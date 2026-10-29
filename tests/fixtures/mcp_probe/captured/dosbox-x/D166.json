@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D166",
+  "prompt": "The screen map is loaded, and its screen named palette has no anchor. Run until the machine shows the palette screen, giving up after 20 seconds.",
+  "tool": "run_to",
+  "args": {
+   "screen": "palette",
+   "seconds": 20
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D166: {\"tool\": \"run_to\", \"args\": {\"screen\": \"palette\", \"seconds\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D166: {\"tool\": \"run_to\", \"args\": {\"screen\": \"palette\", \"seconds\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D166: {\"tool\": \"run_to\", \"args\": {\"screen\": \"palette\", \"seconds\": 20}}"
+   ],
+   "right": true
+  }
+ ]
+}

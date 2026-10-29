@@ -110,37 +110,15 @@ and its own arguments) is `<volatile>`.
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": [
-    "BPIF",
-    "CAPTURE",
-    "DOSTRACE",
-    "LOADSTATE",
-    "PORTINFO",
-    "PRESENCE",
-    "RUNSTATE",
-    "SAVESTATE",
-    "STEPIN",
-    "TAP",
-    "VGAMEMDUMP"
-  ],
+  "debugger_commands": ["BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
   "declarations": {
-    "rearm": {
-      "rearmed": [],
-      "stale": [],
-      "unresolved": [],
-      "ambiguous": [],
-      "unarmable": []
-    }
+    "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -161,11 +139,7 @@ and its own arguments) is `<volatile>`.
   "summary": "resume: OTHER_STOP, stopped at 08DD:00000119",
   "status": "ok",
   "verdict": "OTHER_STOP",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
   "pc": "08DD:00000119",
@@ -189,38 +163,25 @@ and its own arguments) is `<volatile>`.
     "SS": "0x08dd"
   },
   "watches": [],
-  "cause": "no declared code breakpoint at 08DD:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+  "cause": "most likely the held `BPINT 03`: the guest is at `int 03`, at 08DD:00000119",
   "e9": {
     "lines_total": 2,
     "truncated": false,
-    "lines": [
-      "Bochs port E9h: STUB  . scry device=present proto=6 motion=1",
-      "Bochs port E9h: BRICKS ready"
-    ],
+    "lines": ["Bochs port E9h: STUB  . scry device=present proto=6 motion=1", "Bochs port E9h: BRICKS ready"],
     "mark": "<volatile>"
   },
   "stop_seq": 2,
   "instruction": {
-    "seg_off": "08DD:00000119",
+    "address": "08DD:00000119",
     "bytes": "CD03",
     "text": "int 3",
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": {"available": false, "why": "no symbol table is loaded"},
+    "delta": {"available": false, "why": "no symbol table is loaded"}
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -244,13 +205,7 @@ and its own arguments) is `<volatile>`.
   "base": 36304,
   "limit": -1,
   "descriptor": -1,
-  "declarations": {
-    "rearmed": [],
-    "stale": [],
-    "unresolved": [],
-    "ambiguous": [],
-    "unarmable": []
-  },
+  "declarations": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []},
   "pending": false,
   "checked": {
     "available": false,
@@ -274,11 +229,7 @@ and its own arguments) is `<volatile>`.
   "loaded": 65,
   "bytes": 1302,
   "symbols_typed": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -304,38 +255,8 @@ and its own arguments) is `<volatile>`.
   "length": 32,
   "code_bits": 16,
   "code_bits_from": "real mode",
-  "lines": [
-    "08DD:000002C8 88DF                 mov bh, bl",
-    "08DD:000002CA 88C3                 mov bl, al",
-    "08DD:000002CC E81FFF               call 0x1ee",
-    "08DD:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0",
-    "08DD:000002D4 FE0E2B06             dec byte ptr [0x62b]",
-    "08DD:000002D8 53                   push bx",
-    "08DD:000002D9 30C0                 xor al, al",
-    "08DD:000002DB E81BFF               call 0x1f9",
-    "08DD:000002DE 5B                   pop bx",
-    "08DD:000002DF B006                 mov al, 6",
-    "08DD:000002E1 28D8                 sub al, bl",
-    "08DD:000002E3 B40A                 mov ah, 0xa",
-    "08DD:000002E5 F6E4                 mul ah",
-    "08DD:000002E7 01061506             add word ptr [0x615], ax"
-  ],
-  "flow": [
-    "sequential",
-    "sequential",
-    "call",
-    "sequential",
-    "sequential",
-    "sequential",
-    "sequential",
-    "call",
-    "sequential",
-    "sequential",
-    "sequential",
-    "sequential",
-    "sequential",
-    "sequential"
-  ],
+  "lines": ["08DD:000002C8 88DF                 mov bh, bl", "08DD:000002CA 88C3                 mov bl, al", "08DD:000002CC E81FFF               call 0x1ee", "08DD:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0", "08DD:000002D4 FE0E2B06             dec byte ptr [0x62b]", "08DD:000002D8 53                   push bx", "08DD:000002D9 30C0                 xor al, al", "08DD:000002DB E81BFF               call 0x1f9", "08DD:000002DE 5B                   pop bx", "08DD:000002DF B006                 mov al, 6", "08DD:000002E1 28D8                 sub al, bl", "08DD:000002E3 B40A                 mov ah, 0xa", "08DD:000002E5 F6E4                 mul ah", "08DD:000002E7 01061506             add word ptr [0x615], ax"],
+  "flow": ["sequential", "sequential", "call", "sequential", "sequential", "sequential", "sequential", "call", "sequential", "sequential", "sequential", "sequential", "sequential", "sequential"],
   "flow_source": "capstone",
   "resolved": [
     {
@@ -377,11 +298,7 @@ and its own arguments) is `<volatile>`.
       "delta": 0
     }
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -407,11 +324,7 @@ and its own arguments) is `<volatile>`.
   "armed": true,
   "state": "armed",
   "entry": "BP 08DD:02C8",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -441,11 +354,7 @@ and its own arguments) is `<volatile>`.
   "stored": true,
   "armed": false,
   "state": "evaluated",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -466,11 +375,7 @@ and its own arguments) is `<volatile>`.
   "summary": "resume: OTHER_STOP, stopped at 08DD:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
   "pc": "08DD:000002C8",
@@ -506,15 +411,10 @@ and its own arguments) is `<volatile>`.
     }
   ],
   "cause": "breakpoint brick_hit (by symbol) at 08DD:000002C8",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 3,
   "instruction": {
-    "seg_off": "08DD:000002C8",
+    "address": "08DD:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -523,11 +423,7 @@ and its own arguments) is `<volatile>`.
     "symbol": "brick_hit",
     "delta": 0
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -548,11 +444,7 @@ and its own arguments) is `<volatile>`.
   "summary": "resume: OTHER_STOP, stopped at 08DD:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
   "pc": "08DD:000002C8",
@@ -588,17 +480,10 @@ and its own arguments) is `<volatile>`.
     }
   ],
   "cause": "breakpoint brick_hit (by symbol) at 08DD:000002C8",
-  "e9": {
-    "lines_total": 1,
-    "truncated": false,
-    "lines": [
-      "Bochs port E9h: HIT 5 7"
-    ],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: HIT 5 7"], "mark": "<volatile>"},
   "stop_seq": 4,
   "instruction": {
-    "seg_off": "08DD:000002C8",
+    "address": "08DD:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -607,11 +492,7 @@ and its own arguments) is `<volatile>`.
     "symbol": "brick_hit",
     "delta": 0
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -636,11 +517,7 @@ and its own arguments) is `<volatile>`.
   "seg_off": "08DD:00000615",
   "length": 2,
   "hex": "0a00",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -665,12 +542,7 @@ and its own arguments) is `<volatile>`.
   "width": 320,
   "height": 200,
   "mode": "render",
-  "crop": [
-    0,
-    0,
-    320,
-    200
-  ],
+  "crop": [0, 0, 320, 200],
   "screen_indexed": true,
   "entries": 256,
   "image": {
@@ -684,11 +556,7 @@ and its own arguments) is `<volatile>`.
     "inline": true
   },
   "display_start": "0h",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -712,14 +580,8 @@ Also attached: image/png.
   "summary": "declaration_clear breakpoint all: 1 cleared",
   "status": "ok",
   "declarations_cleared": 1,
-  "disarmed": [
-    "BP 08DD:02C8"
-  ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "disarmed": ["BP 08DD:02C8"],
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -759,29 +621,15 @@ Also attached: image/png.
     }
   ],
   "cause": "<volatile>",
-  "e9": {
-    "lines_total": 1,
-    "truncated": false,
-    "lines": [
-      "Bochs port E9h: HIT 5 6"
-    ],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: HIT 5 6"], "mark": "<volatile>"},
   "stop_seq": 5,
   "instruction": "<volatile>",
   "emulated_before_s": 2.0022688,
   "emulated_after_s": 2.0317822000000003,
   "frame_before": 140,
   "frame_after": 143,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "cycles": 68499,
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -806,11 +654,7 @@ Also attached: image/png.
   "seg_off": "08DD:00000621",
   "length": 8,
   "hex": "bc005200feff0200",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -828,17 +672,9 @@ Also attached: image/png.
 {
   "summary": "resume: running",
   "status": "ok",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": false
-  }
+  "session": {"alive": true, "running": true, "altered": false}
 }
 ```
 
@@ -851,30 +687,9 @@ Also attached: image/png.
 ```json
 {
   "act": [
-    {
-      "op": "send_keys",
-      "keys": [
-        "right"
-      ],
-      "expect": "KEY R",
-      "seconds": 10
-    },
-    {
-      "op": "send_keys",
-      "keys": [
-        "right"
-      ],
-      "expect": "KEY R",
-      "seconds": 10
-    },
-    {
-      "op": "send_keys",
-      "keys": [
-        "right"
-      ],
-      "expect": "KEY R",
-      "seconds": 10
-    }
+    {"op": "send_keys", "keys": ["right"], "expect": "KEY R", "seconds": 10},
+    {"op": "send_keys", "keys": ["right"], "expect": "KEY R", "seconds": 10},
+    {"op": "send_keys", "keys": ["right"], "expect": "KEY R", "seconds": 10}
   ],
   "pattern": "KEY|PLAYER"
 }
@@ -891,9 +706,7 @@ Also attached: image/png.
         "reply": {
           "summary": "send_keys (guest): effect seen",
           "status": "ok",
-          "keys": [
-            "right"
-          ],
+          "keys": ["right"],
           "modifiers": [],
           "route": "guest",
           "posted": 1,
@@ -910,11 +723,7 @@ Also attached: image/png.
             "waited_s": "<volatile>",
             "lines_total": "<volatile>"
           },
-          "session": {
-            "alive": true,
-            "running": true,
-            "altered": false
-          }
+          "session": {"alive": true, "running": true, "altered": false}
         }
       },
       {
@@ -922,9 +731,7 @@ Also attached: image/png.
         "reply": {
           "summary": "send_keys (guest): effect seen",
           "status": "ok",
-          "keys": [
-            "right"
-          ],
+          "keys": ["right"],
           "modifiers": [],
           "route": "guest",
           "posted": 1,
@@ -941,11 +748,7 @@ Also attached: image/png.
             "waited_s": "<volatile>",
             "lines_total": "<volatile>"
           },
-          "session": {
-            "alive": true,
-            "running": true,
-            "altered": false
-          }
+          "session": {"alive": true, "running": true, "altered": false}
         }
       },
       {
@@ -953,9 +756,7 @@ Also attached: image/png.
         "reply": {
           "summary": "send_keys (guest): effect seen",
           "status": "ok",
-          "keys": [
-            "right"
-          ],
+          "keys": ["right"],
           "modifiers": [],
           "route": "guest",
           "posted": 1,
@@ -972,19 +773,12 @@ Also attached: image/png.
             "waited_s": "<volatile>",
             "lines_total": "<volatile>"
           },
-          "session": {
-            "alive": true,
-            "running": true,
-            "altered": false
-          }
+          "session": {"alive": true, "running": true, "altered": false}
         }
       }
     ],
     "steps_completed": 3,
-    "failed_at": {
-      "available": false,
-      "why": "no step failed"
-    },
+    "failed_at": {"available": false, "why": "no step failed"},
     "still_running": true,
     "note": "the list began with the machine running and no step of it released it, so no stop was waited for",
     "held": 0
@@ -1000,20 +794,11 @@ Also attached: image/png.
       "lines_written": "<volatile>",
       "lines_total": "<volatile>",
       "truncated": false,
-      "lines": [
-        "Bochs port E9h: PLAYER",
-        "Bochs port E9h: KEY R",
-        "Bochs port E9h: KEY R",
-        "Bochs port E9h: KEY R"
-      ],
+      "lines": ["Bochs port E9h: PLAYER", "Bochs port E9h: KEY R", "Bochs port E9h: KEY R", "Bochs port E9h: KEY R"],
       "pattern": "KEY|PLAYER"
     }
   },
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": false
-  }
+  "session": {"alive": true, "running": true, "altered": false}
 }
 ```
 
@@ -1042,11 +827,7 @@ Also attached: image/png.
   "e9": "<volatile>",
   "stop_seq": 6,
   "instruction": "<volatile>",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1071,11 +852,7 @@ Also attached: image/png.
   "seg_off": "08DD:0000061F",
   "length": 2,
   "hex": "a400",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1093,17 +870,9 @@ Also attached: image/png.
 {
   "summary": "resume: running",
   "status": "ok",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": false
-  }
+  "session": {"alive": true, "running": true, "altered": false}
 }
 ```
 
@@ -1115,9 +884,7 @@ Also attached: image/png.
 
 ```json
 {
-  "keys": [
-    "m"
-  ],
+  "keys": ["m"],
   "expect": "MOUSE ON$",
   "seconds": 10
 }
@@ -1127,9 +894,7 @@ Also attached: image/png.
 {
   "summary": "send_keys (guest): effect seen",
   "status": "ok",
-  "keys": [
-    "m"
-  ],
+  "keys": ["m"],
   "modifiers": [],
   "route": "guest",
   "posted": 1,
@@ -1146,11 +911,7 @@ Also attached: image/png.
     "waited_s": "<volatile>",
     "lines_total": "<volatile>"
   },
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": false
-  }
+  "session": {"alive": true, "running": true, "altered": false}
 }
 ```
 
@@ -1178,18 +939,8 @@ Also attached: image/png.
   "units": "screen",
   "route": "guest",
   "pointer": {
-    "screen": {
-      "x": 240,
-      "y": 100,
-      "width": 320,
-      "height": 200
-    },
-    "mouse": {
-      "x": 480,
-      "y": 100,
-      "max_x": 639,
-      "max_y": 199
-    },
+    "screen": {"x": 240, "y": 100, "width": 320, "height": 200},
+    "mouse": {"x": 480, "y": 100, "max_x": 639, "max_y": 199},
     "buttons": [],
     "bios_mode": "0x13"
   },
@@ -1206,11 +957,7 @@ Also attached: image/png.
     "waited_s": "<volatile>",
     "lines_total": "<volatile>"
   },
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": false
-  }
+  "session": {"alive": true, "running": true, "altered": false}
 }
 ```
 
@@ -1222,9 +969,7 @@ Also attached: image/png.
 
 ```json
 {
-  "keys": [
-    "m"
-  ],
+  "keys": ["m"],
   "expect": "MOUSE OFF$",
   "seconds": 10
 }
@@ -1234,9 +979,7 @@ Also attached: image/png.
 {
   "summary": "send_keys (guest): effect seen",
   "status": "ok",
-  "keys": [
-    "m"
-  ],
+  "keys": ["m"],
   "modifiers": [],
   "route": "guest",
   "posted": 1,
@@ -1253,11 +996,7 @@ Also attached: image/png.
     "waited_s": "<volatile>",
     "lines_total": "<volatile>"
   },
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": false
-  }
+  "session": {"alive": true, "running": true, "altered": false}
 }
 ```
 
@@ -1286,11 +1025,7 @@ Also attached: image/png.
   "e9": "<volatile>",
   "stop_seq": 7,
   "instruction": "<volatile>",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1315,11 +1050,7 @@ Also attached: image/png.
   "seg_off": "08DD:0000061F",
   "length": 2,
   "hex": "dc00",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1337,17 +1068,9 @@ Also attached: image/png.
 {
   "summary": "resume: running",
   "status": "ok",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": false
-  }
+  "session": {"alive": true, "running": true, "altered": false}
 }
 ```
 
@@ -1377,11 +1100,7 @@ Also attached: image/png.
   "memory_mb": 4096,
   "saved_at": "<volatile>",
   "paused": true,
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": false
-  }
+  "session": {"alive": true, "running": true, "altered": false}
 }
 ```
 
@@ -1393,9 +1112,7 @@ Also attached: image/png.
 
 ```json
 {
-  "keys": [
-    "left"
-  ],
+  "keys": ["left"],
   "expect": "KEY L$",
   "seconds": 10
 }
@@ -1405,9 +1122,7 @@ Also attached: image/png.
 {
   "summary": "send_keys (guest): effect seen",
   "status": "ok",
-  "keys": [
-    "left"
-  ],
+  "keys": ["left"],
   "modifiers": [],
   "route": "guest",
   "posted": 1,
@@ -1424,11 +1139,7 @@ Also attached: image/png.
     "waited_s": "<volatile>",
     "lines_total": "<volatile>"
   },
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": false
-  }
+  "session": {"alive": true, "running": true, "altered": false}
 }
 ```
 
@@ -1458,11 +1169,7 @@ Also attached: image/png.
   "saved_at": "<volatile>",
   "paused": true,
   "mark": "<volatile>",
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": true
-  }
+  "session": {"alive": true, "running": true, "altered": true}
 }
 ```
 
@@ -1491,11 +1198,7 @@ Also attached: image/png.
   "e9": "<volatile>",
   "stop_seq": 8,
   "instruction": "<volatile>",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": true
-  }
+  "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
@@ -1520,11 +1223,7 @@ Also attached: image/png.
   "seg_off": "08DD:0000061F",
   "length": 2,
   "hex": "dc00",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": true
-  }
+  "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
@@ -1542,17 +1241,9 @@ Also attached: image/png.
 {
   "summary": "resume: running",
   "status": "ok",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": true
-  }
+  "session": {"alive": true, "running": true, "altered": true}
 }
 ```
 
@@ -1564,9 +1255,7 @@ Also attached: image/png.
 
 ```json
 {
-  "keys": [
-    "space"
-  ],
+  "keys": ["space"],
   "expect": "SERVE$",
   "seconds": 10
 }
@@ -1576,9 +1265,7 @@ Also attached: image/png.
 {
   "summary": "send_keys (guest): effect seen",
   "status": "ok",
-  "keys": [
-    "space"
-  ],
+  "keys": ["space"],
   "modifiers": [],
   "route": "guest",
   "posted": 1,
@@ -1595,11 +1282,7 @@ Also attached: image/png.
     "waited_s": "<volatile>",
     "lines_total": "<volatile>"
   },
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": true
-  }
+  "session": {"alive": true, "running": true, "altered": true}
 }
 ```
 
@@ -1622,11 +1305,7 @@ Also attached: image/png.
   "status": "ok",
   "declarations_cleared": 1,
   "disarmed": [],
-  "session": {
-    "alive": true,
-    "running": true,
-    "altered": true
-  }
+  "session": {"alive": true, "running": true, "altered": true}
 }
 ```
 
@@ -1655,16 +1334,9 @@ Also attached: image/png.
   "state_dir": "./tmp/demos/bricks/bricks-states",
   "ended_by": "quit",
   "exit_code": 0,
-  "omitted": [
-    "stdout_tail",
-    "errorlog_tail"
-  ],
+  "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
-  "session": {
-    "alive": false,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": false, "running": false, "altered": false}
 }
 ```
 

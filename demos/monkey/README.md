@@ -147,31 +147,13 @@ verdict, and this repository carries none of them.
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": [
-    "BPIF",
-    "CAPTURE",
-    "DOSTRACE",
-    "LOADSTATE",
-    "PORTINFO",
-    "PRESENCE",
-    "RUNSTATE",
-    "SAVESTATE",
-    "STEPIN",
-    "TAP",
-    "VGAMEMDUMP"
-  ],
+  "debugger_commands": ["BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
   "declarations": {
-    "rearm": {
-      "rearmed": [],
-      "stale": [],
-      "unresolved": [],
-      "ambiguous": [],
-      "unarmable": []
-    }
+    "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
   "session": "<volatile>"
 }
@@ -205,9 +187,7 @@ verdict, and this repository carries none of them.
   "e9": {
     "lines_total": 1,
     "truncated": false,
-    "lines": [
-      "Bochs port E9h: STUB  . scry device=present proto=6 motion=1"
-    ],
+    "lines": ["Bochs port E9h: STUB  . scry device=present proto=6 motion=1"],
     "mark": "<volatile>"
   },
   "stop_seq": "<volatile>",
@@ -216,10 +196,7 @@ verdict, and this repository carries none of them.
   "emulated_after_s": 11.00330265,
   "frame_before": 0,
   "frame_after": 681,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
+  "cycles": 172220499,
   "session": "<volatile>"
 }
 ```
@@ -268,76 +245,13 @@ verdict, and this repository carries none of them.
   "screen": "language",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    640,
-    480
-  ],
+  "size": [640, 480],
   "controls": [
-    {
-      "name": "english",
-      "rect": [
-        60,
-        412,
-        40,
-        50
-      ],
-      "centre": [
-        80,
-        437
-      ]
-    },
-    {
-      "name": "french",
-      "rect": [
-        168,
-        412,
-        60,
-        50
-      ],
-      "centre": [
-        198,
-        437
-      ]
-    },
-    {
-      "name": "german",
-      "rect": [
-        280,
-        412,
-        60,
-        50
-      ],
-      "centre": [
-        310,
-        437
-      ]
-    },
-    {
-      "name": "italian",
-      "rect": [
-        395,
-        412,
-        60,
-        50
-      ],
-      "centre": [
-        425,
-        437
-      ]
-    },
-    {
-      "name": "spanish",
-      "rect": [
-        512,
-        412,
-        60,
-        50
-      ],
-      "centre": [
-        542,
-        437
-      ]
-    }
+    {"name": "english", "rect": [60, 412, 40, 50], "centre": [80, 437]},
+    {"name": "french", "rect": [168, 412, 60, 50], "centre": [198, 437]},
+    {"name": "german", "rect": [280, 412, 60, 50], "centre": [310, 437]},
+    {"name": "italian", "rect": [395, 412, 60, 50], "centre": [425, 437]},
+    {"name": "spanish", "rect": [512, 412, 60, 50], "centre": [542, 437]}
   ],
   "session": "<volatile>"
 }
@@ -352,16 +266,8 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "english",
-      "button": "left",
-      "action": "double"
-    },
-    {
-      "op": "run_for",
-      "milliseconds": 24000
-    }
+    {"op": "send_mouse", "target": "english", "button": "left", "action": "double"},
+    {"op": "run_for", "milliseconds": 24000}
   ],
   "summaries": true
 }
@@ -375,12 +281,7 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
@@ -396,22 +297,14 @@ verdict, and this repository carries none of them.
         "regs": "<volatile>",
         "watches": [],
         "cause": "<volatile>",
-        "e9": {
-          "lines_total": 0,
-          "truncated": false,
-          "lines": [],
-          "mark": "<volatile>"
-        },
+        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "stop_seq": "<volatile>",
         "instruction": "<volatile>",
         "emulated_before_s": 11.52048965,
         "emulated_after_s": 35.5251577,
         "frame_before": 712,
         "frame_after": 2392,
-        "cycles": {
-          "available": false,
-          "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-        },
+        "cycles": 466932355,
         "session": "<volatile>"
       }
     }
@@ -422,10 +315,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 2,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -440,41 +330,13 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_keys",
-      "keys": [
-        "escape"
-      ]
-    },
-    {
-      "op": "run_for",
-      "milliseconds": 6000
-    },
-    {
-      "op": "send_keys",
-      "keys": [
-        "escape"
-      ]
-    },
-    {
-      "op": "run_for",
-      "milliseconds": 3000
-    },
-    {
-      "op": "send_mouse",
-      "x": 319,
-      "y": 199
-    },
-    {
-      "op": "send_mouse",
-      "x": 0,
-      "y": 0
-    },
-    {
-      "op": "send_mouse",
-      "x": 250,
-      "y": 20
-    }
+    {"op": "send_keys", "keys": ["escape"]},
+    {"op": "run_for", "milliseconds": 6000},
+    {"op": "send_keys", "keys": ["escape"]},
+    {"op": "run_for", "milliseconds": 3000},
+    {"op": "send_mouse", "x": 319, "y": 199},
+    {"op": "send_mouse", "x": 0, "y": 0},
+    {"op": "send_mouse", "x": 250, "y": 20}
   ],
   "summaries": true
 }
@@ -488,62 +350,32 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_keys",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "send_keys",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 4,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 5,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 6,
@@ -556,18 +388,8 @@ verdict, and this repository carries none of them.
         "units": "screen",
         "route": "guest",
         "pointer": {
-          "screen": {
-            "x": 250,
-            "y": 20,
-            "width": 320,
-            "height": 200
-          },
-          "mouse": {
-            "x": 500,
-            "y": 20,
-            "max_x": 639,
-            "max_y": 199
-          },
+          "screen": {"x": 250, "y": 20, "width": 320, "height": 200},
+          "mouse": {"x": 500, "y": 20, "max_x": 639, "max_y": 199},
           "buttons": [],
           "bios_mode": "0x13"
         },
@@ -581,12 +403,7 @@ verdict, and this repository carries none of them.
         "regs": "<volatile>",
         "watches": [],
         "cause": "<volatile>",
-        "e9": {
-          "lines_total": 0,
-          "truncated": false,
-          "lines": [],
-          "mark": "<volatile>"
-        },
+        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
           "checked": false,
@@ -602,10 +419,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 7,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -620,13 +434,8 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "run_for",
-      "milliseconds": 16000
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "run_for", "milliseconds": 16000},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -640,12 +449,7 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
@@ -657,154 +461,19 @@ verdict, and this repository carries none of them.
         "screen": "dock",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "give",
-            "rect": [
-              4,
-              154,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              160
-            ]
-          },
-          {
-            "name": "pick_up",
-            "rect": [
-              46,
-              154,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              160
-            ]
-          },
-          {
-            "name": "use",
-            "rect": [
-              104,
-              154,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              160
-            ]
-          },
-          {
-            "name": "open",
-            "rect": [
-              4,
-              170,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              176
-            ]
-          },
-          {
-            "name": "look_at",
-            "rect": [
-              46,
-              170,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              176
-            ]
-          },
-          {
-            "name": "push",
-            "rect": [
-              104,
-              170,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              176
-            ]
-          },
-          {
-            "name": "close",
-            "rect": [
-              4,
-              186,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              192
-            ]
-          },
-          {
-            "name": "talk_to",
-            "rect": [
-              46,
-              186,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              192
-            ]
-          },
-          {
-            "name": "pull",
-            "rect": [
-              104,
-              186,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              192
-            ]
-          },
-          {
-            "name": "cliffside",
-            "rect": [
-              30,
-              100,
-              20,
-              20
-            ],
-            "centre": [
-              40,
-              110
-            ]
-          },
-          {
-            "name": "poster",
-            "rect": [
-              262,
-              92,
-              18,
-              26
-            ],
-            "centre": [
-              271,
-              105
-            ]
-          }
+          {"name": "give", "rect": [4, 154, 32, 12], "centre": [20, 160]},
+          {"name": "pick_up", "rect": [46, 154, 52, 12], "centre": [72, 160]},
+          {"name": "use", "rect": [104, 154, 34, 12], "centre": [121, 160]},
+          {"name": "open", "rect": [4, 170, 32, 12], "centre": [20, 176]},
+          {"name": "look_at", "rect": [46, 170, 52, 12], "centre": [72, 176]},
+          {"name": "push", "rect": [104, 170, 34, 12], "centre": [121, 176]},
+          {"name": "close", "rect": [4, 186, 32, 12], "centre": [20, 192]},
+          {"name": "talk_to", "rect": [46, 186, 52, 12], "centre": [72, 192]},
+          {"name": "pull", "rect": [104, 186, 34, 12], "centre": [121, 192]},
+          {"name": "cliffside", "rect": [30, 100, 20, 20], "centre": [40, 110]},
+          {"name": "poster", "rect": [262, 92, 18, 26], "centre": [271, 105]}
         ],
         "session": "<volatile>"
       }
@@ -816,10 +485,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 2,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -834,17 +500,9 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "poster"
-    },
-    {
-      "op": "run_for",
-      "frames": 5
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "poster"},
+    {"op": "run_for", "frames": 5},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -858,22 +516,12 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
@@ -885,24 +533,9 @@ verdict, and this repository carries none of them.
         "screen": "dock: walk to poster",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "poster",
-            "rect": [
-              262,
-              92,
-              18,
-              26
-            ],
-            "centre": [
-              271,
-              105
-            ]
-          }
+          {"name": "poster", "rect": [262, 92, 18, 26], "centre": [271, 105]}
         ],
         "session": "<volatile>"
       }
@@ -914,10 +547,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 3,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -932,19 +562,9 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "poster",
-      "button": "left",
-      "action": "click"
-    },
-    {
-      "op": "run_for",
-      "milliseconds": 8000
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "poster", "button": "left", "action": "click"},
+    {"op": "run_for", "milliseconds": 8000},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -958,22 +578,12 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
@@ -985,154 +595,19 @@ verdict, and this repository carries none of them.
         "screen": "by the poster",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "give",
-            "rect": [
-              4,
-              154,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              160
-            ]
-          },
-          {
-            "name": "pick_up",
-            "rect": [
-              46,
-              154,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              160
-            ]
-          },
-          {
-            "name": "use",
-            "rect": [
-              104,
-              154,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              160
-            ]
-          },
-          {
-            "name": "open",
-            "rect": [
-              4,
-              170,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              176
-            ]
-          },
-          {
-            "name": "look_at",
-            "rect": [
-              46,
-              170,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              176
-            ]
-          },
-          {
-            "name": "push",
-            "rect": [
-              104,
-              170,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              176
-            ]
-          },
-          {
-            "name": "close",
-            "rect": [
-              4,
-              186,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              192
-            ]
-          },
-          {
-            "name": "talk_to",
-            "rect": [
-              46,
-              186,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              192
-            ]
-          },
-          {
-            "name": "pull",
-            "rect": [
-              104,
-              186,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              192
-            ]
-          },
-          {
-            "name": "poster",
-            "rect": [
-              158,
-              76,
-              20,
-              24
-            ],
-            "centre": [
-              168,
-              88
-            ]
-          },
-          {
-            "name": "way_back",
-            "rect": [
-              0,
-              105,
-              10,
-              20
-            ],
-            "centre": [
-              5,
-              115
-            ]
-          }
+          {"name": "give", "rect": [4, 154, 32, 12], "centre": [20, 160]},
+          {"name": "pick_up", "rect": [46, 154, 52, 12], "centre": [72, 160]},
+          {"name": "use", "rect": [104, 154, 34, 12], "centre": [121, 160]},
+          {"name": "open", "rect": [4, 170, 32, 12], "centre": [20, 176]},
+          {"name": "look_at", "rect": [46, 170, 52, 12], "centre": [72, 176]},
+          {"name": "push", "rect": [104, 170, 34, 12], "centre": [121, 176]},
+          {"name": "close", "rect": [4, 186, 32, 12], "centre": [20, 192]},
+          {"name": "talk_to", "rect": [46, 186, 52, 12], "centre": [72, 192]},
+          {"name": "pull", "rect": [104, 186, 34, 12], "centre": [121, 192]},
+          {"name": "poster", "rect": [158, 76, 20, 24], "centre": [168, 88]},
+          {"name": "way_back", "rect": [0, 105, 10, 20], "centre": [5, 115]}
         ],
         "session": "<volatile>"
       }
@@ -1144,10 +619,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 3,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -1162,23 +634,10 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "look_at",
-      "button": "left",
-      "action": "click"
-    },
-    {
-      "op": "send_mouse",
-      "target": "poster"
-    },
-    {
-      "op": "run_for",
-      "frames": 5
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "look_at", "button": "left", "action": "click"},
+    {"op": "send_mouse", "target": "poster"},
+    {"op": "run_for", "frames": 5},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -1192,32 +651,17 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
@@ -1229,24 +673,9 @@ verdict, and this repository carries none of them.
         "screen": "by the poster: look at poster",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "poster",
-            "rect": [
-              158,
-              76,
-              20,
-              24
-            ],
-            "centre": [
-              168,
-              88
-            ]
-          }
+          {"name": "poster", "rect": [158, 76, 20, 24], "centre": [168, 88]}
         ],
         "session": "<volatile>"
       }
@@ -1258,10 +687,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 4,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -1276,19 +702,9 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "poster",
-      "button": "left",
-      "action": "click"
-    },
-    {
-      "op": "run_for",
-      "milliseconds": 1500
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "poster", "button": "left", "action": "click"},
+    {"op": "run_for", "milliseconds": 1500},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -1302,22 +718,12 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
@@ -1329,10 +735,7 @@ verdict, and this repository carries none of them.
         "screen": "poster: re-elect governor marley",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
       }
@@ -1344,10 +747,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 3,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -1362,13 +762,8 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "run_for",
-      "milliseconds": 2000
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "run_for", "milliseconds": 2000},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -1382,12 +777,7 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
@@ -1399,10 +789,7 @@ verdict, and this repository carries none of them.
         "screen": "poster: only one candidate",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
       }
@@ -1414,10 +801,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 2,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -1432,13 +816,8 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "run_for",
-      "milliseconds": 3500
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "run_for", "milliseconds": 3500},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -1452,12 +831,7 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
@@ -1469,37 +843,10 @@ verdict, and this repository carries none of them.
         "screen": "by the poster: walk to poster",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "poster",
-            "rect": [
-              158,
-              76,
-              20,
-              24
-            ],
-            "centre": [
-              168,
-              88
-            ]
-          },
-          {
-            "name": "way_back",
-            "rect": [
-              0,
-              105,
-              10,
-              20
-            ],
-            "centre": [
-              5,
-              115
-            ]
-          }
+          {"name": "poster", "rect": [158, 76, 20, 24], "centre": [168, 88]},
+          {"name": "way_back", "rect": [0, 105, 10, 20], "centre": [5, 115]}
         ],
         "session": "<volatile>"
       }
@@ -1511,10 +858,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 2,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -1529,19 +873,9 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "way_back",
-      "button": "left",
-      "action": "click"
-    },
-    {
-      "op": "run_for",
-      "milliseconds": 4000
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "way_back", "button": "left", "action": "click"},
+    {"op": "run_for", "milliseconds": 4000},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -1555,22 +889,12 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
@@ -1582,24 +906,9 @@ verdict, and this repository carries none of them.
         "screen": "dock: walk to cliffside",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "cliffside",
-            "rect": [
-              30,
-              100,
-              20,
-              20
-            ],
-            "centre": [
-              40,
-              110
-            ]
-          }
+          {"name": "cliffside", "rect": [30, 100, 20, 20], "centre": [40, 110]}
         ],
         "session": "<volatile>"
       }
@@ -1611,10 +920,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 3,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -1629,28 +935,11 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "cliffside",
-      "button": "left",
-      "action": "click"
-    },
-    {
-      "op": "run_for",
-      "milliseconds": 8000
-    },
-    {
-      "op": "send_mouse",
-      "x": 250,
-      "y": 20
-    },
-    {
-      "op": "run_for",
-      "frames": 10
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "cliffside", "button": "left", "action": "click"},
+    {"op": "run_for", "milliseconds": 8000},
+    {"op": "send_mouse", "x": 250, "y": 20},
+    {"op": "run_for", "frames": 10},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -1664,42 +953,22 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 4,
@@ -1711,141 +980,18 @@ verdict, and this repository carries none of them.
         "screen": "cliff",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "give",
-            "rect": [
-              4,
-              154,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              160
-            ]
-          },
-          {
-            "name": "pick_up",
-            "rect": [
-              46,
-              154,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              160
-            ]
-          },
-          {
-            "name": "use",
-            "rect": [
-              104,
-              154,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              160
-            ]
-          },
-          {
-            "name": "open",
-            "rect": [
-              4,
-              170,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              176
-            ]
-          },
-          {
-            "name": "look_at",
-            "rect": [
-              46,
-              170,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              176
-            ]
-          },
-          {
-            "name": "push",
-            "rect": [
-              104,
-              170,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              176
-            ]
-          },
-          {
-            "name": "close",
-            "rect": [
-              4,
-              186,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              192
-            ]
-          },
-          {
-            "name": "talk_to",
-            "rect": [
-              46,
-              186,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              192
-            ]
-          },
-          {
-            "name": "pull",
-            "rect": [
-              104,
-              186,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              192
-            ]
-          },
-          {
-            "name": "lookout",
-            "rect": [
-              94,
-              66,
-              16,
-              20
-            ],
-            "centre": [
-              102,
-              76
-            ]
-          }
+          {"name": "give", "rect": [4, 154, 32, 12], "centre": [20, 160]},
+          {"name": "pick_up", "rect": [46, 154, 52, 12], "centre": [72, 160]},
+          {"name": "use", "rect": [104, 154, 34, 12], "centre": [121, 160]},
+          {"name": "open", "rect": [4, 170, 32, 12], "centre": [20, 176]},
+          {"name": "look_at", "rect": [46, 170, 52, 12], "centre": [72, 176]},
+          {"name": "push", "rect": [104, 170, 34, 12], "centre": [121, 176]},
+          {"name": "close", "rect": [4, 186, 32, 12], "centre": [20, 192]},
+          {"name": "talk_to", "rect": [46, 186, 52, 12], "centre": [72, 192]},
+          {"name": "pull", "rect": [104, 186, 34, 12], "centre": [121, 192]},
+          {"name": "lookout", "rect": [94, 66, 16, 20], "centre": [102, 76]}
         ],
         "session": "<volatile>"
       }
@@ -1857,10 +1003,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 5,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -1875,23 +1018,10 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "talk_to",
-      "button": "left",
-      "action": "click"
-    },
-    {
-      "op": "send_mouse",
-      "target": "lookout"
-    },
-    {
-      "op": "run_for",
-      "frames": 5
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "talk_to", "button": "left", "action": "click"},
+    {"op": "send_mouse", "target": "lookout"},
+    {"op": "run_for", "frames": 5},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -1905,32 +1035,17 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
@@ -1942,24 +1057,9 @@ verdict, and this repository carries none of them.
         "screen": "cliff: talk to lookout",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "lookout",
-            "rect": [
-              94,
-              66,
-              16,
-              20
-            ],
-            "centre": [
-              102,
-              76
-            ]
-          }
+          {"name": "lookout", "rect": [94, 66, 16, 20], "centre": [102, 76]}
         ],
         "session": "<volatile>"
       }
@@ -1971,10 +1071,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 4,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -1989,19 +1086,9 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "lookout",
-      "button": "left",
-      "action": "click"
-    },
-    {
-      "op": "run_for",
-      "frames": 87
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "lookout", "button": "left", "action": "click"},
+    {"op": "run_for", "frames": 87},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -2015,22 +1102,12 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
@@ -2042,63 +1119,12 @@ verdict, and this repository carries none of them.
         "screen": "greeting choices",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "weenie_roast",
-            "rect": [
-              0,
-              144,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              148
-            ]
-          },
-          {
-            "name": "looking_for_fun",
-            "rect": [
-              0,
-              152,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              156
-            ]
-          },
-          {
-            "name": "thousand_legs",
-            "rect": [
-              0,
-              160,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              164
-            ]
-          },
-          {
-            "name": "characters_in_a_novel",
-            "rect": [
-              0,
-              168,
-              320,
-              8
-            ],
-            "centre": [
-              160,
-              172
-            ]
-          }
+          {"name": "weenie_roast", "rect": [0, 144, 120, 8], "centre": [60, 148]},
+          {"name": "looking_for_fun", "rect": [0, 152, 120, 8], "centre": [60, 156]},
+          {"name": "thousand_legs", "rect": [0, 160, 120, 8], "centre": [60, 164]},
+          {"name": "characters_in_a_novel", "rect": [0, 168, 320, 8], "centre": [160, 172]}
         ],
         "session": "<volatile>"
       }
@@ -2110,10 +1136,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 3,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -2128,17 +1151,9 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "characters_in_a_novel"
-    },
-    {
-      "op": "run_for",
-      "frames": 5
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "characters_in_a_novel"},
+    {"op": "run_for", "frames": 5},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -2152,22 +1167,12 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
@@ -2179,24 +1184,9 @@ verdict, and this repository carries none of them.
         "screen": "greeting: characters in a novel",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "characters_in_a_novel",
-            "rect": [
-              0,
-              168,
-              320,
-              8
-            ],
-            "centre": [
-              160,
-              172
-            ]
-          }
+          {"name": "characters_in_a_novel", "rect": [0, 168, 320, 8], "centre": [160, 172]}
         ],
         "session": "<volatile>"
       }
@@ -2208,10 +1198,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 3,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -2226,24 +1213,10 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "characters_in_a_novel",
-      "button": "left",
-      "action": "click"
-    },
-    {
-      "op": "send_mouse",
-      "x": 160,
-      "y": 60
-    },
-    {
-      "op": "run_for",
-      "frames": 1046
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "characters_in_a_novel", "button": "left", "action": "click"},
+    {"op": "send_mouse", "x": 160, "y": 60},
+    {"op": "run_for", "frames": 1046},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -2257,32 +1230,17 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
@@ -2294,76 +1252,13 @@ verdict, and this repository carries none of them.
         "screen": "name choices",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "im_guybrush_threepwood",
-            "rect": [
-              0,
-              144,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              148
-            ]
-          },
-          {
-            "name": "call_me_squinky",
-            "rect": [
-              0,
-              152,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              156
-            ]
-          },
-          {
-            "name": "im_over_this_way",
-            "rect": [
-              0,
-              160,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              164
-            ]
-          },
-          {
-            "name": "who_are_you",
-            "rect": [
-              0,
-              168,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              172
-            ]
-          },
-          {
-            "name": "seek_my_fortune",
-            "rect": [
-              0,
-              176,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              180
-            ]
-          }
+          {"name": "im_guybrush_threepwood", "rect": [0, 144, 120, 8], "centre": [60, 148]},
+          {"name": "call_me_squinky", "rect": [0, 152, 120, 8], "centre": [60, 156]},
+          {"name": "im_over_this_way", "rect": [0, 160, 120, 8], "centre": [60, 164]},
+          {"name": "who_are_you", "rect": [0, 168, 120, 8], "centre": [60, 172]},
+          {"name": "seek_my_fortune", "rect": [0, 176, 120, 8], "centre": [60, 180]}
         ],
         "session": "<volatile>"
       }
@@ -2375,10 +1270,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 4,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -2393,17 +1285,9 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "im_guybrush_threepwood"
-    },
-    {
-      "op": "run_for",
-      "frames": 5
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "im_guybrush_threepwood"},
+    {"op": "run_for", "frames": 5},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -2417,22 +1301,12 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
@@ -2444,24 +1318,9 @@ verdict, and this repository carries none of them.
         "screen": "name: im guybrush threepwood",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "im_guybrush_threepwood",
-            "rect": [
-              0,
-              144,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              148
-            ]
-          }
+          {"name": "im_guybrush_threepwood", "rect": [0, 144, 120, 8], "centre": [60, 148]}
         ],
         "session": "<volatile>"
       }
@@ -2473,10 +1332,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 3,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -2491,24 +1347,10 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "im_guybrush_threepwood",
-      "button": "left",
-      "action": "click"
-    },
-    {
-      "op": "send_mouse",
-      "x": 160,
-      "y": 60
-    },
-    {
-      "op": "run_for",
-      "frames": 1263
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "im_guybrush_threepwood", "button": "left", "action": "click"},
+    {"op": "send_mouse", "x": 160, "y": 60},
+    {"op": "run_for", "frames": 1263},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -2522,32 +1364,17 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
@@ -2559,76 +1386,13 @@ verdict, and this repository carries none of them.
         "screen": "name choices again",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "whats_wrong_with_my_name",
-            "rect": [
-              0,
-              144,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              148
-            ]
-          },
-          {
-            "name": "call_me_squinky",
-            "rect": [
-              0,
-              152,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              156
-            ]
-          },
-          {
-            "name": "im_over_this_way",
-            "rect": [
-              0,
-              160,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              164
-            ]
-          },
-          {
-            "name": "who_are_you",
-            "rect": [
-              0,
-              168,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              172
-            ]
-          },
-          {
-            "name": "seek_my_fortune",
-            "rect": [
-              0,
-              176,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              180
-            ]
-          }
+          {"name": "whats_wrong_with_my_name", "rect": [0, 144, 120, 8], "centre": [60, 148]},
+          {"name": "call_me_squinky", "rect": [0, 152, 120, 8], "centre": [60, 156]},
+          {"name": "im_over_this_way", "rect": [0, 160, 120, 8], "centre": [60, 164]},
+          {"name": "who_are_you", "rect": [0, 168, 120, 8], "centre": [60, 172]},
+          {"name": "seek_my_fortune", "rect": [0, 176, 120, 8], "centre": [60, 180]}
         ],
         "session": "<volatile>"
       }
@@ -2640,10 +1404,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 4,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -2658,17 +1419,9 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "whats_wrong_with_my_name"
-    },
-    {
-      "op": "run_for",
-      "frames": 5
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "whats_wrong_with_my_name"},
+    {"op": "run_for", "frames": 5},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -2682,22 +1435,12 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
@@ -2709,24 +1452,9 @@ verdict, and this repository carries none of them.
         "screen": "name: whats wrong with my name",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "whats_wrong_with_my_name",
-            "rect": [
-              0,
-              144,
-              120,
-              8
-            ],
-            "centre": [
-              60,
-              148
-            ]
-          }
+          {"name": "whats_wrong_with_my_name", "rect": [0, 144, 120, 8], "centre": [60, 148]}
         ],
         "session": "<volatile>"
       }
@@ -2738,10 +1466,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 3,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -2786,19 +1511,9 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "whats_wrong_with_my_name",
-      "button": "left",
-      "action": "click"
-    },
-    {
-      "op": "run_for",
-      "milliseconds": 4000
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "send_mouse", "target": "whats_wrong_with_my_name", "button": "left", "action": "click"},
+    {"op": "run_for", "milliseconds": 4000},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -2812,22 +1527,12 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
@@ -2839,10 +1544,7 @@ verdict, and this repository carries none of them.
         "screen": "lookout: sell shoes",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
       }
@@ -2854,10 +1556,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 3,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -2911,30 +1610,11 @@ verdict, and this repository carries none of them.
   "screen": "name: whats wrong with my name",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    320,
-    200
-  ],
+  "size": [320, 200],
   "controls": [
-    {
-      "name": "whats_wrong_with_my_name",
-      "rect": [
-        0,
-        144,
-        120,
-        8
-      ],
-      "centre": [
-        60,
-        148
-      ]
-    }
+    {"name": "whats_wrong_with_my_name", "rect": [0, 144, 120, 8], "centre": [60, 148]}
   ],
-  "stopped_on_its_own": {
-    "stop_seq": "<volatile>",
-    "pc": "<volatile>",
-    "cause": "<volatile>"
-  },
+  "stopped_on_its_own": {"stop_seq": "<volatile>", "pc": "<volatile>", "cause": "<volatile>"},
   "session": "<volatile>"
 }
 ```
@@ -2960,14 +1640,8 @@ verdict, and this repository carries none of them.
   "ref": "0000:0000",
   "seg_off": "0000:00000000",
   "length": 655360,
-  "span": {
-    "from": "0000:00000000",
-    "length": 655360,
-    "source": "ref+length"
-  },
-  "hits": [
-    "82DB:0000000F"
-  ],
+  "span": {"from": "0000:00000000", "length": 655360, "source": "ref+length"},
+  "hits": ["82DB:0000000F"],
   "hits_total": 1,
   "truncated": false,
   "session": "<volatile>"
@@ -2983,66 +1657,18 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "read_memory",
-      "ref": "82DB:000C",
-      "length": 128
-    },
-    {
-      "op": "read_memory",
-      "ref": "82E3:000C",
-      "length": 101
-    },
-    {
-      "op": "read_memory",
-      "ref": "82C3:000C",
-      "length": 128
-    },
-    {
-      "op": "read_memory",
-      "ref": "82CB:000C",
-      "length": 128
-    },
-    {
-      "op": "read_memory",
-      "ref": "82D3:000C",
-      "length": 128
-    },
-    {
-      "op": "read_memory",
-      "ref": "82EB:000D",
-      "length": 128
-    },
-    {
-      "op": "read_memory",
-      "ref": "82F3:000D",
-      "length": 128
-    },
-    {
-      "op": "read_memory",
-      "ref": "82FB:000D",
-      "length": 128
-    },
-    {
-      "op": "read_memory",
-      "ref": "8303:000D",
-      "length": 128
-    },
-    {
-      "op": "read_memory",
-      "ref": "830B:000D",
-      "length": 128
-    },
-    {
-      "op": "read_memory",
-      "ref": "8313:000D",
-      "length": 90
-    },
-    {
-      "op": "read_memory",
-      "ref": "82EA:0001",
-      "length": 28
-    }
+    {"op": "read_memory", "ref": "82DB:000C", "length": 128},
+    {"op": "read_memory", "ref": "82E3:000C", "length": 101},
+    {"op": "read_memory", "ref": "82C3:000C", "length": 128},
+    {"op": "read_memory", "ref": "82CB:000C", "length": 128},
+    {"op": "read_memory", "ref": "82D3:000C", "length": 128},
+    {"op": "read_memory", "ref": "82EB:000D", "length": 128},
+    {"op": "read_memory", "ref": "82F3:000D", "length": 128},
+    {"op": "read_memory", "ref": "82FB:000D", "length": 128},
+    {"op": "read_memory", "ref": "8303:000D", "length": 128},
+    {"op": "read_memory", "ref": "830B:000D", "length": 128},
+    {"op": "read_memory", "ref": "8313:000D", "length": 90},
+    {"op": "read_memory", "ref": "82EA:0001", "length": 28}
   ],
   "summaries": true
 }
@@ -3059,10 +1685,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 12,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -3145,82 +1768,52 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "write",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 1,
       "op": "write",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "write",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "write",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "write",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 5,
       "op": "write",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 6,
       "op": "write",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 7,
       "op": "write",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 8,
       "op": "write",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 9,
       "op": "write",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 10,
@@ -3243,10 +1836,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 11,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -3271,12 +1861,9 @@ verdict, and this repository carries none of them.
   "status": "ok",
   "ref": "BPINT 2F AH=15",
   "stored": true,
+  "armed": true,
   "entry": "BPINT 2F AH=15",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "session": "<volatile>"
 }
@@ -3291,12 +1878,7 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "whats_wrong_with_my_name",
-      "button": "left",
-      "action": "click"
-    }
+    {"op": "send_mouse", "target": "whats_wrong_with_my_name", "button": "left", "action": "click"}
   ],
   "summaries": true
 }
@@ -3320,18 +1902,8 @@ verdict, and this repository carries none of them.
         "action": "click",
         "route": "guest",
         "pointer": {
-          "screen": {
-            "x": 60,
-            "y": 148,
-            "width": 320,
-            "height": 200
-          },
-          "mouse": {
-            "x": 120,
-            "y": 148,
-            "max_x": 639,
-            "max_y": 199
-          },
+          "screen": {"x": 60, "y": 148, "width": 320, "height": 200},
+          "mouse": {"x": 120, "y": 148, "max_x": 639, "max_y": 199},
           "buttons": [],
           "bios_mode": "0x13"
         },
@@ -3345,12 +1917,7 @@ verdict, and this repository carries none of them.
         "regs": "<volatile>",
         "watches": [],
         "cause": "<volatile>",
-        "e9": {
-          "lines_total": 0,
-          "truncated": false,
-          "lines": [],
-          "mark": "<volatile>"
-        },
+        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
           "checked": false,
@@ -3369,10 +1936,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 1,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -3395,11 +1959,7 @@ verdict, and this repository carries none of them.
   "summary": "<volatile>",
   "status": "ok",
   "verdict": "OTHER_STOP",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
   "pc": "<volatile>",
@@ -3408,12 +1968,7 @@ verdict, and this repository carries none of them.
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": "<volatile>",
   "instruction": "<volatile>",
   "session": "<volatile>"
@@ -3454,10 +2009,7 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "step",
-      "mode": "over"
-    }
+    {"op": "step", "mode": "over"}
   ],
   "summaries": true
 }
@@ -3487,12 +2039,7 @@ verdict, and this repository carries none of them.
         "regs": "<volatile>",
         "watches": [],
         "cause": "<volatile>",
-        "e9": {
-          "lines_total": 0,
-          "truncated": false,
-          "lines": [],
-          "mark": "<volatile>"
-        },
+        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "stop_seq": "<volatile>",
         "instruction": "<volatile>",
         "session": "<volatile>"
@@ -3505,10 +2052,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 1,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -3531,11 +2075,7 @@ verdict, and this repository carries none of them.
   "summary": "<volatile>",
   "status": "ok",
   "verdict": "OTHER_STOP",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
   "pc": "<volatile>",
@@ -3544,12 +2084,7 @@ verdict, and this repository carries none of them.
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": "<volatile>",
   "instruction": "<volatile>",
   "session": "<volatile>"
@@ -3590,10 +2125,7 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "step",
-      "mode": "over"
-    }
+    {"op": "step", "mode": "over"}
   ],
   "summaries": true
 }
@@ -3623,12 +2155,7 @@ verdict, and this repository carries none of them.
         "regs": "<volatile>",
         "watches": [],
         "cause": "<volatile>",
-        "e9": {
-          "lines_total": 0,
-          "truncated": false,
-          "lines": [],
-          "mark": "<volatile>"
-        },
+        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "stop_seq": "<volatile>",
         "instruction": "<volatile>",
         "session": "<volatile>"
@@ -3641,10 +2168,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 1,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -3667,11 +2191,7 @@ verdict, and this repository carries none of them.
   "summary": "<volatile>",
   "status": "ok",
   "verdict": "OTHER_STOP",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
   "pc": "<volatile>",
@@ -3680,12 +2200,7 @@ verdict, and this repository carries none of them.
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": "<volatile>",
   "instruction": "<volatile>",
   "session": "<volatile>"
@@ -3761,9 +2276,7 @@ verdict, and this repository carries none of them.
   "summary": "<volatile>",
   "status": "ok",
   "declarations_cleared": 1,
-  "disarmed": [
-    "BPINT 2F AH=15"
-  ],
+  "disarmed": ["BPINT 2F AH=15"],
   "session": "<volatile>"
 }
 ```
@@ -3793,22 +2306,14 @@ verdict, and this repository carries none of them.
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": "<volatile>",
   "instruction": "<volatile>",
   "emulated_before_s": 131.59102925,
   "emulated_after_s": 139.62394595,
   "frame_before": 9424,
   "frame_after": 9984,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
+  "cycles": 159963815,
   "kind": "wav",
   "frames": 560,
   "began": true,
@@ -3875,10 +2380,7 @@ verdict, and this repository carries none of them.
   "screen": "guybrush: a debugger that plays music",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    320,
-    200
-  ],
+  "size": [320, 200],
   "controls": [],
   "session": "<volatile>"
 }
@@ -3893,13 +2395,8 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "run_for",
-      "milliseconds": 28000
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "run_for", "milliseconds": 28000},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -3913,12 +2410,7 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
@@ -3930,10 +2422,7 @@ verdict, and this repository carries none of them.
         "screen": "lookout: the orange tycoon",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
       }
@@ -3945,10 +2434,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 2,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -3963,13 +2449,8 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "run_for",
-      "milliseconds": 16000
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "run_for", "milliseconds": 16000},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -3983,12 +2464,7 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
@@ -4000,10 +2476,7 @@ verdict, and this repository carries none of them.
         "screen": "lookout: those files",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
       }
@@ -4015,10 +2488,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 2,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -4033,13 +2503,8 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "run_for",
-      "milliseconds": 12000
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "run_for", "milliseconds": 12000},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -4053,12 +2518,7 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
@@ -4070,10 +2530,7 @@ verdict, and this repository carries none of them.
         "screen": "lookout: still not a wave",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
       }
@@ -4085,10 +2542,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 2,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -4103,13 +2557,8 @@ verdict, and this repository carries none of them.
 ```json
 {
   "steps": [
-    {
-      "op": "run_for",
-      "milliseconds": 12000
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "run_for", "milliseconds": 12000},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -4123,12 +2572,7 @@ verdict, and this repository carries none of them.
     {
       "step": 0,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
@@ -4140,10 +2584,7 @@ verdict, and this repository carries none of them.
         "screen": "lookout: humor first",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
       }
@@ -4155,10 +2596,7 @@ verdict, and this repository carries none of them.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 2,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -4186,12 +2624,7 @@ verdict, and this repository carries none of them.
   "width": 320,
   "height": 200,
   "mode": "render",
-  "crop": [
-    0,
-    0,
-    320,
-    200
-  ],
+  "crop": [0, 0, 320, 200],
   "screen_indexed": true,
   "entries": 256,
   "image": {
@@ -4220,22 +2653,10 @@ Also attached: image/png.
 ```json
 {
   "steps": [
-    {
-      "op": "run_for",
-      "milliseconds": 30000
-    },
-    {
-      "op": "send_mouse",
-      "x": 250,
-      "y": 20
-    },
-    {
-      "op": "run_for",
-      "frames": 10
-    },
-    {
-      "op": "screen_map_find"
-    }
+    {"op": "run_for", "milliseconds": 30000},
+    {"op": "send_mouse", "x": 250, "y": 20},
+    {"op": "run_for", "frames": 10},
+    {"op": "screen_map_find"}
   ],
   "summaries": true
 }
@@ -4249,32 +2670,17 @@ Also attached: image/png.
     {
       "step": 0,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "run_for",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "stop_seq": "<volatile>",
-        "cause": "<volatile>"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
@@ -4286,141 +2692,18 @@ Also attached: image/png.
         "screen": "cliff",
         "layer": "file",
         "kind": "pixel",
-        "size": [
-          320,
-          200
-        ],
+        "size": [320, 200],
         "controls": [
-          {
-            "name": "give",
-            "rect": [
-              4,
-              154,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              160
-            ]
-          },
-          {
-            "name": "pick_up",
-            "rect": [
-              46,
-              154,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              160
-            ]
-          },
-          {
-            "name": "use",
-            "rect": [
-              104,
-              154,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              160
-            ]
-          },
-          {
-            "name": "open",
-            "rect": [
-              4,
-              170,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              176
-            ]
-          },
-          {
-            "name": "look_at",
-            "rect": [
-              46,
-              170,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              176
-            ]
-          },
-          {
-            "name": "push",
-            "rect": [
-              104,
-              170,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              176
-            ]
-          },
-          {
-            "name": "close",
-            "rect": [
-              4,
-              186,
-              32,
-              12
-            ],
-            "centre": [
-              20,
-              192
-            ]
-          },
-          {
-            "name": "talk_to",
-            "rect": [
-              46,
-              186,
-              52,
-              12
-            ],
-            "centre": [
-              72,
-              192
-            ]
-          },
-          {
-            "name": "pull",
-            "rect": [
-              104,
-              186,
-              34,
-              12
-            ],
-            "centre": [
-              121,
-              192
-            ]
-          },
-          {
-            "name": "lookout",
-            "rect": [
-              94,
-              66,
-              16,
-              20
-            ],
-            "centre": [
-              102,
-              76
-            ]
-          }
+          {"name": "give", "rect": [4, 154, 32, 12], "centre": [20, 160]},
+          {"name": "pick_up", "rect": [46, 154, 52, 12], "centre": [72, 160]},
+          {"name": "use", "rect": [104, 154, 34, 12], "centre": [121, 160]},
+          {"name": "open", "rect": [4, 170, 32, 12], "centre": [20, 176]},
+          {"name": "look_at", "rect": [46, 170, 52, 12], "centre": [72, 176]},
+          {"name": "push", "rect": [104, 170, 34, 12], "centre": [121, 176]},
+          {"name": "close", "rect": [4, 186, 32, 12], "centre": [20, 192]},
+          {"name": "talk_to", "rect": [46, 186, 52, 12], "centre": [72, 192]},
+          {"name": "pull", "rect": [104, 186, 34, 12], "centre": [121, 192]},
+          {"name": "lookout", "rect": [94, 66, 16, 20], "centre": [102, 76]}
         ],
         "session": "<volatile>"
       }
@@ -4432,10 +2715,7 @@ Also attached: image/png.
   "replies_path": "<volatile>",
   "stops": "<volatile>",
   "steps_completed": 4,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
 }
@@ -4467,10 +2747,7 @@ Also attached: image/png.
   "state_dir": "./tmp/demos/monkey/monkey-states",
   "ended_by": "quit",
   "exit_code": 0,
-  "omitted": [
-    "stdout_tail",
-    "errorlog_tail"
-  ],
+  "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
   "session": "<volatile>"
 }

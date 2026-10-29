@@ -103,22 +103,16 @@ point. The demo opens a window so the game can be watched.
 resume(seconds=60)
 -> {
   "summary": "resume: OTHER_STOP, stopped at 08DD:00000119",
-  "cause": "no declared code breakpoint at 08DD:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+  "cause": "most likely the held `BPINT 03`: the guest is at `int 03`, at 08DD:00000119",
   "instruction": {
-    "seg_off": "08DD:00000119",
+    "address": "08DD:00000119",
     "bytes": "CD03",
     "text": "int 3",
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": {"available": false, "why": "no symbol table is loaded"},
+    "delta": {"available": false, "why": "no symbol table is loaded"}
   }
 }
 ```
@@ -177,12 +171,7 @@ drive(act=[{"op": "send_keys", "keys": ["right"], "expect": "KEY R", "seconds": 
       "lines_written": "<volatile>",
       "lines_total": "<volatile>",
       "truncated": false,
-      "lines": [
-        "Bochs port E9h: PLAYER",
-        "Bochs port E9h: KEY R",
-        "Bochs port E9h: KEY R",
-        "Bochs port E9h: KEY R"
-      ],
+      "lines": ["Bochs port E9h: PLAYER", "Bochs port E9h: KEY R", "Bochs port E9h: KEY R", "Bochs port E9h: KEY R"],
       "pattern": "KEY|PLAYER"
     }
   }

@@ -108,37 +108,15 @@ and its own arguments) is `<volatile>`.
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": [
-    "BPIF",
-    "CAPTURE",
-    "DOSTRACE",
-    "LOADSTATE",
-    "PORTINFO",
-    "PRESENCE",
-    "RUNSTATE",
-    "SAVESTATE",
-    "STEPIN",
-    "TAP",
-    "VGAMEMDUMP"
-  ],
+  "debugger_commands": ["BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
   "declarations": {
-    "rearm": {
-      "rearmed": [],
-      "stale": [],
-      "unresolved": [],
-      "ambiguous": [],
-      "unarmable": []
-    }
+    "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -159,11 +137,7 @@ and its own arguments) is `<volatile>`.
   "summary": "resume: OTHER_STOP, stopped at 08DD:00000129",
   "status": "ok",
   "verdict": "OTHER_STOP",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
   "pc": "08DD:00000129",
@@ -187,38 +161,25 @@ and its own arguments) is `<volatile>`.
     "SS": "0x08dd"
   },
   "watches": [],
-  "cause": "no declared code breakpoint at 08DD:00000129: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+  "cause": "most likely the held `BPINT 03`: the guest is at `int 03`, at 08DD:00000129",
   "e9": {
     "lines_total": 2,
     "truncated": false,
-    "lines": [
-      "Bochs port E9h: STUB  . scry device=present proto=6 motion=1",
-      "Bochs port E9h: MINES ready"
-    ],
+    "lines": ["Bochs port E9h: STUB  . scry device=present proto=6 motion=1", "Bochs port E9h: MINES ready"],
     "mark": "<volatile>"
   },
   "stop_seq": 2,
   "instruction": {
-    "seg_off": "08DD:00000129",
+    "address": "08DD:00000129",
     "bytes": "CD03",
     "text": "int 3",
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": {"available": false, "why": "no symbol table is loaded"},
+    "delta": {"available": false, "why": "no symbol table is loaded"}
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -242,13 +203,7 @@ and its own arguments) is `<volatile>`.
   "base": 36304,
   "limit": -1,
   "descriptor": -1,
-  "declarations": {
-    "rearmed": [],
-    "stale": [],
-    "unresolved": [],
-    "ambiguous": [],
-    "unarmable": []
-  },
+  "declarations": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []},
   "pending": false,
   "checked": {
     "available": false,
@@ -272,11 +227,7 @@ and its own arguments) is `<volatile>`.
   "loaded": 141,
   "bytes": 2822,
   "symbols_typed": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -302,11 +253,7 @@ and its own arguments) is `<volatile>`.
   "mode": "verified",
   "screens": 5,
   "controls": 8,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -351,17 +298,10 @@ and its own arguments) is `<volatile>`.
   },
   "watches": [],
   "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {
-    "lines_total": 1,
-    "truncated": false,
-    "lines": [
-      "Bochs port E9h: TITLE"
-    ],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: TITLE"], "mark": "<volatile>"},
   "stop_seq": 3,
   "instruction": {
-    "seg_off": "08DD:00000E08",
+    "address": "08DD:00000E08",
     "bytes": "A808",
     "text": "test al, 8",
     "flow": "sequential",
@@ -374,15 +314,8 @@ and its own arguments) is `<volatile>`.
   "emulated_after_s": 0.13419547499999998,
   "frame_before": 0,
   "frame_after": 10,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "cycles": 825612,
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -404,30 +337,11 @@ and its own arguments) is `<volatile>`.
   "screen": "title",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    800,
-    600
-  ],
+  "size": [800, 600],
   "controls": [
-    {
-      "name": "start",
-      "rect": [
-        216,
-        300,
-        368,
-        32
-      ],
-      "centre": [
-        400,
-        316
-      ]
-    }
+    {"name": "start", "rect": [216, 300, 368, 32], "centre": [400, 316]}
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -457,18 +371,8 @@ and its own arguments) is `<volatile>`.
   "action": "click",
   "route": "guest",
   "pointer": {
-    "screen": {
-      "x": 400,
-      "y": 316,
-      "width": 800,
-      "height": 600
-    },
-    "mouse": {
-      "x": 400,
-      "y": 316,
-      "max_x": 799,
-      "max_y": 599
-    },
+    "screen": {"x": 400, "y": 316, "width": 800, "height": 600},
+    "mouse": {"x": 400, "y": 316, "max_x": 799, "max_y": 599},
     "buttons": [],
     "bios_mode": "0x6b",
     "vbe_mode": "0x103"
@@ -480,7 +384,7 @@ and its own arguments) is `<volatile>`.
   "stop_seq": 24,
   "frame": 31,
   "instruction": {
-    "seg_off": "08DD:00000E08",
+    "address": "08DD:00000E08",
     "bytes": "A808",
     "text": "test al, 8",
     "flow": "sequential",
@@ -511,9 +415,7 @@ and its own arguments) is `<volatile>`.
   "e9": {
     "lines_total": "<volatile>",
     "truncated": false,
-    "lines": [
-      "Bochs port E9h: NEW 9 9 10"
-    ],
+    "lines": ["Bochs port E9h: NEW 9 9 10"],
     "mark": "<volatile>"
   },
   "motion": true,
@@ -531,11 +433,7 @@ and its own arguments) is `<volatile>`.
   "target": "start",
   "screen": "title",
   "identified_at_stop": 3,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -557,30 +455,11 @@ and its own arguments) is `<volatile>`.
   "screen": "board",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    800,
-    600
-  ],
+  "size": [800, 600],
   "controls": [
-    {
-      "name": "game",
-      "rect": [
-        4,
-        0,
-        48,
-        24
-      ],
-      "centre": [
-        28,
-        12
-      ]
-    }
+    {"name": "game", "rect": [4, 0, 48, 24], "centre": [28, 12]}
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -610,18 +489,8 @@ and its own arguments) is `<volatile>`.
   "action": "click",
   "route": "guest",
   "pointer": {
-    "screen": {
-      "x": 28,
-      "y": 12,
-      "width": 800,
-      "height": 600
-    },
-    "mouse": {
-      "x": 28,
-      "y": 12,
-      "max_x": 799,
-      "max_y": 599
-    },
+    "screen": {"x": 28, "y": 12, "width": 800, "height": 600},
+    "mouse": {"x": 28, "y": 12, "max_x": 799, "max_y": 599},
     "buttons": [],
     "bios_mode": "0x6b",
     "vbe_mode": "0x103"
@@ -633,7 +502,7 @@ and its own arguments) is `<volatile>`.
   "stop_seq": 49,
   "frame": 56,
   "instruction": {
-    "seg_off": "08DD:00000E08",
+    "address": "08DD:00000E08",
     "bytes": "A808",
     "text": "test al, 8",
     "flow": "sequential",
@@ -664,9 +533,7 @@ and its own arguments) is `<volatile>`.
   "e9": {
     "lines_total": "<volatile>",
     "truncated": false,
-    "lines": [
-      "Bochs port E9h: MENU OPEN"
-    ],
+    "lines": ["Bochs port E9h: MENU OPEN"],
     "mark": "<volatile>"
   },
   "motion": true,
@@ -684,11 +551,7 @@ and its own arguments) is `<volatile>`.
   "target": "game",
   "screen": "board",
   "identified_at_stop": 24,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -710,69 +573,14 @@ and its own arguments) is `<volatile>`.
   "screen": "menu",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    800,
-    600
-  ],
+  "size": [800, 600],
   "controls": [
-    {
-      "name": "new game",
-      "rect": [
-        2,
-        26,
-        164,
-        24
-      ],
-      "centre": [
-        84,
-        38
-      ]
-    },
-    {
-      "name": "beginner",
-      "rect": [
-        2,
-        50,
-        164,
-        24
-      ],
-      "centre": [
-        84,
-        62
-      ]
-    },
-    {
-      "name": "intermediate",
-      "rect": [
-        2,
-        74,
-        164,
-        24
-      ],
-      "centre": [
-        84,
-        86
-      ]
-    },
-    {
-      "name": "expert",
-      "rect": [
-        2,
-        98,
-        164,
-        24
-      ],
-      "centre": [
-        84,
-        110
-      ]
-    }
+    {"name": "new game", "rect": [2, 26, 164, 24], "centre": [84, 38]},
+    {"name": "beginner", "rect": [2, 50, 164, 24], "centre": [84, 62]},
+    {"name": "intermediate", "rect": [2, 74, 164, 24], "centre": [84, 86]},
+    {"name": "expert", "rect": [2, 98, 164, 24], "centre": [84, 110]}
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -802,18 +610,8 @@ and its own arguments) is `<volatile>`.
   "action": "click",
   "route": "guest",
   "pointer": {
-    "screen": {
-      "x": 84,
-      "y": 62,
-      "width": 800,
-      "height": 600
-    },
-    "mouse": {
-      "x": 84,
-      "y": 62,
-      "max_x": 799,
-      "max_y": 599
-    },
+    "screen": {"x": 84, "y": 62, "width": 800, "height": 600},
+    "mouse": {"x": 84, "y": 62, "max_x": 799, "max_y": 599},
     "buttons": [],
     "bios_mode": "0x6b",
     "vbe_mode": "0x103"
@@ -825,7 +623,7 @@ and its own arguments) is `<volatile>`.
   "stop_seq": 74,
   "frame": 81,
   "instruction": {
-    "seg_off": "08DD:00000E08",
+    "address": "08DD:00000E08",
     "bytes": "A808",
     "text": "test al, 8",
     "flow": "sequential",
@@ -856,10 +654,7 @@ and its own arguments) is `<volatile>`.
   "e9": {
     "lines_total": "<volatile>",
     "truncated": false,
-    "lines": [
-      "Bochs port E9h: MENU CLOSE",
-      "Bochs port E9h: NEW 9 9 10"
-    ],
+    "lines": ["Bochs port E9h: MENU CLOSE", "Bochs port E9h: NEW 9 9 10"],
     "mark": "<volatile>"
   },
   "motion": true,
@@ -877,11 +672,7 @@ and its own arguments) is `<volatile>`.
   "target": "beginner",
   "screen": "menu",
   "identified_at_stop": 49,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -903,30 +694,11 @@ and its own arguments) is `<volatile>`.
   "screen": "board",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    800,
-    600
-  ],
+  "size": [800, 600],
   "controls": [
-    {
-      "name": "game",
-      "rect": [
-        4,
-        0,
-        48,
-        24
-      ],
-      "centre": [
-        28,
-        12
-      ]
-    }
+    {"name": "game", "rect": [4, 0, 48, 24], "centre": [28, 12]}
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -951,11 +723,7 @@ and its own arguments) is `<volatile>`.
   "seg_off": "08DD:00000FFF",
   "length": 2,
   "hex": "0909",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -980,11 +748,7 @@ and its own arguments) is `<volatile>`.
   "seg_off": "08DD:00001030",
   "length": 81,
   "hex": "000000010000000000000001000100000000010000000000000000000000000000000000000000000000000000000000000100000000000000000001000001000001000000000000010000010000000000",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1009,11 +773,7 @@ and its own arguments) is `<volatile>`.
   "seg_off": "08DD:00001001",
   "length": 4,
   "hex": "2401c000",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1026,22 +786,8 @@ and its own arguments) is `<volatile>`.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "x": 376,
-      "y": 204,
-      "button": "right",
-      "expect": "FLAG 0 3$",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 352,
-      "y": 228,
-      "button": "right",
-      "expect": "FLAG 1 2$",
-      "seconds": 10
-    }
+    {"op": "send_mouse", "x": 376, "y": 204, "button": "right", "expect": "FLAG 0 3$", "seconds": 10},
+    {"op": "send_mouse", "x": 352, "y": 228, "button": "right", "expect": "FLAG 1 2$", "seconds": 10}
   ],
   "summaries": true
 }
@@ -1075,18 +821,8 @@ and its own arguments) is `<volatile>`.
         "action": "click",
         "route": "guest",
         "pointer": {
-          "screen": {
-            "x": 352,
-            "y": 228,
-            "width": 800,
-            "height": 600
-          },
-          "mouse": {
-            "x": 352,
-            "y": 228,
-            "max_x": 799,
-            "max_y": 599
-          },
+          "screen": {"x": 352, "y": 228, "width": 800, "height": 600},
+          "mouse": {"x": 352, "y": 228, "max_x": 799, "max_y": 599},
           "buttons": [],
           "bios_mode": "0x6b",
           "vbe_mode": "0x103"
@@ -1098,7 +834,7 @@ and its own arguments) is `<volatile>`.
         "stop_seq": 124,
         "frame": 131,
         "instruction": {
-          "seg_off": "08DD:00000E0A",
+          "address": "08DD:00000E0A",
           "bytes": "74FB",
           "text": "je 0xe07",
           "flow": "branch",
@@ -1126,14 +862,7 @@ and its own arguments) is `<volatile>`.
         },
         "watches": [],
         "cause": "no declared code breakpoint at 08DD:00000E0A: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-        "e9": {
-          "lines_total": 1,
-          "truncated": false,
-          "lines": [
-            "Bochs port E9h: FLAG 1 2"
-          ],
-          "mark": "<volatile>"
-        },
+        "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: FLAG 1 2"], "mark": "<volatile>"},
         "motion": true,
         "verify": {
           "checked": true,
@@ -1146,11 +875,7 @@ and its own arguments) is `<volatile>`.
           "waited_s": "<volatile>",
           "lines_total": 1
         },
-        "session": {
-          "alive": true,
-          "running": false,
-          "altered": false
-        }
+        "session": {"alive": true, "running": false, "altered": false}
       }
     }
   ],
@@ -1168,16 +893,9 @@ and its own arguments) is `<volatile>`.
     "unaccounted": 48
   },
   "steps_completed": 2,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1190,158 +908,25 @@ and its own arguments) is `<volatile>`.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "x": 304,
-      "y": 204,
-      "button": "left",
-      "expect": "REVEAL 0 0 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 352,
-      "y": 204,
-      "button": "left",
-      "expect": "REVEAL 0 2 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 400,
-      "y": 204,
-      "button": "left",
-      "expect": "REVEAL 0 4 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 424,
-      "y": 204,
-      "button": "left",
-      "expect": "REVEAL 0 5 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 448,
-      "y": 204,
-      "button": "left",
-      "expect": "REVEAL 0 6 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 376,
-      "y": 228,
-      "button": "left",
-      "expect": "REVEAL 1 3 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 400,
-      "y": 348,
-      "button": "left",
-      "expect": "REVEAL 6 4 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 448,
-      "y": 348,
-      "button": "left",
-      "expect": "REVEAL 6 6 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 472,
-      "y": 348,
-      "button": "left",
-      "expect": "REVEAL 6 7 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 376,
-      "y": 372,
-      "button": "left",
-      "expect": "REVEAL 7 3 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 400,
-      "y": 372,
-      "button": "left",
-      "expect": "REVEAL 7 4 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 424,
-      "y": 372,
-      "button": "left",
-      "expect": "REVEAL 7 5 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 448,
-      "y": 372,
-      "button": "left",
-      "expect": "REVEAL 7 6 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 472,
-      "y": 372,
-      "button": "left",
-      "expect": "REVEAL 7 7 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 496,
-      "y": 372,
-      "button": "left",
-      "expect": "REVEAL 7 8 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 328,
-      "y": 396,
-      "button": "left",
-      "expect": "REVEAL 8 1 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 352,
-      "y": 396,
-      "button": "left",
-      "expect": "REVEAL 8 2 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 400,
-      "y": 396,
-      "button": "left",
-      "expect": "REVEAL 8 4 ",
-      "seconds": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 424,
-      "y": 396,
-      "button": "left",
-      "expect": "REVEAL 8 5 ",
-      "seconds": 10
-    }
+    {"op": "send_mouse", "x": 304, "y": 204, "button": "left", "expect": "REVEAL 0 0 ", "seconds": 10},
+    {"op": "send_mouse", "x": 352, "y": 204, "button": "left", "expect": "REVEAL 0 2 ", "seconds": 10},
+    {"op": "send_mouse", "x": 400, "y": 204, "button": "left", "expect": "REVEAL 0 4 ", "seconds": 10},
+    {"op": "send_mouse", "x": 424, "y": 204, "button": "left", "expect": "REVEAL 0 5 ", "seconds": 10},
+    {"op": "send_mouse", "x": 448, "y": 204, "button": "left", "expect": "REVEAL 0 6 ", "seconds": 10},
+    {"op": "send_mouse", "x": 376, "y": 228, "button": "left", "expect": "REVEAL 1 3 ", "seconds": 10},
+    {"op": "send_mouse", "x": 400, "y": 348, "button": "left", "expect": "REVEAL 6 4 ", "seconds": 10},
+    {"op": "send_mouse", "x": 448, "y": 348, "button": "left", "expect": "REVEAL 6 6 ", "seconds": 10},
+    {"op": "send_mouse", "x": 472, "y": 348, "button": "left", "expect": "REVEAL 6 7 ", "seconds": 10},
+    {"op": "send_mouse", "x": 376, "y": 372, "button": "left", "expect": "REVEAL 7 3 ", "seconds": 10},
+    {"op": "send_mouse", "x": 400, "y": 372, "button": "left", "expect": "REVEAL 7 4 ", "seconds": 10},
+    {"op": "send_mouse", "x": 424, "y": 372, "button": "left", "expect": "REVEAL 7 5 ", "seconds": 10},
+    {"op": "send_mouse", "x": 448, "y": 372, "button": "left", "expect": "REVEAL 7 6 ", "seconds": 10},
+    {"op": "send_mouse", "x": 472, "y": 372, "button": "left", "expect": "REVEAL 7 7 ", "seconds": 10},
+    {"op": "send_mouse", "x": 496, "y": 372, "button": "left", "expect": "REVEAL 7 8 ", "seconds": 10},
+    {"op": "send_mouse", "x": 328, "y": 396, "button": "left", "expect": "REVEAL 8 1 ", "seconds": 10},
+    {"op": "send_mouse", "x": 352, "y": 396, "button": "left", "expect": "REVEAL 8 2 ", "seconds": 10},
+    {"op": "send_mouse", "x": 400, "y": 396, "button": "left", "expect": "REVEAL 8 4 ", "seconds": 10},
+    {"op": "send_mouse", "x": 424, "y": 396, "button": "left", "expect": "REVEAL 8 5 ", "seconds": 10}
   ],
   "summaries": true
 }
@@ -1545,18 +1130,8 @@ and its own arguments) is `<volatile>`.
         "action": "click",
         "route": "guest",
         "pointer": {
-          "screen": {
-            "x": 424,
-            "y": 396,
-            "width": 800,
-            "height": 600
-          },
-          "mouse": {
-            "x": 424,
-            "y": 396,
-            "max_x": 799,
-            "max_y": 599
-          },
+          "screen": {"x": 424, "y": 396, "width": 800, "height": 600},
+          "mouse": {"x": 424, "y": 396, "max_x": 799, "max_y": 599},
           "buttons": [],
           "bios_mode": "0x6b",
           "vbe_mode": "0x103"
@@ -1568,7 +1143,7 @@ and its own arguments) is `<volatile>`.
         "stop_seq": 599,
         "frame": 606,
         "instruction": {
-          "seg_off": "08DD:00000E0A",
+          "address": "08DD:00000E0A",
           "bytes": "74FB",
           "text": "je 0xe07",
           "flow": "branch",
@@ -1599,10 +1174,7 @@ and its own arguments) is `<volatile>`.
         "e9": {
           "lines_total": 2,
           "truncated": false,
-          "lines": [
-            "Bochs port E9h: REVEAL 8 5 4",
-            "Bochs port E9h: WIN"
-          ],
+          "lines": ["Bochs port E9h: REVEAL 8 5 4", "Bochs port E9h: WIN"],
           "mark": "<volatile>"
         },
         "motion": true,
@@ -1617,11 +1189,7 @@ and its own arguments) is `<volatile>`.
           "waited_s": "<volatile>",
           "lines_total": 1
         },
-        "session": {
-          "alive": true,
-          "running": false,
-          "altered": false
-        }
+        "session": {"alive": true, "running": false, "altered": false}
       }
     }
   ],
@@ -1639,16 +1207,9 @@ and its own arguments) is `<volatile>`.
     "unaccounted": 456
   },
   "steps_completed": 19,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1673,14 +1234,8 @@ and its own arguments) is `<volatile>`.
   "channel": "guest",
   "lines_total": 1,
   "truncated": false,
-  "lines": [
-    "Bochs port E9h: WIN"
-  ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "lines": ["Bochs port E9h: WIN"],
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1706,18 +1261,8 @@ and its own arguments) is `<volatile>`.
   "units": "screen",
   "route": "guest",
   "pointer": {
-    "screen": {
-      "x": 790,
-      "y": 590,
-      "width": 800,
-      "height": 600
-    },
-    "mouse": {
-      "x": 790,
-      "y": 590,
-      "max_x": 799,
-      "max_y": 599
-    },
+    "screen": {"x": 790, "y": 590, "width": 800, "height": 600},
+    "mouse": {"x": 790, "y": 590, "max_x": 799, "max_y": 599},
     "buttons": [],
     "bios_mode": "0x6b",
     "vbe_mode": "0x103"
@@ -1729,7 +1274,7 @@ and its own arguments) is `<volatile>`.
   "stop_seq": 614,
   "frame": 621,
   "instruction": {
-    "seg_off": "08DD:00000E08",
+    "address": "08DD:00000E08",
     "bytes": "A808",
     "text": "test al, 8",
     "flow": "sequential",
@@ -1757,22 +1302,13 @@ and its own arguments) is `<volatile>`.
   },
   "watches": [],
   "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "motion": true,
   "verify": {
     "checked": false,
     "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1794,30 +1330,11 @@ and its own arguments) is `<volatile>`.
   "screen": "win",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    800,
-    600
-  ],
+  "size": [800, 600],
   "controls": [
-    {
-      "name": "ok",
-      "rect": [
-        360,
-        316,
-        80,
-        28
-      ],
-      "centre": [
-        400,
-        330
-      ]
-    }
+    {"name": "ok", "rect": [360, 316, 80, 28], "centre": [400, 330]}
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1842,12 +1359,7 @@ and its own arguments) is `<volatile>`.
   "width": 800,
   "height": 600,
   "mode": "render",
-  "crop": [
-    0,
-    0,
-    800,
-    600
-  ],
+  "crop": [0, 0, 800, 600],
   "screen_indexed": true,
   "entries": 256,
   "image": {
@@ -1861,11 +1373,7 @@ and its own arguments) is `<volatile>`.
     "inline": true
   },
   "display_start": "0h",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1897,18 +1405,8 @@ Also attached: image/png.
   "action": "click",
   "route": "guest",
   "pointer": {
-    "screen": {
-      "x": 400,
-      "y": 330,
-      "width": 800,
-      "height": 600
-    },
-    "mouse": {
-      "x": 400,
-      "y": 330,
-      "max_x": 799,
-      "max_y": 599
-    },
+    "screen": {"x": 400, "y": 330, "width": 800, "height": 600},
+    "mouse": {"x": 400, "y": 330, "max_x": 799, "max_y": 599},
     "buttons": [],
     "bios_mode": "0x6b",
     "vbe_mode": "0x103"
@@ -1920,7 +1418,7 @@ Also attached: image/png.
   "stop_seq": 639,
   "frame": 646,
   "instruction": {
-    "seg_off": "08DD:00000E08",
+    "address": "08DD:00000E08",
     "bytes": "A808",
     "text": "test al, 8",
     "flow": "sequential",
@@ -1951,10 +1449,7 @@ Also attached: image/png.
   "e9": {
     "lines_total": "<volatile>",
     "truncated": false,
-    "lines": [
-      "Bochs port E9h: OK",
-      "Bochs port E9h: NEW 9 9 10"
-    ],
+    "lines": ["Bochs port E9h: OK", "Bochs port E9h: NEW 9 9 10"],
     "mark": "<volatile>"
   },
   "motion": true,
@@ -1972,11 +1467,7 @@ Also attached: image/png.
   "target": "ok",
   "screen": "win",
   "identified_at_stop": 614,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2001,11 +1492,7 @@ Also attached: image/png.
   "seg_off": "08DD:00001030",
   "length": 81,
   "hex": "000000000000000100000100000000000100010000000000000000000000000000000000000100000100000000010001000000000000000000000000000000000000000001000000000000000100000000",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2034,18 +1521,8 @@ Also attached: image/png.
   "action": "click",
   "route": "guest",
   "pointer": {
-    "screen": {
-      "x": 472,
-      "y": 204,
-      "width": 800,
-      "height": 600
-    },
-    "mouse": {
-      "x": 472,
-      "y": 204,
-      "max_x": 799,
-      "max_y": 599
-    },
+    "screen": {"x": 472, "y": 204, "width": 800, "height": 600},
+    "mouse": {"x": 472, "y": 204, "max_x": 799, "max_y": 599},
     "buttons": [],
     "bios_mode": "0x6b",
     "vbe_mode": "0x103"
@@ -2057,7 +1534,7 @@ Also attached: image/png.
   "stop_seq": 664,
   "frame": 671,
   "instruction": {
-    "seg_off": "08DD:00000E08",
+    "address": "08DD:00000E08",
     "bytes": "A808",
     "text": "test al, 8",
     "flow": "sequential",
@@ -2085,24 +1562,13 @@ Also attached: image/png.
   },
   "watches": [],
   "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {
-    "lines_total": 1,
-    "truncated": false,
-    "lines": [
-      "Bochs port E9h: BOOM 0 7"
-    ],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: BOOM 0 7"], "mark": "<volatile>"},
   "motion": true,
   "verify": {
     "checked": false,
     "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2127,14 +1593,8 @@ Also attached: image/png.
   "channel": "guest",
   "lines_total": 1,
   "truncated": false,
-  "lines": [
-    "Bochs port E9h: BOOM 0 7"
-  ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "lines": ["Bochs port E9h: BOOM 0 7"],
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2179,15 +1639,10 @@ Also attached: image/png.
   },
   "watches": [],
   "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 665,
   "instruction": {
-    "seg_off": "08DD:00000E08",
+    "address": "08DD:00000E08",
     "bytes": "A808",
     "text": "test al, 8",
     "flow": "sequential",
@@ -2200,10 +1655,7 @@ Also attached: image/png.
   "emulated_after_s": 10.195798875000001,
   "frame_before": 671,
   "frame_after": 716,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
+  "cycles": 1789671,
   "kind": "wav",
   "frames": 45,
   "began": true,
@@ -2216,11 +1668,7 @@ Also attached: image/png.
   "emulated_s": 0.6413199,
   "sample_min": -18065,
   "sample_max": 18514,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2244,23 +1692,14 @@ Also attached: image/png.
   "sample_rate_hz": 48000,
   "channels": 2,
   "bits": 16,
-  "window": [
-    0.0,
-    0.641
-  ],
+  "window": [0.0, 0.641],
   "measures": [
     {
       "channel": 0,
       "peak_dbfs": -4.96,
       "rms_dbfs": -18.46,
       "silent": false,
-      "silence_spans": {
-        "count": 1,
-        "first": [
-          0.52,
-          0.641
-        ]
-      },
+      "silence_spans": {"count": 1, "first": [0.52, 0.641]},
       "onset_s": 0.0,
       "clipping_run": 7,
       "clipped": false
@@ -2270,13 +1709,7 @@ Also attached: image/png.
       "peak_dbfs": -4.96,
       "rms_dbfs": -18.46,
       "silent": false,
-      "silence_spans": {
-        "count": 1,
-        "first": [
-          0.52,
-          0.641
-        ]
-      },
+      "silence_spans": {"count": 1, "first": [0.52, 0.641]},
       "onset_s": 0.0,
       "clipping_run": 7,
       "clipped": false
@@ -2284,11 +1717,7 @@ Also attached: image/png.
   ],
   "pcm_sha256": "4187473d53866df36cce8d657ebcebcf9d185a7871563f1e95d784c69e4e9dbe",
   "path": "<volatile>",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2323,11 +1752,7 @@ Also attached: image/png.
   "aligned_by_samples": 0,
   "a": "<volatile>",
   "b": "./demos/mines/boom.wav",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2353,18 +1778,8 @@ Also attached: image/png.
   "units": "screen",
   "route": "guest",
   "pointer": {
-    "screen": {
-      "x": 790,
-      "y": 590,
-      "width": 800,
-      "height": 600
-    },
-    "mouse": {
-      "x": 790,
-      "y": 590,
-      "max_x": 799,
-      "max_y": 599
-    },
+    "screen": {"x": 790, "y": 590, "width": 800, "height": 600},
+    "mouse": {"x": 790, "y": 590, "max_x": 799, "max_y": 599},
     "buttons": [],
     "bios_mode": "0x6b",
     "vbe_mode": "0x103"
@@ -2376,7 +1791,7 @@ Also attached: image/png.
   "stop_seq": 676,
   "frame": 727,
   "instruction": {
-    "seg_off": "08DD:00000E08",
+    "address": "08DD:00000E08",
     "bytes": "A808",
     "text": "test al, 8",
     "flow": "sequential",
@@ -2404,22 +1819,13 @@ Also attached: image/png.
   },
   "watches": [],
   "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "motion": true,
   "verify": {
     "checked": false,
     "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2441,30 +1847,11 @@ Also attached: image/png.
   "screen": "lose",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    800,
-    600
-  ],
+  "size": [800, 600],
   "controls": [
-    {
-      "name": "ok",
-      "rect": [
-        360,
-        316,
-        80,
-        28
-      ],
-      "centre": [
-        400,
-        330
-      ]
-    }
+    {"name": "ok", "rect": [360, 316, 80, 28], "centre": [400, 330]}
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2493,16 +1880,9 @@ Also attached: image/png.
   "state_dir": "./tmp/demos/mines/mines-states",
   "ended_by": "quit",
   "exit_code": 0,
-  "omitted": [
-    "stdout_tail",
-    "errorlog_tail"
-  ],
+  "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
-  "session": {
-    "alive": false,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": false, "running": false, "altered": false}
 }
 ```
 

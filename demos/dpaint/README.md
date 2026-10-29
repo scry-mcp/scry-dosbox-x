@@ -122,37 +122,15 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": [
-    "BPIF",
-    "CAPTURE",
-    "DOSTRACE",
-    "LOADSTATE",
-    "PORTINFO",
-    "PRESENCE",
-    "RUNSTATE",
-    "SAVESTATE",
-    "STEPIN",
-    "TAP",
-    "VGAMEMDUMP"
-  ],
+  "debugger_commands": ["BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
   "declarations": {
-    "rearm": {
-      "rearmed": [],
-      "stale": [],
-      "unresolved": [],
-      "ambiguous": [],
-      "unarmable": []
-    }
+    "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -200,41 +178,26 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "e9": {
     "lines_total": 1,
     "truncated": false,
-    "lines": [
-      "Bochs port E9h: STUB  . scry device=present proto=6 motion=1"
-    ],
+    "lines": ["Bochs port E9h: STUB  . scry device=present proto=6 motion=1"],
     "mark": "<volatile>"
   },
   "stop_seq": 2,
   "instruction": {
-    "seg_off": "0B92:00000241",
+    "address": "0B92:00000241",
     "bytes": "8B4708",
     "text": "mov ax, word ptr [bx + 8]",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": {"available": false, "why": "no symbol table is loaded"},
+    "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "emulated_before_s": 0.0007,
   "emulated_after_s": 5.6986656,
   "frame_before": 0,
   "frame_after": 400,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "cycles": 56499906,
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -260,11 +223,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "mode": "verified",
   "screens": 1,
   "controls": 13,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -286,186 +245,23 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "screen": "paint",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    320,
-    200
-  ],
+  "size": [320, 200],
   "controls": [
-    {
-      "name": "line",
-      "rect": [
-        297,
-        46,
-        10,
-        10
-      ],
-      "centre": [
-        302,
-        51
-      ]
-    },
-    {
-      "name": "fill",
-      "rect": [
-        297,
-        58,
-        10,
-        10
-      ],
-      "centre": [
-        302,
-        63
-      ]
-    },
-    {
-      "name": "rect_filled",
-      "rect": [
-        304,
-        75,
-        4,
-        5
-      ],
-      "centre": [
-        306,
-        77
-      ]
-    },
-    {
-      "name": "circle_filled",
-      "rect": [
-        315,
-        75,
-        4,
-        5
-      ],
-      "centre": [
-        317,
-        77
-      ]
-    },
-    {
-      "name": "text",
-      "rect": [
-        309,
-        93,
-        10,
-        10
-      ],
-      "centre": [
-        314,
-        98
-      ]
-    },
-    {
-      "name": "clear",
-      "rect": [
-        309,
-        128,
-        10,
-        11
-      ],
-      "centre": [
-        314,
-        133
-      ]
-    },
-    {
-      "name": "navy",
-      "rect": [
-        297,
-        162,
-        6,
-        2
-      ],
-      "centre": [
-        300,
-        163
-      ]
-    },
-    {
-      "name": "brown",
-      "rect": [
-        297,
-        172,
-        6,
-        2
-      ],
-      "centre": [
-        300,
-        173
-      ]
-    },
-    {
-      "name": "blue",
-      "rect": [
-        297,
-        178,
-        6,
-        2
-      ],
-      "centre": [
-        300,
-        179
-      ]
-    },
-    {
-      "name": "yellow",
-      "rect": [
-        297,
-        188,
-        6,
-        2
-      ],
-      "centre": [
-        300,
-        189
-      ]
-    },
-    {
-      "name": "white",
-      "rect": [
-        297,
-        190,
-        6,
-        2
-      ],
-      "centre": [
-        300,
-        191
-      ]
-    },
-    {
-      "name": "peach",
-      "rect": [
-        315,
-        168,
-        5,
-        2
-      ],
-      "centre": [
-        317,
-        169
-      ]
-    },
-    {
-      "name": "orange",
-      "rect": [
-        315,
-        174,
-        5,
-        2
-      ],
-      "centre": [
-        317,
-        175
-      ]
-    }
+    {"name": "line", "rect": [297, 46, 10, 10], "centre": [302, 51]},
+    {"name": "fill", "rect": [297, 58, 10, 10], "centre": [302, 63]},
+    {"name": "rect_filled", "rect": [304, 75, 4, 5], "centre": [306, 77]},
+    {"name": "circle_filled", "rect": [315, 75, 4, 5], "centre": [317, 77]},
+    {"name": "text", "rect": [309, 93, 10, 10], "centre": [314, 98]},
+    {"name": "clear", "rect": [309, 128, 10, 11], "centre": [314, 133]},
+    {"name": "navy", "rect": [297, 162, 6, 2], "centre": [300, 163]},
+    {"name": "brown", "rect": [297, 172, 6, 2], "centre": [300, 173]},
+    {"name": "blue", "rect": [297, 178, 6, 2], "centre": [300, 179]},
+    {"name": "yellow", "rect": [297, 188, 6, 2], "centre": [300, 189]},
+    {"name": "white", "rect": [297, 190, 6, 2], "centre": [300, 191]},
+    {"name": "peach", "rect": [315, 168, 5, 2], "centre": [317, 169]},
+    {"name": "orange", "rect": [315, 174, 5, 2], "centre": [317, 175]}
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -493,18 +289,8 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "action": "click",
   "route": "guest",
   "pointer": {
-    "screen": {
-      "x": 300,
-      "y": 179,
-      "width": 320,
-      "height": 200
-    },
-    "mouse": {
-      "x": 2404,
-      "y": 1436,
-      "max_x": 2552,
-      "max_y": 1592
-    },
+    "screen": {"x": 300, "y": 179, "width": 320, "height": 200},
+    "mouse": {"x": 2404, "y": 1436, "max_x": 2552, "max_y": 1592},
     "buttons": [],
     "bios_mode": "0x13"
   },
@@ -515,20 +301,14 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "stop_seq": 23,
   "frame": 421,
   "instruction": {
-    "seg_off": "F000:0000CFC5",
+    "address": "F000:0000CFC5",
     "bytes": "CF",
     "text": "iret",
     "flow": "return",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": {"available": false, "why": "no symbol table is loaded"},
+    "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "regs": {
     "EAX": "0x0000011c",
@@ -549,12 +329,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   },
   "watches": [],
   "cause": "the retrace the input's post ran to, at F000:0000CFC5",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "motion": true,
   "verify": {
     "checked": false,
@@ -563,11 +338,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "target": "blue",
   "screen": "paint",
   "identified_at_stop": 2,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -596,11 +367,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "cell_bytes": 1,
   "addr": "0x00031b00",
   "hits_total": 65535,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -627,54 +394,18 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "iterations": 1,
   "closed": false,
   "hits": [
-    {
-      "seg_off": "31B0:0000017C",
-      "addr": "0x00031c7c",
-      "value": "0x09"
-    },
-    {
-      "seg_off": "31B0:000001AE",
-      "addr": "0x00031cae",
-      "value": "0x09"
-    },
-    {
-      "seg_off": "31B0:00000370",
-      "addr": "0x00031e70",
-      "value": "0x09"
-    },
-    {
-      "seg_off": "31B0:00000470",
-      "addr": "0x00031f70",
-      "value": "0x09"
-    },
-    {
-      "seg_off": "31B0:00000597",
-      "addr": "0x00032097",
-      "value": "0x09"
-    },
-    {
-      "seg_off": "31B0:000006B3",
-      "addr": "0x000321b3",
-      "value": "0x09"
-    },
-    {
-      "seg_off": "31B0:000008F9",
-      "addr": "0x000323f9",
-      "value": "0x09"
-    },
-    {
-      "seg_off": "31B0:00000919",
-      "addr": "0x00032419",
-      "value": "0x09"
-    }
+    {"seg_off": "31B0:0000017C", "addr": "0x00031c7c", "value": "0x09"},
+    {"seg_off": "31B0:000001AE", "addr": "0x00031cae", "value": "0x09"},
+    {"seg_off": "31B0:00000370", "addr": "0x00031e70", "value": "0x09"},
+    {"seg_off": "31B0:00000470", "addr": "0x00031f70", "value": "0x09"},
+    {"seg_off": "31B0:00000597", "addr": "0x00032097", "value": "0x09"},
+    {"seg_off": "31B0:000006B3", "addr": "0x000321b3", "value": "0x09"},
+    {"seg_off": "31B0:000008F9", "addr": "0x000323f9", "value": "0x09"},
+    {"seg_off": "31B0:00000919", "addr": "0x00032419", "value": "0x09"}
   ],
   "hits_total": 75,
   "truncated": true,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -702,18 +433,8 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "action": "click",
   "route": "guest",
   "pointer": {
-    "screen": {
-      "x": 317,
-      "y": 175,
-      "width": 320,
-      "height": 200
-    },
-    "mouse": {
-      "x": 2540,
-      "y": 1404,
-      "max_x": 2552,
-      "max_y": 1592
-    },
+    "screen": {"x": 317, "y": 175, "width": 320, "height": 200},
+    "mouse": {"x": 2540, "y": 1404, "max_x": 2552, "max_y": 1592},
     "buttons": [],
     "bios_mode": "0x13"
   },
@@ -724,20 +445,14 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "stop_seq": 48,
   "frame": 446,
   "instruction": {
-    "seg_off": "13F6:00000220",
+    "address": "13F6:00000220",
     "bytes": "83EC06",
     "text": "sub sp, 6",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": {"available": false, "why": "no symbol table is loaded"},
+    "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "regs": {
     "EAX": "0x0000a01c",
@@ -758,12 +473,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   },
   "watches": [],
   "cause": "the retrace the input's post ran to, at 13F6:00000220",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": "<volatile>"
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "motion": true,
   "verify": {
     "checked": false,
@@ -772,11 +482,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "target": "orange",
   "screen": "paint",
   "identified_at_stop": 2,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -802,49 +508,17 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "iterations": 2,
   "closed": false,
   "hits": [
-    {
-      "seg_off": "31B0:0000017C",
-      "addr": "0x00031c7c",
-      "value": "0x37"
-    },
-    {
-      "seg_off": "31B0:000001AE",
-      "addr": "0x00031cae",
-      "value": "0x37"
-    },
-    {
-      "seg_off": "31B0:00000470",
-      "addr": "0x00031f70",
-      "value": "0x37"
-    },
-    {
-      "seg_off": "31B0:000010B0",
-      "addr": "0x00032bb0",
-      "value": "0x37"
-    },
-    {
-      "seg_off": "31B0:0000A57E",
-      "addr": "0x0003c07e",
-      "value": "0x37"
-    },
-    {
-      "seg_off": "31B0:0000A57F",
-      "addr": "0x0003c07f",
-      "value": "0x37"
-    },
-    {
-      "seg_off": "31B0:0000A580",
-      "addr": "0x0003c080",
-      "value": "0x37"
-    }
+    {"seg_off": "31B0:0000017C", "addr": "0x00031c7c", "value": "0x37"},
+    {"seg_off": "31B0:000001AE", "addr": "0x00031cae", "value": "0x37"},
+    {"seg_off": "31B0:00000470", "addr": "0x00031f70", "value": "0x37"},
+    {"seg_off": "31B0:000010B0", "addr": "0x00032bb0", "value": "0x37"},
+    {"seg_off": "31B0:0000A57E", "addr": "0x0003c07e", "value": "0x37"},
+    {"seg_off": "31B0:0000A57F", "addr": "0x0003c07f", "value": "0x37"},
+    {"seg_off": "31B0:0000A580", "addr": "0x0003c080", "value": "0x37"}
   ],
   "hits_total": 7,
   "truncated": false,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -865,11 +539,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "summary": "scan clear: cleared",
   "status": "ok",
   "cleared": true,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -899,11 +569,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "stored": true,
   "armed": false,
   "state": "evaluated",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -916,33 +582,9 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "rect_filled",
-      "button": "left"
-    },
-    {
-      "op": "send_mouse",
-      "target": "peach",
-      "button": "left"
-    },
-    {
-      "op": "send_mouse",
-      "x": 2,
-      "y": 14,
-      "button": "left",
-      "action": "down"
-    },
-    {
-      "op": "send_mouse",
-      "x": 294,
-      "y": 112
-    },
-    {
-      "op": "send_mouse",
-      "button": "left",
-      "action": "up"
-    }
+    {"op": "send_mouse", "target": "rect_filled", "button": "left"},
+    {"op": "send_mouse", "target": "peach", "button": "left"},
+    {"op": "send_mouse", "x": 2, "y": 14, "button": "left", "action": "drag", "to_x": 294, "to_y": 112}
   ],
   "summaries": true
 }
@@ -950,7 +592,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 ```json
 {
-  "summary": "perform: 5 of 5 steps",
+  "summary": "perform: 3 of 3 steps",
   "status": "ok",
   "ran": [
     {
@@ -977,69 +619,35 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 2,14; posted, unverified, 20 retraces to frame 516",
+        "summary": "send_mouse: pointer at 294,112; posted, unverified, 30 retraces to frame 526",
         "status": "ok",
-        "stop_seq": 118,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 3,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 294,112; posted, unverified, 15 retraces to frame 531",
-        "status": "ok",
-        "stop_seq": 133,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 4,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 294,112; posted, unverified, 15 retraces to frame 546",
-        "status": "ok",
+        "x": 2,
+        "y": 14,
         "units": "screen",
         "button": "left",
-        "action": "up",
+        "action": "drag",
         "route": "guest",
         "pointer": {
-          "screen": {
-            "x": 294,
-            "y": 112,
-            "width": 320,
-            "height": 200
-          },
-          "mouse": {
-            "x": 2356,
-            "y": 900,
-            "max_x": 2552,
-            "max_y": 1592
-          },
+          "screen": {"x": 294, "y": 112, "width": 320, "height": 200},
+          "mouse": {"x": 2356, "y": 900, "max_x": 2552, "max_y": 1592},
           "buttons": [],
           "bios_mode": "0x13"
         },
         "arrived": true,
-        "polls": 15,
+        "polls": 30,
         "pc": "F000:0000CFC5",
         "cpu_mode": "real",
-        "stop_seq": 148,
-        "frame": 546,
+        "stop_seq": 128,
+        "frame": 526,
         "instruction": {
-          "seg_off": "F000:0000CFC5",
+          "address": "F000:0000CFC5",
           "bytes": "CF",
           "text": "iret",
           "flow": "return",
           "code_bits": 16,
           "bytes_from": "memory",
-          "symbol": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          },
-          "delta": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          }
+          "symbol": {"available": false, "why": "no symbol table is loaded"},
+          "delta": {"available": false, "why": "no symbol table is loaded"}
         },
         "regs": {
           "EAX": "0x0000011c",
@@ -1071,48 +679,31 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
           }
         ],
         "cause": "the retrace the input's post ran to, at F000:0000CFC5",
-        "e9": {
-          "lines_total": 0,
-          "truncated": false,
-          "lines": [],
-          "mark": "<volatile>"
-        },
+        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+        "motion": true,
         "verify": {
           "checked": false,
           "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
         },
-        "session": {
-          "alive": true,
-          "running": false,
-          "altered": false
-        }
+        "session": {"alive": true, "running": false, "altered": false}
       }
     }
   ],
-  "steps_total": 5,
+  "steps_total": 3,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
     "stop_seq_first": 49,
-    "stop_seq_last": 148,
-    "surveyed": 5,
-    "by_cause": {
-      "the retrace the input's post ran to,": 5
-    },
-    "unaccounted": 95
+    "stop_seq_last": 128,
+    "surveyed": 3,
+    "by_cause": {"the retrace the input's post ran to,": 3},
+    "unaccounted": 77
   },
-  "steps_completed": 5,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "steps_completed": 3,
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1125,32 +716,16 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "circle_filled",
-      "button": "left"
-    },
-    {
-      "op": "send_mouse",
-      "target": "yellow",
-      "button": "left"
-    },
+    {"op": "send_mouse", "target": "circle_filled", "button": "left"},
+    {"op": "send_mouse", "target": "yellow", "button": "left"},
     {
       "op": "send_mouse",
       "x": 210,
       "y": 112,
       "button": "left",
-      "action": "down"
-    },
-    {
-      "op": "send_mouse",
-      "x": 238,
-      "y": 112
-    },
-    {
-      "op": "send_mouse",
-      "button": "left",
-      "action": "up"
+      "action": "drag",
+      "to_x": 238,
+      "to_y": 112
     }
   ],
   "summaries": true
@@ -1159,108 +734,74 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 ```json
 {
-  "summary": "perform: 5 of 5 steps",
+  "summary": "perform: 3 of 3 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 317,77; posted, unverified, 25 retraces to frame 571",
+        "summary": "send_mouse: pointer at 317,77; posted, unverified, 25 retraces to frame 551",
         "status": "ok",
-        "stop_seq": 173,
-        "cause": "the retrace the input's post ran to, at 13F6:00000228"
+        "stop_seq": 153,
+        "cause": "the retrace the input's post ran to, at 0955:0000002A"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,189; posted, unverified, 25 retraces to frame 596",
+        "summary": "send_mouse: pointer at 300,189; posted, unverified, 25 retraces to frame 576",
         "status": "ok",
-        "stop_seq": 198,
-        "cause": "the retrace the input's post ran to, at 1009:0000032D"
+        "stop_seq": 178,
+        "cause": "the retrace the input's post ran to, at 1009:0000023C"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 210,112; posted, unverified, 20 retraces to frame 616",
+        "summary": "send_mouse: pointer at 238,112; posted, unverified, 30 retraces to frame 606",
         "status": "ok",
-        "stop_seq": 218,
-        "cause": "the retrace the input's post ran to, at 0E83:00000970"
-      }
-    },
-    {
-      "step": 3,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 238,112; posted, unverified, 15 retraces to frame 631",
-        "status": "ok",
-        "stop_seq": 233,
-        "cause": "the retrace the input's post ran to, at 1009:00000239"
-      }
-    },
-    {
-      "step": 4,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 238,112; posted, unverified, 15 retraces to frame 646",
-        "status": "ok",
+        "x": 210,
+        "y": 112,
         "units": "screen",
         "button": "left",
-        "action": "up",
+        "action": "drag",
         "route": "guest",
         "pointer": {
-          "screen": {
-            "x": 238,
-            "y": 112,
-            "width": 320,
-            "height": 200
-          },
-          "mouse": {
-            "x": 1908,
-            "y": 900,
-            "max_x": 2552,
-            "max_y": 1592
-          },
+          "screen": {"x": 238, "y": 112, "width": 320, "height": 200},
+          "mouse": {"x": 1908, "y": 900, "max_x": 2552, "max_y": 1592},
           "buttons": [],
           "bios_mode": "0x13"
         },
         "arrived": true,
-        "polls": 15,
-        "pc": "1009:0000023F",
+        "polls": 30,
+        "pc": "0E83:00000B18",
         "cpu_mode": "real",
-        "stop_seq": 248,
-        "frame": 646,
+        "stop_seq": 208,
+        "frame": 606,
         "instruction": {
-          "seg_off": "1009:0000023F",
-          "bytes": "56",
-          "text": "push si",
+          "address": "0E83:00000B18",
+          "bytes": "FF760C",
+          "text": "push word ptr [bp + 0xc]",
           "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
-          "symbol": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          },
-          "delta": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          }
+          "symbol": {"available": false, "why": "no symbol table is loaded"},
+          "delta": {"available": false, "why": "no symbol table is loaded"}
         },
         "regs": {
           "EAX": "0x00000000",
-          "EBX": "0x00000000",
+          "EBX": "0x0000018e",
           "ECX": "0x005b0000",
           "EDX": "0x00000cf3",
           "ESI": "0x00000008",
           "EDI": "0x0000a0ae",
-          "EBP": "0x0000a024",
-          "ESP": "0x0000a022",
-          "EIP": "0x0000023f",
-          "CS": "0x1009",
+          "EBP": "0x0000a010",
+          "ESP": "0x0000a00e",
+          "EIP": "0x00000b18",
+          "CS": "0x0e83",
           "DS": "0x31b0",
           "ES": "0x0000",
           "FS": "0x0000",
@@ -1279,49 +820,32 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
             "bytes": "0e"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 1009:0000023F",
-        "e9": {
-          "lines_total": 0,
-          "truncated": false,
-          "lines": [],
-          "mark": "<volatile>"
-        },
+        "cause": "the retrace the input's post ran to, at 0E83:00000B18",
+        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+        "motion": true,
         "verify": {
           "checked": false,
           "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
         },
-        "session": {
-          "alive": true,
-          "running": false,
-          "altered": false
-        }
+        "session": {"alive": true, "running": false, "altered": false}
       }
     }
   ],
-  "steps_total": 5,
+  "steps_total": 3,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 149,
-    "stop_seq_last": 248,
-    "surveyed": 5,
-    "by_cause": {
-      "the retrace the input's post ran to,": 5
-    },
-    "unaccounted": 95
+    "stop_seq_first": 129,
+    "stop_seq_last": 208,
+    "surveyed": 3,
+    "by_cause": {"the retrace the input's post ran to,": 3},
+    "unaccounted": 77
   },
-  "steps_completed": 5,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "steps_completed": 3,
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1334,32 +858,149 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 ```json
 {
   "steps": [
+    {"op": "send_mouse", "target": "rect_filled", "button": "left"},
+    {"op": "send_mouse", "target": "navy", "button": "left"},
+    {"op": "send_mouse", "x": 2, "y": 113, "button": "left", "action": "drag", "to_x": 294, "to_y": 198}
+  ],
+  "summaries": true
+}
+```
+
+```json
+{
+  "summary": "perform: 3 of 3 steps",
+  "status": "ok",
+  "ran": [
     {
+      "step": 0,
       "op": "send_mouse",
-      "target": "rect_filled",
-      "button": "left"
+      "reply": {
+        "summary": "send_mouse: pointer at 306,77; posted, unverified, 25 retraces to frame 631",
+        "status": "ok",
+        "stop_seq": 233,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+      }
     },
     {
+      "step": 1,
       "op": "send_mouse",
-      "target": "navy",
-      "button": "left"
+      "reply": {
+        "summary": "send_mouse: pointer at 300,163; posted, unverified, 25 retraces to frame 656",
+        "status": "ok",
+        "stop_seq": 258,
+        "cause": "the retrace the input's post ran to, at 1009:00000264"
+      }
     },
     {
+      "step": 2,
       "op": "send_mouse",
-      "x": 2,
-      "y": 113,
+      "reply": {
+        "summary": "send_mouse: pointer at 294,198; posted, unverified, 30 retraces to frame 686",
+        "status": "ok",
+        "x": 2,
+        "y": 113,
+        "units": "screen",
+        "button": "left",
+        "action": "drag",
+        "route": "guest",
+        "pointer": {
+          "screen": {"x": 294, "y": 198, "width": 320, "height": 200},
+          "mouse": {"x": 2356, "y": 1588, "max_x": 2552, "max_y": 1592},
+          "buttons": [],
+          "bios_mode": "0x13"
+        },
+        "arrived": true,
+        "polls": 30,
+        "pc": "0DA5:00000350",
+        "cpu_mode": "real",
+        "stop_seq": 288,
+        "frame": 686,
+        "instruction": {
+          "address": "0DA5:00000350",
+          "bytes": "CD16",
+          "text": "int 0x16",
+          "flow": "call",
+          "code_bits": 16,
+          "bytes_from": "memory",
+          "symbol": {"available": false, "why": "no symbol table is loaded"},
+          "delta": {"available": false, "why": "no symbol table is loaded"}
+        },
+        "regs": {
+          "EAX": "0x0000011c",
+          "EBX": "0x00000000",
+          "ECX": "0x005b0000",
+          "EDX": "0x00000cf3",
+          "ESI": "0x0000ffff",
+          "EDI": "0x0000a0ae",
+          "EBP": "0x0000a00c",
+          "ESP": "0x00009ffe",
+          "EIP": "0x00000350",
+          "CS": "0x0da5",
+          "DS": "0x31b0",
+          "ES": "0x0000",
+          "FS": "0x0000",
+          "GS": "0x0000",
+          "SS": "0x31b0"
+        },
+        "watches": [
+          {
+            "ref": "31B0:017C",
+            "by": "address",
+            "mode": "show",
+            "length": 1,
+            "fmt": "u8",
+            "state": "evaluated",
+            "value": 1,
+            "bytes": "01"
+          }
+        ],
+        "cause": "the retrace the input's post ran to, at 0DA5:00000350",
+        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+        "motion": true,
+        "verify": {
+          "checked": false,
+          "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+        },
+        "session": {"alive": true, "running": false, "altered": false}
+      }
+    }
+  ],
+  "steps_total": 3,
+  "truncated": false,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": {
+    "stop_seq_first": 209,
+    "stop_seq_last": 288,
+    "surveyed": 3,
+    "by_cause": {"the retrace the input's post ran to,": 3},
+    "unaccounted": 77
+  },
+  "steps_completed": 3,
+  "failed_at": {"available": false, "why": "no step failed"},
+  "held": 0,
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**15. `perform`**: OK hull: brown, the colour byte at 6, 1 drag
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "steps": [
+    {"op": "send_mouse", "target": "brown", "button": "left"},
+    {
+      "op": "send_mouse",
+      "x": 60,
+      "y": 150,
       "button": "left",
-      "action": "down"
-    },
-    {
-      "op": "send_mouse",
-      "x": 294,
-      "y": 198
-    },
-    {
-      "op": "send_mouse",
-      "button": "left",
-      "action": "up"
+      "action": "drag",
+      "to_x": 112,
+      "to_y": 158
     }
   ],
   "summaries": true
@@ -1368,96 +1009,52 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 ```json
 {
-  "summary": "perform: 5 of 5 steps",
+  "summary": "perform: 2 of 2 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 306,77; posted, unverified, 25 retraces to frame 671",
+        "summary": "send_mouse: pointer at 300,173; posted, unverified, 25 retraces to frame 711",
         "status": "ok",
-        "stop_seq": 273,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 313,
+        "cause": "the retrace the input's post ran to, at 1009:000002AA"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,163; posted, unverified, 25 retraces to frame 696",
+        "summary": "send_mouse: pointer at 112,158; posted, unverified, 30 retraces to frame 741",
         "status": "ok",
-        "stop_seq": 298,
-        "cause": "the retrace the input's post ran to, at 13F6:0000023B"
-      }
-    },
-    {
-      "step": 2,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 2,113; posted, unverified, 20 retraces to frame 716",
-        "status": "ok",
-        "stop_seq": 318,
-        "cause": "the retrace the input's post ran to, at 1009:000002CE"
-      }
-    },
-    {
-      "step": 3,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 294,198; posted, unverified, 15 retraces to frame 731",
-        "status": "ok",
-        "stop_seq": 333,
-        "cause": "the retrace the input's post ran to, at 0955:00000057"
-      }
-    },
-    {
-      "step": 4,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 294,198; posted, unverified, 15 retraces to frame 746",
-        "status": "ok",
+        "x": 60,
+        "y": 150,
         "units": "screen",
         "button": "left",
-        "action": "up",
+        "action": "drag",
         "route": "guest",
         "pointer": {
-          "screen": {
-            "x": 294,
-            "y": 198,
-            "width": 320,
-            "height": 200
-          },
-          "mouse": {
-            "x": 2356,
-            "y": 1588,
-            "max_x": 2552,
-            "max_y": 1592
-          },
+          "screen": {"x": 112, "y": 158, "width": 320, "height": 200},
+          "mouse": {"x": 900, "y": 1268, "max_x": 2552, "max_y": 1592},
           "buttons": [],
           "bios_mode": "0x13"
         },
         "arrived": true,
-        "polls": 15,
+        "polls": 30,
         "pc": "F000:0000CFC5",
         "cpu_mode": "real",
-        "stop_seq": 348,
-        "frame": 746,
+        "stop_seq": 343,
+        "frame": 741,
         "instruction": {
-          "seg_off": "F000:0000CFC5",
+          "address": "F000:0000CFC5",
           "bytes": "CF",
           "text": "iret",
           "flow": "return",
           "code_bits": 16,
           "bytes_from": "memory",
-          "symbol": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          },
-          "delta": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          }
+          "symbol": {"available": false, "why": "no symbol table is loaded"},
+          "delta": {"available": false, "why": "no symbol table is loaded"}
         },
         "regs": {
           "EAX": "0x0000011c",
@@ -1484,247 +1081,36 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
             "length": 1,
             "fmt": "u8",
             "state": "evaluated",
-            "value": 1,
-            "bytes": "01"
-          }
-        ],
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5",
-        "e9": {
-          "lines_total": 0,
-          "truncated": false,
-          "lines": [],
-          "mark": "<volatile>"
-        },
-        "verify": {
-          "checked": false,
-          "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-        },
-        "session": {
-          "alive": true,
-          "running": false,
-          "altered": false
-        }
-      }
-    }
-  ],
-  "steps_total": 5,
-  "truncated": false,
-  "ran_path": "<volatile>",
-  "replies_path": "<volatile>",
-  "stops": {
-    "stop_seq_first": 249,
-    "stop_seq_last": 348,
-    "surveyed": 5,
-    "by_cause": {
-      "the retrace the input's post ran to,": 5
-    },
-    "unaccounted": 95
-  },
-  "steps_completed": 5,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
-  "held": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
-}
-```
-
-</details>
-
-**15. `perform`**: OK hull: brown, the colour byte at 6, 1 drag
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "steps": [
-    {
-      "op": "send_mouse",
-      "target": "brown",
-      "button": "left"
-    },
-    {
-      "op": "send_mouse",
-      "x": 60,
-      "y": 150,
-      "button": "left",
-      "action": "down"
-    },
-    {
-      "op": "send_mouse",
-      "x": 112,
-      "y": 158
-    },
-    {
-      "op": "send_mouse",
-      "button": "left",
-      "action": "up"
-    }
-  ],
-  "summaries": true
-}
-```
-
-```json
-{
-  "summary": "perform: 4 of 4 steps",
-  "status": "ok",
-  "ran": [
-    {
-      "step": 0,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 300,173; posted, unverified, 25 retraces to frame 771",
-        "status": "ok",
-        "stop_seq": 373,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 1,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 60,150; posted, unverified, 20 retraces to frame 791",
-        "status": "ok",
-        "stop_seq": 393,
-        "cause": "the retrace the input's post ran to, at 0955:0000004F"
-      }
-    },
-    {
-      "step": 2,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 112,158; posted, unverified, 15 retraces to frame 806",
-        "status": "ok",
-        "stop_seq": 408,
-        "cause": "the retrace the input's post ran to, at 0E83:00000A6D"
-      }
-    },
-    {
-      "step": 3,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 112,158; posted, unverified, 15 retraces to frame 821",
-        "status": "ok",
-        "units": "screen",
-        "button": "left",
-        "action": "up",
-        "route": "guest",
-        "pointer": {
-          "screen": {
-            "x": 112,
-            "y": 158,
-            "width": 320,
-            "height": 200
-          },
-          "mouse": {
-            "x": 900,
-            "y": 1268,
-            "max_x": 2552,
-            "max_y": 1592
-          },
-          "buttons": [],
-          "bios_mode": "0x13"
-        },
-        "arrived": true,
-        "polls": 15,
-        "pc": "0E83:00000146",
-        "cpu_mode": "real",
-        "stop_seq": 423,
-        "frame": 821,
-        "instruction": {
-          "seg_off": "0E83:00000146",
-          "bytes": "8BEC",
-          "text": "mov bp, sp",
-          "flow": "sequential",
-          "code_bits": 16,
-          "bytes_from": "memory",
-          "symbol": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          },
-          "delta": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          }
-        },
-        "regs": {
-          "EAX": "0x00006e42",
-          "EBX": "0x000003e4",
-          "ECX": "0x005b0000",
-          "EDX": "0x00000cf3",
-          "ESI": "0x00000008",
-          "EDI": "0x0000a0ae",
-          "EBP": "0x0000a006",
-          "ESP": "0x00009ffc",
-          "EIP": "0x00000146",
-          "CS": "0x0e83",
-          "DS": "0x31b0",
-          "ES": "0x0000",
-          "FS": "0x0000",
-          "GS": "0x0000",
-          "SS": "0x31b0"
-        },
-        "watches": [
-          {
-            "ref": "31B0:017C",
-            "by": "address",
-            "mode": "show",
-            "length": 1,
-            "fmt": "u8",
-            "state": "evaluated",
             "value": 6,
             "bytes": "06"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0E83:00000146",
-        "e9": {
-          "lines_total": 0,
-          "truncated": false,
-          "lines": [],
-          "mark": "<volatile>"
-        },
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5",
+        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+        "motion": true,
         "verify": {
           "checked": false,
           "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
         },
-        "session": {
-          "alive": true,
-          "running": false,
-          "altered": false
-        }
+        "session": {"alive": true, "running": false, "altered": false}
       }
     }
   ],
-  "steps_total": 4,
+  "steps_total": 2,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 349,
-    "stop_seq_last": 423,
-    "surveyed": 4,
-    "by_cause": {
-      "the retrace the input's post ran to,": 4
-    },
-    "unaccounted": 71
+    "stop_seq_first": 289,
+    "stop_seq_last": 343,
+    "surveyed": 2,
+    "by_cause": {"the retrace the input's post ran to,": 2},
+    "unaccounted": 53
   },
-  "steps_completed": 4,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "steps_completed": 2,
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1737,66 +1123,26 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "line",
-      "button": "left"
-    },
-    {
-      "op": "send_mouse",
-      "target": "white",
-      "button": "left"
-    },
-    {
-      "op": "send_mouse",
-      "x": 86,
-      "y": 149,
-      "button": "left",
-      "action": "down"
-    },
-    {
-      "op": "send_mouse",
-      "x": 86,
-      "y": 118
-    },
-    {
-      "op": "send_mouse",
-      "button": "left",
-      "action": "up"
-    },
+    {"op": "send_mouse", "target": "line", "button": "left"},
+    {"op": "send_mouse", "target": "white", "button": "left"},
+    {"op": "send_mouse", "x": 86, "y": 149, "button": "left", "action": "drag", "to_x": 86, "to_y": 118},
     {
       "op": "send_mouse",
       "x": 86,
       "y": 118,
       "button": "left",
-      "action": "down"
-    },
-    {
-      "op": "send_mouse",
-      "x": 108,
-      "y": 146
-    },
-    {
-      "op": "send_mouse",
-      "button": "left",
-      "action": "up"
+      "action": "drag",
+      "to_x": 108,
+      "to_y": 146
     },
     {
       "op": "send_mouse",
       "x": 108,
       "y": 146,
       "button": "left",
-      "action": "down"
-    },
-    {
-      "op": "send_mouse",
-      "x": 86,
-      "y": 146
-    },
-    {
-      "op": "send_mouse",
-      "button": "left",
-      "action": "up"
+      "action": "drag",
+      "to_x": 86,
+      "to_y": 146
     }
   ],
   "summaries": true
@@ -1805,168 +1151,94 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 ```json
 {
-  "summary": "perform: 11 of 11 steps",
+  "summary": "perform: 5 of 5 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 302,51; posted, unverified, 25 retraces to frame 846",
+        "summary": "send_mouse: pointer at 302,51; posted, unverified, 25 retraces to frame 766",
         "status": "ok",
-        "stop_seq": 448,
-        "cause": "the retrace the input's post ran to, at 0955:0000004C"
+        "stop_seq": 368,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,191; posted, unverified, 25 retraces to frame 871",
+        "summary": "send_mouse: pointer at 300,191; posted, unverified, 25 retraces to frame 791",
         "status": "ok",
-        "stop_seq": 473,
-        "cause": "the retrace the input's post ran to, at 0955:00000051"
+        "stop_seq": 393,
+        "cause": "the retrace the input's post ran to, at 1009:000002D5"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 86,149; posted, unverified, 20 retraces to frame 891",
+        "summary": "send_mouse: pointer at 86,118; posted, unverified, 30 retraces to frame 821",
         "status": "ok",
-        "stop_seq": 493,
-        "cause": "the retrace the input's post ran to, at 0E83:000001AB"
+        "stop_seq": 423,
+        "cause": "the retrace the input's post ran to, at 0E83:00000A6A"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 86,118; posted, unverified, 15 retraces to frame 906",
+        "summary": "send_mouse: pointer at 108,146; posted, unverified, 30 retraces to frame 851",
         "status": "ok",
-        "stop_seq": 508,
-        "cause": "the retrace the input's post ran to, at 1009:00000382"
+        "stop_seq": 453,
+        "cause": "the retrace the input's post ran to, at 13F6:000002DA"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 86,118; posted, unverified, 15 retraces to frame 921",
+        "summary": "send_mouse: pointer at 86,146; posted, unverified, 30 retraces to frame 881",
         "status": "ok",
-        "stop_seq": 523,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 5,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 86,118; posted, unverified, 20 retraces to frame 941",
-        "status": "ok",
-        "stop_seq": 543,
-        "cause": "the retrace the input's post ran to, at 0B92:000001FF"
-      }
-    },
-    {
-      "step": 6,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 108,146; posted, unverified, 15 retraces to frame 956",
-        "status": "ok",
-        "stop_seq": 558,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC1"
-      }
-    },
-    {
-      "step": 7,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 108,146; posted, unverified, 15 retraces to frame 971",
-        "status": "ok",
-        "stop_seq": 573,
-        "cause": "the retrace the input's post ran to, at 1009:000001D4"
-      }
-    },
-    {
-      "step": 8,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 108,146; posted, unverified, 20 retraces to frame 991",
-        "status": "ok",
-        "stop_seq": 593,
-        "cause": "the retrace the input's post ran to, at 0E83:00000A90"
-      }
-    },
-    {
-      "step": 9,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 86,146; posted, unverified, 15 retraces to frame 1006",
-        "status": "ok",
-        "stop_seq": 608,
-        "cause": "the retrace the input's post ran to, at 0E83:000004F3"
-      }
-    },
-    {
-      "step": 10,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 86,146; posted, unverified, 15 retraces to frame 1021",
-        "status": "ok",
+        "x": 108,
+        "y": 146,
         "units": "screen",
         "button": "left",
-        "action": "up",
+        "action": "drag",
         "route": "guest",
         "pointer": {
-          "screen": {
-            "x": 86,
-            "y": 146,
-            "width": 320,
-            "height": 200
-          },
-          "mouse": {
-            "x": 692,
-            "y": 1172,
-            "max_x": 2552,
-            "max_y": 1592
-          },
+          "screen": {"x": 86, "y": 146, "width": 320, "height": 200},
+          "mouse": {"x": 692, "y": 1172, "max_x": 2552, "max_y": 1592},
           "buttons": [],
           "bios_mode": "0x13"
         },
         "arrived": true,
-        "polls": 15,
-        "pc": "0E83:00000A14",
+        "polls": 30,
+        "pc": "0B92:00000241",
         "cpu_mode": "real",
-        "stop_seq": 623,
-        "frame": 1021,
+        "stop_seq": 483,
+        "frame": 881,
         "instruction": {
-          "seg_off": "0E83:00000A14",
-          "bytes": "CB",
-          "text": "retf",
-          "flow": "return",
+          "address": "0B92:00000241",
+          "bytes": "8B4708",
+          "text": "mov ax, word ptr [bx + 8]",
+          "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
-          "symbol": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          },
-          "delta": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          }
+          "symbol": {"available": false, "why": "no symbol table is loaded"},
+          "delta": {"available": false, "why": "no symbol table is loaded"}
         },
         "regs": {
           "EAX": "0x00000000",
           "EBX": "0x000003e4",
           "ECX": "0x005b0000",
           "EDX": "0x0000a5ea",
-          "ESI": "0x00000008",
-          "EDI": "0x0000a0ae",
-          "EBP": "0x0000a006",
-          "ESP": "0x00009ffe",
-          "EIP": "0x00000a14",
-          "CS": "0x0e83",
+          "ESI": "0x00006e42",
+          "EDI": "0x00006e52",
+          "EBP": "0x00009ffc",
+          "ESP": "0x00009ff8",
+          "EIP": "0x00000241",
+          "CS": "0x0b92",
           "DS": "0x31b0",
           "ES": "0x0000",
           "FS": "0x0000",
@@ -1985,49 +1257,32 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
             "bytes": "0f"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0E83:00000A14",
-        "e9": {
-          "lines_total": 0,
-          "truncated": false,
-          "lines": [],
-          "mark": "<volatile>"
-        },
+        "cause": "the retrace the input's post ran to, at 0B92:00000241",
+        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+        "motion": true,
         "verify": {
           "checked": false,
           "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
         },
-        "session": {
-          "alive": true,
-          "running": false,
-          "altered": false
-        }
+        "session": {"alive": true, "running": false, "altered": false}
       }
     }
   ],
-  "steps_total": 11,
+  "steps_total": 5,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 424,
-    "stop_seq_last": 623,
-    "surveyed": 11,
-    "by_cause": {
-      "the retrace the input's post ran to,": 11
-    },
-    "unaccounted": 189
+    "stop_seq_first": 344,
+    "stop_seq_last": 483,
+    "surveyed": 5,
+    "by_cause": {"the retrace the input's post ran to,": 5},
+    "unaccounted": 135
   },
-  "steps_completed": 11,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "steps_completed": 5,
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2040,34 +1295,10 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 ```json
 {
   "steps": [
-    {
-      "op": "send_mouse",
-      "target": "text",
-      "button": "left"
-    },
-    {
-      "op": "send_mouse",
-      "x": 20,
-      "y": 180,
-      "button": "left"
-    },
-    {
-      "op": "send_keys",
-      "keys": [
-        "S",
-        "C",
-        "R",
-        "Y"
-      ],
-      "modifiers": [
-        "shift"
-      ]
-    },
-    {
-      "op": "send_mouse",
-      "target": "line",
-      "button": "left"
-    }
+    {"op": "send_mouse", "target": "text", "button": "left"},
+    {"op": "send_mouse", "x": 20, "y": 180, "button": "left"},
+    {"op": "send_keys", "keys": ["S", "C", "R", "Y"], "modifiers": ["shift"]},
+    {"op": "send_mouse", "target": "line", "button": "left"}
   ],
   "summaries": true
 }
@@ -2082,37 +1313,37 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 314,98; posted, unverified, 25 retraces to frame 1046",
+        "summary": "send_mouse: pointer at 314,98; posted, unverified, 25 retraces to frame 906",
         "status": "ok",
-        "stop_seq": 648,
-        "cause": "the retrace the input's post ran to, at 0955:00000037"
+        "stop_seq": 508,
+        "cause": "the retrace the input's post ran to, at 1009:00000320"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 20,180; posted, unverified, 25 retraces to frame 1071",
+        "summary": "send_mouse: pointer at 20,180; posted, unverified, 25 retraces to frame 931",
         "status": "ok",
-        "stop_seq": 673,
-        "cause": "the retrace the input's post ran to, at 1483:000005E7"
+        "stop_seq": 533,
+        "cause": "the retrace the input's post ran to, at 13F6:0000020E"
       }
     },
     {
       "step": 2,
       "op": "send_keys",
       "reply": {
-        "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 1121",
+        "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 981",
         "status": "ok",
-        "stop_seq": 723,
-        "cause": "the retrace the input's post ran to, at 0955:0000002A"
+        "stop_seq": 583,
+        "cause": "the retrace the input's post ran to, at 0E83:00000AFC"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 302,51; posted, unverified, 25 retraces to frame 1146",
+        "summary": "send_mouse: pointer at 302,51; posted, unverified, 25 retraces to frame 1006",
         "status": "ok",
         "x": 302,
         "y": 51,
@@ -2121,54 +1352,38 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
         "action": "click",
         "route": "guest",
         "pointer": {
-          "screen": {
-            "x": 302,
-            "y": 51,
-            "width": 320,
-            "height": 200
-          },
-          "mouse": {
-            "x": 2420,
-            "y": 412,
-            "max_x": 2552,
-            "max_y": 1592
-          },
+          "screen": {"x": 302, "y": 51, "width": 320, "height": 200},
+          "mouse": {"x": 2420, "y": 412, "max_x": 2552, "max_y": 1592},
           "buttons": [],
           "bios_mode": "0x13"
         },
         "arrived": true,
         "polls": 25,
-        "pc": "F000:0000CFC5",
+        "pc": "0955:00000059",
         "cpu_mode": "real",
-        "stop_seq": 748,
-        "frame": 1146,
+        "stop_seq": 608,
+        "frame": 1006,
         "instruction": {
-          "seg_off": "F000:0000CFC5",
-          "bytes": "CF",
-          "text": "iret",
-          "flow": "return",
+          "address": "0955:00000059",
+          "bytes": "5D",
+          "text": "pop bp",
+          "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
-          "symbol": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          },
-          "delta": {
-            "available": false,
-            "why": "no symbol table is loaded"
-          }
+          "symbol": {"available": false, "why": "no symbol table is loaded"},
+          "delta": {"available": false, "why": "no symbol table is loaded"}
         },
         "regs": {
-          "EAX": "0x0000011c",
+          "EAX": "0x00000001",
           "EBX": "0x0000105c",
           "ECX": "0x005b0000",
           "EDX": "0x00000bc7",
-          "ESI": "0x0000ffff",
+          "ESI": "0x00000008",
           "EDI": "0x0000a0ae",
-          "EBP": "0x0000a00c",
-          "ESP": "0x00009ff8",
-          "EIP": "0x0000cfc5",
-          "CS": "0xf000",
+          "EBP": "0x0000a014",
+          "ESP": "0x0000a014",
+          "EIP": "0x00000059",
+          "CS": "0x0955",
           "DS": "0x31b0",
           "ES": "0x0000",
           "FS": "0x0000",
@@ -2187,13 +1402,8 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
             "bytes": "0f"
           }
         ],
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5",
-        "e9": {
-          "lines_total": 0,
-          "truncated": false,
-          "lines": [],
-          "mark": "<volatile>"
-        },
+        "cause": "the retrace the input's post ran to, at 0955:00000059",
+        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
           "checked": false,
@@ -2202,11 +1412,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
         "target": "line",
         "screen": "paint",
         "identified_at_stop": 2,
-        "session": {
-          "alive": true,
-          "running": false,
-          "altered": false
-        }
+        "session": {"alive": true, "running": false, "altered": false}
       }
     }
   ],
@@ -2215,25 +1421,16 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 624,
-    "stop_seq_last": 748,
+    "stop_seq_first": 484,
+    "stop_seq_last": 608,
     "surveyed": 4,
-    "by_cause": {
-      "the retrace the input's post ran to,": 4
-    },
+    "by_cause": {"the retrace the input's post ran to,": 4},
     "unaccounted": 121
   },
   "steps_completed": 4,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2258,11 +1455,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "seg_off": "A000:00007DA0",
   "length": 128,
   "hex": "343434343434343434343434343434343434343434343434340e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e34343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2287,11 +1480,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "seg_off": "A000:0000C09E",
   "length": 112,
   "hex": "01010101010101010101010101010101010101010101010101010101010106060606060606060606060606060606060606060606060606060606060606060606060606060606060606060606060606060606060101010101010101010101010101010101010101010101010101010101",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2316,12 +1505,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "width": 320,
   "height": 200,
   "mode": "render",
-  "crop": [
-    0,
-    0,
-    320,
-    200
-  ],
+  "crop": [0, 0, 320, 200],
   "screen_indexed": true,
   "entries": 256,
   "image": {
@@ -2335,11 +1519,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
     "inline": true
   },
   "display_start": "0h",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2364,11 +1544,7 @@ Also attached: image/png.
   "status": "ok",
   "declarations_cleared": 1,
   "disarmed": [],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2397,16 +1573,9 @@ Also attached: image/png.
   "state_dir": "./tmp/demos/dpaint/dpaint-states",
   "ended_by": "quit",
   "exit_code": 0,
-  "omitted": [
-    "stdout_tail",
-    "errorlog_tail"
-  ],
+  "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
-  "session": {
-    "alive": false,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": false, "running": false, "altered": false}
 }
 ```
 

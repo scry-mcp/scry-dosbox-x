@@ -96,41 +96,16 @@ Give this to an MCP client with this server connected:
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": [
-    "BPIF",
-    "CAPTURE",
-    "DOSTRACE",
-    "LOADSTATE",
-    "PORTINFO",
-    "PRESENCE",
-    "RUNSTATE",
-    "SAVESTATE",
-    "STEPIN",
-    "TAP",
-    "VGAMEMDUMP"
-  ],
+  "debugger_commands": ["BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
   "declarations": {
-    "rearm": {
-      "rearmed": [],
-      "stale": [],
-      "unresolved": [],
-      "ambiguous": [],
-      "unarmable": []
-    }
+    "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
-  "symbols": {
-    "held": "./tmp/demos/lineup/LINEUP.MAP",
-    "base_from": "program"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "symbols": {"held": "./tmp/demos/lineup/LINEUP.MAP", "base_from": "program"},
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -181,7 +156,7 @@ Give this to an MCP client with this server connected:
   },
   "stop_seq": 2,
   "instruction": {
-    "seg_off": "08ED:00001CAE",
+    "address": "08ED:00001CAE",
     "bytes": "74F9",
     "text": "je 0x1ca9",
     "flow": "branch",
@@ -201,15 +176,8 @@ Give this to an MCP client with this server connected:
   "emulated_after_s": 2.00347702,
   "frame_before": 0,
   "frame_after": 141,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "cycles": 96579553,
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -235,11 +203,7 @@ Give this to an MCP client with this server connected:
   "mode": "verified",
   "screens": 4,
   "controls": 10,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -269,12 +233,7 @@ Give this to an MCP client with this server connected:
   "target_disarmed": true,
   "control_hits": 150,
   "controls": [
-    {
-      "ref": "Check_Money25",
-      "at": "08ED:19DC",
-      "hits_in_run": 150,
-      "removed": true
-    }
+    {"ref": "Check_Money25", "at": "08ED:19DC", "hits_in_run": 150, "removed": true}
   ],
   "frame": 351,
   "regs": {
@@ -302,7 +261,7 @@ Give this to an MCP client with this server connected:
   },
   "stop_seq": 3,
   "instruction": {
-    "seg_off": "08ED:00001DF6",
+    "address": "08ED:00001DF6",
     "bytes": "1E",
     "text": "push ds",
     "flow": "sequential",
@@ -311,11 +270,7 @@ Give this to an MCP client with this server connected:
     "symbol": "Draw_High_Scores_Screen",
     "delta": 0
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -366,7 +321,7 @@ Give this to an MCP client with this server connected:
   },
   "stop_seq": 4,
   "instruction": {
-    "seg_off": "08ED:00001CAE",
+    "address": "08ED:00001CAE",
     "bytes": "74F9",
     "text": "je 0x1ca9",
     "flow": "branch",
@@ -379,15 +334,8 @@ Give this to an MCP client with this server connected:
   "emulated_after_s": 6.5121853000000005,
   "frame_before": 351,
   "frame_after": 457,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "cycles": 73158830,
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -409,43 +357,12 @@ Give this to an MCP client with this server connected:
   "screen": "hiscores",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    320,
-    200
-  ],
+  "size": [320, 200],
   "controls": [
-    {
-      "name": "table",
-      "rect": [
-        64,
-        30,
-        192,
-        145
-      ],
-      "centre": [
-        160,
-        102
-      ]
-    },
-    {
-      "name": "credits",
-      "rect": [
-        230,
-        186,
-        76,
-        12
-      ],
-      "centre": [
-        268,
-        192
-      ]
-    }
+    {"name": "table", "rect": [64, 30, 192, 145], "centre": [160, 102]},
+    {"name": "credits", "rect": [230, 186, 76, 12], "centre": [268, 192]}
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -470,11 +387,7 @@ Give this to an MCP client with this server connected:
   "seg_off": "08ED:0000BC04",
   "length": 2,
   "hex": "0000",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -486,9 +399,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "keys": [
-    "tab"
-  ]
+  "keys": ["tab"]
 }
 ```
 
@@ -496,9 +407,7 @@ Give this to an MCP client with this server connected:
 {
   "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 463",
   "status": "ok",
-  "keys": [
-    "tab"
-  ],
+  "keys": ["tab"],
   "modifiers": [],
   "route": "guest",
   "posted": 1,
@@ -510,20 +419,14 @@ Give this to an MCP client with this server connected:
   "stop_seq": 10,
   "frame": 463,
   "instruction": {
-    "seg_off": "F000:0000CA40",
+    "address": "F000:0000CA40",
     "bytes": "90",
     "text": "nop",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "outside the loaded table's span"
-    },
-    "delta": {
-      "available": false,
-      "why": "outside the loaded table's span"
-    }
+    "symbol": {"available": false, "why": "outside the loaded table's span"},
+    "delta": {"available": false, "why": "outside the loaded table's span"}
   },
   "regs": {
     "EAX": "0x00003f8e",
@@ -552,11 +455,7 @@ Give this to an MCP client with this server connected:
     "checked": false,
     "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -607,7 +506,7 @@ Give this to an MCP client with this server connected:
   },
   "stop_seq": 11,
   "instruction": {
-    "seg_off": "08ED:00001CAE",
+    "address": "08ED:00001CAE",
     "bytes": "74F9",
     "text": "je 0x1ca9",
     "flow": "branch",
@@ -620,15 +519,8 @@ Give this to an MCP client with this server connected:
   "emulated_after_s": 7.61082626,
   "frame_before": 463,
   "frame_after": 534,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "cycles": 48952839,
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -650,43 +542,12 @@ Give this to an MCP client with this server connected:
   "screen": "insert",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    320,
-    200
-  ],
+  "size": [320, 200],
   "controls": [
-    {
-      "name": "banner",
-      "rect": [
-        0,
-        6,
-        320,
-        22
-      ],
-      "centre": [
-        160,
-        17
-      ]
-    },
-    {
-      "name": "credits",
-      "rect": [
-        230,
-        186,
-        76,
-        12
-      ],
-      "centre": [
-        268,
-        192
-      ]
-    }
+    {"name": "banner", "rect": [0, 6, 320, 22], "centre": [160, 17]},
+    {"name": "credits", "rect": [230, 186, 76, 12], "centre": [268, 192]}
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -711,11 +572,7 @@ Give this to an MCP client with this server connected:
   "seg_off": "08ED:0000BC04",
   "length": 2,
   "hex": "0300",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -727,9 +584,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "keys": [
-    "1"
-  ]
+  "keys": ["1"]
 }
 ```
 
@@ -737,9 +592,7 @@ Give this to an MCP client with this server connected:
 {
   "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 540",
   "status": "ok",
-  "keys": [
-    "1"
-  ],
+  "keys": ["1"],
   "modifiers": [],
   "route": "guest",
   "posted": 1,
@@ -751,7 +604,7 @@ Give this to an MCP client with this server connected:
   "stop_seq": 17,
   "frame": 540,
   "instruction": {
-    "seg_off": "08ED:00009241",
+    "address": "08ED:00009241",
     "bytes": "7407",
     "text": "je 0x924a",
     "flow": "branch",
@@ -787,11 +640,7 @@ Give this to an MCP client with this server connected:
     "checked": false,
     "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -821,12 +670,7 @@ Give this to an MCP client with this server connected:
   "target_disarmed": true,
   "control_hits": 6,
   "controls": [
-    {
-      "ref": "Check_Money25",
-      "at": "08ED:19DC",
-      "hits_in_run": 6,
-      "removed": true
-    }
+    {"ref": "Check_Money25", "at": "08ED:19DC", "hits_in_run": 6, "removed": true}
   ],
   "frame": 548,
   "regs": {
@@ -854,7 +698,7 @@ Give this to an MCP client with this server connected:
   },
   "stop_seq": 18,
   "instruction": {
-    "seg_off": "08ED:000058FE",
+    "address": "08ED:000058FE",
     "bytes": "BB8834",
     "text": "mov bx, 0x3488",
     "flow": "sequential",
@@ -863,11 +707,7 @@ Give this to an MCP client with this server connected:
     "symbol": "Level_Write",
     "delta": 0
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -918,7 +758,7 @@ Give this to an MCP client with this server connected:
   },
   "stop_seq": 19,
   "instruction": {
-    "seg_off": "08ED:000004AF",
+    "address": "08ED:000004AF",
     "bytes": "2B066C12",
     "text": "sub ax, word ptr [0x126c]",
     "flow": "sequential",
@@ -931,15 +771,8 @@ Give this to an MCP client with this server connected:
   "emulated_after_s": 8.02460012,
   "frame_before": 548,
   "frame_after": 563,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "cycles": 10101742,
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -961,56 +794,13 @@ Give this to an MCP client with this server connected:
   "screen": "level",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    320,
-    200
-  ],
+  "size": [320, 200],
   "controls": [
-    {
-      "name": "p1_well",
-      "rect": [
-        15,
-        0,
-        98,
-        194
-      ],
-      "centre": [
-        64,
-        97
-      ]
-    },
-    {
-      "name": "p2_well",
-      "rect": [
-        207,
-        0,
-        98,
-        194
-      ],
-      "centre": [
-        256,
-        97
-      ]
-    },
-    {
-      "name": "credits",
-      "rect": [
-        152,
-        190,
-        16,
-        10
-      ],
-      "centre": [
-        160,
-        195
-      ]
-    }
+    {"name": "p1_well", "rect": [15, 0, 98, 194], "centre": [64, 97]},
+    {"name": "p2_well", "rect": [207, 0, 98, 194], "centre": [256, 97]},
+    {"name": "credits", "rect": [152, 190, 16, 10], "centre": [160, 195]}
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1035,11 +825,7 @@ Give this to an MCP client with this server connected:
   "seg_off": "08ED:0000BC04",
   "length": 2,
   "hex": "0200",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1064,11 +850,7 @@ Give this to an MCP client with this server connected:
   "seg_off": "08ED:0000B0D8",
   "length": 2,
   "hex": "0000",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1119,7 +901,7 @@ Give this to an MCP client with this server connected:
   },
   "stop_seq": 20,
   "instruction": {
-    "seg_off": "08ED:00009390",
+    "address": "08ED:00009390",
     "bytes": "D3E3",
     "text": "shl bx, cl",
     "flow": "sequential",
@@ -1132,15 +914,8 @@ Give this to an MCP client with this server connected:
   "emulated_after_s": 11.03516166,
   "frame_before": 563,
   "frame_after": 774,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "cycles": 148855844,
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1162,56 +937,13 @@ Give this to an MCP client with this server connected:
   "screen": "play",
   "layer": "file",
   "kind": "pixel",
-  "size": [
-    320,
-    200
-  ],
+  "size": [320, 200],
   "controls": [
-    {
-      "name": "p1_well",
-      "rect": [
-        15,
-        0,
-        98,
-        194
-      ],
-      "centre": [
-        64,
-        97
-      ]
-    },
-    {
-      "name": "p2_well",
-      "rect": [
-        207,
-        0,
-        98,
-        194
-      ],
-      "centre": [
-        256,
-        97
-      ]
-    },
-    {
-      "name": "credits",
-      "rect": [
-        152,
-        190,
-        16,
-        10
-      ],
-      "centre": [
-        160,
-        195
-      ]
-    }
+    {"name": "p1_well", "rect": [15, 0, 98, 194], "centre": [64, 97]},
+    {"name": "p2_well", "rect": [207, 0, 98, 194], "centre": [256, 97]},
+    {"name": "credits", "rect": [152, 190, 16, 10], "centre": [160, 195]}
   ],
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1236,11 +968,7 @@ Give this to an MCP client with this server connected:
   "seg_off": "08ED:0000AE32",
   "length": 12,
   "hex": "010003000100000003000000",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1252,9 +980,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "keys": [
-    "right"
-  ]
+  "keys": ["right"]
 }
 ```
 
@@ -1262,9 +988,7 @@ Give this to an MCP client with this server connected:
 {
   "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 790",
   "status": "ok",
-  "keys": [
-    "right"
-  ],
+  "keys": ["right"],
   "modifiers": [],
   "route": "guest",
   "posted": 1,
@@ -1276,7 +1000,7 @@ Give this to an MCP client with this server connected:
   "stop_seq": 36,
   "frame": 790,
   "instruction": {
-    "seg_off": "08ED:000004AF",
+    "address": "08ED:000004AF",
     "bytes": "2B066C12",
     "text": "sub ax, word ptr [0x126c]",
     "flow": "sequential",
@@ -1312,11 +1036,7 @@ Give this to an MCP client with this server connected:
     "checked": false,
     "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1367,7 +1087,7 @@ Give this to an MCP client with this server connected:
   },
   "stop_seq": 37,
   "instruction": {
-    "seg_off": "08ED:00006106",
+    "address": "08ED:00006106",
     "bytes": "E2FB",
     "text": "loop 0x6103",
     "flow": "branch",
@@ -1380,15 +1100,8 @@ Give this to an MCP client with this server connected:
   "emulated_after_s": 11.477471659999999,
   "frame_before": 790,
   "frame_after": 805,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "cycles": 10580974,
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1413,11 +1126,7 @@ Give this to an MCP client with this server connected:
   "seg_off": "08ED:0000AE32",
   "length": 12,
   "hex": "010004000100000003000000",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1429,9 +1138,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "keys": [
-    "space"
-  ]
+  "keys": ["space"]
 }
 ```
 
@@ -1439,9 +1146,7 @@ Give this to an MCP client with this server connected:
 {
   "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 811",
   "status": "ok",
-  "keys": [
-    "space"
-  ],
+  "keys": ["space"],
   "modifiers": [],
   "route": "guest",
   "posted": 1,
@@ -1453,7 +1158,7 @@ Give this to an MCP client with this server connected:
   "stop_seq": 43,
   "frame": 811,
   "instruction": {
-    "seg_off": "08ED:000004B3",
+    "address": "08ED:000004B3",
     "bytes": "78F7",
     "text": "js 0x4ac",
     "flow": "branch",
@@ -1489,11 +1194,7 @@ Give this to an MCP client with this server connected:
     "checked": false,
     "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1544,7 +1245,7 @@ Give this to an MCP client with this server connected:
   },
   "stop_seq": 44,
   "instruction": {
-    "seg_off": "08ED:0000871A",
+    "address": "08ED:0000871A",
     "bytes": "5D",
     "text": "pop bp",
     "flow": "sequential",
@@ -1557,15 +1258,8 @@ Give this to an MCP client with this server connected:
   "emulated_after_s": 11.777101,
   "frame_before": 811,
   "frame_after": 826,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "cycles": 10592464,
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1590,11 +1284,7 @@ Give this to an MCP client with this server connected:
   "seg_off": "08ED:0000AE32",
   "length": 12,
   "hex": "010004000200000003000000",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1606,9 +1296,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "keys": [
-    "up"
-  ]
+  "keys": ["up"]
 }
 ```
 
@@ -1616,9 +1304,7 @@ Give this to an MCP client with this server connected:
 {
   "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 842",
   "status": "ok",
-  "keys": [
-    "up"
-  ],
+  "keys": ["up"],
   "modifiers": [],
   "route": "guest",
   "posted": 1,
@@ -1630,7 +1316,7 @@ Give this to an MCP client with this server connected:
   "stop_seq": 60,
   "frame": 842,
   "instruction": {
-    "seg_off": "08ED:000004AC",
+    "address": "08ED:000004AC",
     "bytes": "A16A12",
     "text": "mov ax, word ptr [0x126a]",
     "flow": "sequential",
@@ -1666,11 +1352,7 @@ Give this to an MCP client with this server connected:
     "checked": false,
     "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
   },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1721,7 +1403,7 @@ Give this to an MCP client with this server connected:
   },
   "stop_seq": 61,
   "instruction": {
-    "seg_off": "08ED:000004AC",
+    "address": "08ED:000004AC",
     "bytes": "A16A12",
     "text": "mov ax, word ptr [0x126a]",
     "flow": "sequential",
@@ -1734,15 +1416,8 @@ Give this to an MCP client with this server connected:
   "emulated_after_s": 12.11953454,
   "frame_before": 842,
   "frame_after": 850,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "cycles": 5629904,
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1767,11 +1442,7 @@ Give this to an MCP client with this server connected:
   "seg_off": "08ED:0000AE32",
   "length": 12,
   "hex": "010004000200040003000200",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1822,7 +1493,7 @@ Give this to an MCP client with this server connected:
   },
   "stop_seq": 62,
   "instruction": {
-    "seg_off": "08ED:000004AF",
+    "address": "08ED:000004AF",
     "bytes": "2B066C12",
     "text": "sub ax, word ptr [0x126c]",
     "flow": "sequential",
@@ -1835,10 +1506,7 @@ Give this to an MCP client with this server connected:
   "emulated_after_s": 14.13133158,
   "frame_before": 850,
   "frame_after": 991,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  },
+  "cycles": 99381475,
   "kind": "wav",
   "frames": 141,
   "began": true,
@@ -1851,11 +1519,7 @@ Give this to an MCP client with this server connected:
   "emulated_s": 2.011797,
   "sample_min": -8560,
   "sample_max": 3019,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1879,10 +1543,7 @@ Give this to an MCP client with this server connected:
   "sample_rate_hz": 48000,
   "channels": 2,
   "bits": 16,
-  "window": [
-    0.0,
-    2.012
-  ],
+  "window": [0.0, 2.012],
   "measures": [
     {
       "channel": 0,
@@ -1891,10 +1552,7 @@ Give this to an MCP client with this server connected:
       "silent": false,
       "silence_spans": {
         "count": 0,
-        "first": {
-          "available": false,
-          "why": "no silence in the window"
-        }
+        "first": {"available": false, "why": "no silence in the window"}
       },
       "onset_s": 0.0,
       "clipping_run": 0,
@@ -1907,10 +1565,7 @@ Give this to an MCP client with this server connected:
       "silent": false,
       "silence_spans": {
         "count": 0,
-        "first": {
-          "available": false,
-          "why": "no silence in the window"
-        }
+        "first": {"available": false, "why": "no silence in the window"}
       },
       "onset_s": 0.0,
       "clipping_run": 0,
@@ -1919,11 +1574,7 @@ Give this to an MCP client with this server connected:
   ],
   "pcm_sha256": "6a99b5e74159926a562c68887cddceabda7a79bfdcb28a3d66d632ed63c5fd81",
   "path": "<volatile>",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1958,11 +1609,7 @@ Give this to an MCP client with this server connected:
   "aligned_by_samples": 0,
   "a": "./tmp/demos/lineup/music.wav",
   "b": "./demos/lineup/music.wav",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -1988,12 +1635,7 @@ Give this to an MCP client with this server connected:
   "width": 320,
   "height": 200,
   "mode": "render",
-  "crop": [
-    0,
-    0,
-    320,
-    200
-  ],
+  "crop": [0, 0, 320, 200],
   "screen_indexed": true,
   "entries": 256,
   "image": {
@@ -2008,11 +1650,7 @@ Give this to an MCP client with this server connected:
     "not_inlined": "attach=false"
   },
   "display_start": "0h",
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
@@ -2041,16 +1679,9 @@ Give this to an MCP client with this server connected:
   "state_dir": "./tmp/demos/lineup/lineup-states",
   "ended_by": "quit",
   "exit_code": 0,
-  "omitted": [
-    "stdout_tail",
-    "errorlog_tail"
-  ],
+  "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
-  "session": {
-    "alive": false,
-    "running": false,
-    "altered": false
-  }
+  "session": {"alive": false, "running": false, "altered": false}
 }
 ```
 
