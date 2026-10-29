@@ -421,6 +421,7 @@ def test_a_dead_session_answers_broken_until_close_collects_it() -> None:
     dead = install(alive=False)
     got = cast(dict[str, Any], server.registers())
     assert got["code"] == "session_broken" and got["exit_code"] == -15, got
+    assert "died by signal 15" in got["message"], got
     assert dead.closed == 0 and cast(object, dstate.STATE.session) is dead
     closed = cast(dict[str, Any], server.close())
     assert closed["status"] == "ok" and dead.closed == 1 and dstate.STATE.session is None

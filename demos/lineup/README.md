@@ -21,7 +21,8 @@ beside this file.
 
 LineUp is not distributed with this repository. The demo runs a copy of the PC port: a directory
 holding `EXES/LINEUP.EXE` with the linker's symbol map beside it, `EXES/LINEUP.MAP`, and the
-game's own `AUDIO/` and `GFX/`.
+game's own `AUDIO/` and `GFX/`. The game's own repository builds the executable and its map from
+source; that repository is not public yet, so there is no link to it here.
 
 ## Run it
 

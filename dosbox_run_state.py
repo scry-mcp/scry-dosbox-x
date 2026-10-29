@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 
-from scry_core import cancel
+from scry_core import cancel, prose
 from scry_core.progress import PROGRESS_EVERY_S, Progress, no_progress
 from scry_core.reply_contract import Code, Invalid
 
@@ -47,7 +47,7 @@ def wait_ready(ses: ds.Session, timeout: float, progress: Progress = no_progress
         rc = ses.proc.poll()
         if rc is not None:
             raise Invalid("session_broken",
-                f"the emulator exited with code {rc} before its debugger answered. That is "
+                f"the emulator {prose.ended_by(rc)} before its debugger answered. That is "
                 f"not a slow start: the last thing it printed was "
                 f"{ses.output_tail(400).strip()!r}")
         try:

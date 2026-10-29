@@ -138,6 +138,10 @@ def test_an_emulator_that_exits_or_never_prompts_is_said_with_its_last_words(
     assert exited.value.code == "session_broken", exited.value.code
     said = str(exited.value)
     assert "exited with code 3" in said and said.endswith("printed was 'AAAABBBB'"), said
+    killed, _ = _booting(tmp_path, None, [None, -11])
+    with pytest.raises(ds.Invalid) as signalled:
+        killed.wait_ready(5)
+    assert "died by signal 11" in str(signalled.value), signalled.value
     silent, _ = _booting(tmp_path, None, [None])
     with pytest.raises(ds.Invalid) as never:
         silent.wait_ready(0.3)

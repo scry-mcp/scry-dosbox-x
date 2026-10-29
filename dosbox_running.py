@@ -6,7 +6,7 @@ import copy
 from pathlib import Path
 from typing import Any, Literal
 
-from scry_core import log_marks
+from scry_core import log_marks, prose
 from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
@@ -266,8 +266,9 @@ def live() -> ds.Session:
                          "a dead session would be a reading of nothing.")
     if not ses.alive():
         exit_code = ses.proc.poll()
+        ended = "is not running" if exit_code is None else prose.ended_by(exit_code)
         raise ds.Invalid("session_broken",
-                         f"DOSBox-X exited with code {exit_code} under this session: `close` "
+                         f"DOSBox-X {ended} under this session: `close` "
                          f"collects what it left, then `start` a new one", exit_code=exit_code)
     drain_if_stopped(ses)
     return ses
