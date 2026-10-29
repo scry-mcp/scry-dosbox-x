@@ -173,7 +173,8 @@ STEPS = [
                             "loaded"),
     Step("is paint", "screen_map_find", {}, found("paint: freehand")),
     moves("open Color", ([click("color", "down")], "color menu")),
-    moves("choose Palette", ([click("palette", "up"), frames(DRAWN_FRAMES)], "palette")),
+    moves("choose Palette", ([click("palette", "up"), {"op": "run_to", "screen": "palette"}],
+                             "palette")),
     # The press and the release are each posted over retraces of their own, and the program's
     # repeat climbs red's 21 steps to the top inside them; `mixed` reads the DAC to prove it.
     Step("mix", "perform", {"steps": [click("brown"), click("red_up", "down"),

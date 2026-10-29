@@ -43,10 +43,7 @@ Example, from a live run:
     {
       "ref": "8000:0100",
       "by": "address",
-      "cpu": {
-        "available": false,
-        "why": "a DOS machine has one cpu, and every row acts on it"
-      },
+      "cpu": {"available": false, "why": "a DOS machine has one cpu, and every row acts on it"},
       "created_at": "2026-10-29T04:45:56+00:00",
       "origin": "2026-10-29T04:45:52+00:00#6382.1",
       "inherited": false,
@@ -148,10 +145,7 @@ Example, from a live run:
   "comment": {
     "ref": "8000:0100",
     "by": "address",
-    "cpu": {
-      "available": false,
-      "why": "a DOS machine has one cpu, and every row acts on it"
-    },
+    "cpu": {"available": false, "why": "a DOS machine has one cpu, and every row acts on it"},
     "created_at": "2026-10-29T04:45:56+00:00",
     "origin": "2026-10-29T04:45:52+00:00#6382.1",
     "inherited": false,

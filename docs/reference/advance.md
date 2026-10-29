@@ -3,7 +3,7 @@
 <!-- scry-reference:begin run_to -->
 ## `run_to`
 
-*Run to a place, with a control*
+*Run to a place or a mapped screen*
 
 ```text
 run_to(ref="", control="", screen="", seconds=30.0)
@@ -19,9 +19,9 @@ block, `note` says so.
 
 `screen`: a mapped screen's name instead of `ref` (exactly one). With an `anchor`, run to it (`control`
 required): a `verified` map judges it there (`stale_map` when it no longer holds), a
-`consolidated` one takes it as shown. With none, a frame at a time until the map names it,
-within `seconds`; no `control`. Reply: `screen` (`screen`, `layer`, `mode`, `judged`),
-`frames` run. Refused: an unmapped screen (`unknown_ref`).
+`consolidated` one takes it as shown. With none, a retrace (a frame, on MAME) at a time until the map names it,
+within `seconds`; a `control` is refused there (`bad_argument`). Reply: `screen` (`screen`, `layer`,
+`mode`, `judged`), `frames` run. Refused: an unmapped screen (`unknown_ref`).
 
 Reply: `verdict` (`TARGET`, `OTHER_STOP`, `TIMEOUT`), `target_disarmed`, `control_hits`,
 `controls` (`ref`, `at`, `hits_in_run`; a run to a ref or an anchor), `frames` (a screen with
@@ -80,12 +80,7 @@ Example, from a live run:
   "target_disarmed": true,
   "control_hits": 84,
   "controls": [
-    {
-      "ref": "0814:0130",
-      "at": "0814:0130",
-      "hits_in_run": 84,
-      "removed": true
-    }
+    {"ref": "0814:0130", "at": "0814:0130", "hits_in_run": 84, "removed": true}
   ],
   "note": "the 3 s bound ran out and the run was interrupted at 0814:00000130, and not at 0000:0003 If 0000:0003 is in ROM (a BIOS or option-ROM segment such as F000), that is why: a code breakpoint in ROM is acknowledged, appears in BPLIST, and never ... (288 characters)",
   "frame": 138,
@@ -122,14 +117,8 @@ Example, from a live run:
     "flow": "branch",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": {"available": false, "why": "no symbol table is loaded"},
+    "delta": {"available": false, "why": "no symbol table is loaded"}
   }
 }
 ```
@@ -139,7 +128,7 @@ The breakpoint it created is removed on every outcome, because `BP` is persisten
 would silently stop the next `resume` at a place no declaration names; it looks the index up again,
 because `BPDEL` renumbers.
 
-**A dynamic core is refused, not waited out.** Its recompiled blocks run past a code breakpoint without checking it, so a `run_to` there would arrive at nothing and read as "never reached". `start` says so in its `note` when the conf's `[cpu] core=` or a `-set "cpu core=..."` flag selects it, and `run_to` and `breakpoint_at` refuse with `no_channel` naming `start(flags=["-set", "cpu core=normal"])`. `auto` and `normal` are not refused.
+**A dynamic core is said, not waited out in silence.** Its recompiled blocks run past a code breakpoint without checking it, so a `run_to` there could arrive at nothing and read as "never reached". `start` carries a `note` saying so when the conf's `[cpu] core=` or a `-set "cpu core=..."` flag selects it, and so do the replies of `run_to` and `breakpoint_at`, naming `start(flags=["-set", "cpu core=normal"])`. `auto` and `normal` are not noted.
 
 **A control turns a silence into a measurement.** A `TIMEOUT` with zero control hits is
 `control_silent`, not "it did not arrive": nothing was proved about the target, the shape of the
@@ -232,12 +221,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": 87889
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 87889},
   "stop_seq": 7,
   "instruction": {
     "address": "0814:00000130",
@@ -246,14 +230,8 @@ Example, from a live run:
     "flow": "branch",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": {"available": false, "why": "no symbol table is loaded"},
+    "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "emulated_before_s": 1.9731157000000001,
   "emulated_after_s": 1.9747000000000001,
@@ -356,12 +334,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": 88432
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 88432},
   "stop_seq": 8,
   "instruction": {
     "address": "0814:00000130",
@@ -370,14 +343,8 @@ Example, from a live run:
     "flow": "branch",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": {"available": false, "why": "no symbol table is loaded"},
+    "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "verdict": "ELAPSED",
   "trace": {
@@ -571,17 +538,9 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "no declared code breakpoint at F000:0000FEA6: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": 6075
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 6075},
   "stop_seq": 5,
-  "instruction": {
-    "available": false,
-    "why": "the bytes at F000:0000FEA6 (FE...) start no instruction"
-  }
+  "instruction": {"available": false, "why": "the bytes at F000:0000FEA6 (FE...) start no instruction"}
 }
 ```
 <!-- scry-reference:end step -->

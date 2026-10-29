@@ -205,18 +205,9 @@ Example, from a live run:
   "stub": "/path/to/scry-dosbox-x/guest/SCRY.COM",
   "input_port": 58293,
   "background": true,
-  "presence": {
-    "available": false,
-    "why": "a session started without `shared` has no window to draw on"
-  },
+  "presence": {"available": false, "why": "a session started without `shared` has no window to draw on"},
   "declarations": {
-    "rearm": {
-      "rearmed": [],
-      "stale": [],
-      "unresolved": [],
-      "ambiguous": [],
-      "unarmable": []
-    }
+    "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   }
 }
 ```
@@ -293,16 +284,8 @@ Example, from a live run:
 {
   "summary": "status: no session",
   "status": "ok",
-  "last_stop": {
-    "available": false,
-    "why": "this session has not stopped yet"
-  },
-  "pending": {
-    "arm": [],
-    "disarm": 0,
-    "symbols_load": false,
-    "base_remeasure": false
-  },
+  "last_stop": {"available": false, "why": "this session has not stopped yet"},
+  "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
   "presence": false
 }
 ```

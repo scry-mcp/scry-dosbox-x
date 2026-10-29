@@ -122,7 +122,8 @@ proves the program reacted, as in `send_keys`.
 screen, instead of `x`, `y`. `action="drag"` presses at that place and releases at `to_x`,
 `to_y`, with the move between. A stopped machine is run as for `send_keys`; under a map that
 declares the program's own pointer, a move there nudges the driver until that pointer is on
-the place and `arrived` judges it (`pointer.program`).
+the place and `arrived` judges it (`pointer.program`, unavailable with its reason on a running
+guest, `units="mouse"` or a mode of unknown size). A drag's end is not steered.
 
 Refused: no move and no button, half a move, a place off the screen, no stub, a stopped
 machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"`, a drag without
@@ -194,18 +195,8 @@ Example, from a live run:
   "units": "screen",
   "route": "guest",
   "pointer": {
-    "screen": {
-      "x": 0,
-      "y": 0,
-      "width": 80,
-      "height": 25
-    },
-    "mouse": {
-      "x": 0,
-      "y": 0,
-      "max_x": 639,
-      "max_y": 199
-    },
+    "screen": {"x": 0, "y": 0, "width": 80, "height": 25},
+    "mouse": {"x": 0, "y": 0, "max_x": 639, "max_y": 199},
     "buttons": [],
     "bios_mode": "0x03"
   },
@@ -225,9 +216,9 @@ Example, from a live run:
 
 `target` is explained in [Screen maps](files.md#screen-maps).
 
-`pointer` carries `screen` (`x`, `y`, `width`, `height`; unavailable in an unmapped mode), `mouse` (`x`, `y`, `max_x`, `max_y`), `buttons`, `bios_mode`, and under a VBE mode `vbe_mode`. `screen` units are character cells in a text mode and pixels in a graphics one. Under a VBE mode the BIOS mode byte holds the emulated card's own number, which says nothing portable, so the stub asks VBE itself for the mode and its resolution (INT 10h 4F03h, 4F01h) and the units are that resolution, in pixels or, for a VBE text mode, in cells. Each unit is a span of the driver's coordinates: the move aims at the middle of the span, because the driver rounds to its own granularity and a program divides its range back out (Deluxe Paint sets eight coordinates a pixel and divides by eight), so the span's first coordinate can land in the unit before. `arrived` is judged in the units asked: any coordinate in the span is the unit, and it is false when the driver's rounding or a program's own range put the pointer in another one; `asked` then gives the driver coordinates sent. `double` is two clicks a tick apart; a button with no `x`, `y` acts where the pointer is, and a move and a button in one call move first. A read-back that fails after the commands went in is INVALID with `delivered: true`, so nothing is sent twice. With no `logfile` the mouse goes in unchecked.
+`pointer` carries `screen` (`x`, `y`, `width`, `height`; unavailable in an unmapped mode), `mouse` (`x`, `y`, `max_x`, `max_y`), `buttons`, `bios_mode`, under a VBE mode `vbe_mode`, and under a map that declares the program's pointer `program` (`x`, `y`, `corrections` before the press; unavailable, saying why, when it was not read). `screen` units are character cells in a text mode and pixels in a graphics one. Under a VBE mode the BIOS mode byte holds the emulated card's own number, which says nothing portable, so the stub asks VBE itself for the mode and its resolution (INT 10h 4F03h, 4F01h) and the units are that resolution, in pixels or, for a VBE text mode, in cells. Each unit is a span of the driver's coordinates: the move aims at the middle of the span, because the driver rounds to its own granularity and a program divides its range back out (Deluxe Paint sets eight coordinates a pixel and divides by eight), so the span's first coordinate can land in the unit before. `arrived` is judged in the units asked: any coordinate in the span is the unit, and it is false when the driver's rounding or a program's own range put the pointer in another one; `asked` then gives the driver coordinates sent. `double` is two clicks a tick apart; a button with no `x`, `y` acts where the pointer is, and a move and a button in one call move first. A read-back that fails after the commands went in is INVALID with `delivered: true`, so nothing is sent twice. With no `logfile` the mouse goes in unchecked.
 
-**The driver's pointer is the one placed.** A program that keeps its own pointer from the motion counters alone moves with the motion but never reads the driver's position, so its pointer starts where it already was and stops at the edge of its own range: `arrived` judges the driver's pointer and cannot see the program's. Allegro's default DOS mouse driver works that way; with `mouse = I33` in the program's `allegro.cfg` it reads the driver and sets the range to its screen, eight coordinates a pixel, and is pointed at by pixel like any other.
+**The driver's pointer is the one placed.** A program that keeps its own pointer from the motion counters alone moves with the motion but never reads the driver's position, so its pointer starts where it already was and stops at the edge of its own range: `arrived` judges the driver's pointer, which is all it can see unless the screen map declares where the program keeps its own (Screen maps, *A program that keeps a pointer of its own*). Allegro's default DOS mouse driver works that way; with `mouse = I33` in the program's `allegro.cfg` it reads the driver and sets the range to its screen, eight coordinates a pixel, and is pointed at by pixel like any other.
 
 <!-- scry-reference:begin drive -->
 ## `drive`
@@ -276,9 +267,7 @@ Example, from a live run:
 ```json
 {
   "act": [
-    {
-      "op": "status"
-    }
+    {"op": "status"}
   ]
 }
 ```
@@ -308,36 +297,17 @@ Example, from a live run:
             "since_s": 0.1,
             "wall_at": "2026-10-29T04:45:56+00:00"
           },
-          "pending": {
-            "arm": [],
-            "disarm": 0,
-            "symbols_load": false,
-            "base_remeasure": false
-          },
+          "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
           "cpu_mode": "real",
           "pc": "0814:00000130",
-          "declarations": {
-            "breakpoints": 0,
-            "watches": 0,
-            "regpoints": 0
-          },
-          "presence": {
-            "available": false,
-            "why": "a session started without `shared` has no window to draw on"
-          },
-          "session": {
-            "alive": true,
-            "running": false,
-            "altered": true
-          }
+          "declarations": {"breakpoints": 0, "watches": 0, "regpoints": 0},
+          "presence": {"available": false, "why": "a session started without `shared` has no window to draw on"},
+          "session": {"alive": true, "running": false, "altered": true}
         }
       }
     ],
     "steps_completed": 1,
-    "failed_at": {
-      "available": false,
-      "why": "no step failed"
-    },
+    "failed_at": {"available": false, "why": "no step failed"},
     "held": 0
   },
   "verify": {

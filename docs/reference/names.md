@@ -79,13 +79,7 @@ Example, from a live run:
   "base": 32768,
   "limit": -1,
   "descriptor": -1,
-  "declarations": {
-    "rearmed": [],
-    "stale": [],
-    "unresolved": [],
-    "ambiguous": [],
-    "unarmable": []
-  },
+  "declarations": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []},
   "pending": false,
   "checked": {
     "available": false,

@@ -133,10 +133,7 @@ Example, from a live run:
       "single": false,
       "request_issr": false,
       "vector_base": "0x08",
-      "active_irq": {
-        "available": false,
-        "why": "no line is in service"
-      },
+      "active_irq": {"available": false, "why": "no line is in service"},
       "isr": "0x00",
       "isrr": "0xFF",
       "isr_ignore": "0x00"
@@ -151,30 +148,15 @@ Example, from a live run:
       "single": false,
       "request_issr": false,
       "vector_base": "0x70",
-      "active_irq": {
-        "available": false,
-        "why": "no line is in service"
-      },
+      "active_irq": {"available": false, "why": "no line is in service"},
       "isr": "0x00",
       "isrr": "0xFF",
       "isr_ignore": "0x00"
     }
   ],
   "irqs": [
-    {
-      "irq": 0,
-      "vector": "0x08",
-      "requested": false,
-      "masked": false,
-      "in_service": false
-    },
-    {
-      "irq": 1,
-      "vector": "0x09",
-      "requested": false,
-      "masked": false,
-      "in_service": false
-    },
+    {"irq": 0, "vector": "0x08", "requested": false, "masked": false, "in_service": false},
+    {"irq": 1, "vector": "0x09", "requested": false, "masked": false, "in_service": false},
     {
       "irq": 2,
       "vector": "0x0A",
@@ -183,27 +165,9 @@ Example, from a live run:
       "in_service": false,
       "cascade": true
     },
-    {
-      "irq": 3,
-      "vector": "0x0B",
-      "requested": false,
-      "masked": true,
-      "in_service": false
-    },
-    {
-      "irq": 4,
-      "vector": "0x0C",
-      "requested": false,
-      "masked": true,
-      "in_service": false
-    },
-    {
-      "irq": 5,
-      "vector": "0x0D",
-      "requested": false,
-      "masked": true,
-      "in_service": false
-    },
+    {"irq": 3, "vector": "0x0B", "requested": false, "masked": true, "in_service": false},
+    {"irq": 4, "vector": "0x0C", "requested": false, "masked": true, "in_service": false},
+    {"irq": 5, "vector": "0x0D", "requested": false, "masked": true, "in_service": false},
     "... 10 more"
   ]
 }

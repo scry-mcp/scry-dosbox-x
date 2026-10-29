@@ -14,6 +14,8 @@ from scry_core.reply_contract import Invalid
 SYNC, ACK = 0xA5, 0x5A
 OP_REPORT, OP_KEY = ord("R"), ord("K")
 EXTENDED = 0xE0
+#: The release of the fake shift that follows an extended prefix, harmless to a program.
+FAKE_SHIFT_BREAK = 0xAA
 #: The stub answers the moment a frame is whole; a guest silent this long is refused.
 ACK_WAIT_S = 1.0
 SENDS = 3
@@ -66,10 +68,12 @@ def owed_breaks(written: list[bytes]) -> list[bytes]:
         elif key not in down:
             down.append(key)
     owed: list[bytes] = []
-    for extended, code in reversed(down):
-        if extended:
+    for prefixed, code in reversed(down):
+        if prefixed:
             owed.append(bytes((OP_KEY, EXTENDED)))
         owed.append(bytes((OP_KEY, code | 0x80)))
+    if extended:
+        owed.append(bytes((OP_KEY, FAKE_SHIFT_BREAK)))
     return owed
 
 

@@ -553,3 +553,9 @@ def test_a_dropped_first_frame_to_a_stub_whose_last_sequence_is_its_own_is_still
     loaded.unprove()
     loaded.send([b"K\x1e"])
     assert stub.carried[-1:] == [b"K\x1e"] and b"K\x1e" not in stub.carried[:-1], stub.carried
+
+
+def test_a_prefix_whose_key_never_went_out_is_completed_with_the_fake_shift_break() -> None:
+    assert link.owed_breaks([b"K\xe0"]) == [b"K\xaa"]
+    assert link.owed_breaks([b"K\xe0", b"K\x48"]) == [b"K\xe0", b"K\xc8"]
+    assert link.owed_breaks([b"K\xe0", b"K\x48", b"K\xe0"]) == [b"K\xe0", b"K\xc8", b"K\xaa"]

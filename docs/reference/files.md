@@ -164,9 +164,10 @@ seconds, default the whole file.
 `sample_rate_hz`, `channels`, `bits`, `pcm_sha256`.
 
 `diff`: `a` against the reference `b`, of one format; `align` (default true) meets the
-onsets, then the waveforms. Reply: `exact`, `snr_db`, `class` (`exact`; `inaudible` 60 dB or
-more; `audible` 30 to 60; `different`), `envelope_correlation` (64-window envelopes),
-`onset_delta_ms`, `length_delta_samples`, `aligned_by_samples`.
+onsets, then the waveforms; false compares from the starts. Reply: `exact`, `snr_db`,
+`class` (`exact`; `inaudible` 60 dB or more; `audible` 30 to 60; `different`),
+`envelope_correlation` (64-window envelopes), `onset_delta_ms`, `length_delta_samples`,
+`aligned_by_samples`.
 
 Refused: an argument the method does not take; `control_silent` when both are silent.
 
@@ -228,10 +229,7 @@ Example, from a live run:
       "silent": false,
       "silence_spans": {
         "count": 0,
-        "first": {
-          "available": false,
-          "why": "no silence in the window"
-        }
+        "first": {"available": false, "why": "no silence in the window"}
       },
       "onset_s": 0.0,
       "clipping_run": 5,
@@ -244,10 +242,7 @@ Example, from a live run:
       "silent": false,
       "silence_spans": {
         "count": 0,
-        "first": {
-          "available": false,
-          "why": "no silence in the window"
-        }
+        "first": {"available": false, "why": "no silence in the window"}
       },
       "onset_s": 0.0,
       "clipping_run": 5,
@@ -309,9 +304,7 @@ Example, from a live run:
   "status": "ok",
   "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/Y/n1-dosio/OUT.TXT",
   "state": "written",
-  "before": {
-    "exists": false
-  },
+  "before": {"exists": false},
   "bytes": 4,
   "sha256": "580175b2969134a0d8c6f325b442c6d25cf5b10f0643150ed45ffd3a8905bcba"
 }

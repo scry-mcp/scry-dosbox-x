@@ -226,23 +226,11 @@ Example, from a live run:
     {
       "seg_off": "F000:0000FEA5",
       "via": "stop",
-      "call": {
-        "available": false,
-        "why": "the stop itself: no call leads to it"
-      },
-      "bp": {
-        "available": false,
-        "why": "no frame was read beside it"
-      },
+      "call": {"available": false, "why": "the stop itself: no call leads to it"},
+      "bp": {"available": false, "why": "no frame was read beside it"},
       "addr": "0x000ffea5",
-      "symbol": {
-        "available": false,
-        "why": "no symbol table is loaded"
-      },
-      "delta": {
-        "available": false,
-        "why": "no symbol table is loaded"
-      }
+      "symbol": {"available": false, "why": "no symbol table is loaded"},
+      "delta": {"available": false, "why": "no symbol table is loaded"}
     }
   ],
   "truncated": false,
@@ -359,11 +347,7 @@ Example, from a live run:
   "ref": "8000:0000",
   "seg_off": "8000:00000000",
   "length": 16,
-  "span": {
-    "from": "8000:00000000",
-    "length": 16,
-    "source": "ref+length"
-  },
+  "span": {"from": "8000:00000000", "length": 16, "source": "ref+length"},
   "hits": ["8000:00000000", "8000:00000001", "8000:00000002", "8000:00000003", "8000:00000004", "8000:00000005", "... 10 more"],
   "hits_total": 16,
   "truncated": false
@@ -634,88 +618,27 @@ Example, from a live run:
     "... 1 more"
   ],
   "devs": [
-    {
-      "header": "0071:0048",
-      "attr": "8004",
-      "strat": "0000",
-      "intr": "0000",
-      "name": "NUL"
-    },
-    {
-      "header": "00F9:0000",
-      "attr": "8013",
-      "strat": "FFFF",
-      "intr": "FFFF",
-      "name": "CON"
-    }
+    {"header": "0071:0048", "attr": "8004", "strat": "0000", "intr": "0000", "name": "NUL"},
+    {"header": "00F9:0000", "attr": "8013", "strat": "FFFF", "intr": "FFFF", "name": "CON"}
   ],
   "kern": [
-    {
-      "seg": "0070",
-      "size_bytes": 16,
-      "what": "DOS_IHSEG"
-    },
-    {
-      "seg": "0071",
-      "size_bytes": 800,
-      "what": "DOS_INFOBLOCK_SEG"
-    },
-    {
-      "seg": "00a3",
-      "size_bytes": 1376,
-      "what": "DOS_SDA_SEG"
-    },
-    {
-      "seg": "00f9",
-      "size_bytes": 64,
-      "what": "DOS_CONDRV_SEG"
-    },
-    {
-      "seg": "00fd",
-      "size_bytes": 256,
-      "what": "DOS_CDA_SEG"
-    },
-    {
-      "seg": "010d",
-      "size_bytes": 64,
-      "what": "dos.tables.tempdta"
-    },
+    {"seg": "0070", "size_bytes": 16, "what": "DOS_IHSEG"},
+    {"seg": "0071", "size_bytes": 800, "what": "DOS_INFOBLOCK_SEG"},
+    {"seg": "00a3", "size_bytes": 1376, "what": "DOS_SDA_SEG"},
+    {"seg": "00f9", "size_bytes": 64, "what": "DOS_CONDRV_SEG"},
+    {"seg": "00fd", "size_bytes": 256, "what": "DOS_CDA_SEG"},
+    {"seg": "010d", "size_bytes": 64, "what": "dos.tables.tempdta"},
     "... 14 more"
   ],
   "xms": [],
   "ems": [
-    {
-      "handle": 0,
-      "addr": "0x00110000",
-      "size_bytes": 393216,
-      "name": ""
-    }
+    {"handle": 0, "addr": "0x00110000", "size_bytes": 393216, "name": ""}
   ],
   "ems_pages": [
-    {
-      "handle": "--",
-      "page": "0/",
-      "start": "000e0000",
-      "end": "000e3fff"
-    },
-    {
-      "handle": "--",
-      "page": "1/",
-      "start": "000e4000",
-      "end": "000e7fff"
-    },
-    {
-      "handle": "--",
-      "page": "2/",
-      "start": "000e8000",
-      "end": "000ebfff"
-    },
-    {
-      "handle": "--",
-      "page": "3/",
-      "start": "000ec000",
-      "end": "000effff"
-    }
+    {"handle": "--", "page": "0/", "start": "000e0000", "end": "000e3fff"},
+    {"handle": "--", "page": "1/", "start": "000e4000", "end": "000e7fff"},
+    {"handle": "--", "page": "2/", "start": "000e8000", "end": "000ebfff"},
+    {"handle": "--", "page": "3/", "start": "000ec000", "end": "000effff"}
   ],
   "emu_mem": {
     "a20_gate": "ON",
@@ -734,33 +657,12 @@ Example, from a live run:
     "vm": 0,
     "iopl": 3,
     "nt": 1,
-    "gdtr": {
-      "base": "00000000",
-      "limit": "0000FFFF"
-    },
-    "idt": {
-      "base": "00000000",
-      "limit": "000003FF"
-    },
-    "tr": {
-      "selector": "0000",
-      "base": "000EF000",
-      "limit": "0000CA60*1"
-    },
-    "ldtr": {
-      "selector": "0000",
-      "base": "000EF000",
-      "limit": "0000CA60*1"
-    }
+    "gdtr": {"base": "00000000", "limit": "0000FFFF"},
+    "idt": {"base": "00000000", "limit": "000003FF"},
+    "tr": {"selector": "0000", "base": "000EF000", "limit": "0000CA60*1"},
+    "ldtr": {"selector": "0000", "base": "000EF000", "limit": "0000CA60*1"}
   },
-  "counts": {
-    "mcbs": 7,
-    "devs": 2,
-    "kern": 20,
-    "xms": 0,
-    "ems": 1,
-    "ems_pages": 4
-  },
+  "counts": {"mcbs": 7, "devs": 2, "kern": 20, "xms": 0, "ems": 1, "ems_pages": 4},
   "sources": {
     "mcbs": ["DOS MCBS"],
     "devs": ["DOS DEVS"],
@@ -850,19 +752,10 @@ Example, from a live run:
       "number": 33,
       "seg_off": "F000:0000D100",
       "addr": "0x000fd100",
-      "bios_mem": {
-        "start": "000fca00",
-        "end": "000fdfff",
-        "status": "ALLOC DYN",
-        "what": "DOSBox callback area"
-      }
+      "bios_mem": {"start": "000fca00", "end": "000fdfff", "status": "ALLOC DYN", "what": "DOSBox callback area"}
     }
   ],
-  "counts": {
-    "vectors": 256,
-    "held": 113,
-    "named": 0
-  },
+  "counts": {"vectors": 256, "held": 113, "named": 0},
   "sources": {
     "vectors": ["INTVEC"],
     "mcbs": ["DOS MCBS"],
@@ -1246,10 +1139,7 @@ Example, from a live run:
   "size": [80, 25],
   "cells": "rgb",
   "match": [
-    {
-      "crop": [0, 0, 8, 1],
-      "signature": "ed0b26b4f25ef236"
-    }
+    {"crop": [0, 0, 8, 1], "signature": "ed0b26b4f25ef236"}
   ],
   "controls": 0,
   "replaced": false,

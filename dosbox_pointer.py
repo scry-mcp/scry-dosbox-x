@@ -20,13 +20,36 @@ class Steered:
     corrections: int
 
 
+def locate(declared: Pointer, place: Callable[[str], tuple[int, int]]) -> tuple[
+        tuple[int, int], tuple[int, int]]:
+    """Both refs resolved, before anything is sent."""
+    return place(declared.x), place(declared.y)
+
+
 def program_at(read: Callable[[int, int, int], bytes], declared: Pointer,
-               place: Callable[[str], tuple[int, int]]) -> tuple[int, int]:
-    """The program's pointer in its own units, little-endian."""
-    def axis(ref: str) -> int:
-        seg, off = place(ref)
-        return int.from_bytes(read(seg, off, declared.bytes), "little")
-    return axis(declared.x), axis(declared.y)
+               places: tuple[tuple[int, int], tuple[int, int]]) -> tuple[int, int]:
+    """The program's pointer in its own units, a signed little-endian word."""
+    def axis(at: tuple[int, int]) -> int:
+        return int.from_bytes(read(at[0], at[1], declared.bytes), "little", signed=True)
+    return axis(places[0]), axis(places[1])
+
+
+def arrived(steered: Steered | None, driver_landed: bool, drag: bool) -> bool:
+    """A steered move arrives where the program's pointer is; a drag also where its end landed."""
+    if steered is None:
+        return driver_landed
+    return steered.arrived and (driver_landed or not drag)
+
+
+def unsteered(parked: bool, moved: bool, units: str, sized: bool) -> str | None:
+    """Why a map's declared pointer was not read for this move, or None when it was."""
+    if not moved:
+        return None
+    if not parked:
+        return "the guest runs, and a running guest's memory cannot be read"
+    if units != "screen":
+        return "units='mouse' aims at the driver, not the program"
+    return None if sized else "the mode's size is unknown, so there is no ratio to nudge by"
 
 
 def steer(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
@@ -37,7 +60,7 @@ def steer(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
     corrections = 0
     rx, ry = ratio
     while seen != aim and corrections < CORRECTIONS:
-        dx, dy = round((aim[0] - seen[0]) * rx), round((aim[1] - seen[1]) * ry)
+        dx, dy = _nudge(aim[0] - seen[0], rx), _nudge(aim[1] - seen[1], ry)
         nudge(dx, dy)
         corrections += 1
         moved = seen_now()
@@ -47,6 +70,11 @@ def steer(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
         ry = _learnt(ry, dy, moved[1] - seen[1])
         seen = moved
     return Steered(seen, seen == aim, corrections)
+
+
+def _nudge(gap: int, ratio: float) -> int:
+    """`gap` in driver units, at least one when there is a gap."""
+    return round(gap * ratio) or (gap > 0) - (gap < 0)
 
 
 def _learnt(ratio: float, nudged: int, moved: int) -> float:

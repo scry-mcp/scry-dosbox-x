@@ -172,12 +172,12 @@ def test_only_a_caller_that_may_meet_the_retrace_stop_blames_it(tmp_path: Path) 
 
 
 def _stopped_on(fake: Any, raw: bytes, *, held: list[dict[str, str]] | None = None,
-                eax: str = "00000000") -> dict[str, Any]:
+                eax: str = "00000000", release: bool = True) -> dict[str, Any]:
     """`stop_reply` for a machine stopped with `raw` at CS:EIP and nothing declared there."""
     fake.mem[(int(fake.cs, 16), int(fake.eip, 16))] = raw
     fake.rows = list(held or [])
     fake.registers = lambda: {"CS": fake.cs, "DS": fake.ds, "EIP": fake.eip, "EAX": eax}
-    return running.stop_reply(fake)
+    return running.stop_reply(fake, retrace_may_stop=release)
 
 
 def test_a_stop_at_the_guests_own_int3_names_the_row_that_stops_it(tmp_path: Path) -> None:
@@ -189,6 +189,22 @@ def test_a_stop_at_the_guests_own_int3_names_the_row_that_stops_it(tmp_path: Pat
     assert dstate.STATE.as_of()["cause"] == got["cause"]  # type: ignore[index]
     twin = _stopped_on(fake, b"\xCD\x03", held=[{"entry": "BPINT 03"}])
     assert "BPINT 03" in twin["cause"], twin["cause"]
+
+
+def test_a_step_onto_an_int_a_held_row_watches_is_not_blamed_on_the_row(tmp_path: Path) -> None:
+    """Only a release can stop on a row: a step that lands there did not fire it."""
+    fake = _names(tmp_path)
+    got = _stopped_on(fake, b"\xCD\x21", held=[{"entry": "BPINT 21"}], release=False)
+    assert got["cause"].startswith("no declared code breakpoint"), got["cause"]
+
+
+def test_a_stop_found_at_first_contact_names_the_row_too(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    fake.mem[(int(fake.cs, 16), int(fake.eip, 16))] = b"\xCC"
+    fake.rows = [{"entry": "BPINT 03"}]
+    running.observe_stop(fake)  # type: ignore[arg-type]
+    cause = dstate.STATE.found_stop_last["cause"]
+    assert "BPINT 03" in cause, cause
 
 
 def test_an_int3_no_held_row_watches_is_not_blamed_on_one(tmp_path: Path) -> None:

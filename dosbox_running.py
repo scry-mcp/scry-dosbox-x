@@ -34,9 +34,16 @@ def observe_stop(session: ds.Session) -> None:
     except ds.Invalid:
         return                                  # an unreadable stop: the next contact tries again
     machine = (where["mode"], registers)
-    STATE.remember_stop(session, where, registers, held,
-                   arming.attribute_stop(session, where=where, machine=machine,
-                                         retrace_may_stop=True, held=held))
+    attribution = arming.attribute_stop(session, where=where, machine=machine,
+                                        retrace_may_stop=True, held=held)
+    # The instruction is read only when a held interrupt row could be the cause.
+    picture = (code.stop_instruction(session, where, registers, comments.notes)
+               if any(b["entry"].startswith("BPINT ") for b in held) else None)
+    if picture is not None:
+        attribution = st.interrupt_stop(attribution, picture["instruction"], registers, held)
+    STATE.remember_stop(session, where, registers, held, attribution)
+    if picture is not None:
+        STATE.last_stop["picture"] = picture
     STATE.found_stop_last = {"stop_seq": STATE.last_stop["seq"], "pc": STATE.last_stop["at"],
                              "cause": st.cause(STATE.last_stop["attribution"])}
 
@@ -102,8 +109,9 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
     STATE.pending["drained_seq"] = STATE.last_stop["seq"]
     picture = STATE.last_stop["picture"] = code.stop_instruction(session, where, registers,
                                                                  comments.notes)
-    attribution = STATE.last_stop["attribution"] = st.interrupt_stop(
-        attribution, picture["instruction"], registers, held)
+    if retrace_may_stop and made_by is None:
+        attribution = STATE.last_stop["attribution"] = st.interrupt_stop(
+            attribution, picture["instruction"], registers, held)
     e9 = e9_block(session)
     frame = STATE.last_stop["frame"] = dbg.frame_at_stop(session)
     return st.reply(**{**base, **position(where, getattr(session, "paging", None))},

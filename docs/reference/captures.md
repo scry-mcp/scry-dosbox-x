@@ -373,12 +373,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": 88960
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 88960},
   "stop_seq": 10,
   "instruction": {
     "address": "0814:00000130",
@@ -387,14 +382,8 @@ Example, from a live run:
     "flow": "branch",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": {"available": false, "why": "no symbol table is loaded"},
+    "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "emulated_before_s": 1.9747018,
   "emulated_after_s": 2.003237,
@@ -523,12 +512,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": 91575
-  },
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 91575},
   "stop_seq": 11,
   "instruction": {
     "address": "0814:00000130",
@@ -537,14 +521,8 @@ Example, from a live run:
     "flow": "branch",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": {"available": false, "why": "no symbol table is loaded"},
+    "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "emulated_before_s": 2.003237,
   "emulated_after_s": 2.0317731,

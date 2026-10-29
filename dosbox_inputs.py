@@ -639,7 +639,8 @@ def _pointer(report: Report) -> dict[str, Any]:
             **({"vbe_mode": f"{report.vbe:#05x}"} if report.is_vbe() else {})}
 
 
-def _steer(session: ds.Session, parked: Retraces, program: Pointer, aim: tuple[int, int],
+def _steer(session: ds.Session, parked: Retraces, program: Pointer,
+           places: tuple[tuple[int, int], tuple[int, int]], aim: tuple[int, int],
            after: Report) -> tuple[Report, dpointer.Steered | None]:
     """The driver nudged until the program's own pointer is on `aim`; the report after the last
     nudge. A mode with no known size has no ratio to nudge by, and is left as it is."""
@@ -655,8 +656,7 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer, aim: tuple[i
         latest[0] = _report(session, parked)
     steered = dpointer.steer(
         aim,
-        lambda: dpointer.program_at(session.read_bytes, program,
-                                    lambda ref: placement.read_target(ref, "DS", session)),
+        lambda: dpointer.program_at(session.read_bytes, program, places),
         nudge, ((after.max_x + 1) / size[0], (after.max_y + 1) / size[1]))
     return latest[0], steered
 
@@ -713,6 +713,11 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         _still_the_screen(before, aimed)
     target = None if x is None or y is None else _target(before, x, y, units)
     end = None if to_x is None or to_y is None else _target(before, to_x, to_y, units)
+    sized = before.units() is not None
+    why_not = (None if program is None else
+               dpointer.unsteered(parked is not None, target is not None, units, sized))
+    places = (dpointer.locate(program, lambda ref: placement.read_target(ref, "DS", session))
+              if program is not None and target is not None and why_not is None else None)
 
     def post() -> dict[str, Any]:
         moves = [] if target is None else [move_command(*target)]
@@ -725,11 +730,11 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
             buttons = button_commands(button, action)
         steered: dpointer.Steered | None = None
         try:
-            if program is not None and parked is not None and moves and units == "screen":
+            if program is not None and places is not None and parked is not None:
                 assert x is not None and y is not None
                 _send(session, moves, parked)
                 after = _report(session, parked)
-                after, steered = _steer(session, parked, program, (x, y), after)
+                after, steered = _steer(session, parked, program, places, (x, y), after)
                 if buttons:
                     _send(session, buttons, parked)
                     after = _report(session, parked)
@@ -739,13 +744,15 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         except ds.Invalid as e:
             raise _delivered(e, parked) from None
         arrival = end or target
-        landed = (steered.arrived if steered is not None and not end else
-                  arrival is None or _landed(after, arrival, to_x if end else x,
-                                             to_y if end else y, units))
+        landed = dpointer.arrived(
+            steered, arrival is None or _landed(after, arrival, to_x if end else x,
+                                                to_y if end else y, units), end is not None)
         shown = _pointer(after)
         if steered is not None:
             shown["program"] = {"x": steered.seen[0], "y": steered.seen[1],
                                 "corrections": steered.corrections}
+        elif why_not is not None:
+            shown["program"] = unavailable(why_not)
         fields: dict[str, Any] = {"route": "guest", "pointer": shown,
                                   "arrived": landed, **_parked_fields(parked)}
         if target is not None:

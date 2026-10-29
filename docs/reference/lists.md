@@ -64,9 +64,7 @@ Example, from a live run:
 ```json
 {
   "steps": [
-    {
-      "op": "status"
-    }
+    {"op": "status"}
   ]
 }
 ```
@@ -95,36 +93,17 @@ Example, from a live run:
           "since_s": 0.1,
           "wall_at": "2026-10-29T04:45:56+00:00"
         },
-        "pending": {
-          "arm": [],
-          "disarm": 0,
-          "symbols_load": false,
-          "base_remeasure": false
-        },
+        "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
         "cpu_mode": "real",
         "pc": "0814:00000130",
-        "declarations": {
-          "breakpoints": 0,
-          "watches": 0,
-          "regpoints": 0
-        },
-        "presence": {
-          "available": false,
-          "why": "a session started without `shared` has no window to draw on"
-        },
-        "session": {
-          "alive": true,
-          "running": false,
-          "altered": true
-        }
+        "declarations": {"breakpoints": 0, "watches": 0, "regpoints": 0},
+        "presence": {"available": false, "why": "a session started without `shared` has no window to draw on"},
+        "session": {"alive": true, "running": false, "altered": true}
       }
     }
   ],
   "steps_completed": 1,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
+  "failed_at": {"available": false, "why": "no step failed"},
   "held": 0
 }
 ```

@@ -711,7 +711,7 @@ def step(count: Annotated[int, vocab.bounds(1, stepping.STEP_MAX)] = 1,
     return running.stop_or_base(session, not ran_away, out)
 
 
-@tool("Run to a place, with a control", summary=one_line.run_to, on_cancel="stop")
+@tool("Run to a place or a mapped screen", summary=one_line.run_to, on_cancel="stop")
 def run_to(ref: str = "", *, control: str = "", screen: str = "",
            seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
@@ -1439,7 +1439,8 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
     screen, instead of `x`, `y`. `action="drag"` presses at that place and releases at `to_x`,
     `to_y`, with the move between. A stopped machine is run as for `send_keys`; under a map that
     declares the program's own pointer, a move there nudges the driver until that pointer is on
-    the place and `arrived` judges it (`pointer.program`).
+    the place and `arrived` judges it (`pointer.program`, unavailable with its reason on a running
+    guest, `units="mouse"` or a mode of unknown size). A drag's end is not steered.
 
     Refused: no move and no button, half a move, a place off the screen, no stub, a stopped
     machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"`, a drag without

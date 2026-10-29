@@ -63,7 +63,8 @@ def _wav_fields(path: Path, ran: dict[str, Any]) -> dict[str, Any]:
                       "with the file", path=str(path))
     if head.samples == 0:
         raise Invalid("readback_refused", f"{path} holds no sample: the mixer wrote nothing over "
-                      "the run", path=str(path))
+                      "the run; check that the guest makes sound on a device this conf enables",
+                      path=str(path))
     before, after = ran.get("emulated_before_s"), ran.get("emulated_after_s")
     fields: dict[str, Any] = {}
     if isinstance(before, float) and isinstance(after, float):

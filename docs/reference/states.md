@@ -55,10 +55,7 @@ Example, from a live run:
       "saved_at": "2026-10-29 05:45"
     }
   ],
-  "working_slot": {
-    "available": false,
-    "why": "the emulator's own numbered slot has not been written"
-  }
+  "working_slot": {"available": false, "why": "the emulator's own numbered slot has not been written"}
 }
 ```
 <!-- scry-reference:end state_list -->

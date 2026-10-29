@@ -29,7 +29,7 @@ def run_to_screen(screen: str, seconds: float, progress: ds.Progress) -> dict[st
     session = live()
     got = screen_map.run_until(
         STATE.maps, screen,
-        lambda: retrace.run_for(session, 1, 0, seconds, progress, who="a run to a screen"),
+        lambda left: retrace.run_for(session, 1, 0, left, progress, who="a run to a screen"),
         folds.map_read(session), seconds)
     if got.get("status") != "ok":
         return got
