@@ -18,12 +18,11 @@ from dosbox_x_server_support import CASED_PATHS
 from scry_core.host_program import absolute as _abs
 from test_dosbox_x_session import _writer
 
-import dosbox_collect as dcollect
-import dosbox_debugger as dbg
-import dosbox_grammar as grammar
-import dosbox_launch as dlaunch
-import dosbox_session as ds
-import dosbox_stepping as stepping
+from scry_dosbox_x import collect as dcollect
+from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import grammar, stepping
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import session as ds
 
 
 def _writing(mode: str = "Real") -> tuple[Any, list[str], list[tuple[Any, ...]]]:
@@ -230,7 +229,7 @@ def test_a_gone_emulator_says_how_far_into_which_wait(monkeypatch: pytest.Monkey
 
 def test_a_new_session_starts_unaltered_unread_and_at_no_stop(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    import dosbox_process as dprocess
+    from scry_dosbox_x import process as dprocess
     monkeypatch.setattr(dprocess.Process, "_spawn", lambda self, launch: None)
     launch = _launch(tmp_path)
     ses = ds.Session(launch)

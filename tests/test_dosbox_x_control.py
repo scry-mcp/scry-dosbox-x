@@ -1,4 +1,4 @@
-"""The debugger channel's client (`dosbox_control`), held to a double that speaks the protocol
+"""The debugger channel's client (`control`), held to a double that speaks the protocol
 the emulator speaks: it dials the session's port and answers one `REQ` per line."""
 
 from __future__ import annotations
@@ -14,9 +14,9 @@ import pytest
 from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
-import dosbox_control as control
-import dosbox_launch as dlaunch
-import dosbox_session as ds
+from scry_dosbox_x import control
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import session as ds
 
 
 def _emulator(port: int, answer: Callable[[str], bytes | Iterable[bytes] | None],

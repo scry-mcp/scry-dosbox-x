@@ -32,8 +32,8 @@ from matrix_common import (
 )
 from scry_core import avi, presence, window_capture
 
-import dosbox_presence as dpresence  # isort: skip -- found through the path the matrix sets
-from dosbox_state import STATE  # isort: skip
+from scry_dosbox_x import presence as dpresence  # isort: skip -- found through the path the matrix sets
+from scry_dosbox_x.state import STATE  # isort: skip
 
 LEAK_VAR = "DOSBOX_X_LEAK_BINARY"
 STOCK_VAR = "DOSBOX_X_STOCK_BINARY"

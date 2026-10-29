@@ -16,8 +16,8 @@ from typing import Any
 import pytest
 from scry_core import guardian
 
-import dosbox_process as dprocess
-import dosbox_session as ds
+from scry_dosbox_x import process as dprocess
+from scry_dosbox_x import session as ds
 
 #: Cases about a SIGTERM and then a SIGKILL; Windows has no SIGKILL, and both terminate there.
 NO_SIGKILL = pytest.mark.skipif(sys.platform == "win32", reason="Windows has no SIGKILL")

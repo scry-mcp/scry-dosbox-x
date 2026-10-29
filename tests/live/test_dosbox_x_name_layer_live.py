@@ -15,9 +15,9 @@ from test_dosbox_x_entry_routes import (
     real_address,
 )
 
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 pytestmark = pytest.mark.live
 

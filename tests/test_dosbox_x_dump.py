@@ -24,13 +24,12 @@ from dosbox_x_server_support import (  # noqa: F401
 from scry_core.host_program import MODE_BITS, POSIX_NAMES
 from test_dosbox_x_machine import Bench
 
-import dosbox_collect as dcollect
-import dosbox_dump as dumping
-import dosbox_find as finder
-import dosbox_machine as machine
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import collect as dcollect
+from scry_dosbox_x import dump as dumping
+from scry_dosbox_x import find as finder
+from scry_dosbox_x import machine, server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 MEMDUMP = Path(__file__).parent / "fixtures" / "memdump"
 PROBE_PSP_LINEAR = 0x8140                # 0814:0000

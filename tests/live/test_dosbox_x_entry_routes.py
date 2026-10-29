@@ -9,9 +9,9 @@ import dpmi_guest as guest
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
 
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 pytestmark = pytest.mark.live
 

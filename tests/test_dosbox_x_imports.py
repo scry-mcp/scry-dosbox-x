@@ -8,7 +8,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-MODULES = sorted(p.stem for p in ROOT.glob("dosbox_*.py"))
+MODULES = sorted(f"scry_dosbox_x.{p.stem}" for p in (ROOT / "src" / "scry_dosbox_x").glob("*.py")
+                 if p.stem != "__init__")
 
 
 def test_the_modules_were_found() -> None:

@@ -35,11 +35,10 @@ from test_dosbox_x_comments import (
     refused,
 )
 
-import dosbox_comment_file as cf
-import dosbox_declarations as dec
-import dosbox_grammar as grammar
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import comment_file as cf
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import grammar, server
+from scry_dosbox_x import state as dstate
 
 #: A real-mode row placed at the park, which no batch describes; a protected-mode row made under
 #: a map, in the first batch's span; a protected-mode row past FFFF, in that span too, which the

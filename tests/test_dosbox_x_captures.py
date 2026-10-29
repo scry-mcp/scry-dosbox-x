@@ -11,10 +11,10 @@ from typing import Any
 import pytest
 from test_dosbox_x_session import fake_avi
 
-import dosbox_captures as caps
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import captures as caps
+from scry_dosbox_x import server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 
 def test_each_writer_is_kept_under_its_kind_once_and_a_refusal_or_a_reader_never(

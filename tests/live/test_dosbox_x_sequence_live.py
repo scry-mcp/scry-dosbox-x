@@ -9,7 +9,7 @@ import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
 from test_dosbox_x_entry_routes import reach_djgpp
 
-import dosbox_x_server as server
+from scry_dosbox_x import server
 
 pytestmark = pytest.mark.live
 

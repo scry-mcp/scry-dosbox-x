@@ -19,9 +19,9 @@ from typing import Any, cast
 import pytest
 from scry_core import guardian
 
-import dosbox_control as control
-import dosbox_launch as dlaunch
-import dosbox_session as ds
+from scry_dosbox_x import control
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import session as ds
 
 POSIX = pytest.mark.skipif(sys.platform == "win32", reason="Windows gives a console, not a tty")
 

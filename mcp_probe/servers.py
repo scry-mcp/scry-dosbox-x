@@ -1,8 +1,8 @@
 from pathlib import Path
 from types import ModuleType
 
-import dosbox_checks
-import dosbox_x_server
+from scry_dosbox_x import checks as dosbox_checks
+from scry_dosbox_x import server as dosbox_x_server
 
 ROOT = Path(__file__).resolve().parent.parent
 CAPTURED = ("dosbox-x",)

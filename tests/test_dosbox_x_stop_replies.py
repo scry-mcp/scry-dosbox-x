@@ -15,12 +15,8 @@ import pytest
 from dosbox_x_server_support import NamesFake, _names, clean_session  # noqa: F401
 from scry_core import reply_contract as contract
 
-import dosbox_arming as arming
-import dosbox_code as code
-import dosbox_comments as comments
-import dosbox_running as running
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import arming, code, comments, running, server
+from scry_dosbox_x import state as dstate
 
 
 def test_the_cpu_mode_says_paged_protected_or_which_mark_left_it_unplaced() -> None:
@@ -120,7 +116,7 @@ def test_a_fresh_state_answers_before_any_session(tmp_path: Path) -> None:
 # ------------------------------------------------------------- what a stop is said to be
 
 def _attributed(monkeypatch: pytest.MonkeyPatch, got: dict[str, Any]) -> None:
-    import dosbox_arming as arming
+    from scry_dosbox_x import arming
     monkeypatch.setattr(arming, "attribute_stop", lambda *a, **k: dict(got))
 
 
@@ -256,7 +252,7 @@ def test_a_running_guest_s_mode_points_at_last_stop(tmp_path: Path) -> None:
 
 
 def test_a_reply_off_the_record_evaluates_its_watches_against_that_stop(tmp_path: Path) -> None:
-    import dosbox_symbols as dsym
+    from scry_dosbox_x import symbols as dsym
     fake = _names(tmp_path, symbols=[dsym.Symbol("_v", 0x6024)])
     fake.mem[(0xAF, 0x6024)] = (7).to_bytes(4, "little")
     fake.mem[(0xAF, 0x6028)] = (9).to_bytes(4, "little")
@@ -305,7 +301,7 @@ def test_a_stop_the_cancelled_call_had_already_reached_is_named_as_that_call_s(
     """A cancel that lands with the guest at a stop nobody read (the call's own retrace or
     breakpoint) records that stop as the cancelled call's, in the words a cancelled call's stop
     is named with, as the stop it breaks in for is."""
-    import dosbox_mcp
+    from scry_dosbox_x import mcp as dosbox_mcp
     fake = _names(tmp_path)
     fake.stop_count = 1
     got = dosbox_mcp._stop_of_its_own(fake)  # type: ignore[arg-type]

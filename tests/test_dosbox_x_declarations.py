@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-import dosbox_declarations as dec
-import dosbox_session as ds
-import dosbox_symbols as sym
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import symbols as sym
 
 
 def _sym(name: str, offset: int, *, idle: bool = False) -> sym.Symbol:

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-import dosbox_symbols as sym
+from scry_dosbox_x import symbols as sym
 
 # Bytes DOSBox-X itself wrote for `IV 1234:5678 MYSYMBOL`, `IV 0:0 zero_lower` and a 36-char name
 # (`IV` uppercases and keeps 15), transcribed from `xxd` of the file its `SV` produced.

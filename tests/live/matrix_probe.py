@@ -54,7 +54,7 @@ from matrix_common import (
 )
 from matrix_ledger import Cell
 
-import dosbox_mcp
+from scry_dosbox_x import mcp as dosbox_mcp
 
 PROBE_COM = GUEST / "probe.com"
 #: A Borland real-mode map this package builds and commits: symbols to load on a guest that has
@@ -751,9 +751,9 @@ B_CELLS = cells(
     ("B scan 41 survivors cut by default", "scan filter: docstring, `limit` defaults to 40"),
     ("B scan start cell_bytes=3", "scan start: docstring, `cell_bytes` 1, 2 or 4"),
     ("B scan filter operator=~", "scan filter: docstring, the six operators"),
-    ("B step count=64", "the ceiling dosbox_stepping.STEP_MAX declares, REFERENCE's Advancing "
+    ("B step count=64", "the ceiling stepping.STEP_MAX declares, REFERENCE's Advancing "
                         "quotes; step docstring: instructions_completed is what landed"),
-    ("B step count=65", "the ceiling dosbox_session.STEP_MAX declares"),
+    ("B step count=65", "the ceiling session.STEP_MAX declares"),
     ("B step count=0", "step docstring: a count of instructions"),
     ("B step mode=sideways", "step docstring: into or over"),
     ("B log limit=400", "log docstring: limit 1..400"),

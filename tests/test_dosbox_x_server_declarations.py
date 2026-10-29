@@ -29,19 +29,15 @@ from scry_core import (
 )
 from scry_core import reply_contract as contract
 
-import dosbox_arming as arming
-import dosbox_code as dcode
-import dosbox_debugger as dbg
-import dosbox_declarations as dec
-import dosbox_launch as dlaunch
-import dosbox_mcp
-import dosbox_placement as placement
-import dosbox_running as running
-import dosbox_session as ds
-import dosbox_start_symbols as start_symbols
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import arming, placement, running, server, start_symbols
+from scry_dosbox_x import code as dcode
+from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import mcp as dosbox_mcp
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 
 def test_the_block_carries_each_alarm_while_it_holds_and_the_process_facts_ride_at_the_top(
@@ -230,7 +226,7 @@ def test_a_value_at_its_registers_width_is_taken(tmp_path: Path, condition: str)
 
 
 def test_the_flags_term_is_judged_on_all_32_bits_as_the_debugger_compares_them() -> None:
-    from dosbox_grammar import condition_holds
+    from scry_dosbox_x.grammar import condition_holds
     regs = {"EFLAGS": "00020202", "EAX": "00001234"}
     assert condition_holds("FLAGS==20202", regs) is True
     assert condition_holds("FLAGS==202", regs) is False
@@ -1599,7 +1595,7 @@ def test_a_watched_start_hands_dosbox_x_the_host_s_arguments_and_opens_with_none
     monkeypatch.setattr("scry_core.binaries.version", lambda *_a, **_k: "DOSBox-X (a stub)")
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
-    with mock.patch("dosbox_x_server.ds.Session", booted):
+    with mock.patch("scry_dosbox_x.server.ds.Session", booted):
         server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60, shared=True)
     assert seen and seen[0].window_flags == ["-set", "sdl display=1"], seen
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)

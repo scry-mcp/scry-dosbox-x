@@ -5,9 +5,7 @@ import asyncio
 import pytest
 from scry_core import reply_schema
 
-import dosbox_docs as docs
-import dosbox_replies as replies
-import dosbox_x_server as server
+from scry_dosbox_x import docs, replies, server
 
 
 def test_every_tool_publishes_each_field_as_its_value_or_unavailable() -> None:

@@ -30,7 +30,7 @@ from matrix_common import (
     videos,
 )
 
-import dosbox_grammar as grammar
+from scry_dosbox_x import grammar
 
 SCREEN_CONF = GUEST / "screen.conf"
 SCREEN_PROGRAM = "SCREEN.COM"

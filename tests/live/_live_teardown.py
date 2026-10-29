@@ -9,9 +9,9 @@ from typing import Any, cast
 import pytest
 from scry_core import guardian
 
-import dosbox_process as dprocess
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import process as dprocess
+from scry_dosbox_x import server
+from scry_dosbox_x import state as dstate
 
 
 def _drop() -> None:

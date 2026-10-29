@@ -16,26 +16,28 @@ from scry_core import scan_vocabulary as words
 from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
-import dosbox_capture_files as capture_files
-import dosbox_checks as checks
-import dosbox_code as code
-import dosbox_dac as vgadac
-import dosbox_declarations as dec
-import dosbox_find as finder
-import dosbox_folds as folds
-import dosbox_grammar as grammar
-import dosbox_hardware as hardware
-import dosbox_inputs as inputs
-import dosbox_launch as dlaunch
-import dosbox_logs as dlogs
-import dosbox_machine as machine
-import dosbox_placement as placement
-import dosbox_screen_pens as by_pens
-import dosbox_session as ds
-import dosbox_start_symbols as start_symbols
-import dosbox_stepping as stepping
-import dosbox_trace as tracing
-import dosbox_x_server as server
+from scry_dosbox_x import (
+    capture_files,
+    checks,
+    code,
+    folds,
+    grammar,
+    hardware,
+    inputs,
+    machine,
+    placement,
+    server,
+    start_symbols,
+    stepping,
+)
+from scry_dosbox_x import dac as vgadac
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import find as finder
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import screen_pens as by_pens
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import trace as tracing
 
 CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("log", "channel", dlogs.LOG_CHANNELS), ("log_wait", "channel", dlogs.LOG_CHANNELS),

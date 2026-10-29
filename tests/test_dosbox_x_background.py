@@ -10,10 +10,9 @@ from typing import Any
 import pytest
 from scry_core import host_args
 
-import dosbox_launch as dlaunch
-import dosbox_lifecycle as lifecycle
-import dosbox_session as ds
-import dosbox_x_server as server
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import lifecycle, server
+from scry_dosbox_x import session as ds
 
 
 @pytest.mark.parametrize(("background", "watched", "behind"), [
@@ -152,7 +151,7 @@ def test_host_arguments_dosbox_x_would_hang_on_refuse_the_watched_start_naming_t
 
 def test_host_arguments_that_refuse_are_refused_before_start_forgets_anything(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from dosbox_state import STATE
+    from scry_dosbox_x.state import STATE
     monkeypatch.setenv(host_args.VARIABLE, "-set sdl display=1")
     forgot: list[bool] = []
     monkeypatch.setattr(STATE, "forget_symbols", lambda: forgot.append(True))

@@ -10,7 +10,7 @@ from typing import Any
 from matrix_common import ENV, M, boot, cells, close_whatever, must, ok, refused, said, server
 from matrix_presence import MOUSE_CONF, MOUSE_PROGRAM, STOCK_VAR
 
-from dosbox_session import Session  # isort: skip -- found through the path the matrix sets
+from scry_dosbox_x.session import Session  # isort: skip -- found through the path the matrix sets
 
 S_CELLS = cells(
     ("S build_check answers the build with none of the fork's optional debugger commands",

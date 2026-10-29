@@ -39,8 +39,8 @@ def test_every_task_is_captured_and_judged_as_it_was() -> None:
 
 
 def test_the_probe_reads_the_server_the_suite_imports() -> None:
-    import dosbox_checks
-    import dosbox_x_server
+    from scry_dosbox_x import checks as dosbox_checks
+    from scry_dosbox_x import server as dosbox_x_server
 
     assert REPO.modules["dosbox-x"] is dosbox_x_server
     assert REPO.checks["dosbox-x"] is dosbox_checks.probe_check

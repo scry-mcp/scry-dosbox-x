@@ -28,14 +28,12 @@ from test_dosbox_x_live import (  # noqa: E402
     conf_that_does_not_exit,
 )
 
-import dosbox_grammar as grammar
-import dosbox_logs as dlogs
-import dosbox_machine as machine
-import dosbox_mcp
-import dosbox_process as dprocess
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import grammar, machine, server
+from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import mcp as dosbox_mcp
+from scry_dosbox_x import process as dprocess
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 pytestmark = LIVE_MARKS
 

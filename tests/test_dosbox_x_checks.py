@@ -1,4 +1,4 @@
-"""The pre-gate checks (`dosbox_checks`), by the words a caller acts on: each refusal names the
+"""The pre-gate checks (`checks`), by the words a caller acts on: each refusal names the
 argument it refuses, the value it got and the bound it holds, and a default a step may leave out
 is one the tool would take. Driven through `check` and `preflight`, the two doors the server
 and a sequence use."""
@@ -10,9 +10,9 @@ from typing import Any
 import pytest
 from scry_core.host_program import absolute as _abs
 
-import dosbox_checks as checks
-import dosbox_session as ds
-import dosbox_x_server  # noqa: F401  (registers the step vocabulary the list checks read)
+from scry_dosbox_x import checks
+from scry_dosbox_x import server as dosbox_x_server  # noqa: F401  (registers the step vocabulary the list checks read)
+from scry_dosbox_x import session as ds
 
 
 def _refused(tool: str, **given: Any) -> str:

@@ -10,10 +10,10 @@ from typing import Any, cast
 import pytest
 from scry_core import scan_vocabulary as words
 
-import dosbox_find as finder
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server  # noqa: F401 -- imports the boundary the shape guard wraps
+from scry_dosbox_x import find as finder
+from scry_dosbox_x import server as dosbox_x_server  # noqa: F401 -- imports the boundary the shape guard wraps
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 CAPTURE = json.loads((Path(__file__).resolve().parent / "fixtures" / "memfind" / "scry-scan.json")
                      .read_text(encoding="utf-8"))["exchanges"]

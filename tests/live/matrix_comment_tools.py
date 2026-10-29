@@ -35,7 +35,7 @@ from matrix_common import (
 )
 from scry_core import prose
 
-import dosbox_state as dstate
+from scry_dosbox_x import state as dstate
 
 HEADER = "# comments v1: ref\tcpu\tcreated_at\ttext"
 #: A call that types at a running guest waits for a pane that never comes; one that types

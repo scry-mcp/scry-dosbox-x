@@ -20,10 +20,10 @@ from matrix_ledger import Cell, Ledger  # noqa: E402
 from scry_core import guardian  # noqa: E402
 from scry_core import reply_contract as contract  # noqa: E402
 
-import dosbox_process as dprocess  # noqa: E402
-import dosbox_session as ds  # noqa: E402
-import dosbox_state as dstate  # noqa: E402
-import dosbox_x_server as server  # noqa: E402
+from scry_dosbox_x import process as dprocess  # noqa: E402
+from scry_dosbox_x import server  # noqa: E402
+from scry_dosbox_x import session as ds  # noqa: E402
+from scry_dosbox_x import state as dstate  # noqa: E402
 
 __all__ = ["ds", "server"]
 

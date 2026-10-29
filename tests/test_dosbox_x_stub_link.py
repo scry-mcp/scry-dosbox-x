@@ -18,8 +18,8 @@ import pytest
 from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
-import dosbox_inputs as inputs
-import dosbox_stub_link as link
+from scry_dosbox_x import inputs
+from scry_dosbox_x import stub_link as link
 
 ASM = (Path(link.__file__).parent / "guest" / "scry.asm").read_text(encoding="utf-8")
 

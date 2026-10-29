@@ -64,7 +64,8 @@ def take_private_copies() -> None:
                          "makes for its job")
     root.mkdir(parents=True, exist_ok=True)
     shutil.copytree(REPO / "tests" / "guest", root / "tests" / "guest")
-    shutil.copytree(REPO / "guest", root / "guest")
+    shutil.copytree(REPO / "src" / "scry_dosbox_x" / "guest",
+                    root / "src" / "scry_dosbox_x" / "guest")
     shutil.copytree(REPO / "demos" / "bricks", root / "demos" / "bricks",
                     ignore=shutil.ignore_patterns("__pycache__", *DEBUGGER_FILES))
     os.environ[GUEST_VAR] = str(root / "tests" / "guest")

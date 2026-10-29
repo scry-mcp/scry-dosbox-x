@@ -18,7 +18,7 @@ from typing import Any
 
 import pytest
 
-import dosbox_inputs as inputs
+from scry_dosbox_x import inputs, launch
 
 GUEST = Path(__file__).resolve().parent / "guest"
 LIVE = Path(__file__).resolve().parent / "live"
@@ -135,14 +135,14 @@ def test_the_resident_check_reads_a_one_digit_protocol_number() -> None:
                     reason="no `nasm` on PATH, so the stub cannot be reassembled to compare")
 def test_the_packaged_stub_is_exactly_what_its_source_assembles_to(tmp_path: Path) -> None:
     """The stub ships to every guest, so a binary behind its source runs an older protocol."""
-    stub = GUEST.parent.parent / "guest"
+    stub = launch.GUEST_DIR
     out = tmp_path / "SCRY.COM"
     r = subprocess.run(["nasm", "-f", "bin", str(stub / "scry.asm"), "-o", str(out)],
                        capture_output=True, text=True, check=False)
     assert r.returncode == 0, f"scry.asm does not assemble: {r.stderr}"
     assert out.read_bytes() == (stub / "SCRY.COM").read_bytes(), (
-        "guest/SCRY.COM is not the assembly of guest/scry.asm. Reassemble it: "
-        "nasm -f bin guest/scry.asm -o guest/SCRY.COM")
+        "SCRY.COM is not the assembly of scry.asm. Reassemble it: "
+        "nasm -f bin src/scry_dosbox_x/guest/scry.asm -o src/scry_dosbox_x/guest/SCRY.COM")
     assert out.stat().st_size < 2048, (
         "the stub stays resident in the guest's conventional memory, so it is kept tiny")
 

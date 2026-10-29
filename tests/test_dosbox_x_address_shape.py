@@ -7,11 +7,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import dosbox_arming as arming  # noqa: E402
-import dosbox_checks as checks  # noqa: E402
-import dosbox_find as finder  # noqa: E402
-import dosbox_placement as placement  # noqa: E402
-import dosbox_session as ds  # noqa: E402
+from scry_dosbox_x import (
+    arming,  # noqa: E402
+    checks,  # noqa: E402
+    placement,  # noqa: E402
+)
+from scry_dosbox_x import find as finder  # noqa: E402
+from scry_dosbox_x import session as ds  # noqa: E402
 
 
 @pytest.mark.parametrize("ref", ["12345:0010", "10000:0000", "FFFFF:0001"])

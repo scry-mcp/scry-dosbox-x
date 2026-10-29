@@ -21,14 +21,13 @@ import pytest
 from scry_core import cancel
 from scry_core.host_program import MODE_BITS, POSIX_NAMES
 
-import dosbox_binary as binaries
-import dosbox_debugger as dbg
-import dosbox_inputs as inputs
-import dosbox_launch as dlaunch
-import dosbox_mcp
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import inputs, server
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import mcp as dosbox_mcp
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 META = {"DOSBox-X_Version": "DOSBox-X 2026.08.02 (SDL2)", "Program_Name": "PROBE",
         "Machine_Type": "svga_s3", "Memory_Size": "16", "Time_Stamp": "2026-09-10 03:58",

@@ -29,7 +29,7 @@ from scry_core.verdict import EXIT_FAIL as EXIT_FAIL
 from scry_core.verdict import EXIT_INVALID as EXIT_INVALID
 from scry_core.verdict import EXIT_PASS as EXIT_PASS
 
-import dosbox_binary  # isort: skip -- a module of the repository root, installed in its environment
+from scry_dosbox_x import binary as dosbox_binary  # isort: skip -- a module of the repository root, installed in its environment
 
 ROOT = Path(__file__).resolve().parents[2]
 JOBS_VAR = "DOSBOX_X_LIVE_JOBS"

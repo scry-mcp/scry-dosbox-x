@@ -6,11 +6,9 @@ from pathlib import Path
 
 import pytest
 
-import dosbox_checks as checks
-import dosbox_declarations as dec
-import dosbox_grammar as grammar
-import dosbox_session as ds
-import dosbox_x_server as server
+from scry_dosbox_x import checks, grammar, server
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import session as ds
 
 CONF = "guest-a.conf"
 # Includes a change row, so a migration that rewrote every mode shows.

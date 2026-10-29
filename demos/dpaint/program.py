@@ -82,7 +82,7 @@ def opening(boot: Callable[[Run], dict[str, Any]]) -> list[Step]:
 def declared(name: str, here: Path, steps: list[Step]) -> Demo:
     """A Deluxe Paint demo: run from the directory `--cwd` names, refused on any other build."""
     return Demo(
-        name=name, root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
+        name=name, root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
         readme=here / "README.md", steps=steps,
         capture=lambda run: run.dir / "screen.png",
         offers=frozenset({"cwd"}), precheck=precheck,

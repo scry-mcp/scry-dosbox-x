@@ -18,14 +18,10 @@ from channel_double import REAL_STOP, Machine, Stop, session_over
 from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 from scry_core import cancel
 
-import dosbox_binary as binaries
-import dosbox_capture_files as capture_files
-import dosbox_captures as caps
-import dosbox_recordings as recordings
-import dosbox_retrace as retrace
-import dosbox_state as dstate
-import dosbox_summaries as summaries
-import dosbox_x_server as server
+from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import capture_files, recordings, retrace, server, summaries
+from scry_dosbox_x import captures as caps
+from scry_dosbox_x import state as dstate
 
 CAPTURES = Path(__file__).parent / "fixtures" / "captures"
 #: One retrace of the sound guest's text mode, in emulated milliseconds: the two the WAV holds

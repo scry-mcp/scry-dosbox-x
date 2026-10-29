@@ -12,13 +12,10 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import _names, clean_session  # noqa: F401
 
-import dosbox_debugger as dbg
-import dosbox_inputs as inputs
-import dosbox_retrace as retrace
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_taps as taps
-import dosbox_x_server as server
+from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import inputs, retrace, server, taps
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 E9_KEY_ACT = "Bochs port E9h: [+   0.010] KEY   . key_cue_a"
 

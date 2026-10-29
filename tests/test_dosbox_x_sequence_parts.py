@@ -9,11 +9,11 @@ from typing import Any, cast
 
 import pytest
 
-import dosbox_inputs as inputs
-import dosbox_running as guest
-import dosbox_sequence as seq
-import dosbox_session as ds
-import dosbox_state as st
+from scry_dosbox_x import inputs
+from scry_dosbox_x import running as guest
+from scry_dosbox_x import sequence as seq
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as st
 
 
 @pytest.mark.parametrize(("attribution", "key"), [

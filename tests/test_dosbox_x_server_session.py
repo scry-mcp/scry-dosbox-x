@@ -48,20 +48,15 @@ from scry_core.host_program import absolute as _abs
 from scry_core.host_program import temporary as _tmp
 from test_dosbox_x_find import reply
 
-import dosbox_arming as arming
-import dosbox_binary as binaries
-import dosbox_checks as checks
-import dosbox_dos_calls as dos_calls_trace
-import dosbox_folds as folds
-import dosbox_launch as dlaunch
-import dosbox_mcp
-import dosbox_placement as placement
-import dosbox_replies
-import dosbox_run_state as run_state
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import arming, checks, folds, placement, run_state, server
+from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import dos_calls as dos_calls_trace
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import mcp as dosbox_mcp
+from scry_dosbox_x import replies as dosbox_replies
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 
 @pytest.fixture(autouse=True)
@@ -165,7 +160,7 @@ def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> Non
         made.append(Unreapable())
         return made[-1]
 
-    with mock.patch("dosbox_x_server.ds.Session", build):
+    with mock.patch("scry_dosbox_x.server.ds.Session", build):
         got = cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=30))
     assert got["status"] == "INVALID"
@@ -178,7 +173,7 @@ def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> Non
     class Reaped(Unreapable):
         unreapable = False
 
-    with mock.patch("dosbox_x_server.ds.Session", lambda _l: Reaped()):
+    with mock.patch("scry_dosbox_x.server.ds.Session", lambda _l: Reaped()):
         ok = cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=30))
     assert "the debugger never appeared" in str(ok["message"])
@@ -209,8 +204,8 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     src = tmp_path / "cap.avi"
     src.write_bytes(b"RIFF")
     fake = SimpleNamespace(captures=lambda: [{"path": str(src)}])
-    with (mock.patch("dosbox_frames.subprocess.run", hangs),
-          mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
+    with (mock.patch("scry_dosbox_x.frames.subprocess.run", hangs),
+          mock.patch("scry_dosbox_x.frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match="did not return within")):
         ds.Session.frame(fake, 0, tmp_path / "out.png", _src(fake))  # type: ignore[arg-type]
 
@@ -224,8 +219,8 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         dest.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 2000)
         return SimpleNamespace(stdout="", stderr="", returncode=0)
 
-    with (mock.patch("dosbox_frames.subprocess.run", writes),
-          mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg"))):
+    with (mock.patch("scry_dosbox_x.frames.subprocess.run", writes),
+          mock.patch("scry_dosbox_x.frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg"))):
         got = ds.Session.frame(fake, 0, dest, _src(fake))  # type: ignore[arg-type]
     assert got == dest and dest.stat().st_size > 1000
     # Without the forced format ffmpeg picks the encoder from the extension and writes a frameless
@@ -240,8 +235,8 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         return SimpleNamespace(stdout="", stderr=past_end["stderr"],
                                returncode=past_end["returncode"])
 
-    with (mock.patch("dosbox_frames.subprocess.run", writes_nothing),
-          mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
+    with (mock.patch("scry_dosbox_x.frames.subprocess.run", writes_nothing),
+          mock.patch("scry_dosbox_x.frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match="ffmpeg exited 0 but no image")):
         ds.Session.frame(fake, 99999, tmp_path / "never.png", _src(fake))  # type: ignore[arg-type]
 
@@ -256,8 +251,8 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
 
     # The two refusals differ: a non-zero exit carries ffmpeg's reason, an empty output at
     # exit 0 is a guess.
-    with (mock.patch("dosbox_frames.subprocess.run", fails_but_writes),
-          mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
+    with (mock.patch("scry_dosbox_x.frames.subprocess.run", fails_but_writes),
+          mock.patch("scry_dosbox_x.frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match=f"ffmpeg exited {corrupt['returncode']}")):
         ds.Session.frame(fake, 5, bad, _src(fake))  # type: ignore[arg-type]
 
@@ -271,8 +266,8 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         container.write_bytes(recorded)
         return SimpleNamespace(stdout="", stderr="", returncode=0)
 
-    with (mock.patch("dosbox_frames.subprocess.run", writes_a_container),
-          mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
+    with (mock.patch("scry_dosbox_x.frames.subprocess.run", writes_a_container),
+          mock.patch("scry_dosbox_x.frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match="is not a PNG")):
         ds.Session.frame(fake, 99999, container, _src(fake))  # type: ignore[arg-type]
 
@@ -288,7 +283,7 @@ def test_the_live_case_counter_ignores_helpers_comments_and_session_methods() ->
 
 def test_every_tool_has_a_live_case_naming_it() -> None:
     """The "every tool has a live case" claim, GATED instead of asserted in prose."""
-    live = Path(str(server.__file__)).parent / "tests" / "live"
+    live = Path(str(server.__file__)).parents[2] / "tests" / "live"
     called: set[str] = set()
     for path in sorted(live.glob("test_*.py")):
         called |= _tools_called_in_tests(path.read_text(encoding="utf-8"))
@@ -435,7 +430,7 @@ def test_start_over_a_dead_session_collects_it_first_and_refuses_over_a_live_one
     def spawn(launch: Any) -> Any:
         raise ds.Invalid("session_broken", "not starting anything")
     monkeypatch.setattr("scry_core.binaries.shutil.which", lambda _n: _abs("somewhere", "dosbox-x"))
-    monkeypatch.setattr("dosbox_x_server.ds.Session", spawn)
+    monkeypatch.setattr("scry_dosbox_x.server.ds.Session", spawn)
     kw = {"conf": str(conf), "cwd": str(tmp_path), "session_seconds": 60}
     live_one = install()
     assert cast(dict[str, Any], server.start(**kw))["code"] == "session_live"
@@ -558,7 +553,7 @@ def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -
     # never written out; attributes on an import are excluded, each file read against its imports.
     package = Path(str(server.__file__)).parent
     used: set[str] = set()
-    for path in sorted(package.glob("dosbox_*.py")):
+    for path in sorted(package.glob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))
         modules = {a.asname or a.name.split(".")[0]
                    for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
@@ -736,7 +731,7 @@ def test_start_expands_a_tilde_in_every_path_and_makes_nothing_at_a_literal_one(
         built.append(launch)
         raise ds.Invalid("host_failed", "built: the case ends here")
     with mock.patch("scry_core.binaries.shutil.which", lambda _n: _abs("somewhere", "dosbox-x")), \
-         mock.patch("dosbox_x_server.ds.Session", build):
+         mock.patch("scry_dosbox_x.server.ds.Session", build):
         got = cast(dict[str, Any], server.start(**kw))
     assert "built: the case ends here" in got["message"], got
     assert getattr(built[0], arg) == (tmp_path / under_home if under_home else tmp_path)
@@ -1042,7 +1037,7 @@ def test_start_launches_the_binary_it_resolved_and_says_which(
         return Booted(conf=conf)
 
     monkeypatch.setenv("PATH", str(tmp_path / "empty"))
-    with mock.patch("dosbox_x_server.ds.Session", session):
+    with mock.patch("scry_dosbox_x.server.ds.Session", session):
         got = cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=60,
                                                 binary=str(mine)))
@@ -1072,7 +1067,7 @@ def test_start_warns_that_a_dynamic_core_passes_over_code_breakpoints(
     monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
     monkeypatch.setattr("scry_core.binaries.version", lambda *_a, **_k: "DOSBox-X (a stub)")
     stub_build(monkeypatch)
-    with mock.patch("dosbox_x_server.ds.Session", lambda launch: Booted(conf=conf)):
+    with mock.patch("scry_dosbox_x.server.ds.Session", lambda launch: Booted(conf=conf)):
         got = cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=60, flags=flags))
     assert got["status"] == "ok", got
@@ -1086,7 +1081,7 @@ def test_start_with_no_rung_resolving_is_refused_before_anything_starts(
     conf.write_text("[sdl]\n", encoding="utf-8")
     monkeypatch.setenv("PATH", str(tmp_path / "empty"))
     spawned: list[object] = []
-    with mock.patch("dosbox_x_server.ds.Session", lambda launch: spawned.append(launch)):
+    with mock.patch("scry_dosbox_x.server.ds.Session", lambda launch: spawned.append(launch)):
         got = cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=60))
     assert got["status"] == "INVALID" and got["code"] == "host_failed", got
@@ -1405,8 +1400,8 @@ def test_every_tool_is_summarised_by_its_own_line() -> None:
             # server's or scry-core's.
             assert lines[name].__qualname__.startswith("fold_line"), (name, lines[name])
             for method in folded[name].values():
-                assert method.line.__module__ in ("dosbox_summaries", "scry_core.screen_map"), (
-                    name, method.line)
+                assert method.line.__module__ in ("scry_dosbox_x.summaries",
+                                                  "scry_core.screen_map"), (name, method.line)
         elif name == "screen_map_find":
             assert lines[name] is screen_map.find_line, name
         elif name == "perform_export":
@@ -1579,7 +1574,7 @@ def test_the_instructions_tell_an_empty_diagnostic_from_a_field_not_sent() -> No
 def test_presence_off_is_answered_false_and_never_omitted() -> None:
     from scry_core import reply_schema
 
-    import dosbox_replies
+    from scry_dosbox_x import replies as dosbox_replies
     for model in (dosbox_replies.StartReply, dosbox_replies.StatusReply):
         assert "presence" not in reply_schema.omitted_when_empty(model), model
 

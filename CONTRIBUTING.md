@@ -6,11 +6,13 @@ change.
 
 ## Where the code lives
 
-`dosbox_x_server.py` holds the tools and `dosbox_mcp.py` the MCP boundary (the server object, its
-`instructions`, the roster of tools by family). Each `dosbox_*.py` holds one concern, and its
-docstring opens with what it holds and why: read that before changing it. What both Scry servers
-share (the reply contract, the reference generator, the demo runner, the probe, the live bench)
-is the scry-core package, pinned by tag in `pyproject.toml`. `guest/` holds the resident input stub the server loads into the guest (`scry.asm`, built to `SCRY.COM`), `demos/` the demos, and `bench.py` and `mapsweep.py` are the development scripts below. `tests/` holds the
+`src/scry_dosbox_x/server.py` holds the tools and `src/scry_dosbox_x/mcp.py` the MCP boundary (the
+server object, its `instructions`, the roster of tools by family). Every other module in
+`src/scry_dosbox_x/` holds one concern, and its docstring opens with what it holds and why: read that
+before changing it. What both Scry servers share (the reply contract, the reference generator, the
+demo runner, the probe, the live bench) is the scry-core package, pinned by tag in `pyproject.toml`.
+`src/scry_dosbox_x/guest/` holds the resident input stub the server loads into the guest (`scry.asm`,
+built to `SCRY.COM`), `demos/` the demos, and `tools/` the development scripts below. `tests/` holds the
 contract tests and `tests/live/` the tiers that drive a real emulator.
 
 ## The battery
@@ -52,8 +54,8 @@ code, and the examples only from a live run's transcript (each `--mark` spells a
 the run's host, as the committed examples do):
 
 ```sh
-uv run python -m scry_core.reference dosbox_x_server:REFERENCE --write
-uv run python -m scry_core.reference dosbox_x_server:REFERENCE --write \
+uv run python -m scry_core.reference scry_dosbox_x.server:REFERENCE --write
+uv run python -m scry_core.reference scry_dosbox_x.server:REFERENCE --write \
     --examples <transcript.jsonl ...> --mark '/tmp/<the run>=$TMPDIR'
 ```
 
@@ -64,7 +66,7 @@ git config core.hooksPath .githooks
 ```
 
 These are contract tests and none of them launches an emulator: they hold the part that has to
-be true before one is involved. `bench.py`'s own guards are among them, because an instrument
+be true before one is involved. `tools/bench.py`'s own guards are among them, because an instrument
 that can lie needs validation and validation nothing executes is a comment.
 
 Every pytest run judges the coverage floor: `--cov` is in `addopts` and the floor is
@@ -184,7 +186,7 @@ keeps it and prints its path (`scry_core.live_host`).
 
 ## Development scripts
 
-`bench.py` measures a program's cost. It takes `--conf` (the config file to measure) and `--cwd`
+`tools/bench.py` measures a program's cost. It takes `--conf` (the config file to measure) and `--cwd`
 (the directory that config runs in) as required flags, with no default, and refuses without them,
 naming the flags. `--json`, `--reps` and `--song` are optional. The song, the boot marker it
 waits for and the make target of its batch cost belong to the program it was written for, so a
@@ -214,12 +216,12 @@ transcribed can then never be settled. Neither toolchain is vendored here; `buil
 location in an environment variable and stops loudly rather than quietly building with something
 else.
 
-`mapsweep.py` reads REAL maps where they live, against a manifest that says what each one holds,
+`tools/mapsweep.py` reads REAL maps where they live, against a manifest that says what each one holds,
 and goes red when the two part company in either direction: a count that ROSE against an
 unchanged file means the reader has begun reading something that is not a symbol.
 
 ```sh
-uv run python mapsweep.py --manifest <bench>/real-maps.json --root /where/those/maps/live
+uv run python tools/mapsweep.py --manifest <bench>/real-maps.json --root /where/those/maps/live
 ```
 
 It is manual and declared as such in `tests/gates-manual.txt`, with the reason: the material is

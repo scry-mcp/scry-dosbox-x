@@ -18,9 +18,9 @@ import pytest
 from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 from test_dosbox_x_e9_wait import E9_BOOT, E9_HELP, LogSession
 
-import dosbox_logs as dlogs
-import dosbox_session as ds
-import dosbox_x_server as server
+from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import server
+from scry_dosbox_x import session as ds
 
 EMU_LINE = "LOG: DOSBox-X version 2025.05.03"           # an emulator line, no E9 prefix
 EMU_LINE_2 = "LOG: CONFIG: Loading primary settings"
@@ -96,7 +96,7 @@ def test_the_log_tool_passes_channel_and_labels_through() -> None:
 
 
 def test_perform_knows_the_pair_under_its_new_names() -> None:
-    import dosbox_checks as checks
+    from scry_dosbox_x import checks
     assert {"log", "log_wait"} <= set(checks.BY_OP)
     assert not {"e9", "e9_wait"} & set(checks.BY_OP)
 
@@ -154,7 +154,7 @@ def test_log_wait_since_mark_takes_a_line_before_the_mark_for_history(tmp_path: 
 def test_the_tools_refuse_a_mark_that_names_no_position_before_reading(tmp_path: Path) -> None:
     """A negative mark is refused by the judge every list runs too; one past the end by the
     tool, against the file as it stands."""
-    import dosbox_checks as checks
+    from scry_dosbox_x import checks
     with pytest.raises(ds.Invalid, match="0 or more"):
         checks.BY_OP["log"](pattern=".", channel="guest", since_mark=-1)
     with pytest.raises(ds.Invalid, match="0 or more"):

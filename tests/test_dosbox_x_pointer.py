@@ -6,7 +6,7 @@ from __future__ import annotations
 import pytest
 from scry_core.screen_map import Pointer
 
-import dosbox_pointer as pointer
+from scry_dosbox_x import pointer
 
 
 class Program:

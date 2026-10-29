@@ -1,4 +1,4 @@
-"""`dosbox_presence`: which tools drive, held against the registry; the look as the channel's
+"""`presence`: which tools drive, held against the registry; the look as the channel's
 `PRESENCE` takes it; what the emulator's answers mean (drawn, a build without the command, an
 output it cannot draw on); a session with no window; the arrow turned on by the first mouse
 move; and a start plan lighting the window."""
@@ -14,10 +14,9 @@ from typing import Any
 import pytest
 from scry_core import presence
 
-import dosbox_debugger as dbg
-import dosbox_lifecycle as lifecycle
-import dosbox_presence as dpresence
-import dosbox_x_server as server
+from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import lifecycle, server
+from scry_dosbox_x import presence as dpresence
 
 
 def test_every_registered_tool_is_declared_driving_or_still_and_no_other() -> None:
@@ -162,7 +161,7 @@ def test_a_start_plan_lights_the_window_while_it_runs(monkeypatch: pytest.Monkey
                                                       tmp_path: Path) -> None:
     from dosbox_x_server_support import _start_on_a_booted_fake
 
-    import dosbox_state as dstate
+    from scry_dosbox_x import state as dstate
     shown: list[str] = []
     during: list[str] = []
 
@@ -179,7 +178,7 @@ def test_a_start_plan_lights_the_window_while_it_runs(monkeypatch: pytest.Monkey
     def lit(session: Any, asked: bool, shared: bool) -> presence.Shown:
         return presence.Presence.open(Shows(), ())
 
-    import dosbox_sequence as sequence
+    from scry_dosbox_x import sequence
     real = sequence.run_steps
 
     def watched(session: Any, *a: Any, **k: Any) -> Any:
@@ -199,9 +198,8 @@ def test_a_start_plan_lights_the_window_while_it_runs(monkeypatch: pytest.Monkey
 
 def test_a_mouse_move_keeps_its_reply_when_the_session_dies_after_it(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    import dosbox_inputs as inputs
-    import dosbox_running as running
-    import dosbox_state as dstate
+    from scry_dosbox_x import inputs, running
+    from scry_dosbox_x import state as dstate
     delivered = {"status": "ok", "delivered": True, "route": "guest",
                  "pointer": {"x": 1, "y": 1}, "arrived": True,
                  "verify": {"checked": False, "why": "no expect"}}

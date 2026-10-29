@@ -9,7 +9,7 @@ import live_private  # isort: skip -- first: a pooled job's working copies
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
 
-import dosbox_x_server as server
+from scry_dosbox_x import server
 
 pytestmark = pytest.mark.live
 

@@ -15,10 +15,10 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from dosbox_x_server_support import clean_session, install  # noqa: E402,F401  (the autouse teardown)
 
-import dosbox_checks as checks  # noqa: E402
-import dosbox_mcp  # noqa: E402
-import dosbox_state as st  # noqa: E402
-import dosbox_x_server as s  # noqa: E402
+from scry_dosbox_x import checks  # noqa: E402
+from scry_dosbox_x import mcp as dosbox_mcp  # noqa: E402
+from scry_dosbox_x import server as s  # noqa: E402
+from scry_dosbox_x import state as st  # noqa: E402
 
 
 @pytest.fixture

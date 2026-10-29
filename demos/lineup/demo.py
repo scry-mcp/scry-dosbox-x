@@ -13,6 +13,8 @@ from scry_core.demo import Demo, Reply, Run, Step, StepFailed, main
 from scry_core.game_demo import Binding, Press, elapsed
 from scry_core.games import lineup
 
+from scry_dosbox_x import launch
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
@@ -57,7 +59,7 @@ def boot(run: Run) -> dict[str, Any]:
     shutil.copyfile(game(run) / MAP, copy)
     conf = run.dir / "lineup.conf"
     conf.write_text((HERE / "lineup.conf").read_text(encoding="utf-8").replace(
-        "@GUEST@", str(ROOT / "guest")), encoding="utf-8")
+        "@GUEST@", str(launch.GUEST_DIR)), encoding="utf-8")
     states = run.dir / "lineup-states"
     shutil.rmtree(states, ignore_errors=True)
     return {"conf": conf, "session_seconds": 900, "shared": True, "symbols": copy,
@@ -82,7 +84,7 @@ BINDING = Binding(
     inputs=INPUTS, rate_hz=RATE_HZ, sound=HERE / "music.wav", volatile=INPUT_TIMING)
 
 DEMO = Demo(
-    name="lineup", root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
+    name="lineup", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=lineup.steps(BINDING),
     capture=lambda run: run.dir / "screen.png",
     offers=frozenset({"cwd"}), reads=frozenset({"cwd"}), precheck=checked,

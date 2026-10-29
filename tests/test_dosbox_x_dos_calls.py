@@ -10,11 +10,11 @@ import pytest
 from dosbox_x_server_support import install
 from scry_core.reply_contract import Invalid
 
-import dosbox_dos_calls as dos
-import dosbox_logs as dlogs
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import dos_calls as dos
+from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 TRACE = Path(__file__).resolve().parent / "fixtures" / "hardware" / "dosio.trace"
 

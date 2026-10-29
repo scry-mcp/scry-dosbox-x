@@ -13,7 +13,7 @@ from typing import Any, cast
 import live_private  # isort: skip -- first: a pooled job's working copies
 import pytest
 
-import dosbox_x_server as server
+from scry_dosbox_x import server
 
 pytestmark = pytest.mark.live
 

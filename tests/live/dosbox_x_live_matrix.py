@@ -42,7 +42,7 @@ from matrix_common import ENV, M, close_whatever, isolate
 from matrix_ledger import EXIT_INVALID, SUMMARY_VAR, Section, chosen_sections
 from scry_core import live_pool
 
-import dosbox_binary  # isort: skip
+from scry_dosbox_x import binary as dosbox_binary  # isort: skip
 
 SECTIONS_VAR = "DOSBOX_X_LIVE_SECTIONS"
 JOBS_VAR = "DOSBOX_X_LIVE_JOBS"

@@ -25,7 +25,7 @@ IDENTITY = BENCH.root / "identity.json"
 LABELS = ("dos-real16", "dos-real16-alt")
 IDENTITY_KEYS = ("dir", "exe", "map", "launch", "process", "e9_line")
 PATH_KEYS = ("exe", "map")
-STUB_DIR = Path(__file__).resolve().parents[2] / "guest"
+STUB_DIR = Path(__file__).resolve().parents[2] / "src" / "scry_dosbox_x" / "guest"
 
 
 def _known(label: str, key: str = "dir") -> None:

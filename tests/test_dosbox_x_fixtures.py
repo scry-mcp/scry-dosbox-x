@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import dosbox_symbols as sym
+from scry_dosbox_x import symbols as sym
 
 FIXTURES = Path(__file__).parent / "fixtures"
 TLINK16 = FIXTURES / "borland-tlink16" / "MAPDEMO.MAP"

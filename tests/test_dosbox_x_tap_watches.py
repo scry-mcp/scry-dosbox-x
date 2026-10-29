@@ -12,14 +12,12 @@ import pytest
 from channel_double import REAL_STOP, Machine, protected, session_over
 from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 
-import dosbox_arming as arming
-import dosbox_binary as binaries
-import dosbox_declarations as dec
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as sym
-import dosbox_taps as taps
-import dosbox_x_server as server
+from scry_dosbox_x import arming, server, taps
+from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as sym
 
 TAPS = Path(__file__).parent / "fixtures" / "taps"
 SOURCES = {"W": TAPS / "count-writes.rows", "R": TAPS / "polled-reads.rows",

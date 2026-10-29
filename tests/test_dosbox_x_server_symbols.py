@@ -28,14 +28,11 @@ from dosbox_x_server_support import (  # noqa: E402
     install,
 )
 
-import dosbox_arming as arming
-import dosbox_declarations as dec
-import dosbox_inputs as inputs
-import dosbox_placement as placement
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import arming, inputs, placement, server
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 
 def test_log_passes_the_callers_pattern_limit_and_channel_through() -> None:
@@ -1055,14 +1052,14 @@ def test_a_pending_measure_is_said_by_status_and_drained_by_the_next_contact(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     fake = _loaded_then_restored(tmp_path, monkeypatch)
     assert dstate.STATE.pending_summary()["base_remeasure"] is True
-    import dosbox_running as running
+    from scry_dosbox_x import running
     running.drain_if_stopped(cast(Any, fake))
     assert dstate.STATE.base["base"] == 0x00500000, dstate.STATE.base
     assert dstate.STATE.pending_summary()["base_remeasure"] is False
 
 
 def test_a_load_refused_before_it_was_sent_replaced_nothing(tmp_path: Path) -> None:
-    import dosbox_saved_states as saved
+    from scry_dosbox_x import saved_states as saved
     ses = SimpleNamespace(machine_replaced=True, state_sent=True,
                           _state_dir=lambda: tmp_path)
     with pytest.raises(ds.Invalid) as refusal:

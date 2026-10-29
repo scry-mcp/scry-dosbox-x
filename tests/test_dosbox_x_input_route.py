@@ -13,13 +13,11 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import _guest, _names
 
-import dosbox_inputs as inputs
-import dosbox_launch as dlaunch
-import dosbox_logs as dlogs
-import dosbox_running as running
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import inputs, running, server
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 #: Authored in the format the stub's source prints:
 #: text mode 3, then mode 13h with the left button held.
@@ -322,7 +320,7 @@ def test_a_first_report_that_fails_delivered_nothing(tmp_path: Path) -> None:
 def test_drive_at_a_stop_never_takes_the_stub_s_line_for_the_program_s() -> None:
     """The verify of an act that ended stopped reads the log since the mark once: a line of the
     stub's can sit there, and it is not the program reacting."""
-    import dosbox_sequence as sequence
+    from scry_dosbox_x import sequence
 
     class Since:
         def e9_since_mark(self, mark: int) -> list[str]:

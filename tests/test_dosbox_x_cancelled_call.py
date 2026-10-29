@@ -21,11 +21,13 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: E402,F401
 
-import dosbox_checks as checks  # noqa: E402
-import dosbox_mcp  # noqa: E402
-import dosbox_retrace as retrace  # noqa: E402
-import dosbox_state as st  # noqa: E402
-import dosbox_x_server as server  # noqa: E402
+from scry_dosbox_x import (
+    checks,  # noqa: E402
+    retrace,  # noqa: E402
+    server,  # noqa: E402
+)
+from scry_dosbox_x import mcp as dosbox_mcp  # noqa: E402
+from scry_dosbox_x import state as st  # noqa: E402
 
 
 class _Running(FakeSession):
@@ -198,7 +200,7 @@ def test_the_stop_end_hands_the_next_reply_what_the_stop_applied(
         monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
     """A declaration made while the guest ran is applied at the stop the end makes; the stop's
     own reply goes to nobody, so the account rides on the next one."""
-    import dosbox_running as running
+    from scry_dosbox_x import running
     install()
     _running()
 
@@ -216,7 +218,7 @@ def test_the_stop_end_names_its_stop_as_the_cancelled_calls(
         monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
     """The stop the end makes on a running guest is the cancelled call's own: its reply is built
     to say so (`asked_by`), not that no declaration can be told."""
-    import dosbox_running as running
+    from scry_dosbox_x import running
     install()
     _running()
     asked: list[dict[str, Any]] = []
@@ -235,7 +237,7 @@ def test_a_stop_of_its_own_the_call_had_reached_is_recorded_as_its_own(
         monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
     """Cancelled with the guest already at a stop nobody has read (its own retrace, its own
     breakpoint), the end records it as the call's, as the call's bound would have."""
-    import dosbox_running as running
+    from scry_dosbox_x import running
     install()
     ses = _running()
     ses.at = True
@@ -355,7 +357,7 @@ def test_a_cancelled_trace_ends_stopped_with_its_log_closed_and_the_file_kept(
     recorded after it the next contact would find a stop nobody made. What it wrote goes where a
     trace with no `dest` goes, the session's captures directory, and to the working directory
     only for a session started with none."""
-    import dosbox_trace as trace
+    from scry_dosbox_x import trace
     install()
     ses = _running()
     ses.launch.cwd = tmp_path
@@ -375,7 +377,7 @@ def test_a_cancelled_trace_ends_stopped_with_its_log_closed_and_the_file_kept(
         ses.stop_count = (ses.stop_count or 0) + 1   # released and back at the prompt
         return False, 0.0
     monkeypatch.setattr(ses, "log_cpu", log_cpu)
-    import dosbox_running as running
+    from scry_dosbox_x import running
     asked: list[Any] = []
     real = running.stop_reply
 
@@ -423,8 +425,8 @@ def test_a_frame_whose_retrace_never_comes_still_reports_progress(
 def test_accounts_given_back_one_after_another_accumulate_as_a_stops_do() -> None:
     """A cancelled `perform` gives back each answered step's account and then its end's stop:
     the next reply says all of them, as one stop's drains are joined (`arming.merge_applied`)."""
-    import dosbox_mcp
-    import dosbox_state as dstate
+    from scry_dosbox_x import mcp as dosbox_mcp
+    from scry_dosbox_x import state as dstate
 
     dstate.STATE.applied_last.clear()
     dosbox_mcp._keep_accounts({"applied_on_stop": {"armed": ["A"], "disarmed": [],

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-import dosbox_capture_files as files
+from scry_dosbox_x import capture_files as files
 
 CAPTURES = Path(__file__).parent / "fixtures" / "captures"
 DRO = (CAPTURES / "eight-frames.dro").read_bytes()

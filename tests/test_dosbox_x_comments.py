@@ -26,16 +26,12 @@ from scry_core.host_program import MODE_BITS
 from test_dosbox_x_code import pr32_machine
 from test_dosbox_x_running_table import _running
 
-import dosbox_arming as arming
-import dosbox_comment_file as cf
-import dosbox_comments as comments
-import dosbox_declarations as dec
-import dosbox_grammar as grammar
-import dosbox_machine as machine
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import arming, comments, grammar, machine, server
+from scry_dosbox_x import comment_file as cf
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 STAMP = "2026-10-03T06:00:00+00:00"
 #: The probe guest's own table (`tests/guest/probe.sym`) and the base it is loaded at.

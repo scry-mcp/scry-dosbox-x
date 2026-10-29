@@ -23,13 +23,13 @@ from matrix_common import (
     server,
 )
 
-import dosbox_capture_files as capture_files
+from scry_dosbox_x import capture_files
 
 SOUND_CONF, TAP_CONF = GUEST / "sound.conf", GUEST / "tap.conf"
 #: `tap.asm`'s places in the segment DOS loads a `.COM` at on this conf, read off its listing.
 COUNT, POLLED, W_INC, W_PAIR, R_POLL = ("0814:0138", "0814:013E", "0814:0000011D",
                                         "0814:00000126", "0814:00000129")
-#: The mixer's samples a run may miss its span by (`dosbox_capture_files.SPAN_TICKS` ticks).
+#: The mixer's samples a run may miss its span by (`capture_files.SPAN_TICKS` ticks).
 TICK_SAMPLES = 48
 
 

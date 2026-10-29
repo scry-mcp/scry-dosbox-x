@@ -14,12 +14,9 @@ import pytest
 from dosbox_x_server_support import _start_over_a_store, clean_session  # noqa: F401
 from test_dosbox_x_comments import _ParkedInRealMode, ok
 
-import dosbox_arming as arming
-import dosbox_code as code
-import dosbox_declarations as dec
-import dosbox_grammar as grammar
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import arming, code, grammar, server
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import state as dstate
 
 AT = "0000:0600"
 

@@ -1,4 +1,4 @@
-"""The comment file as this server reads and writes it (`dosbox_comment_file`): one known answer
+"""The comment file as this server reads and writes it (`comment_file`): one known answer
 written by an independent writer, and one case per rule of the format."""
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 from scry_core import prose
 
-import dosbox_comment_file as cf
-import dosbox_x_server  # noqa: F401 -- imports the envelope and the boundary the shape guard wraps
+from scry_dosbox_x import comment_file as cf
+from scry_dosbox_x import server as dosbox_x_server  # noqa: F401 -- imports the envelope and the boundary the shape guard wraps
 
 KNOWN = Path(__file__).parent / "fixtures" / "comments" / "known.comments.tsv"
 STAMP = "2026-10-03T06:00:00+00:00"
@@ -246,7 +246,7 @@ def test_every_accepted_ref_and_text_written_together_reads_back_whole() -> None
 def test_every_address_the_rule_takes_is_one_the_placement_parser_parses(ref: str) -> None:
     """The rule judges the spelling and the placement parser makes the numbers: an address the
     rule let through and the parser refused would pass every check and fail at its place."""
-    import dosbox_placement as placement
+    from scry_dosbox_x import placement
     assert cf.ref_fault(ref) is None
     seg, off = placement.parse_seg_off(ref)
     assert f"{seg:X}:{off:X}" == ":".join(f"{int(h, 16):X}" for h in ref.split(":"))

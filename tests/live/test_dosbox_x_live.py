@@ -13,10 +13,10 @@ import pytest
 from live_private import guest_dir
 from scry_core import prose
 
-import dosbox_binary as binaries
-import dosbox_grammar as grammar
-import dosbox_launch as dlaunch
-import dosbox_session as ds
+from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import grammar
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import session as ds
 
 _OWN = guest_dir()
 

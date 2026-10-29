@@ -15,7 +15,7 @@ import live_private  # isort: skip -- first: a pooled job's working copies
 import pytest
 from scry_core import guardian
 
-import dosbox_process as dprocess
+from scry_dosbox_x import process as dprocess
 
 pytestmark = pytest.mark.live
 
@@ -53,7 +53,7 @@ def _alive(pid: int) -> bool:
 def test_the_emulator_ends_with_the_server(ended_by: str, code: int, tmp_path: Path) -> None:
     errors = tmp_path / "server.stderr"
     with errors.open("wb") as err:
-        proc = subprocess.Popen([sys.executable, str(ROOT / "dosbox_x_server.py")], cwd=ROOT,
+        proc = subprocess.Popen([sys.executable, "-m", "scry_dosbox_x.server"], cwd=ROOT,
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=err)
     silent = threading.Timer(ANSWER_WITHIN_S, proc.kill)
     silent.start()

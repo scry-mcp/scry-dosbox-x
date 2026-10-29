@@ -14,14 +14,13 @@ from scry_core import reply_contract as contract
 from scry_core.host_program import absolute as _abs
 from scry_core.host_program import temporary as _tmp
 
-import dosbox_mcp
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import mcp as dosbox_mcp
+from scry_dosbox_x import server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
-PACKAGE = Path(__file__).resolve().parent.parent
-# `mapsweep.py` is a command-line tool with a refusal type of its own, outside the reply.
-SOURCES = sorted(p for p in PACKAGE.glob("*.py") if p.name != "mapsweep.py")
+PACKAGE = Path(server.__file__).resolve().parent
+SOURCES = sorted(PACKAGE.glob("*.py"))
 
 _ARGS: dict[str, dict[str, Any]] = {
     "series_capture": {"at_frames": [0]},

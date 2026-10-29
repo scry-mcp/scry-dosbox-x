@@ -10,10 +10,10 @@ from typing import Any, cast
 import pytest
 from stub_builds import BANNER, build
 
-import dosbox_binary as binaries
-import dosbox_launch as dlaunch
-import dosbox_session as ds
-import dosbox_x_server as server
+from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import server
+from scry_dosbox_x import session as ds
 
 
 @pytest.fixture
@@ -78,7 +78,7 @@ def test_the_version_probe_of_a_build_spawns_it_behind_as_a_session_does(
 
     def spawn(launch: Any) -> Any:
         raise ds.Invalid("session_broken", "not starting anything")
-    monkeypatch.setattr("dosbox_x_server.ds.Session", spawn)
+    monkeypatch.setattr("scry_dosbox_x.server.ds.Session", spawn)
     server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60, binary=str(mine))
     assert seen.read_text().split() == ["v=1"], seen.read_text()
 

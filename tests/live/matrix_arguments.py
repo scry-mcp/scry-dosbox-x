@@ -38,9 +38,9 @@ from matrix_common import (
     server,
 )
 
-import dosbox_paths as paths
-import dosbox_session as ds
-import dosbox_trace as tracing
+from scry_dosbox_x import paths
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import trace as tracing
 
 #: A `~user` no host has: the one `~` spelling the judge still refuses.
 UNKNOWN_HOME = "~no-such-user-matrix"

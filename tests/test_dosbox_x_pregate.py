@@ -14,13 +14,12 @@ import fold_calls
 import pytest
 from dosbox_x_server_support import _names, clean_session, install, stubbed_build  # noqa: F401
 
-import dosbox_find as finder
-import dosbox_launch as dlaunch
-import dosbox_placement as placement
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import find as finder
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import placement, server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 
 def _refused(reply: Any, code: str = "bad_argument", *words: str) -> dict[str, Any]:
@@ -203,7 +202,7 @@ def test_a_start_plan_is_judged_whole_before_anything_starts(tmp_path: Path) -> 
         raise ds.Invalid("session_broken", "not starting anything")
     kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "session_seconds": 60}
     with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
-         mock.patch("dosbox_x_server.ds.Session", boot), stubbed_build():
+         mock.patch("scry_dosbox_x.server.ds.Session", boot), stubbed_build():
         planned = _refused(server.start(**kw, plan=[{"op": "nope"}]), "bad_argument", "nope")
         assert "resume" in planned["operations"], planned
         _refused(server.start(**kw, plan=[{"op": "registers"}], settle_seconds=-1), "bad_argument",
@@ -234,7 +233,7 @@ def test_a_seg_off_takes_hex_with_or_without_0x_as_every_address_argument_does()
 def test_a_scan_start_without_a_length_is_refused_by_name() -> None:
     import pytest
 
-    import dosbox_checks as checks
-    import dosbox_session as ds
+    from scry_dosbox_x import checks
+    from scry_dosbox_x import session as ds
     with pytest.raises(ds.Invalid, match="length"):
         checks.BY_OP["scan"](method="start", ref="0000:0400")

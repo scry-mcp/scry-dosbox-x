@@ -28,19 +28,14 @@ from scry_core import (
 )
 from scry_core import vocabulary as vocab
 
-import dosbox_arming as arming
-import dosbox_checks as checks
-import dosbox_declarations as dec
-import dosbox_folds as folds
-import dosbox_grammar as grammar
-import dosbox_launch as dlaunch
-import dosbox_mcp
-import dosbox_process as dprocess
-import dosbox_sequence as sequence
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import arming, checks, folds, grammar, sequence, server
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import mcp as dosbox_mcp
+from scry_dosbox_x import process as dprocess
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 
 def test_a_log_that_cannot_be_read_at_a_stop_is_the_verify_s_refusal_never_a_check() -> None:
@@ -443,7 +438,7 @@ def test_start_leaves_the_park_at_the_debugger_recorded_as_stop_one(tmp_path: Pa
         def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
             return 0.5
 
-    with mock.patch("dosbox_x_server.ds.Session", lambda _l: Booted(conf=conf)):
+    with mock.patch("scry_dosbox_x.server.ds.Session", lambda _l: Booted(conf=conf)):
         out = cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=30))
     assert out["status"] == "ok", out
@@ -757,7 +752,7 @@ def test_a_stop_already_parked_is_heard_by_a_wait_of_no_seconds(
 
 def test_a_stop_tool_s_drain_is_not_repeated_by_the_next_contact(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    import dosbox_running as running
+    from scry_dosbox_x import running
     fake = _names(tmp_path)
     running.stop_reply(cast(Any, fake))
     dstate.STATE.pending["arm"] = ["9999:9999"]       # still waiting for a stop that places it

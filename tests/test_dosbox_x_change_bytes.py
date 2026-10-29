@@ -11,12 +11,10 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import _names, clean_session  # noqa: F401
 
-import dosbox_arming as arming
-import dosbox_checks as checks
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import arming, checks, server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 DS, HERE = 0x00AF, 0x6024
 

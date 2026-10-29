@@ -14,12 +14,12 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+import bench
 import pytest
 from scry_core import guardian
 
-import bench
-import dosbox_binary as dbinary
-import dosbox_launch as dlaunch
+from scry_dosbox_x import binary as dbinary
+from scry_dosbox_x import launch as dlaunch
 
 
 def test_the_timer_reads_true_and_its_negative_reads_zero() -> None:

@@ -408,7 +408,7 @@ STEPS = [
 ]
 
 DEMO = Demo(
-    name="monkey", root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
+    name="monkey", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS, capture=lambda run: run.dir / "screen.png",
     offers=frozenset({"cwd"}), reads=frozenset({"cwd"}), precheck=precheck,
     host_args={"cwd": "the directory holding the reader's disc image",

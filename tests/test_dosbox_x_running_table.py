@@ -10,16 +10,13 @@ import fold_calls
 import pytest
 from dosbox_x_server_support import NM_TEXT, SessionGates, _names, clean_session  # noqa: F401
 
-import dosbox_declarations as dec
-import dosbox_folds as folds
-import dosbox_inputs as inputs
-import dosbox_launch as dlaunch
-import dosbox_mcp
-import dosbox_sequence as sequence
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import folds, inputs, sequence, server
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import mcp as dosbox_mcp
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 #: What a session does without the debugger's console; a running guest's console drops
 #: anything typed at it, and it is not run at the next stop either.

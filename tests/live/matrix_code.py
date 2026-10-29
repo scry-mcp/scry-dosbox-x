@@ -32,9 +32,11 @@ from matrix_common import (
     server,
 )
 
-import dosbox_code as code  # noqa: E402
-import dosbox_grammar as grammar  # noqa: E402
-import dosbox_state as dstate
+from scry_dosbox_x import (
+    code,  # noqa: E402
+    grammar,  # noqa: E402
+)
+from scry_dosbox_x import state as dstate
 
 CODE_CONF = GUEST / "code.conf"
 #: Where DOS loads both guests, and the base their `nm` tables are placed at.

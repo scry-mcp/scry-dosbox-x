@@ -17,9 +17,9 @@ import pytest
 from scry_core import live_host
 from scry_core.demo import Run
 
-import dosbox_binary
-import dosbox_x_server  # noqa: F401 -- imports the boundary the shape guard wraps, before the runners
 from demos import host as demo_host
+from scry_dosbox_x import binary as dosbox_binary
+from scry_dosbox_x import server as dosbox_x_server  # noqa: F401 -- imports the boundary the shape guard wraps, before the runners
 
 LIVE = Path(__file__).parent / "live"
 ROOT = Path(__file__).parents[1]

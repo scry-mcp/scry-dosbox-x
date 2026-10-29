@@ -12,8 +12,7 @@ import dpmi_guest as guest
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
 
-import dosbox_inputs as inputs
-import dosbox_x_server as server
+from scry_dosbox_x import inputs, server
 
 pytestmark = pytest.mark.live
 
@@ -151,7 +150,7 @@ def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
     # An unmapped VESA mode: a named control is refused before anything is sent.
     from scry_core import screen_map
 
-    import dosbox_state as dstate
+    from scry_dosbox_x import state as dstate
     maps = dstate.STATE.maps = screen_map.Maps()
     for kind, size in (("text", (80, 25)), ("pixel", (320, 200))):
         maps.found = screen_map.Found(screen_map.Screen(

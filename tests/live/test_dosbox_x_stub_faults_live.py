@@ -12,9 +12,9 @@ import pytest
 import stub_faults
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
 
-import dosbox_launch as dlaunch
-import dosbox_session as ds
-import dosbox_x_server as server
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import server
+from scry_dosbox_x import session as ds
 
 pytestmark = pytest.mark.live
 

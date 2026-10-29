@@ -10,6 +10,7 @@ from scry_core.demo import Reply, Run, StepFailed
 from scry_core.games import lineup
 
 from demos.lineup import demo
+from scry_dosbox_x import launch
 
 
 def _game(folder: Path, *, with_map: bool = True) -> Path:
@@ -40,7 +41,7 @@ def test_the_conf_is_the_committed_one_and_the_map_goes_with_the_start(tmp_path:
     args = demo.boot(Run(dir=tmp_path, options={"cwd": str(game)}))
     conf = Path(args["conf"]).read_text()
     assert conf == (demo.HERE / "lineup.conf").read_text().replace("@GUEST@",
-                                                                    str(demo.ROOT / "guest"))
+                                                                    str(launch.GUEST_DIR))
     assert "@GUEST@" not in conf and "core=normal" in conf
     assert args["shared"] is True and "display" not in args
     assert args["symbols"] == tmp_path / "LINEUP.MAP"

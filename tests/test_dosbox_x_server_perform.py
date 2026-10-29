@@ -33,21 +33,16 @@ from scry_core import steps as step_judge
 from scry_core import vocabulary as vocab
 from scry_core.host_program import absolute as _abs
 
-import dosbox_checks as checks
-import dosbox_debugger as dbg
-import dosbox_declarations as dec
-import dosbox_docs
-import dosbox_inputs as inputs
-import dosbox_launch as dlaunch
-import dosbox_lifecycle
-import dosbox_logs as dlogs
-import dosbox_machine as machine
-import dosbox_running as running
-import dosbox_sequence as sequence
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import checks, inputs, machine, running, sequence, server
+from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import docs as dosbox_docs
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import lifecycle as dosbox_lifecycle
+from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 
 def test_an_empty_name_is_a_listing_and_not_a_lookup(tmp_path: Path) -> None:
@@ -699,7 +694,7 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session_and_folds_the_boot_in(
         made.append(b)
         return b
 
-    with mock.patch("dosbox_x_server.ds.Session", build):
+    with mock.patch("scry_dosbox_x.server.ds.Session", build):
         out = cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=30,
             plan=[{"op": "registers"}]))
@@ -713,7 +708,7 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session_and_folds_the_boot_in(
     # watch with no size passes the list's check and is refused by its step. Clear the
     # session the first start installed, or this start refuses "already live" before the plan.
     dstate.STATE.session = None
-    with mock.patch("dosbox_x_server.ds.Session", build):
+    with mock.patch("scry_dosbox_x.server.ds.Session", build):
         failed = cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=30,
             plan=[{"op": "watch_add", "ref": "no_such", "mode": "show"}]))
@@ -724,7 +719,7 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session_and_folds_the_boot_in(
     assert still_open is not None, "a failed plan closed the session"
     # AND no plan short-circuits to the plain boot reply.
     dstate.STATE.session = None
-    with mock.patch("dosbox_x_server.ds.Session", build):
+    with mock.patch("scry_dosbox_x.server.ds.Session", build):
         plain = cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=30))
     assert plain["status"] == "ok" and "ran" not in plain and "start" not in plain, plain

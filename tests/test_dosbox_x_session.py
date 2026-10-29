@@ -27,14 +27,12 @@ from scry_core.host_program import absolute as _abs
 from test_dosbox_x_spawn import Child
 from test_dosbox_x_stub_link import REPORT, Stub
 
-import dosbox_grammar as grammar
-import dosbox_launch as dlaunch
-import dosbox_logs as dlogs
-import dosbox_process as dprocess
-import dosbox_session as ds
-import dosbox_stepping as stepping
-import dosbox_stub_link as stub_link
-import dosbox_symbols as dsym
+from scry_dosbox_x import grammar, stepping, stub_link
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import process as dprocess
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import symbols as dsym
 
 
 def _free_port() -> int:
@@ -1532,7 +1530,7 @@ def test_the_conf_is_hashed_again_only_when_it_moves(tmp_path: Path) -> None:
     """Every reply says whether the conf changed."""
     import os
 
-    import dosbox_launch as dl
+    from scry_dosbox_x import launch as dl
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n")
     first = dl.current_digest(conf)

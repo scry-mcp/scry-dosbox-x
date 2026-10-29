@@ -13,10 +13,9 @@ from dosbox_x_server_support import clean_session, install  # noqa: F401  (the a
 from scry_core import screen_map
 from test_dosbox_x_screen import screen_bench
 
-import dosbox_inputs as inputs
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import inputs, server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 #: The prompt row of the booted probe's text screen, and a control on it.
 PROMPT = [0, 3, 4, 1]
@@ -236,7 +235,7 @@ def test_an_export_keeps_the_map_an_identification_was_made_against_and_replays_
     no map, identifies the same screen."""
     from scry_core import recording
 
-    import dosbox_mcp
+    from scry_dosbox_x import mcp as dosbox_mcp
     screen_bench("probe-booted", tmp_path)
     _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT], controls=[CONTROL]))
     path = tmp_path / "probe.screen-map.json"
@@ -259,7 +258,7 @@ def test_an_export_keeps_the_map_an_identification_was_made_against_and_replays_
 
 def _canned_frames(monkeypatch: pytest.MonkeyPatch) -> list[int]:
     """`run_for(frames=1)` as one retrace stop, counted."""
-    import dosbox_retrace as retrace
+    from scry_dosbox_x import retrace
     ran: list[int] = []
 
     def one_frame(session: Any, frames: int, milliseconds: int, seconds: float, progress: Any,
@@ -320,7 +319,7 @@ def _consolidated_prompt(tmp_path: Path) -> None:
 
 def test_a_run_to_an_anchored_screen_runs_to_its_anchor_with_the_control_and_takes_it_as_shown(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    import dosbox_advance as advance
+    from scry_dosbox_x import advance
     screen_bench("probe-booted", tmp_path)
     _consolidated_prompt(tmp_path)
     given: list[tuple[str, str, float]] = []

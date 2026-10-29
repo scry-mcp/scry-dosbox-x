@@ -15,13 +15,12 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: F401
 
-import dosbox_logs as dlogs
-import dosbox_machine as machine
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_summaries as one_line
-import dosbox_symbols as sym
-import dosbox_x_server as server
+from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import machine, server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import summaries as one_line
+from scry_dosbox_x import symbols as sym
 
 MACHINE = Path(__file__).parent / "fixtures" / "machine"
 

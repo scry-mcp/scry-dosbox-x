@@ -16,7 +16,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import NamedTuple
 
-import dosbox_disasm as disasm
+from scry_dosbox_x import disasm
 
 
 class PaneLine(NamedTuple):

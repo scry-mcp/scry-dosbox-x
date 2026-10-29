@@ -11,9 +11,9 @@ from pathlib import Path
 
 from dosbox_x_server_support import _names, clean_session, install  # noqa: F401
 
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import server
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 
 def test_a_sized_format_needs_no_width_and_a_typed_symbol_needs_no_format(
@@ -71,7 +71,7 @@ def test_symbols_load_takes_a_types_file_and_refuses_a_name_the_table_lacks(
 def test_a_types_file_that_cannot_be_read_is_refused_naming_it(tmp_path: Path) -> None:
     import pytest
 
-    import dosbox_placement as placement
-    import dosbox_session as ds
+    from scry_dosbox_x import placement
+    from scry_dosbox_x import session as ds
     with pytest.raises(ds.Invalid, match="no types file at"):
         placement.read_types(str(tmp_path / "missing.txt"))

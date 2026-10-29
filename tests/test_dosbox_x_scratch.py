@@ -12,8 +12,8 @@ from typing import Any, cast
 
 from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import server
+from scry_dosbox_x import state as dstate
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -43,7 +43,7 @@ def test_close_takes_the_sessions_scratch_with_it() -> None:
 
 def test_a_server_process_leaves_neither_its_batches_nor_an_unclosed_session_behind(
         tmp_path: Path) -> None:
-    made = _exits(tmp_path, "import dosbox_state as d\n"
+    made = _exits(tmp_path, "from scry_dosbox_x import state as d\n"
                             "(d.STATE.batch_scratch() / 'b.bat').write_text('x')\n"
                             "(d.STATE.session_scratch() / 'f.png').write_bytes(b'x')\n"
                             "print(d.STATE.scratch.parent, d.STATE.session_dir.parent)\n")

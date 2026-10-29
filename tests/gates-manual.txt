@@ -6,7 +6,7 @@
 #
 # Format: one gate per line, `<command>  --  <reason>`. Lines starting `#` are prose.
 
-uv run python mapsweep.py --manifest <bench>/real-maps.json --root <where those repositories live>  --  It reads the author's OWN symbol material -- linker maps and one `nm` listing -- living OUTSIDE this repository and deliberately not versioned in it, and so is its manifest, which names it: they are that person's material and this package is published. On the commit path it would therefore be INVALID in every clone but one, and a gate that is almost always invalid is a gate people learn to ignore. What a clone CAN check is `tests/test_dosbox_x_fixtures.py`, which reads the artefacts this package generated itself.
+uv run python tools/mapsweep.py --manifest <bench>/real-maps.json --root <where those repositories live>  --  It reads the author's OWN symbol material -- linker maps and one `nm` listing -- living OUTSIDE this repository and deliberately not versioned in it, and so is its manifest, which names it: they are that person's material and this package is published. On the commit path it would therefore be INVALID in every clone but one, and a gate that is almost always invalid is a gate people learn to ignore. What a clone CAN check is `tests/test_dosbox_x_fixtures.py`, which reads the artefacts this package generated itself.
 
 # WHAT THE SWEEP CAN AND CANNOT SAY, written here rather than assumed:
 #   It can say a count MOVED. That is what it is for, and it fires in BOTH directions --

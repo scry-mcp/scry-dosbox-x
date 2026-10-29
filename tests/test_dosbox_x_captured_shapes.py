@@ -10,11 +10,11 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import runnable
 
-import dosbox_binary as binaries
-import dosbox_debugger as dbg
-import dosbox_saved_states as states
-import dosbox_session as ds
-import dosbox_x_server as server
+from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import saved_states as states
+from scry_dosbox_x import server
+from scry_dosbox_x import session as ds
 
 FIX = Path(__file__).resolve().parent / "fixtures"
 

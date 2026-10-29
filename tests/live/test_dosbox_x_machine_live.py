@@ -10,7 +10,7 @@ import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
 from live_private import guest_dir
 
-import dosbox_x_server as server
+from scry_dosbox_x import server
 
 pytestmark = pytest.mark.live
 

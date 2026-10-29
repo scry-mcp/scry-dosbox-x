@@ -16,7 +16,7 @@ import pytest
 from scry_core import guardian
 from test_dosbox_x_server_exit_live import ANSWER_WITHIN_S, BRICKS, ROOT, _alive, _rpc
 
-import dosbox_process as dprocess
+from scry_dosbox_x import process as dprocess
 
 pytestmark = [pytest.mark.live,
               pytest.mark.skipif(sys.platform == "win32", reason="the guardian is POSIX only")]
@@ -32,7 +32,7 @@ sys.path.insert(0, sys.argv[1])
 if sys.argv[2] == "bare":
     from scry_core import guardian
     guardian.spawn = lambda *a, **k: None
-import dosbox_x_server
+from scry_dosbox_x import server as dosbox_x_server
 dosbox_x_server.main()
 """
 

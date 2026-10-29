@@ -22,18 +22,13 @@ from channel_double import NOT_RECOGNIZED, Machine, Stop, protected, session_ove
 from dosbox_x_server_support import clean_session, install, runnable  # noqa: F401
 from scry_core.host_program import MODE_BITS
 
-import dosbox_arming as arming
-import dosbox_binary as binaries
-import dosbox_checks as checks
-import dosbox_collect as dcollect
-import dosbox_grammar as grammar
-import dosbox_machine as machine
-import dosbox_placement as placement
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as sym
-import dosbox_trace as tracing
-import dosbox_x_server as server
+from scry_dosbox_x import arming, checks, grammar, machine, placement, server
+from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import collect as dcollect
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as sym
+from scry_dosbox_x import trace as tracing
 
 TRACE = Path(__file__).parent / "fixtures" / "trace"
 GUEST = Path(__file__).parent / "guest"
@@ -1155,7 +1150,7 @@ def test_a_wait_that_breaks_off_remembers_the_log_it_released(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The log opens with the release: a wait that leaves by an exception (a client that went
     away, a read that failed) leaves it open, and the next trace has to know."""
-    import dosbox_debugger as dbg
+    from scry_dosbox_x import debugger as dbg
     monkeypatch.setattr(dbg, "PROGRESS_EVERY_S", 0.0)
     machine = tracer(tmp_path, [("probe-settle-cs_ip-16", None)])
 

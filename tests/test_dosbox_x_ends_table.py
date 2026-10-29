@@ -9,8 +9,8 @@ from scry_core import ends_table
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import dosbox_mcp  # noqa: E402
-import dosbox_x_server  # noqa: E402,F401
+from scry_dosbox_x import mcp as dosbox_mcp  # noqa: E402
+from scry_dosbox_x import server as dosbox_x_server  # noqa: E402,F401
 
 ROOT = Path(__file__).resolve().parent.parent
 

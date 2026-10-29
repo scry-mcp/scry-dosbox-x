@@ -230,7 +230,7 @@ STEPS = [
 
 
 DEMO = Demo(
-    name="bricks", root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
+    name="bricks", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", front=ROOT / "README.md", steps=STEPS,
     capture=lambda run: run.dir / "screen.png",
     precheck=precheck,

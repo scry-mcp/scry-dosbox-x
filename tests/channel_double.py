@@ -15,10 +15,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
 
-import dosbox_binary
-import dosbox_grammar as grammar
-import dosbox_launch as dlaunch
-import dosbox_session as ds
+from scry_dosbox_x import binary as dosbox_binary
+from scry_dosbox_x import grammar
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import session as ds
 
 FIXTURES = Path(__file__).parent / "fixtures" / "channel"
 #: The longest line the debugger's message buffer holds: 512 bytes, one of them the NUL.

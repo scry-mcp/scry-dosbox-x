@@ -14,10 +14,11 @@ import pytest
 LIVE = Path(__file__).resolve().parent / "live"
 REPO = LIVE.parents[1]
 #: What a job prints of its copies: the guests' and the demo's directories, whether the demo's
-#: conf is there, and whether its `../../guest` mount reaches the stub.
+#: conf is there, and whether its `../../src/scry_dosbox_x/guest` mount reaches the stub.
 ASK = ("import live_private as p; print(p.guest_dir()); print(p.bricks_dir()); "
        "print((p.bricks_dir() / 'bricks.conf').is_file()); "
-       "print((p.bricks_dir() / '..' / '..' / 'guest' / 'SCRY.COM').resolve().is_file())")
+       "print((p.bricks_dir() / '..' / '..' / 'src' / 'scry_dosbox_x' / 'guest'"
+       " / 'SCRY.COM').resolve().is_file())")
 #: The one live file that names the repository's own demo directories: it runs each demo whole,
 #: windowed, alone after the pool, and compares its output with the files committed there.
 SERIAL_DEMO = "test_demos_live.py"

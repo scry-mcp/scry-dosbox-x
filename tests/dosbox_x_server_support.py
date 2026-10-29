@@ -27,17 +27,14 @@ from scry_core import log_wait as core_wait
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 
-import dosbox_binary as binaries
-import dosbox_declarations as dec
-import dosbox_folds as folds
-import dosbox_grammar as grammar
-import dosbox_inputs as inputs
-import dosbox_launch as dlaunch
-import dosbox_logs as dlogs
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import folds, grammar, inputs, server
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 #: What the DJGPP guest's debugger printed to `SELINFO <reg>` over the channel
 #: (`fixtures/channel/scry-dpmi.json`), by register.
@@ -462,7 +459,7 @@ def live_callers() -> set[str]:
 
     tree = ast.parse(Path(str(server.__file__)).read_text(encoding="utf-8"))
     direct = {node.name for node in tree.body if isinstance(node, ast.FunctionDef) and asks(node)}
-    # a fold's methods ask in `dosbox_folds`, each in its own body
+    # a fold's methods ask in `folds`, each in its own body
     folded = {tool for tool, table in (("comment_write", folds.COMMENT),
                                        ("screen_map_write", folds.MAP),
                                        ("scan", folds.SCAN), ("state_write", folds.STATE_METHODS))
@@ -480,7 +477,7 @@ def _launch_of(**kw: Any) -> dlaunch.Launch:
         raise ds.Invalid("session_broken", "not starting anything: this case wants the Launch only")
 
     with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
-         mock.patch("dosbox_x_server.ds.Session", build), stubbed_build():
+         mock.patch("scry_dosbox_x.server.ds.Session", build), stubbed_build():
         server.start(**kw)
     assert seen, "`start` never reached the Launch"
     return seen[0]
@@ -554,7 +551,7 @@ def returned_key_sets(fn: object) -> list[frozenset[str]]:
     return [keys(d) for node in ast.walk(ast.parse(src)) if (d := returned(node)) is not None]
 
 def documented(tool: str) -> str:
-    import dosbox_mcp
+    from scry_dosbox_x import mcp as dosbox_mcp
     root = Path(__file__).resolve().parent.parent
     family = next(f for f, tools in dosbox_mcp.ROSTER.families if tool in tools)
     pages = (root / "docs" / "reference" / f"{family.lower()}.md", root / "REFERENCE.md")
@@ -999,7 +996,7 @@ def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
         fake.launch.input_port = launch.input_port
         return fake
 
-    with mock.patch("dosbox_x_server.ds.Session", booted):
+    with mock.patch("scry_dosbox_x.server.ds.Session", booted):
         return cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=60,
                                                  **kw))
@@ -1037,7 +1034,7 @@ def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
         store.add(dec.Declaration("regpoint", "expr", row, created_at="t0", origin="s1"))
     monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
     stub_build(monkeypatch)
-    with mock.patch("dosbox_x_server.ds.Session", lambda _l: booted):
+    with mock.patch("scry_dosbox_x.server.ds.Session", lambda _l: booted):
         got = cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=60))
     return got, booted

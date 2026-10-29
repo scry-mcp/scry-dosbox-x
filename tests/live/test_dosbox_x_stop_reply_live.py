@@ -16,8 +16,8 @@ from test_dosbox_x_entry_routes import (
     real_address,
 )
 
-import dosbox_x_server as server
-from dosbox_logs import LOG_LIMIT_MAX
+from scry_dosbox_x import server
+from scry_dosbox_x.logs import LOG_LIMIT_MAX
 
 pytestmark = pytest.mark.live
 

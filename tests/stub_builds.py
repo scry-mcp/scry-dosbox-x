@@ -6,7 +6,7 @@ from pathlib import Path
 
 from scry_core import host_program
 
-import dosbox_binary as binaries
+from scry_dosbox_x import binary as binaries
 
 BANNER = "DOSBox-X version 0.0.0 SDL2, a stub build"
 

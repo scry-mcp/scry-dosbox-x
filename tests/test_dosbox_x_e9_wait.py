@@ -18,8 +18,8 @@ from scry_core import log_wait as core_wait
 from scry_core import progress as mprogress
 from scry_core import vocabulary as vocab
 
-import dosbox_log_reader as log_reader
-import dosbox_session as ds
+from scry_dosbox_x import log_reader
+from scry_dosbox_x import session as ds
 
 # Two instrumentation lines verbatim from a real guest; the third string only quotes one.
 E9_BOOT = ("Bochs port E9h: [+   0.000] BOOT  . start version=1.0 gfx=1024x768x8 "

@@ -9,9 +9,8 @@ import pytest
 from dosbox_x_server_support import FakeSession, install
 from scry_core.reply_contract import Invalid
 
-import dosbox_hardware as hardware
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import hardware, server
+from scry_dosbox_x import state as dstate
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "hardware"
 PORTINFO = {int(line.split()[2], 16): line
@@ -181,7 +180,7 @@ def test_a_build_without_pic_or_a20_is_refused_by_name_before_anything_is_sent(
 
 
 def test_the_summary_of_a_pic_action_says_what_the_line_reads_not_that_the_action_made_it() -> None:
-    from dosbox_summaries import pic_action
+    from scry_dosbox_x.summaries import pic_action
     said = pic_action({}, {"irq": 3, "method": "acknowledge",
                            "line": {"masked": True, "requested": False, "in_service": False}})
     assert said == "IRQ 3 acknowledge done; its line reads masked", said

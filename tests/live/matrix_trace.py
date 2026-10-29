@@ -35,7 +35,7 @@ from matrix_common import (
 from matrix_dos_real16 import dos_real16_main_loop
 from matrix_dpmi import dpmi_client
 
-import dosbox_trace as tracing
+from scry_dosbox_x import trace as tracing
 
 NORMAL_CORE_FLAGS = ["-set", "cpu core=normal"]
 DYNAMIC_CORE_FLAGS = ["-set", "cpu core=dynamic"]

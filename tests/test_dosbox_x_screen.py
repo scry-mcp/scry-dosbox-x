@@ -29,19 +29,11 @@ from scry_core.host_program import MODE_BITS
 from test_dosbox_x_machine import Bench, listing
 from test_dosbox_x_run_for import FRAME_MS
 
-import dosbox_arming as arming
-import dosbox_checks as checks
-import dosbox_dac as vgadac
-import dosbox_docs as docs
-import dosbox_grammar as grammar
-import dosbox_machine as machine
-import dosbox_paths as paths
-import dosbox_retrace as retrace
-import dosbox_screen as screen
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_vga as dvga
-import dosbox_x_server as server
+from scry_dosbox_x import arming, checks, docs, grammar, machine, paths, retrace, screen, server
+from scry_dosbox_x import dac as vgadac
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import vga as dvga
 
 VGA = Path(__file__).parent / "fixtures" / "vga"
 BENCHES = ("probe-park", "probe-booted", "dos-real16", "dos-djgpp32-startup", "dos-djgpp32-ui",
@@ -1690,7 +1682,7 @@ class Costly(Frames):
 
 @pytest.fixture
 def ahead(monkeypatch: pytest.MonkeyPatch) -> list[float]:
-    """`dosbox_retrace`'s clock run ahead of the real one by what a case adds: the bound is read
+    """`retrace`'s clock run ahead of the real one by what a case adds: the bound is read
     off it, while the session's own wait for a stop keeps the real clock, so a `VRT` the double
     answers is heard."""
     by = [0.0]

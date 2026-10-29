@@ -15,10 +15,12 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from dosbox_x_server_support import _names, clean_session, install  # noqa: E402,F401
 
-import dosbox_inputs as inputs  # noqa: E402
-import dosbox_mcp  # noqa: E402
-import dosbox_state as dstate  # noqa: E402
-import dosbox_x_server as server  # noqa: E402
+from scry_dosbox_x import (
+    inputs,  # noqa: E402
+    server,  # noqa: E402
+)
+from scry_dosbox_x import mcp as dosbox_mcp  # noqa: E402
+from scry_dosbox_x import state as dstate  # noqa: E402
 
 
 @pytest.fixture
@@ -170,7 +172,7 @@ def test_a_start_with_a_plan_is_exported_and_its_document_replays_on_the_same_do
     out = server.perform_export(dest=str(tmp_path / "s.json"))
     assert out["status"] == "ok" and out["cut"]["available"] is False, out
     doc = json.loads((tmp_path / "s.json").read_text())
-    assert "plan" not in doc["start"] and doc["entry"] == "dosbox_x_server.py"
+    assert "plan" not in doc["start"] and doc["entry"] == "scry_dosbox_x.server"
     assert "settle_seconds" not in doc["start"], doc["start"]
     assert [step["op"] for step in doc["steps"]] == ["write", "registers", "read_memory"]
     played = server.perform(steps=doc["steps"])

@@ -1,0 +1,99 @@
+"""`series_capture`: frames out of the session's video capture, written as a `scry-series/1`
+series (`scry_core.series`); and `MEDIA_TOOLS`, the file tools of scry-core this server publishes.
+
+Frames come from the AVI: frame N is the AVI's N-th frame from 0, not the display frame a
+stop's `frame` counts since power-on. Pixels are written RGB with no row
+prediction so palette and direct-colour AVIs come out alike.
+"""
+
+from __future__ import annotations
+
+import shutil
+import subprocess
+from pathlib import Path
+from typing import Any
+
+from scry_core import avi, fresh, judges, media_tools, raster, series
+
+from scry_dosbox_x import paths
+from scry_dosbox_x import session as ds
+
+SERIES_FFMPEG_SECS = 300
+#: The media file tools this server publishes: the image layer's, and the sound layer's, since
+#: `audio_record` writes WAV.
+MEDIA_TOOLS = media_tools.IMAGE_TOOLS + media_tools.AUDIO_TOOLS
+FRAME_SOURCE = "avi"
+
+def check_series_capture(at_frames: list[int] | None = None, first: int | None = None,
+                         last: int | None = None, step: int = 1, crop: list[int] | None = None,
+                         dest: str = "", capture_path: str = "", **_: Any) -> None:
+    """`series_capture`'s machine-independent half; `%` is refused (image2 template)."""
+    series.frame_list(at_frames, first, last, step)
+    if crop is not None:
+        judges.rect("crop", crop)
+    if capture_path:
+        paths.absolute("capture_path", capture_path)
+    if dest:
+        path = paths.absolute("dest", dest)
+        if "%" in str(path):
+            raise ds.Invalid("bad_argument", f"dest: a path containing `%` is refused: "
+                             f"{str(path)!r}. ffmpeg's image2 muxer reads it as a numbering "
+                             "template and writes somewhere else")
+
+
+def select_expression(wanted: list[int]) -> str:
+    """ffmpeg's `select` expression keeping exactly the frames `wanted`."""
+    return "+".join(f"eq(n\\,{f})" for f in wanted)
+
+
+def series_capture(session: ds.Session, scratch: Path, at_frames: list[int] | None,
+                   first: int | None, last: int | None, step: int, crop: list[int] | None,
+                   dest: str, capture_path: str) -> dict[str, Any]:
+    """The body of the `series_capture` tool."""
+    check_series_capture(at_frames, first, last, step, crop, dest, capture_path)
+    if shutil.which("ffmpeg") is None:
+        raise ds.Invalid("host_failed", "a series is extracted from the capture with `ffmpeg`, "
+                         "and there is none on PATH")
+    wanted = series.frame_list(at_frames, first, last, step)
+    src = (judges.existing_file("capture_path", capture_path, "capture") if capture_path
+           else Path(str(session.captures()[-1]["path"])))
+    width, height = avi.size("capture_path", src)
+    area = raster.inside(crop, width, height, f"the capture's {width}x{height} frames")
+    folder = fresh.directory(paths.fresh_dest("dest", dest) if dest else None,
+                             scratch / "series", lambda n: f"series-{n}", "the series")
+    with fresh.taken_back(folder):
+        _extract(src, folder, wanted, area if crop is not None else None)
+        reply = series.write_manifest(folder, "dosbox-x", FRAME_SOURCE, crop, wanted)
+    return {**reply, **series.tail(len(wanted), bool(dest), FRAME_SOURCE), "capture_path": str(src),
+            "crop": list(area)}
+
+
+def _extract(src: Path, folder: Path, wanted: list[int],
+             area: tuple[int, int, int, int] | None) -> None:
+    """The one ffmpeg pass, its PNGs renamed by frame; fewer than asked is refused."""
+    graph = f"select='{select_expression(wanted)}'"
+    if area is not None:
+        x, y, w, h = area
+        graph += f",crop={w}:{h}:{x}:{y}"
+    try:
+        got = subprocess.run(
+            ["ffmpeg", "-v", "error", "-y", "-i", str(src), "-vf", graph,
+             "-fps_mode", "passthrough", "-frames:v", str(len(wanted)), "-f", "image2",
+             "-c:v", "png", "-pred", "none", "-pix_fmt", "rgb24",
+             str(folder / "raw-%06d.png")],
+            capture_output=True, text=True, errors="replace", check=False,
+            timeout=SERIES_FFMPEG_SECS)
+    except subprocess.TimeoutExpired:
+        raise ds.Invalid("host_failed", f"`ffmpeg` did not return within {SERIES_FFMPEG_SECS}s "
+                         f"extracting {len(wanted)} frames from {src}") from None
+    out = sorted(folder.glob("raw-*.png"))
+    said = (got.stdout + got.stderr).strip()[-300:]
+    if got.returncode != 0:
+        raise ds.Invalid("host_failed", f"ffmpeg exited {got.returncode} extracting frames "
+                         f"from {src} and said: {said!r}")
+    if len(out) != len(wanted):
+        missing = wanted[len(out)]
+        raise ds.Invalid("bad_argument", f"{src} holds {len(out)} of the {len(wanted)} frames "
+                         f"asked: frame {missing} is past its end (frames are numbered from 0)")
+    for raw, frame in zip(out, wanted, strict=True):
+        raw.rename(folder / series.frame_name(frame))

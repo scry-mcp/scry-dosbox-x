@@ -9,9 +9,9 @@ from pathlib import Path
 
 import pytest
 
-import dosbox_coff as coff
-import dosbox_session as ds
-import dosbox_symbols as sym
+from scry_dosbox_x import coff
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import symbols as sym
 
 GUEST = Path(__file__).resolve().parent / "guest"
 

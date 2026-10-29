@@ -1,5 +1,5 @@
 """Every path a caller gives this server, judged by one rule: absolute or `~`-led, `~` expanded,
-the shape before the session gate and the filesystem at the call (`dosbox_paths`)."""
+the shape before the session gate and the filesystem at the call (`paths`)."""
 from __future__ import annotations
 
 import asyncio
@@ -18,12 +18,10 @@ from scry_core.host_program import MODE_BITS
 from scry_core.host_program import absolute as _abs
 from test_dosbox_x_dump import debugger
 
-import dosbox_launch as dlaunch
-import dosbox_paths as paths
-import dosbox_placement as placement
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import paths, placement, server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 #: Every (tool, argument) that carries a path. The registry test below holds the registered
 #: tools' arguments NAMED as paths (`paths.PATH_PARAMETERS`) to it: a new one under one of those
@@ -163,7 +161,7 @@ def _start_stubbed(**kw: Any) -> dict[str, Any]:
     def build(launch: dlaunch.Launch) -> Any:
         raise ds.Invalid("session_broken", "not starting anything")
     with mock.patch("scry_core.binaries.shutil.which", lambda _n: _abs("somewhere", "dosbox-x")), \
-         mock.patch("dosbox_x_server.ds.Session", build):
+         mock.patch("scry_dosbox_x.server.ds.Session", build):
         reply: Any = server.start(**kw)
     return cast(dict[str, Any], reply)
 

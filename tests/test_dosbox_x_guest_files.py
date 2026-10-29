@@ -11,10 +11,10 @@ import pytest
 from dosbox_x_server_support import install
 from scry_core.reply_contract import Invalid
 
-import dosbox_guest_files as guest
-import dosbox_launch as dlaunch
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import guest_files as guest
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import server
+from scry_dosbox_x import state as dstate
 
 
 def _judged(path: Path) -> dict[str, Any]:

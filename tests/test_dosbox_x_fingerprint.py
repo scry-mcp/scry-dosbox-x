@@ -7,10 +7,10 @@ from typing import Any
 
 from dosbox_x_server_support import _names, build_of, clean_session, install  # noqa: F401
 
-import dosbox_declarations as dec
-import dosbox_launch as dlaunch
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import server
+from scry_dosbox_x import state as dstate
 
 
 def test_a_declaration_carries_the_fingerprint_it_was_made_against() -> None:

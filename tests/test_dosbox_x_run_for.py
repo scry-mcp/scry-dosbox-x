@@ -11,13 +11,10 @@ from dosbox_x_server_support import clean_session, install  # noqa: F401  (the a
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 
-import dosbox_arming as arming
-import dosbox_grammar as grammar
-import dosbox_retrace as retrace
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
-from dosbox_sequence import _leaves_running
+from scry_dosbox_x import arming, grammar, retrace, server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x.sequence import _leaves_running
 
 #: The probe guest at rest in its tick loop, where a retrace stop finds it.
 PARK = {"CS": 0x814, "EIP": 0x106}

@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-import dosbox_inputs as inputs  # isort: skip -- a module of the repository root
+from scry_dosbox_x import inputs  # isort: skip -- a module of the repository root
 from matrix_common import (
     GUEST,
     M,

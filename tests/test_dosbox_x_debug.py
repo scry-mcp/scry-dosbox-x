@@ -25,15 +25,10 @@ from dosbox_x_server_support import returned_key_sets
 from scry_core import vocabulary as vocab
 from test_dosbox_x_e9_wait import E9_BOOT, LogSession
 
-import dosbox_arming as arming
-import dosbox_debugger as dbg
-import dosbox_grammar as grammar
-import dosbox_run_state as run_state
-import dosbox_running as running
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_stepping as stepping
-import dosbox_x_server as server
+from scry_dosbox_x import arming, grammar, run_state, running, server, stepping
+from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 #: The step guest's bytes at 0814:0100 (`tests/guest/step.asm`, assembled by nasm).
 STEP_COM = bytes.fromhex("CD03B83412E81700B430CD21BE2200BF2600B90400FCF3A4B90300E2FEEB01C3EBFE")

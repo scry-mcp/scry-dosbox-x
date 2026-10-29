@@ -15,7 +15,7 @@ from typing import Any
 from scry_core import live_host
 from scry_core.demo import Reply, Run, StepFailed
 
-import dosbox_binary
+from scry_dosbox_x import binary as dosbox_binary
 
 
 def precheck(run: Run) -> str:

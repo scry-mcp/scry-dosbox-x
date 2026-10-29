@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 from _live_teardown import _drop
 
-import dosbox_state as dstate
+from scry_dosbox_x import state as dstate
 
 
 class _ClosesWithoutEnding:

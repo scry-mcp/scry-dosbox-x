@@ -9,10 +9,9 @@ from typing import Any, cast
 
 import pytest
 
-import dosbox_captures as captures
-import dosbox_inputs as inputs
-import dosbox_session as ds
-import dosbox_state as dstate
+from scry_dosbox_x import captures, inputs
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 
 def test_a_key_list_takes_its_maximum_and_refuses_one_more() -> None:

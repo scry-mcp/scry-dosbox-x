@@ -14,13 +14,11 @@ import pytest
 from dosbox_x_server_support import NamesFake, _names, clean_session  # noqa: F401
 from scry_core import value_format as vf
 
-import dosbox_arming as arming
-import dosbox_declarations as dec
-import dosbox_placement as placement
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_symbols as dsym
-import dosbox_x_server as server
+from scry_dosbox_x import arming, placement, server
+from scry_dosbox_x import declarations as dec
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as dsym
 
 DS = 0xAF
 ENGINE = 0x1000            # the global pointer `_g_engine`, an offset in DS

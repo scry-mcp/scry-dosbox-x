@@ -17,10 +17,12 @@ from scry_core import avi, png, raster
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import dosbox_media as media  # noqa: E402
-import dosbox_session as ds  # noqa: E402
-import dosbox_state as dstate  # noqa: E402
-import dosbox_x_server as server  # noqa: E402
+from scry_dosbox_x import (
+    media,  # noqa: E402
+    server,  # noqa: E402
+)
+from scry_dosbox_x import session as ds  # noqa: E402
+from scry_dosbox_x import state as dstate  # noqa: E402
 
 needs_ffmpeg = pytest.mark.skipif(shutil.which("ffmpeg") is None,
                                   reason="series_capture's real path needs ffmpeg on PATH")
@@ -256,15 +258,14 @@ def test_a_media_file_tool_answers_in_this_server_s_envelope(tmp_path: Path) -> 
 def test_the_media_tools_are_named_once_for_the_registration_the_sequences_and_the_gate() -> None:
     """One constant read by the three places that need it, so a sound tool joining the
     server joins all three or none."""
-    import dosbox_checks as checks
-    import dosbox_mcp
-    import dosbox_sequence as sequence
+    from scry_dosbox_x import checks, sequence
+    from scry_dosbox_x import mcp as dosbox_mcp
     assert set(media.MEDIA_TOOLS) <= set(dosbox_mcp.registered_tools())
     assert set(media.MEDIA_TOOLS) <= sequence.RUNNING_OK_OPS
     assert set(media.MEDIA_TOOLS) <= set(checks.BY_OP)
     root = Path(media.__file__).parent
     spelled = [f.name for f in sorted(root.glob("*.py"))
-               if f.name != "dosbox_media.py"
+               if f.name != "media.py"
                and any(t in f.read_text(encoding="utf-8") for t in ("IMAGE_TOOLS", "AUDIO_TOOLS"))]
     assert spelled == [], f"{spelled} name the tools a second time instead of MEDIA_TOOLS"
 

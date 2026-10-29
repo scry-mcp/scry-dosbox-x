@@ -6,12 +6,12 @@ from typing import Any
 
 import pytest
 
-import dosbox_machine
-import dosbox_placement
-import dosbox_session as ds
-import dosbox_start_symbols as ss
-import dosbox_x_server as server
-from dosbox_state import STATE
+from scry_dosbox_x import machine as dosbox_machine
+from scry_dosbox_x import placement as dosbox_placement
+from scry_dosbox_x import server
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import start_symbols as ss
+from scry_dosbox_x.state import STATE
 
 ROWS = [
     {"memory": "conventional", "mcb_seg": "0158", "size_bytes": 640, "psp_seg": "0008",

@@ -13,10 +13,8 @@ import pytest
 from dosbox_x_server_support import _names, clean_session  # noqa: F401
 from scry_core import sequence as executor
 
-import dosbox_running as running
-import dosbox_sequence as sequence
-import dosbox_session as ds
-import dosbox_x_server as server
+from scry_dosbox_x import running, sequence, server
+from scry_dosbox_x import session as ds
 
 
 def test_a_refused_list_says_which_step_failed_and_every_refusal(tmp_path: Path) -> None:
@@ -89,7 +87,7 @@ def test_the_account_counts_the_stops_numbered_since_the_list_began(tmp_path: Pa
     """The stops block reads the failed step's or the tail's stop (`also`) beside the rows, and
     ends at the session's own record when that is newer, so a stop no reply surveyed is
     counted as unaccounted."""
-    import dosbox_state as dstate
+    from scry_dosbox_x import state as dstate
     _names(tmp_path)
     dstate.STATE.last_stop["seq"] = 5
     machine = sequence._Dosbox(cast(ds.Session, None), True)

@@ -10,7 +10,7 @@ import pytest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-import dosbox_summaries as one_line  # noqa: E402
+from scry_dosbox_x import summaries as one_line  # noqa: E402
 
 
 @pytest.mark.parametrize("states, said", [(1, "state_list: 1 state in /s"),

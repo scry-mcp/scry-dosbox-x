@@ -1,5 +1,5 @@
 """Freeze watches against the channel double, which answers `FM` as the debugger does: the byte's
-value now, and a list row with its offset alone (`dosbox_freezes`)."""
+value now, and a list row with its offset alone (`freezes`)."""
 
 from __future__ import annotations
 
@@ -10,11 +10,10 @@ import pytest
 from channel_double import REAL_STOP, Machine, session_over
 from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 
-import dosbox_arming as arming
-import dosbox_binary as binaries
-import dosbox_session as ds
-import dosbox_state as dstate
-import dosbox_x_server as server
+from scry_dosbox_x import arming, server
+from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 #: `dosio.asm`'s timer counter, in the segment DOS loaded it at.
 TICKS = "08BC:018F"

@@ -2,7 +2,7 @@ What the debugger's listings wrote into a session's logfile (`start(logfile=)`),
 live DOSBox-X sessions (the Homebrew build, `dosbox-x --version` 2026.08.31) by a script driving
 this server in process: each `<bench>-<COMMAND>.log.txt` is the logfile's bytes from the offset
 it had before the command to its end once the prompt was back, the pager (where the listing
-paged) answered with `Q`. Nothing here is authored: the parsers in `dosbox_machine.py` are
+paged) answered with `Q`. Nothing here is authored: the parsers in `src/scry_dosbox_x/machine.py` are
 written against these files and the doubles in `test_dosbox_x_machine.py` replay them.
 Program and board names were then replaced by neutral labels by a single mechanical substitution
 that preserves every field width; nothing else was edited.

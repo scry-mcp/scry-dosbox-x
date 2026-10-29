@@ -8,10 +8,9 @@ from typing import Any
 
 from dosbox_x_server_support import _names, clean_session  # noqa: F401
 
-import dosbox_arming as arming
-import dosbox_grammar as grammar
-import dosbox_session as ds
-import dosbox_state as dstate
+from scry_dosbox_x import arming, grammar
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 BPLIST = Path(__file__).parent / "fixtures" / "bplist"
 
@@ -76,8 +75,7 @@ def _captured(name: str) -> Any:
 
 def test_a_breakpoint_declared_at_a_vm86_stop_arms_and_names_the_stop_as_a_live_run_did(
         tmp_path: Path) -> None:
-    import dosbox_running as running
-    import dosbox_x_server as server
+    from scry_dosbox_x import running, server
     live = _captured("vm86-arm.json")
     fake = _names(tmp_path, mode="VM86", cs="0814")
     fake.eip = "00000221"
@@ -94,8 +92,8 @@ def _same(got: Any, live: Any, keys: tuple[str, ...]) -> None:
 
 
 def test_the_watches_a_live_run_armed_answer_as_it_did(tmp_path: Path) -> None:
-    import dosbox_symbols as dsym
-    import dosbox_x_server as server
+    from scry_dosbox_x import server
+    from scry_dosbox_x import symbols as dsym
     keys = ("status", "by", "mode", "fmt", "length", "armed", "state", "entries")
     _names(tmp_path, mode="Real", cs="0000", ds_="0000")
     _same(server.watch_add(ref="0000:0500", mode="change", length=2),
@@ -106,7 +104,7 @@ def test_the_watches_a_live_run_armed_answer_as_it_did(tmp_path: Path) -> None:
 
 
 def test_a_pointer_watch_on_a_null_head_answers_as_a_live_run_did(tmp_path: Path) -> None:
-    import dosbox_x_server as server
+    from scry_dosbox_x import server
     live = _captured("pointer-watches.json")
     _names(tmp_path, mode="Real", cs="0000", ds_="0040")
     keys = ("status", "by", "mode", "fmt", "length", "armed", "state", "why", "pointer")
@@ -116,7 +114,7 @@ def test_a_pointer_watch_on_a_null_head_answers_as_a_live_run_did(tmp_path: Path
 
 def test_a_saved_comment_keeps_the_width_its_offset_was_read_with(tmp_path: Path) -> None:
     """An offset past FFFF keeps its eight digits through a load and a save, a 16-bit one four."""
-    import dosbox_declarations as dec
+    from scry_dosbox_x import declarations as dec
     assert dec.canonical_ref("00A7:0045F880", "address") == "00A7:0045F880"
     assert dec.canonical_ref("00a7:45f880", "address") == "00A7:0045F880"
     assert dec.canonical_ref("814:10b", "address") == "0814:010B"
@@ -125,7 +123,7 @@ def test_a_saved_comment_keeps_the_width_its_offset_was_read_with(tmp_path: Path
 
 
 def test_a_linear_watch_armed_at_the_console_is_listed_as_nobody_s(tmp_path: Path) -> None:
-    import dosbox_x_server as server
+    from scry_dosbox_x import server
     fake = _names(tmp_path, mode="Real", cs="0000", ds_="0000")
     fake.rows[:] = [r for r in rows("bplist-bplm.txt") if r["entry"].startswith("BPLM ")]
     got = server.declaration_list("watch")
@@ -169,7 +167,7 @@ def test_two_stale_rows_of_a_moved_watch_are_both_deleted_whatever_the_renumberi
 def test_a_console_linear_watch_at_a_server_watch_s_place_is_neither_taken_nor_deleted(
         tmp_path: Path) -> None:
     """`BPLM 600` and a server watch at 0000:0600 name one byte; the linear row stays foreign."""
-    import dosbox_x_server as server
+    from scry_dosbox_x import server
     fake = _names(tmp_path, mode="Real", cs="0000", ds_="0000")
     added = server.watch_add(ref="0000:0600", mode="change", length=1)
     assert added["armed"] is True, added

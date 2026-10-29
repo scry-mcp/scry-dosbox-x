@@ -12,10 +12,10 @@ from typing import Any
 import pytest
 from scry_core import signalled_end
 
-import dosbox_mcp
-import dosbox_state as dstate
-import dosbox_x_server as server
-from dosbox_mcp import LOCK
+from scry_dosbox_x import mcp as dosbox_mcp
+from scry_dosbox_x import server
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x.mcp import LOCK
 
 
 class _Live:
@@ -69,7 +69,7 @@ def _lock_held_elsewhere() -> Iterator[None]:
 
 def _bare_session(monkeypatch: pytest.MonkeyPatch, body: Callable[..., int]) -> Any:
     """A `Session` with only what its `close` reads, its close body replaced by `body`."""
-    import dosbox_session as ds
+    from scry_dosbox_x import session as ds
 
     ses = ds.Session.__new__(ds.Session)
     ses._closing, ses._closed, ses.reap_failed = threading.Lock(), False, ""

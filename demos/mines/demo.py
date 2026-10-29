@@ -277,7 +277,7 @@ STEPS = [
 
 
 DEMO = Demo(
-    name="mines", root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
+    name="mines", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
     capture=lambda run: run.dir / "screen.png",
     precheck=precheck,

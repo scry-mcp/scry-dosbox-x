@@ -21,18 +21,12 @@ import pytest
 from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: F401
 from test_dosbox_x_machine import listing
 
-import dosbox_code as code
-import dosbox_comments as dcomments
-import dosbox_disasm as disasm
-import dosbox_dump as dumping
-import dosbox_grammar as grammar
-import dosbox_machine as machine
-import dosbox_running as running
-import dosbox_session as ds
-import dosbox_start_symbols as start_symbols
-import dosbox_state as dstate
-import dosbox_symbols as sym
-import dosbox_x_server as server
+from scry_dosbox_x import code, disasm, grammar, machine, running, server, start_symbols
+from scry_dosbox_x import comments as dcomments
+from scry_dosbox_x import dump as dumping
+from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
+from scry_dosbox_x import symbols as sym
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "disasm"
 GUEST = Path(__file__).resolve().parent / "guest"
