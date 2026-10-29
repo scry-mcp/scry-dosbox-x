@@ -70,8 +70,9 @@ def found(name: str) -> Any:
 
 
 def completed(reply: Reply) -> None:
-    expect(reply["failed_at"].get("available") is False,
-           f"{reply['steps_completed']} steps, failed at {reply['failed_at']}")
+    failed = reply["failed_at"]
+    expect(isinstance(failed, dict) and failed.get("available") is False,
+           f"{reply['steps_completed']} steps, failed at {failed}")
 
 
 def landed(*screens: str) -> Any:

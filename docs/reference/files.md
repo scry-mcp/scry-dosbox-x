@@ -164,9 +164,9 @@ seconds, default the whole file.
 `sample_rate_hz`, `channels`, `bits`, `pcm_sha256`.
 
 `diff`: `a` against the reference `b`, of one format; `align` (default true) meets the
-onsets. Reply: `exact`, `snr_db`, `class` (`exact`; `inaudible` 60 dB or more; `audible` 30
-to 60; `different`), `envelope_correlation` (64-window envelopes), `onset_delta_ms`,
-`length_delta_samples`, `aligned_by_samples`.
+onsets, then the waveforms. Reply: `exact`, `snr_db`, `class` (`exact`; `inaudible` 60 dB or
+more; `audible` 30 to 60; `different`), `envelope_correlation` (64-window envelopes),
+`onset_delta_ms`, `length_delta_samples`, `aligned_by_samples`.
 
 Refused: an argument the method does not take; `control_silent` when both are silent.
 

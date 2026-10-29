@@ -125,6 +125,14 @@ def test_a_text_mode_s_rows_and_columns_come_from_the_driver_s_range() -> None:
     assert inputs.parse_report(AUTHORED_TEXT).units() == (80, 25)
 
 
+@pytest.mark.parametrize(("top", "rows"), [(199, 25), (192, 25), (399, 50), (392, 50)])
+def test_a_text_mode_s_rows_are_read_off_a_range_set_either_way(top: int, rows: int) -> None:
+    """A program sets the range as `rows * 8 - 1`, or as `(rows - 1) * 8` the way Deluxe Paint
+    does for pixels: both name the same rows."""
+    report = dataclasses.replace(inputs.parse_report(AUTHORED_TEXT), max_y=top)
+    assert report.units() == (80, rows)
+
+
 def test_both_axes_are_bounded_on_the_screen_and_in_the_driver(tmp_path: Path) -> None:
     fake = _guest(tmp_path)
     for kw, words in (({"x": 79, "y": 25}, "outside the screen"),

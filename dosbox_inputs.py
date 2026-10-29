@@ -150,8 +150,17 @@ class Report:
             # 4F01h failing leaves 0x0, and the BIOS byte is then no mode a table can read.
             return self.resolution if min(self.resolution) > 0 else None
         if self.mode in TEXT_COLUMNS:
-            return TEXT_COLUMNS[self.mode], (self.max_y + 1) // DRIVER_UNITS_PER_ROW
+            return TEXT_COLUMNS[self.mode], self.text_rows()
         return SCREEN_UNITS.get(self.mode)
+
+    def text_rows(self) -> int:
+        """Rows from a range set as `rows * 8 - 1` (the driver's own) or `(rows - 1) * 8` (a
+        program that multiplies its last row); never both of the two fit one range."""
+        if (self.max_y + 1) % DRIVER_UNITS_PER_ROW == 0:
+            return (self.max_y + 1) // DRIVER_UNITS_PER_ROW
+        if self.max_y % DRIVER_UNITS_PER_ROW == 0:
+            return self.max_y // DRIVER_UNITS_PER_ROW + 1
+        return (self.max_y + 1) // DRIVER_UNITS_PER_ROW
 
     def kind(self) -> str:
         if self.is_vbe():
