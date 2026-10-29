@@ -840,6 +840,10 @@ class Session(dprocess.Process):
                     f"no new PNG appeared under {folder} within {seconds:g} s of the command")
             time.sleep(0.1)
         if target is not None:
+            if paths.taken(target):
+                raise Invalid("readback_refused", f"{target} appeared while the screenshot was "
+                              f"taken, and is somebody's: the screenshot stays at {path}",
+                              path=str(path))
             path = dcollect.collect(path, target, "screenshot")
         return {"route": "guest", **judges.file_facts(path)}
 

@@ -91,8 +91,8 @@ STATUS_ERROR     equ 02h            ; the status register (CMD read): the last w
 REG_IDENTIFY     equ 00000000h
 ID_MAGIC         equ 0D05B0740h
 REG_KB_INJECT    equ 00804200h      ; sub-selector KB is 0 << 8: the low byte is the scan byte
-INJECT_MOUSEBTN  equ 0800h          ; sub-selector 8: bit 7 press, low bits the button
-INJECT_MOTION    equ 0C00h          ; sub-selector 12: X in bits 16-23, Y in 24-31, signed
+SUB_MOUSEBTN     equ 0800h          ; sub-selector 8: bit 7 press, low bits the button
+SUB_MOTION       equ 0C00h          ; sub-selector 12: X in bits 16-23, Y in 24-31, signed
 MOTION_STEP      equ 127            ; the most one signed byte of motion carries
 REG_VGA_SIZE     equ 006845C0h      ; height << 16 | width, as the display draws it
 REG_SCREENSHOT   equ 00C54010h      ; bit 0: take a screenshot
@@ -144,7 +144,7 @@ start:
         out     dx, al
         mov     eax, REG_KB_INJECT
         call    write_regsel
-        mov     eax, INJECT_MOTION  ; no motion at all: a build that takes it moves nothing
+        mov     eax, SUB_MOTION    ; no motion at all: a build that takes it moves nothing
         call    write_data
         mov     dx, CMD
         in      al, dx
@@ -383,7 +383,7 @@ carry:
 .notk:  cmp     al, 'B'
         jne     .notb
         movzx   eax, byte [frame+2]
-        or      eax, INJECT_MOUSEBTN
+        or      eax, SUB_MOUSEBTN
         call    inject_reg
         jmp     .acked
 .notb:  cmp     al, 'M'
@@ -440,7 +440,7 @@ glide:
         shl     eax, 8
         or      eax, ebx
         shl     eax, 16
-        or      eax, INJECT_MOTION
+        or      eax, SUB_MOTION
         call    inject_reg
         jmp     .step
 .done:  ret

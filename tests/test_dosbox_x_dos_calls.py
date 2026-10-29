@@ -10,6 +10,7 @@ from dosbox_x_server_support import install
 from scry_core.reply_contract import Invalid
 
 import dosbox_dos_calls as dos
+import dosbox_logs as dlogs
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
@@ -153,3 +154,56 @@ def test_a_trace_written_with_crlf_reads_as_the_same_rows(tmp_path: Path) -> Non
     path.write_bytes(TRACE.read_bytes().replace(b"\n", b"\r\n"))
     calls = {c.get("file"): c for c in _read(path).calls if c.get("file")}
     assert calls["MISSING.TXT"]["error"]["code"] == 2 and calls["IN.TXT"]["file"] == "IN.TXT"
+
+
+def test_a_trace_row_of_no_known_shape_breaks_every_later_read_not_only_the_first(
+        tmp_path: Path) -> None:
+    path = tmp_path / "t.trace"
+    path.write_bytes(b"not a row of DOSTRACE\n")
+    trace = dos.Trace(path)
+    for _ in range(2):
+        with pytest.raises(Invalid) as seen:
+            dos.read(trace)
+        assert seen.value.code == "unexpected_answer", seen.value
+
+
+def test_a_match_the_trace_gained_just_before_the_emulator_died_is_still_found(
+        tmp_path: Path) -> None:
+    path = tmp_path / "t.trace"
+    path.write_bytes(b"")
+    install()
+    dstate.STATE.dos_calls = dos.Trace(path)
+
+    class Dying:
+        parked = False
+        polls = 0
+
+        def alive(self) -> bool:
+            self.polls += 1
+            if self.polls == 1:
+                return True
+            path.write_bytes(TRACE.read_bytes())
+            return False
+
+        def at_debugger(self) -> bool:
+            return False
+
+    got = dos.log_wait(cast(Any, Dying()), "MISSING", 5.0, 0, lambda *_a: None)
+    assert got["verdict"] == "TARGET" and got["already"] is False, got
+
+
+def test_a_repeated_pattern_searches_only_the_calls_that_can_still_change(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    trace = _read(TRACE)
+    searched: list[str] = []
+
+    class Counting:
+        def search(self, line: str) -> object:
+            searched.append(line)
+            return None
+
+    monkeypatch.setattr(dlogs, "compiled", lambda _pattern: Counting())
+    dos._matching(trace, "ANY")
+    first = len(searched)
+    dos._matching(trace, "ANY")
+    assert first == len(trace.calls) and len(searched) - first < first // 2, (first, searched)

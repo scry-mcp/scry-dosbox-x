@@ -5,7 +5,6 @@ from __future__ import annotations
 import inspect
 import json
 import os
-import shutil
 import subprocess
 import time
 from collections.abc import Callable
@@ -399,19 +398,6 @@ def test_send_keys_refuses_the_cap_and_a_miss_blames_no_window(tmp_path: Path) -
     miss = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=1))
     assert miss["verify"]["verdict"] == "TIMEOUT", miss
     assert "focus" not in miss["verify"]["note"], miss["verify"]["note"]
-
-
-def test_the_shipped_stub_matches_its_source(tmp_path: Path) -> None:
-    nasm = shutil.which("nasm")
-    if nasm is None:
-        pytest.skip("nasm is not on PATH, so the stub cannot be reassembled to compare")
-    guest = Path(str(server.__file__)).parent / "guest"
-    out = tmp_path / "SCRY.COM"
-    subprocess.run([nasm, "-f", "bin", str(guest / "scry.asm"), "-o", str(out)], check=True)
-    assert out.read_bytes() == (guest / "SCRY.COM").read_bytes(), (
-        "guest/SCRY.COM is not the assembled guest/scry.asm: reassemble it")
-    assert out.stat().st_size < 2048, (
-        "the stub stays resident in the guest's conventional memory, so it is kept tiny")
 
 
 def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> None:

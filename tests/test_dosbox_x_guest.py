@@ -131,6 +131,8 @@ def test_the_resident_check_reads_a_one_digit_protocol_number() -> None:
 
 @pytest.mark.skipif(shutil.which("nasm") is None,
                     reason="no `nasm` on PATH, so the stub cannot be reassembled")
+@pytest.mark.skipif(shutil.which("nasm") is None,
+                    reason="no `nasm` on PATH, so the stub cannot be reassembled to compare")
 def test_the_packaged_stub_is_exactly_what_its_source_assembles_to(tmp_path: Path) -> None:
     """The stub ships to every guest, so a binary behind its source runs an older protocol."""
     stub = GUEST.parent.parent / "guest"
@@ -141,6 +143,8 @@ def test_the_packaged_stub_is_exactly_what_its_source_assembles_to(tmp_path: Pat
     assert out.read_bytes() == (stub / "SCRY.COM").read_bytes(), (
         "guest/SCRY.COM is not the assembly of guest/scry.asm. Reassemble it: "
         "nasm -f bin guest/scry.asm -o guest/SCRY.COM")
+    assert out.stat().st_size < 2048, (
+        "the stub stays resident in the guest's conventional memory, so it is kept tiny")
 
 
 #: A global label in a `nasm -l` listing: offset, bytes, undotted name, then what follows it.

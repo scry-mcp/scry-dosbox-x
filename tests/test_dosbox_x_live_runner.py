@@ -414,3 +414,11 @@ def test_each_pytest_job_runs_in_a_basetemp_of_its_own_and_leaves_it_behind(
         rlp._child(tmp_path / f"summary-{n}.json", [f"tests/live/x.py::t{n}"])
     assert len(seen) == 2 and seen[0] != seen[1], seen
     assert not any(p.exists() for p in seen), "a job's basetemp outlived it"
+
+
+@pytest.mark.parametrize(("raw", "names"), [
+    ("", []), ("abc", ["A", "B", "C"]), ("AA", ["A", "A"]), ("aa, b", ["AA", "B"]),
+    ("AB,CD,", ["AB", "CD"])])
+def test_sections_are_named_one_letter_each_or_by_comma_so_the_alphabet_can_run_out(
+        lm: ModuleType, raw: str, names: list[str]) -> None:
+    assert lm.chosen_sections(raw) == names

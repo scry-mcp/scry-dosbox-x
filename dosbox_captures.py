@@ -47,6 +47,20 @@ def note_written(tool: str, reply: dict[str, Any]) -> None:
         STATE.written.append((kind, path))
 
 
+#: A recording's facts by path, valid while its size and modification time are the same: the
+#: listing is polled, and reading a clip whole at every poll is the cost.
+_AVI_SEEN: dict[str, tuple[tuple[int, int], dict[str, Any]]] = {}
+
+
+def _avi_row(path: Path, size: int) -> dict[str, Any]:
+    stamp = (size, path.stat().st_mtime_ns)
+    held = _AVI_SEEN.get(str(path))
+    if held is None or held[0] != stamp:
+        held = (stamp, ds.avi_facts(path.read_bytes()))
+        _AVI_SEEN[str(path)] = held
+    return held[1]
+
+
 def _row(kind: str, path: Path) -> dict[str, Any]:
     """One written file as `captures` lists it: present or not, its size, and for a recording
     whether its writer finished it and what it holds, re-read now."""
@@ -59,7 +73,7 @@ def _row(kind: str, path: Path) -> dict[str, Any]:
     row: dict[str, Any] = {"kind": kind, "path": str(path), "present": True, "bytes": size}
     if kind == "avi":
         try:
-            facts = ds.avi_facts(path.read_bytes())
+            facts = _avi_row(path, size)
         except OSError:
             return row
         return {**row, **{k: v for k, v in facts.items() if k != "bytes"}}

@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from scry_core import log_wait as core_wait
 from scry_core import prose
 from scry_core.progress import Ticker
 from scry_core.reply_contract import Invalid
@@ -63,6 +64,8 @@ ERRORS = {
 #: The first function that reports failure by the carry: older ones answer in AL.
 CARRY_ERA = 0x38
 POLL_S = 0.05
+#: How many patterns a trace remembers the matches of.
+PATTERNS_KEPT = 8
 
 
 @dataclass
@@ -75,6 +78,11 @@ class Trace:
     by_n: dict[int, dict[str, Any]] = field(default_factory=dict)
     capped: int | None = None
     partial: bytes = b""
+    #: The refusal of the first row of no known shape, kept because the read that met it had
+    #: already moved `offset` past the rest of its chunk.
+    broken: str | None = None
+    #: Per pattern: how many calls from the front are final (returned), and the matches among them.
+    matched: dict[str, tuple[int, list[dict[str, Any]]]] = field(default_factory=dict)
 
 
 def _regs(names: tuple[str, ...], values: tuple[str, ...]) -> dict[str, str]:
@@ -132,6 +140,8 @@ def _returned(call: dict[str, Any], found: re.Match[str]) -> None:
 
 def read(trace: Trace) -> Trace:
     """Parse what the file gained since the last read."""
+    if trace.broken is not None:
+        raise Invalid("unexpected_answer", trace.broken)
     try:
         with trace.path.open("rb") as f:
             f.seek(trace.offset)
@@ -158,8 +168,10 @@ def read(trace: Trace) -> Trace:
         elif (c := CAP.match(line)) is not None:
             trace.capped = int(c.group(1))
         else:
-            raise Invalid("unexpected_answer", f"the DOS call trace {trace.path} holds a line "
-                          f"that is no row of `{DOSTRACE}`: {line[:120]!r}")
+            trace.broken = (f"the DOS call trace {trace.path} holds a line that is no row of "
+                            f"`{DOSTRACE}`: {line[:120]!r}; the rows after it were not read, so "
+                            "the trace is not trusted from here on")
+            raise Invalid("unexpected_answer", trace.broken)
     for call in trace.calls:
         call.setdefault("line", _render(call))
     return trace
@@ -187,8 +199,24 @@ def _trace() -> Trace:
 
 
 def _matching(trace: Trace, pattern: str) -> list[dict[str, Any]]:
+    """The calls whose line `pattern` matches. A returned call's line no longer changes, so the
+    matches among the calls before the first unreturned one are kept per pattern."""
     rx = dlogs.compiled(pattern)
-    return [c for c in trace.calls if rx.search(c["line"])]
+    settled, kept = trace.matched.pop(pattern, (0, []))
+    stable: list[dict[str, Any]] = list(kept)
+    tail: list[dict[str, Any]] = []
+    pending = False
+    for i in range(settled, len(trace.calls)):
+        call = trace.calls[i]
+        pending = pending or not call["returned"]
+        if rx.search(call["line"]):
+            (tail if pending else stable).append(call)
+        if not pending:
+            settled = i + 1
+    trace.matched[pattern] = (settled, stable)
+    while len(trace.matched) > PATTERNS_KEPT:
+        del trace.matched[next(iter(trace.matched))]
+    return stable + tail
 
 
 def _capped(trace: Trace) -> dict[str, Any]:
@@ -230,12 +258,13 @@ def log_wait(session: ds.Session, pattern: str, seconds: float, since_mark: int,
                         already=True, waited_s=0.0, lines_before=before,
                         lines_total=len(trace.calls), arrived_during=0, lines_examined=before)
     ticker = Ticker(seconds, progress)
+    parked = None
     while not ticker.expired():
-        if not session.alive():
-            raise Invalid("session_broken", "the emulator went away while the DOS channel was "
-                          "being waited on")
-        # Asked of the debugger at every poll, as the guest channel's wait asks it.
+        # Both asked before the read, so the read is the last word on a stop or a death, as in
+        # the guest channel's wait.
         stopped = session.at_debugger()
+        gone = not session.alive()
+        parked = stopped if parked is None else parked
         read(trace)
         found = _matching(trace, pattern)
         if found:
@@ -244,10 +273,14 @@ def log_wait(session: ds.Session, pattern: str, seconds: float, since_mark: int,
                             lines_total=len(trace.calls),
                             arrived_during=len(trace.calls) - before,
                             lines_examined=len(trace.calls))
+        arrived = len(trace.calls) - before
+        if gone:
+            raise Invalid("session_broken", core_wait.gone_message(
+                pattern, core_wait.Ended("GONE", arrived, len(trace.calls), ticker.elapsed()),
+                seconds))
         if stopped:
-            raise ds.E9Stopped(f"the machine is stopped and its DOS trace holds no call matching "
-                               f"{pattern!r}: nothing more arrives until it runs",
-                               waited_s=ticker.elapsed(), arrived=len(trace.calls) - before)
+            raise ds._wait_stopped(pattern, arrived, ticker.elapsed(), parked=parked is True,
+                                   at_bound=False)
         ticker.tick("waiting {elapsed:.0f} s for a DOS call matching {pattern!r}",
                     pattern=pattern)
         time.sleep(POLL_S)

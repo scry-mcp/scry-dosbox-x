@@ -1578,7 +1578,7 @@ def list_watches(session: ds.Session) -> dict[str, Any]:
         item.update(mode=decl.watch_mode, length=decl.width, fmt=decl.fmt)
         if decl.watch_mode == "freeze":
             out.append({**item, **(_freeze_item(session, decl, held, machine) if read else
-                                   {"state": "unread", "why": "the guest is running"})})
+                                   {"state": "unlisted", "why": "the guest is running"})})
             continue
         if decl.watch_mode in dec.TAP_MODES:
             out.append({**item, **_tap_item(decl, counts, at_stop=False)})

@@ -54,6 +54,13 @@ class Section:
     alone: bool = False          # opens a window: never pooled
 
 
+def chosen_sections(raw: str) -> list[str]:
+    """The sections a run names: one letter each, or comma-separated names once a name has two
+    letters (`AA,B`); a lone name with two letters ends in a comma (`AA,`)."""
+    raw = raw.strip().upper()
+    return [n.strip() for n in raw.split(",") if n.strip()] if "," in raw else list(raw)
+
+
 def _waits(kw: dict[str, Any], params: dict[str, inspect.Parameter]) -> Iterator[tuple[str, Any]]:
     """Every wait a call declares, its own and its steps'."""
     for arg in _WAIT_ARGS:

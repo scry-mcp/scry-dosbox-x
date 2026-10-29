@@ -78,6 +78,13 @@ def arm(session: ds.Session, decl: dec.Declaration) -> Freeze:
         value = int(found.group(3), 16)
         freeze.values += bytes([value])
         freeze.entries.append(f"FM {off + i:08X} ({value:02X})")
+    # The value `FM` echoes is uninitialised when a paged protected-mode fault hit the read.
+    held_now = session.read_bytes(seg, off, width)
+    if held_now != freeze.values:
+        drop(session, decl.ref)
+        raise Invalid("readback_refused", f"`{FM}` echoed {freeze.values.hex()} for the bytes at "
+                      f"{seg:04X}:{off:X}, and reading them gives {held_now.hex()}: the debugger "
+                      "did not read what it froze, so nothing is armed or stored")
     entries = freeze.entries
     listed = {b["entry"] for b in session.breakpoints()}
     if missing := [e for e in entries if e not in listed]:

@@ -20,6 +20,7 @@ from dosbox_state import STATE
 #: The states that mean the guest handed nothing back, or nothing the host can read.
 FAILED = ("absent", "empty", "unchanged", "unreadable")
 GUEST_FILES_MAX = 16
+HASH_CHUNK_BYTES = 1 << 20
 
 
 @dataclass(frozen=True)
@@ -38,14 +39,19 @@ class Print:
 
 
 def fingerprint(path: Path) -> Print:
+    digest = hashlib.sha256()
+    size = 0
     try:
         st_ = path.stat()
-        data = path.read_bytes()
+        with path.open("rb") as f:
+            while chunk := f.read(HASH_CHUNK_BYTES):
+                digest.update(chunk)
+                size += len(chunk)
     except FileNotFoundError:
         return Print(False)
     except OSError as e:
         raise Invalid("host_failed", f"{path} could not be read: {e!r}") from None
-    return Print(True, len(data), st_.st_mtime_ns, hashlib.sha256(data).hexdigest())
+    return Print(True, size, st_.st_mtime_ns, digest.hexdigest())
 
 
 def check_guest_files(guest_files: object) -> list[Path]:

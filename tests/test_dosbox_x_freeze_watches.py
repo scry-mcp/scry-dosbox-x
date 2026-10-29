@@ -134,3 +134,27 @@ def test_a_freeze_through_a_pointer_is_refused_before_the_session() -> None:
     dstate.STATE.session = None
     got = _reply(server.watch_add(ref="[0040:0010]+2", mode="freeze", length=1))
     assert got["code"] == "bad_argument" and "symbol or by address" in got["message"], got
+
+
+def test_a_freeze_whose_echoed_value_is_not_what_memory_holds_is_refused_and_taken_out(
+        tmp_path: Path) -> None:
+    machine = live(tmp_path)
+
+    def lies(command: str) -> tuple[bool, list[str]]:
+        machine.breakpoints.insert(0, "FM 0000018F (00)")
+        return True, ["DEBUG: Set memory freeze at 08BC:018F with value: 00"]
+
+    machine.hooks["FM"] = lies
+    got = _reply(server.watch_add(ref=TICKS, mode="freeze", length=1))
+    assert got["code"] == "readback_refused" and "49" in got["message"], got
+    assert machine.breakpoints == [] and not dstate.STATE.freezes, (got, machine.breakpoints)
+
+
+def test_a_freeze_on_a_running_guest_lists_unlisted_as_a_tap_does(tmp_path: Path) -> None:
+    machine = live(tmp_path)
+    assert _reply(server.watch_add(ref=TICKS, mode="freeze", length=1))["status"] == "ok"
+    machine.stopped = False
+    cast(Any, dstate.STATE.session)._at_debugger = False
+    listed = _reply(server.declaration_list("watch"))
+    freeze = next(w for w in listed["watches"] if w["mode"] == "freeze")
+    assert freeze["state"] == "unlisted" and "running" in freeze["why"], freeze

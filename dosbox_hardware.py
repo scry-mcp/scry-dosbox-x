@@ -16,6 +16,8 @@ import dosbox_session as ds
 import dosbox_state as st
 
 PORTINFO = "PORTINFO"
+PIC = "PIC"
+A20 = "A20"
 PORT_MAX = 0xFFFF
 #: Each access's size in bits, with the debugger's read and write words for it.
 BITS = {8: ("INP", "OUTB"), 16: ("INW", "OUTW"), 32: ("IND", "OUTD")}
@@ -25,8 +27,8 @@ RESULT_LINE = re.compile(r"^Result: ([0-9a-f]+)$")
 
 IRQ_MAX = 15
 #: The `PIC` subcommand each action sends.
-PIC_ACTIONS = {"mask": "MASKIRQ", "unmask": "UNMASKIRQ", "ack": "ACKIRQ", "raise": "RAISEIRQ",
-               "lower": "LOWERIRQ"}
+PIC_ACTIONS = {"mask": "MASKIRQ", "unmask": "UNMASKIRQ", "acknowledge": "ACKIRQ",
+               "raise": "RAISEIRQ", "lower": "LOWERIRQ"}
 PIC_HEADER = re.compile(r"^(Master|Slave) interrupt controller state$")
 PIC_ICW = re.compile(r"^ICW (\d+)/(\d+) special=([01]) auto-eoi=([01]) rotate-eoi=([01]) "
                      r"single=([01]) request_issr=([01]) vectorbase=0x([0-9a-f]{2}) "
@@ -183,8 +185,14 @@ def check_pic(irq: object = None, **_: Any) -> None:
                       "(8 to 15 on the slave controller)")
 
 
+def _needs(session: ds.Session, command: str, tool: str) -> None:
+    if not session.has(command):
+        raise dbg.missing(command, f"`{tool}`")
+
+
 def pic_read(session: ds.Session) -> dict[str, Any]:
     """The body of `pic(method="read")`."""
+    _needs(session, PIC, "pic")
     session.require_stopped('pic(method="read")')
     return st.reply(**_pic_listing(session))
 
@@ -194,6 +202,7 @@ def pic_action(session: ds.Session, action: str, irq: int) -> dict[str, Any]:
     and the line read back. Only a mask is a state the listing must show; the rest say what the
     line holds after."""
     check_pic(irq)
+    _needs(session, PIC, "pic")
     session.require_stopped(f'pic(method="{action}")')
     listed = _pic_listing(session)
     if irq >= 8 * len(listed["controllers"]):
@@ -213,6 +222,7 @@ def pic_action(session: ds.Session, action: str, irq: int) -> dict[str, Any]:
 
 def a20_read(session: ds.Session) -> dict[str, Any]:
     """The body of `a20(method="read")`."""
+    _needs(session, A20, "a20")
     session.require_stopped('a20(method="read")')
     return st.reply(enabled=_a20(session))
 
@@ -229,6 +239,7 @@ def _a20(session: ds.Session) -> bool:
 def a20_set(session: ds.Session, on: bool) -> dict[str, Any]:
     """The body of `a20(method="on")` and `a20(method="off")`, read back."""
     word = "ON" if on else "OFF"
+    _needs(session, A20, "a20")
     session.require_stopped(f'a20(method="{word.lower()}")')
     session.altered = True
     ok, lines = session.exec(f"A20 {word}")

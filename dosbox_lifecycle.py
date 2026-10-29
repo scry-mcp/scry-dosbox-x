@@ -52,6 +52,14 @@ def _window_flags(shared: bool) -> list[str]:
     return tokens
 
 
+def _refuse_unreaped(session: ds.Session, cause: ds.Invalid) -> None:
+    """A start that failed after the emulator was killed, if the kill did not reap it."""
+    if session.reap_failed:
+        raise ds.Invalid("session_broken", f"{cause} -- and worse, {session.reap_failed}, so an "
+                         f"emulator may still be running. Check for a stray "
+                         f"`dosbox-x` before starting again") from None
+
+
 def start(conf: str, cwd: str, session_seconds: int, shared: bool,
           flags: list[str] | None, break_on_int3: bool,
           program: str, logfile: str, capture_video: bool, captures_dir: str,
@@ -137,10 +145,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         # Closed before the refusal goes out, or an emulator keeps running behind an INVALID.
         # `wait_ready` raising with the child alive is where a stray emulator is most likely.
         session.close(progress=progress)
-        if session.reap_failed:
-            raise ds.Invalid("session_broken", f"{e} -- and worse, {session.reap_failed}, so an "
-                             f"emulator may still be running. Check for a stray "
-                             f"`dosbox-x` before starting again") from None
+        _refuse_unreaped(session, e)
         raise
     except BaseException:
         session.close(progress=progress)
@@ -157,9 +162,12 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     if dos_calls:
         try:
             STATE.dos_calls = dos_calls_trace.begin(session)
-        except ds.Invalid:
+        except ds.Invalid as e:
             session.close(progress=progress)
             STATE.session = None
+            STATE.store = None
+            STATE.clear_running_state()
+            _refuse_unreaped(session, e)
             raise
     STATE.start_symbols = held
     rearm = arming.arm_at_start(session)   # before the park's survey, so the first stop lists them

@@ -50,6 +50,7 @@ from test_dosbox_x_find import reply
 import dosbox_arming as arming
 import dosbox_binary as binaries
 import dosbox_checks as checks
+import dosbox_dos_calls as dos_calls_trace
 import dosbox_folds as folds
 import dosbox_launch as dlaunch
 import dosbox_mcp
@@ -1602,3 +1603,34 @@ def test_close_and_status_with_no_session_say_so_in_the_words_both_servers_use()
     assert closed["summary"] == session_block.NO_SESSION_CLOSE, closed
     assert closed["note"] == session_block.NO_SESSION_CLOSE_NOTE, closed
     assert cast(dict[str, Any], server.status())["summary"] == session_block.NO_SESSION_STATUS
+
+
+def test_a_start_whose_dos_trace_fails_leaves_no_session_and_names_a_stray_emulator(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+
+    class Booted:
+        reap_failed = ""
+
+        def __init__(self, launch: dlaunch.Launch) -> None:
+            pass
+
+        def wait_ready(self, timeout: float, **_: Any) -> float:
+            return 0.1
+
+        def close(self, **_: Any) -> None:
+            self.reap_failed = "SIGKILL was sent and the process had not been reaped"
+
+    def refuse(_session: Any) -> None:
+        raise ds.Invalid("unexpected_answer", "DOSTRACE answered nothing")
+
+    monkeypatch.setattr(shutil, "which", lambda _: _abs("bin", "true"))
+    monkeypatch.setattr(binaries, "debugger_commands", lambda _path: ["DOSTRACE"])
+    monkeypatch.setattr(ds, "Session", Booted)
+    monkeypatch.setattr(dos_calls_trace, "begin", refuse)
+    dstate.STATE.session = None
+    got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path),
+                                            session_seconds=30, dos_calls=True))
+    assert got["code"] == "session_broken" and "stray" in got["message"], got
+    assert dstate.STATE.session is None and dstate.STATE.store is None, got

@@ -618,7 +618,7 @@ def pic(method: Annotated[str, vocab.enum(tuple(folds.PIC))],
     with none in service), `isr`, `isrr`, `auto_eoi`, ...), `irqs` (each `irq`, `vector`,
     `requested`, `masked`, `in_service`, `cascade`).
 
-    `mask`, `unmask`, `ack` (clear its in-service bit), `raise`, `lower` (its request line):
+    `mask`, `unmask`, `acknowledge` (clear its in-service bit), `raise`, `lower` (its request line):
     `irq` 0 to 15. Marks the session `altered`. The timer is IRQ 0: `raise` it to run its
     handler on demand. Reply: `method`, `irq`, `line` (its row after).
 

@@ -91,3 +91,26 @@ def test_a_capture_gone_between_the_listing_and_its_size_is_absent(
     monkeypatch.setattr(Path, "is_file", lambda self: True)
     assert caps._row("snapshot", gone) == {"kind": "snapshot", "path": str(gone),
                                            "present": False}
+
+
+def test_a_recorded_avi_is_read_once_while_it_has_not_changed(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    dstate.STATE.written.clear()
+    clip = tmp_path / "rec.avi"
+    clip.write_bytes(fake_avi(frames=5))
+    dstate.STATE.written.append(("avi", str(clip)))
+    reads: list[bytes] = []
+    real = ds.avi_facts
+
+    def counted(data: bytes) -> dict[str, object]:
+        reads.append(data)
+        return real(data)
+    monkeypatch.setattr(ds, "avi_facts", counted)
+    session = _recording(tmp_path)
+    session.launch.capture_video = False
+    for _ in range(2):
+        rows = caps.captures(session)["captures"]
+        assert [(r["kind"], r["avi_frames"]) for r in rows] == [("avi", 5)]
+    clip.write_bytes(fake_avi(frames=6))
+    assert caps.captures(session)["captures"][0]["avi_frames"] == 6
+    assert len(reads) == 2, "an unchanged recording was read whole again"

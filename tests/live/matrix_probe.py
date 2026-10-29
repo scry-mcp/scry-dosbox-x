@@ -161,7 +161,7 @@ _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump
                "screen_signature", "screen_wait", "comment_write add", "comment_write delete",
                "comment_write load", "screen_map_write add", "screen_map_find", "port read",
                    "port write",
-               "pic read", "pic unmask", "pic mask", "pic raise", "pic lower", "pic ack",
+               "pic read", "pic unmask", "pic mask", "pic raise", "pic lower", "pic acknowledge",
                "a20 read", "a20 off", "a20 on")
 _NO_CAPTURE = ("capture_frame", "series_capture")
 #: A directory no host has, spelled absolute on this one.
@@ -257,7 +257,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         # then raised, lowered and acknowledged while masked, so the guest never takes it.
         "port read": {"port": 0x3DA}, "port write": {"port": 0x3C8, "value": 0},
         "pic read": {}, **{f"pic {a}": {"irq": 3} for a in ("unmask", "mask", "raise", "lower",
-                                                            "ack")},
+                                                            "acknowledge")},
         "a20 read": {}, "a20 off": {}, "a20 on": {},
         "guest_file": {"path": str(_ABSENT / "OUT.TXT")},
     }
@@ -483,7 +483,7 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                       "pic docstring; measured: a masked line raised stays requested"),
         "pic lower": (lambda r: ok(r) and (r.get("line") or {}).get("requested") is False,
                       "pic docstring; measured: lowered, the request clears"),
-        "pic ack": (lambda r: ok(r) and (r.get("line") or {}).get("in_service") is False,
+        "pic acknowledge": (lambda r: ok(r) and (r.get("line") or {}).get("in_service") is False,
                     "pic docstring: its in-service bit cleared"),
         "a20 read": (lambda r: ok(r) and isinstance(r.get("enabled"), bool),
                      "a20 docstring"),
@@ -662,7 +662,7 @@ _STOPPED_ORDER = [
                   "declaration_clear watch", "send_keys", "send_mouse",
     "captures", "capture_frame", "series_capture", *MEDIA_ABSENT, "perform", "drive",
     "perform_export", "port read", "port write", "pic read", "pic unmask", "pic mask",
-    "pic raise", "pic lower", "pic ack", "a20 read", "a20 off", "a20 on", "guest_file"]
+    "pic raise", "pic lower", "pic acknowledge", "a20 read", "a20 off", "a20 on", "guest_file"]
 
 
 TOOLS = [p for t in REGISTERED

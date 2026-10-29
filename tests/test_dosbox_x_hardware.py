@@ -166,3 +166,15 @@ def test_the_a20_gate_set_is_read_back() -> None:
     _on(Machine(a20_sticks=False))
     got = _call(server.a20, method="on")
     assert got["status"] == "INVALID" and got["code"] == "readback_refused", got
+
+
+@pytest.mark.parametrize(("tool", "kw", "command"), [
+    (server.pic, {"method": "read"}, "PIC"), (server.pic, {"method": "mask", "irq": 3}, "PIC"),
+    (server.a20, {"method": "read"}, "A20"), (server.a20, {"method": "on"}, "A20")])
+def test_a_build_without_pic_or_a20_is_refused_by_name_before_anything_is_sent(
+        tool: Callable[..., object], kw: dict[str, Any], command: str) -> None:
+    m = _on(Machine())
+    m.commands = frozenset(m.commands - {command})
+    got = _call(tool, **kw)
+    assert got["code"] == "no_channel" and f"`{command}`" in got["message"], got
+    assert m.executed == []

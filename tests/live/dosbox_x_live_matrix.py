@@ -5,7 +5,7 @@
 Exit 0 no FAIL, 1 FAIL, 3 invalid, 2 argument. Env:
 DOSBOX_X_BINARY, DOSBOX_X_LIVE_BENCH, DOSBOX_X_LEAK_BINARY, DOSBOX_X_STOCK_BINARY,
 RECHIP_DIR (a ReChip build, for section P's private VESA case), DOSBOX_X_LIVE_SECTIONS
-(letters), DOSBOX_X_LIVE_JOBS (default half the CPUs).
+(letters, or comma-separated names once a name has two), DOSBOX_X_LIVE_JOBS (default half the CPUs).
 """
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ import matrix_v86  # noqa: F401
 import matrix_video_memory  # noqa: F401
 import matrix_window  # noqa: F401
 from matrix_common import ENV, M, close_whatever, isolate
-from matrix_ledger import EXIT_INVALID, SUMMARY_VAR, Section
+from matrix_ledger import EXIT_INVALID, SUMMARY_VAR, Section, chosen_sections
 from scry_core import live_pool
 
 import dosbox_binary  # isort: skip
@@ -74,7 +74,7 @@ def _pool(workers: int) -> Callable[[list[Section]], live_pool.PoolResult]:
         with live_private.copies_of_jobs() as copies:
             jobs = [live_pool.Job(
                         letter, [sys.executable, str(Path(__file__).resolve())],
-                        env={SECTIONS_VAR: letter, JOBS_VAR: "1", **copies.env(letter),
+                        env={SECTIONS_VAR: f"{letter},", JOBS_VAR: "1", **copies.env(letter),
                              **M.host.job_env(letter)},
                         planned=tuple(c.label for s in sections if s.letter == letter
                                       for c in s.cells))
@@ -98,11 +98,11 @@ def _main() -> int:
               file=sys.stderr)
         return 2
     letters = {s.letter for s in M.sections}
-    wanted = ENV.get(SECTIONS_VAR, "").strip().upper()
+    wanted = chosen_sections(ENV.get(SECTIONS_VAR, ""))
     unknown = sorted(set(wanted) - letters)
     if unknown:
         print(f"INVALID: {SECTIONS_VAR} names no section {unknown}; "
-              f"there are {''.join(sorted(letters))}", file=sys.stderr)
+              f"there are {', '.join(sorted(letters))}", file=sys.stderr)
         return EXIT_INVALID
     workers = _jobs()
     if workers is None:
@@ -116,7 +116,7 @@ def _main() -> int:
     pool = _pool(workers) if workers > 1 and not summary else None
     if pool is None and not summary:
         print("jobs: 1, every section in this process", flush=True)
-    return M.run(list(wanted), ENV, close_whatever, isolate, pool=pool,
+    return M.run(wanted, ENV, close_whatever, isolate, pool=pool,
                  summary=Path(summary) if summary else None)
 
 

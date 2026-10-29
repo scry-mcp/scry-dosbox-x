@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import functools
+import struct
 
 import dosbox_vga as vga
 
@@ -52,4 +53,4 @@ def rgb(shape: vga.Geometry, data: bytes) -> bytes:
         out[0::3], out[1::3], out[2::3] = flat[2::4], flat[1::4], flat[0::4]
         return bytes(out)
     table = _wide_table(6 if shape.word == "M_LIN16" else 5)
-    return b"".join(table[w] for w in memoryview(flat).cast("H"))
+    return b"".join(table[w] for (w,) in struct.iter_unpack("<H", flat))

@@ -422,6 +422,24 @@ def test_snapshot_sends_the_stub_s_command_and_hands_back_the_new_png_or_moves_i
         ds.Session.snapshot(as_session(fake), Path("shot.png"), 5.0)
 
 
+def test_a_snapshot_whose_dest_appeared_during_the_shot_leaves_it_where_it_was(
+        tmp_path: Path) -> None:
+    fake = ShotFake(tmp_path / "save")
+    dest = tmp_path / "shot.png"
+    send = fake.send_commands
+
+    def somebody_writes_first(commands: list[bytes]) -> list[str]:
+        sent = send(commands)
+        dest.write_bytes(b"somebody's")
+        return sent
+    fake.send_commands = somebody_writes_first  # type: ignore[method-assign]
+    with pytest.raises(ds.Invalid) as e:
+        ds.Session.snapshot(as_session(fake), dest, 5.0)
+    left = list((tmp_path / "caps").glob("*.png"))
+    assert e.value.code == "readback_refused" and len(left) == 1, (e.value, left)
+    assert str(left[0]) in str(e.value) and dest.read_bytes() == b"somebody's"
+
+
 @MODE_BITS
 def test_a_snapshot_that_cannot_be_moved_is_host_failed_naming_where_the_png_is(
         tmp_path: Path) -> None:

@@ -2,6 +2,7 @@
 emulator's own log categories chosen at `start`."""
 from __future__ import annotations
 
+import hashlib
 import os
 from pathlib import Path
 from typing import Any, cast
@@ -129,3 +130,18 @@ def test_a_file_the_guest_turned_into_a_directory_is_unreadable_not_a_failed_clo
     out.mkdir()
     states = guest.at_close()
     assert states[0]["state"] == "unreadable" and "why" in states[0], states
+
+
+def test_a_large_output_is_hashed_in_chunks_never_read_whole(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    big = tmp_path / "OUT.BIN"
+    big.write_bytes(b"\x5a" * 3_000_007)
+
+    def refuse(self: Path) -> bytes:
+        raise AssertionError("the whole file was read into memory")
+
+    monkeypatch.setattr(Path, "read_bytes", refuse)
+    seen = guest.fingerprint(big)
+    assert seen.size == 3_000_007
+    monkeypatch.undo()
+    assert seen.sha256 == hashlib.sha256(big.read_bytes()).hexdigest()
