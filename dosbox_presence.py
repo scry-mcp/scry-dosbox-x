@@ -36,6 +36,8 @@ NO_COMMAND = "this DOSBox-X's debugger has no PRESENCE command"
 NO_OUTPUT = ("this output cannot be drawn on (an 8-bit output, or the TrueType output while it "
              "shows text)")
 NO_WINDOW = "a session started without `shared` has no window to draw on"
+#: The bare command names the build's version; a build that refuses the bare form is version 1.
+MIN_VERSION = 2
 
 
 def channel_args(look: presence.Look = presence.LOOK) -> str:
@@ -58,10 +60,17 @@ class ChannelAdapter:
         self._args = channel_args(look)
         self.pointer = False
         self.answer = ""
+        self.version: int | None = None
 
     def show(self, state: presence.State) -> None:
         if not self._session.has("PRESENCE"):
             raise presence.Unavailable(NO_COMMAND)
+        if self.version is None:
+            self.version = build_version(self._session.exec("PRESENCE")[1])
+        if self.version < MIN_VERSION:
+            raise presence.Unavailable(
+                f"this DOSBox-X's PRESENCE is version {self.version}, which draws the arrow at a "
+                f"share of the window; version {MIN_VERSION} sizes it by the guest's pixels")
         ok, lines = self._session.exec(
             f"PRESENCE {state} {self._args} pointer={int(self.pointer)}")
         if not ok:
@@ -80,6 +89,14 @@ class ChannelAdapter:
 
     def repaint(self, still: Callable[[], bool]) -> None:
         """Nothing: a guest parked at the debugger keeps drawing frames."""
+
+
+def build_version(lines: list[str]) -> int:
+    """The `version=N` word of the bare command's answer; 1 when it has none."""
+    for word in " ".join(lines).split():
+        if word.startswith("version=") and word[len("version="):].isdigit():
+            return int(word[len("version="):])
+    return 1
 
 
 def pointer_moved(shown: presence.Shown) -> None:

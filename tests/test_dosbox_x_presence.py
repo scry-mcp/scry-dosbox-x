@@ -47,11 +47,15 @@ class _Session:
         self.answers = list(answers)
         self.commands = commands
         self.sent: list[str] = []
+        self.bare: tuple[bool, list[str]] = (
+            True, ["PRESENCE off frames=0 pointer=0 output=none version=2"])
 
     def has(self, command: str) -> bool:
         return command in self.commands
 
     def exec(self, command: str, seconds: float | None = None) -> tuple[bool, list[str]]:
+        if command == "PRESENCE":
+            return self.bare
         self.sent.append(command)
         return self.answers.pop(0)
 
@@ -218,3 +222,22 @@ def test_a_mouse_move_keeps_its_reply_when_the_session_dies_after_it(
     monkeypatch.setattr(inputs, "send_mouse", died)
     out = server.send_mouse(x=1, y=1)
     assert out["status"] == "ok" and out["delivered"] is True, out
+
+
+@pytest.mark.parametrize("bare, said", [
+    ((False, ["PRESENCE needs a state", dbg.NOT_RECOGNIZED]), "version 1"),
+    ((True, ["PRESENCE off frames=0 pointer=0 output=none version=1"]), "version 1"),
+])
+def test_a_build_older_than_the_arrows_pixel_size_is_said_unavailable_by_version(
+        bare: tuple[bool, list[str]], said: str) -> None:
+    session = _Session(commands=frozenset({"PRESENCE"}))
+    session.bare = bare
+    shown = dpresence.open_shown(session, True, True)
+    why = shown.reply()
+    assert isinstance(why, dict) and why["available"] is False and said in why["why"], why
+    assert session.sent == [], "nothing was drawn on a build that would draw it wrong"
+
+
+def test_a_build_names_its_version_in_the_bare_answer() -> None:
+    assert dpresence.build_version(["PRESENCE off frames=0 pointer=0 output=none version=2"]) == 2
+    assert dpresence.build_version(["PRESENCE needs a state"]) == 1
