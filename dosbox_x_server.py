@@ -623,9 +623,9 @@ def pic(method: Annotated[str, vocab.enum(tuple(folds.PIC))],
     handler on demand. Reply: `method`, `irq`, `line` (its row after).
 
     Refused (`bad_argument`): an `irq` out of range or on a slave this machine lacks, an
-    argument the method does not take. `readback_refused`: a mask or unmask the listing does
-    not show after. `not_stopped`: a running guest. `unexpected_answer`: a listing of another
-    shape.
+    argument the method does not take. `no_channel`: a build with no `PIC` command.
+    `readback_refused`: a mask or unmask the listing does not show after. `not_stopped`: a
+    running guest. `unexpected_answer`: a listing of another shape.
 
     Reference: REFERENCE.md, The machine's hardware.
     """
@@ -640,7 +640,8 @@ def a20(method: Annotated[str, vocab.enum(tuple(folds.A20))]) -> dict[str, Any]:
     `read`, `on`, `off`; the last two mark the session `altered` and read the gate back.
     Reply: `enabled`.
 
-    Refused: a gate that does not read back as set (`readback_refused`); a running guest
+    Refused: a build with no `A20` command (`no_channel`); a gate that does not read back as set
+    (`readback_refused`); a running guest
     (`not_stopped`); an answer of another shape (`unexpected_answer`).
 
     Reference: REFERENCE.md, The machine's hardware.
@@ -931,8 +932,9 @@ def state_write(method: Annotated[str, vocab.enum(tuple(folds.STATE_METHODS))], 
 
     `load`: replaces the machine, altering the session, and taps the declared count and capture
     watches again (the load resets the page handlers). Reply: `name`, `path`, the state's own
-    members, `paused`, `mark`, `taps` (`rearmed` refs and `unarmed` rows with `why`) with
-    a count or capture watch declared.
+    members, `paused`, `mark`, `taps` (`rearmed` refs and `unarmed` rows with `why`) when
+    a declared tap was tapped again or could not be (a guest released running again waits for
+    a stop).
 
     Refused: a DOSBox-X without the commands (`no_channel`); a state of another version,
     program, memory size or machine type; a `.sav` that is no regular file (`unknown_ref`).
@@ -1494,8 +1496,8 @@ def guest_file(path: str) -> dict[str, Any]:
 @tool("List this session's captures", summary=one_line.captures, read_only=True)
 def captures() -> dict[str, Any]:
     """Lists the files the session's tools wrote (`record` and `audio_record` among them), in
-    write order, re-read now, then the `capture_video` AVIs, largest last. Works on a running
-    guest.
+    write order, re-read when changed, then the `capture_video` AVIs, largest last. Works on a
+    running guest.
 
     Reply: `captures` (each `kind`, `path`, `present`, `bytes`; a recording also `complete`, and
     an AVI `riff_avi`, `avi_frames`, a WAV `samples`, `channels`, `sample_rate_hz`, a DRO

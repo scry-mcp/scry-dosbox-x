@@ -18,8 +18,8 @@ captures()
 ```
 
 Lists the files the session's tools wrote (`record` and `audio_record` among them), in
-write order, re-read now, then the `capture_video` AVIs, largest last. Works on a running
-guest.
+write order, re-read when changed, then the `capture_video` AVIs, largest last. Works on a
+running guest.
 
 Reply: `captures` (each `kind`, `path`, `present`, `bytes`; a recording also `complete`, and
 an AVI `riff_avi`, `avi_frames`, a WAV `samples`, `channels`, `sample_rate_hz`, a DRO

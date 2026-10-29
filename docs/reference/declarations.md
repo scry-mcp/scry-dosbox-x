@@ -309,7 +309,7 @@ freeze never stops it either: each byte is a debugger `FM` row.
 steps, so it holds against the guest's own writes and runs past anything that is not an
 instruction stepped there: a dynamic core, a DMA transfer. Each stop reads the bytes back and
 says `holding` or `not_held`, rather than trusting the row (`gone` when a row was deleted,
-`unarmed` in a session that has not armed it, `unread` on a running guest). It pins the values
+`unarmed` in a session that has not armed it, `unlisted` on a running guest). It pins the values
 of the stop it is declared at, so a stored freeze is never armed again by `start` or
 `symbols_load`, where those bytes hold something else. The debugger lists a freeze by its
 offset alone, so any freeze already at the same offset refuses a new one: the two rows could not
@@ -365,14 +365,13 @@ block. Rows past the cap are counted in `overflow_rows`, values and writers past
 holding the trigger, little-endian, so a word written over the trigger and its neighbour shows both
 lanes and the byte it covered. `pc` is the instruction that made the access, `SSSS:OOOOOOOO`, with
 `symbol` when a table places it. `time_s` is the emulated clock, `line` the beam's line computed as
-the light pen latches it, and `frame` is unavailable: the debugger's `TAP` writes a row's time
-and line but not the frame count a stop reads, and `line` is unavailable before the display has
+the light pen latches it, and `frame` is the display frame count a stop reads (unavailable only on a build whose `TAP` writes a row's time and line alone); `line` is unavailable before the display has
 timed its first frame. A read capture
 on code also sees the instruction fetches of that byte.
 
 **What a survey and a listing say.** Each count or capture carries `tally_id` (the debugger's
 tap), `addr`, `trigger_addr` and `trigger_type` where it has them, `installed`, `state`
-(`tallied` or `captured`; `displaced`; `unlisted` when `TAPLIST` did not list it; `unarmed` when
+(`tallied` or `captured`; `displaced`; `unlisted` when `TAPLIST` did not list it or could not be read, as on a running guest; `unarmed` when
 this session holds no tap for it) and `total`. A stop's survey adds `since_last_stop` (with
 `reset` when the total fell) and never the rows or the tables, which would drown every reply.
 `declaration_list` adds a count's `values` (each `at`, `raw_hex`, `count`, and `value` when one

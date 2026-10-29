@@ -63,7 +63,7 @@ def _avi_row(path: Path, size: int) -> dict[str, Any]:
 
 def _row(kind: str, path: Path) -> dict[str, Any]:
     """One written file as `captures` lists it: present or not, its size, and for a recording
-    whether its writer finished it and what it holds, re-read now."""
+    whether its writer finished it and what it holds, re-read when it changed."""
     try:
         size = path.stat().st_size if path.is_file() else None
     except FileNotFoundError:

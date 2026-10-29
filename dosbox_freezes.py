@@ -9,6 +9,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
 import dosbox_binary as binaries
@@ -66,31 +67,35 @@ def arm(session: ds.Session, decl: dec.Declaration) -> Freeze:
     freeze = Freeze(seg, off, b"", [])
     # Kept as it grows, so a failure half-way removes the rows already armed.
     STATE.freezes[decl.ref] = freeze
-    for i in range(width):
-        command = f"{FM} {seg:04X}:{off + i:X}"
-        ok, lines = session.exec(command)
-        found = next((m for line in lines if (m := _SET.match(line))), None)
-        if not ok or found is None:
+    try:
+        for i in range(width):
+            command = f"{FM} {seg:04X}:{off + i:X}"
+            ok, lines = session.exec(command)
+            found = next((m for line in lines if (m := _SET.match(line))), None)
+            if not ok or found is None:
+                raise Invalid("unexpected_answer", f"`{command}` answered "
+                              f"{' / '.join(lines) or 'nothing'}, not that it froze the byte; the "
+                              "bytes frozen before it were taken out")
+            value = int(found.group(3), 16)
+            freeze.values += bytes([value])
+            freeze.entries.append(f"FM {off + i:08X} ({value:02X})")
+        # The value `FM` echoes is uninitialised when a paged protected-mode fault hit the read.
+        held_now = session.read_bytes(seg, off, width)
+        if held_now != freeze.values:
+            raise Invalid("readback_refused",
+                          f"`{FM}` echoed {freeze.values.hex()} for the bytes at "
+                          f"{seg:04X}:{off:X}, and reading them gives {held_now.hex()}: the "
+                          "debugger did not read what it froze, so nothing is armed or stored")
+        entries = freeze.entries
+        listed = {b["entry"] for b in session.breakpoints()}
+        if missing := [e for e in entries if e not in listed]:
+            raise Invalid("readback_refused",
+                          f"the debugger does not list {', '.join(missing)} after freezing: "
+                          "nothing is armed or stored")
+    except BaseException:
+        with cancel.shielded():
             drop(session, decl.ref)
-            raise Invalid("unexpected_answer", f"`{command}` answered "
-                          f"{' / '.join(lines) or 'nothing'}, not that it froze the byte; the "
-                          "bytes frozen before it were taken out")
-        value = int(found.group(3), 16)
-        freeze.values += bytes([value])
-        freeze.entries.append(f"FM {off + i:08X} ({value:02X})")
-    # The value `FM` echoes is uninitialised when a paged protected-mode fault hit the read.
-    held_now = session.read_bytes(seg, off, width)
-    if held_now != freeze.values:
-        drop(session, decl.ref)
-        raise Invalid("readback_refused", f"`{FM}` echoed {freeze.values.hex()} for the bytes at "
-                      f"{seg:04X}:{off:X}, and reading them gives {held_now.hex()}: the debugger "
-                      "did not read what it froze, so nothing is armed or stored")
-    entries = freeze.entries
-    listed = {b["entry"] for b in session.breakpoints()}
-    if missing := [e for e in entries if e not in listed]:
-        drop(session, decl.ref)
-        raise Invalid("readback_refused", f"the debugger does not list {', '.join(missing)} after "
-                      "freezing: nothing is armed or stored")
+        raise
     return freeze
 
 

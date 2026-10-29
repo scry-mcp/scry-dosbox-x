@@ -102,3 +102,12 @@ def test_build_check_on_an_executable_the_host_cannot_run_is_host_failed(
     got = cast(dict[str, Any], server.build_check(binary=str(empty)))
     assert got["code"] == "host_failed", got
     assert str(empty) in got["message"], got
+
+
+def test_a_bare_pic_or_a20_word_in_a_build_is_not_the_debuggers_command(tmp_path: Path) -> None:
+    other = tmp_path / "other-dosbox-x"
+    other.write_bytes(b"\0PIC\0\0A20\0 log groups and a conf word, no debugger command")
+    assert not {"PIC", "A20"} & set(binaries.debugger_commands(str(other)))
+    carries = tmp_path / "dosbox-x"
+    carries.write_bytes(b"\0MASKIRQ\0\0ACKIRQ\0 A20 gate is %s\n")
+    assert {"PIC", "A20"} <= set(binaries.debugger_commands(str(carries)))

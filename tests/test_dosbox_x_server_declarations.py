@@ -10,7 +10,6 @@ from unittest import mock
 
 import pytest
 from dosbox_x_server_support import (  # noqa: E402
-    FakeSession,
     _Booted,
     _deferred_load_with,
     _loaded_then_restored,
@@ -239,9 +238,10 @@ def test_the_flags_term_is_judged_on_all_32_bits_as_the_debugger_compares_them()
 
 def test_a_holding_registerpoint_is_named_but_never_taken_for_the_stops_maker(
         tmp_path: Path) -> None:
-    """`BPIF` keeps no hit flag and a condition can hold at a stop something else made, so the
-    stop stays unattributed: what reads `attributed` (a retrace cut, `run_to`'s arrival) must
-    not see a declared stop, and `cause` names the registerpoint as the likely one."""
+    """On a build whose `RUNSTATE` names no `BPIF` row a condition can hold at a stop something
+    else made, so the stop stays unattributed: what reads `attributed` (a retrace cut, `run_to`'s
+    arrival) must not see a declared stop, and `cause` names the registerpoint as the likely
+    one."""
     fake = _names(tmp_path)
     held = [{"index": "00", "entry": "BPIF DS!=0"}]
     where = {"cs": "0814", "eip": "00000106", "mode": "real"}
@@ -262,7 +262,7 @@ def test_a_registerpoint_the_debugger_names_as_the_stops_maker_is_attributed_exa
     """`RUNSTATE` ends a stop made by a `BPIF` row with that row's `BPLIST` number: the stop is
     then that registerpoint's, though another one holds too."""
     fake = _names(tmp_path)
-    fake.fired_row = 0x0A
+    fake.fired_entry = "BPIF AX==1"
     held = [{"index": "00", "entry": "BPIF DS!=0"}, {"index": "0A", "entry": "BPIF AX==1"}]
     where = {"cs": "0814", "eip": "00000106", "mode": "real"}
     got = arming.attribute_stop(cast(ds.Session, fake), where=where,
@@ -270,22 +270,24 @@ def test_a_registerpoint_the_debugger_names_as_the_stops_maker_is_attributed_exa
     assert got["attributed"] is True and got["ref"] == "AX==1" and got["by"] == "regpoint", got
     assert "regpoints_holding" not in got
     assert dstate.cause(got) == "registerpoint AX==1, whose condition came true at 0814:00000106"
-    fake.fired_row = 0x0B                  # a number no row carries: nothing is claimed
+    held = held[:1]                        # the row left the list since: nothing is claimed
     got = arming.attribute_stop(cast(ds.Session, fake), where=where,
                                 machine=("real", {"DS": "0814"}), held=held)
     assert got["attributed"] is False and got["regpoints_holding"] == ["DS!=0"], got
 
 
 @pytest.mark.parametrize(("line", "fired"), [
-    ("DEBUG: RUNSTATE stopped cycles=5 ms=0.5 frames=3 bpif=0A", 0x0A),
+    ("DEBUG: RUNSTATE stopped cycles=5 ms=0.5 frames=3 bpif=0A", "BPIF AX==1"),
+    ("DEBUG: RUNSTATE stopped cycles=5 ms=0.5 frames=3 bpif=0B", None),
     ("DEBUG: RUNSTATE stopped cycles=5 ms=0.5 frames=3", None),
     ("DEBUG: RUNSTATE running cycles=5 ms=0.5 frames=3", None)])
 def test_runstate_says_which_bpif_row_stopped_the_machine_only_when_it_did(
-        line: str, fired: int | None) -> None:
-    fake = FakeSession()
-    fake.fired_row = 0x77
+        tmp_path: Path, line: str, fired: str | None) -> None:
+    fake = _names(tmp_path)
+    fake.fired_entry = "BPIF stale"
+    fake.rows = [{"index": "0A", "entry": "BPIF AX==1"}]
     dbg.take_run_state(cast(ds.Session, fake), True, [line])
-    assert fake.fired_row == fired and cast(Any, fake).frames == 3
+    assert fake.fired_entry == fired and cast(Any, fake).frames == 3
 
 
 def test_a_registerpoint_declared_while_running_is_armed_at_the_next_stop_and_cleared_queued(
@@ -1752,3 +1754,13 @@ def test_a_clear_takes_out_every_duplicate_row_and_queues_what_it_could_not(
     assert (got_disarmed, got_pending) == (disarmed, pending)
     assert bool(dstate.STATE.pending["disarm"]) == bool(pending)
     dstate.STATE.pending["disarm"].clear()
+
+
+def test_a_queued_clear_takes_out_every_identical_row_at_the_stop() -> None:
+    install()
+    dstate.STATE.pending["disarm"][:] = [{"kind": "cond", "row": "X", "entry": "BPIF X"}]
+    clear = _clear_like_the_session(3)
+    session = cast(ds.Session, SimpleNamespace(clear_condition_breakpoint=lambda row: clear()))
+    got = arming.apply_pending(session)
+    assert got["disarmed"] == ["BPIF X"] and not got.get("still_pending"), got
+    assert dstate.STATE.pending["disarm"] == []

@@ -132,7 +132,7 @@ whose path it prints first and again beside the verdict, and a failed cell keeps
 log tail of the session live at the time. It exits 0 with no FAIL, 1 with one, 3 when the run is
 invalid (no cell ran among them). Its docstring holds the command and the variables it reads.
 
-**Parts run side by side.** The matrix runs each section letter, and
+**Parts run side by side.** The matrix runs each section (a letter; a name of two letters, once the alphabet runs out, is chosen with commas, `AA,` for a lone one), and
 `tests/live/run_live_pytest.py` each live test, as a process of its own, as many at once as
 `DOSBOX_X_LIVE_JOBS` says (unset, half the host's CPUs; `1`, one after another in one process),
 merged from the summaries they declare through `scry_core.live_pool`.

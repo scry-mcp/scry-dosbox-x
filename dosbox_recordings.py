@@ -53,8 +53,9 @@ def _cut_line(kind: str, word: str, lines: list[str]) -> Invalid | None:
         return None
     return Invalid("readback_refused",
                    f"the debugger's message buffer cut its `{CAPTURE} {kind} {word}` line at "
-                   f"{len(cut)} characters, so the path in it cannot be trusted: record with a "
-                   "shorter `captures_dir` (or working directory)")
+                   f"{len(cut)} characters, so the path in it cannot be trusted (the capture is "
+                   "off, and its file is where the emulator wrote it): record with a shorter "
+                   "`captures_dir` (or working directory)")
 
 
 def _toggle(session: ds.Session, kind: str, on: bool) -> tuple[str | None, Invalid | None]:

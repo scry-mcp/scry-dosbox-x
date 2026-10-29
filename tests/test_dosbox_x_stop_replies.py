@@ -138,6 +138,16 @@ def test_a_run_to_stop_names_every_declaration_at_its_target(
     assert one["cause"].endswith("where breakpoint a is declared too"), one["cause"]
 
 
+def test_a_run_to_target_a_registerpoint_also_stopped_at_is_worded_as_one(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _names(tmp_path)
+    _attributed(monkeypatch, {"attributed": True, "ref": "AX==1", "by": "regpoint",
+                              "at": "00A7:00000000"})
+    got = running.stop_reply(fake, made_by={"ref": "T", "by": "run_to"})  # type: ignore[arg-type]
+    assert got["cause"] == ("run_to's target T at 00A7:00000000, where registerpoint AX==1 "
+                            "came true too"), got["cause"]
+
+
 def test_a_stop_call_names_a_declaration_there_before_itself(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     fake = _names(tmp_path)

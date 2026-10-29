@@ -341,10 +341,10 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
     left armed when no declaration explains the stop."""
     stop = (int(where["cs"], 16), int(where["eip"], 16))
     mode = where["mode"]
-    # `RUNSTATE` ends a stop a `BPIF` row made with that row's `BPLIST` number; the debugger
-    # checks conditions before addresses, so a condition that came true made the stop.
+    # `RUNSTATE` ends a stop a `BPIF` row made with that row's number, read as its text at the
+    # stop; the debugger checks conditions before addresses, so a condition that came true made it.
     fired = next((b["entry"][len(grammar.CONDITION_ROW):] for b in held
-                  if session.fired_row is not None and int(b["index"], 16) == session.fired_row
+                  if b["entry"] == session.fired_entry
                   and b["entry"].startswith(grammar.CONDITION_ROW)), None)
     if fired is not None:
         return {"attributed": True, "ref": fired, "by": "regpoint", "at": st.seg_off(*stop)}
@@ -522,6 +522,10 @@ def _rearm_kept(session: ds.Session, decl: dec.Declaration, out: dict[str, Any])
     out["rearmed"].append(row)
 
 
+RETAP_RUNNING_WHY = ("the guest is running again after the load, and a tap goes in only at a "
+                     "stop: declare the watch again at the next one")
+
+
 def retap_after_load(session: ds.Session) -> dict[str, list[Any]]:
     """The count and capture watches this session had tapped, tapped again after a state load
     reset the page handlers: the refs it tapped, and the rows it could not with why. Empty when
@@ -529,9 +533,13 @@ def retap_after_load(session: ds.Session) -> dict[str, list[Any]]:
     out: dict[str, list[Any]] = {key: [] for key in REARM_BUCKETS}
     if STATE.store is None:
         return out
+    running = not session.at_debugger()
     for decl in STATE.store.declarations():
         if decl.kind == "watch" and decl.watch_mode in dec.TAP_MODES and decl.ref in STATE.taps:
-            _rearm_kept(session, decl, out)
+            if running:
+                out["unarmable"].append({**decl_row(decl), "why": RETAP_RUNNING_WHY})
+            else:
+                _rearm_kept(session, decl, out)
     return out
 
 
@@ -642,6 +650,18 @@ def _unarmed_at_start(refused: str = "") -> dict[str, Any]:
 NO_TABLE_WHY = "no symbol table is loaded yet: `symbols_load` re-arms it"
 
 
+def _clear_every_row(session: ds.Session, spec: dict[str, Any]) -> dict[str, object]:
+    """A queued code, interrupt or condition row taken out of the debugger: one clear takes out one
+    row, so identical rows (put in with `debug`) need one each."""
+    def clear() -> dict[str, object]:
+        if spec["kind"] == "bp":
+            return session.clear_code_breakpoint(spec["seg"], spec["off"])
+        if spec["kind"] == "int":
+            return session.clear_interrupt_breakpoint(spec["num"], spec["ah"])
+        return session.clear_condition_breakpoint(spec["row"])
+    return clear_until_gone(clear)
+
+
 def apply_pending(session: ds.Session) -> dict[str, Any]:
     """At a stop, do what the guest's running kept the debugger from doing: load held symbols,
     remove rows a clear left, arm what was declared. Each half is attempted on its own; what
@@ -658,12 +678,8 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
     kept_disarm: list[dict[str, Any]] = []
     for spec in STATE.pending["disarm"]:
         try:
-            if spec["kind"] == "bp":
-                gone = session.clear_code_breakpoint(spec["seg"], spec["off"])
-            elif spec["kind"] == "int":
-                gone = session.clear_interrupt_breakpoint(spec["num"], spec["ah"])
-            elif spec["kind"] == "cond":
-                gone = session.clear_condition_breakpoint(spec["row"])
+            if spec["kind"] in ("bp", "int", "cond"):
+                gone = _clear_every_row(session, spec)
             elif spec["kind"] == "tap":
                 gone = {"entry": spec["entry"],
                         "removed": taps.remove(session, spec["ref"], spec["id"]) is not None}
@@ -1738,17 +1754,27 @@ def pending_states(rows: list[dict[str, Any]]) -> None:
 DUPLICATE_ROWS_MAX = 16
 
 
+def clear_until_gone(clear: Callable[[], dict[str, object]]) -> dict[str, object]:
+    """`clear` again while it leaves a listed row: one call takes out one row, so identical rows
+    (put in with `debug`) need one call each. The last answer."""
+    gone = clear()
+    for _ in range(DUPLICATE_ROWS_MAX - 1):
+        if gone["removed"] or "note" in gone:
+            break
+        gone = clear()
+    return gone
+
+
 def disarm_one(spec: dict[str, Any], named: str, running: bool, disarmed: list[str],
                 pending_disarm: list[str], clear: Callable[[], dict[str, object]]) -> None:
     """One armed row taken out of the debugger, or queued for the next stop: while the guest
     runs, and when the removal refuses, since a row left in is one the next release meets."""
     if not running:
-        # One clear takes out one row; identical rows (put in with `debug`) need one each.
-        for _ in range(DUPLICATE_ROWS_MAX):
-            try:
-                gone = clear()
-            except ds.Invalid:
-                break
+        try:
+            gone = clear_until_gone(clear)
+        except ds.Invalid:
+            pass
+        else:
             if gone["removed"]:
                 disarmed.append(str(gone["entry"]))
                 STATE.snapshot_forget(str(gone["entry"]))

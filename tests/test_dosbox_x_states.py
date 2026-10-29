@@ -14,6 +14,7 @@ import threading
 import time
 import zipfile
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
@@ -881,3 +882,18 @@ def test_a_state_removed_while_the_list_is_read_is_left_out_not_noted(
     monkeypatch.setattr(zipfile, "ZipFile", vanishing)
     out = ds.Session.state_list(as_session(fake))
     assert [s["name"] for s in cast(list[dict[str, Any]], out["states"])] == ["boot"], out
+
+
+def test_a_load_forgets_which_registerpoint_made_the_stop_before_it(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
+    cast(Any, fake).fired_entry = "BPIF AX==1"
+    ds.Session.save_state(as_session(fake), "boot", 5.0)
+    ds.Session.load_state(as_session(fake), "boot", 5.0)
+    assert cast(Any, fake).fired_entry is None
+
+
+def test_forgetting_a_stop_forgets_the_registerpoint_that_made_it() -> None:
+    session = cast(Any, SimpleNamespace(fired_entry="BPIF X", _at_debugger=True,
+                                        _surveyed=object()))
+    ds.Session.forget_stop(session)
+    assert session.fired_entry is None and session._at_debugger is False

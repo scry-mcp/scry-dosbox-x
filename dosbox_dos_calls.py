@@ -78,6 +78,8 @@ class Trace:
     by_n: dict[int, dict[str, Any]] = field(default_factory=dict)
     capped: int | None = None
     partial: bytes = b""
+    #: How many calls from the front have their `line`; a returned call's is set at its return.
+    rendered: int = 0
     #: The refusal of the first row of no known shape, kept because the read that met it had
     #: already moved `offset` past the rest of its chunk.
     broken: str | None = None
@@ -170,10 +172,12 @@ def read(trace: Trace) -> Trace:
         else:
             trace.broken = (f"the DOS call trace {trace.path} holds a line that is no row of "
                             f"`{DOSTRACE}`: {line[:120]!r}; the rows after it were not read, so "
-                            "the trace is not trusted from here on")
+                            "the trace is not trusted from here on: `close` and `start` again "
+                            "for a trace to read")
             raise Invalid("unexpected_answer", trace.broken)
-    for call in trace.calls:
+    for call in trace.calls[trace.rendered:]:
         call.setdefault("line", _render(call))
+    trace.rendered = len(trace.calls)
     return trace
 
 
@@ -243,6 +247,26 @@ def log(pattern: str, limit: int, since_mark: int, labels: bool = False) -> dict
                     truncated=len(hits) > limit, calls=hits[-limit:], **_capped(trace))
 
 
+def _peek(session: ds.Session) -> tuple[bool, bool]:
+    """Whether the machine is at the debugger and whether the emulator is gone; a peek that fails
+    on an emulator that has since gone is that, the trace still holding what it wrote."""
+    try:
+        stopped = session.at_debugger()
+    except ds.Invalid:
+        if session.alive():
+            raise
+        return False, True
+    return stopped, not session.alive()
+
+
+def _arrived(trace: Trace, pattern: str, call: dict[str, Any], before: int,
+             ticker: Ticker) -> dict[str, Any]:
+    return st.reply(verdict="TARGET", pattern=pattern, channel=CHANNEL, call=call,
+                    already=False, waited_s=ticker.elapsed(), lines_before=before,
+                    lines_total=len(trace.calls), arrived_during=len(trace.calls) - before,
+                    lines_examined=len(trace.calls))
+
+
 def log_wait(session: ds.Session, pattern: str, seconds: float, since_mark: int,
              progress: ds.Progress) -> dict[str, Any]:
     """The body of `log_wait(channel="dos")`: the first call matching `pattern`, at once if the
@@ -262,17 +286,12 @@ def log_wait(session: ds.Session, pattern: str, seconds: float, since_mark: int,
     while not ticker.expired():
         # Both asked before the read, so the read is the last word on a stop or a death, as in
         # the guest channel's wait.
-        stopped = session.at_debugger()
-        gone = not session.alive()
+        stopped, gone = _peek(session)
         parked = stopped if parked is None else parked
         read(trace)
         found = _matching(trace, pattern)
         if found:
-            return st.reply(verdict="TARGET", pattern=pattern, channel=CHANNEL, call=found[0],
-                            already=False, waited_s=ticker.elapsed(), lines_before=before,
-                            lines_total=len(trace.calls),
-                            arrived_during=len(trace.calls) - before,
-                            lines_examined=len(trace.calls))
+            return _arrived(trace, pattern, found[0], before, ticker)
         arrived = len(trace.calls) - before
         if gone:
             raise Invalid("session_broken", core_wait.gone_message(
@@ -284,6 +303,10 @@ def log_wait(session: ds.Session, pattern: str, seconds: float, since_mark: int,
         ticker.tick("waiting {elapsed:.0f} s for a DOS call matching {pattern!r}",
                     pattern=pattern)
         time.sleep(POLL_S)
+    # One look after the last sleep: a call that came in it is found, not timed out.
+    read(trace)
+    if found := _matching(trace, pattern):
+        return _arrived(trace, pattern, found[0], before, ticker)
     note = f"no DOS call matching {pattern!r} in {seconds:g} s"
     capped = _capped(trace).get("note")
     return st.reply(verdict="TIMEOUT", pattern=pattern, channel=CHANNEL,

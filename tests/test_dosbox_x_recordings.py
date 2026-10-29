@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import struct
+import sys
 from pathlib import Path
 from typing import Any, cast
 
@@ -402,6 +403,8 @@ def test_a_dest_taken_during_the_run_is_never_overwritten(tmp_path: Path) -> Non
     assert dest.read_bytes() == b"somebody's" and Path(got["path"]).is_file()
 
 
+@pytest.mark.skipif(sys.platform == "win32",
+                    reason="a 480-character directory cannot be made under MAX_PATH")
 def test_a_capture_path_the_debuggers_message_buffer_cut_is_refused_not_misread(
         tmp_path: Path) -> None:
     deep = tmp_path.joinpath(*["d" * 60] * 8)

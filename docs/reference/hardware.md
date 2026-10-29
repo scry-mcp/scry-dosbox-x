@@ -91,9 +91,9 @@ with none in service), `isr`, `isrr`, `auto_eoi`, ...), `irqs` (each `irq`, `vec
 handler on demand. Reply: `method`, `irq`, `line` (its row after).
 
 Refused (`bad_argument`): an `irq` out of range or on a slave this machine lacks, an
-argument the method does not take. `readback_refused`: a mask or unmask the listing does
-not show after. `not_stopped`: a running guest. `unexpected_answer`: a listing of another
-shape.
+argument the method does not take. `no_channel`: a build with no `PIC` command.
+`readback_refused`: a mask or unmask the listing does not show after. `not_stopped`: a
+running guest. `unexpected_answer`: a listing of another shape.
 
 Reference: REFERENCE.md, The machine's hardware.
 
@@ -196,7 +196,8 @@ stopped.
 `read`, `on`, `off`; the last two mark the session `altered` and read the gate back.
 Reply: `enabled`.
 
-Refused: a gate that does not read back as set (`readback_refused`); a running guest
+Refused: a build with no `A20` command (`no_channel`); a gate that does not read back as set
+(`readback_refused`); a running guest
 (`not_stopped`); an answer of another shape (`unexpected_answer`).
 
 Reference: REFERENCE.md, The machine's hardware.

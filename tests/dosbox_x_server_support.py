@@ -99,7 +99,7 @@ class SessionGates:
 
     # the fields every real session carries, which the server reads directly
     stop_count: int | None = 0
-    fired_row: int | None = None
+    fired_entry: str | None = None
     paging: bool | None = None
     machine_replaced = False
     reap_failed = ""

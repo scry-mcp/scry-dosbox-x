@@ -450,3 +450,23 @@ def test_a_tap_on_an_auto_core_session_says_protected_mode_may_leave_it_blind(
     session.launch = dataclasses.replace(session.launch, core="normal")
     again = _ok(server.watch_add(ref=POLLED, mode="capture", trigger_type="r"))
     assert "note" not in again, again
+
+
+def test_a_load_that_released_a_running_guest_says_its_taps_wait_for_a_stop(
+        tmp_path: Path) -> None:
+    machine = live(tmp_path)
+    _ok(server.watch_add(ref=COUNT, mode="count", length=8))
+    session = cast(Any, dstate.STATE.session)
+
+    def loaded(name: str, seconds: float) -> dict[str, object]:
+        session.machine_replaced = True
+        machine.stopped = False        # the load stopped the guest and released it again
+        session._at_debugger = False
+        return {"name": name, **_LOADED}
+
+    session.machine_replaced = False
+    session.load_state = loaded
+    got = _ok(server.state_write("load", name="x"))
+    assert got["taps"]["rearmed"] == [] and got["taps"]["unarmed"][0]["ref"] == COUNT, got
+    assert "running" in got["taps"]["unarmed"][0]["why"], got
+    assert machine.taps == {} or list(machine.taps) == [1], "nothing was tapped on a running guest"

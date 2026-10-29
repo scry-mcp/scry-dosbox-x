@@ -222,10 +222,9 @@ def is_dynamic(core: str) -> bool:
 
 
 AUTO_CORE_TAPS = (
-    "this session's core is auto, which runs protected-mode code on the dynamic core, and the "
-    "debugger refuses a new tap while that core runs: a tap put in now is not proved to see a "
-    "protected-mode program's accesses. Start on the normal core for a tap that does: "
-    "`start(flags=[\"-set\", \"cpu core=normal\"])`")
+    "this session's core is auto: protected-mode code runs on the dynamic core, which the "
+    "debugger refuses a new tap on and which this tap is not proved to see. For a "
+    "protected-mode program start on `flags=[\"-set\", \"cpu core=normal\"]`")
 
 
 def with_auto_core_tap_note(reply: dict[str, Any], launch: Launch) -> dict[str, Any]:

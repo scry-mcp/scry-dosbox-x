@@ -349,7 +349,7 @@ def session_over(machine: Machine, cwd: Path, *, logfile: Path | None = None,
     s.plants_int3 = False       # the heavy debugger, as every build this suite stands in for
     s.conf_digest, s.started_at, s.dropped = "", time.monotonic(), 0
     s.paging, s.clock_ms, s.cycles = None, None, None
-    s.fired_row = None
+    s.fired_entry = None
     s.vars_held, s.stub_protocol = 0, ""
     s._link, s._input = None, None
     s.proc = SimpleNamespace(poll=lambda: None if machine.alive else -9, pid=4242)  # type: ignore[assignment]

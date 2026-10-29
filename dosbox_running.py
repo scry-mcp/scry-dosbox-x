@@ -95,10 +95,12 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
                                         retrace_may_stop=retrace_may_stop and made_by is None,
                                         held=held)
     if made_by is not None:
-        also = (attribution.get("refs") or [attribution["ref"]]
+        regpoint = attribution["ref"] if attribution.get("by") == "regpoint" else None
+        also = ([] if regpoint else attribution.get("refs") or [attribution["ref"]]
                 if attribution.get("attributed") else [])
         attribution = {"attributed": True, **made_by, "at": attribution["at"],
-                       **({"refs": also} if also else {})}
+                       **({"refs": also} if also else {}),
+                       **({"regpoint": regpoint} if regpoint else {})}
     elif asked_by is not None and not attribution.get("attributed"):
         attribution = {"attributed": True, "ref": asked_by, "by": asked_by,
                        "at": attribution["at"]}

@@ -693,7 +693,8 @@ class PicReply(DosboxEnvelope, total=False):
     controllers: Annotated[list[Any], When("`read`")]
     irq: int
     irqs: Annotated[list[Any], When("`read`")]
-    line: Annotated[dict[str, Any], When("`mask`", "`lower`")]
+    line: Annotated[dict[str, Any],
+                    When("`mask`", "`unmask`", "`acknowledge`", "`raise`", "`lower`")]
     method: str
 
 
@@ -794,7 +795,7 @@ class StateWriteReply(DosboxEnvelope, total=False):
     paused: Required[bool]
     program: Required[str]
     saved_at: Required[str]
-    taps: Annotated[dict[str, Any], When("a count or capture watch declared")]
+    taps: Annotated[dict[str, Any], When("a declared tap was tapped again or could not be")]
     version: Required[str]
 
 

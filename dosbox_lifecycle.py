@@ -162,12 +162,13 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     if dos_calls:
         try:
             STATE.dos_calls = dos_calls_trace.begin(session)
-        except ds.Invalid as e:
+        except BaseException as e:
             session.close(progress=progress)
             STATE.session = None
             STATE.store = None
             STATE.clear_running_state()
-            _refuse_unreaped(session, e)
+            if isinstance(e, ds.Invalid):
+                _refuse_unreaped(session, e)
             raise
     STATE.start_symbols = held
     rearm = arming.arm_at_start(session)   # before the park's survey, so the first stop lists them

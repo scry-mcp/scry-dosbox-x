@@ -2,6 +2,7 @@
 (`tests/fixtures/hardware/dosio.trace`)."""
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from typing import Any, cast
 
@@ -207,3 +208,70 @@ def test_a_repeated_pattern_searches_only_the_calls_that_can_still_change(
     first = len(searched)
     dos._matching(trace, "ANY")
     assert first == len(trace.calls) and len(searched) - first < first // 2, (first, searched)
+
+
+def test_a_match_written_as_the_emulator_died_is_found_though_the_peek_at_the_debugger_fails(
+        tmp_path: Path) -> None:
+    path = tmp_path / "t.trace"
+    path.write_bytes(b"")
+    install()
+    dstate.STATE.dos_calls = dos.Trace(path)
+
+    class Gone:
+        parked = False
+        peeks = 0
+
+        def alive(self) -> bool:
+            return self.peeks < 2
+
+        def at_debugger(self) -> bool:
+            self.peeks += 1
+            if self.peeks >= 2:
+                path.write_bytes(TRACE.read_bytes())
+                raise ds.Invalid("session_broken", "the debugger channel dropped")
+            return False
+
+    got = dos.log_wait(cast(Any, Gone()), "MISSING", 5.0, 0, lambda *_a: None)
+    assert got["verdict"] == "TARGET", got
+
+
+def test_a_call_that_arrives_in_the_last_poll_interval_is_found_not_timed_out(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    path = tmp_path / "t.trace"
+    path.write_bytes(b"")
+    install()
+    dstate.STATE.dos_calls = dos.Trace(path)
+    sleep = time.sleep
+
+    def arrives_while_asleep(seconds: float) -> None:
+        path.write_bytes(TRACE.read_bytes())
+        sleep(0.03)
+    monkeypatch.setattr(time, "sleep", arrives_while_asleep)
+
+    class Running:
+        parked = False
+
+        def alive(self) -> bool:
+            return True
+
+        def at_debugger(self) -> bool:
+            return False
+
+    got = dos.log_wait(cast(Any, Running()), "MISSING", 0.01, 0, lambda *_a: None)
+    assert got["verdict"] == "TARGET", got
+
+
+def test_a_read_renders_only_the_calls_it_gained(monkeypatch: pytest.MonkeyPatch) -> None:
+    rows = TRACE.read_bytes().splitlines(keepends=True)
+    trace = dos.Trace(TRACE)
+    seen: list[int] = []
+    real = dos._render
+
+    def counted(call: dict[str, Any]) -> str:
+        seen.append(call["n"])
+        return real(call)
+    monkeypatch.setattr(dos, "_render", counted)
+    dos.read(trace)
+    first = len(seen)
+    dos.read(trace)
+    assert first >= len(trace.calls) and len(seen) == first, (first, len(seen), len(rows))

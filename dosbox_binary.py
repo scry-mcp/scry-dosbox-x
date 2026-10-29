@@ -36,8 +36,9 @@ DEBUGGER_MARK = b"Debugger command not recognized"
 #: Commands a build may lack, found as the parser's NUL-bounded literals, not the help text's.
 COMMANDS = ("RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "BPIF",
             "CAPTURE", "TAP", "PORTINFO", "DOSTRACE", "PIC", "A20")
-#: Bare names a release also carries for something else: found by their usage line.
+#: Bare names a release also carries for something else: found by a literal only the command has.
 USAGE_MARKS = {name: b"\0DEBUG: " + name.encode() + b" usage: " for name in ("CAPTURE", "TAP")}
+USAGE_MARKS |= {"PIC": b"\0MASKIRQ\0", "A20": b"A20 gate is %s"}
 #: The debugger with no screen, which needs no terminal or console.
 HEADLESS_MARK = b"\0debugger headless\0"
 

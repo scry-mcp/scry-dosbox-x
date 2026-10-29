@@ -432,8 +432,8 @@ def cause(attribution: dict[str, Any]) -> str:
                     f"breakpoint at {at}{held_too}")
         if holding:
             return (f"most likely registerpoint {', '.join(holding)}, whose condition holds at "
-                    f"{at}: `BPIF` stops as it comes true, and the debugger keeps no hit flag to "
-                    f"prove it")
+                    f"{at}: `BPIF` stops as it comes true, and this build's `RUNSTATE` did not "
+                    f"name the row that stopped the machine, so it cannot be proved")
         return (f"no declared code breakpoint at {at}: the debugger keeps no hit flag and a memory "
                 f"watch stops at the instruction that wrote, so which declaration fired cannot "
                 f"be told")
@@ -446,7 +446,9 @@ def cause(attribution: dict[str, Any]) -> str:
     if attribution.get("by") == "run_to":
         also = list(attribution.get("refs", []))
         return (f"run_to's target {attribution['ref']} at {at}"
-                + (f", where breakpoint {', '.join(also)} is declared too" if also else ""))
+                + (f", where breakpoint {', '.join(also)} is declared too" if also else "")
+                + (f", where registerpoint {attribution['regpoint']} came true too"
+                   if attribution.get("regpoint") else ""))
     refs = attribution.get("refs")
     if refs:
         return f"breakpoints {', '.join(refs)} at {at}, every declaration at that address named"

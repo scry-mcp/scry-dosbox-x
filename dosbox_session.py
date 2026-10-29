@@ -275,7 +275,7 @@ class Session(dprocess.Process):
         self.clock_ms: float | None = None  # `RUNSTATE`'s emulated milliseconds, last read
         self.cycles: int | None = None      # `RUNSTATE`'s cycle count, last read
         self.frames: int | None = None      # `RUNSTATE`'s display frames since power-on
-        self.fired_row: int | None = None   # the `BPIF` row `RUNSTATE` said made this stop
+        self.fired_entry: str | None = None   # the `BPIF` row `RUNSTATE` said made this stop
 
         self._avi_facts: dict[tuple[str, int, int], dict[str, object]] = {}
         self.state_sent = False   # whether the last state command went down the channel
@@ -344,6 +344,7 @@ class Session(dprocess.Process):
 
     def forget_stop(self) -> None:
         """The machine was released, or was seen running."""
+        self.fired_entry = None
         self._at_debugger = False
         self._surveyed = None
 

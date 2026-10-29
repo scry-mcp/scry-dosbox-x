@@ -131,8 +131,10 @@ nothing and is refused rather than accepted and never firing.
 **A registerpoint stops on a condition bound to no address** (`regpoint_add`: "who puts this
 value in this register"), through the debugger's `BPIF`, which compiles its terms once and checks
 them before every instruction, and fires as they come TRUE: one set while it already holds waits
-until it has not, and a resumed machine does not stop again at once. The debugger keeps no hit
-flag, and a condition can also hold at a stop something else made, so a stop is never attributed
+until it has not, and a resumed machine does not stop again at once. A build whose `RUNSTATE`
+ends the stop with `bpif=<row>` names the row that made it, and the stop is attributed to that
+registerpoint (`by` `regpoint`; `cause` "registerpoint X, whose condition came true"). On another
+build a condition can also hold at a stop something else made, so the stop is not attributed
 to one: `attribution.regpoints_holding` names those that hold, and `cause` calls them the likely
 maker.
 
@@ -197,11 +199,11 @@ The nearest symbol in protected mode costs one `SELINFO CS` and only with a tabl
 block is unavailable, with why, when no bytes could be read.
 
 `cause` names the declaration whose address it stopped at (several at one address are all named),
-a `run_to`'s own target, the caller's `stop`, a retrace stop a `run_for` left armed, or, with
+the registerpoint a `bpif=` named, a `run_to`'s own target, the caller's `stop`, a retrace stop a `run_for` left armed, or, with
 nothing declared that could have stopped it, the bound a run ended at or the retrace it ran to
 (where the frame moved). Else it is
-an honest cannot-say: the debugger keeps no hit flag, and a memory watch stops at the instruction
-that WROTE.
+an honest cannot-say: a breakpoint or watch row has no hit flag, and a memory watch stops at the
+instruction that WROTE.
 
 `e9` is the guest's E9 lines since the previous stop, bounded on every stop because each stop is
 where a caller asks what the guest said. A cut block's `how` is the one way to read the rest:
@@ -375,7 +377,7 @@ Some tools need a debugger command a build may lack; `build_check` lists the one
 
 | Command | What it gives | The tools that need it |
 | --- | --- | --- |
-| `RUNSTATE` | whether the debugger holds the machine, its cycle count, its emulated clock and the display frames since power-on (`frames=`) | `run_to`, `run_for`, `trace`, `screen_wait`, `step` with `mode="over"`, `resume` with a bound, input to a stopped machine, and any reading after a release; `frames=` gives every stop its `frame` and `perform` its `until_frame` |
+| `RUNSTATE` | whether the debugger holds the machine, its cycle count, its emulated clock, the display frames since power-on (`frames=`) and, for a stop a `BPIF` row made, that row's number (`bpif=`) | `run_to`, `run_for`, `trace`, `screen_wait`, `step` with `mode="over"`, `resume` with a bound, input to a stopped machine, and any reading after a release; `frames=` gives every stop its `frame` and `perform` its `until_frame` |
 | `STEPIN` | one instruction run, synchronously | `step` |
 | `SAVESTATE`, `LOADSTATE` | a saved state | `state_write` |
 | `PRESENCE` | the orange edge drawn by the emulator | the presence indicator |
@@ -385,6 +387,8 @@ Some tools need a debugger command a build may lack; `build_check` lists the one
 | `TAP` | every write or read of a place recorded without stopping (`TAPLIST`, `TAPDEL` beside it) | `watch_add` with `mode` `count` or `capture` |
 | `PORTINFO` | which reads and writes of a port, at each width, reach a device | `port` |
 | `DOSTRACE` | every INT 21h at entry and return, into a file | `log` and `log_wait` on the `dos` channel, `start(dos_calls=True)` |
+| `PIC` | the interrupt controllers' state, and masking, acknowledging, raising or lowering a line | `pic` |
+| `A20` | the A20 gate, read or set | `a20` |
 
 On a build without `RUNSTATE` a session starts, every reading answers at the stop `start` leaves, and input, captures and declarations work; `resume` with no bound releases the machine and says that nothing will tell when it stops again, and `stop` brings it back to the debugger wherever it is. No DOSBox-X release carries `RUNSTATE` yet.
 

@@ -12,6 +12,7 @@ from dosbox_x_server_support import clean_session, install  # noqa: F401  (the a
 
 import dosbox_arming as arming
 import dosbox_binary as binaries
+import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
 
@@ -158,3 +159,16 @@ def test_a_freeze_on_a_running_guest_lists_unlisted_as_a_tap_does(tmp_path: Path
     listed = _reply(server.declaration_list("watch"))
     freeze = next(w for w in listed["watches"] if w["mode"] == "freeze")
     assert freeze["state"] == "unlisted" and "running" in freeze["why"], freeze
+
+
+def test_a_freeze_whose_readback_raises_leaves_no_row_and_no_record(tmp_path: Path) -> None:
+    machine = live(tmp_path)
+    session = cast(Any, dstate.STATE.session)
+
+    def fails(*_a: object, **_k: object) -> bytes:
+        raise ds.Invalid("host_failed", "the dump could not be read")
+
+    session.read_bytes = fails
+    got = _reply(server.watch_add(ref=TICKS, mode="freeze", length=1))
+    assert got["code"] == "host_failed", got
+    assert machine.breakpoints == [] and dstate.STATE.freezes == {}, (machine.breakpoints,)

@@ -86,6 +86,15 @@ def read_run_state(session: ds.Session) -> bool:
     return take_run_state(session, *exec_lines(session, RUNSTATE))
 
 
+def _fired_entry(session: ds.Session, number: str | None) -> str | None:
+    """The text of the `BPIF` row `RUNSTATE` numbered, read now: a row's number shifts when
+    another row goes in or out, its text does not."""
+    if number is None:
+        return None
+    return next((b["entry"] for b in session.breakpoints()
+                 if int(b["index"], 16) == int(number, 16)), None)
+
+
 def take_run_state(session: ds.Session, ok: bool, lines: list[str]) -> bool:
     """`RUNSTATE`'s answer read into the session: stopped, its cycles and its clock."""
     found = RUNSTATE_LINE.match(lines[-1]) if ok and lines else None
@@ -96,10 +105,10 @@ def take_run_state(session: ds.Session, ok: bool, lines: list[str]) -> bool:
     session.cycles, session.clock_ms = int(found.group(2)), float(found.group(3))
     session.frames = None if found.group(4) is None else int(found.group(4))
     if found.group(1) == "stopped":
-        session.fired_row = None if found.group(5) is None else int(found.group(5), 16)
+        session.fired_entry = _fired_entry(session, found.group(5))
         session.mark_stopped()
         return True
-    session.fired_row = None
+    session.fired_entry = None
     session.forget_stop()
     return False
 
