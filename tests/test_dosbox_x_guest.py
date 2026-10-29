@@ -18,6 +18,8 @@ from typing import Any
 
 import pytest
 
+import dosbox_inputs as inputs
+
 GUEST = Path(__file__).resolve().parent / "guest"
 LIVE = Path(__file__).resolve().parent / "live"
 ASM = GUEST / "probe.asm"
@@ -95,6 +97,36 @@ def test_the_guest_binary_is_exactly_what_its_source_assembles_to(tmp_path: Path
         f"{name}.com ({com.stat().st_size} bytes) is not the assembly of {name}.asm "
         f"({out.stat().st_size} bytes). Reassemble it: "
         f"nasm -f bin tests/guest/{name}.asm -o tests/guest/{name}.com")
+
+
+DEMOS = GUEST.parent.parent / "demos"
+
+
+@pytest.mark.skipif(shutil.which("nasm") is None,
+                    reason="no `nasm` on PATH, so the binary cannot be reassembled")
+@pytest.mark.skipif(shutil.which("nasm") is not None and _nasm_major() < NASM_MAJOR,
+                    reason=f"the binaries are nasm {NASM_MAJOR}'s, and nasm 2 orders prefixes "
+                           "differently")
+@pytest.mark.parametrize("demo,name", [("bricks", "bricks"), ("mines", "mines")])
+def test_a_demos_program_is_exactly_what_its_source_assembles_to(tmp_path: Path, demo: str,
+                                                                 name: str) -> None:
+    """The demos' own programs are committed binaries too: the README's transcript is their run."""
+    asm, com = DEMOS / demo / f"{name}.asm", DEMOS / demo / f"{name.upper()}.COM"
+    out = tmp_path / "reassembled.com"
+    r = subprocess.run(["nasm", "-f", "bin", str(asm), "-o", str(out)], cwd=tmp_path,
+                       capture_output=True, text=True, check=False)
+    assert r.returncode == 0, f"{asm.name} does not assemble: {r.stderr}"
+    assert out.read_bytes() == com.read_bytes(), (
+        f"{com.name} is not the assembly of {asm.name}. Reassemble it: "
+        f"nasm -f bin demos/{demo}/{asm.name} -o demos/{demo}/{com.name}")
+
+
+def test_the_resident_check_reads_a_one_digit_protocol_number() -> None:
+    """`resident` compares `SIG_LEN - 1` bytes at the distance its own signature has, so a
+    stub whose signature is a byte longer is not recognised as a copy of itself: revisit the
+    check (a fixed-width number, or the prefix found by scanning) before the protocol has two
+    digits."""
+    assert len(inputs.STUB_PROTOCOL) == 1, inputs.STUB_PROTOCOL
 
 
 @pytest.mark.skipif(shutil.which("nasm") is None,

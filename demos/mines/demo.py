@@ -116,7 +116,9 @@ def centre(run: Run, row: int, col: int) -> tuple[int, int]:
 
 def plan(mines: list[tuple[int, int]]) -> list[tuple[int, int]]:
     """The fewest clicks that open every safe cell, the game's own flood fill played out: a cell
-    with no mine around it opens its neighbours, so one click opens a whole empty region."""
+    with no mine around it opens its neighbours, so one click opens a whole empty region. Only
+    mines are flagged (`flags` takes them from `mines`), because a click on a flagged safe cell
+    would be ignored and the board would never be cleared."""
     mined = set(mines)
 
     def around(r: int, c: int) -> list[tuple[int, int]]:

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import math
 import re
 import socket
@@ -13,6 +14,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
 import dosbox_inputs as inputs
@@ -276,6 +278,50 @@ def test_each_command_waits_for_its_acknowledgement_and_is_carried_out_once(pair
     assert link.Link(host).send(KEYS) == []
     assert stub.carried == KEYS and stub.most_queued <= 1 + max(LENGTHS.values()), (
         "a frame went before its ack")
+
+
+def test_a_send_cancelled_between_a_make_and_its_break_sends_the_break_it_owes(
+        pair: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A key left down in the guest autorepeats and swallows the next keys."""
+    host, guest = pair
+    stub = Stub(guest)
+    monkeypatch.setattr(link, "FRAME_SPACING_S", 0.05)
+    calls = {"n": 0}
+
+    def cancelled_before_the_break() -> None:
+        if cancel.shielding():
+            return
+        calls["n"] += 1
+        if calls["n"] == 3:
+            raise asyncio.CancelledError
+
+    monkeypatch.setattr(cancel, "check", cancelled_before_the_break)
+    with pytest.raises(asyncio.CancelledError):
+        link.Link(host).send([b"K\xe0", b"K\x48", b"K\xe0", b"K\xc8", b"B\x80"])
+    time.sleep(0.1)     # a frame written when the cancel landed is still being carried
+    assert stub.carried == [b"K\xe0", b"K\x48", b"K\xe0", b"K\xc8"], stub.carried
+
+
+def test_a_send_cancelled_after_every_key_was_released_owes_nothing(
+        pair: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    host, guest = pair
+    stub = Stub(guest)
+    monkeypatch.setattr(link, "FRAME_SPACING_S", 0.05)
+    calls = {"n": 0}
+
+    def cancelled_late() -> None:
+        if cancel.shielding():
+            return
+        calls["n"] += 1
+        if calls["n"] == 5:
+            raise asyncio.CancelledError
+
+    monkeypatch.setattr(cancel, "check", cancelled_late)
+    with pytest.raises(asyncio.CancelledError):
+        link.Link(host).send([b"K\x1e", b"K\x9e", b"B\x80", b"B\x00"])
+    time.sleep(0.1)
+    assert stub.carried[:2] == [b"K\x1e", b"K\x9e"], stub.carried
+    assert stub.carried.count(b"K\x9e") == 1, stub.carried
 
 
 def test_frames_go_a_spacing_apart_and_the_spacing_outlasts_a_50_hz_frame(

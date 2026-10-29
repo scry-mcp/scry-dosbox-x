@@ -13,9 +13,11 @@ from scry_core import recording
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from dosbox_x_server_support import clean_session, install  # noqa: E402,F401
+from dosbox_x_server_support import _names, clean_session, install  # noqa: E402,F401
 
+import dosbox_inputs as inputs  # noqa: E402
 import dosbox_mcp  # noqa: E402
+import dosbox_state as dstate  # noqa: E402
 import dosbox_x_server as server  # noqa: E402
 
 
@@ -50,6 +52,27 @@ def test_a_session_on_the_double_is_exported_as_steps_checks_and_named_drops(
     assert out["checks"] == 1 and [d["op"] for d in out["dropped"]] == ["status",
                                                                         "comment_write"]
     assert out["summary"].startswith("perform_export: 2 steps, 1 check, 2 dropped to ")
+
+
+def test_input_sent_to_a_parked_machine_is_an_export_step(
+        tmp_path: pathlib.Path, recorder: recording.Recorder,
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A parked machine takes input by running retrace by retrace; the export keeps the call as
+    a step the replay sends the same way, and drops nothing."""
+    fake = _names(tmp_path)
+    assert fake.parked
+    monkeypatch.setattr(inputs, "send_keys", lambda *a, **k: dstate.reply(
+        route="guest", posted=1, bytes=2, frames=2, verify={"why": "none given"}))
+    monkeypatch.setattr(inputs, "send_mouse", lambda *a, **k: dstate.reply(
+        route="guest", arrived=True, pointer={"x": 10, "y": 20}, verify={"why": "none given"}))
+    assert server.send_keys(keys=["a"])["status"] == "ok"
+    assert server.send_mouse(x=10, y=20, action="click", button="left")["status"] == "ok"
+    out = server.perform_export(dest=str(tmp_path / "s.json"))
+    doc = json.loads((tmp_path / "s.json").read_text())
+    assert [step["op"] for step in doc["steps"]] == ["send_keys", "send_mouse"], doc["steps"]
+    assert doc["steps"][0] == {"op": "send_keys", "keys": ["a"]}, doc["steps"][0]
+    assert (doc["steps"][1]["x"], doc["steps"][1]["y"]) == (10, 20), doc["steps"][1]
+    assert out["dropped"] == [], out
 
 
 def test_the_machine_around_a_call_is_the_sessions_stop_count_and_never_a_frame() -> None:

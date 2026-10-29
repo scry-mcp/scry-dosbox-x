@@ -1582,7 +1582,7 @@ def test_the_instructions_tell_an_empty_diagnostic_from_a_field_not_sent() -> No
     assert "`omitted` names what was not sent" in text, text
 
 
-def test_presence_off_is_answered_false_as_on_the_mame_server() -> None:
+def test_presence_off_is_answered_false_and_never_omitted() -> None:
     from scry_core import reply_schema
 
     import dosbox_replies

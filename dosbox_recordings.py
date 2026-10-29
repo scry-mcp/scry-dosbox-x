@@ -70,10 +70,14 @@ def _wav_fields(path: Path, ran: dict[str, Any]) -> dict[str, Any]:
         span = after - before
         tick = head.sample_rate / 1000
         if abs(head.samples - span * head.sample_rate) > files.SPAN_TICKS * tick:
+            lost = (" A short file is the usual sign of a host that did not hold the guest's "
+                    "clock in real time, so the mixer dropped whole blocks: lower the guest's "
+                    "fixed `cycles` and record again."
+                    if head.samples < span * head.sample_rate else "")
             raise Invalid("readback_refused",
                           f"{path} does not hold the run it was bounded by: "
                           f"{prose.counted(head.samples, 'sample')} where {span:.7f} s at "
-                          f"{head.sample_rate} Hz is {span * head.sample_rate:.0f}",
+                          f"{head.sample_rate} Hz is {span * head.sample_rate:.0f}.{lost}",
                           path=str(path))
         fields["emulated_s"] = round(span, 7)
     else:

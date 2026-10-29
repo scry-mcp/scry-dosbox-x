@@ -91,7 +91,8 @@ def scan_sequence(keys: list[str], mods: str) -> bytes:
 # The opcodes `guest/scry.asm` reads; its header is the contract.
 OP_KEY, OP_BUTTON, OP_MOVE, OP_REPORT = b"K", b"B", b"M", b"R"
 STUB_PROTOCOL = "6"
-# The old stub's name is still matched, so its announce reads as another protocol, not as none.
+# `inject` is the stub's former name: matching it lets its announce read as another protocol,
+# not as none.
 STUB_ANNOUNCE = re.compile(r"STUB  \. (?:scry|inject) device=(\w+)(?: proto=(\d+))?"
                            r"(?: motion=([01]))?")
 REPORT_LINE = re.compile(

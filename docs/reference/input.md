@@ -175,7 +175,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end send_keys -->
 
-`send_keys` composes scan code set 1 on the host; a DOS keyboard has no command key, and `cmd` is refused by name. The 64-key ceiling is because every scan byte is a frame, a BIOS tick after the last, under the session's lock. A key sent to a stopped machine runs it by retraces until the stub takes it (The route, above), rather than leaving the bytes to land, unannounced, at the next resume.
+`send_keys` composes scan code set 1 on the host; a DOS keyboard has no command key, and `cmd` is refused by name. The 64-key ceiling is because every scan byte is a frame, a BIOS tick after the last, under the session's lock. A key sent to a stopped machine runs it by retraces until the stub takes it (The route, above), rather than leaving the bytes to land at the next resume. A cancelled call releases any key it had pressed and not yet released (an extended key's break repeats its prefix), so none is left down repeating in the guest; a mouse button a cancelled call pressed is not released, since `action="down"` holds one on purpose.
 
 A stop during the `expect` wait is INVALID (`wait_stopped`) with `last_stop`. `verify` also carries `line`, `note`, `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total` and, on a `TIMEOUT`, `arrived_during`; `checked: false` when no `expect` was given. With no `logfile` there is no stub announce to read, so the keys go out unchecked.
 

@@ -95,6 +95,8 @@ def test_a_wav_that_misses_its_span_by_more_than_two_ticks_is_refused_and_kept(
     assert got["code"] == "readback_refused" and "does not hold the run" in got["message"], got
     assert got["path"] == str(tmp_path / "capture" / "sound_000.wav")
     assert Path(got["path"]).is_file(), "a refused recording is kept, never deleted"
+    short = frame_ms > 14.0
+    assert ("lower the guest's fixed `cycles`" in got["message"]) is short, got["message"]
 
 
 def _edited(tmp_path: Path, at: int, value: int) -> Path:

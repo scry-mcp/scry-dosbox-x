@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import socket
 import time
 from collections.abc import Callable
@@ -11,7 +12,8 @@ from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
 SYNC, ACK = 0xA5, 0x5A
-OP_REPORT = ord("R")
+OP_REPORT, OP_KEY = ord("R"), ord("K")
+EXTENDED = 0xE0
 #: The stub answers the moment a frame is whole; a guest silent this long is refused.
 ACK_WAIT_S = 1.0
 SENDS = 3
@@ -45,6 +47,32 @@ def frame(seq: int, command: bytes) -> bytes:
     return bytes((SYNC,)) + body + bytes((check,))
 
 
+def owed_breaks(written: list[bytes]) -> list[bytes]:
+    """The key commands that release every key `written` pressed and did not release, last
+    pressed first; an extended key's break repeats its prefix."""
+    down: list[tuple[bool, int]] = []
+    extended = False
+    for command in written:
+        if command[0] != OP_KEY:
+            continue
+        code = command[1]
+        if code == EXTENDED:
+            extended = True
+            continue
+        key, extended = (extended, code & 0x7F), False
+        if code & 0x80:
+            if key in down:
+                down.remove(key)
+        elif key not in down:
+            down.append(key)
+    owed: list[bytes] = []
+    for extended, code in reversed(down):
+        if extended:
+            owed.append(bytes((OP_KEY, EXTENDED)))
+        owed.append(bytes((OP_KEY, code | 0x80)))
+    return owed
+
+
 class Link:
     """One session's serial link to the stub. `parked` says whether the machine is at the
     debugger, where the guest runs nothing and so no acknowledgement comes unless a send's
@@ -61,6 +89,7 @@ class Link:
         self._advance: Advance | None = None
         self._clock_ms = 0.0
         self._acked_ms: float | None = None
+        self._written: list[bytes] = []
 
     def unprove(self) -> None:
         """The stub's memory was replaced (a state loaded)."""
@@ -84,20 +113,34 @@ class Link:
     def _send(self, commands: list[bytes]) -> list[str]:
         reports: list[str] = []
         acknowledged = 0
-        if not self.proved:
-            self._deliver(bytes((OP_REPORT,)))
-            self._line()
-            self.proved = True
-        for command in commands:
-            try:
-                self._deliver(command)
-                acknowledged += 1
-                if command[0] == OP_REPORT:
-                    reports.append(self._line())
-            except Invalid as e:
-                raise Invalid(e.code, f"{e} ({acknowledged} of {len(commands)} commands "
-                              f"acknowledged)") from None
+        self._written = []
+        try:
+            if not self.proved:
+                self._deliver(bytes((OP_REPORT,)))
+                self._line()
+                self.proved = True
+            for command in commands:
+                try:
+                    self._deliver(command)
+                    acknowledged += 1
+                    if command[0] == OP_REPORT:
+                        reports.append(self._line())
+                except Invalid as e:
+                    raise Invalid(e.code, f"{e} ({acknowledged} of {len(commands)} commands "
+                                  f"acknowledged)") from None
+        except BaseException as e:
+            if cancel.is_cancellation(e):
+                self._release_keys()
+            raise
         return reports
+
+    def _release_keys(self) -> None:
+        """The breaks a cancelled send owes: a key whose make went out and whose break did not
+        stays down in the guest, repeating until something releases it. Best effort, the
+        cancel being the answer the caller gets."""
+        with cancel.shielded(), contextlib.suppress(Invalid):
+            for command in owed_breaks(self._written):
+                self._deliver(command)
 
     def _deliver(self, command: bytes) -> None:
         """Return once the command has run (by this send or an earlier one); else refuse."""
@@ -105,6 +148,8 @@ class Link:
         self._space()
         for sent in range(SENDS):
             self._write(frame(seq, command))
+            if not sent:
+                self._written.append(command)
             carried = self._acknowledged(seq, command[0])
             if carried is None:
                 continue
