@@ -171,6 +171,47 @@ def test_only_a_caller_that_may_meet_the_retrace_stop_blames_it(tmp_path: Path) 
     assert dstate.STATE.retrace_pending is False
 
 
+def _stopped_on(fake: Any, raw: bytes, *, held: list[dict[str, str]] | None = None,
+                eax: str = "00000000") -> dict[str, Any]:
+    """`stop_reply` for a machine stopped with `raw` at CS:EIP and nothing declared there."""
+    fake.mem[(int(fake.cs, 16), int(fake.eip, 16))] = raw
+    fake.rows = list(held or [])
+    fake.registers = lambda: {"CS": fake.cs, "DS": fake.ds, "EIP": fake.eip, "EAX": eax}
+    return running.stop_reply(fake)
+
+
+def test_a_stop_at_the_guests_own_int3_names_the_row_that_stops_it(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    got = _stopped_on(fake, b"\xCC", held=[{"entry": "BPINT 03"}])
+    assert got["instruction"]["text"] == "int3", got["instruction"]
+    assert "`int 03`" in got["cause"] and "BPINT 03" in got["cause"], got["cause"]
+    assert "no declared code breakpoint" not in got["cause"], got["cause"]
+    assert dstate.STATE.as_of()["cause"] == got["cause"]  # type: ignore[index]
+    twin = _stopped_on(fake, b"\xCD\x03", held=[{"entry": "BPINT 03"}])
+    assert "BPINT 03" in twin["cause"], twin["cause"]
+
+
+def test_an_int3_no_held_row_watches_is_not_blamed_on_one(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    got = _stopped_on(fake, b"\xCC", held=[{"entry": "BPINT 21"}])
+    assert got["cause"].startswith("no declared code breakpoint"), got["cause"]
+    bare = _stopped_on(fake, b"\xCC")
+    assert bare["cause"].startswith("no declared code breakpoint"), bare["cause"]
+
+
+def test_a_stop_at_an_int_an_interrupt_breakpoint_watches_names_that_row(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    held = [{"entry": "BPINT 21 AH=4C"}, {"entry": "BPINT 21"}]
+    hit = _stopped_on(fake, b"\xCD\x21", held=held, eax="00004C00")
+    assert "`BPINT 21 AH=4C`" in hit["cause"] and "`BPINT 21`" in hit["cause"], hit["cause"]
+    other = _stopped_on(fake, b"\xCD\x21", held=held, eax="00000900")
+    assert "AH=4C" not in other["cause"] and "`BPINT 21`" in other["cause"], other["cause"]
+    narrow = _stopped_on(fake, b"\xCD\x21", held=held[:1], eax="00000900")
+    assert narrow["cause"].startswith("no declared code breakpoint"), narrow["cause"]
+    wrong_int = _stopped_on(fake, b"\xCD\x10", held=held, eax="00004C00")
+    assert wrong_int["cause"].startswith("no declared code breakpoint"), wrong_int["cause"]
+
+
 def test_an_arm_queued_while_running_says_where_it_will_be_reported(tmp_path: Path) -> None:
     _names(tmp_path)
     dstate.STATE.pending["dirty"] = False

@@ -102,6 +102,8 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
     STATE.pending["drained_seq"] = STATE.last_stop["seq"]
     picture = STATE.last_stop["picture"] = code.stop_instruction(session, where, registers,
                                                                  comments.notes)
+    attribution = STATE.last_stop["attribution"] = st.interrupt_stop(
+        attribution, picture["instruction"], registers, held)
     e9 = e9_block(session)
     frame = STATE.last_stop["frame"] = dbg.frame_at_stop(session)
     return st.reply(**{**base, **position(where, getattr(session, "paging", None))},

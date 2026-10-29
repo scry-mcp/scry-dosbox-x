@@ -389,6 +389,33 @@ def delta_if_asked(out: str, keep: int, detail: bool) -> dict[str, Any]:
     return delta(out, keep) if detail else narrowing.omission(list(OUTPUT_FIELDS), OUTPUT_HOW)
 
 
+def interrupt_stop(attribution: dict[str, Any], instruction: dict[str, Any],
+                   registers: dict[str, str], held: list[dict[str, str]]) -> dict[str, Any]:
+    """`attribution` with an `own` cause when no declaration explains the stop, the instruction
+    there is an `int`, and a held `BPINT` row watches that interrupt (and that `AH`, if it names
+    one): `break_on_int3` is such a row."""
+    if (attribution.get("attributed") or attribution.get("own")
+            or attribution.get("retrace_pending") or attribution.get("regpoints_holding")):
+        return attribution
+    raw = bytes.fromhex(str(instruction.get("bytes", "")))
+    if raw[:1] == b"\xCC":
+        number = 3
+    elif raw[:1] == b"\xCD" and len(raw) >= 2:
+        number = raw[1]
+    else:
+        return attribution
+    eax = registers.get("EAX")
+    ah = (int(eax, 16) >> 8) & 0xFF if eax else None
+    rows = [entry for b in held if b["entry"].startswith("BPINT ")
+            for entry, (num, row_ah) in [(b["entry"], grammar.parse_interrupt_row(b["entry"]))]
+            if num == number and (row_ah is None or row_ah == ah)]
+    if not rows:
+        return attribution
+    named = " and ".join(f"`{row}`" for row in rows)
+    return {**attribution, "own": f"most likely the held {named}: the guest is at `int "
+                                  f"{number:02X}`"}
+
+
 _CAUSE_AT = re.compile(r" at [0-9A-Fa-f]{4}:[0-9A-Fa-f]{4,8}")
 
 
