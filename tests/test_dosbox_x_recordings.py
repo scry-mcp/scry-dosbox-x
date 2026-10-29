@@ -6,8 +6,10 @@ path is answered."""
 from __future__ import annotations
 
 import asyncio
+import os
 import struct
 import sys
+import time
 from pathlib import Path
 from typing import Any, cast
 
@@ -139,6 +141,65 @@ def test_the_opl_and_midi_files_are_checked_and_counted(
     assert _capture_commands(machine)[1:] == [f"CAPTURE {word} ON", f"CAPTURE {word} OFF"]
     assert got["kind"] == kind and {k: got[k] for k in fields} == fields, got
     assert "samples" not in got
+
+
+def test_an_opl_run_that_rolled_over_names_every_file_it_wrote(tmp_path: Path) -> None:
+    """The OPL writer closes its file after 30 s of emulated silence and opens the next at the
+    next note: the run's files are the siblings written since it began, not the last alone."""
+    live(tmp_path, capture_rollovers=2)
+    got = _ok(server.audio_record(frames=2, kind="dro"))
+    folder = tmp_path / "capture"
+    assert got["path"] == str(folder / "sound_002.dro"), got
+    assert [f["path"] for f in got["files"]] == [str(folder / f"sound_00{n}.dro") for n in range(3)]
+    assert all(f["bytes"] == got["bytes"] for f in got["files"]), got["files"]
+    assert "3 files" in got["note"] and "30 s" in got["note"], got["note"]
+
+
+def test_a_rolled_over_run_moved_to_dest_still_names_all_its_files(tmp_path: Path) -> None:
+    """`dest` takes the last file out of the capture folder; the run's files are listed as they
+    stood when it ended, the last one at `dest`."""
+    live(tmp_path, capture_rollovers=2)
+    dest = tmp_path / "out.dro"
+    got = _ok(server.audio_record(frames=2, kind="dro", dest=str(dest)))
+    folder = tmp_path / "capture"
+    assert got["path"] == str(dest), got
+    assert [f["path"] for f in got["files"]] == [str(folder / "sound_000.dro"),
+                                                 str(folder / "sound_001.dro"), str(dest)]
+    assert "3 files" in got["note"], got["note"]
+
+
+def test_the_file_the_previous_recording_closed_a_moment_ago_is_not_this_runs(
+        tmp_path: Path) -> None:
+    older = tmp_path / "capture" / "sound_000.dro"
+    older.parent.mkdir()
+    older.write_bytes(SOURCES["OPL"].read_bytes())
+    ago = time.time() - 1
+    os.utime(older, (ago, ago))
+    live(tmp_path, capture_first=1)
+    got = _ok(server.audio_record(frames=2, kind="dro"))
+    assert got["path"].endswith("sound_001.dro") and "files" not in got, got
+
+
+def test_a_capture_folder_entry_that_is_no_file_or_vanished_is_not_a_run_file(
+        tmp_path: Path) -> None:
+    folder = tmp_path / "capture"
+    folder.mkdir()
+    (folder / "sound_000.dro").mkdir()
+    (folder / "sound_001.DRO").write_bytes(b"x")
+    (folder / "sound_002.dro").symlink_to(folder / "nowhere")
+    live(tmp_path, capture_first=3)
+    got = _ok(server.audio_record(frames=2, kind="dro"))
+    assert got["path"].endswith("sound_003.dro") and "files" not in got, got
+
+
+def test_a_file_an_earlier_run_left_beside_the_new_one_is_not_this_runs(tmp_path: Path) -> None:
+    older = tmp_path / "capture" / "sound_000.dro"
+    older.parent.mkdir()
+    older.write_bytes(SOURCES["OPL"].read_bytes())
+    os.utime(older, (1_000_000, 1_000_000))
+    live(tmp_path, capture_first=1)
+    got = _ok(server.audio_record(frames=2, kind="dro"))
+    assert got["path"].endswith("sound_001.dro") and "files" not in got, got
 
 
 @pytest.mark.parametrize("kind", ["dro", "mid"])

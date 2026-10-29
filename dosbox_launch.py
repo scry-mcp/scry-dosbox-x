@@ -73,7 +73,7 @@ class Launch:
     # Chosen once at `start`, so later replies name the drive used.
     stub_drive: str = ""
     background: bool = True
-    # The `-savedir` slot directory, where state tools write; None: `save/` under `cwd`.
+    # The `-savedir` slot directory; `start` names it (the session's scratch if none is given).
     state_dir: Path | None = None
     # The session's own debugger listener, never a caller's.
     control_port: int | None = None
@@ -475,12 +475,12 @@ STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
               "saved_at": "Time_Stamp"}
 
 
-#: Where the states go when `start` is given no `state_dir`: this directory under `cwd`.
+#: The folder states go in, under the session's scratch when `start` is given no `state_dir`.
 DEFAULT_STATE_SUBDIR = "save"
 
 
 def default_state_dir(cwd: Path) -> Path:
-    """Where states go when `state_dir` is not named."""
+    """Where states go for a Launch with no `state_dir` (one `start` did not make)."""
     return cwd / DEFAULT_STATE_SUBDIR
 
 

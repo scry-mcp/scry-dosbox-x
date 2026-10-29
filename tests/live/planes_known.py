@@ -3,7 +3,7 @@ from __future__ import annotations
 
 
 def known(word: str, x: int, y: int) -> int | tuple[int, int, int]:
-    if word == "M_EGA":
+    if word in ("M_EGA", "M_LIN4"):
         return (x + y) & 0x0F
     if word == "M_VGA":
         return (2 * x + y) & 0xFF

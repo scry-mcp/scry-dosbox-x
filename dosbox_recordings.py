@@ -5,6 +5,7 @@ the run, and the file checked before its path is answered (`docs/reference/captu
 from __future__ import annotations
 
 import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -128,6 +129,30 @@ def _file_fields(kind: str, path: Path, ran: dict[str, Any]) -> dict[str, Any]:
     return found
 
 
+DRO_NAME = re.compile(r"^(?P<prefix>.*_)(?P<number>\d+)(?P<suffix>\.dro)$")
+
+def _opl_run_files(last: Path, began: float) -> list[Path]:
+    """Every DRO the run wrote, oldest first: the OPL writer closes a file after 30 s of emulated
+    silence and numbers the next one on, and the capture answers the last. A sibling of the same
+    name, numbered at or below it and written since `began`, belongs to the run."""
+    named = DRO_NAME.match(last.name)
+    if named is None:
+        return [last]
+    mine = []
+    for other in last.parent.iterdir():
+        found = DRO_NAME.match(other.name)
+        if (found is None or found["prefix"] != named["prefix"]
+                or int(found["number"]) > int(named["number"])):
+            continue
+        try:
+            written = other.stat().st_mtime if other.is_file() else 0.0
+        except OSError:
+            continue        # gone, or a link to nothing: not a file of this run
+        if written >= began:
+            mine.append((int(found["number"]), other))
+    return [path for _, path in sorted(mine)]
+
+
 def recording(session: ds.Session, tool: str, kind: str, frames: int, dest: Path | None,
               seconds: float, progress: ds.Progress) -> dict[str, Any]:
     """The body of `record` (`kind` `VIDEO`) and `audio_record`."""
@@ -149,6 +174,7 @@ def recording(session: ds.Session, tool: str, kind: str, frames: int, dest: Path
                       + ": a recording here would end that one. A stretch is recorded with the "
                       "capture off")
     ended, closed, why, cut = True, None, "", None
+    began = time.time()
     try:
         _toggle(session, kind, True)
         ran = retrace.run_for(session, frames, 0, seconds, progress)
@@ -178,12 +204,21 @@ def recording(session: ds.Session, tool: str, kind: str, frames: int, dest: Path
                       "writer opened no file")
     path = Path(closed)
     fields = _file_fields(kind, path, ran)
+    rolled = [{"path": str(p), "bytes": p.stat().st_size}
+              for p in _opl_run_files(path, began)] if kind == "OPL" else []
     if dest is not None:
         if paths.taken(dest):
             raise Invalid("readback_refused", f"{dest} appeared while the run went on, and is "
                           f"somebody's: the recording stays at {path}", path=str(path))
         path = dcollect.collect(path, dest, f"{kind} capture")
+        if rolled:
+            rolled[-1]["path"] = str(path)
     own.update(path=str(path), bytes=path.stat().st_size)
+    if len(rolled) > 1:
+        own["files"] = rolled
+        own["note"] = "; ".join(n for n in (ran.get("note"), (
+            f"the OPL writer closed its file after 30 s of emulated silence and wrote "
+            f"{len(rolled)} files over the run, listed in `files`, the last at `path`")) if n)
     if ran.get("status") == "INVALID":
         return {**ran, **own, **fields}
     return st.extend(ran, **own, **fields)

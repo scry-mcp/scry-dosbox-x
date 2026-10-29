@@ -1,5 +1,5 @@
 """Section W of the live matrix: the screen read from video memory itself (`VGAMEMDUMP`), on the
-package's planes guest (`tests/guest/planes.asm`), whose six stops each hold a picture made of
+package's planes guest (`tests/guest/planes.asm`), whose seven stops each hold a picture made of
 its own arithmetic in a mode the CPU's window cannot read whole."""
 from __future__ import annotations
 
@@ -14,7 +14,8 @@ PLANES_PROGRAM = "PLANES.COM"
 SCREEN_CONF = GUEST / "screen.conf"
 #: Each stop's mode word and size, in the guest's order.
 STOPS = (("M_EGA", 640, 480), ("M_VGA", 320, 200), ("M_LIN8", 640, 480),
-         ("M_LIN15", 640, 480), ("M_LIN16", 640, 480), ("M_LIN32", 640, 480))
+         ("M_LIN15", 640, 480), ("M_LIN16", 640, 480), ("M_LIN32", 640, 480),
+         ("M_LIN4", 800, 600))
 
 W_CELLS = cells(*(
     (f"W screen_view in {word} is the guest's own picture, pixel for pixel",
@@ -43,7 +44,7 @@ def _matches(word: str, width: int, height: int, view: dict[str, Any]) -> bool:
                     return False
             else:
                 assert isinstance(want, int)
-                index = _ac_index(vga, want) if word == "M_EGA" else want
+                index = _ac_index(vga, want) if word in ("M_EGA", "M_LIN4") else want
                 if raster.pixels[y * scale * raster.width + x * scale] != index:
                     return False
     return True

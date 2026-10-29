@@ -16,6 +16,8 @@ import dosbox_debugger as dbg
 import dosbox_inputs as inputs
 import dosbox_retrace as retrace
 import dosbox_session as ds
+import dosbox_state as dstate
+import dosbox_taps as taps
 import dosbox_x_server as server
 
 E9_KEY_ACT = "Bochs port E9h: [+   0.010] KEY   . key_cue_a"
@@ -77,7 +79,8 @@ def test_a_mouse_wait_takes_the_callers_bound_and_reports_its_progress(tmp_path:
     assert ticks, "the wait's progress never reached the caller through a target"
 
 
-def _stub_session(tmp_path: Path, lines: list[str], stub_drive: str | None) -> Any:
+def _stub_session(tmp_path: Path, lines: list[str], stub_drive: str | None,
+                  parked: bool = False, stop_count: int = 0) -> Any:
     asked: list[int] = []
 
     def since(mark: int) -> list[str]:
@@ -85,7 +88,8 @@ def _stub_session(tmp_path: Path, lines: list[str], stub_drive: str | None) -> A
         return lines
     return SimpleNamespace(launch=SimpleNamespace(logfile=tmp_path / "e9.log",
                                                   stub_drive=stub_drive),
-                           stub_protocol="", e9_since_mark=since, asked=asked)
+                           stub_protocol="", e9_since_mark=since, asked=asked,
+                           parked=parked, stop_count=stop_count)
 
 
 def test_a_stub_that_never_announced_is_refused_naming_the_line_and_the_way_in(
@@ -97,6 +101,27 @@ def test_a_stub_that_never_announced_is_refused_naming_the_line_and_the_way_in(
     assert "`STUB  . scry` on E9" in said and "[autoexec]" in said, said
     assert "or `start(program=...)` loads it by itself" in said, said
     assert "mounted it on" not in said, said
+
+
+@pytest.mark.parametrize("stop_count", [0, 1])
+def test_a_guest_parked_before_its_first_instruction_is_refused_naming_that_and_the_next_call(
+        tmp_path: Path, stop_count: int) -> None:
+    """The stub has not announced because nothing has run, not because the conf lacks it."""
+    ses = _stub_session(tmp_path, [], "Y", parked=True, stop_count=stop_count)
+    with pytest.raises(ds.Invalid) as refused:
+        inputs.require_stub(ses)
+    said = str(refused.value)
+    assert refused.value.code == "no_channel", said
+    assert "has not run yet" in said and "`run_for` or `resume`" in said, said
+    assert "[autoexec]" not in said and "mounted it on" not in said, said
+
+
+def test_a_guest_that_ran_and_stopped_again_without_a_stub_still_names_the_conf(
+        tmp_path: Path) -> None:
+    ses = _stub_session(tmp_path, [], "Y", parked=True, stop_count=2)
+    with pytest.raises(ds.Invalid) as refused:
+        inputs.require_stub(ses)
+    assert "has not run yet" not in str(refused.value) and "[autoexec]" in str(refused.value)
 
 
 def test_a_stub_announced_in_the_log_is_read_from_its_start(tmp_path: Path) -> None:
@@ -132,3 +157,23 @@ def test_a_cancel_among_a_parked_posts_retraces_leaves_the_machine_stopped(
     with pytest.raises(asyncio.CancelledError):
         inputs.Retraces(session)()  # type: ignore[arg-type]
     assert stopped == [session]
+
+
+def test_a_parked_posts_count_watch_counts_since_the_stop_the_post_began_at(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Each retrace of the post is a stop that moves the baseline; the reply's `since_last_stop`
+    is what the whole post saw, not the last retrace's share."""
+    monkeypatch.setattr(dbg, "read_run_state", lambda _s: True)
+    # Totals as the debugger lists them where the post begins: 10 and 9 are what the last stop a
+    # tool reported held, and the stop the post found (an `observe_stop`) was 20 and 9 by then.
+    monkeypatch.setattr(taps, "listed", lambda _s: {7: {"total": 20}, 8: {"total": 9}})
+    monkeypatch.setitem(dstate.STATE.taps, "tap", SimpleNamespace(id=7, last_total=10))
+    row = {"ref": "tap", "tally_id": "7", "total": 25, "since_last_stop": 2}
+    fell = {"ref": "gone", "tally_id": "8", "total": 3, "since_last_stop": 3}
+    monkeypatch.setitem(dstate.STATE.taps, "gone", SimpleNamespace(id=8, last_total=9))
+    run = inputs.Retraces(SimpleNamespace(clock_ms=0.0))  # type: ignore[arg-type]
+    run.last = {"watches": [row, fell, {"ref": "freeze", "mode": "freeze"}]}
+    got = run.fields()["watches"]
+    assert (got[0]["since_last_stop"], "reset" in got[0]) == (5, False), got
+    assert (got[1]["since_last_stop"], got[1]["reset"]) == (3, True), got
+    assert got[2] == {"ref": "freeze", "mode": "freeze"}, got

@@ -370,8 +370,9 @@ The session's log, one `channel` (`guest`, `emulator`, `all`, `dos`) filtered by
 Python regex `pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`.
 `since_mark` (a byte position, from a `mark`) reads only what follows. Needs a session with
 `logfile`. `dos`, the guest's INT 21h calls and no other interrupt, instead needs a session
-started with `dos_calls`, matches `pattern` against each call's `line`, counts calls where
-the others count lines, and takes no `since_mark` or `labels`. Works on a running guest.
+started with `dos_calls`, matches `pattern` against each call's `line` (`#20 08BC:0139 psp
+0x08BC 0x3D open MISSING.TXT -> error 2 file not found`), counts calls where the others count
+lines, and takes no `since_mark` or `labels`. Works on a running guest.
 
 Reply: `channel`, `lines` (not on `dos`), `lines_total`, `truncated`, `labels`, `pattern`,
 `note`; on the DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`,

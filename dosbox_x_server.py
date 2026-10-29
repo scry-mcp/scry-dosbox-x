@@ -211,20 +211,22 @@ def start(conf: str, cwd: str,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Open one live DOSBox-X session from your conf, parked at the debugger.
 
-    Paths are absolute or `~`-led. `session_seconds`: the lifetime. `shared`: watched, in a
-    window; false, headless. `flags`: argv tokens, a `-set` value one token. `logfile`: the
-    guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexec;
-    `capture_video` records it. `plan` runs as `perform` does, each wait bounded by
-    `settle_seconds` (default {SETTLE_S}). `input_port`: COM1's TCP port, 0 a free one.
+    Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve.
+    `session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
+    `flags`: argv tokens, a `-set` value one token. `logfile`: the guest's E9 channel, for `log`,
+    `log_wait`, `drive`. `program` runs after autoexec; `capture_video` records it. `plan` runs
+    as `perform` does, each wait bounded by `settle_seconds` (default {SETTLE_S}). `input_port`:
+    COM1's TCP port, 0 a free one.
     `state_dir`: where `state_write` saves; empty, the session's scratch (gone at `close`).
-    `dos_calls`: record every INT 21h for `log(channel="dos")`. `log_categories`: `[log]` category
-    to level, into `logfile`. `guest_files`: host files the guest should leave, read by
-    `guest_file` and `close`. `symbols`: a table `symbols_load` reads, judged here and placed at
-    the first stop where DOS holds the program its stem names (`<stem>.exe`); `base_from`
-    `program` (its load segment) or a register, as `symbols_load` measures one, at a
-    protected-mode stop. That stop's reply says `symbols_placed` once (`placed`, `path`,
-    `load_segment`, `base`, `loaded`; a placement refused: `placed: false`, `code`, `why`); a
-    later `symbols_load` replaces it.
+    `dos_calls`: record every INT 21h for `log(channel="dos")`, up to the build's row cap; the
+    server holds the calls it has read in memory.
+    `log_categories`: `[log]` category to level, into `logfile`. `guest_files`: host files the
+    guest should leave, read by `guest_file` and `close`. `symbols`: a table `symbols_load`
+    reads, judged here and placed at the first stop where DOS holds the program its stem names
+    (`<stem>.exe`); `base_from` `program` (its load segment) or a register, as `symbols_load`
+    measures one, at a protected-mode stop. That stop's reply says `symbols_placed` once
+    (`placed`, `path`, `load_segment`, `base`, `loaded`; a placement refused: `placed: false`,
+    `code`, `why`); a later `symbols_load` replaces it.
 
     Refused: a live session, a bad path or `symbols` table, `session_seconds` out of range,
     `capture_video` without `program`, an `input_port` other than 0 outside
@@ -295,8 +297,9 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
     Python regex `pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`.
     `since_mark` (a byte position, from a `mark`) reads only what follows. Needs a session with
     `logfile`. `dos`, the guest's INT 21h calls and no other interrupt, instead needs a session
-    started with `dos_calls`, matches `pattern` against each call's `line`, counts calls where
-    the others count lines, and takes no `since_mark` or `labels`. Works on a running guest.
+    started with `dos_calls`, matches `pattern` against each call's `line` (`#20 08BC:0139 psp
+    0x08BC 0x3D open MISSING.TXT -> error 2 file not found`), counts calls where the others count
+    lines, and takes no `since_mark` or `labels`. Works on a running guest.
 
     Reply: `channel`, `lines` (not on `dos`), `lines_total`, `truncated`, `labels`, `pattern`,
     `note`; on the DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`,
@@ -797,7 +800,8 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
                          paths.absolute("dest", dest) if dest else None, seconds, bridge(ctx))
 
 
-@tool("Run until text is on screen", summary=one_line.screen_wait, on_cancel="stop", replay="wall")
+@tool("Run until text is on screen", summary=one_line.screen_wait, on_cancel="stop",
+      replay=recording.Counted("run_for", "frames", "polls"))
 def screen_wait(text: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
                 ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run the machine retrace by retrace until `text` is on the TEXT screen, and stop there.
@@ -884,19 +888,20 @@ def audio_record(frames: int, dest: str = "",
     (`mid`). Needs the machine STOPPED and a build whose debugger has `CAPTURE`.
 
     `dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
-    Each file is checked before its path is given; a WAV whose samples miss the run's
-    emulated span by more than {SPAN_TICKS} mixer ticks is INVALID. Silence is reported,
-    never refused; a run with no OPL note or MIDI byte has no file (`path` unavailable). A run cut
-    short is checked for what it holds; a capture that could not be turned off is `ended: false`,
-    no `path`, and records until `close`.
+    The file is checked before its path is given (a rolled-over OPL run: the last); a WAV whose
+    samples miss the run's emulated span by more than {SPAN_TICKS} mixer ticks is INVALID.
+    Silence is reported, never refused; a run with no OPL note or MIDI byte has no file (`path`
+    unavailable). A run cut short is checked for what it holds; a capture that could not be turned
+    off is `ended: false`, no `path`, and records until `close`.
 
     Refused: `frames` under 1, that kind already on, a build with no `CAPTURE`, a running
     machine.
 
     Reply: `verdict`, `kind`, `frames`, `began`, `ended`, `path` (none if the capture could not be
     turned off), `bytes` (a file was written); a WAV's `channels`, `sample_rate_hz`, `samples`,
-    `emulated_s`, `sample_min`, `sample_max`; a DRO's `opl_pairs`, `opl_ms`; a MIDI file's
-    `midi_bytes`; `note`, the run's fields, {STOP_FIELDS}.
+    `emulated_s`, `sample_min`, `sample_max`; a DRO's `opl_pairs`, `opl_ms` (the last file's);
+    `files` (each `path`, `bytes`) when the OPL writer rolled over to a new file, `path` then the
+    last; a MIDI file's `midi_bytes`; `note`, the run's fields, {STOP_FIELDS}.
 
     Reference: REFERENCE.md, Input and the screen.
     """

@@ -1172,7 +1172,7 @@ def _known(bench: str, x: int, y: int) -> int | tuple[int, int, int]:
     ("planes-12h", "mode", "real-start=0h", "real-start=6a01h", "wraps"),
     ("planes-modex", "mode", "real-start=0h", "real-start=f00dh", "wraps"),
     ("planes-lin32", "mode", "real-start=0h", "real-start=35001h", "wraps"),
-    ("planes-12h", "mode", "mode=M_EGA", "mode=M_LIN4", "`M_LIN4`"),
+    ("planes-12h", "mode", "mode=M_EGA", "mode=M_CGA4", "`M_CGA4`"),
 ])
 def test_a_screen_in_video_memory_this_cannot_place_is_refused_rather_than_misread(
         bench_name: str, key: str, old: str, new: str, why: str) -> None:
@@ -1182,6 +1182,12 @@ def test_a_screen_in_video_memory_this_cannot_place_is_refused_rather_than_misre
     with pytest.raises(ds.Invalid) as got:
         shape_of(bench_name, **{key: (old, new)})
     assert got.value.code == "no_channel" and why in str(got.value), str(got.value)
+
+
+def test_vbe_102h_is_read_as_a_planar_mode() -> None:
+    """The planes guest's seventh stop: 800 x 600 in four planes, laid out as 12h's are (the live
+    cell of section W compares its pixels with the guest's arithmetic)."""
+    assert shape_of("planes-12h", mode=("mode=M_EGA", "mode=M_LIN4")).source == dvga.PLANAR
 
 
 @pytest.mark.parametrize(("bench_name", "start", "end"), [

@@ -415,19 +415,20 @@ Record exactly `frames` retraces of sound, then stop: the mixer to a WAV (`kind`
 (`mid`). Needs the machine STOPPED and a build whose debugger has `CAPTURE`.
 
 `dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
-Each file is checked before its path is given; a WAV whose samples miss the run's
-emulated span by more than 2 mixer ticks is INVALID. Silence is reported,
-never refused; a run with no OPL note or MIDI byte has no file (`path` unavailable). A run cut
-short is checked for what it holds; a capture that could not be turned off is `ended: false`,
-no `path`, and records until `close`.
+The file is checked before its path is given (a rolled-over OPL run: the last); a WAV whose
+samples miss the run's emulated span by more than 2 mixer ticks is INVALID.
+Silence is reported, never refused; a run with no OPL note or MIDI byte has no file (`path`
+unavailable). A run cut short is checked for what it holds; a capture that could not be turned
+off is `ended: false`, no `path`, and records until `close`.
 
 Refused: `frames` under 1, that kind already on, a build with no `CAPTURE`, a running
 machine.
 
 Reply: `verdict`, `kind`, `frames`, `began`, `ended`, `path` (none if the capture could not be
 turned off), `bytes` (a file was written); a WAV's `channels`, `sample_rate_hz`, `samples`,
-`emulated_s`, `sample_min`, `sample_max`; a DRO's `opl_pairs`, `opl_ms`; a MIDI file's
-`midi_bytes`; `note`, the run's fields, the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause` and `e9`.
+`emulated_s`, `sample_min`, `sample_max`; a DRO's `opl_pairs`, `opl_ms` (the last file's);
+`files` (each `path`, `bytes`) when the OPL writer rolled over to a new file, `path` then the
+last; a MIDI file's `midi_bytes`; `note`, the run's fields, the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause` and `e9`.
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -463,6 +464,7 @@ Reference: REFERENCE.md, Input and the screen.
 | `channels` | integer |
 | `emulated_s` | number or object |
 | `ended` | boolean |
+| `files` | array of object |
 | `frames` | integer |
 | `kind` | string |
 | `midi_bytes` | integer |
@@ -562,7 +564,8 @@ drawn no frame yet. A DRO must be a DRO 2.0 stream whose header's length is the 
 register state dumped at its first event and then each write; a MIDI file a header and a track
 whose length reaches the file's end. The OPL writer opens its file at the first note keyed on and the
 MIDI writer at the first byte, so a run with neither has no file, and `path` says why; the OPL
-writer also starts a new file after half a minute of emulated silence, and the reply names the
-last.
+writer also starts a new file after half a minute of emulated silence: `files` then names every
+file of the run, `path` the last, and the checks and the counts (`opl_pairs`, `opl_ms`) are the
+last file's alone.
 Silence is a fact about the guest: a constant level is reported as `sample_min` equal to
 `sample_max`, never refused.

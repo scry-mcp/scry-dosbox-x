@@ -127,7 +127,7 @@ MEMORY_SOURCES = frozenset({PLANAR, UNCHAINED, LINEAR})
 VGAMEMDUMP = "VGAMEMDUMP"
 
 
-PLANAR_WORDS = frozenset({"M_EGA"})
+PLANAR_WORDS = frozenset({"M_EGA", "M_LIN4"})
 
 
 #: The linear modes decoded, by bytes a pixel; `M_LIN24` has no decoder.

@@ -342,6 +342,7 @@ class AudioRecordReply(RunForReply, total=False):
     channels: Annotated[int, When("a WAV's")]
     emulated_s: Annotated[float | dict[str, Any], When("a WAV's")]
     ended: Required[bool]
+    files: Annotated[list[dict[str, Any]], When("the OPL writer rolled over to a new file")]
     frames: int
     kind: str
     midi_bytes: Annotated[int, When("a MIDI file's")]

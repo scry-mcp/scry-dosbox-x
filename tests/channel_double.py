@@ -90,6 +90,8 @@ class Machine:
     #: Per `CAPTURE` kind, the file its writer opens at its first data (copied into the capture
     #: folder at the first release with the kind on), or absent for a kind that gets none.
     capture_sources: dict[str, Path] = field(default_factory=dict)
+    capture_rollovers: int = 0
+    capture_first: int = 0
     #: The kinds on, each with the file it writes, None until its first data.
     capturing: dict[str, Path | None] = field(default_factory=dict)
     #: Per `TAP` kind (`W`, `R`, `C`), the file the debugger has written for such a tap by the
@@ -149,8 +151,9 @@ class Machine:
             if path is None and source is not None and self.cwd is not None:
                 folder = self.cwd / "capture"
                 folder.mkdir(exist_ok=True)
-                made = folder / f"sound_000{source.suffix}"
-                made.write_bytes(source.read_bytes())
+                for n in range(self.capture_first, self.capture_first + self.capture_rollovers + 1):
+                    made = folder / f"sound_{n:03d}{source.suffix}"
+                    made.write_bytes(source.read_bytes())
                 self.capturing[kind] = made
 
     def _do_runstate(self, _: list[str]) -> tuple[bool, list[str]]:

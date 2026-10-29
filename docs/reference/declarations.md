@@ -389,7 +389,8 @@ of its own, is refused when the tap goes in (a conf whose core is `auto` can swi
 in protected mode, and a tap then may miss accesses); the HMA is refused because its alias follows the A20 gate, and a range that
 paging splits across non-adjacent pages is refused. Every stop with a tap declared costs one
 `TAPLIST`, which flushes the rows and rewrites the tables; `since_last_stop` counts what came since
-the previous stop, and a list between stops consumes nothing.
+the previous stop (for a `send_keys` or `send_mouse` posted to a stopped machine, since the stop the
+post began at, whatever retraces it ran), and a list between stops consumes nothing.
 
 <!-- scry-reference:begin declaration_list -->
 ## `declaration_list`

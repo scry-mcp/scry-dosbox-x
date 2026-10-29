@@ -69,20 +69,22 @@ start(conf, cwd, session_seconds, shared=false, flags=null, break_on_int3=false,
 
 Open one live DOSBox-X session from your conf, parked at the debugger.
 
-Paths are absolute or `~`-led. `session_seconds`: the lifetime. `shared`: watched, in a
-window; false, headless. `flags`: argv tokens, a `-set` value one token. `logfile`: the
-guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexec;
-`capture_video` records it. `plan` runs as `perform` does, each wait bounded by
-`settle_seconds` (default 30). `input_port`: COM1's TCP port, 0 a free one.
+Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve.
+`session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
+`flags`: argv tokens, a `-set` value one token. `logfile`: the guest's E9 channel, for `log`,
+`log_wait`, `drive`. `program` runs after autoexec; `capture_video` records it. `plan` runs
+as `perform` does, each wait bounded by `settle_seconds` (default 30). `input_port`:
+COM1's TCP port, 0 a free one.
 `state_dir`: where `state_write` saves; empty, the session's scratch (gone at `close`).
-`dos_calls`: record every INT 21h for `log(channel="dos")`. `log_categories`: `[log]` category
-to level, into `logfile`. `guest_files`: host files the guest should leave, read by
-`guest_file` and `close`. `symbols`: a table `symbols_load` reads, judged here and placed at
-the first stop where DOS holds the program its stem names (`<stem>.exe`); `base_from`
-`program` (its load segment) or a register, as `symbols_load` measures one, at a
-protected-mode stop. That stop's reply says `symbols_placed` once (`placed`, `path`,
-`load_segment`, `base`, `loaded`; a placement refused: `placed: false`, `code`, `why`); a
-later `symbols_load` replaces it.
+`dos_calls`: record every INT 21h for `log(channel="dos")`, up to the build's row cap; the
+server holds the calls it has read in memory.
+`log_categories`: `[log]` category to level, into `logfile`. `guest_files`: host files the
+guest should leave, read by `guest_file` and `close`. `symbols`: a table `symbols_load`
+reads, judged here and placed at the first stop where DOS holds the program its stem names
+(`<stem>.exe`); `base_from` `program` (its load segment) or a register, as `symbols_load`
+measures one, at a protected-mode stop. That stop's reply says `symbols_placed` once
+(`placed`, `path`, `load_segment`, `base`, `loaded`; a placement refused: `placed: false`,
+`code`, `why`); a later `symbols_load` replaces it.
 
 Refused: a live session, a bad path or `symbols` table, `session_seconds` out of range,
 `capture_video` without `program`, an `input_port` other than 0 outside
@@ -230,7 +232,7 @@ Example, from a live run:
 
 **`program` loads the stub itself when the conf's autoexec does not run it**, which is why the autoexec must not `exit` before `program` runs.
 
-**`state_dir`** is what `state_write(method="save")` writes to; empty, `save` under `cwd`.
+**`state_dir`** is what `state_write(method="save")` writes to; empty, `save` under the session's scratch, gone at `close`, as MAME's.
 
 **Also refused before anything starts**: a missing conf, `cwd` or `logfile` directory, an unresolved binary, a glued or shredded `-set`, and no drive free for the stub. `captures_dir` and `state_dir` are created with their parents. The reply also carries `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background`, `presence` and `rearm_refused` (why, when stored raw breakpoints could not re-arm).
 

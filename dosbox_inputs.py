@@ -13,6 +13,7 @@ a mark taken before the post (`_post_and_verify`).
 
 from __future__ import annotations
 
+import contextlib
 import re
 from dataclasses import dataclass
 from typing import Any, cast
@@ -32,6 +33,7 @@ import dosbox_retrace as retrace
 import dosbox_running as running
 import dosbox_session as ds
 import dosbox_state as st
+import dosbox_taps as taps
 from dosbox_state import STATE
 
 # Scan set 1 make codes by the mapper-style names `send_keys` takes. The stub injects whatever
@@ -229,6 +231,11 @@ def require_stub(session: ds.Session) -> None:
     announce = [STUB_ANNOUNCE.search(line) for line in session.e9_since_mark(0)]
     found = [m for m in announce if m is not None]
     if not found:
+        if session.parked and session.stop_count <= 1:
+            raise ds.Invalid("no_channel",
+                "the guest has not run yet: `start` parked it before its first instruction, so "
+                "the input stub has not announced itself (`STUB  . scry` on E9); `run_for` or "
+                "`resume` lets the autoexec run it, then send again")
         loaded = (f"`start(program=...)` mounted it on {session.launch.stub_drive}: and ran it "
                   f"after the conf's [autoexec], which may have exited or run the program first"
                   if session.launch.stub_drive else "or `start(program=...)` loads it by itself")
@@ -279,6 +286,12 @@ class Retraces:
         dbg.read_run_state(session)
         self.clock_ms = session.clock_ms or 0.0
         self.e9_mark = STATE.e9_offset
+        self.baseline = {str(tap.id): tap.last_total for tap in STATE.taps.values()}
+        if STATE.taps:
+            # The stop the post begins at may be one no tool reported, so the totals are read here.
+            with contextlib.suppress(ds.Invalid):
+                self.baseline.update({str(i): int(c["total"])
+                                      for i, c in taps.listed(session).items()})
 
     def __call__(self) -> float:
         try:
@@ -308,6 +321,8 @@ class Retraces:
         """What the post ran, and the stop it left the machine at, with the guest's lines of
         every retrace; the watches are as the last one read them."""
         out = {"polls": self.run, **{k: self.last[k] for k in STOP_KEYS if k in self.last}}
+        if "watches" in out:
+            out["watches"] = taps.since_post(out["watches"], self.baseline)
         if "e9" in out:
             out["e9"] = running.e9_block(self.session, self.e9_mark)
         return out

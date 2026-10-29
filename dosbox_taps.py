@@ -226,6 +226,22 @@ def _tables(tap: Tap, decl: dec.Declaration, shown: int) -> dict[str, Any]:
             "writers_total": len(writers)}
 
 
+def since_post(watches: list[dict[str, Any]], baseline: dict[str, int]) -> list[dict[str, Any]]:
+    """`watches` of a stop that ends a parked post, counted from the baseline each tap had when the
+    post began: every retrace of the post is a stop that moved the baseline since."""
+    out: list[dict[str, Any]] = []
+    for row in watches:
+        before = baseline.get(str(row.get("tally_id")))
+        if before is None or "total" not in row:
+            out.append(row)
+            continue
+        fell = row["total"] < before
+        fresh = {k: v for k, v in row.items() if k != "reset"}
+        fresh["since_last_stop"] = row["total"] if fell else row["total"] - before
+        out.append({**fresh, "reset": True} if fell else fresh)
+    return out
+
+
 def evaluate(decl: dec.Declaration, counts: dict[int, dict[str, int]], at_stop: bool
              ) -> dict[str, Any]:
     """What a stop survey (`at_stop`) or `declaration_list(kind="watch")` says of the tap under

@@ -16,6 +16,7 @@
 ;   4. VBE 110h (640 x 480, 15 bits a pixel): the word (y & FF) << 8 | (x & FF).
 ;   5. VBE 111h (640 x 480, 16 bits a pixel): the same words as step 4.
 ;   6. VBE 112h (640 x 480, 32 bits a pixel): the dword y << 12 | x.
+;   7. VBE 102h (800 x 600, 16 colours in four planes): step 1's picture, (x + y) & 0F.
 ;
 ; The SVGA steps write through the 64 KB window at A000h, moved a bank at a time with VBE
 ; function 05h by the window granularity function 01h reports, so the frame is filled the way
@@ -30,50 +31,9 @@
         ; 1. mode 12h, one plane at a time through the sequencer's map mask
         mov     ax, 0x0012
         int     0x10
-        mov     ax, 0xA000
-        mov     es, ax
-        xor     bp, bp                  ; BP is the plane
-.plane: mov     dx, 0x3C4
-        mov     al, 2
-        mov     ah, 1
-        mov     cx, bp
-        shl     ah, cl
-        out     dx, ax
-        xor     di, di
-        xor     si, si                  ; SI is the row
-.row12: xor     bx, bx                  ; BX is the byte column
-.byte12:
-        mov     ax, bx                  ; the first pixel of the byte is x = 8 * column
-        shl     ax, 3
-        add     ax, si                  ; ... and its colour (x + y) & 0F
-        mov     dl, 0                   ; DL gathers the plane's eight bits
-        mov     dh, 0x80
-.bit12: push    ax
-        and     al, 0x0F
-        mov     cx, bp
-        shr     al, cl
-        test    al, 1
-        jz      .clear
-        or      dl, dh
-.clear: pop     ax
-        inc     ax
-        shr     dh, 1
-        jnz     .bit12
-        mov     [es:di], dl
-        inc     di
-        inc     bx
-        cmp     bx, 80
-        jb      .byte12
-        inc     si
-        cmp     si, 480
-        jb      .row12
-        inc     bp
-        cmp     bp, 4
-        jb      .plane
-        mov     dx, 0x3C4               ; every plane enabled again, as the BIOS left it
-        mov     ax, 0x0F02
-        out     dx, ax
-        call    settle
+        mov     word [cols], 80
+        mov     word [rows], 480
+        call    planar
         int     3
 
         ; 2. mode X: 13h, then the sequencer and the CRTC unchained
@@ -136,7 +96,64 @@
         call    svga
         int     3
 
+        ; 7. VBE 102h (800 x 600, 16 colours in four planes): step 1's picture, (x + y) & 0F
+        mov     ax, 0x4F02
+        mov     bx, 0x0102
+        int     0x10
+        mov     word [cols], 100
+        mov     word [rows], 600
+        call    planar
+        int     3
+
 .spin:  jmp     .spin
+
+; --- the planar picture (x + y) & 0F on [cols] bytes by [rows] rows, a plane at a time ---
+planar:
+        mov     ax, 0xA000
+        mov     es, ax
+        xor     bp, bp                  ; BP is the plane
+.plane: mov     dx, 0x3C4
+        mov     al, 2
+        mov     ah, 1
+        mov     cx, bp
+        shl     ah, cl
+        out     dx, ax
+        xor     di, di
+        xor     si, si                  ; SI is the row
+.rowp: xor     bx, bx                  ; BX is the byte column
+.bytep:
+        mov     ax, bx                  ; the first pixel of the byte is x = 8 * column
+        shl     ax, 3
+        add     ax, si                  ; ... and its colour (x + y) & 0F
+        mov     dl, 0                   ; DL gathers the plane's eight bits
+        mov     dh, 0x80
+.bitp: push    ax
+        and     al, 0x0F
+        mov     cx, bp
+        shr     al, cl
+        test    al, 1
+        jz      .clear
+        or      dl, dh
+.clear: pop     ax
+        inc     ax
+        shr     dh, 1
+        jnz     .bitp
+        mov     [es:di], dl
+        inc     di
+        inc     bx
+        cmp     bx, [cols]
+        jb      .bytep
+        inc     si
+        cmp     si, [rows]
+        jb      .rowp
+        inc     bp
+        cmp     bp, 4
+        jb      .plane
+        mov     dx, 0x3C4               ; every plane enabled again, as the BIOS left it
+        mov     ax, 0x0F02
+        out     dx, ax
+        call    settle
+        ret
 
 ; --- set VBE mode [mode] and draw its picture, [bytes] a pixel ---------------------------
 svga:   mov     ax, 0x4F01              ; the mode's window granularity, in KB
@@ -232,8 +249,10 @@ retrace:
         jz      .in
         ret
 
-name:   db      "PLANES: 12h, mode X, VBE 101h 110h 111h 112h"
+name:   db      "PLANES: 12h, mode X, VBE 101h 110h 111h 112h 102h"
 mode:   dw      0
+cols:   dw      0
+rows:   dw      0
 bytes:  db      0
 step:   dw      0
 bank:   dw      0

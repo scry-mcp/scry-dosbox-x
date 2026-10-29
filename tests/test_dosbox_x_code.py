@@ -24,6 +24,7 @@ from test_dosbox_x_machine import listing
 import dosbox_code as code
 import dosbox_comments as dcomments
 import dosbox_disasm as disasm
+import dosbox_dump as dumping
 import dosbox_grammar as grammar
 import dosbox_machine as machine
 import dosbox_running as running
@@ -1075,3 +1076,23 @@ def test_call_stack_is_a_step_of_perform_beside_disassemble() -> None:
     r = cast(dict[str, Any], server.perform(steps=[
         {"op": "disassemble", "ref": "inner", "length": 8}, {"op": "call_stack"}]))
     assert r["status"] == "ok" and r["steps_completed"] == 2, r
+
+
+def test_the_descriptor_tables_of_a_protected_stop_are_read_once_for_every_comment_it_places(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A selector no register holds takes the GDT and LDT listings; a stop's `Segments` reads them
+    once however many comments ask, so placing comments costs two reads per stop, not two each."""
+    reads: list[frozenset[str]] = []
+
+    def read(_session: object, wanted: frozenset[str]) -> machine.Reading:
+        reads.append(wanted)
+        return machine.Reading(found={"gdt": {}, "ldt": {}})
+
+    monkeypatch.setattr(machine, "read", read)
+    monkeypatch.setattr(dumping, "addressable",
+                        lambda _found, sel: {"base": f"{sel * 0x1000:X}", "limit": "FFFF"})
+    segs = code.Segments(SimpleNamespace(), {"mode": "Pr32"},  # type: ignore[arg-type]
+                         {"CS": "00A7", "DS": "00AF"})
+    bases = [segs.base(sel) for sel in (0x38, 0x40, 0x48, 0x50, 0x38)]
+    assert bases == [0x38000, 0x40000, 0x48000, 0x50000, 0x38000], bases
+    assert reads == [frozenset({"gdt", "ldt"})], reads
