@@ -42,6 +42,7 @@ from scry_core import (
     media_tools,
     recording,
     reply_schema,
+    roster,
 )
 from scry_core.host_program import absolute as _abs
 from scry_core.host_program import temporary as _tmp
@@ -1145,6 +1146,7 @@ def test_a_relative_path_is_refused_and_an_absolute_one_names_the_file_it_looked
 
 def test_every_registered_tool_is_named_in_the_instructions() -> None:
     assert dosbox_mcp.ROSTER.unlisted(dosbox_mcp.registered_tools()) == []
+    assert dosbox_mcp.ROSTER.misfiled(roster.SHARED_FAMILIES) == []
     assert dosbox_mcp.ROSTER.text() in (server.mcp.instructions or ""), "the roster is missing"
 
 

@@ -44,12 +44,12 @@ _ANSWERS_WHILE_RUNNING = roster.answers_while_running(
 #: The tools by family, in the order the instructions list them.
 ROSTER = roster.Roster(families=(
     ("Session", ("build_check", "start", "status", "close")),
+    ("Machine", ("machine_map", "interrupt_vectors", "log", "log_wait")),
     ("Read", ("registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
-                  "log", "log_wait", "machine_map", "interrupt_vectors", "palette",
-                  "screen_view", "screen_signature", "screen_map_find", "screen_map_write",
-                  "debug")),
+              "screen_map_find", "screen_map_write")),
+    ("Screen", ("palette", "screen_view", "screen_signature")),
     ("Scan", ("scan",)),
-    ("Write", ("set_register", "write")),
+    ("Write", ("set_register", "write", "debug")),
     ("Hardware", ("port", "pic", "a20")),
     ("Advance", ("run_to", "run_for", "trace", "screen_wait", "step", "resume", "stop")),
     ("Declarations", ("breakpoint_at", "breakpoint_interrupt", "regpoint_add", "watch_add",
@@ -57,11 +57,11 @@ ROSTER = roster.Roster(families=(
     ("States", ("state_list", "state_write")),
     ("Names", ("symbols_load", "symbols_find")),
     ("Comments", ("comment_list", "comment_write")),
-    ("Input", ("send_keys", "send_mouse", "drive")),
+    ("Input", ("send_keys", "send_mouse")),
     ("Captures", ("captures", "capture_frame", "series_capture", "snapshot", "record",
                   "audio_record")),
     ("Files", ("image_compare", "audio_compare", "guest_file")),
-    ("Lists", ("perform", "perform_export")),
+    ("Lists", ("perform", "perform_export", "drive")),
 ), answering=tuple(_ANSWERS_WHILE_RUNNING))
 
 
