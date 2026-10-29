@@ -648,7 +648,11 @@ class NamesFake(SessionGates):
         return not (self.where_raises or self.running)
 
     def state(self) -> dict[str, object]:
-        return {"alive": self.alive_flag, "running": self._running, "altered": False}
+        return {"pid": 4242, "alive": self.alive_flag, "running": self._running, "altered": False,
+                "conf": "/x/g.conf", "conf_digest": "abc123", "conf_changed_on_disk": False,
+                "watched": False, "bound_s": 60, "elapsed_s": 1.0,
+                "output_bytes_dropped": 0, "captures": "off",
+                "state_dir": "the emulator's own save/ under its working directory"}
 
     def report_line(self) -> str:
         x, y = self.pointer
@@ -831,7 +835,8 @@ class NamesFake(SessionGates):
 
     def step(self, mode: str = "over", count: int = 1) -> dict[str, object]:
         self.running = self.step_running
-        return {"running": self.step_running, "completed": count, "moved": True,
+        return {"mode": mode, "asked": count, "running": self.step_running, "completed": count,
+                "moved": True,
                 "stalled": 0, "before": {"cs": self.cs, "eip": self.eip, "mode": self.mode},
                 "after": {"cs": self.cs, "eip": self.eip, "mode": self.mode}}
 

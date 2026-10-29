@@ -220,6 +220,17 @@ def test_a_capture_that_cannot_be_turned_off_is_said_and_never_checked(tmp_path:
     assert "path" not in got
 
 
+def test_a_video_capture_that_cannot_be_turned_off_says_why_it_has_no_file(
+        tmp_path: Path) -> None:
+    machine = live(tmp_path)
+    machine.hooks["CAPTURE"] = lambda body: ((False, ["*** Debugger command not recognized"])
+                                             if body.endswith(" OFF") else None)
+    got = _ok(server.record(frames=2))
+    assert got["ended"] is False, got
+    for field in ("path", "bytes", "avi_frames"):
+        assert got[field]["available"] is False and "still on" in got[field]["why"], (field, got)
+
+
 def test_a_run_that_raised_still_turns_the_capture_off(tmp_path: Path,
                                                       monkeypatch: pytest.MonkeyPatch) -> None:
     machine = live(tmp_path)

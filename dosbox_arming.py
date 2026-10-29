@@ -1046,7 +1046,8 @@ def breakpoint_interrupt(session: ds.Session, number: int, ah: int | None,
         raise
     num, ah = grammar.parse_interrupt_row(want)
     STATE.note_armed(want, {"kind": "int", "num": num, "ah": ah, "entry": want})
-    return st.reply(ref=want, stored=True, already_stored=not is_new, entry=want, **delta)
+    return st.reply(ref=want, stored=True, already_stored=not is_new, armed=True, entry=want,
+                    **delta)
 
 
 def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:

@@ -231,11 +231,11 @@ def start(conf: str, cwd: str,
     with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
     {GUEST_FILES_MAX}, or busy.
 
-    Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`), `dos_calls`,
-    `log_categories`, `guest_files` (each when asked for: the trace's path, the categories set,
-    each file as it was before the boot), `symbols` (`held`, `base_from`); with `plan`, its
-    account. `note` when the conf or `flags` select a dynamic cpu core, which can pass over code
-    breakpoints: start on `flags=["-set", "cpu core=normal"]`.
+    Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
+    `guest_files` (each when asked for: the trace's path, the categories set, each file as it was
+    before the boot), `symbols` (`held`, `base_from`); all but with `plan`, which answers its
+    account and these facts under `start`. `note` when the conf or `flags` select a dynamic cpu
+    core, which can pass over code breakpoints: start on `flags=["-set", "cpu core=normal"]`.
 
     Reference: REFERENCE.md, The session.
     """
@@ -252,11 +252,11 @@ def status() -> dict[str, Any]:
     (`stopped_on_its_own`) and applies what was queued while the guest ran
     (`applied_on_stop`).
 
-    Reply: `pid`, `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`, `elapsed_s`,
-    `output_bytes_dropped`, `captures`, `state_dir`, `pending` (`arm` refs, a `disarm` count,
-    `symbols_load`, `base_remeasure`), `presence`, `declarations`, and with a session `pc` and
-    `cpu_mode`. Also `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`). `session`
-    carries `alive`, `running`, `altered` and each alarm while it holds.
+    Reply: `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`), `pending` (`arm` refs, a
+    `disarm` count, `symbols_load`, `base_remeasure`) and `presence`; with a session also `pid`,
+    `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`, `elapsed_s`,
+    `output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and `cpu_mode`.
+    `session` carries `alive`, `running`, `altered` and each alarm while it holds.
 
     Reference: REFERENCE.md, What every reply carries.
     """
@@ -274,11 +274,11 @@ def status() -> dict[str, Any]:
 def close(detail: bool = False, ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """End the session deliberately rather than waiting for its bound.
 
-    Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid`, `stdout_tail` and
-    `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`. `exit_code` is
-    an integer or unavailable with its `why`; `note` when the output was not read to its end.
-    `guest_files`: each file `start` named, with `guest_file`'s `state`. `session` is the block
-    as it is after the close (`alive` and `running` false).
+    Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` (with a session),
+    `stdout_tail` and `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`.
+    `exit_code`, with a session, is an integer or unavailable with its `why`; `note` when the
+    output was not read to its end. `guest_files`: each file `start` named, with `guest_file`'s
+    `state`. `session` is the block as it is after the close (`alive` and `running` false).
     """
     return lifecycle.close(bridge(ctx), detail)
 
@@ -297,13 +297,12 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
     started with `dos_calls`, matches `pattern` against each call's `line`, counts calls where
     the others count lines, and takes no `since_mark` or `labels`. Works on a running guest.
 
-    Reply: `channel`, `lines`, `lines_total`, `truncated`, `labels`, `pattern`, `note`; on the
-    DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`, `caller`, `psp`,
-    `function`, `name`, `file`, `in`, `out`, `error`, `returned`, `returned_s`, `switched`,
-    `line`). INVALID with `code`: no
-    `logfile`, no log yet, no guest instrumentation, `limit` out of range, a bad pattern, an
-    unknown channel (`process` is refused by name), a `since_mark` naming no position.
-    To wait for a line use `log_wait`.
+    Reply: `channel`, `lines` (not on `dos`), `lines_total`, `truncated`, `labels`, `pattern`,
+    `note`; on the DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`,
+    `caller`, `psp`, `function`, `name`, `file`, `in`, `out`, `error`, `returned`, `returned_s`,
+    `switched`, `line`). INVALID with `code`: no `logfile`, no log yet, no guest instrumentation,
+    `limit` out of range, a bad pattern, an unknown channel (`process` is refused by name), a
+    `since_mark` naming no position. To wait for a line use `log_wait`.
 
     Reference: REFERENCE.md, The log.
     """
@@ -368,8 +367,8 @@ def registers(from_last_stop: bool = False) -> dict[str, Any]:
     """The registers at this stop. `from_last_stop=True` returns the registers of the last stop,
     never the current value; refused before any stop.
 
-    Reply: `regs` (hex strings), `superseded`. CR0, CR3 and descriptor tables:
-    `machine_map(sections=["control"])`.
+    Reply: `regs` (hex strings), `superseded` (with `from_last_stop`). CR0, CR3 and descriptor
+    tables: `machine_map(sections=["control"])`.
     """
     if from_last_stop:
         live()
@@ -751,8 +750,9 @@ def run_for(milliseconds: int = 0, frames: int = 0,
     Needs the machine stopped.
 
     Reply: `verdict` (`ELAPSED`, `OTHER_STOP`, `TIMEOUT`), `polls`, `emulated_before_s`,
-    `emulated_after_s`, `frame_before`, `frame_after`, `cycles` (unavailable with why),
-    `retrace_pending`, `note`, {STOP_FIELDS}. INVALID: `no_progress`, `unexpected_answer`.
+    `emulated_after_s`, `frame_before`, `frame_after`, `cycles` (a count on the normal core, else
+    unavailable with why), `retrace_pending` (a retrace stop is left armed), `note`,
+    {STOP_FIELDS}. INVALID: `no_progress`, `unexpected_answer`.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
@@ -794,10 +794,11 @@ def screen_wait(text: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
     `RUNSTATE`. Already on screen: answered at once. Each retrace costs a stop and a reading of the
     screen, so `run_for` first for a distant string.
 
-    Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`)
-    or `TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of
-    `run_to` with its `frame`. Refused: `bad_argument`, `wait_stopped` (a declared breakpoint
-    stopped it), `no_channel` (a screen it cannot read, or a build with no `RUNSTATE`).
+    Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`) or
+    `TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of `run_to`
+    with its `frame` (unless the text was already there). Refused: `bad_argument`, `wait_stopped`
+    (a declared breakpoint stopped it), `no_channel` (a screen it cannot read, or a build with no
+    `RUNSTATE`).
 
     Reference: REFERENCE.md, Input and the screen.
     """
@@ -880,9 +881,10 @@ def audio_record(frames: int, dest: str = "",
     Refused: `frames` under 1, that kind already on, a build with no `CAPTURE`, a running
     machine.
 
-    Reply: `verdict`, `kind`, `frames`, `began`, `ended`, `path`, `bytes`; a WAV's `channels`,
-    `sample_rate_hz`, `samples`, `emulated_s`, `sample_min`, `sample_max`; a DRO's
-    `opl_pairs`, `opl_ms`; a MIDI file's `midi_bytes`; `note`, the run's fields, {STOP_FIELDS}.
+    Reply: `verdict`, `kind`, `frames`, `began`, `ended`, `path` (none if the capture could not be
+    turned off), `bytes` (a file was written); a WAV's `channels`, `sample_rate_hz`, `samples`,
+    `emulated_s`, `sample_min`, `sample_max`; a DRO's `opl_pairs`, `opl_ms`; a MIDI file's
+    `midi_bytes`; `note`, the run's fields, {STOP_FIELDS}.
 
     Reference: REFERENCE.md, Input and the screen.
     """
@@ -936,7 +938,8 @@ def breakpoint_interrupt(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)],
     `ah` are hex given as integers: `0x21` for DOS, not `21`. Pending while the guest runs.
 
     Reply: `ref` (e.g. `BPINT 21 AH=4B`, what `declaration_clear` takes), `stored`,
-    `already_stored`, `armed`, `state`, `entry`; with `detail=True` also `output`.
+    `already_stored`, `armed`, `state` (while the guest runs), `entry` (once armed at a stop);
+    with `detail=True` also `output`.
 
     Reference: REFERENCE.md, Declarations.
     """
@@ -956,7 +959,8 @@ def regpoint_add(condition: str) -> dict[str, Any]:
     Refused: a term not in that shape (`bad_argument`); a build without `BPIF` (`no_channel`).
 
     Reply: `ref` (the condition as the debugger prints it back, what `declaration_clear` takes),
-    `stored`, `already_stored`, `armed`, `state`, `while_running`, `entry`, `note`.
+    `stored`, `already_stored`, `armed`, `state`, `while_running`, `entry` (on a stopped machine),
+    `note`.
 
     Reference: REFERENCE.md, Declarations.
     """
@@ -1010,8 +1014,8 @@ def symbols_find(name: str = "", offset: int | None = None,
     `limit`, case ignored; a name keeps its own spelling in the reply. `offset` (an integer) or
     `linear` (hex text), with `section`: the nearest symbol at or below.
 
-    Reply: `query`, `symbols_total`, `symbols` (`name`, `offset`, `addr`),
-    `truncated`; by address, the symbol's fields and `delta`. INVALID: no table.
+    Reply: `query`; by name, `symbols_total`, `symbols` (`name`, `offset`, `addr`), `truncated`;
+    by address, the symbol's fields and `delta`. INVALID: no table.
     """
     # THE SESSION IS ASKED FOR FIRST, as every read tool asks: a session whose emulator died is
     # `session_broken` there, and the table is forgotten when the session OBJECT changes, so it
@@ -1073,8 +1077,8 @@ def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]
     named. `dest` (absolute, new) writes all sections whole as JSON. Writes nothing to the guest.
 
     Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
-    {LOG_LIMIT_MAX} rows), `sources`, `coverage_note` (why a section is absent), `path`.
-    Refused: bad `sections` or an existing `dest` (`bad_argument`); a running guest
+    {LOG_LIMIT_MAX} rows), `sources`, `coverage_note` (why a section is absent), `path` (with
+    `dest`). Refused: bad `sections` or an existing `dest` (`bad_argument`); a running guest
     (`not_stopped`).
 
     Reference: REFERENCE.md, Reading and writing.
@@ -1164,10 +1168,10 @@ def screen_view(mode: Annotated[str, vocab.enum(by_pens.MODES)] = "render",
     or pixels and narrows all but `pixel`. `scale` 0 fits the largest up to 8x; `dest` a new
     path (else a scratch); `attach` false leaves it unattached.
 
-    Reply: `mode`, `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text
-    `text`, `cursor`; in graphics `screen_indexed`, `entries` (indexed) and `image`; `isolate`:
-    `pixels`, `bbox`, `pens`, `isolate_color`; `histogram`: `histogram`, `pens_used`, `unused`;
-    `pixel`: `x`, `y`, `pen`, `color`, `point_in_crop`.
+    Reply: `mode`, `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `text`,
+    `cursor`; in graphics `screen_indexed`, `entries` (indexed) and `image` (not for mode
+    histogram); `isolate`: `pixels`, `bbox`, `pens`, `isolate_color`; mode histogram: `histogram`,
+    `pens_used`, `unused`; `pixel`: `x`, `y`, `pen`, `color`, `point_in_crop`.
 
     Refused: a relative or existing `dest`, a bad `scale`, `crop`, `mode`, `pens` or `point`, an
     argument the mode ignores, `dest`/`scale`/`attach` in text or `histogram`, a `point` off the
@@ -1369,11 +1373,11 @@ def watch_add(ref: str, mode: Annotated[str, vocab.enum(dec.WATCH_MODES)], lengt
     on an offset already frozen (`ambiguous_ref`); a write capture with no `trigger`; `trigger`
     or `trigger_type` on another mode.
 
-    Reply: `ref`, `by`, `mode`, `fmt`, `length`, `stored`, `already_stored`, `state`
-    (`evaluated`, `unresolved`, `unarmable`, `null_pointer`, `pending`, `armed`), `armed`,
-    `pointer`, `entry`, `caveat`; a count or capture's `tally_id`, `addr`, `trigger`,
-    `trigger_addr`, `trigger_type`; a freeze's `addr`, `entries`, `frozen_hex`; its account is
-    `declaration_list`'s.
+    Reply: `ref`, `by`, `mode`, `fmt`, `length`, `stored`, `already_stored`, `state` (`evaluated`,
+    `unresolved`, `unarmable`, `null_pointer`, `pending`, `armed`), `armed`, `pointer` (a pointer
+    `ref`), `entry` (once armed), `caveat` (protected mode); a count or capture's `tally_id`,
+    `addr`, `trigger`, `trigger_addr`, `trigger_type`; a freeze's `addr`, `entries`, `frozen_hex`;
+    its account is `declaration_list`'s.
 
     Reference: REFERENCE.md, Declarations.
     """
@@ -1546,8 +1550,8 @@ def perform(steps: list[dict[str, Any]],
     `no_channel` if the build counts no frames.
 
     Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
-    `verdict` (`TARGET` adds `stopped`, `TIMEOUT` `note`), else `still_running`;
-    `frame_reached`.
+    `verdict` (once the list waited; `TARGET` adds `stopped`, `TIMEOUT` `note`), else
+    `still_running`; `frame_reached` (with `until_frame`).
 
     Reference: REFERENCE.md, Sequences in one call.
     """

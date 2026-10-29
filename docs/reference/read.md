@@ -18,8 +18,8 @@ registers(from_last_stop=false)
 The registers at this stop. `from_last_stop=True` returns the registers of the last stop,
 never the current value; refused before any stop.
 
-Reply: `regs` (hex strings), `superseded`. CR0, CR3 and descriptor tables:
-`machine_map(sections=["control"])`.
+Reply: `regs` (hex strings), `superseded` (with `from_last_stop`). CR0, CR3 and descriptor
+tables: `machine_map(sections=["control"])`.
 
 | argument | type | default |
 |---|---|---|
@@ -102,7 +102,7 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "read_memory 0000:0020: 4 bytes at 0000:00000020",
+  "summary": "read_memory 0000:0020: 4 bytes at 0000:00000020: a5fe00f0",
   "status": "ok",
   "ref": "0000:0020",
   "seg_off": "0000:00000020",
@@ -296,18 +296,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1107.bin"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1107.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1107.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1107.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1107.bin",
+  "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1107.bin",
   "bytes": 16
 }
 ```
@@ -405,13 +405,12 @@ Python regex `pattern`; `limit` keeps the newest matches; `labels=True` adds `la
 started with `dos_calls`, matches `pattern` against each call's `line`, counts calls where
 the others count lines, and takes no `since_mark` or `labels`. Works on a running guest.
 
-Reply: `channel`, `lines`, `lines_total`, `truncated`, `labels`, `pattern`, `note`; on the
-DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`, `caller`, `psp`,
-`function`, `name`, `file`, `in`, `out`, `error`, `returned`, `returned_s`, `switched`,
-`line`). INVALID with `code`: no
-`logfile`, no log yet, no guest instrumentation, `limit` out of range, a bad pattern, an
-unknown channel (`process` is refused by name), a `since_mark` naming no position.
-To wait for a line use `log_wait`.
+Reply: `channel`, `lines` (not on `dos`), `lines_total`, `truncated`, `labels`, `pattern`,
+`note`; on the DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`,
+`caller`, `psp`, `function`, `name`, `file`, `in`, `out`, `error`, `returned`, `returned_s`,
+`switched`, `line`). INVALID with `code`: no `logfile`, no log yet, no guest instrumentation,
+`limit` out of range, a bad pattern, an unknown channel (`process` is refused by name), a
+`since_mark` naming no position. To wait for a line use `log_wait`.
 
 Reference: REFERENCE.md, The log.
 
@@ -430,7 +429,6 @@ Reference: REFERENCE.md, The log.
 | `labels` | object |
 | `lines` | array |
 | `lines_total` | integer |
-| `note` | string |
 | `pattern` | string |
 | `truncated` | boolean |
 
@@ -512,7 +510,6 @@ Reference: REFERENCE.md, The log.
 | `lines_before` | integer |
 | `lines_examined` | integer |
 | `lines_total` | integer |
-| `note` | string |
 | `pattern` | string |
 | `verdict` | string |
 | `waited_s` | number |
@@ -567,8 +564,8 @@ out reads the DOS machine and `control`; `bios_mem`, `callbacks`, `vga`, `paging
 named. `dest` (absolute, new) writes all sections whole as JSON. Writes nothing to the guest.
 
 Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
-400 rows), `sources`, `coverage_note` (why a section is absent), `path`.
-Refused: bad `sections` or an existing `dest` (`bad_argument`); a running guest
+400 rows), `sources`, `coverage_note` (why a section is absent), `path` (with
+`dest`). Refused: bad `sections` or an existing `dest` (`bad_argument`); a running guest
 (`not_stopped`).
 
 Reference: REFERENCE.md, Reading and writing.
@@ -1008,7 +1005,7 @@ Example, from a live run:
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
-    "path": "$TMPDIR/dosbox-x-session-nm2kjpvk/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-g91n0wpd/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,
@@ -1041,10 +1038,10 @@ a pixel holds, and no `set_by` is answered. `crop` is `[x, y, width, height]` in
 or pixels and narrows all but `pixel`. `scale` 0 fits the largest up to 8x; `dest` a new
 path (else a scratch); `attach` false leaves it unattached.
 
-Reply: `mode`, `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text
-`text`, `cursor`; in graphics `screen_indexed`, `entries` (indexed) and `image`; `isolate`:
-`pixels`, `bbox`, `pens`, `isolate_color`; `histogram`: `histogram`, `pens_used`, `unused`;
-`pixel`: `x`, `y`, `pen`, `color`, `point_in_crop`.
+Reply: `mode`, `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `text`,
+`cursor`; in graphics `screen_indexed`, `entries` (indexed) and `image` (not for mode
+histogram); `isolate`: `pixels`, `bbox`, `pens`, `isolate_color`; mode histogram: `histogram`,
+`pens_used`, `unused`; `pixel`: `x`, `y`, `pen`, `color`, `point_in_crop`.
 
 Refused: a relative or existing `dest`, a bad `scale`, `crop`, `mode`, `pens` or `point`, an
 argument the mode ignores, `dest`/`scale`/`attach` in text or `histogram`, a `point` off the
@@ -1106,6 +1103,7 @@ Example, from a live run:
   "kind": "text",
   "width": 80,
   "height": 25,
+  "mode": "render",
   "crop": [
     0,
     0,
@@ -1201,10 +1199,11 @@ Example, from a live run:
 screen_map_find()
 ```
 
-Which mapped screen the machine shows. Reply: `matched`; matched, `screen`, `layer`, `kind`,
-`size`, `controls` (`name`, `rect`, `centre`), in the program's units; else the machine's
-`kind` and `size`, `screens_mapped`, `screens_tried`, `screens_unjudged` (signed by index on a
-screen with no palette), or `view_fits: false`. None mapped: `needs_call`.
+Which mapped screen the machine shows. Reply: `matched`, `kind` and `size`; when matched,
+`screen`, `layer`, `controls` (`name`, `rect`, `centre`), in the program's units; when not,
+`screens_mapped` and, if the view fits the map, `screens_tried` and `screens_unjudged`
+(signed by index on a screen with no palette), else `view_fits` false. None mapped:
+`needs_call`.
 
 Reference: REFERENCE.md, Screen maps.
 
@@ -1221,6 +1220,7 @@ Takes no argument.
 | `screens_tried` | integer |
 | `screens_unjudged` | integer |
 | `size` | array |
+| `view_fits` | boolean |
 
 Example, from a live run:
 
@@ -1336,6 +1336,7 @@ Example, from a live run:
     80,
     25
   ],
+  "cells": "rgb",
   "match": [
     {
       "crop": [
@@ -1382,7 +1383,6 @@ Refused `bad_argument`: a command that lets the guest run (`RUN`, `VRT`, `RUNWAT
 |---|---|
 | `clipped` | boolean |
 | `command` | string |
-| `note` | string |
 | `output` | string |
 | `output_chars` | integer |
 

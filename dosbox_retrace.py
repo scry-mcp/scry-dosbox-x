@@ -23,8 +23,7 @@ import dosbox_state as st
 import dosbox_vga as vga
 from dosbox_state import STATE
 
-CYCLES_WHY = (f"{dbg.NORMAL_CORE_CYCLES}, and which core runs is not something this server "
-              f"can read, so no count is given")
+COUNTED_CORE = "normal"
 PENDING_NOTE = "a retrace stop is still armed: the next release stops at the next retrace"
 UNCUT_NOTE = ("a code breakpoint is declared, and on a dynamic core one can fail to cut a frame: "
               "`ELAPSED` does not prove its address was not reached; `run_to` and `resume` "
@@ -34,6 +33,26 @@ UNTOLD_NOTE = ("a change-watch or an interrupt breakpoint is declared, and its s
 #: `RUNSTATE` prints its clock to this many decimals; compare at that resolution, not at float
 #: noise.
 CLOCK_DECIMALS = 9
+
+
+def cycles_why(core: str) -> str:
+    """Why a run on `core` gives no cycle count."""
+    return (f"{dbg.NORMAL_CORE_CYCLES}, and this session started on the {core} core: "
+            f"start on `flags=[\"-set\", \"cpu core={COUNTED_CORE}\"]` for a count")
+
+
+def _cycles(session: ds.Session, before: int | None) -> Any:
+    """The run's cycles, counted only on a session that started on the normal core, whose
+    `RUNSTATE` cycle count then means what it says."""
+    core = session.launch.core
+    if core != COUNTED_CORE:
+        return contract.unavailable(cycles_why(core))
+    if before is None or session.cycles is None:
+        return contract.unavailable("`RUNSTATE` gave no cycle count at one end of the run")
+    if session.cycles < before:
+        return contract.unavailable("the cycle counter wrapped during the run, so there is no "
+                                    "count")
+    return session.cycles - before
 
 
 def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
@@ -47,6 +66,7 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
     session.where_and_registers()
     dbg.read_run_state(session)
     before = session.clock_ms
+    cycles_before = session.cycles
     first_frame = session.frames
     if milliseconds and before is None:
         raise ds.Invalid("unexpected_answer",
@@ -136,7 +156,8 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         verdict = contract.OTHER_STOP
     after = session.clock_ms if stopped_at else (last if timed else None)
     extra: dict[str, Any] = {**_clock(before, after),
-                             **_counts(first_frame, reply.get("frame") if stopped_at else None),
+                             **_counts(first_frame, reply.get("frame") if stopped_at else None,
+                                      _cycles(session, cycles_before)),
                              **({} if stopped_at else running.position(None, None))}
     pending = STATE.retrace_pending
     notes = [note for note, holds in ((PENDING_NOTE, pending),
@@ -205,12 +226,12 @@ def _clock(before: float | None, after: float | None) -> dict[str, Any]:
                 None if after is None else after / 1000, NO_CLOCK_WHY)}
 
 
-def _counts(before: int | None, after: Any) -> dict[str, Any]:
+def _counts(before: int | None, after: Any, cycles: Any) -> dict[str, Any]:
     """The frames the run began and ended in, as each stop reply's `frame` reads them."""
     return {"frame_before": contract.or_unavailable(before, dbg.NO_FRAMES_WHY),
             "frame_after": after if after is not None
             else contract.unavailable(NO_STOP_FRAME_WHY),
-            "cycles": contract.unavailable(CYCLES_WHY)}
+            "cycles": cycles}
 
 
 def screen_wait(session: ds.Session, text: str, seconds: float,

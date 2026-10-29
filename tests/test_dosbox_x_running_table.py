@@ -62,7 +62,8 @@ class RunningGuest(SessionGates):
 
     def log_wait(self, pattern: str, seconds: float, channel: str, mark: int = 0,
                  **_: object) -> dict[str, object]:
-        return {"verdict": "TARGET", "line": "x", "already": True}
+        return {"verdict": "TARGET", "line": "x", "already": True, "waited_s": 0.0,
+                "arrived_during": 0, "lines_examined": 1}
 
     stub_protocol = inputs.STUB_PROTOCOL
 
@@ -76,7 +77,8 @@ class RunningGuest(SessionGates):
 
     def save_state(self, name: str, seconds: float = 20.0,
                    progress: object = None) -> dict[str, object]:
-        return {"name": name}
+        return {"name": name, "path": "/x/save/s.sav", "paused": True, "version": "1",
+                "program": "p", "machine": "vga", "memory_mb": 16, "saved_at": "2026-01-01"}
 
     load_state = save_state
 

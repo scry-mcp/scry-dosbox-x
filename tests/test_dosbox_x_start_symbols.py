@@ -136,7 +136,10 @@ def test_a_table_loaded_by_hand_supersedes_the_one_start_holds(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(STATE, "start_symbols", ss.Held("/x/LINEUP.MAP", "program"))
     monkeypatch.setattr(server, "live", lambda: object())
-    monkeypatch.setattr(dosbox_placement, "load", lambda *a, **k: {"status": "ok"})
+    monkeypatch.setattr(dosbox_placement, "load", lambda *a, **k: {
+        "status": "ok", "parsed": 1, "kept": 1, "loaded": 1, "table_mode": "flat", "table_total": 1,
+        "renamed": 0, "pending": False, "checked": {"available": False, "why": "a double"},
+        "declarations": {"rearmed": 0}})
     table = tmp_path / "OTHER.SYM"
     table.write_text("00000100 T start\n")
     server.symbols_load(path=str(table), base="1000")

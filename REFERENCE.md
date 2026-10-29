@@ -50,6 +50,7 @@ While a session holds the window, an orange edge tells whoever sits at the host 
 | `message` | string |
 | `omitted` | array of string |
 | `how` | string |
+| `note` | string |
 | `cancelled` | object |
 | `session` | object |
 | `answers_while_running` | array |
@@ -66,7 +67,7 @@ While a session holds the window, an orange edge tells whoever sits at the host 
 
 **A signal to the server ends its emulator first.** A SIGTERM, a SIGHUP or a Ctrl-C closes the session, after the tool holding the lock returns or a bounded wait for it, before the server leaves.
 
-**A refusal is one contract.** An INVALID carries `code`, one word from a fixed table, and `message`, flat beside the context (`last_stop`, `posted`, `route`, `failed_at`); a code outside the table or an empty message is refused where it is written. A bad argument is a refusal, not an execution failure: `isError` is for a bug. The schema is strict: a wrong type or an unknown argument name is refused as `bad_argument` naming it, and nothing is coerced (`"16"` is not 16), except that an integer stands for a number. `outputSchema` constrains no value, because any datum may come back as `unavailable(why)`.
+**A refusal is one contract.** An INVALID carries `code`, one word from a fixed table, and `message`, flat beside the context (`last_stop`, `posted`, `route`, `failed_at`); a code outside the table or an empty message is refused where it is written. A bad argument is a refusal, not an execution failure: `isError` is for a bug. The schema is strict: a wrong type or an unknown argument name is refused as `bad_argument` naming it, and nothing is coerced (`"16"` is not 16), except that an integer stands for a number. The published `outputSchema` types each field as its value or `unavailable(why)` and requires of an `ok` reply the fields it always carries (unless its `omitted` names them); a field that comes only sometimes says when in the tool's `Reply:` sentence.
 
 **A value as wrong with no machine as with one is judged before the session gate**, so with no session it answers `bad_argument`, never `no_session`.
 
@@ -259,7 +260,7 @@ the stop.
 
 ### Addresses in a reply
 
-A segmented address is `SSSS:OOOOOOOO` (`seg_off` under its own key) and a linear one `addr`, `0x`
+A segmented address is `SSSS:OOOOOOOO` (`seg_off` under its own key, `address` in a stop's `instruction`) and a linear one `addr`, `0x`
 and eight digits, so the same place is one string. A **ref** a caller gives is matched, and a
 comment stored, in the spelling its offset needs: `SSSS:OOOO` within `FFFF`, `SSSS:OOOOOOOO` past
 it, upper case (`814:10b` is `0814:010B`). A row carries `addr` only where the server already knows

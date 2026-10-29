@@ -61,7 +61,7 @@ Reference: REFERENCE.md, Input and the screen.
 | `cpu_mode` | string or object |
 | `e9` | object |
 | `frame` | integer or object |
-| `instruction` | object |
+| `instruction` | DosboxInstruction |
 | `pc` | string or object |
 | `polls` | integer |
 | `regs` | object |
@@ -222,7 +222,7 @@ Reference: REFERENCE.md, Input and the screen.
 | `cpu_mode` | string or object |
 | `e9` | object |
 | `frame` | integer or object |
-| `instruction` | object |
+| `instruction` | DosboxInstruction |
 | `pc` | string or object |
 | `polls` | integer |
 | `regs` | object |
@@ -248,32 +248,29 @@ Example, from a live run:
 
 ```json
 {
-  "x": 96,
-  "y": 48,
-  "units": "mouse",
-  "expect": "MOUSE \\. pos x=96 y=48 ",
-  "seconds": 20
+  "x": 0,
+  "y": 0
 }
 ```
 
 ```json
 {
-  "summary": "send_mouse: pointer at 12,6; effect seen, 15 retraces to frame 114",
+  "summary": "send_mouse: pointer at 0,0; posted, unverified",
   "status": "ok",
-  "x": 96,
-  "y": 48,
-  "units": "mouse",
+  "x": 0,
+  "y": 0,
+  "units": "screen",
   "route": "guest",
   "pointer": {
     "screen": {
-      "x": 12,
-      "y": 6,
+      "x": 0,
+      "y": 0,
       "width": 80,
       "height": 25
     },
     "mouse": {
-      "x": 96,
-      "y": 48,
+      "x": 0,
+      "y": 0,
       "max_x": 639,
       "max_y": 199
     },
@@ -281,65 +278,10 @@ Example, from a live run:
     "bios_mode": "0x03"
   },
   "arrived": true,
-  "polls": 15,
-  "pc": "F000:0000CFC5",
-  "cpu_mode": "real",
-  "stop_seq": 44,
-  "frame": 114,
-  "instruction": {
-    "seg_off": "F000:0000CFC5",
-    "bytes": "CF",
-    "text": "iret",
-    "flow": "return",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
-  },
-  "regs": {
-    "EAX": "0x00000103",
-    "EBX": "0x00000000",
-    "ECX": "0x005b0060",
-    "EDX": "0x00000030",
-    "ESI": "0x00000100",
-    "EDI": "0x0000fffe",
-    "EBP": "0x0000091c",
-    "ESP": "0x0000fff8",
-    "EIP": "0x0000cfc5",
-    "CS": "0xf000",
-    "DS": "0x08dd",
-    "ES": "0x08dd",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x08dd"
-  },
-  "watches": [],
-  "cause": "the retrace the input's post ran to, at F000:0000CFC5",
-  "e9": {
-    "lines_total": 1,
-    "truncated": false,
-    "lines": [
-      "Bochs port E9h: MOUSE . pos x=96 y=48 b=0 presses=0"
-    ],
-    "mark": 35246
-  },
   "motion": true,
   "verify": {
-    "checked": true,
-    "seen": true,
-    "expected": "MOUSE \\. pos x=96 y=48 ",
-    "verdict": "TARGET",
-    "line": "Bochs port E9h: MOUSE . pos x=96 y=48 b=0 presses=0",
-    "seen_before_waiting": true,
-    "lines_before": 0,
-    "waited_s": 0.0,
-    "lines_total": 1
+    "checked": false,
+    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
   }
 }
 ```
@@ -420,19 +362,19 @@ Example, from a live run:
         "reply": {
           "summary": "status: alive, stopped",
           "status": "ok",
-          "pid": 1871,
-          "conf": "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest/probe.conf",
+          "pid": 6399,
+          "conf": "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf",
           "conf_digest": "78bdc38f360b9b4a",
           "bound_s": 1200,
-          "elapsed_s": 4.1,
+          "elapsed_s": 3.9,
           "captures": "off",
-          "state_dir": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n986-save",
+          "state_dir": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save",
           "last_stop": {
             "stop_seq": 11,
             "pc": "0814:00000130",
             "cause": "the retrace run_for ran to, at 0814:00000130",
             "since_s": 0.1,
-            "wall_at": "2026-10-27T11:18:26+00:00"
+            "wall_at": "2026-10-29T04:45:56+00:00"
           },
           "pending": {
             "arm": [],
@@ -473,7 +415,7 @@ Example, from a live run:
   "looked": {
     "guest": {
       "available": true,
-      "since_mark": 95797,
+      "since_mark": 95189,
       "lines_written": 0,
       "lines_total": 0,
       "truncated": false,

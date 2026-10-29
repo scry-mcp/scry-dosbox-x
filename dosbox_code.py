@@ -282,7 +282,7 @@ def stop_instruction(session: ds.Session, where: dict[str, str],
     if not first or first[0].flow == disasm.UNKNOWN:
         return _no_instruction(at, raw)
     insn = first[0]
-    picture: dict[str, Any] = {"seg_off": at, "bytes": insn.data.hex().upper(),
+    picture: dict[str, Any] = {"address": at, "bytes": insn.data.hex().upper(),
                                "text": insn.text, "flow": insn.flow, "code_bits": bits,
                                "bytes_from": "memory"}
     if text := _note_at(*_comments_at(segs, cs, notes), eip):

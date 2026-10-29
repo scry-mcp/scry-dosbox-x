@@ -140,7 +140,11 @@ def recording(session: ds.Session, tool: str, kind: str, frames: int, dest: Path
     if not ended:
         left_on = (f"the capture could not be turned off ({why}): it records until `close`, "
                    "which ends the emulator and its files")
-        return st.extend(ran, **own, note="; ".join(n for n in (ran.get("note"), left_on) if n))
+        # A video reply requires its file facts, so each says it has none; the rest leave them out.
+        gone = {name: unavailable(f"the capture is still on: {why}")
+                for name in ("path", "bytes", "avi_frames")} if kind == VIDEO else {}
+        return st.extend(ran, **own, **gone,
+                         note="; ".join(n for n in (ran.get("note"), left_on) if n))
     if closed is None:
         if kind in NO_FILE_WHY:
             return st.extend(ran, **own, path=unavailable(NO_FILE_WHY[kind]))

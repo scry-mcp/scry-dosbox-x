@@ -180,16 +180,16 @@ def _code_guest() -> None:
     _inner_stack()
     pic = inner.get("instruction") or {}
     M.judge("M the int 3 in inner names inner and its delta",
-            ok(inner) and pic.get("seg_off") == "0814:00000167" and pic.get("text") == "int 3"
+            ok(inner) and pic.get("address") == "0814:00000167" and pic.get("text") == "int 3"
             and (pic.get("symbol"), pic.get("delta")) == ("inner", 0x167 - 0x15E), str(pic))
     parked = M.call(server.run_for, frames=1)
     pic = parked.get("instruction") or {}
     M.judge("M the next stop's instruction is the park's jmp",
             ok(parked) and parked.get("verdict") == "ELAPSED"
-            and pic.get("seg_off") == parked.get("pc") == "0814:0000013A"
+            and pic.get("address") == parked.get("pc") == "0814:0000013A"
             and pic.get("bytes") == "EBFE" and pic.get("symbol") == "park"
             and pic.get("bytes_from") == "memory",
-            f"{pic.get('seg_off')} {pic.get('bytes')} {pic.get('bytes_from')} {pic.get('symbol')}")
+            f"{pic.get('address')} {pic.get('bytes')} {pic.get('bytes_from')} {pic.get('symbol')}")
     must(M.call(server.close), "closing the code guest")
 
 
@@ -216,9 +216,9 @@ def _inner_stack() -> None:
 
 def _first_stop(stop: dict[str, Any]) -> None:
     pic = stop.get("instruction") or {}
-    one = M.call(server.disassemble, ref=str(pic.get("seg_off", f"{LOAD}:0102")), length=1)
+    one = M.call(server.disassemble, ref=str(pic.get("address", f"{LOAD}:0102")), length=1)
     M.judge("M the first int 3's stop carries its instruction from memory, as disassemble "
-            "reads it", ok(stop) and pic.get("seg_off") == stop.get("pc")
+            "reads it", ok(stop) and pic.get("address") == stop.get("pc")
             and pic.get("bytes_from") == "memory"
             and [ln.split(None, 2)[-1] for ln in one.get("lines") or []] == [pic.get("text")],
             f"{pic} / {one.get('lines')}")

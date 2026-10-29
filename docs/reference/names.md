@@ -157,8 +157,8 @@ Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefixes 
 `limit`, case ignored; a name keeps its own spelling in the reply. `offset` (an integer) or
 `linear` (hex text), with `section`: the nearest symbol at or below.
 
-Reply: `query`, `symbols_total`, `symbols` (`name`, `offset`, `addr`),
-`truncated`; by address, the symbol's fields and `delta`. INVALID: no table.
+Reply: `query`; by name, `symbols_total`, `symbols` (`name`, `offset`, `addr`), `truncated`;
+by address, the symbol's fields and `delta`. INVALID: no table.
 
 | argument | type | default |
 |---|---|---|

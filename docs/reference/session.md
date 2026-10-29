@@ -41,9 +41,9 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
   "status": "ok",
-  "binary": "~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger": true,
@@ -105,11 +105,11 @@ Refused: a live session, a bad path or `symbols` table, `session_seconds` out of
 with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
 16, or busy.
 
-Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`), `dos_calls`,
-`log_categories`, `guest_files` (each when asked for: the trace's path, the categories set,
-each file as it was before the boot), `symbols` (`held`, `base_from`); with `plan`, its
-account. `note` when the conf or `flags` select a dynamic cpu core, which can pass over code
-breakpoints: start on `flags=["-set", "cpu core=normal"]`.
+Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
+`guest_files` (each when asked for: the trace's path, the categories set, each file as it was
+before the boot), `symbols` (`held`, `base_from`); all but with `plan`, which answers its
+account and these facts under `start`. `note` when the conf or `flags` select a dynamic cpu
+core, which can pass over code breakpoints: start on `flags=["-set", "cpu core=normal"]`.
 
 Reference: REFERENCE.md, The session.
 
@@ -144,22 +144,21 @@ Reference: REFERENCE.md, The session.
 |---|---|
 | `errors` | array |
 | `failed` | object |
-| `failed_at` | integer or object |
 | `field` | string |
 | `got` | any |
-| `held` | integer |
-| `note` | string |
-| `ran` | array |
 | `ran_path` | string or object |
 | `recorded` | any |
 | `replies_path` | string or object |
-| `steps_completed` | integer |
 | `steps_total` | integer |
 | `still_running` | boolean |
 | `stopped` | object |
 | `stops` | object |
 | `truncated` | boolean |
 | `verdict` | string |
+| `failed_at` | integer or object |
+| `held` | integer |
+| `ran` | array |
+| `steps_completed` | integer |
 | `argv` | array |
 | `background` | boolean |
 | `binary` | string |
@@ -194,36 +193,36 @@ Example, from a live run:
 
 ```json
 {
-  "conf": "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest/probe.conf",
-  "cwd": "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest",
+  "conf": "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf",
+  "cwd": "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest",
   "session_seconds": 1200,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n985.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n986-save"
+  "logfile": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n985.log",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save"
 }
 ```
 
 ```json
 {
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.163s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.108s",
   "status": "ok",
-  "pid": 1871,
-  "conf": "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest/probe.conf",
+  "pid": 6399,
+  "conf": "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf",
   "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.4,
+  "elapsed_s": 0.3,
   "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n986-save",
-  "ready_after_s": 0.163,
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save",
+  "ready_after_s": 0.108,
   "argv": [
-    "~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x",
+    "~/.local/state/dosbox-x-builds/scry/dosbox-x",
     "-conf",
-    "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest/probe.conf",
+    "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf",
     "-time-limit",
     "1200",
     "-break-start",
     "... 20 more"
   ],
-  "binary": "~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger_commands": [
@@ -236,7 +235,7 @@ Example, from a live run:
     "... 5 more"
   ],
   "stub": "/path/to/scry-dosbox-x/guest/SCRY.COM",
-  "input_port": 61425,
+  "input_port": 58293,
   "background": true,
   "presence": {
     "available": false,
@@ -288,11 +287,11 @@ What the session is right now. It records a stop no tool has reported
 (`stopped_on_its_own`) and applies what was queued while the guest ran
 (`applied_on_stop`).
 
-Reply: `pid`, `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`, `elapsed_s`,
-`output_bytes_dropped`, `captures`, `state_dir`, `pending` (`arm` refs, a `disarm` count,
-`symbols_load`, `base_remeasure`), `presence`, `declarations`, and with a session `pc` and
-`cpu_mode`. Also `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`). `session`
-carries `alive`, `running`, `altered` and each alarm while it holds.
+Reply: `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`), `pending` (`arm` refs, a
+`disarm` count, `symbols_load`, `base_remeasure`) and `presence`; with a session also `pid`,
+`conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`, `elapsed_s`,
+`output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and `cpu_mode`.
+`session` carries `alive`, `running`, `altered` and each alarm while it holds.
 
 Reference: REFERENCE.md, What every reply carries.
 
@@ -356,11 +355,11 @@ close(detail=false)
 
 End the session deliberately rather than waiting for its bound.
 
-Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid`, `stdout_tail` and
-`errorlog_tail` when the end was not a clean `quit`, or with `detail=True`. `exit_code` is
-an integer or unavailable with its `why`; `note` when the output was not read to its end.
-`guest_files`: each file `start` named, with `guest_file`'s `state`. `session` is the block
-as it is after the close (`alive` and `running` false).
+Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` (with a session),
+`stdout_tail` and `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`.
+`exit_code`, with a session, is an integer or unavailable with its `why`; `note` when the
+output was not read to its end. `guest_files`: each file `start` named, with `guest_file`'s
+`state`. `session` is the block as it is after the close (`alive` and `running` false).
 
 | argument | type | default |
 |---|---|---|
@@ -378,7 +377,6 @@ as it is after the close (`alive` and `running` false).
 | `ended_by` | string |
 | `errorlog_tail` | string or object |
 | `guest_files` | array |
-| `note` | string |
 | `pid` | integer |
 | `state_dir` | string |
 | `stdout_tail` | string |

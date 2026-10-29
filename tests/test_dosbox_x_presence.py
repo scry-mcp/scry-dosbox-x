@@ -198,7 +198,9 @@ def test_a_mouse_move_keeps_its_reply_when_the_session_dies_after_it(
     import dosbox_inputs as inputs
     import dosbox_running as running
     import dosbox_state as dstate
-    delivered = {"status": "ok", "delivered": True}
+    delivered = {"status": "ok", "delivered": True, "route": "guest",
+                 "pointer": {"x": 1, "y": 1}, "arrived": True,
+                 "verify": {"checked": False, "why": "no expect"}}
 
     def died(*_a: Any, **_k: Any) -> dict[str, Any]:
         dstate.STATE.session = None            # the emulator went while the move went in

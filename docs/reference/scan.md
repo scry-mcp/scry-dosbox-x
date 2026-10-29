@@ -46,7 +46,6 @@ Reference: REFERENCE.md, Reading and writing.
 | `hits_total` | integer |
 | `iterations` | integer or object |
 | `length` | integer |
-| `note` | string |
 | `operator` | string |
 | `ref` | string |
 | `rows` | integer |

@@ -34,7 +34,6 @@ Reference: REFERENCE.md, Declarations.
 | `by` | string |
 | `entry` | string |
 | `marked` | boolean |
-| `note` | string |
 | `ref` | string |
 | `state` | string |
 | `stored` | boolean |
@@ -81,7 +80,8 @@ Break on an interrupt, optionally one `ah` function. Arm it before `resume`. `nu
 `ah` are hex given as integers: `0x21` for DOS, not `21`. Pending while the guest runs.
 
 Reply: `ref` (e.g. `BPINT 21 AH=4B`, what `declaration_clear` takes), `stored`,
-`already_stored`, `armed`, `state`, `entry`; with `detail=True` also `output`.
+`already_stored`, `armed`, `state` (while the guest runs), `entry` (once armed at a stop);
+with `detail=True` also `output`.
 
 Reference: REFERENCE.md, Declarations.
 
@@ -97,7 +97,6 @@ Reference: REFERENCE.md, Declarations.
 | `armed` | boolean |
 | `clipped` | boolean |
 | `entry` | string |
-| `note` | string |
 | `ref` | string |
 | `output` | string |
 | `output_chars` | integer |
@@ -119,6 +118,7 @@ Example, from a live run:
   "status": "ok",
   "ref": "BPINT 21 AH=4C",
   "stored": true,
+  "armed": true,
   "entry": "BPINT 21 AH=4C",
   "omitted": [
     "output",
@@ -156,7 +156,8 @@ the guest runs. Needs the debugger's `BPIF`.
 Refused: a term not in that shape (`bad_argument`); a build without `BPIF` (`no_channel`).
 
 Reply: `ref` (the condition as the debugger prints it back, what `declaration_clear` takes),
-`stored`, `already_stored`, `armed`, `state`, `while_running`, `entry`, `note`.
+`stored`, `already_stored`, `armed`, `state`, `while_running`, `entry` (on a stopped machine),
+`note`.
 
 Reference: REFERENCE.md, Declarations.
 
@@ -171,7 +172,6 @@ Reference: REFERENCE.md, Declarations.
 | `by` | string |
 | `condition` | string |
 | `entry` | string |
-| `note` | string |
 | `ref` | string |
 | `state` | string |
 | `stored` | boolean |
@@ -235,11 +235,11 @@ a count or capture with no `TAP`, a freeze with no heavy debugger (`no_channel`)
 on an offset already frozen (`ambiguous_ref`); a write capture with no `trigger`; `trigger`
 or `trigger_type` on another mode.
 
-Reply: `ref`, `by`, `mode`, `fmt`, `length`, `stored`, `already_stored`, `state`
-(`evaluated`, `unresolved`, `unarmable`, `null_pointer`, `pending`, `armed`), `armed`,
-`pointer`, `entry`, `caveat`; a count or capture's `tally_id`, `addr`, `trigger`,
-`trigger_addr`, `trigger_type`; a freeze's `addr`, `entries`, `frozen_hex`; its account is
-`declaration_list`'s.
+Reply: `ref`, `by`, `mode`, `fmt`, `length`, `stored`, `already_stored`, `state` (`evaluated`,
+`unresolved`, `unarmable`, `null_pointer`, `pending`, `armed`), `armed`, `pointer` (a pointer
+`ref`), `entry` (once armed), `caveat` (protected mode); a count or capture's `tally_id`,
+`addr`, `trigger`, `trigger_addr`, `trigger_type`; a freeze's `addr`, `entries`, `frozen_hex`;
+its account is `declaration_list`'s.
 
 Reference: REFERENCE.md, Declarations.
 
@@ -267,7 +267,6 @@ Reference: REFERENCE.md, Declarations.
 | `frozen_hex` | string |
 | `length` | integer |
 | `mode` | string |
-| `note` | string |
 | `pointer` | object |
 | `ref` | string |
 | `state` | string |
@@ -448,8 +447,8 @@ Example, from a live run:
         "available": false,
         "why": "a DOS machine has one cpu, and every row acts on it"
       },
-      "created_at": "2026-10-27T11:18:26+00:00",
-      "origin": "2026-10-27T11:18:22+00:00#1818.1",
+      "created_at": "2026-10-29T04:45:56+00:00",
+      "origin": "2026-10-29T04:45:52+00:00#6382.1",
       "inherited": false,
       "age_s": 0,
       "entry": "BP 0000:0002",
@@ -494,7 +493,6 @@ Reference: REFERENCE.md, Declarations.
 |---|---|
 | `declarations_cleared` | integer |
 | `disarmed` | array |
-| `note` | string |
 | `pending_disarm` | array |
 
 Example, from a live run:

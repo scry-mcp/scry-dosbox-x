@@ -22,8 +22,8 @@ reads frame F, counted since power-on, within 5000 steps and 600 s;
 `no_channel` if the build counts no frames.
 
 Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
-`verdict` (`TARGET` adds `stopped`, `TIMEOUT` `note`), else `still_running`;
-`frame_reached`.
+`verdict` (once the list waited; `TARGET` adds `stopped`, `TIMEOUT` `note`), else
+`still_running`; `frame_reached` (with `until_frame`).
 
 Reference: REFERENCE.md, Sequences in one call.
 
@@ -40,22 +40,21 @@ Reference: REFERENCE.md, Sequences in one call.
 |---|---|
 | `errors` | array |
 | `failed` | object |
-| `failed_at` | integer or object |
 | `field` | string |
 | `got` | any |
-| `held` | integer |
-| `note` | string |
-| `ran` | array |
 | `ran_path` | string or object |
 | `recorded` | any |
 | `replies_path` | string or object |
-| `steps_completed` | integer |
 | `steps_total` | integer |
 | `still_running` | boolean |
 | `stopped` | object |
 | `stops` | object |
 | `truncated` | boolean |
 | `verdict` | string |
+| `failed_at` | integer or object |
+| `held` | integer |
+| `ran` | array |
+| `steps_completed` | integer |
 | `frame_reached` | integer or object |
 | `operations` | array |
 | `until_frame` | integer |
@@ -82,19 +81,19 @@ Example, from a live run:
       "reply": {
         "summary": "status: alive, stopped",
         "status": "ok",
-        "pid": 1871,
-        "conf": "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest/probe.conf",
+        "pid": 6399,
+        "conf": "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf",
         "conf_digest": "78bdc38f360b9b4a",
         "bound_s": 1200,
-        "elapsed_s": 4.1,
+        "elapsed_s": 3.9,
         "captures": "off",
-        "state_dir": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n986-save",
+        "state_dir": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save",
         "last_stop": {
           "stop_seq": 11,
           "pc": "0814:00000130",
           "cause": "the retrace run_for ran to, at 0814:00000130",
           "since_s": 0.1,
-          "wall_at": "2026-10-27T11:18:26+00:00"
+          "wall_at": "2026-10-29T04:45:56+00:00"
         },
         "pending": {
           "arm": [],
@@ -179,15 +178,15 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1821.json"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1821.json"
 }
 ```
 
 ```json
 {
-  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1821.json",
+  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1821.json",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1821.json",
+  "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1821.json",
   "steps": 1,
   "checks": 0,
   "dropped": [],
@@ -197,7 +196,7 @@ Example, from a live run:
     "op": "resume",
     "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches; it stopped inside frame 0, the one it began in"
   },
-  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1821.json"
+  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1821.json"
 }
 ```
 <!-- scry-reference:end perform_export -->

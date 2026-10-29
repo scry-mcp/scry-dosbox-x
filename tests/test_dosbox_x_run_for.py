@@ -68,6 +68,30 @@ def test_three_frames_land_three_retraces_with_the_whole_stop_reply(tmp_path: Pa
     assert "cannot be told" in got["cause"], "with no frame counted, no retrace is proved"
 
 
+def test_cycles_are_counted_when_the_session_started_on_the_normal_core(tmp_path: Path) -> None:
+    machine = live(frames(3), tmp_path)
+    dstate.STATE.session.launch.core = "normal"      # type: ignore[union-attr]
+    got = cast(dict[str, Any], server.run_for(frames=3))
+    assert got["cycles"] == 3 * 1000, got["cycles"]
+    assert vrts(machine) == ["EXEC VRT"] * 3
+
+
+def test_a_cycle_counter_that_wrapped_in_the_run_gives_no_count() -> None:
+    from types import SimpleNamespace
+    session = SimpleNamespace(launch=SimpleNamespace(core="normal"), cycles=3)
+    got = retrace._cycles(cast(ds.Session, session), 10)
+    assert got["available"] is False and "wrapped" in got["why"], got
+    session.cycles = 13
+    assert retrace._cycles(cast(ds.Session, session), 10) == 3
+
+
+def test_cycles_name_the_core_that_keeps_them_from_being_counted(tmp_path: Path) -> None:
+    live(frames(1), tmp_path)
+    dstate.STATE.session.launch.core = "dynamic_x86"  # type: ignore[union-attr]
+    got = cast(dict[str, Any], server.run_for(frames=1))
+    assert got["cycles"]["available"] is False and "dynamic_x86" in got["cycles"]["why"], got
+
+
 def test_a_build_that_counts_frames_places_the_run_and_its_stop_by_frame(tmp_path: Path) -> None:
     machine = frames(3)
     machine.frames = 100

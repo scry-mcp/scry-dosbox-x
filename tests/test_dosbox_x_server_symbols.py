@@ -1082,7 +1082,8 @@ def test_a_state_load_through_the_server_asks_the_next_stop_for_the_base(
         self.machine_replaced = name == "here"
         if name != "here":
             raise ds.Invalid("unknown_ref", f"no state named {name!r}")
-        return {"name": name, "paused": True}
+        return {"name": name, "paused": True, "path": "/x/save/s.sav", "version": "1",
+                "program": "p", "machine": "vga", "memory_mb": 16, "saved_at": "2026-01-01"}
 
     monkeypatch.setattr(type(fake), "load_state", loads, raising=False)
     assert cast(dict[str, Any], server.state_write("load", name="gone"))["code"] == "unknown_ref"

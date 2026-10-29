@@ -43,8 +43,7 @@ Reference: REFERENCE.md, Advancing the machine.
 | `e9` | object |
 | `enrichment` | object |
 | `frame` | integer or object |
-| `instruction` | object |
-| `note` | string |
+| `instruction` | DosboxInstruction |
 | `pc` | string |
 | `ref` | string |
 | `regs` | object |
@@ -67,7 +66,7 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 85",
+  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 84",
   "status": "ok",
   "verdict": "TIMEOUT",
   "target": "0000:0003",
@@ -75,16 +74,16 @@ Example, from a live run:
   "pc": "0814:00000130",
   "cpu_mode": "real",
   "target_disarmed": true,
-  "control_hits": 85,
+  "control_hits": 84,
   "controls": [
     {
       "ref": "0814:0130",
       "at": "0814:0130",
-      "hits_in_run": 85,
+      "hits_in_run": 84,
       "removed": true
     }
   ],
-  "note": "it came to rest ON the control 0814:0130 (its hit number 85) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
+  "note": "the 3 s bound ran out and the run was interrupted at 0814:00000130, and not at 0000:0003 If 0000:0003 is in ROM (a BIOS or option-ROM segment such as F000), that is why: a code breakpoint in ROM is acknowledged, appears in BPLIST, and never ... (288 characters)",
   "frame": 138,
   "regs": {
     "EAX": "0x00000000",
@@ -111,11 +110,11 @@ Example, from a live run:
     "lines": [
       "Bochs port E9h: [+ 00000.000] PROBE . tick"
     ],
-    "mark": 32026
+    "mark": 31992
   },
   "stop_seq": 6,
   "instruction": {
-    "seg_off": "0814:00000130",
+    "address": "0814:00000130",
     "bytes": "E2FE",
     "text": "loop 0x130",
     "flow": "branch",
@@ -162,8 +161,9 @@ retrace at or past the time asked, up to one frame later. Reports progress while
 Needs the machine stopped.
 
 Reply: `verdict` (`ELAPSED`, `OTHER_STOP`, `TIMEOUT`), `polls`, `emulated_before_s`,
-`emulated_after_s`, `frame_before`, `frame_after`, `cycles` (unavailable with why),
-`retrace_pending`, `note`, the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause` and `e9`. INVALID: `no_progress`, `unexpected_answer`.
+`emulated_after_s`, `frame_before`, `frame_after`, `cycles` (a count on the normal core, else
+unavailable with why), `retrace_pending` (a retrace stop is left armed), `note`,
+the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause` and `e9`. INVALID: `no_progress`, `unexpected_answer`.
 
 Reference: REFERENCE.md, Advancing the machine.
 
@@ -177,7 +177,7 @@ Reference: REFERENCE.md, Advancing the machine.
 |---|---|
 | `cause` | string |
 | `cpu_mode` | string or object |
-| `cycles` | object |
+| `cycles` | integer or object |
 | `e9` | object |
 | `emulated_after_s` | number or object |
 | `emulated_before_s` | number |
@@ -185,8 +185,7 @@ Reference: REFERENCE.md, Advancing the machine.
 | `frame` | integer or object |
 | `frame_after` | integer or object |
 | `frame_before` | integer or object |
-| `instruction` | object |
-| `note` | string |
+| `instruction` | DosboxInstruction |
 | `pc` | string or object |
 | `polls` | integer |
 | `regs` | object |
@@ -235,11 +234,11 @@ Example, from a live run:
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 88798
+    "mark": 87889
   },
   "stop_seq": 7,
   "instruction": {
-    "seg_off": "0814:00000130",
+    "address": "0814:00000130",
     "bytes": "E2FE",
     "text": "loop 0x130",
     "flow": "branch",
@@ -258,10 +257,7 @@ Example, from a live run:
   "emulated_after_s": 1.9747000000000001,
   "frame_before": 138,
   "frame_after": 139,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
-  }
+  "cycles": 15835
 }
 ```
 <!-- scry-reference:end run_for -->
@@ -313,7 +309,7 @@ Reference: REFERENCE.md, Advancing the machine.
 | `cpu_mode` | string or object |
 | `e9` | object |
 | `frame` | integer or object |
-| `instruction` | object |
+| `instruction` | DosboxInstruction |
 | `pc` | string |
 | `regs` | object |
 | `stop_seq` | integer |
@@ -327,14 +323,14 @@ Example, from a live run:
 {
   "instructions": 16,
   "shape": "cs_ip",
-  "dest": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1372.trace",
+  "dest": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1372.trace",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1372.trace",
+  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1372.trace",
   "status": "ok",
   "pc": "0814:00000130",
   "cpu_mode": "real",
@@ -362,11 +358,11 @@ Example, from a live run:
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 89341
+    "mark": 88432
   },
   "stop_seq": 8,
   "instruction": {
-    "seg_off": "0814:00000130",
+    "address": "0814:00000130",
     "bytes": "E2FE",
     "text": "loop 0x130",
     "flow": "branch",
@@ -383,13 +379,13 @@ Example, from a live run:
   },
   "verdict": "ELAPSED",
   "trace": {
-    "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1372.trace",
+    "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1372.trace",
     "bytes": 238,
     "shape": "cs_ip",
     "instructions": 16,
     "addresses": 1,
     "unplaced": 1,
-    "set_path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1372.trace.set.jsonl",
+    "set_path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1372.trace.set.jsonl",
     "symbols": [],
     "symbols_total": 0,
     "truncated": false,
@@ -430,10 +426,11 @@ case-sensitive, inside one row as `screen_view` reads it. Needs a stopped machin
 `RUNSTATE`. Already on screen: answered at once. Each retrace costs a stop and a reading of the
 screen, so `run_for` first for a distant string.
 
-Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`)
-or `TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of
-`run_to` with its `frame`. Refused: `bad_argument`, `wait_stopped` (a declared breakpoint
-stopped it), `no_channel` (a screen it cannot read, or a build with no `RUNSTATE`).
+Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`) or
+`TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of `run_to`
+with its `frame` (unless the text was already there). Refused: `bad_argument`, `wait_stopped`
+(a declared breakpoint stopped it), `no_channel` (a screen it cannot read, or a build with no
+`RUNSTATE`).
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -450,9 +447,8 @@ Reference: REFERENCE.md, Input and the screen.
 | `e9` | object |
 | `enrichment` | object |
 | `frame` | integer or object |
-| `instruction` | object |
+| `instruction` | DosboxInstruction |
 | `line` | string |
-| `note` | string |
 | `pc` | string |
 | `point` | array |
 | `polls` | integer |
@@ -525,11 +521,10 @@ stands, and no later step is sent. For longer runs `run_to`.
 | `e9` | object |
 | `enrichment` | object |
 | `frame` | integer or object |
-| `instruction` | object |
+| `instruction` | DosboxInstruction |
 | `instructions_completed` | integer |
 | `mode` | string |
 | `moved` | boolean |
-| `note` | string |
 | `pc` | string |
 | `regs` | object |
 | `stalled` | integer |
@@ -581,7 +576,7 @@ Example, from a live run:
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 6109
+    "mark": 6075
   },
   "stop_seq": 5,
   "instruction": {
@@ -633,8 +628,7 @@ Reference: REFERENCE.md, Advancing the machine.
 | `e9` | object |
 | `enrichment` | object |
 | `frame` | integer or object |
-| `instruction` | object |
-| `note` | string |
+| `instruction` | DosboxInstruction |
 | `pc` | string |
 | `regs` | object |
 | `output` | string |
@@ -691,9 +685,8 @@ Takes no argument.
 | `cpu_mode` | string or object |
 | `e9` | object |
 | `frame` | integer or object |
-| `instruction` | object |
+| `instruction` | DosboxInstruction |
 | `interrupted` | boolean |
-| `note` | string |
 | `pc` | string |
 | `regs` | object |
 | `stop_seq` | integer |
@@ -716,7 +709,7 @@ Example, from a live run:
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
     "since_s": 0.1,
-    "wall_at": "2026-10-27T11:18:22+00:00"
+    "wall_at": "2026-10-29T04:45:52+00:00"
   },
   "note": "the machine was already stopped"
 }

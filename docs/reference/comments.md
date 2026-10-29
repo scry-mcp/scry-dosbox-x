@@ -47,8 +47,8 @@ Example, from a live run:
         "available": false,
         "why": "a DOS machine has one cpu, and every row acts on it"
       },
-      "created_at": "2026-10-27T11:18:26+00:00",
-      "origin": "2026-10-27T11:18:22+00:00#1818.1",
+      "created_at": "2026-10-29T04:45:56+00:00",
+      "origin": "2026-10-29T04:45:52+00:00#6382.1",
       "inherited": false,
       "age_s": 0,
       "text": "matrix A",
@@ -60,7 +60,7 @@ Example, from a live run:
   "truncated": false,
   "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/dosbox-x-live-matrix-A-48rjafq1/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/dosbox-x-live-matrix-A-e9lishbj/dosbox-x-debug/declarations.json"
   }
 }
 ```
@@ -124,7 +124,6 @@ Reference: REFERENCE.md, Declarations.
 | `deleted` | object |
 | `dropped_comments` | array |
 | `dropped_total` | integer |
-| `note` | string |
 | `parsed` | integer |
 | `path` | string |
 | `replaced_comments` | array |
@@ -153,8 +152,8 @@ Example, from a live run:
       "available": false,
       "why": "a DOS machine has one cpu, and every row acts on it"
     },
-    "created_at": "2026-10-27T11:18:26+00:00",
-    "origin": "2026-10-27T11:18:22+00:00#1818.1",
+    "created_at": "2026-10-29T04:45:56+00:00",
+    "origin": "2026-10-29T04:45:52+00:00#6382.1",
     "inherited": false,
     "age_s": 0,
     "text": "matrix A",
@@ -164,7 +163,7 @@ Example, from a live run:
   "replaced_comments": [],
   "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/dosbox-x-live-matrix-A-48rjafq1/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/dosbox-x-live-matrix-A-e9lishbj/dosbox-x-debug/declarations.json"
   }
 }
 ```

@@ -651,7 +651,7 @@ def picture(s: StoppedCode) -> dict[str, Any]:
 def test_a_stop_takes_its_instruction_from_memory() -> None:
     s = StoppedCode("code-stop1")
     got = picture(s)["instruction"]
-    assert got == {"seg_off": "0814:00000102", "bytes": "CD03", "text": "int 3", "flow": "call",
+    assert got == {"address": "0814:00000102", "bytes": "CD03", "text": "int 3", "flow": "call",
                    "code_bits": 16, "bytes_from": "memory",
                    "symbol": {"available": False, "why": "no symbol table is loaded"},
                    "delta": {"available": False, "why": "no symbol table is loaded"}}
@@ -755,7 +755,7 @@ def test_every_stop_reply_carries_the_instruction_and_its_record_too() -> None:
     install()
     dstate.STATE.session = cast(ds.Session, s)
     reply = running.stop_reply(cast(ds.Session, s))
-    assert reply["instruction"]["seg_off"] == "0814:00000102", reply
+    assert reply["instruction"]["address"] == "0814:00000102", reply
     recorded = running.recorded_stop_reply(cast(ds.Session, s), {"stop_seq": 1})
     assert recorded["instruction"] == {**reply["instruction"]}
     assert recorded["instruction"] is not reply["instruction"], "the record is handed out"
@@ -781,12 +781,12 @@ def test_a_stop_found_on_its_own_after_a_replied_stop_carries_its_own_instructio
     s = StoppedCode("code-stop1")
     install()
     dstate.STATE.session = cast(ds.Session, s)
-    assert running.stop_reply(cast(ds.Session, s))["instruction"]["seg_off"] == "0814:00000102"
+    assert running.stop_reply(cast(ds.Session, s))["instruction"]["address"] == "0814:00000102"
     s.regs = json.loads((FIX / "code-stop2-registers.json").read_text(encoding="utf-8"))
     s.stop_count = 2
     running.observe_stop(cast(ds.Session, s))
     recorded = running.recorded_stop_reply(cast(ds.Session, s), {"stop_seq": 2})
-    assert recorded["instruction"]["seg_off"] == "0814:00000167", recorded["instruction"]
+    assert recorded["instruction"]["address"] == "0814:00000167", recorded["instruction"]
     assert (recorded["pc"], recorded["cpu_mode"]) == ("0814:00000167", "real"), recorded
 
 
