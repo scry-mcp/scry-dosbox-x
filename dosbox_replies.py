@@ -794,6 +794,7 @@ class StateWriteReply(DosboxEnvelope, total=False):
     paused: Required[bool]
     program: Required[str]
     saved_at: Required[str]
+    taps: Annotated[dict[str, Any], When("a count or capture watch declared")]
     version: Required[str]
 
 

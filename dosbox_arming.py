@@ -20,6 +20,7 @@ import dosbox_declarations as dec
 import dosbox_dump as dumping
 import dosbox_freezes as freezes
 import dosbox_grammar as grammar
+import dosbox_launch as dlaunch
 import dosbox_placement as placement
 import dosbox_session as ds
 import dosbox_state as st
@@ -340,6 +341,13 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
     left armed when no declaration explains the stop."""
     stop = (int(where["cs"], 16), int(where["eip"], 16))
     mode = where["mode"]
+    # `RUNSTATE` ends a stop a `BPIF` row made with that row's `BPLIST` number; the debugger
+    # checks conditions before addresses, so a condition that came true made the stop.
+    fired = next((b["entry"][len(grammar.CONDITION_ROW):] for b in held
+                  if session.fired_row is not None and int(b["index"], 16) == session.fired_row
+                  and b["entry"].startswith(grammar.CONDITION_ROW)), None)
+    if fired is not None:
+        return {"attributed": True, "ref": fired, "by": "regpoint", "at": st.seg_off(*stop)}
     holders = _bp_holders(session, mode, stop, machine=machine)
     rows = [t[1:] for t in map(grammar.bp_row_target, (b["entry"] for b in held))
             if t is not None and t[0] == "BP"]
@@ -352,8 +360,8 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
             out["refs"] = [d.ref for d in holders]
             out["note"] = f"{len(holders)} declarations resolve to this address: all are named"
         return out
-    # `BPIF` keeps no hit flag, and a condition can hold at a stop something else made: one
-    # that holds is named as the likely maker, never taken for it.
+    # A build whose `RUNSTATE` does not name the row, or a row it names that is no longer listed:
+    # a condition that holds is named as the likely maker, never taken for it.
     met = _conditions_met(machine[1], held) if machine is not None else []
     holding = {"regpoints_holding": met} if met else {}
     if retrace_may_stop and STATE.retrace_pending:
@@ -512,6 +520,19 @@ def _rearm_kept(session: ds.Session, decl: dec.Declaration, out: dict[str, Any])
         out[state].append({**row, "why": str(e)})
         return
     out["rearmed"].append(row)
+
+
+def retap_after_load(session: ds.Session) -> dict[str, list[Any]]:
+    """The count and capture watches this session had tapped, tapped again after a state load
+    reset the page handlers: the refs it tapped, and the rows it could not with why. Empty when
+    no such watch was declared."""
+    out: dict[str, list[Any]] = {key: [] for key in REARM_BUCKETS}
+    if STATE.store is None:
+        return out
+    for decl in STATE.store.declarations():
+        if decl.kind == "watch" and decl.watch_mode in dec.TAP_MODES and decl.ref in STATE.taps:
+            _rearm_kept(session, decl, out)
+    return out
 
 
 def rearm_declarations(session: ds.Session) -> dict[str, Any]:
@@ -1479,8 +1500,9 @@ def _tap_add(session: ds.Session, chosen: str, ref: str, mode: str, width: int, 
         return _freeze_add(session, store, stored, decl, reply)
     if stored is not None and stored.ref in STATE.taps and taps.installed(session, stored.ref):
         tap = STATE.taps[stored.ref]
-        return st.reply(**{**reply, "ref": stored.ref}, already_stored=True, armed=True,
-                        state="armed", tally_id=str(tap.id), entry=f"TAP {tap.id}")
+        return dlaunch.with_auto_core_tap_note(
+            st.reply(**{**reply, "ref": stored.ref}, already_stored=True, armed=True,
+                     state="armed", tally_id=str(tap.id), entry=f"TAP {tap.id}"), session.launch)
     if stored is not None and stored.ref in STATE.taps:
         taps.drop(session, stored.ref)       # displaced: tapped again as the page is now
     tap = taps.arm(session, stored or decl)
@@ -1489,11 +1511,12 @@ def _tap_add(session: ds.Session, chosen: str, ref: str, mode: str, width: int, 
     except ds.Invalid:
         taps.drop(session, (stored or decl).ref)
         raise
-    return st.reply(**reply, already_stored=already, armed=True, state="armed",
-                    tally_id=str(tap.id), entry=f"TAP {tap.id}",
-                    addr=f"{tap.seg:04X}:{tap.off:08X}",
-                    **({"trigger_addr": f"{tap.trigger[0]:04X}:{tap.trigger[1]:08X}"}
-                       if tap.trigger else {}))
+    return dlaunch.with_auto_core_tap_note(
+        st.reply(**reply, already_stored=already, armed=True, state="armed",
+                 tally_id=str(tap.id), entry=f"TAP {tap.id}",
+                 addr=f"{tap.seg:04X}:{tap.off:08X}",
+                 **({"trigger_addr": f"{tap.trigger[0]:04X}:{tap.trigger[1]:08X}"}
+                    if tap.trigger else {})), session.launch)
 
 
 def _freeze_add(session: ds.Session, store: dec.DeclarationStore,

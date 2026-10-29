@@ -142,13 +142,24 @@ def _save_state(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
 def _load_state(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
     session = live()
     try:
-        return st.answer(session.load_state(name, seconds))
+        loaded = session.load_state(name, seconds)
+        return st.answer({**loaded, **_taps_after_load(session)})
     finally:
         # A LOAD THAT REPLACED THE MACHINE, answered or cut short after it went (the session
         # decides, `dosbox_saved_states.load_state`): the table is kept and its base is measured
         # again at the next stop.
         if session.machine_replaced:
             STATE.machine_replaced()
+
+
+def _taps_after_load(session: ds.Session) -> dict[str, Any]:
+    """`taps` of a load's reply: the loaded machine's page handlers are the emulator's own again,
+    so every declared count and capture is tapped anew (`arming.retap_after_load`)."""
+    got = arming.retap_after_load(session)
+    rearmed = [str(r["ref"]) for r in got["rearmed"]]
+    unarmed = [{"ref": r["ref"], "why": r["why"]}
+               for key in arming.REARM_BUCKETS if key != "rearmed" for r in got[key]]
+    return {"taps": {"rearmed": rearmed, "unarmed": unarmed}} if rearmed or unarmed else {}
 
 
 STATE_METHODS = {

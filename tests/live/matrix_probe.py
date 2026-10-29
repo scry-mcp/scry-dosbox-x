@@ -1069,6 +1069,8 @@ C_CELLS = cells(
      "regpoint_add docstring: Refused"),
     ("C a registerpoint stops the guest as its condition comes true, and the stop names it",
      "regpoint_add docstring; known: probe.asm's pause counts BX down from 700"),
+    ("C the stop a registerpoint made is attributed to it exactly, not as the likely one",
+     "regpoint_add docstring; known: RUNSTATE ends the stop with the BPIF row's number"),
     ("C run_to arrives in the probe and removes its breakpoint",
      REF_DOC + "Advancing the machine; known: probe.asm `emit`"),
     ("C a show watch rides the stop with the counter's digits",
@@ -1195,6 +1197,9 @@ def _c_regpoints() -> None:
            reply=r, holds=ok(armed) and armed.get("ref") == "BX==100" and ok(r)
            and r.get("verdict") == "OTHER_STOP" and (hexint(regs.get("EBX")) or 0) & 0xFFFF == 0x100
            and "BX==100" in cause)
+    judged("C the stop a registerpoint made is attributed to it exactly, not as the likely one",
+           reply=r, holds=cause.startswith("registerpoint BX==100, whose condition came true")
+           and "most likely" not in cause)
     M.call(server.declaration_clear, kind="regpoint", all=True)
     M.setup()
 

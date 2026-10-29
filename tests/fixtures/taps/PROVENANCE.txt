@@ -1,5 +1,7 @@
 What the debugger's `TAP` wrote on the tap guest (`tests/guest/tap.asm`), headless, the three taps
 put in at its `int 3` and the machine then run 20 retraces (five BIOS ticks).
+A row is `r <n> <frame> <line> <ms> <cs> <ip> <data> <mask> <block>`: the frame is the display
+frame count since power-on.
 
 count-writes.rows    `TAP W` on `count` with the 4-byte block at `count`: one row per write, each
                      by `w_inc` (0814:011D), `data` the new count, the block the count before it

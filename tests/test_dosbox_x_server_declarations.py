@@ -10,6 +10,7 @@ from unittest import mock
 
 import pytest
 from dosbox_x_server_support import (  # noqa: E402
+    FakeSession,
     _Booted,
     _deferred_load_with,
     _loaded_then_restored,
@@ -31,6 +32,7 @@ from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
 import dosbox_code as dcode
+import dosbox_debugger as dbg
 import dosbox_declarations as dec
 import dosbox_launch as dlaunch
 import dosbox_mcp
@@ -253,6 +255,37 @@ def test_a_holding_registerpoint_is_named_but_never_taken_for_the_stops_maker(
                                 retrace_may_stop=True)
     assert got["retrace_pending"] is True and got["regpoints_holding"] == ["DS!=0"], got
     assert "registerpoint DS!=0" in dstate.cause(got), dstate.cause(got)
+
+
+def test_a_registerpoint_the_debugger_names_as_the_stops_maker_is_attributed_exactly(
+        tmp_path: Path) -> None:
+    """`RUNSTATE` ends a stop made by a `BPIF` row with that row's `BPLIST` number: the stop is
+    then that registerpoint's, though another one holds too."""
+    fake = _names(tmp_path)
+    fake.fired_row = 0x0A
+    held = [{"index": "00", "entry": "BPIF DS!=0"}, {"index": "0A", "entry": "BPIF AX==1"}]
+    where = {"cs": "0814", "eip": "00000106", "mode": "real"}
+    got = arming.attribute_stop(cast(ds.Session, fake), where=where,
+                                machine=("real", {"DS": "0814", "EAX": "1"}), held=held)
+    assert got["attributed"] is True and got["ref"] == "AX==1" and got["by"] == "regpoint", got
+    assert "regpoints_holding" not in got
+    assert dstate.cause(got) == "registerpoint AX==1, whose condition came true at 0814:00000106"
+    fake.fired_row = 0x0B                  # a number no row carries: nothing is claimed
+    got = arming.attribute_stop(cast(ds.Session, fake), where=where,
+                                machine=("real", {"DS": "0814"}), held=held)
+    assert got["attributed"] is False and got["regpoints_holding"] == ["DS!=0"], got
+
+
+@pytest.mark.parametrize(("line", "fired"), [
+    ("DEBUG: RUNSTATE stopped cycles=5 ms=0.5 frames=3 bpif=0A", 0x0A),
+    ("DEBUG: RUNSTATE stopped cycles=5 ms=0.5 frames=3", None),
+    ("DEBUG: RUNSTATE running cycles=5 ms=0.5 frames=3", None)])
+def test_runstate_says_which_bpif_row_stopped_the_machine_only_when_it_did(
+        line: str, fired: int | None) -> None:
+    fake = FakeSession()
+    fake.fired_row = 0x77
+    dbg.take_run_state(cast(ds.Session, fake), True, [line])
+    assert fake.fired_row == fired and cast(Any, fake).frames == 3
 
 
 def test_a_registerpoint_declared_while_running_is_armed_at_the_next_stop_and_cleared_queued(

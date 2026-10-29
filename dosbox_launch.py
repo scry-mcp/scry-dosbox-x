@@ -221,6 +221,20 @@ def is_dynamic(core: str) -> bool:
     return core.startswith("dynamic")
 
 
+AUTO_CORE_TAPS = (
+    "this session's core is auto, which runs protected-mode code on the dynamic core, and the "
+    "debugger refuses a new tap while that core runs: a tap put in now is not proved to see a "
+    "protected-mode program's accesses. Start on the normal core for a tap that does: "
+    "`start(flags=[\"-set\", \"cpu core=normal\"])`")
+
+
+def with_auto_core_tap_note(reply: dict[str, Any], launch: Launch) -> dict[str, Any]:
+    """A tap's reply, its `note` carrying the auto core's limit when the session runs on it."""
+    if launch.core != "auto":
+        return reply
+    return {**reply, "note": "; ".join(n for n in (reply.get("note"), AUTO_CORE_TAPS) if n)}
+
+
 def with_dynamic_core_note(reply: dict[str, Any], launch: Launch) -> dict[str, Any]:
     """A code breakpoint's reply, its `note` carrying the dynamic core's limit when it applies."""
     if not is_dynamic(launch.core):

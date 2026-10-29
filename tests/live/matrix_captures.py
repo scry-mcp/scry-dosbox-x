@@ -139,6 +139,10 @@ U_CELLS = cells(
      "audio_record docstring: a run with no OPL or MIDI event has no file"),
     ("U declaration_clear removes every tap",
      "declaration_clear docstring"),
+    ("U a row names the display frame it was made in",
+     "watch_add docstring: first_rows; known: tap.asm writes once a BIOS tick"),
+    ("U a state load taps the declared watches again, and they go on counting",
+     "state_write docstring: load; known: the fork's load resets the page handlers"),
 )
 
 
@@ -149,7 +153,7 @@ def _watch(ref: str) -> dict[str, Any]:
 
 @M.section("U", "accesses kept without stopping, on the package's tap guest", U_CELLS)
 def section_u() -> None:
-    boot(conf=TAP_CONF, break_on_int3=True)
+    boot(conf=TAP_CONF, break_on_int3=True, state_dir=M.fresh("-save"))
     advanced(M.call(server.resume, seconds=30), "resume(seconds=30)", STOPPED)
     M.call(server.declaration_clear, kind="watch", all=True)
     count = M.call(server.watch_add, ref=COUNT, mode="count", length=8)
@@ -190,4 +194,17 @@ def section_u() -> None:
     cleared = M.call(server.declaration_clear, kind="watch", all=True)
     M.judge(U_CELLS[6].label, ok(cleared) and sorted(cleared.get("disarmed") or []) == [
         "TAP 1", "TAP 2", "TAP 3"], said(cleared))
+    frames = [r.get("frame") for r in rows]
+    M.judge(U_CELLS[7].label, all(isinstance(f, int) for f in frames)
+            and frames == sorted(set(frames)) and 0 < frames[0] <= int(stop.get("frame") or 0)
+            and frames[-1] <= int(again.get("frame") or 0), str(frames))
+    M.call(server.watch_add, ref=COUNT, mode="count", length=8)
+    M.call(server.state_write, method="save", name="tapload")
+    M.call(server.run_for, frames=10)
+    loaded = M.call(server.state_write, method="load", name="tapload")
+    after = M.call(server.run_for, frames=20)
+    counted = {w.get("ref"): w for w in after.get("watches") or []}.get(COUNT, {})
+    M.judge(U_CELLS[8].label, ok(loaded) and (loaded.get("taps") or {}).get("rearmed") == [COUNT]
+            and counted.get("state") == "tallied" and int(counted.get("total") or 0) >= 4,
+            str(loaded.get("taps")) + " " + str(counted)[:100])
     close_whatever()

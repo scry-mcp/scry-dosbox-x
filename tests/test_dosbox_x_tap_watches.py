@@ -4,6 +4,7 @@ more each time, and its polled byte read once a tick by `r_poll`."""
 
 from __future__ import annotations
 
+import dataclasses
 from pathlib import Path
 from typing import Any, cast
 
@@ -91,7 +92,8 @@ def test_a_write_capture_keeps_each_row_with_the_block_before_the_write(tmp_path
         written = int(r["data"], 16)
         assert r["mask"] == "0x000000ff" and written == r["n"]
         assert r["block"] == [written - 1, 0xA5, 0x5A, 0xC3], "the block from before the write"
-        assert r["frame"]["available"] is False and 0 <= r["line"] < 525
+        assert 0 <= r["line"] < 525
+    assert [r["frame"] for r in rows] == [4, 8, 12, 16, 19]
     times = [r["time_s"] for r in rows]
     assert all(0.054 < b - a < 0.056 for a, b in zip(times, times[1:], strict=False)), times
 
@@ -398,3 +400,53 @@ def test_a_trigger_is_stored_in_one_spelling_and_never_through_a_pointer(tmp_pat
     pointer = cast(dict[str, Any], server.watch_add(ref="0814:013C", mode="capture",
                                                    trigger="[0814:0138]", length=2))
     assert pointer["code"] == "bad_argument" and "pointer" in pointer["message"], pointer
+
+
+def test_a_row_of_a_build_that_writes_no_frame_is_read_with_the_frame_unavailable() -> None:
+    old = "r 1 224 55.629400000 0814 0000011D 00000001 000000FF 00a55ac3"
+    new = "r 1 4 224 55.629400000 0814 0000011D 00000001 000000FF 00a55ac3"
+    assert taps._ROW.match(old).groups()[:3] == ("1", None, "224")  # type: ignore[union-attr]
+    assert taps._ROW.match(new).groups()[:3] == ("1", "4", "224")  # type: ignore[union-attr]
+
+
+_LOADED = {"path": "/s/x.sav", "paused": True, "machine": "svga_s3", "memory_mb": 16,
+           "program": "TAP", "saved_at": "2026-10-29 12:00:00", "version": "2026.10.01",
+           "mark": {}}
+
+
+def test_a_state_load_taps_the_declared_watches_again_and_says_so(tmp_path: Path) -> None:
+    machine = live(tmp_path)
+    _ok(server.watch_add(ref=COUNT, mode="count", length=8))
+    session = cast(Any, dstate.STATE.session)
+
+    def loaded(name: str, seconds: float) -> dict[str, object]:
+        session.machine_replaced = True
+        _displaced(machine)          # the fork's load resets the page handlers
+        return {"name": name, **_LOADED}
+
+    session.machine_replaced = False
+    session.load_state = loaded
+    got = _ok(server.state_write("load", name="x"))
+    assert got["taps"] == {"rearmed": [COUNT], "unarmed": []}, got
+    assert list(machine.taps) == [2], "the displaced tap was replaced by a new one"
+    assert _listed(COUNT)["tally_id"] == "2"
+
+
+def test_a_state_load_with_no_watch_declared_adds_nothing(tmp_path: Path) -> None:
+    live(tmp_path)
+    session = cast(Any, dstate.STATE.session)
+    session.machine_replaced = False
+    session.load_state = lambda name, seconds: {"name": name, **_LOADED}
+    assert "taps" not in _ok(server.state_write("load", name="x"))
+
+
+def test_a_tap_on_an_auto_core_session_says_protected_mode_may_leave_it_blind(
+        tmp_path: Path) -> None:
+    live(tmp_path)
+    session = cast(Any, dstate.STATE.session)
+    assert session.launch.core == "auto"
+    got = _ok(server.watch_add(ref=COUNT, mode="count", length=8))
+    assert "auto" in got["note"] and "cpu core=normal" in got["note"], got
+    session.launch = dataclasses.replace(session.launch, core="normal")
+    again = _ok(server.watch_add(ref=POLLED, mode="capture", trigger_type="r"))
+    assert "note" not in again, again

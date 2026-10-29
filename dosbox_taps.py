@@ -24,7 +24,8 @@ TAP = "TAP"
 #: The debugger's `TAP_ROWS_MAX`: past it a row is counted only.
 ROWS_MAX = 100_000
 DATA_WIDTH, ENDIANNESS = 32, "little"
-NO_FRAME_WHY = "the debugger's `TAP` writes a row's time and line, not its frame"
+NO_FRAME_WHY = ("this build's `TAP` writes a row's time and line, not the display frame it was "
+                "made in")
 NO_LINE_WHY = "the display had timed no frame yet when the access was made"
 DISPLACED_WHY = ("the page's handler was replaced since the tap went in (a video mode set remaps "
                  "video memory): the tap sees nothing more; declare it again to tap the page as it "
@@ -35,8 +36,8 @@ _ANSWER = re.compile(r"^DEBUG: TAP (\d+) ([WRC]) PHYS=([0-9A-F]+) LEN=([0-9A-F]+
 _LISTED = re.compile(r"^DEBUG: TAP (\d+) ([WRC]) PHYS=([0-9A-F]+) LEN=([0-9A-F]+) "
                      r"INSTALLED=([01]) TOTAL=(\d+) ROWS=(\d+) OVERFLOW_ROWS=(\d+) VALUES=(\d+) "
                      r"OVERFLOW_VALUES=(\d+) PCS=(\d+) OVERFLOW_PCS=(\d+)$")
-_ROW = re.compile(r"^r (\d+) (-?\d+) (\d+\.\d+) ([0-9A-F]{4}) ([0-9A-F]{8}) ([0-9A-F]{8}) "
-                  r"([0-9A-F]{8}) ([0-9a-f]*)$")
+_ROW = re.compile(r"^r (\d+) (?:(\d+) )?(-?\d+) (\d+\.\d+) ([0-9A-F]{4}) ([0-9A-F]{8}) "
+                  r"([0-9A-F]{8}) ([0-9A-F]{8}) ([0-9a-f]*)$")
 _VALUE = re.compile(r"^v ([0-9A-F]{8}) ([0-9A-F]{8}) ([0-9A-F]{8}) (\d+)$")
 _PC = re.compile(r"^p ([0-9A-F]{4}) ([0-9A-F]{8}) (\d+)$")
 
@@ -171,9 +172,9 @@ def first_rows(tap: Tap, decl: dec.Declaration, shown: int) -> list[dict[str, An
         m = _ROW.match(line)
         if m is None:
             break
-        n, beam, ms, cs, ip, data, mask, block = m.groups()
+        n, frame, beam, ms, cs, ip, data, mask, block = m.groups()
         row: dict[str, Any] = {
-            "n": int(n), "frame": unavailable(NO_FRAME_WHY),
+            "n": int(n), "frame": int(frame) if frame is not None else unavailable(NO_FRAME_WHY),
             "line": int(beam) if int(beam) >= 0 else unavailable(NO_LINE_WHY),
             "time_s": float(ms) / 1000, "pc": _seg_off(int(cs, 16), int(ip, 16)),
             "data": judges.hex_at_width(int(data, 16), DATA_WIDTH),

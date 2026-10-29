@@ -437,6 +437,8 @@ def cause(attribution: dict[str, Any]) -> str:
         return (f"no declared code breakpoint at {at}: the debugger keeps no hit flag and a memory "
                 f"watch stops at the instruction that wrote, so which declaration fired cannot "
                 f"be told")
+    if attribution.get("by") == "regpoint":
+        return f"registerpoint {attribution['ref']}, whose condition came true at {at}"
     if attribution.get("by") == "stop":
         return f"the `stop` call at {at}"
     if attribution.get("by") == "cancel":

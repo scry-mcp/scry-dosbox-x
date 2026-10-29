@@ -30,7 +30,7 @@ NOT_RECOGNIZED = "*** Debugger command not recognized"
 
 RUNSTATE = "RUNSTATE"
 RUNSTATE_LINE = re.compile(r"^DEBUG: RUNSTATE (stopped|running) cycles=(\d+) ms=(\d+\.\d+)"
-                           r"(?: frames=(\d+))?$")
+                           r"(?: frames=(\d+))?(?: bpif=([0-9A-F]+))?$")
 #: Why a stop has no `frame`: the counter is printed by `RUNSTATE`, on builds that count frames.
 NO_FRAMES_WHY = (f"this build's `{RUNSTATE}` prints no `frames=`, the count of display frames "
                  f"since power-on")
@@ -92,12 +92,14 @@ def take_run_state(session: ds.Session, ok: bool, lines: list[str]) -> bool:
     if found is None:
         raise Invalid("unexpected_answer",
             f"`{RUNSTATE}` answered {' / '.join(lines) or 'nothing'}, not its one line "
-            f"`DEBUG: RUNSTATE stopped|running cycles=<n> ms=<t> frames=<n>`")
+            f"`DEBUG: RUNSTATE stopped|running cycles=<n> ms=<t> frames=<n> [bpif=<n>]`")
     session.cycles, session.clock_ms = int(found.group(2)), float(found.group(3))
     session.frames = None if found.group(4) is None else int(found.group(4))
     if found.group(1) == "stopped":
+        session.fired_row = None if found.group(5) is None else int(found.group(5), 16)
         session.mark_stopped()
         return True
+    session.fired_row = None
     session.forget_stop()
     return False
 

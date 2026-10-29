@@ -929,8 +929,10 @@ def state_write(method: Annotated[str, vocab.enum(tuple(folds.STATE_METHODS))], 
     `save`: never overwrites. Reply: `name`, `path`, `bytes`, `version`, `program`, `machine`,
     `memory_mb`, `saved_at`, `paused`.
 
-    `load`: replaces the machine, altering the session. Reply: `name`, `path`, the state's own
-    members, `paused`, `mark`.
+    `load`: replaces the machine, altering the session, and taps the declared count and capture
+    watches again (the load resets the page handlers). Reply: `name`, `path`, the state's own
+    members, `paused`, `mark`, `taps` (`rearmed` refs and `unarmed` rows with `why`) with
+    a count or capture watch declared.
 
     Refused: a DOSBox-X without the commands (`no_channel`); a state of another version,
     program, memory size or machine type; a `.sav` that is no regular file (`unknown_ref`).
