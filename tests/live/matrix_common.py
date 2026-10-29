@@ -20,8 +20,11 @@ from matrix_ledger import Cell, Ledger  # noqa: E402
 from scry_core import guardian  # noqa: E402
 from scry_core import reply_contract as contract  # noqa: E402
 
+from scry_dosbox_x import (  # noqa: E402
+    launch,
+    server,
+)
 from scry_dosbox_x import process as dprocess  # noqa: E402
-from scry_dosbox_x import server  # noqa: E402
 from scry_dosbox_x import session as ds  # noqa: E402
 from scry_dosbox_x import state as dstate  # noqa: E402
 
@@ -298,7 +301,7 @@ def _rewrite(conf: Path, program_line: str, into: str, drop_exit: bool) -> Path:
 
 def conf_with_stub(conf: Path, program_line: str) -> Path:
     """`conf` running the serial stub before the guest (REFERENCE.md, Input and the screen)."""
-    stub = f'mount g "{PKG / "guest"}"\nG:\\SCRY.COM\nc:\n{program_line}'
+    stub = f'mount g "{launch.GUEST_DIR}"\nG:\\SCRY.COM\nc:\n{program_line}'
     return _rewrite(conf, program_line, stub, drop_exit=False)
 
 

@@ -28,8 +28,7 @@ BOUND_S = 15
 #: The server's own entry, the guardian withheld when told to (the control).
 SERVER = """
 import sys
-sys.path.insert(0, sys.argv[1])
-if sys.argv[2] == "bare":
+if sys.argv[1] == "bare":
     from scry_core import guardian
     guardian.spawn = lambda *a, **k: None
 from scry_dosbox_x import server as dosbox_x_server
@@ -38,7 +37,7 @@ dosbox_x_server.main()
 
 
 def _server(mode: str, err: Any) -> subprocess.Popen[bytes]:
-    return subprocess.Popen([sys.executable, "-c", SERVER, str(ROOT), mode], cwd=ROOT,
+    return subprocess.Popen([sys.executable, "-c", SERVER, mode], cwd=ROOT,
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=err)
 
 

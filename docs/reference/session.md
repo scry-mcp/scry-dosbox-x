@@ -205,7 +205,7 @@ Example, from a live run:
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "<volatile>",
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "... 7 more"],
-  "stub": "/path/to/scry-dosbox-x/guest/SCRY.COM",
+  "stub": "/path/to/scry-dosbox-x/src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": true,
   "presence": {"available": false, "why": "a session started without `shared` has no window to draw on"},

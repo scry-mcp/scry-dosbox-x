@@ -1871,7 +1871,7 @@
     "PIC",
     "... 7 more"
    ],
-   "stub": "/path/to/scry-dosbox-x/guest/SCRY.COM",
+   "stub": "/path/to/scry-dosbox-x/src/scry_dosbox_x/guest/SCRY.COM",
    "input_port": "<volatile>",
    "background": true,
    "presence": {

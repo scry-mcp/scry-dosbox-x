@@ -24,7 +24,6 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, NoReturn
 
-sys.path.append(str(Path(__file__).resolve().parent))
 from scry_core import guardian, verdict  # noqa: E402
 from scry_core.reply_contract import Invalid  # noqa: E402
 

@@ -66,9 +66,9 @@ R_CELLS = cells(
      "series_capture: the comparison can fail",
      "REFERENCE.md, The presence indicator: after the frame was handed to capture"),
     ("R a build whose debugger has no PRESENCE answers presence unavailable, naming it",
-     "dosbox_presence: NO_COMMAND"),
+     "presence: NO_COMMAND"),
     ("R a session with no window says it has none, and one asked off says false",
-     "dosbox_presence: NO_WINDOW"),
+     "presence: NO_WINDOW"),
     ("R the first mouse move draws the arrow inside the picture, away from the edge, and only "
      "the arrow: with it turned off the same screen differs by those pixels alone",
      "REFERENCE.md, The presence indicator: an orange arrow stands on the guest's pointer"),

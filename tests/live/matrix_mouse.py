@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from scry_dosbox_x import inputs  # isort: skip -- a module of the repository root
+from scry_dosbox_x import inputs, launch  # isort: skip
 from matrix_common import (
     GUEST,
     M,
@@ -64,7 +64,7 @@ P_CELLS = cells(
     ("P mode 13h: the far corner 319,199 arrives", "send_mouse docstring: the screen's own bounds"),
     ("P mode 12h: pixel 639,479 arrives one to one", "send_mouse docstring: 640x480 pixels"),
     ("P mode 12h: a coordinate pair of 0xFF bytes arrives whole, the driver at 255,255",
-     "dosbox_session: the nullmodem is transparent, so 0xFF is data"),
+     "session: the nullmodem is transparent, so 0xFF is data"),
     ("P VBE 103h: pixel 799,599 arrives one to one, the reply naming the VBE mode",
      "docs/reference/input.md: under a VBE mode the units are VBE's resolution"),
     ("P VBE 103h: pixel 420,310 arrives, and the guest's driver agrees",
@@ -337,7 +337,7 @@ def _twice(hooked: bool = False) -> None:
     behind it."""
     text = MOUSE_CONF.read_text(encoding="utf-8")
     hook = "C:\\HOOK1C.COM\n" if hooked else ""
-    stub = f'mount g "{GUEST.parent.parent / "guest"}"\n{hook}G:\\SCRY.COM\n{hook}c:\n'
+    stub = f'mount g "{launch.GUEST_DIR}"\n{hook}G:\\SCRY.COM\n{hook}c:\n'
     conf = M.fresh(".conf")
     with open(conf, "w", encoding="utf-8") as out:
         out.write(text.replace("[autoexec]\nmount c \".\"\nc:\n",

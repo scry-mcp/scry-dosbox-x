@@ -2,7 +2,7 @@
 
 Every question is a debugger command sent with the channel's `EXEC` and read from what it PRINTS
 (`debugger`); nothing reads the debugger's screen. Launch, logs, runs, stepping, frames and
-states are the `dosbox_*` modules `Session` delegates to.
+states are the modules beside it that `Session` delegates to.
 """
 
 from __future__ import annotations

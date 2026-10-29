@@ -99,7 +99,7 @@ and its own arguments) is `<volatile>`.
   "status": "ok",
   "pid": "<volatile>",
   "conf": "./demos/mines/mines.conf",
-  "conf_digest": "4d0d69acfe9d62cb",
+  "conf_digest": "598de503a693bba5",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -111,8 +111,8 @@ and its own arguments) is `<volatile>`.
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": ["BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
-  "stub": "./guest/SCRY.COM",
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
+  "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
@@ -313,11 +313,11 @@ and its own arguments) is `<volatile>`.
     "symbol": "retrace",
     "delta": 9
   },
-  "emulated_before_s": 0.005595,
-  "emulated_after_s": 0.13419547499999998,
+  "emulated_before_s": 0.005608500000000001,
+  "emulated_after_s": 0.1341957,
   "frame_before": 0,
   "frame_after": 10,
-  "cycles": 825612,
+  "cycles": 825562,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -808,7 +808,7 @@ and its own arguments) is `<volatile>`.
         "summary": "send_mouse: pointer at 376,204; effect seen, 25 retraces to frame 106",
         "status": "ok",
         "stop_seq": 99,
-        "cause": "no declared code breakpoint at 08DD:00000E0A: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
@@ -977,7 +977,7 @@ and its own arguments) is `<volatile>`.
         "summary": "send_mouse: pointer at 424,204; effect seen, 25 retraces to frame 231",
         "status": "ok",
         "stop_seq": 224,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DD:00000E07: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
@@ -1097,7 +1097,7 @@ and its own arguments) is `<volatile>`.
         "summary": "send_mouse: pointer at 328,396; effect seen, 25 retraces to frame 531",
         "status": "ok",
         "stop_seq": 524,
-        "cause": "no declared code breakpoint at 08DD:00000E0A: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
@@ -1141,19 +1141,19 @@ and its own arguments) is `<volatile>`.
         },
         "arrived": true,
         "polls": 25,
-        "pc": "08DD:00000E0A",
+        "pc": "08DD:00000E08",
         "cpu_mode": "real",
         "stop_seq": 599,
         "frame": 606,
         "instruction": {
-          "address": "08DD:00000E0A",
-          "bytes": "74FB",
-          "text": "je 0xe07",
-          "flow": "branch",
+          "address": "08DD:00000E08",
+          "bytes": "A808",
+          "text": "test al, 8",
+          "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": "retrace",
-          "delta": 11
+          "delta": 9
         },
         "regs": {
           "EAX": "0x00000004",
@@ -1164,7 +1164,7 @@ and its own arguments) is `<volatile>`.
           "EDI": "0x00000fc4",
           "EBP": "0x0000091c",
           "ESP": "0x0000fffc",
-          "EIP": "0x00000e0a",
+          "EIP": "0x00000e08",
           "CS": "0x08dd",
           "DS": "0x08dd",
           "ES": "0x08dd",
@@ -1173,7 +1173,7 @@ and its own arguments) is `<volatile>`.
           "SS": "0x08dd"
         },
         "watches": [],
-        "cause": "no declared code breakpoint at 08DD:00000E0A: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
         "e9": {
           "lines_total": 2,
           "truncated": false,
@@ -1875,7 +1875,7 @@ Also attached: image/png.
   "closed": true,
   "pid": "<volatile>",
   "conf": "./demos/mines/mines.conf",
-  "conf_digest": "4d0d69acfe9d62cb",
+  "conf_digest": "598de503a693bba5",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",

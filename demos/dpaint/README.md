@@ -123,7 +123,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "binary_origin": "<volatile>",
   "version": "<volatile>",
   "debugger_commands": ["BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
-  "stub": "./guest/SCRY.COM",
+  "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,

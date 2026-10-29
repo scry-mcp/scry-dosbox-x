@@ -25,7 +25,7 @@ def _left(tmp: Path, prefix: str) -> list[str]:
 def _exits(tmp: Path, body: str) -> str:
     """`body` run in a process of its own whose TMPDIR is `tmp`, ending normally: its stdout."""
     env = {**os.environ, "TMPDIR": f"{tmp}{os.sep}"}
-    code = f"import sys; sys.path[:0] = {[str(ROOT), str(ROOT / 'tests')]!r}\n{body}"
+    code = f"import sys; sys.path[:0] = {[str(ROOT / 'tests')]!r}\n{body}"
     run = subprocess.run([sys.executable, "-c", code], env=env, cwd=ROOT, capture_output=True,
                          text=True, timeout=120, check=False)
     assert run.returncode == 0, run.stderr
