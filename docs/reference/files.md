@@ -116,7 +116,7 @@ Example, from a live run:
 ```json
 {
   "method": "region",
-  "manifest": "$TMPDIR/dosbox-x-session-rerzhhot/series/series-1/manifest.json",
+  "manifest": "$TMPDIR/dosbox-x-session-o_b8jy2k/series/series-1/manifest.json",
   "measure": "changed_pixels"
 }
 ```
@@ -137,8 +137,8 @@ Example, from a live run:
   ],
   "gaps": [],
   "transitions_total": 1,
-  "path": "$TMPDIR/dosbox-x-session-rerzhhot/series/series-1/track-1.json",
-  "manifest": "$TMPDIR/dosbox-x-session-rerzhhot/series/series-1/manifest.json"
+  "path": "$TMPDIR/dosbox-x-session-o_b8jy2k/series/series-1/track-1.json",
+  "manifest": "$TMPDIR/dosbox-x-session-o_b8jy2k/series/series-1/manifest.json"
 }
 ```
 <!-- scry-reference:end image_compare -->
@@ -209,7 +209,7 @@ Example, from a live run:
 ```json
 {
   "method": "measure",
-  "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/T/n4.wav"
+  "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/T/n4.wav"
 }
 ```
 
@@ -250,7 +250,7 @@ Example, from a live run:
     }
   ],
   "pcm_sha256": "e60ff11bce0c03f6caa4a04e9e3654b9e40a70a8c156d9e6d2ec7c33a3703a62",
-  "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/T/n4.wav"
+  "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/T/n4.wav"
 }
 ```
 <!-- scry-reference:end audio_compare -->
@@ -294,15 +294,15 @@ Example, from a live run:
 
 ```json
 {
-  "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/Y/n1-dosio/OUT.TXT"
+  "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/Y/n1-dosio/OUT.TXT"
 }
 ```
 
 ```json
 {
-  "summary": "guest_file $TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
+  "summary": "guest_file $TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/Y/n1-dosio/OUT.TXT",
+  "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/Y/n1-dosio/OUT.TXT",
   "state": "written",
   "before": {"exists": false},
   "bytes": 4,

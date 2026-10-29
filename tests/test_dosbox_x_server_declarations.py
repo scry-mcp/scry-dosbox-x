@@ -38,6 +38,7 @@ import dosbox_mcp
 import dosbox_placement as placement
 import dosbox_running as running
 import dosbox_session as ds
+import dosbox_start_symbols as start_symbols
 import dosbox_state as dstate
 import dosbox_symbols as dsym
 import dosbox_x_server as server
@@ -1218,6 +1219,19 @@ def test_status_counts_the_declarations_on_a_running_machine_too(tmp_path: Path)
     got = cast(dict[str, Any], server.status())
     assert got["pc"]["available"] is False, got
     assert got["declarations"] == {"breakpoints": 1, "watches": 0, "regpoints": 0}, got
+
+
+@pytest.mark.parametrize(("com", "waits_for"), [(False, "LINEUP.EXE"), (True, "LINEUP.COM")])
+def test_status_says_which_program_a_held_start_table_waits_for(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, com: bool, waits_for: str) -> None:
+    """A table that never matches costs a memory-chain read at every stop, silently otherwise."""
+    _names(tmp_path, mode="Real", cs="0749", ds_="0749")
+    assert "symbols_held" not in server.status()
+    monkeypatch.setattr(dstate.STATE, "start_symbols",
+                        start_symbols.Held(str(tmp_path / "lineup.map"), "program", com))
+    got = cast(dict[str, Any], server.status())
+    assert got["symbols_held"] == {"path": str(tmp_path / "lineup.map"), "base_from": "program",
+                                   "waiting_for": waits_for}, got
 
 
 @pytest.mark.parametrize(("shared", "said"), [(False, "headless"), (True, "shared")])

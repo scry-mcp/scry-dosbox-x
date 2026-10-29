@@ -393,7 +393,8 @@ def _judged_dest(dest: str, store: dec.DeclarationStore) -> tuple[Path, list[cf.
         if os.path.normcase(str(path.parent.resolve() / path.name)).casefold() == \
                 os.path.normcase(str(store.path.resolve())).casefold():
             raise ds.Invalid("bad_argument",
-                f"dest: {path} is the declaration store's own file; a comment file goes "
+                f"dest: {path} is the declaration store's own file (compared without regard "
+                "to case); a comment file goes "
                 "beside the symbol file, as <symbol file stem>.comments.tsv")
         if not paths.taken(path):
             return path, None

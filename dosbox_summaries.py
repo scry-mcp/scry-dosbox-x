@@ -139,7 +139,7 @@ def read_memory(args: dict[str, Any], reply: dict[str, Any]) -> str:
     at = _at(reply.get("seg_off"))
     read = _said(len(str(reply.get("hex") or "")) // 2, "byte")
     shown = prose.hex_clipped(str(reply.get("hex") or ""))
-    return f"read_memory {args.get('ref', '')}: {read} at {at}: {shown}"
+    return f"read_memory {args.get('ref', '')}: {read} at {at}" + (f": {shown}" if shown else "")
 
 
 def disassemble(args: dict[str, Any], reply: dict[str, Any]) -> str:

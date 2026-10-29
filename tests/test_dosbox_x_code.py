@@ -29,6 +29,7 @@ import dosbox_grammar as grammar
 import dosbox_machine as machine
 import dosbox_running as running
 import dosbox_session as ds
+import dosbox_start_symbols as start_symbols
 import dosbox_state as dstate
 import dosbox_symbols as sym
 import dosbox_x_server as server
@@ -801,6 +802,39 @@ def test_a_stop_whose_survey_was_cut_carries_no_instruction() -> None:
     s.stop_survey = cut  # type: ignore[method-assign]
     reply = running.stop_or_base(cast(ds.Session, s), True, {"halted": True})
     assert "instruction" not in reply and reply["enrichment"]["available"] is False, reply
+
+
+def test_a_placement_said_once_survives_a_stop_whose_survey_was_cut(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The placement is consumed as it is said: a survey cut after it must still carry it."""
+    s = StoppedCode("code-stop1")
+    install()
+    dstate.STATE.session = cast(ds.Session, s)
+    said = {"placed": True, "path": "/x/APP.MAP", "load_segment": "025C", "base": 0x25C0,
+            "loaded": 3}
+    monkeypatch.setattr(start_symbols, "place_if_due", lambda session: said)
+
+    def cut() -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
+        raise ds.Invalid("unexpected_answer", "no register pane came back")
+    s.stop_survey = cut  # type: ignore[method-assign]
+    reply = running.stop_or_base(cast(ds.Session, s), True, {"halted": True})
+    assert reply["enrichment"]["available"] is False and reply["symbols_placed"] == said, reply
+
+
+def test_a_stop_whose_registers_cannot_be_read_while_a_table_is_due_keeps_the_base_reply(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The placement reads the mode itself: that read failing is a stop with its enrichment cut,
+    not an error out of `resume`."""
+    s = StoppedCode("code-stop1")
+    install()
+    dstate.STATE.session = cast(ds.Session, s)
+
+    def unreadable(session: Any) -> None:
+        raise ds.Invalid("unexpected_answer", "no register pane came back")
+    monkeypatch.setattr(start_symbols, "place_if_due", unreadable)
+    reply = running.stop_or_base(cast(ds.Session, s), True, {"halted": True})
+    assert reply["halted"] is True and reply["enrichment"]["available"] is False, reply
+    assert "symbols_placed" not in reply, reply
 
 
 # ------------------------------------------------------------------------ the call stack

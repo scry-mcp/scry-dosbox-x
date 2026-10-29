@@ -17,6 +17,7 @@ from typing import Any
 
 from scry_core import judges
 from scry_core import reply_contract as contract
+from scry_core import scan_vocabulary as words
 from scry_core import vocabulary as vocab
 from scry_core.prose import counted
 
@@ -47,8 +48,8 @@ SCAN_NONE_TO_CANCEL = "No active search instances to cancel."
 SCAN_NONE_TO_LIST = "No active search instances to list from."
 #: Cell size in bytes to the letter the debugger takes.
 CELLS = {1: "B", 2: "W", 4: "D"}
-CELL_BYTES = judges.SCAN_CELL_BYTES
-OPERATORS = judges.SCAN_OPERATORS
+CELL_BYTES = words.CELL_BYTES
+OPERATORS = words.OPERATORS
 
 
 def hex_bytes(name: str, value: str, *, verb: str) -> bytes:
@@ -83,7 +84,7 @@ def find(session: ds.Session, seg: int, off: int, length: int, pattern: bytes) -
         dumped = dumping.dump_range(session, seg, off, length, Path(scratch) / "range.bin")
         data = dumped.path.read_bytes()
     # a pattern matching everywhere would otherwise hold one number per byte
-    hits: collections.deque[int] = collections.deque(maxlen=judges.HITS_MAX)
+    hits: collections.deque[int] = collections.deque(maxlen=words.HITS_MAX)
     total = 0
     at = data.find(pattern)
     while at != -1:
@@ -94,7 +95,7 @@ def find(session: ds.Session, seg: int, off: int, length: int, pattern: bytes) -
     return {"seg_off": st.seg_off(seg, off), "length": length,
             "span": {"from": st.seg_off(seg, off), "length": length, "source": "ref+length"},
             "hits": [_spelled(seg, o, dumped.real_past_ffff) for o in hits],
-            "hits_total": total, "truncated": total > judges.HITS_MAX}
+            "hits_total": total, "truncated": total > words.HITS_MAX}
 
 
 def _spelled(seg: int, off: int, real_past_ffff: bool) -> str:
@@ -166,8 +167,8 @@ def check_scan_range(length: int, cell_bytes: int) -> None:
 
 
 def unlisted_note() -> str:
-    """Why a filter past `judges.HITS_MAX` lists none."""
-    return (f"more than {judges.HITS_MAX} survive, more than a reply lists: filter again to list "
+    """Why a filter past `words.HITS_MAX` lists none."""
+    return (f"more than {words.HITS_MAX} survive, more than a reply lists: filter again to list "
             f"them")
 
 
@@ -175,11 +176,11 @@ NO_VALUE_WHY = ("no `value` was given, so each cell was compared with its value 
                 "`scan(method=\"start\")`")
 
 
-def check_filter(operator: str, value: int | None, limit: int = judges.HITS_DEFAULT) -> None:
+def check_filter(operator: str, value: int | None, limit: int = words.HITS_DEFAULT) -> None:
     """A filter as the debugger takes it, judged with no machine (it compares unsigned)."""
-    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= judges.HITS_MAX:
-        raise ds.Invalid("bad_argument", f"limit={limit!r} is outside 1..{judges.HITS_MAX}, how "
-                         f"many survivors a filter lists; above {judges.HITS_MAX}, filter again")
+    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= words.HITS_MAX:
+        raise ds.Invalid("bad_argument", f"limit={limit!r} is outside 1..{words.HITS_MAX}, how "
+                         f"many survivors a filter lists; above {words.HITS_MAX}, filter again")
     vocab.one_of("operator", operator, OPERATORS)
     if value is not None and (isinstance(value, bool) or not isinstance(value, int)
                               or value < 0):
@@ -228,7 +229,7 @@ def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
 
 
 def filter_scan(session: ds.Session, operator: str, value: int | None,
-                limit: int = judges.HITS_DEFAULT) -> dict[str, Any]:
+                limit: int = words.HITS_DEFAULT) -> dict[str, Any]:
     """Keep the cells satisfying `operator` against `value`, or against their value at the scan's
     opening when there is none. Lists the first `limit` survivors, none past `HITS_MAX`; a step
     leaving none closes the instance, as the debugger does.
@@ -262,7 +263,7 @@ def filter_scan(session: ds.Session, operator: str, value: int | None,
     survivors = int(summary.group(1), 16)
     iterations = int(summary.group(2), 16)
     STATE.scan_iterations = iterations
-    listable = survivors <= judges.HITS_MAX
+    listable = survivors <= words.HITS_MAX
     hits = [_shown(row, cell) for row in _listing(session, survivors)[:limit]] if listable else []
     return {"operator": operator, "value": _asked(value, cell), "iterations": iterations,
             "closed": False, "hits": hits, "hits_total": survivors,

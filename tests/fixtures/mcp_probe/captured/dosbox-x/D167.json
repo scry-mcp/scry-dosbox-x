@@ -1,0 +1,115 @@
+{
+ "task": {
+  "id": "D167",
+  "prompt": "The screen map loaded is consolidated, and the guest is stopped on its title screen, which is whole once DrawTitle has run. Map it as title, known by the row at column 0, row 0, 40 cells wide and 1 high, entered by that routine.",
+  "tool": "screen_map_write",
+  "args": {
+   "method": "add",
+   "screen": "title",
+   "match": [
+    [
+     0,
+     0,
+     40,
+     1
+    ]
+   ],
+   "anchor": "DrawTitle"
+  },
+  "grammar": [
+   "add"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"anchor\": \"DrawTitle\", \"match\": [[0, 0, 40, 1]]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

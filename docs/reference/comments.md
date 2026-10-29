@@ -44,8 +44,8 @@ Example, from a live run:
       "ref": "8000:0100",
       "by": "address",
       "cpu": {"available": false, "why": "a DOS machine has one cpu, and every row acts on it"},
-      "created_at": "2026-10-29T04:45:56+00:00",
-      "origin": "2026-10-29T04:45:52+00:00#6382.1",
+      "created_at": "2026-10-29T16:14:04+00:00",
+      "origin": "2026-10-29T16:14:00+00:00#77719.1",
       "inherited": false,
       "age_s": 0,
       "text": "matrix A",
@@ -57,7 +57,7 @@ Example, from a live run:
   "truncated": false,
   "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/dosbox-x-live-matrix-A-e9lishbj/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/dosbox-x-live-matrix-A-f7ybguw6/dosbox-x-debug/declarations.json"
   }
 }
 ```
@@ -99,7 +99,8 @@ running machine. Reply: `path`, `comments_total`, `dropped_comments`, `dropped_t
 `comments_total`, `declarations`, `note`.
 
 `add`, `delete` and `load` need the machine stopped. Refused: an argument the method
-does not take, a misshapen `ref` or `text` (`bad_argument`), a name defined twice
+does not take, a misshapen `ref` or `text`, a `save` `dest` that is the declaration store's
+file, compared without regard to case on any volume (`bad_argument`), a name defined twice
 (`ambiguous_ref`), an unknown `ref` (`unknown_ref`), an unwritable store (`host_failed`).
 
 Reference: REFERENCE.md, Declarations.
@@ -146,8 +147,8 @@ Example, from a live run:
     "ref": "8000:0100",
     "by": "address",
     "cpu": {"available": false, "why": "a DOS machine has one cpu, and every row acts on it"},
-    "created_at": "2026-10-29T04:45:56+00:00",
-    "origin": "2026-10-29T04:45:52+00:00#6382.1",
+    "created_at": "2026-10-29T16:14:04+00:00",
+    "origin": "2026-10-29T16:14:00+00:00#77719.1",
     "inherited": false,
     "age_s": 0,
     "text": "matrix A",
@@ -157,7 +158,7 @@ Example, from a live run:
   "replaced_comments": [],
   "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/dosbox-x-live-matrix-A-e9lishbj/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/dosbox-x-live-matrix-A-f7ybguw6/dosbox-x-debug/declarations.json"
   }
 }
 ```

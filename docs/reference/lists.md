@@ -79,19 +79,19 @@ Example, from a live run:
       "reply": {
         "summary": "status: alive, stopped",
         "status": "ok",
-        "pid": 6399,
-        "conf": "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf",
+        "pid": 77786,
+        "conf": "$TMPDIR/dosbox-x-live-job-fu2i1nji/A/tests/guest/probe.conf",
         "conf_digest": "78bdc38f360b9b4a",
         "bound_s": 1200,
-        "elapsed_s": 3.9,
+        "elapsed_s": 4.5,
         "captures": "off",
-        "state_dir": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save",
+        "state_dir": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n986-save",
         "last_stop": {
           "stop_seq": 11,
           "pc": "0814:00000130",
           "cause": "the retrace run_for ran to, at 0814:00000130",
           "since_s": 0.1,
-          "wall_at": "2026-10-29T04:45:56+00:00"
+          "wall_at": "2026-10-29T16:14:04+00:00"
         },
         "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
         "cpu_mode": "real",
@@ -157,15 +157,15 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1821.json"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1821.json"
 }
 ```
 
 ```json
 {
-  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1821.json",
+  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1821.json",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1821.json",
+  "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1821.json",
   "steps": 1,
   "checks": 0,
   "dropped": [],
@@ -175,7 +175,7 @@ Example, from a live run:
     "op": "resume",
     "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches; it stopped inside frame 0, the one it began in"
   },
-  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1821.json"
+  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1821.json"
 }
 ```
 <!-- scry-reference:end perform_export -->

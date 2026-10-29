@@ -40,19 +40,19 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "state_list: 1 state in $TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save",
+  "summary": "state_list: 1 state in $TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n986-save",
   "status": "ok",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n986-save",
   "states": [
     {
       "name": "matrix_a_stopped",
-      "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save/matrix_a_stopped.sav",
-      "bytes": 81403,
+      "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n986-save/matrix_a_stopped.sav",
+      "bytes": 81391,
       "version": "DOSBox-X 2026.10.01 (SDL2)",
       "program": "PROBE",
       "machine": "MCH_VGA",
       "memory_mb": 4096,
-      "saved_at": "2026-10-29 05:45"
+      "saved_at": "2026-10-29 17:14"
     }
   ],
   "working_slot": {"available": false, "why": "the emulator's own numbered slot has not been written"}
@@ -122,16 +122,16 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "state_write save: matrix_a_stopped, 81403 bytes, PROBE 2026-10-29 05:45",
+  "summary": "state_write save: matrix_a_stopped, 81391 bytes, PROBE 2026-10-29 17:14",
   "status": "ok",
   "name": "matrix_a_stopped",
-  "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save/matrix_a_stopped.sav",
-  "bytes": 81403,
+  "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n986-save/matrix_a_stopped.sav",
+  "bytes": 81391,
   "version": "DOSBox-X 2026.10.01 (SDL2)",
   "program": "PROBE",
   "machine": "MCH_VGA",
   "memory_mb": 4096,
-  "saved_at": "2026-10-29 05:45",
+  "saved_at": "2026-10-29 17:14",
   "paused": false
 }
 ```

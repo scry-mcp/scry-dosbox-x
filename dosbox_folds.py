@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 from scry_core import declaration_rows, judges, methods, screen_map
+from scry_core import scan_vocabulary as words
 from scry_core import vocabulary as vocab
 from scry_core.methods import Method
 
@@ -47,7 +48,7 @@ def list_declarations(kind: str) -> dict[str, Any]:
 def check_clear_declarations(kind: str = "", ref: str = "", all: bool = False,
                              **_: Any) -> None:
     vocab.one_of("kind", kind, KINDS)
-    vocab.check_clear_scope(ref, all, kind)
+    declaration_rows.check_clear_scope(ref, all, kind)
 
 
 def clear_declarations(kind: str, ref: str, all: bool) -> dict[str, Any]:
@@ -86,10 +87,11 @@ def map_read(session: ds.Session) -> screen_map.Read:
 
 
 def _add_map(screen: str, match: list[list[int]],
-             controls: list[dict[str, Any]] | None = None, cells: str = "rgb") -> dict[str, Any]:
+             controls: list[dict[str, Any]] | None = None, cells: str = "rgb",
+             anchor: str = "") -> dict[str, Any]:
     session = live()
     session.require_stopped("a listing")
-    return st.reply(**STATE.maps.add(screen, match, controls, map_read(session), cells))
+    return st.reply(**STATE.maps.add(screen, match, controls, map_read(session), cells, anchor))
 
 
 def _load_map(path: str, scale: int = 1, margin: list[int] | None = None) -> dict[str, Any]:
@@ -115,7 +117,7 @@ def _start_scan(ref: str, length: int, cell_bytes: int = 1) -> dict[str, Any]:
 
 
 def _filter_scan(operator: str = "=", value: judges.NumberArg | None = None,
-                 limit: int = judges.HITS_DEFAULT) -> dict[str, Any]:
+                 limit: int = words.HITS_DEFAULT) -> dict[str, Any]:
     session = live()
     session.require_stopped("a search")
     number = None if value is None else checks.number("value", value)

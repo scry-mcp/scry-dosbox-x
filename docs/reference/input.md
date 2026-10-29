@@ -287,19 +287,19 @@ Example, from a live run:
         "reply": {
           "summary": "status: alive, stopped",
           "status": "ok",
-          "pid": 6399,
-          "conf": "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf",
+          "pid": 77786,
+          "conf": "$TMPDIR/dosbox-x-live-job-fu2i1nji/A/tests/guest/probe.conf",
           "conf_digest": "78bdc38f360b9b4a",
           "bound_s": 1200,
-          "elapsed_s": 3.9,
+          "elapsed_s": 4.5,
           "captures": "off",
-          "state_dir": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save",
+          "state_dir": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n986-save",
           "last_stop": {
             "stop_seq": 11,
             "pc": "0814:00000130",
             "cause": "the retrace run_for ran to, at 0814:00000130",
             "since_s": 0.1,
-            "wall_at": "2026-10-29T04:45:56+00:00"
+            "wall_at": "2026-10-29T16:14:04+00:00"
           },
           "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
           "cpu_mode": "real",
@@ -321,7 +321,7 @@ Example, from a live run:
   "looked": {
     "guest": {
       "available": true,
-      "since_mark": 95189,
+      "since_mark": 92957,
       "lines_written": 0,
       "lines_total": 0,
       "truncated": false,

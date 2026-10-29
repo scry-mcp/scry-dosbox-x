@@ -11,7 +11,8 @@ import re
 from typing import Any
 
 import pytest
-from scry_core import judges, media_tools, screen_map
+from scry_core import media_tools, screen_map
+from scry_core import scan_vocabulary as words
 from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
@@ -67,7 +68,7 @@ FOLDED: list[tuple[str, str, tuple[str, ...]]] = [
 ]
 RANGES: list[tuple[str, str, int, int]] = [
     ("log", "limit", 1, dlogs.LOG_LIMIT_MAX), ("drive", "limit", 1, dlogs.LOG_LIMIT_MAX),
-    ("scan", "limit", 1, judges.HITS_MAX),
+    ("scan", "limit", 1, words.HITS_MAX),
     ("read_memory", "length", 1, grammar.READ_BYTES_MAX),
     ("disassemble", "length", 1, code.LENGTH_MAX),
     ("symbols_find", "limit", 1, placement.SYMBOLS_LIMIT_MAX),

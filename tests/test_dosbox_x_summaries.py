@@ -26,6 +26,11 @@ def test_a_read_says_how_many_bytes_it_read_where_and_which() -> None:
         "read_memory g_rate: 4 bytes at 00AF:0017A6EC: 00112233"
 
 
+def test_a_read_that_answered_no_bytes_ends_at_where_it_read() -> None:
+    line = one_line.read_memory({"ref": "g_rate"}, {"seg_off": "00AF:0017A6EC", "hex": ""})
+    assert line == "read_memory g_rate: 0 bytes at 00AF:0017A6EC", line
+
+
 def test_a_long_read_shows_the_first_bytes_and_counts_the_rest() -> None:
     cap = 64
     image = bytes(range(cap + 3))

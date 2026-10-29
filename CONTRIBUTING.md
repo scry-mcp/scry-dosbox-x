@@ -141,7 +141,10 @@ merged from the summaries they declare through `scry_core.live_pool`.
 uv run python tests/live/run_live_pytest.py
 ```
 
-What opens a window (section G, the focus gate's O, the `windowed` tests) runs alone. Each part
+What opens a window (section G, the focus gate's O, the `windowed` tests) runs alone. The focus
+gate's start in front and its Space move take the desk of whoever is working, so they run only
+with `SCRY_FOCUS_CONTROL=1` on an idle machine; unset, those cells are BLOCKED naming the variable
+and the verdict says it is unproven. Each part
 works on copies of its own of the guests and the bench, because the debugger writes its files
 under fixed names into the emulator's working directory (`tests/live/live_private.py`).
 

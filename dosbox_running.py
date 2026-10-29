@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+from pathlib import Path
 from typing import Any, Literal
 
 from scry_core import log_marks
@@ -74,17 +75,26 @@ def e9_block(session: ds.Session, mark: int | None = None) -> dict[str, Any]:
     return log_marks.stop_block(fresh, mark, "guest", dlogs.LOG_LIMIT_MAX)
 
 
+class _Due:
+    """No placement was attempted yet at this stop."""
+
+
+DUE = _Due()
+
+
 def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
                made_by: dict[str, str] | None = None,
                asked_by: Literal["stop", "cancel"] | None = None,
-               own: str = "",
+               own: str = "", placed: dict[str, Any] | None | _Due = DUE,
                **base: Any) -> dict[str, Any]:
     """What a stop always returns on top of `base`: position, `cause`, watches, registers, E9.
     `made_by` attributes a stop the calling tool made itself; `asked_by` names the cause when
     no declaration is at the address; `own` is the cause of a stop nothing declared could make,
-    left unattributed."""
+    left unattributed. `placed` is a placement the caller already made at this stop (it is said
+    once)."""
     # The table `start` holds is placed before the queue drains, so the re-arm sees it.
-    placed = start_symbols.place_if_due(session)
+    if isinstance(placed, _Due):
+        placed = start_symbols.place_if_due(session)
     said: dict[str, Any] = {"symbols_placed": placed} if placed is not None else {}
     # One survey serves where, registers and the watches' list.
     arming.apply_pending(session)
@@ -145,11 +155,14 @@ def stop_or_base(session: ds.Session, stopped: bool, base: dict[str, Any], *,
     enrichment unavailable."""
     if not stopped:
         return st.reply(**base)
+    placed: dict[str, Any] | None = None
     try:
+        placed = start_symbols.place_if_due(session)
         return stop_reply(session, retrace_may_stop=retrace_may_stop, made_by=made_by,
-                          asked_by=asked_by, **base)
+                          asked_by=asked_by, placed=placed, **base)
     except ds.Invalid as e:
-        return st.reply(enrichment={"available": False, "why": str(e)}, **base)
+        kept: dict[str, Any] = {"symbols_placed": placed} if placed is not None else {}
+        return st.reply(enrichment={"available": False, "why": str(e)}, **base, **kept)
 
 
 def cpu_mode_of(mode: str, paging: bool | None) -> str | dict[str, Any]:
@@ -194,7 +207,8 @@ PC_GONE_WHY = "DOSBox-X has exited: `last_stop` says where the guest was last se
 
 def status_facts(session: ds.Session | None, stopped: bool) -> dict[str, Any]:
     """What `status` adds about the machine: `pc` now (read off the registers, so a
-    `set_register` inside the stop shows), `cpu_mode`, and `declarations` counted per family.
+    `set_register` inside the stop shows), `cpu_mode`, `declarations` counted per family, and
+    `symbols_held` while a `start` table waits for its program.
     `stopped` is the call's one reading of the run state: a running guest costs one `RUNSTATE`."""
     if session is None:
         return {}
@@ -216,6 +230,10 @@ def status_facts(session: ds.Session | None, stopped: bool) -> dict[str, Any]:
     for decl in (STATE.store.declarations() if STATE.store is not None else []):
         families[{"watch": "watches", "regpoint": "regpoints"}.get(decl.kind, "breakpoints")] += 1
     facts["declarations"] = families
+    if (held := STATE.start_symbols) is not None:
+        facts["symbols_held"] = {"path": held.path, "base_from": held.base_from,
+                                 "waiting_for": f"{Path(held.path).stem.upper()}"
+                                                f".{'COM' if held.com else 'EXE'}"}
     return facts
 
 

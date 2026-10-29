@@ -1,7 +1,8 @@
 """Section O of the live matrix: DOSBox-X never came to the front and no Space moved during the run.
 
 The control opens the run and the verdict closes it; without a control that held, the verdict is
-BLOCKED, never green. The control briefly takes the owner's focus and Space, so announce the run.
+BLOCKED, never green, though a stolen focus is still a FAIL. The control's start in front and its
+Space move take the owner's focus and Space, so they run only with SCRY_FOCUS_CONTROL=1.
 """
 from __future__ import annotations
 

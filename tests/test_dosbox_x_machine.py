@@ -292,7 +292,7 @@ class Bench(FakeSession):
         super().__init__()
         self.bench = bench
         self.launch = SimpleNamespace(cwd=Path("/"), logfile=logfile, watched=False,
-                                      input_port=None, captures_dir=None)
+                                      input_port=None, captures_dir=None, core="auto")
         self.asked: list[str] = []
 
     def _memdump_candidates(self) -> list[Path]:

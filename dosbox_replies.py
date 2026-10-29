@@ -562,6 +562,7 @@ class StatusReply(DosboxEnvelope, total=False):
     pid: Annotated[int, When("with a session")]
     presence: Required[bool | dict[str, Any]]
     state_dir: Annotated[str, When("with a session")]
+    symbols_held: Annotated[dict[str, Any], When("a `start` table waits for its program")]
     output_bytes_dropped: Annotated[int, OmitEmpty]
     watched: Annotated[bool, OmitEmpty]
     # Every status says where the guest was last seen. A TypedDict cannot make a key required
@@ -752,6 +753,7 @@ class DeclarationListReply(DosboxEnvelope, total=False):
 
 
 class MapWriteReply(DosboxEnvelope, total=False):
+    anchor: Annotated[str, When("`add`, given one")]
     application: Annotated[str, When("`load`", "`save`")]
     cells: str
     controls: int

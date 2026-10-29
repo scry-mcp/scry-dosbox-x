@@ -158,10 +158,10 @@ def build_argv(launch: Launch) -> list[str]:
     return argv
 
 
-# Drives for the stub: late first, where a conf rarely mounts, never one its `[autoexec]` mounted.
 GUEST_DIR = Path(__file__).resolve().with_name("guest")
 #: The resident stub the input route runs in the guest (`guest/scry.asm`).
 STUB_FILE = "SCRY.COM"
+# Drives for the stub: late first, where a conf rarely mounts, never one its `[autoexec]` mounted.
 STUB_DRIVES = "YXWVUTSRQPONMLKJIHGFED"
 MOUNTING = frozenset({"mount", "imgmount", "subst"})
 
@@ -197,14 +197,14 @@ def cpu_core(conf: Path, flags: list[str]) -> str:
     for line in text.splitlines():
         line = line.strip()
         if line.startswith("["):
-            section = line.lower()
+            section = line.partition("#")[0].strip().lower()
         elif section == "[cpu]":
             key, _, value = line.partition("=")
-            if key.strip().lower() == "core" and value.strip():
-                core = value.split("#")[0].strip().lower()
+            if key.strip().lower() == "core" and (cut := value.partition("#")[0].strip()):
+                core = cut.lower()
     for flag, setting in zip(flags, flags[1:], strict=False):
         words = setting.replace("=", " ").split()
-        if flag == "-set" and len(words) == 3 and words[:2] == ["cpu", "core"]:
+        if flag == "-set" and len(words) == 3 and [w.lower() for w in words[:2]] == ["cpu", "core"]:
             core = words[2].lower()
     return core
 

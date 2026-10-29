@@ -98,6 +98,9 @@ from scry_core import (  # noqa: E402
     signalled_end,
 )
 from scry_core import presence as scry_presence  # noqa: E402
+from scry_core import (
+    scan_vocabulary as words,
+)
 from scry_core import sequence_account as account  # noqa: E402
 from scry_core import steps as core_steps  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
@@ -258,8 +261,10 @@ def status() -> dict[str, Any]:
     Reply: `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`), `pending` (`arm` refs, a
     `disarm` count, `symbols_load`, `base_remeasure`) and `presence`; with a session also `pid`,
     `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`, `elapsed_s`,
-    `output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and `cpu_mode`.
-    `session` carries `alive`, `running`, `altered` and each alarm while it holds.
+    `output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and `cpu_mode`;
+    `symbols_held` (`path`, `base_from`, `waiting_for`) while a `start` table waits for its
+    program, which costs a memory-chain read at every stop. `session` carries `alive`,
+    `running`, `altered` and each alarm while it holds.
 
     Reference: REFERENCE.md, What every reply carries.
     """
@@ -273,7 +278,7 @@ def status() -> dict[str, Any]:
                     presence=lifecycle.presence_shown(STATE.session))
 
 
-@tool("Close the session", summary=one_line.close, session_before=True, on_cancel="kill")
+@tool("Close the session", summary=one_line.close, body_session=True, on_cancel="kill")
 def close(detail: bool = False, ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """End the session deliberately rather than waiting for its bound.
 
@@ -476,7 +481,7 @@ def scan(method: Annotated[str, vocab.enum(tuple(folds.SCAN))], ref: str = "",
          cell_bytes: Annotated[int, vocab.enum(finder.CELL_BYTES)] | None = None,
          operator: Annotated[str, vocab.enum(finder.OPERATORS)] | None = None,
          value: judges.NumberArg | None = None,
-         limit: Annotated[int, vocab.bounds(1, judges.HITS_MAX)] | None = None,
+         limit: Annotated[int, vocab.bounds(1, words.HITS_MAX)] | None = None,
          ) -> dict[str, Any]:
     """Value scan: find a variable no map names (the debugger's `MEMFIND`). One scan at a time.
 
@@ -739,10 +744,7 @@ def run_to(ref: str = "", *, control: str = "", screen: str = "",
     """
     session = live()
     if screen and not STATE.maps.is_anchored(screen):
-        if control:
-            raise ds.Invalid("bad_argument", f"screen {screen!r} names no anchor, so it is run "
-                             "to a frame at a time and a `control` has nothing to count: leave "
-                             "it out")
+        screen_map.check_frame_run(screen, control)
         return advance.run_to_screen(screen, seconds, bridge(ctx))
     if not control:
         raise checks.no_control()
@@ -1076,7 +1078,8 @@ def comment_write(method: Annotated[str, vocab.enum(tuple(folds.COMMENT))], ref:
     {COMMENT_LOAD}
 
     `add`, `delete` and `load` need the machine stopped. Refused: an argument the method
-    does not take, a misshapen `ref` or `text` (`bad_argument`), a name defined twice
+    does not take, a misshapen `ref` or `text`, a `save` `dest` that is the declaration store's
+    file, compared without regard to case on any volume (`bad_argument`), a name defined twice
     (`ambiguous_ref`), an unknown `ref` (`unknown_ref`), an unwritable store (`host_failed`).
 
     Reference: REFERENCE.md, Declarations.
@@ -1251,22 +1254,29 @@ def screen_map_find() -> dict[str, Any]:
 def screen_map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], screen: str = "",
               match: list[list[int]] | None = None, controls: list[dict[str, Any]] | None = None,
               cells: Annotated[str, vocab.enum(screen_map.CELLS_WORDS)] = "",
-              path: str = "", scale: int | None = None, margin: list[int] | None = None,
-              dest: str = "", overwrite: bool | None = None) -> dict[str, Any]:
+              anchor: str = "", path: str = "", scale: int | None = None,
+              margin: list[int] | None = None, dest: str = "",
+              overwrite: bool | None = None) -> dict[str, Any]:
     """The screen map: an application's screens, each known by the signatures of its stable
     regions, and their controls, in a session layer and a file layer.
 
     `add`: the screen shown now as `screen` in the session layer, one read signing each `match`
     crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own
-    units. {MAP_CELLS} Reply: `screen`, `kind`, `size`, `cells`, `match`, `controls`,
-    `replaced`, `shadows_file`.
+    units; needs the machine stopped. Reply: `screen`, `kind`, `size`, `cells`, `match`,
+    `controls`, `replaced`, `shadows_file`, `anchor` (when given).
+
+    {MAP_CELLS}
+
+    {MAP_ANCHOR}
 
     {MAP_LOAD}
 
     {MAP_SAVE}
 
-    Refused: an argument the method does not take; a misshapen name, crop, control, view or file
-    (`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view` refuses.
+    Refused: an argument the method does not take; a misshapen name, crop, control, view or file;
+    an `add` without an `anchor` to a consolidated map, and a save of one holding a screen with
+    none (`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view`
+    refuses.
 
     Reference: REFERENCE.md, Screen maps.
     """

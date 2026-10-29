@@ -48,7 +48,7 @@ Example, from a live run:
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger": true,
   "heavy_debug": true,
-  "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "... 5 more"],
+  "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "... 7 more"],
   "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 53 more"]
 }
 ```
@@ -180,33 +180,33 @@ Example, from a live run:
 
 ```json
 {
-  "conf": "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf",
-  "cwd": "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest",
+  "conf": "$TMPDIR/dosbox-x-live-job-fu2i1nji/A/tests/guest/probe.conf",
+  "cwd": "$TMPDIR/dosbox-x-live-job-fu2i1nji/A/tests/guest",
   "session_seconds": 1200,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n985.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save"
+  "logfile": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n985.log",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n986-save"
 }
 ```
 
 ```json
 {
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.108s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.157s",
   "status": "ok",
-  "pid": 6399,
-  "conf": "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf",
+  "pid": 77786,
+  "conf": "$TMPDIR/dosbox-x-live-job-fu2i1nji/A/tests/guest/probe.conf",
   "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.3,
+  "elapsed_s": 0.6,
   "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save",
-  "ready_after_s": 0.108,
-  "argv": ["~/.local/state/dosbox-x-builds/scry/dosbox-x", "-conf", "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n986-save",
+  "ready_after_s": 0.157,
+  "argv": ["~/.local/state/dosbox-x-builds/scry/dosbox-x", "-conf", "$TMPDIR/dosbox-x-live-job-fu2i1nji/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
   "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
-  "debugger_commands": ["BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PORTINFO", "PRESENCE", "... 5 more"],
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "... 7 more"],
   "stub": "/path/to/scry-dosbox-x/guest/SCRY.COM",
-  "input_port": 58293,
+  "input_port": 63168,
   "background": true,
   "presence": {"available": false, "why": "a session started without `shared` has no window to draw on"},
   "declarations": {
@@ -252,8 +252,10 @@ What the session is right now. It records a stop no tool has reported
 Reply: `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`), `pending` (`arm` refs, a
 `disarm` count, `symbols_load`, `base_remeasure`) and `presence`; with a session also `pid`,
 `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`, `elapsed_s`,
-`output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and `cpu_mode`.
-`session` carries `alive`, `running`, `altered` and each alarm while it holds.
+`output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and `cpu_mode`;
+`symbols_held` (`path`, `base_from`, `waiting_for`) while a `start` table waits for its
+program, which costs a memory-chain read at every stop. `session` carries `alive`,
+`running`, `altered` and each alarm while it holds.
 
 Reference: REFERENCE.md, What every reply carries.
 
@@ -274,6 +276,7 @@ Takes no argument.
 | `pid` | integer |
 | `presence` | boolean or object |
 | `state_dir` | string |
+| `symbols_held` | object |
 | `output_bytes_dropped` | integer |
 | `watched` | boolean |
 

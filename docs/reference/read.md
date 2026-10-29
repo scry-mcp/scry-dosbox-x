@@ -276,18 +276,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1107.bin"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1107.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1107.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1107.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n1107.bin",
+  "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1107.bin",
   "bytes": 16
 }
 ```
@@ -837,7 +837,7 @@ Example, from a live run:
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
-    "path": "$TMPDIR/dosbox-x-session-g91n0wpd/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-m9rbfeyn/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,
@@ -1013,7 +1013,7 @@ screen_map_find()
 Which mapped screen the machine shows. Reply: `matched`, `kind` and `size`; when matched,
 `screen`, `layer`, `controls` (`name`, `rect`, `centre`), in the program's units; when not,
 `screens_mapped` and, if the view fits the map, `screens_tried` and `screens_unjudged`
-(signed by index on a screen with no palette), else `view_fits` false. None mapped:
+(signed by index on a screen whose pens cannot be read), else `view_fits` false. None mapped:
 `needs_call`.
 
 Reference: REFERENCE.md, Screen maps.
@@ -1061,7 +1061,7 @@ Session layer first, then the file's; a screen matches when its kind and size ar
 *Write the screen map*
 
 ```text
-screen_map_write(method, screen="", match=null, controls=null, cells="", path="", scale=null, margin=null, dest="", overwrite=null)
+screen_map_write(method, screen="", match=null, controls=null, cells="", anchor="", path="", scale=null, margin=null, dest="", overwrite=null)
 ```
 
 The screen map: an application's screens, each known by the signatures of its stable
@@ -1069,10 +1069,16 @@ regions, and their controls, in a session layer and a file layer.
 
 `add`: the screen shown now as `screen` in the session layer, one read signing each `match`
 crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own
-units. `cells` `index` (a pixel screen; default
+units; needs the machine stopped. Reply: `screen`, `kind`, `size`, `cells`, `match`,
+`controls`, `replaced`, `shadows_file`, `anchor` (when given).
+
+`add`'s `cells` `index` (a pixel screen; default
 `rgb`) signs the palette indices drawn, not the colours shown, so one map knows a program
-shown through two palettes; a screen with no palette refuses it (`no_channel`). Reply: `screen`, `kind`, `size`, `cells`, `match`, `controls`,
-`replaced`, `shadows_file`.
+shown through two palettes; a screen with no palette refuses it (`no_channel`).
+
+`add`'s `anchor` (a symbol or an address, as `run_to`'s `ref`) is the place after which the screen is whole,
+what `run_to(screen=)` runs to: a consolidated map refuses an `add` without one (`bad_argument`),
+since it enters its screens by theirs.
 
 `load`: `path` (`<application>.screen-map.json`, absolute or `~`-led) as the file layer, held by the
 server; nothing is written to disk. `scale` (1..8) and `margin` [x, y] (machine pixels on
@@ -1084,8 +1090,10 @@ crops are in the program's units. Reply: `path`, `application`, `mode`, `screens
 layer, in the loaded map's `mode` (`verified` when none was loaded). Reply: `path`,
 `application`, `mode`, `screens`, `controls`, `promoted`.
 
-Refused: an argument the method does not take; a misshapen name, crop, control, view or file
-(`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view` refuses.
+Refused: an argument the method does not take; a misshapen name, crop, control, view or file;
+an `add` without an `anchor` to a consolidated map, and a save of one holding a screen with
+none (`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view`
+refuses.
 
 Reference: REFERENCE.md, Screen maps.
 
@@ -1096,6 +1104,7 @@ Reference: REFERENCE.md, Screen maps.
 | `match` | array of array of integer or null | `null` |
 | `controls` | array of object or null | `null` |
 | `cells` | one of `""`, `"rgb"`, `"index"` | `""` |
+| `anchor` | string | `""` |
 | `path` | string | `""` |
 | `scale` | integer or null | `null` |
 | `margin` | array of integer or null | `null` |
@@ -1104,6 +1113,7 @@ Reference: REFERENCE.md, Screen maps.
 
 | reply field | type |
 |---|---|
+| `anchor` | string |
 | `application` | string |
 | `cells` | string |
 | `controls` | integer |
@@ -1149,7 +1159,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end screen_map_write -->
 
-Units are cells in a text mode and pixels in 256 colours.
+Units are cells in a text mode and pixels in a graphics mode, whichever depth `screen_view` reads (256 colours, planar, 15-, 16- or 32-bit).
 
 <!-- scry-reference:begin debug -->
 ## `debug`

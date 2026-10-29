@@ -14,7 +14,17 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-from scry_core import judges, log_marks, media_tools, narrowing, picture, screen_map
+from scry_core import (
+    judges,
+    log_marks,
+    media_tools,
+    narrowing,
+    picture,
+    screen_map,
+)
+from scry_core import (
+    scan_vocabulary as words,
+)
 from scry_core import sequence as executor
 from scry_core import sequence_account as account
 from scry_core import value_format as vf
@@ -189,9 +199,9 @@ def check_load_map(path: str = "", scale: object = 1, margin: object = None, **_
 
 
 def check_add_map(screen: str = "", match: Any = None, controls: Any = None,
-                  cells: str = "", **_: Any) -> None:
+                  cells: str = "", anchor: object = "", **_: Any) -> None:
     vocab.one_of("cells", cells, screen_map.CELLS_WORDS)
-    screen_map.check_add(screen, match, controls, cells)
+    screen_map.check_add(screen, match, controls, cells, anchor)
 
 
 def check_save_map(dest: str = "", overwrite: bool = False, **_: Any) -> None:
@@ -422,7 +432,7 @@ def check_filter_scan(operator: str = "=", value: object = None, **rest: Any) ->
     # Read at the call: importing `dosbox_find` reaches this module, so its names are not yet
     # there at definition.
     finder.check_filter(operator, None if value is None else number("value", value),
-                        rest.get("limit", judges.HITS_DEFAULT))
+                        rest.get("limit", words.HITS_DEFAULT))
 
 
 def _machine_map(sections: list[str] | None = None, dest: str = "", **_: Any) -> None:

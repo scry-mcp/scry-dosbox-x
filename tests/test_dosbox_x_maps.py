@@ -305,6 +305,58 @@ def test_a_control_with_a_screen_that_has_no_anchor_is_refused(tmp_path: Path) -
     assert "no anchor" in got["message"] and "control" in got["message"], got["message"]
 
 
+def _consolidated_prompt(tmp_path: Path) -> None:
+    """The prompt screen mapped, saved as a consolidated map that enters it by `DrawPrompt`, and
+    loaded back."""
+    _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT]))
+    path = tmp_path / "probe.screen-map.json"
+    _ok(server.screen_map_write("save", dest=str(path)))
+    doc = json.loads(path.read_text())
+    doc["mode"], doc["screens"][0]["anchor"] = "consolidated", "DrawPrompt"
+    path.write_text(json.dumps(doc))
+    dstate.STATE.maps = screen_map.Maps()
+    _ok(server.screen_map_write("load", path=str(path)))
+
+
+def test_a_run_to_an_anchored_screen_runs_to_its_anchor_with_the_control_and_takes_it_as_shown(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import dosbox_advance as advance
+    screen_bench("probe-booted", tmp_path)
+    _consolidated_prompt(tmp_path)
+    given: list[tuple[str, str, float]] = []
+
+    def run(ref: str, control: str, seconds: float, progress: Any) -> dict[str, Any]:
+        given.append((ref, control, seconds))
+        return {"status": "ok", "verdict": "TARGET", "control_hits": 1, "stop_seq": 5}
+    monkeypatch.setattr(advance, "run_to", run)
+    got = _ok(server.run_to(screen="prompt", control="_main", seconds=7))
+    assert given == [("DrawPrompt", "_main", 7)], given
+    assert got["screen"] == {"screen": "prompt", "layer": "file", "mode": "consolidated",
+                             "judged": False}, got
+    refused = cast(dict[str, Any], server.run_to(screen="prompt"))
+    assert refused["status"] == "INVALID" and "control" in refused["message"], refused
+    assert given == [("DrawPrompt", "_main", 7)], "a refused run reached the machine"
+
+
+def test_a_screen_added_to_a_consolidated_map_names_its_anchor_through_the_tool(
+        tmp_path: Path) -> None:
+    screen_bench("probe-booted", tmp_path)
+    _consolidated_prompt(tmp_path)
+    said = cast(dict[str, Any], server.screen_map_write("add", screen="again", match=[PROMPT]))
+    assert said["status"] == "INVALID" and said["code"] == "bad_argument", said
+    assert "`anchor`" in said["message"] and "consolidated" in said["message"], said
+    added = _ok(server.screen_map_write("add", screen="again", match=[PROMPT],
+                                        anchor="DrawAgain"))
+    assert added["anchor"] == "DrawAgain", added
+    out = tmp_path / "out"
+    out.mkdir()
+    saved = _ok(server.screen_map_write("save", dest=str(out / "probe.screen-map.json")))
+    assert saved["mode"] == "consolidated" and saved["promoted"] == ["again"], saved
+    refused = cast(dict[str, Any], server.screen_map_write(
+        "add", screen="x", match=[PROMPT], anchor=" leading"))
+    assert refused["status"] == "INVALID", "a misshapen anchor reached the map"
+
+
 def test_a_map_that_declares_the_programs_pointer_loads_and_says_so(tmp_path: Path) -> None:
     screen_bench("probe-booted", tmp_path)
     doc = {"format": "scry-screen-map/1", "application": "demo", "mode": "verified",

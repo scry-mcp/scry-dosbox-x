@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
-from scry_core import judges
+from scry_core import scan_vocabulary as words
 
 import dosbox_find as finder
 import dosbox_session as ds
@@ -79,7 +79,7 @@ def test_find_reports_every_offset_the_pattern_starts_at_and_leaves_no_file() ->
 
 def test_find_counts_overlapping_hits_and_keeps_the_highest_when_truncated(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(judges, "HITS_MAX", 2)
+    monkeypatch.setattr(words, "HITS_MAX", 2)
     got = finder.find(session([], b"\xaa" * 5), 0, 0, 5, b"\xaa\xaa")
     assert got["hits_total"] == 4 and got["truncated"] is True
     assert got["hits"] == ["0000:00000002", "0000:00000003"]
@@ -142,13 +142,13 @@ def test_scan_filter_refuses_a_listing_whose_rows_do_not_add_up() -> None:
     """The captured listing with one row taken out (an edit) against its own closing count."""
     s = session(listed(drop=1))
     with pytest.raises(ds.Invalid, match="a whole listing"):
-        finder.filter_scan(s, "=", 0, judges.HITS_MAX)
+        finder.filter_scan(s, "=", 0, words.HITS_MAX)
     assert s.sent == ["MEMS =0", "MEMFIND L"]
 
 
 def test_scan_filter_hands_back_a_whole_listing_when_the_rows_match_the_count() -> None:
     """Rows matching the count make a whole listing: first row, last row, every row keyed once."""
-    got = finder.filter_scan(session(listed()), "=", 0, judges.HITS_MAX)
+    got = finder.filter_scan(session(listed()), "=", 0, words.HITS_MAX)
     assert got["hits_total"] == SURVIVORS and got["closed"] is False and got["iterations"] == 1
     assert len(got["hits"]) == SURVIVORS
     assert got["hits"][0] == {"seg_off": "0000:00000404", "addr": "0x00000404", "value": "0x00"}
@@ -161,7 +161,7 @@ def test_scan_filter_shows_the_first_limit_survivors_and_says_more_survive() -> 
     assert got["hits"][0]["seg_off"] == "0000:00000404", got
 
 
-@pytest.mark.parametrize("limit", [0, judges.HITS_MAX + 1, True, 2.5])
+@pytest.mark.parametrize("limit", [0, words.HITS_MAX + 1, True, 2.5])
 def test_scan_filter_refuses_a_limit_outside_its_range_before_sending(limit: object) -> None:
     s = session([])
     with pytest.raises(ds.Invalid, match="is outside 1..400"):
@@ -209,7 +209,7 @@ def test_scan_filter_refuses_its_own_arguments_before_sending(op: str, value: in
 
 def test_scan_filter_does_not_list_above_the_cap(monkeypatch: pytest.MonkeyPatch) -> None:
     """Above the ceiling the list is cut whole: `hits: []` with `hits_total` and `truncated`."""
-    monkeypatch.setattr(judges, "HITS_MAX", SURVIVORS - 1)
+    monkeypatch.setattr(words, "HITS_MAX", SURVIVORS - 1)
     s = session([("MEMS =0", "matches")])
     got = finder.filter_scan(s, "=", 0, SURVIVORS - 1)
     assert got["hits_total"] == SURVIVORS and got["hits"] == [] and got["truncated"], got
@@ -230,7 +230,7 @@ def test_the_closing_reply_carries_the_count_one_past_the_last_filter(
         no_scan_count: None) -> None:
     """The debugger's finish line has no count, so the server counts one past the last."""
     s = session([*listed(), ("MEMS !0", "finished")])
-    first = finder.filter_scan(s, "=", 0, judges.HITS_MAX)
+    first = finder.filter_scan(s, "=", 0, words.HITS_MAX)
     closing = finder.filter_scan(s, "!", 0)
     assert closing["closed"] is True and closing["iterations"] == first["iterations"] + 1
     assert closing["hits"] == [] and closing["hits_total"] == 0, closing
@@ -352,7 +352,7 @@ def test_a_scan_that_needs_another_call_first_says_needs_call(line: str) -> None
 def test_a_filter_with_no_value_says_what_it_compared_with_instead_of_a_null(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """No `value`: cells compare with their previous value, and the reply says so, not null."""
-    monkeypatch.setattr(judges, "HITS_MAX", 0x7F)      # the 128 survivors are not listed
+    monkeypatch.setattr(words, "HITS_MAX", 0x7F)      # the 128 survivors are not listed
     got = finder.filter_scan(session([("MEMS =", "matches_previous")]), "=", None)
     assert got["value"] == {"available": False, "why": finder.NO_VALUE_WHY}, got["value"]
     assert got["hits_total"] == 0x80 and got["note"] == finder.unlisted_note(), got
@@ -368,7 +368,7 @@ def test_find_keeps_no_more_hits_than_it_answers() -> None:
     got = finder.find(s, 0, 0, len(dump), b"\x00")
     peak = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
-    assert got["hits_total"] == len(dump) and len(got["hits"]) == judges.HITS_MAX, got["hits_total"]
+    assert got["hits_total"] == len(dump) and len(got["hits"]) == words.HITS_MAX, got["hits_total"]
     assert peak < 3 * len(dump), f"{peak} bytes traced for a {len(dump)}-byte range"
 
 
@@ -384,9 +384,9 @@ def test_a_scan_opened_over_another_range_is_cancelled_before_it_is_refused() ->
 def test_the_scan_judges_take_their_edges_and_refuse_one_past() -> None:
     """The edges of `limit`, a bool value, a one-cell range, and `find` at exactly `HITS_MAX`."""
     op = finder.OPERATORS[0]
-    for limit in (1, judges.HITS_MAX):
+    for limit in (1, words.HITS_MAX):
         finder.check_filter(op, None, limit)
-    for limit in (0, judges.HITS_MAX + 1):
+    for limit in (0, words.HITS_MAX + 1):
         with pytest.raises(ds.Invalid):
             finder.check_filter(op, None, limit)
     with pytest.raises(ds.Invalid):
@@ -394,8 +394,8 @@ def test_the_scan_judges_take_their_edges_and_refuse_one_past() -> None:
     finder.check_scan_range(1, 1)
     with pytest.raises(ds.Invalid):
         finder.check_scan_range(0, 1)
-    got = finder.find(session([], b"\xaa" * judges.HITS_MAX), 0, 0, judges.HITS_MAX, b"\xaa")
-    assert got["hits_total"] == judges.HITS_MAX and got["truncated"] is False, got["truncated"]
+    got = finder.find(session([], b"\xaa" * words.HITS_MAX), 0, 0, words.HITS_MAX, b"\xaa")
+    assert got["hits_total"] == words.HITS_MAX and got["truncated"] is False, got["truncated"]
 
 
 def test_every_cell_width_a_scan_takes_has_the_letter_the_debugger_takes() -> None:

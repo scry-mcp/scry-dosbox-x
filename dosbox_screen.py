@@ -137,15 +137,13 @@ def still(session: ds.Session, dest: Path | None) -> dict[str, Any]:
     """`snapshot` at a stop: the graphics screen as one unscaled PNG written from video memory
     through the decoder `screen_view` uses, at `dest` or the next free name in the captures
     directory."""
-    mode = vga.listed(session, vga.COMMAND_OF["mode"])
-    if vga.source_of(mode) == vga.TEXT:
-        raise ds.Invalid("no_channel", f"the screen is in `{mode.get('mode')}`, a text mode, "
-                         f"which has no picture to snapshot at a stop: `screen_view` reads its "
-                         f"text, or `resume` and snapshot the running screen")
+    listings = vga.read_listings(session)
+    if vga.source_of(listings["mode"]) == vga.TEXT:
+        raise ds.Invalid("no_channel", f"the screen is in `{listings['mode'].get('mode')}`, a "
+                         f"text mode, which has no picture to snapshot at a stop: `screen_view` "
+                         f"reads its text, or `resume` and snapshot the running screen")
     if dest is not None:
         paths.fresh_dest("dest", dest)
-    listings = {"mode": mode, **{key: vga.listed(session, vga.COMMAND_OF[key])
-                                 for key in vga.SHAPE_KEYS[1:]}}
     shape = vga.geometry(listings)
     data = png.encode(pixels(session, shape, vga.read_screen(session, shape)))
     if dest is None:

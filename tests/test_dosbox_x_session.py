@@ -1623,6 +1623,11 @@ def test_a_conf_s_mounts_are_read_past_options_case_and_a_bom(tmp_path: Path, au
     ("[cpu]\ncore=normal\n", ["-set", "cpu core=dynamic", "-set", "cpu core=auto"], "auto"),
     ("[cpu]\ncore=dynamic\n", ["-set", "sdl fullscreen=true"], "dynamic"),
     ("\ufeff[CPU]\ncore=dynamic\n", [], "dynamic"),
+    ("[cpu] # the processor\ncore=dynamic\n", [], "dynamic"),
+    ("[cpu]\ncore=normal\n", ["-set", "CPU CORE=dynamic"], "dynamic"),
+    ("[cpu]\ncore=normal\n", ["-set", "cpu", "core", "dynamic"], "normal"),
+    ("[cpu]\ncore= # use the default\n", [], "auto"),
+    ("[cpu]\ncore=normal\ncore= # nothing\n", [], "normal"),
 ])
 def test_the_core_a_session_boots_with_is_the_flags_last_word_over_the_confs(
         tmp_path: Path, conf_text: str, flags: list[str], core: str) -> None:
