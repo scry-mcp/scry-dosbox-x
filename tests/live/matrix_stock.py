@@ -13,7 +13,7 @@ from matrix_presence import MOUSE_CONF, MOUSE_PROGRAM, STOCK_VAR
 from dosbox_session import Session  # isort: skip -- found through the path the matrix sets
 
 S_CELLS = cells(
-    ("S build_check answers the build with no optional debugger command",
+    ("S build_check answers the build with none of the fork's optional debugger commands",
      "REFERENCE.md, Debugger commands: `debugger_commands`"),
     ("S start parks the guest at the debugger",
      "REFERENCE.md, Debugger commands: a session starts"),
@@ -28,6 +28,8 @@ S_CELLS = cells(
 )
 
 WAIT_S = 20
+#: The debugger commands a release carries; every other one is the fork's.
+STOCK_COMMANDS = {"PIC", "A20"}
 #: What each refusal names; a release built without the CPU log refuses `trace` for that first.
 _NEEDS = {"run_to": ("RUNSTATE",), "run_for": ("RUNSTATE",), "trace": ("RUNSTATE", "heavy_debug"),
           "screen_wait": ("RUNSTATE",), "step": ("STEPIN",), "resume": ("RUNSTATE",),
@@ -45,7 +47,8 @@ def section_s() -> None:
         M.block_rest(f"{STOCK_VAR} is not set: no release build to run")
         return
     checked = M.call(server.build_check, binary=stock)
-    M.judge(S_CELLS[0].label, ok(checked) and not checked.get("debugger_commands"), said(checked))
+    have = set(checked.get("debugger_commands") or [])
+    M.judge(S_CELLS[0].label, ok(checked) and have <= STOCK_COMMANDS, said(checked))
     started = boot(binary=stock)
     M.judge(S_CELLS[1].label, ok(started) and started["session"]["running"] is False,
             said(started))

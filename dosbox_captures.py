@@ -83,6 +83,8 @@ def _row(kind: str, path: Path) -> dict[str, Any]:
 def captures(session: ds.Session) -> dict[str, Any]:
     """The body of the `captures` tool: files in write order, then recorded videos."""
     rows = [_row(kind, Path(path)) for kind, path in STATE.written]
+    for gone in set(_AVI_SEEN) - {path for _kind, path in STATE.written}:
+        del _AVI_SEEN[gone]
     rows += [{"kind": "avi", "present": True, **video} for video in frames.videos(session)]
     return st.reply(captures=rows)
 

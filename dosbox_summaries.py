@@ -575,7 +575,8 @@ def pic_action(args: dict[str, Any], reply: dict[str, Any]) -> str:
     line: dict[str, Any] = found if isinstance(found, dict) else {}
     held = [word for word, key in (("masked", "masked"), ("requested", "requested"),
                                    ("in service", "in_service")) if line.get(key)]
-    return f"IRQ {reply.get('irq')} {reply.get('method')}: now {', '.join(held) or 'clear'}"
+    return (f"IRQ {reply.get('irq')} {reply.get('method')} done; "
+            f"its line reads {', '.join(held) or 'clear'}")
 
 
 def a20(args: dict[str, Any], reply: dict[str, Any]) -> str:

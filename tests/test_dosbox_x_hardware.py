@@ -178,3 +178,12 @@ def test_a_build_without_pic_or_a20_is_refused_by_name_before_anything_is_sent(
     got = _call(tool, **kw)
     assert got["code"] == "no_channel" and f"`{command}`" in got["message"], got
     assert m.executed == []
+
+
+def test_the_summary_of_a_pic_action_says_what_the_line_reads_not_that_the_action_made_it() -> None:
+    from dosbox_summaries import pic_action
+    said = pic_action({}, {"irq": 3, "method": "acknowledge",
+                           "line": {"masked": True, "requested": False, "in_service": False}})
+    assert said == "IRQ 3 acknowledge done; its line reads masked", said
+    assert pic_action({}, {"irq": 3, "method": "raise", "line": {}}) == (
+        "IRQ 3 raise done; its line reads clear")

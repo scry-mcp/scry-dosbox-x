@@ -114,3 +114,17 @@ def test_a_recorded_avi_is_read_once_while_it_has_not_changed(
     clip.write_bytes(fake_avi(frames=6))
     assert caps.captures(session)["captures"][0]["avi_frames"] == 6
     assert len(reads) == 2, "an unchanged recording was read whole again"
+
+
+def test_the_avi_cache_keeps_only_the_recordings_the_listing_still_names(tmp_path: Path) -> None:
+    dstate.STATE.written.clear()
+    clip = tmp_path / "rec.avi"
+    clip.write_bytes(fake_avi(frames=5))
+    dstate.STATE.written.append(("avi", str(clip)))
+    session = _recording(tmp_path)
+    session.launch.capture_video = False
+    caps.captures(session)
+    assert str(clip) in caps._AVI_SEEN
+    dstate.STATE.written.clear()
+    caps.captures(session)
+    assert caps._AVI_SEEN == {}
