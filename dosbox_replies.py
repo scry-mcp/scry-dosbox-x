@@ -519,21 +519,21 @@ class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
     conf_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
     conf_digest: str
     debugger_commands: Annotated[list[Any], OmitEmpty]
-    declarations: Annotated[dict[str, Any], When("all but with `plan`")]
+    declarations: Annotated[dict[str, Any], When("under `start`")]
     dos_calls: str
     elapsed_s: float
     guest_files: list[Any]
     input_port: int | dict[str, Any]
     log_categories: dict[str, Any]
     operations: list[Any]
-    pid: Annotated[int, When("all but with `plan`")]
+    pid: Annotated[int, When("under `start`")]
     presence: bool | dict[str, Any]
     ready_after_s: float
     rearm_refused: str
     shared: Annotated[bool, OmitEmpty]
     start: Annotated[dict[str, Any], When("with `plan`")]
     state_dir: str
-    stub: Annotated[str, When("all but with `plan`")]
+    stub: Annotated[str, When("under `start`")]
     output_bytes_dropped: Annotated[int, OmitEmpty]
     symbols: dict[str, Any]
     version: str | dict[str, Any]
