@@ -133,3 +133,58 @@ Example, from a live run:
 **Why `verified: false` is not always a failure.** A memory-mapped register answers what it answers; for RAM the write did not land.
 
 **Why the width is bounded.** The width is what one read takes back for the readback; a region is not a write.
+
+<!-- scry-reference:begin debug -->
+## `debug`
+
+*Raw debugger command*
+
+```text
+debug(command)
+```
+
+One raw `command` to the debugger; the last resort. For a value use `registers`,
+`read_memory` or `memdump`; for the log `log`.
+
+Reply: `output` (the last 4000 characters of what the debugger printed),
+`output_chars`, `clipped`, `command`, `note` (when the debugger did not take the command).
+
+Refused `bad_argument`: a command that lets the guest run (`RUN`, `VRT`, `RUNWATCH`, `INT`,
+`STEPIN`, the `LOG` family) and a control character.
+
+| argument | type | default |
+|---|---|---|
+| `command` | string | required |
+
+| reply field | type |
+|---|---|
+| `clipped` | boolean |
+| `command` | string |
+| `output` | string |
+| `output_chars` | integer |
+
+Example, from a live run:
+
+```json
+{
+  "command": "BPLIST"
+}
+```
+
+```json
+{
+  "summary": "debug 'BPLIST': 90 chars",
+  "status": "ok",
+  "command": "BPLIST",
+  "output": "Breakpoint list:\n-------------------------------------------------------------------------",
+  "output_chars": 90,
+  "clipped": false
+}
+```
+<!-- scry-reference:end debug -->
+
+**A command that lets the guest run is refused before it is sent**, because it leaves the debugger without the session knowing and `last_stop` and `status` would go on naming the stop before it. A control character is refused: a line break would carry a second command past that check.
+
+**A command the debugger does not take says so**: its printed reason comes back in `output` and `note` says it was not taken.
+
+The refusal names the tool that does what the command would.

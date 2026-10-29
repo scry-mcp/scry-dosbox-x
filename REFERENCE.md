@@ -6,19 +6,21 @@ The [README](README.md) is the front door. This page holds the index, the envelo
 
 <!-- scry-reference:begin index -->
 - [Session](docs/reference/session.md): [`build_check`](docs/reference/session.md#build_check), [`start`](docs/reference/session.md#start), [`status`](docs/reference/session.md#status), [`close`](docs/reference/session.md#close)
-- [Read](docs/reference/read.md): [`registers`](docs/reference/read.md#registers), [`read_memory`](docs/reference/read.md#read_memory), [`disassemble`](docs/reference/read.md#disassemble), [`call_stack`](docs/reference/read.md#call_stack), [`memdump`](docs/reference/read.md#memdump), [`find`](docs/reference/read.md#find), [`log`](docs/reference/read.md#log), [`log_wait`](docs/reference/read.md#log_wait), [`machine_map`](docs/reference/read.md#machine_map), [`interrupt_vectors`](docs/reference/read.md#interrupt_vectors), [`palette`](docs/reference/read.md#palette), [`screen_view`](docs/reference/read.md#screen_view), [`screen_signature`](docs/reference/read.md#screen_signature), [`screen_map_find`](docs/reference/read.md#screen_map_find), [`screen_map_write`](docs/reference/read.md#screen_map_write), [`debug`](docs/reference/read.md#debug)
+- [Machine](docs/reference/machine.md): [`machine_map`](docs/reference/machine.md#machine_map), [`interrupt_vectors`](docs/reference/machine.md#interrupt_vectors), [`log`](docs/reference/machine.md#log), [`log_wait`](docs/reference/machine.md#log_wait)
+- [Read](docs/reference/read.md): [`registers`](docs/reference/read.md#registers), [`read_memory`](docs/reference/read.md#read_memory), [`disassemble`](docs/reference/read.md#disassemble), [`call_stack`](docs/reference/read.md#call_stack), [`memdump`](docs/reference/read.md#memdump), [`find`](docs/reference/read.md#find), [`screen_map_find`](docs/reference/read.md#screen_map_find), [`screen_map_write`](docs/reference/read.md#screen_map_write)
+- [Screen](docs/reference/screen.md): [`palette`](docs/reference/screen.md#palette), [`screen_view`](docs/reference/screen.md#screen_view), [`screen_signature`](docs/reference/screen.md#screen_signature)
 - [Scan](docs/reference/scan.md): [`scan`](docs/reference/scan.md#scan)
-- [Write](docs/reference/write.md): [`set_register`](docs/reference/write.md#set_register), [`write`](docs/reference/write.md#write)
+- [Write](docs/reference/write.md): [`set_register`](docs/reference/write.md#set_register), [`write`](docs/reference/write.md#write), [`debug`](docs/reference/write.md#debug)
 - [Hardware](docs/reference/hardware.md): [`port`](docs/reference/hardware.md#port), [`pic`](docs/reference/hardware.md#pic), [`a20`](docs/reference/hardware.md#a20)
 - [Advance](docs/reference/advance.md): [`run_to`](docs/reference/advance.md#run_to), [`run_for`](docs/reference/advance.md#run_for), [`trace`](docs/reference/advance.md#trace), [`screen_wait`](docs/reference/advance.md#screen_wait), [`step`](docs/reference/advance.md#step), [`resume`](docs/reference/advance.md#resume), [`stop`](docs/reference/advance.md#stop)
 - [Declarations](docs/reference/declarations.md): [`breakpoint_at`](docs/reference/declarations.md#breakpoint_at), [`breakpoint_interrupt`](docs/reference/declarations.md#breakpoint_interrupt), [`regpoint_add`](docs/reference/declarations.md#regpoint_add), [`watch_add`](docs/reference/declarations.md#watch_add), [`declaration_list`](docs/reference/declarations.md#declaration_list), [`declaration_clear`](docs/reference/declarations.md#declaration_clear)
 - [States](docs/reference/states.md): [`state_list`](docs/reference/states.md#state_list), [`state_write`](docs/reference/states.md#state_write)
 - [Names](docs/reference/names.md): [`symbols_load`](docs/reference/names.md#symbols_load), [`symbols_find`](docs/reference/names.md#symbols_find)
 - [Comments](docs/reference/comments.md): [`comment_list`](docs/reference/comments.md#comment_list), [`comment_write`](docs/reference/comments.md#comment_write)
-- [Input](docs/reference/input.md): [`send_keys`](docs/reference/input.md#send_keys), [`send_mouse`](docs/reference/input.md#send_mouse), [`drive`](docs/reference/input.md#drive)
+- [Input](docs/reference/input.md): [`send_keys`](docs/reference/input.md#send_keys), [`send_mouse`](docs/reference/input.md#send_mouse)
 - [Captures](docs/reference/captures.md): [`captures`](docs/reference/captures.md#captures), [`capture_frame`](docs/reference/captures.md#capture_frame), [`series_capture`](docs/reference/captures.md#series_capture), [`snapshot`](docs/reference/captures.md#snapshot), [`record`](docs/reference/captures.md#record), [`audio_record`](docs/reference/captures.md#audio_record)
 - [Files](docs/reference/files.md): [`image_compare`](docs/reference/files.md#image_compare), [`audio_compare`](docs/reference/files.md#audio_compare), [`guest_file`](docs/reference/files.md#guest_file)
-- [Lists](docs/reference/lists.md): [`perform`](docs/reference/lists.md#perform), [`perform_export`](docs/reference/lists.md#perform_export)
+- [Lists](docs/reference/lists.md): [`perform`](docs/reference/lists.md#perform), [`perform_export`](docs/reference/lists.md#perform_export), [`drive`](docs/reference/lists.md#drive)
 <!-- scry-reference:end index -->
 
 ## The session
@@ -272,7 +274,7 @@ matches against.
 
 ## Reading and writing
 
-The tools: [Read](docs/reference/read.md), [Write](docs/reference/write.md) and [Scan](docs/reference/scan.md).
+The tools: [Read](docs/reference/read.md), [Write](docs/reference/write.md) and [Scan](docs/reference/scan.md), and `machine_map` and `interrupt_vectors` on [Machine](docs/reference/machine.md).
 
 ### The code pane is the control
 
@@ -290,7 +292,7 @@ Live, the bytes a listing shows are held to the memory `read_memory` reads.
 
 ## The log
 
-`log` reads one `channel` of the logfile: the guest's E9 lines and the emulator's own. The tools: [Read](docs/reference/read.md) (`log`, `log_wait`).
+`log` reads one `channel` of the logfile: the guest's E9 lines and the emulator's own. The tools: [Machine](docs/reference/machine.md) (`log`, `log_wait`).
 
 **`since_mark` asks "after Y".** A guest replaying a saved timeline writes lines identical to the ones before the load, so content cannot tell them apart and a position can. `state_write(method="load")` answers `mark`, one number per channel, all equal because one file holds them. It is a position in the file, not a moment: a line the emulator had not flushed when the load was sent lands after it.
 
@@ -318,7 +320,7 @@ A DOS program hands a result back the DOS way: a file on a mounted drive. `start
 
 ## Sequences in one call
 
-`perform(steps)` runs a list of the server's own operations in order and stops at the first failure with a full account; `start(plan=...)` runs the same list on the fresh session. The tools: [Lists](docs/reference/lists.md) (`perform`, `perform_export`) and [Input](docs/reference/input.md) (`drive`).
+`perform(steps)` runs a list of the server's own operations in order and stops at the first failure with a full account; `start(plan=...)` runs the same list on the fresh session. The tools: [Lists](docs/reference/lists.md) (`perform`, `perform_export`, `drive`).
 
 **The list is checked whole before its first step runs**, and before the session gate, so with no session a bad step answers `bad_argument` and a mistake in step 4 does not press the keys of steps 1 to 3. A step naming no operation is refused pointing at `operations`, carried once at the top level (inside `act` in a `drive`).
 
@@ -344,7 +346,7 @@ The tool: [Lists](docs/reference/lists.md) (`perform_export`).
 
 ## Input and the screen
 
-Every input goes in inside the machine and nothing about the host is touched: no window comes to the front, the host pointer never moves, no Accessibility grant is asked for, and the window's scale changes nothing the guest sees. The tools: [Input](docs/reference/input.md), [Captures](docs/reference/captures.md), [Read](docs/reference/read.md) (`screen_view`, `screen_signature`, `palette`) and [Advance](docs/reference/advance.md) (`screen_wait`). A stretch of the screen or the sound is recorded between two stops through the debugger's `CAPTURE` (`record`, `audio_record`), so no window or menu is involved either.
+Every input goes in inside the machine and nothing about the host is touched: no window comes to the front, the host pointer never moves, no Accessibility grant is asked for, and the window's scale changes nothing the guest sees. The tools: [Input](docs/reference/input.md), [Captures](docs/reference/captures.md), [Screen](docs/reference/screen.md) (`screen_view`, `screen_signature`, `palette`) and [Advance](docs/reference/advance.md) (`screen_wait`). A stretch of the screen or the sound is recorded between two stops through the debugger's `CAPTURE` (`record`, `audio_record`), so no window or menu is involved either.
 
 **The screen is read from video memory**: text and 13h's chained bytes through the CPU's window,
 and every mode that window cannot read whole (planar 16-colour, unchained 256-colour, 8-, 15-,
@@ -355,13 +357,13 @@ eight bits by repeating their high bits.
 
 ## Media files
 
-The tools that answer about pictures and sound follow one order: a signature or a number first ("is it the same screen" is two strings compared, never two pictures sent), the full picture last and only from a tool whose purpose is to show, and a sound never sent at all, only its measures. Every tool that signs or compares a picture takes a `crop`, `[x, y, width, height]` inside the picture: one that leaves it is refused, never padded, since a padded crop compares pixels nobody drew; a recording is cut by a `window` in seconds instead. The tools: [Captures](docs/reference/captures.md), [Files](docs/reference/files.md), [Read](docs/reference/read.md) (`screen_view`, `screen_signature`, `palette`).
+The tools that answer about pictures and sound follow one order: a signature or a number first ("is it the same screen" is two strings compared, never two pictures sent), the full picture last and only from a tool whose purpose is to show, and a sound never sent at all, only its measures. Every tool that signs or compares a picture takes a `crop`, `[x, y, width, height]` inside the picture: one that leaves it is refused, never padded, since a padded crop compares pixels nobody drew; a recording is cut by a `window` in seconds instead. The tools: [Captures](docs/reference/captures.md), [Files](docs/reference/files.md), [Screen](docs/reference/screen.md) (`screen_view`, `screen_signature`, `palette`).
 
 **The signature** (`screen_signature`, every row of a series) is BLAKE2b with an 8-byte digest, 16 lowercase hex characters, over `scry-sig/1|<kind>|<w>x<h>|` (the crop's size) and the crop's cells row by row: `pixel` cells as RGB, `text` cells as their byte and the two colours. A text cell's colours are what its attribute resolves to: the nibble picks an Attribute Controller register (`VGA AC`), whose value, with `color-select` above it as `mode_control` bit 7 says, picks the DAC entry (with blink on, the background's fourth bit blinks and is not a colour), so a palette fade changes the signature as a character does.
 
 ## Screen maps
 
-A screen map names an application's screens and their controls, so a caller says "the play screen" and "the court" instead of a picture and a coordinate. The file layers and the format are on [Files](docs/reference/files.md#screen-maps). The tools: [Read](docs/reference/read.md) (`screen_map_write(method="add")`, `screen_map_find`), [Files](docs/reference/files.md) (`screen_map_write(method="load")`, `screen_map_write(method="save")`), [Input](docs/reference/input.md) (`send_mouse`).
+A screen map names an application's screens and their controls, so a caller says "the play screen" and "the court" instead of a picture and a coordinate. The file layers and the format are on [Files](docs/reference/files.md#screen-maps). The tools: [Read](docs/reference/read.md) (`screen_map_write` with its three methods, `screen_map_find`), [Input](docs/reference/input.md) (`send_mouse`).
 
 ## Saved states
 
@@ -369,7 +371,7 @@ DOSBox-X merged SAVESTATE and LOADSTATE into its `main-ai` branch, joncampbell12
 
 ## The debugger channel
 
-Every reading and every command goes to the debugger through its channel (`[dosbox] mcp_server`): one request, the lines the command printed, one at a time, on every host. The debugger's screen is never read; a build whose debugger can run with no screen (`[dosbox] debugger headless`) is started that way, and one that cannot gets a terminal nobody reads on macOS, or a hidden console of its own on Windows. A reply longer than the channel keeps (it drops lines past its cap and says how many) is refused, never read as whole. `debug` is the raw command, its printed lines handed back. The tool: [Read](docs/reference/read.md) (`debug`).
+Every reading and every command goes to the debugger through its channel (`[dosbox] mcp_server`): one request, the lines the command printed, one at a time, on every host. The debugger's screen is never read; a build whose debugger can run with no screen (`[dosbox] debugger headless`) is started that way, and one that cannot gets a terminal nobody reads on macOS, or a hidden console of its own on Windows. A reply longer than the channel keeps (it drops lines past its cap and says how many) is refused, never read as whole. `debug` is the raw command, its printed lines handed back. The tool: [Write](docs/reference/write.md) (`debug`).
 
 ### Debugger commands
 

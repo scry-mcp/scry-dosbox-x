@@ -95,10 +95,11 @@ Give this to an MCP client with this server connected:
 |---|---|
 | Session | `start` (windowed, the CD image mounted), `close` |
 | Advance | `run_for` by milliseconds on the conf's fixed clock, `resume` to a stop, `step` over an `INT` |
-| Files | `screen_map_write(method="load")`, `audio_compare(method="diff")` |
+| Files | `audio_compare(method="diff")` |
 | Input | `send_mouse` by control name off the map, at screen pixels, double; `send_keys` |
 | States | `state_write` (`save`, then `load`) |
-| Read | `screen_map_find`, `find`, `read_memory`, `screen_view` |
+| Read | `screen_map_write(method="load")`, `screen_map_find`, `find`, `read_memory` |
+| Screen | `screen_view` |
 | Write | `write` (the conversation, the drive's request) |
 | Declarations | `breakpoint_interrupt` (INT 2Fh, AH=15h), `declaration_clear` |
 | Lists | `perform` (a gesture: a click, the run it starts, the pointer parked) |

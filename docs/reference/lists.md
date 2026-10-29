@@ -79,19 +79,19 @@ Example, from a live run:
       "reply": {
         "summary": "status: alive, stopped",
         "status": "ok",
-        "pid": 77786,
-        "conf": "$TMPDIR/dosbox-x-live-job-fu2i1nji/A/tests/guest/probe.conf",
+        "pid": "<volatile>",
+        "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
         "conf_digest": "78bdc38f360b9b4a",
         "bound_s": 1200,
-        "elapsed_s": 4.5,
+        "elapsed_s": 4.3,
         "captures": "off",
-        "state_dir": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n986-save",
+        "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save",
         "last_stop": {
           "stop_seq": 11,
           "pc": "0814:00000130",
           "cause": "the retrace run_for ran to, at 0814:00000130",
           "since_s": 0.1,
-          "wall_at": "2026-10-29T16:14:04+00:00"
+          "wall_at": "<volatile>"
         },
         "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
         "cpu_mode": "real",
@@ -157,15 +157,15 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1821.json"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1821.json"
 }
 ```
 
 ```json
 {
-  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1821.json",
+  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1821.json",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1821.json",
+  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1821.json",
   "steps": 1,
   "checks": 0,
   "dropped": [],
@@ -175,9 +175,122 @@ Example, from a live run:
     "op": "resume",
     "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches; it stopped inside frame 0, the one it began in"
   },
-  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1821.json"
+  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1821.json"
 }
 ```
 <!-- scry-reference:end perform_export -->
 
 A release, a `stop` that ran the guest and came back stopped, or a wall-clock bound that ended a run (a `screen_wait` that timed out among them), ends the document because the run ends where no replay reaches; on a build that counts frames its `why` says how many frames the run took, and that `run_for` with that count replays it up to the start of the frame it stopped in. A `screen_wait` that found its text is the `run_for` of as many frames as it polled, a step a replay reaches; one that moved nothing is dropped. A `send_keys` or `send_mouse` to a stopped machine is a step: it runs by retraces to a stop a replay reaches, and holds to its registers and frame. Also cut: a call with no reply, a refusal after the guest moved, a guest found elsewhere than the call before left it, a step that wrote a file the session named. Dropped: a refused call, any other read, a call that changes nothing in the emulated machine. The replay is `uv run python -m scry_core.replay <dest>`, from this server's repository, and exits 0 when every step held. `dropped` shows the last 40 rows (`call`, `op`, `why`); `cut` is unavailable when nothing was cut; `no_recording` also covers a cancelled `start`. Dropped and cut calls are each named with a `why`.
+
+<!-- scry-reference:begin drive -->
+## `drive`
+
+*Drive an input and verify it*
+
+```text
+drive(act, expect="", seconds=null, pattern=".", limit=40, settle_seconds=30.0, summaries=false)
+```
+
+Look, act and verify in one call. Marks the E9 log, runs `act` (steps in `perform`'s
+vocabulary), then with `expect` waits up to `seconds` (default 5, at most
+600) for a new matching line. Needs a `logfile`.
+
+`pattern` and `limit` only filter the lines shown; `settle_seconds` is the call's, as in
+`perform`. Refused: `seconds` without `expect`.
+
+Reply: `act` (`ran`, `steps_completed`, `failed_at`), `verify` (`verdict` `TARGET` or
+`TIMEOUT`, `seen`, `line`; `checked: false`), `looked.guest` (`lines`, `truncated`).
+INVALID with the same fields on `step_failed`, `wait_stopped`, or the act's own refusal.
+No screen: use `capture_frame`.
+
+Reference: REFERENCE.md, Input and the screen.
+
+| argument | type | default |
+|---|---|---|
+| `act` | array of object | required |
+| `expect` | string | `""` |
+| `seconds` | number (> 0, <= 600.0) or null | `null` |
+| `pattern` | string | `"."` |
+| `limit` | integer (>= 1, <= 400) | `40` |
+| `settle_seconds` | number (>= 0, <= 600.0) | `30.0` |
+| `summaries` | boolean | `false` |
+
+- `summaries`: True (of the call, never of a step) makes each step but the last a compact row; `ran` shows the first 24 (`truncated`), `ran_path` and `replies_path` hold all; `stops` counts the stops.
+
+| reply field | type |
+|---|---|
+| `act` | object |
+| `looked` | object |
+| `operations` | array |
+| `verify` | object |
+
+Example, from a live run:
+
+```json
+{
+  "act": [
+    {"op": "status"}
+  ]
+}
+```
+
+```json
+{
+  "summary": "drive: no expectation",
+  "status": "ok",
+  "act": {
+    "ran": [
+      {
+        "op": "status",
+        "reply": {
+          "summary": "status: alive, stopped",
+          "status": "ok",
+          "pid": "<volatile>",
+          "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
+          "conf_digest": "78bdc38f360b9b4a",
+          "bound_s": 1200,
+          "elapsed_s": 4.3,
+          "captures": "off",
+          "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save",
+          "last_stop": {
+            "stop_seq": 11,
+            "pc": "0814:00000130",
+            "cause": "the retrace run_for ran to, at 0814:00000130",
+            "since_s": 0.1,
+            "wall_at": "<volatile>"
+          },
+          "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
+          "cpu_mode": "real",
+          "pc": "0814:00000130",
+          "declarations": {"breakpoints": 0, "watches": 0, "regpoints": 0},
+          "presence": {"available": false, "why": "a session started without `shared` has no window to draw on"},
+          "session": {"alive": true, "running": false, "altered": true}
+        }
+      }
+    ],
+    "steps_completed": 1,
+    "failed_at": {"available": false, "why": "no step failed"},
+    "held": 0
+  },
+  "verify": {
+    "checked": false,
+    "why": "no `expect` given; the act's own steps carried whatever verification they asked for"
+  },
+  "looked": {
+    "guest": {
+      "available": true,
+      "since_mark": 96673,
+      "lines_written": 0,
+      "lines_total": 0,
+      "truncated": false,
+      "lines": [],
+      "pattern": "."
+    }
+  }
+}
+```
+<!-- scry-reference:end drive -->
+
+The log is marked once, before anything moves, because that one mark keeps both halves honest: a verification reading from the top would find the cue that fired ten seconds ago. A screen is not part of the look: a still needs a recording and `ffmpeg`, and `capture_frame` offers it on its own.
+
+A stopped guest cannot write, so an act that ended stopped has the log read once, not waited on. `checked` is whether a check ran at all and `seen` whether the line arrived; neither is `verified`, which everywhere else means a readback equal to what was sent. `verify` also carries `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total`, and on a `TIMEOUT` `arrived_during` and `note`; `why` explains `checked: false`, and `available: false` means the act timed out. `looked.guest` also carries `lines_written`, `lines_total`, `since_mark`, `pattern`. The act's own INVALID codes (`not_stopped`, `session_broken`, `diverged`) pass through.

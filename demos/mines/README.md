@@ -30,11 +30,12 @@ Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a
 line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2
 a usage error, 3 nothing was demonstrated (a server that did not start).
 
-The explosion is held against `boom.wav` here. The recording starts where the click's post leaves
+The explosion is held against [`boom.wav`](boom.wav) here. The recording starts where the click's post leaves
 the machine, a few retraces after the game took the click, so it holds the explosion from there
 on, and a change to the game's sound or timing or to the input route's pacing makes it stale:
-the run's own `boom.wav`, beside its transcript, is then the one to copy over it. The game itself is `mines.asm`, whose header says how to build it and what it tells a
-debugger.
+the run's own `boom.wav`, beside its transcript, is then the one to copy over it.
+
+The game itself is `mines.asm`, whose header says how to build it and what it tells a debugger.
 
 ## The prompt
 
@@ -60,10 +61,12 @@ Give this to an MCP client with this server connected:
 | Session | `start` (windowed, stopping at the program's `int 3`), `close` |
 | Advance | `resume` to the `int 3`, `run_for` by retraces on the conf's fixed clock |
 | Names | `symbols_load` at the load segment |
-| Files | `screen_map_write(method="load")`, `audio_compare` (`measure`, `diff`) |
+| Files | `audio_compare` (`measure`, `diff`) |
 | Input | `send_mouse` by control name off the map and at pixels, both buttons |
 | Lists | `perform` (the flags in one call, the clicks that clear the board in another) |
-| Read | `screen_map_find` on every screen, `read_memory` by symbol, `log`, `screen_view` |
+| Read | `screen_map_write(method="load")`, `screen_map_find` on every screen, `read_memory` by symbol |
+| Machine | `log` |
+| Screen | `screen_view` |
 | Captures | `audio_record` of the Sound Blaster's output |
 
 ## The transcript

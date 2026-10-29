@@ -44,8 +44,8 @@ Example, from a live run:
       "ref": "8000:0100",
       "by": "address",
       "cpu": {"available": false, "why": "a DOS machine has one cpu, and every row acts on it"},
-      "created_at": "2026-10-29T16:14:04+00:00",
-      "origin": "2026-10-29T16:14:00+00:00#77719.1",
+      "created_at": "<volatile>",
+      "origin": "<volatile>",
       "inherited": false,
       "age_s": 0,
       "text": "matrix A",
@@ -57,7 +57,7 @@ Example, from a live run:
   "truncated": false,
   "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/dosbox-x-live-matrix-A-f7ybguw6/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/dosbox-x-live-matrix-A-<run>/dosbox-x-debug/declarations.json"
   }
 }
 ```
@@ -147,8 +147,8 @@ Example, from a live run:
     "ref": "8000:0100",
     "by": "address",
     "cpu": {"available": false, "why": "a DOS machine has one cpu, and every row acts on it"},
-    "created_at": "2026-10-29T16:14:04+00:00",
-    "origin": "2026-10-29T16:14:00+00:00#77719.1",
+    "created_at": "<volatile>",
+    "origin": "<volatile>",
     "inherited": false,
     "age_s": 0,
     "text": "matrix A",
@@ -158,7 +158,7 @@ Example, from a live run:
   "replaced_comments": [],
   "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/dosbox-x-live-matrix-A-f7ybguw6/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/dosbox-x-live-matrix-A-<run>/dosbox-x-debug/declarations.json"
   }
 }
 ```

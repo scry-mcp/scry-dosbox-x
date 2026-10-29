@@ -31,7 +31,8 @@ driven by look, act, verify, and so is this.
   screen" with one string; `screen_wait` runs until a string appears.
 - **Stop where you mean to.** Run to a symbol and be told whether you arrived, stopped elsewhere
   or ran out of time; break on an interrupt, on the program's own `int 3`, when a variable
-  changes, or when a register takes a value wherever the code is; step with every step read back; run by frames of the display or by emulated time.
+  changes, or when a register takes a value wherever the code is; step with every step read back;
+  run by frames of the display or by emulated time.
 - **Record a stretch, and watch without stopping.** `record` and `audio_record` capture the
   screen to an AVI, the sound to a WAV, the AdLib's register writes to a DRO or the MIDI bytes
   to a file, over a number of display frames, headless, each file checked before you get it. A
@@ -77,10 +78,10 @@ comes from you; the server carries no default that points anywhere.
 
 ## Platforms
 
-macOS and Windows. The server talks to DOSBox-X's debugger over its debugger channel on both, the
-same requests and the same replies; on Windows the emulator runs in a console of its own, hidden.
-Linux runs the unit tests (`.github/workflows/ci.yml`) and nothing
-else: the server supports macOS and Windows only.
+macOS and Windows: the server and its tests run on both. The server talks to DOSBox-X's debugger
+over its debugger channel on both, the same requests and the same replies; on Windows the emulator
+runs in a console of its own, hidden. Linux runs the unit tests (`.github/workflows/ci.yml`) and
+nothing else: the server supports macOS and Windows only.
 
 What a session can do depends on the debugger commands its build carries, and `build_check`
 lists them. Any DOSBox-X with the debugger starts a session and answers every reading at the stop

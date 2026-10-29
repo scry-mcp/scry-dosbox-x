@@ -64,9 +64,11 @@ Give this to an MCP client with this server connected:
 | Session | `start` (windowed, stopping at the guest's `int 3`), `close` |
 | Advance | `resume` to a stop, `run_for` by retraces on the conf's fixed clock, `stop` |
 | Names | `symbols_load` at the measured segment |
-| Read | `disassemble`, `read_memory` by symbol, `screen_view` |
+| Read | `disassemble`, `read_memory` by symbol |
+| Screen | `screen_view` |
 | Declarations | `breakpoint_at` by name, `declaration_clear(kind="breakpoint")`, `watch_add` (`score` in view at every stop), `declaration_clear(kind="watch")` |
-| Input | `send_keys`, `send_mouse`, `drive` (three keys and their proof in one call) |
+| Input | `send_keys`, `send_mouse` |
+| Lists | `drive` (three keys and their proof in one call) |
 | States | `state_write(method="save")`, `state_write(method="load")` |
 
 ## The transcript

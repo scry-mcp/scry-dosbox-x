@@ -70,7 +70,7 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 71",
+  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 81",
   "status": "ok",
   "verdict": "TIMEOUT",
   "target": "0000:0003",
@@ -78,16 +78,16 @@ Example, from a live run:
   "pc": "0814:00000130",
   "cpu_mode": "real",
   "target_disarmed": true,
-  "control_hits": 71,
+  "control_hits": 81,
   "controls": [
-    {"ref": "0814:0130", "at": "0814:0130", "hits_in_run": 71, "removed": true}
+    {"ref": "0814:0130", "at": "0814:0130", "hits_in_run": 81, "removed": true}
   ],
   "note": "the 3 s bound ran out and the run was interrupted at 0814:00000130, and not at 0000:0003 If 0000:0003 is in ROM (a BIOS or option-ROM segment such as F000), that is why: a code breakpoint in ROM is acknowledged, appears in BPLIST, and never ... (288 characters)",
   "frame": 138,
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000ffb9",
+    "ECX": "0x0000ffaf",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -107,7 +107,7 @@ Example, from a live run:
     "lines_total": 1,
     "truncated": false,
     "lines": ["Bochs port E9h: [+ 00000.000] PROBE . tick"],
-    "mark": 32044
+    "mark": 31992
   },
   "stop_seq": 6,
   "instruction": {
@@ -205,7 +205,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1b7",
+    "ECX": "0x0000c1cb",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -221,7 +221,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 84377},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 88477},
   "stop_seq": 7,
   "instruction": {
     "address": "0814:00000130",
@@ -233,11 +233,11 @@ Example, from a live run:
     "symbol": {"available": false, "why": "no symbol table is loaded"},
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
-  "emulated_before_s": 1.9731117999999999,
+  "emulated_before_s": 1.9731148,
   "emulated_after_s": 1.9747000000000001,
   "frame_before": 138,
   "frame_after": 139,
-  "cycles": 15874
+  "cycles": 15844
 }
 ```
 <!-- scry-reference:end run_for -->
@@ -303,14 +303,14 @@ Example, from a live run:
 {
   "instructions": 16,
   "shape": "cs_ip",
-  "dest": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1372.trace",
+  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1372.trace",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1372.trace",
+  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1372.trace",
   "status": "ok",
   "pc": "0814:00000130",
   "cpu_mode": "real",
@@ -318,7 +318,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1a7",
+    "ECX": "0x0000c1bb",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -334,7 +334,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 84920},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 89020},
   "stop_seq": 8,
   "instruction": {
     "address": "0814:00000130",
@@ -348,13 +348,13 @@ Example, from a live run:
   },
   "verdict": "ELAPSED",
   "trace": {
-    "path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1372.trace",
+    "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1372.trace",
     "bytes": 238,
     "shape": "cs_ip",
     "instructions": 16,
     "addresses": 1,
     "unplaced": 1,
-    "set_path": "$TMPDIR/dosbox-x-live-matrix-67c0070a3b18/jobs-scratch/A/n1372.trace.set.jsonl",
+    "set_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1372.trace.set.jsonl",
     "symbols": [],
     "symbols_total": 0,
     "truncated": false,
@@ -538,7 +538,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "no declared code breakpoint at F000:0000FEA6: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 6127},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 6075},
   "stop_seq": 5,
   "instruction": {"available": false, "why": "the bytes at F000:0000FEA6 (FE...) start no instruction"}
 }
@@ -662,8 +662,8 @@ Example, from a live run:
     "stop_seq": 4,
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-    "since_s": 0.2,
-    "wall_at": "2026-10-29T16:14:01+00:00"
+    "since_s": 0.1,
+    "wall_at": "<volatile>"
   },
   "note": "the machine was already stopped"
 }

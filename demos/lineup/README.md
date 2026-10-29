@@ -14,8 +14,8 @@ game counted, starts a game, runs to the routine that writes its level, and play
 the next colour, a shot, each read back off the player's own variables. Each screen it arrives at
 is recognised off a map signed in palette indices, because the VGA's 6-bit DAC and the arcade's
 5-bit palette show the same pixels in slightly different colours. Then it records two seconds of
-the stage's music off the Sound Blaster and holds it, sample for sample, to `music.wav` beside
-this file.
+the stage's music off the Sound Blaster and holds it, sample for sample, to [`music.wav`](music.wav)
+beside this file.
 
 ## The game
 
