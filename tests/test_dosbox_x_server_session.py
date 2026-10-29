@@ -746,7 +746,7 @@ def test_the_two_optional_paths_stay_absent_when_the_caller_omits_them(tmp_path:
     conf.write_text("[sdl]\n", encoding="utf-8")
     launch = _launch_of(conf=str(conf), cwd=str(tmp_path), session_seconds=30)
     assert launch.captures_dir is None and launch.logfile is None
-    assert launch.state_dir == tmp_path.resolve() / "save"
+    assert launch.state_dir == dstate.STATE.session_scratch() / "save"
 
 
 def test_memdump_expands_a_tilde_dest_and_makes_no_literal_one(
@@ -1122,20 +1122,6 @@ def test_clearing_a_ref_that_matches_nothing_is_refused_naming_what_there_is(
     empty = server.declaration_clear("breakpoint", all=True)
     assert empty["status"] == "ok" and empty["declarations_cleared"] == 0, empty
     assert server.declaration_clear("watch", all=True)["status"] == "ok"
-
-
-def test_a_file_where_the_default_state_directory_goes_is_refused_naming_the_default(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    (tmp_path / "save").write_text("a file, not a directory", encoding="utf-8")
-    (tmp_path / "g.conf").write_text("[sdl]\n", encoding="utf-8")
-    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
-    monkeypatch.setattr("shutil.which", lambda _b: _abs("usr", "bin", "dosbox-x"))
-    got = server.start(conf=str(tmp_path / "g.conf"), cwd=str(tmp_path), session_seconds=60)
-    assert got["status"] == "INVALID" and got["code"] == "host_failed", got
-    assert got["message"].startswith(
-        "the default state directory (`<cwd>/save`; `state_dir` names another): "), got
-    assert dstate.STATE.session is None
-
 
 
 def test_a_relative_path_is_refused_and_an_absolute_one_names_the_file_it_looked_at(
@@ -1639,3 +1625,30 @@ def test_a_start_whose_dos_trace_fails_leaves_no_session_and_names_a_stray_emula
         got = {"code": "session_broken", "message": "stray"}
     assert got["code"] == "session_broken" and "stray" in got["message"], got
     assert dstate.STATE.session is None and dstate.STATE.store is None, got
+
+
+def test_a_start_that_names_no_state_dir_keeps_its_states_out_of_the_working_directory(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    seen: list[dlaunch.Launch] = []
+
+    class Recorder:
+        reap_failed = ""
+
+        def __init__(self, launch: dlaunch.Launch) -> None:
+            seen.append(launch)
+
+        def wait_ready(self, timeout: float, **_: Any) -> float:
+            raise ds.Invalid("session_broken", "recorded, not started")
+
+        def close(self, **_: Any) -> None:
+            pass
+
+    monkeypatch.setattr(shutil, "which", lambda _: _abs("bin", "true"))
+    monkeypatch.setattr(ds, "Session", Recorder)
+    dstate.STATE.session = None
+    server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=30)
+    chosen = seen[0].state_dir
+    assert chosen is not None and tmp_path not in chosen.parents, chosen
+    assert dstate.STATE.session_scratch() in chosen.parents, chosen

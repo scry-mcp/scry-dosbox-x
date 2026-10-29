@@ -1661,3 +1661,15 @@ def test_the_argument_judges_take_their_edges_and_refuse_one_past(
     ds.check_dump_length(1)
     with pytest.raises(ds.Invalid):
         ds.check_dump_length(0)
+
+
+def test_two_programs_under_one_conf_keep_their_own_declarations(tmp_path: Path) -> None:
+    conf = tmp_path / "g.conf"
+
+    def identity(program: str | None) -> str:
+        return dlaunch.store_identity(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60,
+                                                     program=program))
+
+    assert identity("A.EXE") != identity("B.EXE")
+    assert identity("A.EXE") == identity("a.exe /x") == identity("A.EXE one two")
+    assert identity(None) == identity("") == str(conf.resolve())

@@ -402,7 +402,8 @@ def test_a_directory_already_there_is_taken_and_the_default_state_dir_is_made(
     there.mkdir()
     _refused(_start_stubbed(**{**kw, "state_dir": str(there)}), "session_broken")
     _refused(_start_stubbed(**kw), "session_broken")
-    assert there.is_dir() and (tmp_path / "save").is_dir()
+    assert there.is_dir() and (dstate.STATE.session_scratch() / "save").is_dir()
+    assert not (tmp_path / "save").exists(), "nothing is made in the working directory"
 
 
 @pytest.mark.parametrize("arg", ["logfile", "captures_dir", "state_dir"])

@@ -216,6 +216,13 @@ DYNAMIC_CORE_BREAKPOINTS = (
     "nothing. Start on the normal core: `start(flags=[\"-set\", \"cpu core=normal\"])`")
 
 
+def store_identity(launch: Launch) -> str:
+    """What keys a guest's declarations: its conf, and the program run under it (its name, not
+    its arguments), since one conf can run an application one day and a utility the next."""
+    program = (launch.program or "").split(maxsplit=1)
+    return str(launch.conf.resolve()) + (f"|{program[0].casefold()}" if program else "")
+
+
 def is_dynamic(core: str) -> bool:
     """Whether `core` is a dynamic recompiler."""
     return core.startswith("dynamic")

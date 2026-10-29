@@ -30,7 +30,7 @@ import dosbox_state as st
 from dosbox_state import STATE
 
 #: How a refusal names the default state directory.
-DEFAULT_STATE_DIR = (f"the default state directory (`<cwd>/{dlaunch.DEFAULT_STATE_SUBDIR}`; "
+DEFAULT_STATE_DIR = ("the default state directory (the session's scratch, gone at `close`; "
                      "`state_dir` names another)")
 
 
@@ -113,7 +113,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         log_categories=dict(log_categories or {}),
         # Input reaches the guest through this socket alone.
         input_port=input_port,
-        state_dir=state_path if state_path is not None else dlaunch.default_state_dir(cwd_path),
+        state_dir=(state_path if state_path is not None
+                   else STATE.session_scratch() / dlaunch.DEFAULT_STATE_SUBDIR),
         binary=resolved.path,
         debugger_headless=binaries.debugger_headless(resolved.path),
         debugger_commands=commands_built,
@@ -124,7 +125,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         launch = replace(launch, stub_drive=dlaunch.stub_drive(launch.conf))
     # Built before the emulator boots: a corrupt persisted file then fails as a clean INVALID
     # with nothing to clean up. Keyed by the resolved conf path, so two spellings are one identity.
-    store = placement.to_invalid(lambda: dec.DeclarationStore(str(launch.conf.resolve())))
+    store = placement.to_invalid(lambda: dec.DeclarationStore(dlaunch.store_identity(launch)))
     # The emulator creates neither directory (a save into a missing one logs `SAVE_FAILED`).
     state_name = "state_dir" if state_path is not None else DEFAULT_STATE_DIR
     for name, made in (("captures_dir", launch.captures_dir), (state_name, launch.state_dir)):

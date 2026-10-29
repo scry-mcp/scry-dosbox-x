@@ -148,7 +148,7 @@ parsed.
 The server stores the declaration, not the armed row: a symbol's address moves with every
 recompile, the declaration does not, so each `symbols_load` re-resolves and re-arms it. A symbol
 that no longer exists is KEPT, unresolved, arming nothing and losing nothing. The store is on disk,
-keyed by the config file's identity, so two guests never inherit each other's declarations. Nothing
+keyed by the config file and the program run under it (its name, not its arguments), so two guests never inherit each other's declarations. Nothing
 expires: a row another session left is shown as such and cleared by its `ref`, and a show watch
 among the `orphan` rows is still evaluated at every stop.
 

@@ -216,14 +216,15 @@ def start(conf: str, cwd: str,
     guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexec;
     `capture_video` records it. `plan` runs as `perform` does, each wait bounded by
     `settle_seconds` (default {SETTLE_S}). `input_port`: COM1's TCP port, 0 a free one.
-    `state_dir`: where `state_write` saves; empty, under `cwd`. `dos_calls`: record every
-    INT 21h for `log(channel="dos")`. `log_categories`: `[log]` category to level, into
-    `logfile`. `guest_files`: host files the guest should leave, read by `guest_file` and
-    `close`. `symbols`: a table `symbols_load` reads, judged here and placed at the first stop
-    where DOS holds the program its stem names (`<stem>.exe`); `base_from` `program` (its load
-    segment) or a register, as `symbols_load` measures one, at a protected-mode stop. That stop's
-    reply says `symbols_placed` once (`placed`, `path`, `load_segment`, `base`, `loaded`; a
-    placement refused: `placed: false`, `code`, `why`); a later `symbols_load` replaces it.
+    `state_dir`: where `state_write` saves; empty, the session's scratch (gone at `close`).
+    `dos_calls`: record every INT 21h for `log(channel="dos")`. `log_categories`: `[log]` category
+    to level, into `logfile`. `guest_files`: host files the guest should leave, read by
+    `guest_file` and `close`. `symbols`: a table `symbols_load` reads, judged here and placed at
+    the first stop where DOS holds the program its stem names (`<stem>.exe`); `base_from`
+    `program` (its load segment) or a register, as `symbols_load` measures one, at a
+    protected-mode stop. That stop's reply says `symbols_placed` once (`placed`, `path`,
+    `load_segment`, `base`, `loaded`; a placement refused: `placed: false`, `code`, `why`); a
+    later `symbols_load` replaces it.
 
     Refused: a live session, a bad path or `symbols` table, `session_seconds` out of range,
     `capture_video` without `program`, an `input_port` other than 0 outside
