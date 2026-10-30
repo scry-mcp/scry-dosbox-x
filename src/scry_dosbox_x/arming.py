@@ -15,6 +15,7 @@ from scry_core import declaration_rows
 from scry_core import value_format as vf
 
 from scry_dosbox_x import checks, code, freezes, grammar, placement, symbol_file, taps
+from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import declarations as dec
 from scry_dosbox_x import dump as dumping
 from scry_dosbox_x import launch as dlaunch
@@ -683,7 +684,7 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
             else:
                 row = watch_held(session.breakpoints(), spec["seg"], spec["off"])
                 if row is not None:
-                    session.command(f"BPDEL {row['index']}")
+                    session.command(f"BPDEL {dbg.typed_hex(int(row['index'], 16), 2)}")
                 gone = {"entry": spec["entry"], "removed": row is not None}
             if gone["removed"]:
                 out["disarmed"].append(str(gone["entry"]))
@@ -1098,7 +1099,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
     # kept (it may resolve next build).
     res = placement.resolve_ref(decl, "CS", session)
     if res["state"] == "ambiguous":
-        raise ds.Invalid("unknown_ref", res["why"])   # refuse, and store nothing
+        raise ds.Invalid("ambiguous_ref", res["why"])   # refuse, and store nothing
     # One row is one declaration: a second ref resolving to a held row's address would leave the
     # other declared over a row the debugger no longer has after a clear.
     if res["state"] == "armable":
@@ -1420,7 +1421,7 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
     # A name matching several symbols is refused before storing, as in `breakpoint_at`: stored, the
     # change path read `seg` off a resolution that has none.
     if res["state"] == "ambiguous":
-        raise ds.Invalid("unknown_ref", res["why"])
+        raise ds.Invalid("ambiguous_ref", res["why"])
     if mode == "change" and res["state"] == "armable":
         aliased = _aliased(ref, change_bytes(res["seg"], res["off"], width))
         if aliased is not None:

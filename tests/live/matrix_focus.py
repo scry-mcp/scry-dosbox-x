@@ -70,7 +70,7 @@ def section_o_control() -> None:
         SINCE.append(c.since)
 
 
-@M.section("O", "the focus gate's verdict, closing the run", O_VERDICT, place=2, spans=True)
+@M.section("O", "the focus gate's verdict, closing the run", O_VERDICT, place=2)
 def section_o_verdict() -> None:
     if not WATCH:
         M.block_rest("the control never started the watch")

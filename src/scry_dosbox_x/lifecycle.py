@@ -206,11 +206,9 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
                                  if k not in ("status", "session")})
 
 
-def presence_shown(session: ds.Session | None) -> bool | dict[str, Any]:
-    """What `status` says of the presence: the session's, `false` with no session open, and
-    unavailable once its emulator has ended, whatever the last delivery said."""
-    if session is None:
-        return False
+def presence_shown(session: ds.Session) -> bool | dict[str, Any]:
+    """What `status` says of the presence: the session's, and unavailable once its emulator has
+    ended, whatever the last delivery said."""
     if not session.alive():
         return contract.unavailable("the session's emulator has ended")
     return dpresence.of(session).reply()

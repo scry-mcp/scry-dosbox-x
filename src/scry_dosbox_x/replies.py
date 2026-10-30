@@ -9,11 +9,11 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Required
 
-from scry_core import media_replies
+from scry_core import media_replies, tool_replies
 from scry_core import sequence_account as account
 from scry_core.instruction import StopInstruction
 from scry_core.reply_contract import OmitEmpty, When
-from scry_core.reply_schema import ReplyEnvelope
+from scry_core.reply_schema import RunEnvelope
 from typing_extensions import TypedDict
 
 
@@ -25,15 +25,11 @@ class DosboxInstruction(StopInstruction):
     flow: str
 
 
-class DosboxEnvelope(ReplyEnvelope, total=False):
+class DosboxEnvelope(RunEnvelope, total=False):
     """What this server's shared paths add to any reply: the stop a call met or
     applied, the refusal's context."""
 
-    answers_while_running: list[Any]
     applied_on_stop: dict[str, Any]
-    exit_code: int | dict[str, Any]
-    last_stop: dict[str, Any]
-    stopped_on_its_own: dict[str, Any]
     symbols_placed: dict[str, Any]
 
 
@@ -99,8 +95,8 @@ class CaptureFrameReply(DosboxEnvelope, total=False):
     sha256: Required[str]
 
 
-class CapturesReply(DosboxEnvelope, total=False):
-    captures: Required[list[Any]]
+class CapturesReply(DosboxEnvelope, media_replies.CapturesFields, total=False):
+    pass
 
 
 class CloseReply(DosboxEnvelope, total=False):
@@ -185,19 +181,9 @@ class LogReply(DosboxEnvelope, total=False):
     truncated: Required[bool]
 
 
-class LogWaitReply(DosboxEnvelope, total=False):
-    already: Annotated[bool, When("`verdict` `TARGET`")]
-    arrived_during: Required[int]
+class LogWaitReply(DosboxEnvelope, tool_replies.LogWaitFields, total=False):
     call: Annotated[dict[str, Any], When("on `dos`")]
     calls_dropped: Annotated[int, When("on `dos`, past the calls held")]
-    channel: str
-    line: Annotated[str, When("`verdict` `TARGET`")]
-    lines_before: Annotated[int, When("`verdict` `TARGET`")]
-    lines_examined: Required[int]
-    lines_total: Annotated[int, When("`verdict` `TARGET`")]
-    pattern: str
-    verdict: Required[str]
-    waited_s: Required[float]
 
 
 class MachineMapReply(DosboxEnvelope, total=False):
@@ -266,14 +252,8 @@ class PerformReply(DosboxEnvelope, account.SequenceFields, account.SequenceRun, 
     until_frame: int
 
 
-class PerformExportReply(DosboxEnvelope, total=False):
-    checks: Required[int]
-    cut: Required[dict[str, Any]]
-    dropped: Required[list[Any]]
-    dropped_total: Required[int]
-    path: Required[str]
-    replay: Required[str]
-    steps: Required[int]
+class PerformExportReply(DosboxEnvelope, media_replies.PerformExportFields, total=False):
+    pass
 
 
 class ReadMemoryReply(DosboxEnvelope, total=False):
@@ -571,7 +551,7 @@ class StatusReply(DosboxEnvelope, total=False):
     pc: Annotated[str | dict[str, Any], When("with a session")]
     pending: Required[dict[str, Any]]
     pid: Annotated[int, When("with a session")]
-    presence: Required[bool | dict[str, Any]]
+    presence: Annotated[bool | dict[str, Any], When("with a session")]
     state_dir: Annotated[str, When("with a session")]
     symbols_held: Annotated[dict[str, Any], When("a `start` table waits for its program")]
     output_bytes_dropped: Annotated[int, OmitEmpty]
@@ -736,20 +716,8 @@ class WriteReply(DosboxEnvelope, total=False):
     written: int
 
 
-class CommentWriteReply(DosboxEnvelope, total=False):
-    added: Annotated[int, When("`load`")]
-    comment: Annotated[dict[str, Any], When("`add`")]
-    comments_total: Annotated[int, When("`save`", "`load`")]
-    declarations: Annotated[dict[str, Any], When("`add`", "`delete`", "`load`")]
-    deleted: Annotated[dict[str, Any], When("`delete`")]
-    dropped_comments: Annotated[list[Any], When("`save`")]
-    dropped_total: Annotated[int, When("`save`")]
-    parsed: Annotated[int, When("`load`")]
-    path: str
-    replaced_comments: Annotated[list[Any], When("`add`", "`load`")]
-    replaced_total: Annotated[int, When("`load`")]
-    truncated: Annotated[bool, When("`save`", "`load`")]
-    unchanged: Annotated[int, When("`load`")]
+class CommentWriteReply(DosboxEnvelope, tool_replies.CommentWriteFields, total=False):
+    pass
 
 
 class DeclarationClearReply(DosboxEnvelope, total=False):
@@ -766,22 +734,8 @@ class DeclarationListReply(DosboxEnvelope, total=False):
     watches: Annotated[list[Any], When("each kind asked")]
 
 
-class MapWriteReply(DosboxEnvelope, total=False):
-    anchor: Annotated[str, When("`add`, given one")]
-    application: Annotated[str, When("`load`", "`save`")]
-    cells: str
-    controls: int
-    kind: Annotated[str, When("`add`")]
-    match: list[Any]
-    mode: Annotated[str, When("`load`", "`save`")]
-    path: str
-    pointer: Annotated[dict[str, Any], When("a map that declares the program's pointer")]
-    promoted: Annotated[list[Any], When("`save`")]
-    replaced: Annotated[bool, When("`add`")]
-    screen: str
-    screens: Annotated[int, When("`load`", "`save`")]
-    shadows_file: Annotated[bool, When("`add`")]
-    size: Annotated[list[Any], When("`add`")]
+class MapWriteReply(DosboxEnvelope, tool_replies.MapWriteFields, total=False):
+    pass
 
 
 class ScanReply(DosboxEnvelope, total=False):

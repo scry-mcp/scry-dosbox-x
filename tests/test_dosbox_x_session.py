@@ -1602,6 +1602,7 @@ def test_the_stub_takes_the_first_drive_from_y_down_that_the_conf_does_not_mount
 @pytest.mark.parametrize(("autoexec", "taken"), [
     ("mount -t cdrom d /cd", "D"), ("[AUTOEXEC]\nMOUNT y .", "Y"),
     ("imgmount -t floppy a a.img", "A"), ("subst x: c:\\tools", "X"),
+    ("[autoexec] # the program starts here\nmount y .", "Y"),
 ])
 def test_a_conf_s_mounts_are_read_past_options_case_and_a_bom(tmp_path: Path, autoexec: str,
                                                             taken: str) -> None:

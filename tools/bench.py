@@ -11,7 +11,6 @@ round trip. A run that is not a measurement prints INVALID on stderr and exits 3
 from __future__ import annotations
 
 import argparse
-import contextlib
 import functools
 import json
 import os
@@ -25,13 +24,12 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, NoReturn
 
-from scry_core import guardian, verdict  # noqa: E402
+from scry_core import process_tree, verdict  # noqa: E402
 from scry_core.reply_contract import Invalid  # noqa: E402
 
 from scry_dosbox_x import binary as dbinary  # noqa: E402
 from scry_dosbox_x import launch as dlaunch  # noqa: E402
 from scry_dosbox_x import logs as dlogs  # noqa: E402
-from scry_dosbox_x import process as dprocess  # noqa: E402
 from scry_dosbox_x import session as ds  # noqa: E402
 
 STAMP = re.compile(r"\[\+\s*([0-9]+\.[0-9]+)\]")
@@ -124,17 +122,6 @@ def newest(log: Path) -> float | None:
     return max(found) if found else None
 
 
-def _end_tree(proc: subprocess.Popen[bytes]) -> None:
-    """End `proc` and everything it started: its process group, or on Windows (where a signal
-    reaches one pid) the tree by parent pid."""
-    if sys.platform == "win32":
-        with contextlib.suppress(subprocess.TimeoutExpired):
-            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
-                           capture_output=True, check=False, timeout=KILL_WAIT_S)
-    else:
-        dprocess.signal_group(proc.pid, guardian.KILL)
-
-
 def run_group(argv: list[str], cwd: Path, timeout_s: float) -> None:
     """Run `argv` in a process group of its own to its end; past `timeout_s` the whole tree goes
     (`make` runs the emulator as a grandchild, which killing the leader leaves running) and
@@ -145,9 +132,7 @@ def run_group(argv: list[str], cwd: Path, timeout_s: float) -> None:
     try:
         proc.wait(timeout=timeout_s)
     except subprocess.TimeoutExpired:
-        _end_tree(proc)
-        with contextlib.suppress(subprocess.TimeoutExpired):
-            proc.wait(timeout=KILL_WAIT_S)
+        process_tree.end_tree(proc, wait_s=KILL_WAIT_S)
         raise
 
 

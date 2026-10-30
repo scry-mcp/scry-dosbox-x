@@ -70,7 +70,7 @@ def arm(session: ds.Session, decl: dec.Declaration) -> Freeze:
     STATE.freezes[decl.ref] = freeze
     try:
         for i in range(width):
-            command = f"{FM} {seg:04X}:{dbg.typed_hex(off + i)}"
+            command = f"{FM} {dbg.typed_addr(seg, off + i, 0)}"
             ok, lines = session.exec(command)
             found = next((m for line in lines if (m := _SET.match(line))), None)
             if not ok or found is None:

@@ -294,19 +294,16 @@ Example, from a live run:
 
 ```json
 {
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT"
+  "path": "/nonexistent/OUT.TXT"
 }
 ```
 
 ```json
 {
-  "summary": "guest_file $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
-  "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT",
-  "state": "written",
-  "before": {"exists": false},
-  "bytes": 4,
-  "sha256": "580175b2969134a0d8c6f325b442c6d25cf5b10f0643150ed45ffd3a8905bcba"
+  "summary": "guest_file: INVALID (bad_argument), /nonexistent/OUT.TXT was not fingerprinted at `start`, so whether it changed since cannot be told;...",
+  "status": "INVALID",
+  "code": "bad_argument",
+  "message": "/nonexistent/OUT.TXT was not fingerprinted at `start`, so whether it changed since cannot be told; `start(guest_files=[...])` names the files (this session's: none)"
 }
 ```
 <!-- scry-reference:end guest_file -->

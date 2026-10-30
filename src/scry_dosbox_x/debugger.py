@@ -39,6 +39,11 @@ def typed_hex(value: int, width: int = 0) -> str:
     return f"0{text}" if text[0] in "ABCDEF" else text
 
 
+def typed_addr(seg: int, off: int, off_width: int = 4) -> str:
+    """`seg:off` as the debugger is typed it: each half a number, never a loaded symbol's name."""
+    return f"{typed_hex(seg, 4)}:{typed_hex(off, off_width)}"
+
+
 def exec_lines(session: ds.Session, command: str,
                seconds: float | None = None) -> tuple[bool, list[str]]:
     """`EXEC command`: whether the debugger took it, and every line it printed. A reply cut at

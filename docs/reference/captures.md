@@ -358,7 +358,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b8",
-    "ECX": "0x00006a9c",
+    "ECX": "0x00006a92",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -374,7 +374,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 89548},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 86806},
   "stop_seq": 10,
   "instruction": {
     "address": "0814:00000130",
@@ -500,7 +500,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b4",
-    "ECX": "0x0000135a",
+    "ECX": "0x00001350",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -516,7 +516,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 93059},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 90317},
   "stop_seq": 11,
   "instruction": {
     "address": "0814:00000130",

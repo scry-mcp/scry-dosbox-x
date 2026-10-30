@@ -13,6 +13,7 @@ from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import NamesFake, _names, clean_session  # noqa: F401
+from scry_core import regpoint
 from scry_core import reply_contract as contract
 
 from scry_dosbox_x import arming, code, comments, inputs, retrace, running, sequence, server
@@ -166,7 +167,8 @@ def test_a_registerpoint_stop_carries_a_regpoint_hit_object(
     _attributed(monkeypatch, {"attributed": True, "ref": "AX==1", "by": "regpoint",
                               "at": "00A7:00000000"})
     got = running.stop_reply(fake)  # type: ignore[arg-type]
-    assert got["regpoint_hit"] == {"ref": "AX==1", "condition": "AX==1", "pc": "00A7:00000000"}
+    assert got["regpoint_hit"] == {"ref": "AX==1", "condition": "AX==1", "pc": "00A7:00000000",
+                                   "note": regpoint.STILL_ARMED}
     assert got["cause"].startswith("registerpoint AX==1"), "the sentence stays beside the object"
     _attributed(monkeypatch, {"attributed": True, "ref": "a", "by": "address",
                               "at": "00A7:00000000"})
@@ -326,6 +328,38 @@ def test_a_reply_off_a_record_with_no_picture_decodes_it_from_that_stop(
     assert asked == [(fake, dict(stop["where"]), dict(stop["registers"]), comments.notes)], asked
     assert got["instruction"] == {"text": "DECODED"} and stop["picture"] == {
         "instruction": {"text": "DECODED"}}, (got, stop)
+
+
+def test_a_cancel_that_cut_the_survey_of_its_stop_still_says_the_placement(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The break-in a cancel makes surveys the stop: a survey cut after the symbols were placed
+    leaves the stop recorded and the placement said once, never lost with the refusal."""
+    from scry_dosbox_x import mcp as dosbox_mcp
+    from scry_dosbox_x import session as ds
+    placed = {"placed": 2}
+
+    def cut(session: Any, **fields: Any) -> dict[str, Any]:
+        raise ds.Invalid("no_channel", "the survey was cut", symbols_placed=placed)
+    monkeypatch.setattr(running, "stop_reply", cut)
+    fake = _names(tmp_path)
+    fake.stop_count = 1
+    got = dosbox_mcp._stop_of_its_own(fake, broke_in=True)  # type: ignore[arg-type]
+    assert got["symbols_placed"] == placed and got["enrichment"]["available"] is False, got
+
+
+def test_a_cancel_whose_survey_was_cut_with_no_placement_is_still_refused(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Only a cut that made a placement is turned into a stop reply: any other refusal of the
+    break-in stays one, never swallowed as an unavailable enrichment."""
+    from scry_dosbox_x import mcp as dosbox_mcp
+    from scry_dosbox_x import session as ds
+
+    def cut(session: Any, **fields: Any) -> dict[str, Any]:
+        raise ds.Invalid("no_channel", "the debugger answered nothing")
+    monkeypatch.setattr(running, "stop_reply", cut)
+    fake = _names(tmp_path)
+    with pytest.raises(ds.Invalid, match="answered nothing"):
+        dosbox_mcp._stop_of_its_own(fake, broke_in=True)  # type: ignore[arg-type]
 
 
 def test_a_stop_the_cancelled_call_had_already_reached_is_named_as_that_call_s(

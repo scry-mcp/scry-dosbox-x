@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
-from scry_core import cancel, judges, narrowing, screen_map
+from scry_core import cancel, judges, narrowing, regpoint, screen_map
 from scry_core import reply_contract as contract
 
 from scry_dosbox_x import declarations as dec
@@ -423,11 +423,11 @@ _CAUSE_AT = re.compile(r" at [0-9A-Fa-f]{4}:[0-9A-Fa-f]{4,8}")
 
 def regpoint_hit(attribution: dict[str, Any]) -> dict[str, Any]:
     """The `regpoint_hit` object of a stop a registerpoint made, or met beside a `run_to`'s
-    target: `ref`, `condition` and `pc`."""
+    target."""
     ref = attribution["ref"] if attribution.get("by") == "regpoint" else attribution.get("regpoint")
     if not ref:
         return {}
-    return {"regpoint_hit": {"ref": ref, "condition": ref, "pc": attribution["at"]}}
+    return {"regpoint_hit": regpoint.hit(ref, ref, attribution["at"])}
 
 
 def cause(attribution: dict[str, Any]) -> str:

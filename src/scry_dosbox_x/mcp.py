@@ -137,7 +137,13 @@ def _stop_of_its_own(ses: ds.Session, broke_in: bool = False) -> dict[str, Any]:
     if broke_in or not ses.at_debugger():
         if not broke_in:
             ses.break_in()
-        return running.stop_reply(ses, interrupted=True, via="break", asked_by="cancel")
+        try:
+            return running.stop_reply(ses, interrupted=True, via="break", asked_by="cancel")
+        except ds.Invalid as e:
+            # A survey cut after the placement was made: the stop stands and says it.
+            if not running.placement_of(e):
+                raise
+            return running.unavailable_enrichment(e)
     if ses.stop_count != STATE.last_stop.get("stop_count"):
         return running.stop_or_base(ses, True, {}, asked_by="cancel")
     return {}

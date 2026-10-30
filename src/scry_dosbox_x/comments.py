@@ -157,9 +157,8 @@ def _symbol_place(name: str) -> dict[str, Any]:
         return {"state": "unresolved", "why": f"{name!r} is not a symbol of the table loaded "
                                               "now: kept, it may be back after a rebuild"}
     if len(hits) > 1:
-        return {"state": "ambiguous", "why": (
-            f"{name!r} names {len(hits)} symbols in this build, so its place would be a guess: "
-            "comment it by address")}
+        return {"state": "ambiguous", "why": prose.ambiguous_name(
+            name, placement.candidates(name), placement.IN_THIS_BUILD)}
     try:
         return {"state": "resolved", "linear": placement.linear_of(hits[0])}
     except sym.BadSymbolText as e:

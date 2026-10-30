@@ -35,7 +35,7 @@ MEMDUMP = Path(__file__).parent / "fixtures" / "memdump"
 PROBE_PSP_LINEAR = 0x8140                # 0814:0000
 AFTER_PSP_LINEAR = 0x18130               # 1813:0000, the bytes that really follow 0814:FFFF
 DUMP_COMMAND = re.compile(
-    r"MEMDUMPBIN (?P<seg>[0-9A-F]{4}):(?P<off>[0-9A-F]+) (?P<len>[0-9A-F]+)(?: (?P<name>\S+))?$")
+    r"MEMDUMPBIN (?P<seg>0?[0-9A-F]{4}):(?P<off>[0-9A-F]+) (?P<len>[0-9A-F]+)(?: (?P<name>\S+))?$")
 # Captured: `MEMDUMPBIN 0000:0000 20` wrote `00:0000 20`, the line from this offset on.
 ARGS_TAIL_FROM = len("MEMDUMPBIN 00")
 # `GetHexValue` reads an unquoted `AC`, `AF`, `CF` or `DF` as that flag, which is clear here.

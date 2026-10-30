@@ -2082,6 +2082,18 @@ def test_a_breakpoint_that_lands_as_the_wait_expires_ends_it_naming_it(tmp_path:
     assert "breakpoint 0814:0108 " in r["cause"] and "BREAK" not in machine.sent, r
 
 
+def test_a_wait_ended_at_a_stop_whose_survey_was_cut_keeps_the_placement_it_made(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A stop reply that fell back to its base still says the symbols it placed, once: the
+    refusal that ends the wait carries it with the enrichment mark."""
+    placed = {"placed": 3}
+    cut = {"stop_seq": 7, "enrichment": {"available": False, "why": "cut"},
+           "symbols_placed": placed}
+    monkeypatch.setattr(retrace, "_stop_reply", lambda session, base: dict(cut))
+    ended = retrace._ended_at(cast(ds.Session, None))
+    assert ended["symbols_placed"] == placed and ended["stop_seq"] == 7, ended
+
+
 def test_a_wait_refused_at_a_retrace_carries_the_stop_it_ended_at_with_its_cause(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A screen that can no longer be read after a retrace ends the wait at that stop: the

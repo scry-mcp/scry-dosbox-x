@@ -474,7 +474,7 @@ class Session(dprocess.Process):
             chunk = data[i:i + self.WRITE_CHUNK]
             # EVERY VALUE LEADS WITH A ZERO.
             values = " ".join(f"0{b:02X}" for b in chunk)
-            self.command(f"SM {seg:04X}:{off + i:04X} {values}")
+            self.command(f"SM {dbg.typed_addr(seg, off + i)} {values}")
         back = self.read_bytes(seg, off, len(data), mode=mode)
         return {"bytes_written": len(data), "readback": back.hex(), "verified": back == data}
 
@@ -555,7 +555,7 @@ class Session(dprocess.Process):
         found = [next((b for b in listed if pick(b["entry"])), None) for pick in picks]
         rows = {b["index"]: b for b in found if b is not None}
         for index in sorted(rows, key=lambda i: int(i, 16), reverse=True):
-            self.command(f"BPDEL {index}")
+            self.command(f"BPDEL {dbg.typed_hex(int(index, 16), 2)}")
         after = self.breakpoints() if rows else listed
         return [(row, not any(pick(b["entry"]) for b in after))
                 for row, pick in zip(found, picks, strict=True)]
@@ -574,10 +574,10 @@ class Session(dprocess.Process):
         sent: list[tuple[str, str]] = []
         for segment, offset in places:
             if grammar.watch_kind(cpu) == "BPPM":
-                sent.append((f"BPPM {segment:04X}:{offset:04X}",
+                sent.append((f"BPPM {dbg.typed_addr(segment, offset)}",
                              f"BPPM {segment:04X}:{offset:08X}"))
             else:
-                sent.append((f"BPM {segment:04X}:{offset:04X}",
+                sent.append((f"BPM {dbg.typed_addr(segment, offset)}",
                              f"BPMEM {segment:04X}:{offset:04X}"))
         # A watch is NEVER removed by this method.
         for command, _ in sent:
@@ -607,7 +607,7 @@ class Session(dprocess.Process):
         grammar.check_offset(off, stopped["mode"])
         target = f"{seg:04X}:{off:04X}"
         self.altered |= self.arming_writes()
-        self.command(f"BP {target}")
+        self.command(f"BP {dbg.typed_addr(seg, off)}")
         held = self.breakpoints()
         want = ("BP", seg, off)
         listed = next((b for b in held if grammar.bp_row_target(b["entry"]) == want), None)
@@ -700,7 +700,7 @@ class Session(dprocess.Process):
         """Memory to a FILE, returning the path it ended up at."""
         check_segment(seg)
         check_dump_length(length)
-        command = f"MEMDUMPBIN {seg:04X}:{off:04X} {dbg.typed_hex(length)} {MEMDUMP_FILE}"
+        command = f"MEMDUMPBIN {dbg.typed_addr(seg, off)} {dbg.typed_hex(length)} {MEMDUMP_FILE}"
         return _dumped(self, command, length, dest, (MEMDUMP_OK, MEMDUMP_FAIL), MEMDUMP_OK)
 
     def vgamemdump(self, offset: int, length: int, dest: Path) -> Path:

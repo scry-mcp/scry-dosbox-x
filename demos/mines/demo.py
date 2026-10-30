@@ -247,10 +247,17 @@ STEPS = [
          seen("Beginner started a new beginner's game"), volatile=INPUT_TIMING),
     Step("is board again", "screen_map_find", {}, found("board")),
     Step("size", "read_memory", {"ref": "rows", "length": 2}, size),
-    Step("mines", "read_memory", {"ref": "mines", "length": ROWS * COLS}, mines_read),
+    Step("mines", "read_memory", {"ref": "mines", "length": ROWS * COLS}, mines_read,
+         highlight=("The board is read out of the game's memory by name: `mines` is a symbol of "
+                    "the build, one byte per cell. Where the mines are is data, and what the "
+                    "server can read, a player cannot.")),
     Step("origin", "read_memory", {"ref": "board_x", "length": 4}, origin_read),
     Step("flags", "perform", flags, flagged),
-    Step("clear", "perform", clear, cleared),
+    Step("clear", "perform", clear, cleared,
+         highlight=("Each click is a `send_mouse` with an `expect`: the call returns only when the "
+                    "game's own log shows the reveal the click was meant to cause (`REVEAL row "
+                    "col`), so a click that missed fails at once instead of three clicks later. "
+                    "`perform` sends them all as one call.")),
     Step("won", "log", {"channel": "guest", "pattern": "WIN$"}, won),
     Step("park", "send_mouse", {"x": PARK[0], "y": PARK[1]}, parked),
     Step("is win", "screen_map_find", {}, found("win")),
@@ -269,7 +276,10 @@ STEPS = [
          volatile={"path": "the run's own directory"}),
     Step("exact", "audio_compare", lambda run: {"method": "diff", "a": run.dir / "boom.wav",
                                                 "b": HERE / "boom.wav", "align": False},
-         exact, volatile={"a": "the run's own directory"}),
+         exact, volatile={"a": "the run's own directory"},
+         highlight=("The explosion was recorded off the emulated Sound Blaster's digital output, "
+                    "not off the speakers, and the comparison is a `diff` with alignment off: the "
+                    "two recordings are equal sample for sample, which is what `exact` says.")),
     Step("park again", "send_mouse", {"x": PARK[0], "y": PARK[1]}, parked),
     Step("is lose", "screen_map_find", {}, found("lose")),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),

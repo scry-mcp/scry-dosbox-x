@@ -65,7 +65,8 @@ def place(decl: dec.Declaration, session: ds.Session) -> tuple[int, int]:
     """Where a tap's place resolves now, or the refusal saying why it does not."""
     res = placement.resolve_ref(decl, "DS", session)
     if res["state"] != "armable":
-        raise Invalid("unknown_ref" if res["state"] in ("unresolved", "ambiguous")
+        raise Invalid("ambiguous_ref" if res["state"] == "ambiguous"
+                      else "unknown_ref" if res["state"] == "unresolved"
                       else "not_stopped" if not session.at_debugger() else "bad_argument",
                       f"{decl.ref} cannot be tapped now ({res['state']}): "
                       f"{res.get('why', 'it names no address')}")

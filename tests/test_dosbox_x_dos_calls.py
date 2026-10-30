@@ -123,6 +123,25 @@ def test_a_read_trims_as_it_goes_so_a_long_unread_file_never_sits_whole_in_memor
     assert len(held) > 1 and max(held) < dos.CALLS_KEPT * 2, held
 
 
+@pytest.mark.parametrize("chunk", [1, 2, 3, 7, 16, 61, 62, 63])
+def test_a_trace_written_with_cr_lf_reads_the_same_cut_at_any_byte(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, chunk: int) -> None:
+    """A text-mode trace on Windows ends each row with CR LF, and a slice may end between the CR
+    and the LF, or inside a row: the calls and their rendered lines are those of one whole read."""
+    rows = _call_rows(1, 6)
+    whole = tmp_path / "whole.trace"
+    whole.write_bytes(rows.encode("latin-1"))
+    crlf = tmp_path / "crlf.trace"
+    crlf.write_bytes(rows.replace("\n", "\r\n").encode("latin-1"))
+    expected = _read(whole)
+    assert len(expected.calls) == 6, "the control read nothing, so the comparison proves nothing"
+    monkeypatch.setattr(dos, "CHUNK_BYTES", chunk)
+    got = _read(crlf)
+    assert [c["n"] for c in got.calls] == [c["n"] for c in expected.calls]
+    assert [c["line"] for c in got.calls] == [c["line"] for c in expected.calls]
+    assert got.partial == b"" and got.broken is None
+
+
 def test_a_pattern_cached_before_the_window_moved_answers_only_with_held_calls(
         tmp_path: Path) -> None:
     path = tmp_path / "long.trace"

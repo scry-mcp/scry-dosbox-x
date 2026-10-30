@@ -82,7 +82,7 @@
    "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b4",
-    "ECX": "0x0000135a",
+    "ECX": "0x00001350",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -102,7 +102,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 93059
+    "mark": 90317
    },
    "stop_seq": 11,
    "instruction": {
@@ -181,9 +181,9 @@
   "from": "[A] every tool in every machine state, on the probe guest: A none    build_check",
   "call": {},
   "reply": {
-   "summary": "build_check: ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+   "summary": "build_check: /path/to/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
    "status": "ok",
-   "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
+   "binary": "/path/to/dosbox-x",
    "binary_origin": "DOSBOX_X_BINARY",
    "version": "<volatile>",
    "debugger": true,
@@ -322,6 +322,11 @@
    "status": "ok",
    "closed": false,
    "ended_by": "none",
+   "pid": "<volatile>",
+   "exit_code": {
+    "available": false,
+    "why": "no session was running"
+   },
    "note": "there was no session to close"
   }
  },
@@ -544,7 +549,7 @@
    "looked": {
     "guest": {
      "available": true,
-     "since_mark": 96673,
+     "since_mark": 93931,
      "lines_written": 0,
      "lines_total": 0,
      "truncated": false,
@@ -586,20 +591,15 @@
   }
  },
  "guest_file": {
-  "from": "[Y] the file the guest leaves and the emulator's log categories, on the package's DOS guest: Y guest_file: the file the guest wrote is written with its bytes, while it runs and at close",
+  "from": "[A] every tool in every machine state, on the probe guest: A none    guest_file",
   "call": {
-   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT"
+   "path": "/nonexistent/OUT.TXT"
   },
   "reply": {
-   "summary": "guest_file $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
-   "status": "ok",
-   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT",
-   "state": "written",
-   "before": {
-    "exists": false
-   },
-   "bytes": 4,
-   "sha256": "580175b2969134a0d8c6f325b442c6d25cf5b10f0643150ed45ffd3a8905bcba"
+   "summary": "guest_file: INVALID (bad_argument), /nonexistent/OUT.TXT was not fingerprinted at `start`, so whether it changed since cannot be told;...",
+   "status": "INVALID",
+   "code": "bad_argument",
+   "message": "/nonexistent/OUT.TXT was not fingerprinted at `start`, so whether it changed since cannot be told; `start(guest_files=[...])` names the files (this session's: none)"
   }
  },
  "image_compare": {
@@ -690,19 +690,19 @@
    "channel": "emulator"
   },
   "reply": {
-   "summary": "log emulator /./: 40 of 135 lines",
+   "summary": "log emulator /./: 40 of 134 lines",
    "status": "ok",
    "pattern": ".",
    "channel": "emulator",
-   "lines_total": 135,
+   "lines_total": 134,
    "truncated": true,
    "lines": [
+    "Breakpoint list:",
     "-------------------------------------------------------------------------",
     "00. BPINT 21 AH=4B",
     "DEBUG: Breakpoint deletion success.",
     "Breakpoint list:",
     "-------------------------------------------------------------------------",
-    "Breakpoint list:",
     "... 34 more"
    ]
   }
@@ -1228,7 +1228,7 @@
    "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b8",
-    "ECX": "0x00006a9c",
+    "ECX": "0x00006a92",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -1248,7 +1248,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 89548
+    "mark": 86806
    },
    "stop_seq": 10,
    "instruction": {
@@ -1354,7 +1354,7 @@
    "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1cb",
+    "ECX": "0x0000c1c1",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -1374,7 +1374,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 88477
+    "mark": 85735
    },
    "stop_seq": 7,
    "instruction": {
@@ -1393,11 +1393,11 @@
      "why": "no symbol table is loaded"
     }
    },
-   "emulated_before_s": 1.9731148,
+   "emulated_before_s": 1.9731133,
    "emulated_after_s": 1.9747000000000001,
    "frame_before": 138,
    "frame_after": 139,
-   "cycles": 15844
+   "cycles": 15859
   }
  },
  "run_to": {
@@ -1408,7 +1408,7 @@
    "control": "0814:0130"
   },
   "reply": {
-   "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 81",
+   "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 77",
    "status": "ok",
    "verdict": "TIMEOUT",
    "target": "0000:0003",
@@ -1416,21 +1416,21 @@
    "pc": "0814:00000130",
    "cpu_mode": "real",
    "target_disarmed": true,
-   "control_hits": 81,
+   "control_hits": 77,
    "controls": [
     {
      "ref": "0814:0130",
      "at": "0814:0130",
-     "hits_in_run": 81,
+     "hits_in_run": 77,
      "removed": true
     }
    ],
-   "note": "the 3 s bound ran out and the run was interrupted at 0814:00000130, and not at 0000:0003 If 0000:0003 is in ROM (a BIOS or option-ROM segment such as F000), that is why: a code breakpoint in ROM is acknowledged, appears in BPLIST, and never ... (288 characters)",
+   "note": "it came to rest ON the control 0814:0130 (its hit number 77) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
    "frame": 138,
    "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000ffaf",
+    "ECX": "0x0000ffb4",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -1452,7 +1452,7 @@
     "lines": [
      "Bochs port E9h: [+ 00000.000] PROBE . tick"
     ],
-    "mark": 31992
+    "mark": 31929
    },
    "stop_seq": 6,
    "instruction": {
@@ -1840,18 +1840,18 @@
    "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save"
   },
   "reply": {
-   "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.236s",
+   "summary": "start probe.conf: headless on /path/to/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.187s",
    "status": "ok",
    "pid": "<volatile>",
    "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
    "conf_digest": "78bdc38f360b9b4a",
    "bound_s": 1200,
-   "elapsed_s": 0.6,
+   "elapsed_s": 0.5,
    "captures": "off",
    "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save",
-   "ready_after_s": 0.236,
+   "ready_after_s": 0.187,
    "argv": [
-    "~/.local/state/dosbox-x-builds/scry/dosbox-x",
+    "/path/to/dosbox-x",
     "-conf",
     "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
     "-time-limit",
@@ -1859,7 +1859,7 @@
     "-break-start",
     "... 20 more"
    ],
-   "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
+   "binary": "/path/to/dosbox-x",
    "binary_origin": "DOSBOX_X_BINARY",
    "version": "<volatile>",
    "debugger_commands": [
@@ -1900,7 +1900,7 @@
     {
      "name": "matrix_a_stopped",
      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save/matrix_a_stopped.sav",
-     "bytes": 81352,
+     "bytes": 81753,
      "version": "<volatile>",
      "program": "PROBE",
      "machine": "MCH_VGA",
@@ -1922,11 +1922,11 @@
    "seconds": 10
   },
   "reply": {
-   "summary": "state_write save: matrix_a_stopped, 81352 bytes, PROBE <time>",
+   "summary": "state_write save: matrix_a_stopped, 81753 bytes, PROBE <time>",
    "status": "ok",
    "name": "matrix_a_stopped",
    "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save/matrix_a_stopped.sav",
-   "bytes": 81352,
+   "bytes": 81753,
    "version": "<volatile>",
    "program": "PROBE",
    "machine": "MCH_VGA",
@@ -1950,8 +1950,7 @@
     "disarm": 0,
     "symbols_load": false,
     "base_remeasure": false
-   },
-   "presence": false
+   }
   }
  },
  "step": {
@@ -1995,7 +1994,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 6075
+    "mark": 6012
    },
    "stop_seq": 5,
    "instruction": {
@@ -2015,7 +2014,7 @@
     "stop_seq": 4,
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-    "since_s": 0.1,
+    "since_s": 0.2,
     "wall_at": "<volatile>"
    },
    "note": "the machine was already stopped"
@@ -2105,7 +2104,7 @@
    "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1bb",
+    "ECX": "0x0000c1b1",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -2125,7 +2124,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 89020
+    "mark": 86278
    },
    "stop_seq": 8,
    "instruction": {

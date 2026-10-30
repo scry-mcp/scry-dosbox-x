@@ -10,7 +10,10 @@ change.
 server object, its `instructions`, the roster of tools by family). Every other module in
 `src/scry_dosbox_x/` holds one concern, and its docstring opens with what it holds and why: read that
 before changing it. What both Scry servers share (the reply contract, the reference generator, the
-demo runner, the probe, the live bench) is the scry-core package, pinned by tag in `pyproject.toml`.
+demo runner, the probe, the live bench) is the scry-core package, pinned by tag in `pyproject.toml`; its README lists every module, among them `scry_core.process_tree` (ending a launched
+process with everything it started), `scry_core.regpoint` (the `regpoint_hit` of a registerpoint
+stop) and `scry_core.tool_replies` (the fields `screen_map_write`, `log_wait` and `comment_write`
+share).
 `src/scry_dosbox_x/guest/` holds the resident input stub the server loads into the guest (`scry.asm`,
 built to `SCRY.COM`), `demos/` the demos, and `tools/` the development scripts below. `tests/` holds the
 contract tests and `tests/live/` the tiers that drive a real emulator.
@@ -147,33 +150,19 @@ What opens a window (section G, the focus gate's O, the `windowed` tests) runs a
 gate's start in front and its Space move take the desk of whoever is working, so they run only
 with `SCRY_FOCUS_CONTROL=1` on an idle machine; unset, those cells are BLOCKED naming the variable
 and the verdict says it is unproven. Each part
-works on copies of its own of the guests and the bench, because the debugger writes its files
+works on copies of its own of the guests, because the debugger writes its files
 under fixed names into the emulator's working directory (`tests/live/live_private.py`).
 
-## The bench the live tier reads
+## The guests the live tier runs
 
 The protected-mode cases need no other project: they run on a second guest the package owns,
 `tests/guest/dpmi.c`, a DJGPP program built into the committed `dpmi.exe` and its `nm` table
 `dpmi.sym`, under the DPMI host DOSBox-X provides, CWSDPMI, which the program's stub loads
 resident.
 
-The real-mode cases and the matrix's program sections run `dos-real16` and `dos-real16-alt` from
-a bench: copies of each program, its map, the data it opens and its project's own run conf,
-pinned by hash in the bench's own `bench.json`, with an `identity.json` beside it that says which
-files, launch line, memory-block name and E9 line each program's label stands for (its keys:
-`IDENTITY_KEYS` in `tests/live/bench_programs.py`). Neither file is tracked, because both name
-the programs; the tracked live code names only the labels. The bench is the directory
-`DOSBOX_X_LIVE_BENCH` names, else `.local/share/scry-bench/dosbox-x` under your home directory.
-
-```sh
-uv run python -m scry_core.live_bench fill --bench <bench> --from <source_repo>=<checkout>
-uv run python -m scry_core.live_bench check --bench <bench>
-```
-
-`fill` copies the files from their checkouts and `check` says whether they still match. The
-session conf is derived from the pinned run conf at run time. A case whose identity is
-incomplete or whose copies are absent or wrong is skipped, or its cells BLOCKED, naming what is
-wrong.
+The real-mode cases and the matrix's program sections run programs this repository does not
+carry. Where one is not there, its case is skipped or its cells are BLOCKED naming what is
+missing, so a fresh clone runs everything the package's own guests cover.
 
 ## What a live run guards
 
@@ -221,12 +210,12 @@ and goes red when the two part company in either direction: a count that ROSE ag
 unchanged file means the reader has begun reading something that is not a symbol.
 
 ```sh
-uv run python tools/mapsweep.py --manifest <bench>/real-maps.json --root /where/those/maps/live
+uv run python tools/mapsweep.py --manifest <manifest>.json --root /where/those/maps/live
 ```
 
 It is manual and declared as such in `tests/gates-manual.txt`, with the reason: the material is
-not in this repository and is not versioned here, nor is the manifest, which names it and so
-lives in the bench beside `bench.json`. On the commit path the sweep would be INVALID in every
+not in this repository and is not versioned here, nor is the manifest, which names it and so is
+kept with it. On the commit path the sweep would be INVALID in every
 clone but one, and a gate that is almost always invalid is one people learn to ignore. It covers
 the Borland, Open Watcom and `nm` formats on real material; the GNU `ld` map is absent on
 purpose, because the only one is the fixture this package generated, which lives inside the

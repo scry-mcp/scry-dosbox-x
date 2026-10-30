@@ -41,9 +41,9 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+  "summary": "build_check: /path/to/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
   "status": "ok",
-  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
+  "binary": "/path/to/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "<volatile>",
   "debugger": true,
@@ -190,18 +190,18 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.236s",
+  "summary": "start probe.conf: headless on /path/to/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.187s",
   "status": "ok",
   "pid": "<volatile>",
   "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
   "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.6,
+  "elapsed_s": 0.5,
   "captures": "off",
   "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save",
-  "ready_after_s": 0.236,
-  "argv": ["~/.local/state/dosbox-x-builds/scry/dosbox-x", "-conf", "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
-  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
+  "ready_after_s": 0.187,
+  "argv": ["/path/to/dosbox-x", "-conf", "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
+  "binary": "/path/to/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "<volatile>",
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "... 7 more"],
@@ -220,7 +220,7 @@ Example, from a live run:
 
 **`session_seconds` is a hard bound** because a DOSBox-X held at its debugger never reaches its own time limit. The emulator's `-time-limit` counts emulated time, which a machine held at the debugger never advances, so a guardian (`scry-dosbox-x-guardian` in the process list) also keeps the host's clock, ending the emulator a few seconds past the bound or within one poll of this server dying.
 
-**The window, and the host's own arguments.** A watched start opens DOSBox-X's window as the conf sizes it (`windowresolution`, with `output=opengl` to scale it), on any host and with nothing to set. `SCRY_EMULATOR_ARGS` in the server's environment holds the host's own DOSBox-X arguments, one token a line so a `-set` value keeps its space (`-set`, then `sdl display=1`). They go after this server's own on every watched start, so which display the window opens on is the host's to say; only the caller's `flags`, which come last, could override them. A headless start opens no window and takes none of them (MAME's window opens either way, so MAME takes them on every start). A glued or shredded `-set` there refuses the start `host_failed` before anything else happens, for the same reasons as in `flags`.
+**The window, and the host's own arguments.** A watched start opens DOSBox-X's window as the conf sizes it (`windowresolution`, with `output=opengl` to scale it), on any host and with nothing to set. `SCRY_EMULATOR_ARGS` in the server's environment holds the host's own DOSBox-X arguments, one token a line so a `-set` value keeps its space (`-set`, then `sdl display=1`). They go after this server's own on every watched start, so which display the window opens on is the host's to say; only the caller's `flags`, which come last, could override them. A headless start opens no window and takes none of them. A glued or shredded `-set` there refuses the start `host_failed` before anything else happens, for the same reasons as in `flags`.
 
 **`flags` come after this server's defaults**, so a `-set` for the same key wins, except the ones a named argument sets (`-time-limit`, `sdl videodriver`, `log logfile`, the conf, the program...): refused naming the argument, because after ours the flag would quietly undo it.
 
@@ -249,8 +249,9 @@ What the session is right now. It records a stop no tool has reported
 (`stopped_on_its_own`) and applies what was queued while the guest ran
 (`applied_on_stop`).
 
-Reply: `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`), `pending` (`arm` refs, a
-`disarm` count, `symbols_load`, `base_remeasure`) and `presence`; with a session also `pid`,
+Reply: `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`) and `pending` (`arm`
+refs, a `disarm` count, `symbols_load`, `base_remeasure`), both unavailable or empty once a
+session has ended; with a session also `presence`, `pid`,
 `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`, `elapsed_s`,
 `output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and `cpu_mode`;
 `symbols_held` (`path`, `base_from`, `waiting_for`) while a `start` table waits for its
@@ -291,15 +292,14 @@ Example, from a live run:
   "summary": "status: no session",
   "status": "ok",
   "last_stop": {"available": false, "why": "this session has not stopped yet"},
-  "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
-  "presence": false
+  "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false}
 }
 ```
 <!-- scry-reference:end status -->
 
 **The alarms** are `conf_changed_on_disk` (the file changed since start; `false` also if gone), and `output_bytes_dropped` (the emulator's output overflowed what the server keeps). They ride in `session` only while they hold.
 
-**`pc` is read from the debugger at a stop**, so it is unavailable while the guest runs; `cpu_mode` is `real`, `protected`, `paged` or `VM86`. `last_stop` is unavailable with no session or a cut survey. `presence` is `true` drawn, `false` off or no session, or why not. `declarations` is this server's own count.
+**`pc` is read from the debugger at a stop**, so it is unavailable while the guest runs; `cpu_mode` is `real`, `protected`, `paged` or `VM86`. `last_stop` is unavailable with no session or a cut survey. `presence` is `true` drawn, `false` off, or why not, and is left out with no session. `declarations` is this server's own count.
 
 <!-- scry-reference:begin close -->
 ## `close`
@@ -353,6 +353,8 @@ Example, from a live run:
   "status": "ok",
   "closed": false,
   "ended_by": "none",
+  "pid": "<volatile>",
+  "exit_code": {"available": false, "why": "no session was running"},
   "note": "there was no session to close"
 }
 ```

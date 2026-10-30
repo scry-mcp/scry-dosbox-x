@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
 import signal
 import subprocess
 import sys
@@ -13,7 +12,7 @@ from typing import Any
 
 import live_private  # isort: skip -- first: a pooled job's working copies
 import pytest
-from scry_core import guardian
+from scry_core import guardian, process_tree
 
 from scry_dosbox_x import process as dprocess
 
@@ -39,14 +38,6 @@ def _rpc(proc: subprocess.Popen[bytes], mid: int, method: str, params: dict[str,
     raise AssertionError(f"the server closed its stdout before answering {method}")
 
 
-def _alive(pid: int) -> bool:
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    return True
-
-
 @pytest.mark.skipif(sys.platform == "win32", reason="POSIX signals and process sessions")
 @pytest.mark.parametrize("ended_by, code", [("stdin", 0), ("SIGTERM", 128 + signal.SIGTERM),
                                              ("SIGHUP", 128 + getattr(signal, "SIGHUP", 0))])
@@ -69,24 +60,24 @@ def test_the_emulator_ends_with_the_server(ended_by: str, code: int, tmp_path: P
         body = started["result"]["structuredContent"]
         assert body["status"] == "ok", body.get("summary")
         pid = body["pid"]
-        assert _alive(pid), "the emulator the start reported is not running"
+        assert process_tree.pid_alive(pid), "the emulator the start reported is not running"
         if ended_by == "stdin":
             proc.stdin.close()
         else:
             proc.send_signal(getattr(signal, ended_by))
         deadline = time.monotonic() + GONE_WITHIN_S
-        while _alive(pid) and time.monotonic() < deadline:
+        while process_tree.pid_alive(pid) and time.monotonic() < deadline:
             time.sleep(0.2)
         # `Z` in ps is an emulator gone and not yet reaped; a live server is an unfinished close.
         seen = subprocess.run(["ps", "-o", "pid=,stat=,etime=", "-p", f"{pid},{proc.pid}"],
                               capture_output=True, text=True, check=False).stdout.strip()
-        assert not _alive(pid), (f"DOSBox-X {pid} outlived a server ended by {ended_by} by "
-                                 f"{GONE_WITHIN_S:g} s; ps: {seen or 'nothing'}; server: "
-                                 f"{errors.read_text(errors='replace')[-600:]}")
+        assert not process_tree.pid_alive(pid), (
+            f"DOSBox-X {pid} outlived a server ended by {ended_by} by {GONE_WITHIN_S:g} s; "
+            f"ps: {seen or 'nothing'}; server: {errors.read_text(errors='replace')[-600:]}")
         assert proc.wait(GONE_WITHIN_S) == code, errors.read_text(errors="replace")[-600:]
     finally:
         silent.cancel()
-        if pid is not None and _alive(pid):
+        if pid is not None and process_tree.pid_alive(pid):
             dprocess.signal_group(pid, guardian.KILL)
         if proc.poll() is None:
             proc.kill()

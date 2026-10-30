@@ -1367,6 +1367,8 @@ def test_status_with_no_session_adds_no_machine_facts() -> None:
     got = cast(dict[str, Any], server.status())
     assert not got["session"]["alive"] and not {"pc", "cpu_mode", "declarations"} & set(got), got
     assert got["summary"] == "status: no session", got["summary"]
+    assert "presence" not in got, "alive false already says no overlay is drawn"
+    assert {"last_stop", "pending"} <= set(got), got
 
 
 def test_status_summarises_the_session_it_answers_about() -> None:

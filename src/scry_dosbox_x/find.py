@@ -195,7 +195,7 @@ def start_scan(session: ds.Session, seg: int, off: int, length: int,
     """Open the debugger's search instance over `length` bytes from `seg:off`."""
     check_scan_range(length, cell_bytes)
     letter, size = CELLS[cell_bytes], cell_bytes
-    where = f"{seg:04X}:{dbg.typed_hex(off)}"
+    where = dbg.typed_addr(seg, off, 0)
     out = session.command(f"MEMFIND {where} {dbg.typed_hex(length)} {letter}")
     last = _last_scan_line(out)
     _refuse(last, "open")

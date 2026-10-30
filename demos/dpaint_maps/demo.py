@@ -120,11 +120,11 @@ FIND = {"op": "screen_map_find"}
 Move = tuple[list[dict[str, Any]], str]
 
 
-def moves(name: str, *made: Move) -> Step:
+def moves(name: str, *made: Move, highlight: str = "") -> Step:
     """Moves between screens in one call, each followed by the map's word on where it landed."""
     steps = [op for ops, _ in made for op in (*ops, FIND)]
     return Step(name, "perform", {"steps": steps, "summaries": True},
-                landed(*(screen for _, screen in made)))
+                landed(*(screen for _, screen in made)), highlight=highlight)
 
 
 def shape(picks: list[str], strokes: list[tuple[tuple[int, int], tuple[int, int]]],
@@ -179,8 +179,16 @@ STEPS = [
     # repeat climbs red's 21 steps to the top inside them; `mixed` reads the DAC to prove it.
     Step("mix", "perform", {"steps": [click("brown"), click("red_up", "down"),
                                       {"op": "send_mouse", "button": "left", "action": "up"}],
-                            "summaries": True}, held),
-    Step("orange", "palette", orange_swatch, mixed),
+                            "summaries": True}, held,
+         highlight=("Deluxe Paint's menus and arrows act only while the button is held. "
+                    "`send_mouse` takes `action: down` and `action: up` as the two halves of a "
+                    "click, and `perform` sends the pick, the press and the release as one call, "
+                    "so the arrow is held exactly from one step to the next.")),
+    Step("orange", "palette", orange_swatch, mixed,
+         highlight=("`palette` reads the VGA DAC back: the entry the dialog's arrows mixed, as the "
+                    "colour the screen will show. The DAC holds six bits per channel; the reply "
+                    "gives both its raw values and the eight-bit colour. Nothing but the program's "
+                    "own dialog touched it.")),
     moves("sky, sun and sea", ([click("ok"), frames(DRAWN_FRAMES)], "paint: freehand"),
           shape(["rect_filled", "brown"], [SKY], "paint: rectangle"),
           shape(["circle_filled", "yellow"], [SUN], "paint: circle"),
@@ -199,7 +207,10 @@ STEPS = [
           ([click("flip_horizontal", "up"), frames(DRAWN_FRAMES), PARKED],
            "paint: custom brush"),
           ([{"op": "send_mouse", "x": STAMP[0], "y": STAMP[1], "button": "left"}, frames(10),
-            PARKED], "paint: custom brush")),
+            PARKED], "paint: custom brush"),
+         highlight=("The longest chain of map names in the run: lift the boat as a brush, flip it "
+                    "from the Brush menu, stamp the mirror image. After each move the map is asked "
+                    "where it landed, because the same pixels mean a different tool in hand.")),
     moves("Pict, and the brush put down", ([click("pict", "down")], "pict menu"),
           ([{"op": "send_mouse", "button": "left", "action": "up"}, frames(10), PARKED],
            "paint: custom brush"),

@@ -109,9 +109,7 @@ def test_a_session_with_no_window_or_asked_off_sends_nothing() -> None:
     assert quiet.sent == silent.sent == []
 
 
-def test_status_says_false_with_no_session_and_unavailable_once_the_emulator_ended() -> None:
-    assert lifecycle.presence_shown(None) is False
-
+def test_status_says_unavailable_once_the_emulator_ended() -> None:
     class Ended:
         presence = presence.Shown(refused=True)
 

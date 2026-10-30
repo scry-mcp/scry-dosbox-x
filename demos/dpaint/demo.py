@@ -135,13 +135,21 @@ STEPS = [
                             "loaded"),
     Step("find", "screen_map_find", {}, found),
     Step("blue", "send_mouse", {"target": "blue", "button": "left"},
-         picked("blue picked off the palette")),
+         picked("blue picked off the palette"),
+         highlight=("Tools and colours are picked by name: the screen map says where `blue` sits "
+                    "on the palette, and `send_mouse` with a `target` moves the guest's own mouse "
+                    "driver there and presses. The script holds no coordinates.")),
     Step("scan", "scan", scan_start, candidates),
     Step("is blue", "scan", {"method": "filter", "value": COLOURS["blue"], "limit": 8},
          narrowed),
     Step("orange", "send_mouse", {"target": "orange", "button": "left"},
          picked("orange picked off the palette")),
-    Step("is orange", "scan", {"method": "filter", "value": COLOURS["orange"]}, colour_found),
+    Step("is orange", "scan", {"method": "filter", "value": COLOURS["orange"]}, colour_found,
+         highlight=("A value scan, the cheat finder's trick done through a debugger. The first "
+                    "scan kept every byte of the data segment, the filter after picking blue kept "
+                    "those holding blue's index, and this one, after orange, keeps those that held "
+                    "each in turn. The survivors are of two kinds, told apart by where they live: "
+                    "copies in the stack's frames, and static bytes in the data segment.")),
     Step("unscan", "scan", {"method": "clear"}, lambda reply, run: "scan closed"),
     Step("watch", "watch_add", lambda run: {"ref": colour_ref(run), "mode": "show",
                                             "fmt": "u8"},
@@ -159,7 +167,10 @@ STEPS = [
         lambda reply, run: f"{WORD} typed at {TEXT_AT[0]},{TEXT_AT[1]}, then the line tool "
                            "again, which ends the text"),
     Step("sun row", "read_memory", lambda run: row(100, 160, 128),
-         crossing(("peach", 25), ("yellow", 51), ("peach", 52))),
+         crossing(("peach", 25), ("yellow", 51), ("peach", 52)),
+         highlight=("The picture is checked by reading it back: a row of the screen comes out of "
+                    "video memory as colours and run lengths, in the order the strokes were "
+                    "painted.")),
     Step("boat row", "read_memory", lambda run: row(154, 30, 112),
          crossing(("navy", 30), ("brown", 53), ("navy", 29))),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),

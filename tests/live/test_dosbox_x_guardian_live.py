@@ -13,8 +13,8 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from scry_core import guardian
-from test_dosbox_x_server_exit_live import ANSWER_WITHIN_S, BRICKS, ROOT, _alive, _rpc
+from scry_core import guardian, process_tree
+from test_dosbox_x_server_exit_live import ANSWER_WITHIN_S, BRICKS, ROOT, _rpc
 
 from scry_dosbox_x import process as dprocess
 
@@ -52,30 +52,22 @@ def _start(proc: subprocess.Popen[bytes], seconds: int) -> int:
     body = started["result"]["structuredContent"]
     assert body["status"] == "ok", body.get("summary")
     pid = int(body["pid"])
-    assert _alive(pid), "the emulator the start reported is not running"
+    assert process_tree.pid_alive(pid), "the emulator the start reported is not running"
     return pid
-
-
-def _running(pid: int) -> bool:
-    """Whether `pid` still runs: a process killed and not yet reaped by its parent, the live
-    server, is a zombie, which has ended."""
-    stat = subprocess.run(["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True,
-                          check=False).stdout.strip()
-    return bool(stat) and not stat.startswith("Z")
 
 
 def _gone_within(pid: int, seconds: float) -> bool:
     deadline = time.monotonic() + seconds
-    while _running(pid) and time.monotonic() < deadline:
+    while process_tree.pid_alive(pid) and time.monotonic() < deadline:
         time.sleep(0.2)
-    return not _running(pid)
+    return not process_tree.pid_alive(pid)
 
 
 def _end(proc: subprocess.Popen[bytes], pid: int | None) -> None:
     with contextlib.suppress(ProcessLookupError):
         proc.kill()
     proc.wait()
-    if pid is not None and _alive(pid):
+    if pid is not None and process_tree.pid_alive(pid):
         dprocess.signal_group(pid, guardian.KILL)
 
 

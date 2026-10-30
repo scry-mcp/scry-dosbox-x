@@ -9,7 +9,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
-from scry_core import judges
+from scry_core import judges, prose
 from scry_core import value_format as vf
 
 from scry_dosbox_x import coff, grammar
@@ -175,14 +175,23 @@ def resolve_ref(decl: dec.Declaration, reg: str, session: ds.Session, *,
         return {"state": "unresolved"}
     if r.matches > 1:
         return {"state": "ambiguous", "matches": r.matches,
-                "why": f"{decl.ref!r} names {r.matches} symbols in this build, so arming "
-                       f"one would be a guess at the wrong address. Disambiguate, or arm "
-                       f"by address"}
+                "why": prose.ambiguous_name(decl.ref, candidates(decl.ref), IN_THIS_BUILD)}
     try:
         seg, off = target_for(cast(int, r.offset), reg, session, machine=machine)
     except ds.Invalid as e:
         return {"state": "unarmable", "why": str(e)}
     return {"state": "armable", "seg": seg, "off": off, "marked": r.idle}
+
+
+IN_THIS_BUILD = "this build"
+
+
+def candidates(name: str) -> list[str]:
+    """The table's own addresses of every symbol `name` names, in the table's order: the offset,
+    with its section when the table has several."""
+    hits = STATE.name_index.get(sym.folded(name), [])
+    several = len({s.section for s in hits}) > 1
+    return [f"section {s.section} {s.offset:#x}" if several else f"{s.offset:#x}" for s in hits]
 
 
 def to_invalid(fn: Callable[[], Any]) -> Any:
@@ -220,7 +229,7 @@ def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
                 f"ref needs a GLOBAL (a symbol of the table, or an address) as its base")}
         if base.matches > 1:
             return {"state": "ambiguous", "matches": base.matches,
-                    "why": f"{pr.base!r} names {base.matches} symbols in this build"}
+                    "why": prose.ambiguous_name(pr.base, candidates(pr.base), IN_THIS_BUILD)}
         try:
             seg, off = target_for(cast(int, base.offset), reg, session, machine=machine)
         except ds.Invalid as e:
@@ -285,7 +294,7 @@ def read_target(ref: str, reg: str, session: ds.Session, *,
         raise ds.NotStopped(f"{why}; and a read needs the machine stopped anyway" if why else
                             f"the guest is running, so {ref!r} cannot be placed now, and a "
                             f"read needs the machine stopped anyway")
-    raise ds.Invalid("unknown_ref",
+    raise ds.Invalid("ambiguous_ref" if res["state"] == "ambiguous" else "unknown_ref",
         str(res.get("why", f"{ref!r} cannot be resolved to an address")))
 
 

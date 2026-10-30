@@ -109,11 +109,11 @@ Example, from a live run:
 
 **A `resume` inside a sequence is followed by asking `RUNSTATE`**, so whether it stopped again is the debugger's answer. Its `output` (`detail=True`) is what the debugger printed for `RUN`, capped at 2000 characters; the guest's own lines are the log's (`log` reads the log).
 
-**`until_frame=F` is a window, not a count.** The list repeats until a step's stop reads frame F or later, counted since power-on, and ends right after that step, even mid-list; so it needs a `run_for` step, and `summaries`, because a window is hundreds of steps. A frame the stopped machine already stands at or past is refused before anything runs; on a running machine the first stop starts the window, and one already past F is refused as nothing walked. A stop with no `frame` ends the list (`unexpected_answer`), since nothing then says whether the window is over; the bounds are its steps and its seconds, and reaching neither F nor an error is a `TIMEOUT` naming the last frame read. An export keeps the steps the window ran, never the `until_frame`, because each lap's stop is held to its own `recorded`.
+**`until_frame=F` is a window, not a count.** The list repeats until a step's stop reads frame F or later, counted since power-on, and ends right after that step, even mid-list; so it needs a `run_for` step and `summaries`. A frame the stopped machine already stands at or past is refused before anything runs; on a running machine the first stop starts the window, and one already past F is refused as nothing walked. A stop with no `frame` ends the list (`unexpected_answer`), since nothing then says whether the window is over; the bounds are its steps and its seconds, and reaching neither F nor an error is a `TIMEOUT` naming the last frame read. An export keeps the steps the window ran, never the `until_frame`, because each lap's stop is held to its own `recorded`.
 
 **`summaries=True`** exists for size, and `stops` is the server's own count because one assembled by hand from summary lines comes out wrong.
 
-After a `resume`, only the ops `answers_while_running` lists go on at once, and before any other the list waits up to `settle_seconds` for a stop. `start(plan=...)` also runs a list. A `step` that comes back running ends the console-driven part like a `resume`, and a `stop` ends the run. A `resume` inside a sequence drains what the console steps before it left in the terminal, so their prompt does not read as the resume's halt. `settle_seconds` 0 never waits. What only a step can judge (a symbol against the table loaded by then, a file an earlier step writes, the machine's mode) refuses at that step; the list check covers ops, argument names and values through each tool's own checks. `summaries` exists for size, and `stops` is the server's own count because one assembled by hand from summary lines comes out wrong. A wait whose channel failed ends the list with its code (`session_broken` when the emulator is gone). `ran` carries each step's `op` and full `reply`; `held` counts the steps that held their `recorded`; `not_stopped` is the answer before a console step when nothing waited. Refused steps in `errors` each carry `step`, `op`, `code` and `message`.
+After a `resume`, only the ops `answers_while_running` lists go on at once, and before any other the list waits up to `settle_seconds` for a stop. `start(plan=...)` also runs a list. A `step` that comes back running ends the console-driven part like a `resume`, and a `stop` ends the run. A `resume` inside a sequence drains what the console steps before it left in the terminal, so their prompt does not read as the resume's halt. `settle_seconds` 0 never waits. What only a step can judge (a symbol against the table loaded by then, a file an earlier step writes, the machine's mode) refuses at that step; the list check covers ops, argument names and values through each tool's own checks. A wait whose channel failed ends the list with its code (`session_broken` when the emulator is gone). `ran` carries each step's `op` and full `reply`; `held` counts the steps that held their `recorded`; `not_stopped` is the answer before a console step when nothing waited. Refused steps in `errors` each carry `step`, `op`, `code` and `message`.
 
 <!-- scry-reference:begin perform_export -->
 ## `perform_export`
@@ -277,7 +277,7 @@ Example, from a live run:
   "looked": {
     "guest": {
       "available": true,
-      "since_mark": 96673,
+      "since_mark": 93931,
       "lines_written": 0,
       "lines_total": 0,
       "truncated": false,

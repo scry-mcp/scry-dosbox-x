@@ -382,6 +382,8 @@ def test_breakpoint_at_an_ambiguous_name_is_refused_and_stores_nothing(
     _names(tmp_path, symbols=syms)
     got = server.breakpoint_at(ref="dup")
     assert got["status"] == "INVALID" and "names 2 symbols" in str(got["message"])
+    assert got["code"] == "ambiguous_ref", "the code the other server gives the same refusal"
+    assert "(0x1000, 0x2000)" in str(got["message"]), "each candidate's address, the file's order"
     assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
 
 

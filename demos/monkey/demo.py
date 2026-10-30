@@ -320,8 +320,8 @@ def same_track(reply: Reply, run: Run) -> str:
            f"the recording is not the disc's track from the logo's bar (SNR {reply['snr_db']} "
            f"dB, envelope {reply['envelope_correlation']}); if your DOSBox-X scales the drive's "
            "volume by its 0-255 value, it plays the track four times as loud, clipped")
-    return (f"the reader's own track 18 from the logo's bar, sample for sample, SNR "
-            f"{reply['snr_db']} dB")
+    return (f"the reader's own track 18 from the logo's bar, compared sample against sample with "
+            f"no realigning, SNR {reply['snr_db']} dB")
 
 
 STEPS = [
@@ -377,7 +377,12 @@ STEPS = [
     Step("script", "perform", originals, originals_held,
          volatile={"ran": "the game's own bytes, which this repository does not carry: the "
                           "step's line gives their sha256 verdict"}),
-    Step("rewrite", "perform", rewrite, rewritten),
+    Step("rewrite", "perform", rewrite, rewritten,
+         highlight=("The game's own script is data in memory, so the demo rewrites it. It found "
+                    "the lookout's line with `find` and read the original bytes back, and this "
+                    "`perform` writes a new conversation of SCUMM bytecode over three stretches of "
+                    "the script the game no longer needs, chained by jumps, reading each write "
+                    "back. The lookout then says what the demo wrote, in the game's own voice.")),
     Step("arm", "breakpoint_interrupt", {"number": 0x2F, "ah": 0x15},
          lambda reply, run: "a stop on every request to the CD driver"),
     act("pick", [click("whats_wrong_with_my_name")], "the same comeback, picked again"),
@@ -388,13 +393,24 @@ STEPS = [
     Step("request 2", "read_memory", request_ref("second"), stop_request),
     act("pass 2", [{"op": "step", "mode": "over"}], "the request answered"),
     Step("third", "resume", {"seconds": 30}, at_mscdex),
-    Step("request 3", "read_memory", request_ref("third"), play_request),
+    Step("request 3", "read_memory", request_ref("third"), play_request,
+         highlight=("The game asks the CD driver for audio through interrupt 2Fh. "
+                    "`breakpoint_interrupt` stops the machine on every such request, and "
+                    "`read_memory` reads the request block the call points at: this one is PLAY "
+                    "AUDIO, with the sector the theme starts at. The next step writes a different "
+                    "start sector into that block, so the same game call plays the theme from the "
+                    "bar where the logo enters.")),
     Step("to the logo", "write", to_the_logo, moved),
     Step("disarm", "declaration_clear", {"kind": "breakpoint", "all": True},
          lambda reply, run: "the stop on the CD driver cleared"),
     Step("theme", "audio_record", lambda run: {"frames": THEME_FRAMES,
                                                "dest": run.dir / "theme.wav"}, recorded),
-    Step("the disc", "audio_compare", reference, same_track),
+    Step("the disc", "audio_compare", reference, same_track,
+         highlight=("The theme the game played is recorded off the emulated mixer and compared "
+                    "with the same track read off the disc image. The reply says whether the two "
+                    "are equal (`exact`) and, when they are not, how far apart (`snr_db`, "
+                    "`class`), so what the demo claims about the music is a measurement, not a "
+                    "listening test.")),
     find("music?", "guybrush: a debugger that plays music"),
     go("talk 1", [{"op": "run_for", "milliseconds": 28000}], "lookout: the orange tycoon"),
     go("talk 2", [{"op": "run_for", "milliseconds": 16000}], "lookout: those files"),

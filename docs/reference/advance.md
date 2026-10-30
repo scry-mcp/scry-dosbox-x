@@ -19,7 +19,7 @@ which can pass over a breakpoint inside a compiled block, `note` says so.
 
 `screen`: a mapped screen's name instead of `ref` (exactly one). With an `anchor`, run to it (`control`
 required): a `verified` map judges it there (`stale_map` when it no longer holds), a
-`consolidated` one takes it as shown. With none, a retrace (a frame, on MAME) at a time until the map names it,
+`consolidated` one takes it as shown. With none, a frame at a time until the map names it,
 within `seconds`; a `control` is refused there (`bad_argument`). Reply: `screen` (`screen`, `layer`,
 `mode`, `judged`), `frames` run. Refused: an unmapped screen (`unknown_ref`).
 
@@ -71,7 +71,7 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 81",
+  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 77",
   "status": "ok",
   "verdict": "TIMEOUT",
   "target": "0000:0003",
@@ -79,16 +79,16 @@ Example, from a live run:
   "pc": "0814:00000130",
   "cpu_mode": "real",
   "target_disarmed": true,
-  "control_hits": 81,
+  "control_hits": 77,
   "controls": [
-    {"ref": "0814:0130", "at": "0814:0130", "hits_in_run": 81, "removed": true}
+    {"ref": "0814:0130", "at": "0814:0130", "hits_in_run": 77, "removed": true}
   ],
-  "note": "the 3 s bound ran out and the run was interrupted at 0814:00000130, and not at 0000:0003 If 0000:0003 is in ROM (a BIOS or option-ROM segment such as F000), that is why: a code breakpoint in ROM is acknowledged, appears in BPLIST, and never ... (288 characters)",
+  "note": "it came to rest ON the control 0814:0130 (its hit number 77) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
   "frame": 138,
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000ffaf",
+    "ECX": "0x0000ffb4",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -108,7 +108,7 @@ Example, from a live run:
     "lines_total": 1,
     "truncated": false,
     "lines": ["Bochs port E9h: [+ 00000.000] PROBE . tick"],
-    "mark": 31992
+    "mark": 31929
   },
   "stop_seq": 6,
   "instruction": {
@@ -136,7 +136,7 @@ because `BPDEL` renumbers.
 ROM breakpoint that never fires (`breakpoint_at`). A cold target beside a hot control fires the
 control and never the target; with the roles swapped the target arrives.
 
-The server derives the debugger's address from the machine's own mode, arms a `BP`, verifies it by reading the list back, and interrupts at the bound. Pick a control that fires a few times a run: each hit costs a round trip. `OTHER_STOP` means another breakpoint got there first. The `target_disarmed` breakpoint is removed on every outcome (false when that could not be confirmed). `control_silent` is a TIMEOUT with no control hit and `cut_by_other_stop` another stop before the control fired, each with the stop surveyed; `not_settled` is an interrupt after which `RUNSTATE` did not say stopped.
+The server derives the debugger's address from the machine's own mode, arms a `BP`, verifies it by reading the list back, and interrupts at the bound. Pick a control that fires a few times a run: each hit costs a round trip. `OTHER_STOP` means another breakpoint got there first. `control_silent` is a TIMEOUT with no control hit and `cut_by_other_stop` another stop before the control fired, each with the stop surveyed; `not_settled` is an interrupt after which `RUNSTATE` did not say stopped.
 
 <!-- scry-reference:begin run_for -->
 ## `run_for`
@@ -207,7 +207,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1cb",
+    "ECX": "0x0000c1c1",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -223,7 +223,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 88477},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 85735},
   "stop_seq": 7,
   "instruction": {
     "address": "0814:00000130",
@@ -235,11 +235,11 @@ Example, from a live run:
     "symbol": {"available": false, "why": "no symbol table is loaded"},
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
-  "emulated_before_s": 1.9731148,
+  "emulated_before_s": 1.9731133,
   "emulated_after_s": 1.9747000000000001,
   "frame_before": 138,
   "frame_after": 139,
-  "cycles": 15844
+  "cycles": 15859
 }
 ```
 <!-- scry-reference:end run_for -->
@@ -321,7 +321,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1bb",
+    "ECX": "0x0000c1b1",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -337,7 +337,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 89020},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 86278},
   "stop_seq": 8,
   "instruction": {
     "address": "0814:00000130",
@@ -543,7 +543,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "no declared code breakpoint at F000:0000FEA6: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 6075},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 6012},
   "stop_seq": 5,
   "instruction": {"available": false, "why": "the bytes at F000:0000FEA6 (FE...) start no instruction"}
 }
@@ -669,7 +669,7 @@ Example, from a live run:
     "stop_seq": 4,
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-    "since_s": 0.1,
+    "since_s": 0.2,
     "wall_at": "<volatile>"
   },
   "note": "the machine was already stopped"

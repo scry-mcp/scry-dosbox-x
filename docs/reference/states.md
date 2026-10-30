@@ -47,7 +47,7 @@ Example, from a live run:
     {
       "name": "matrix_a_stopped",
       "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save/matrix_a_stopped.sav",
-      "bytes": 81352,
+      "bytes": 81753,
       "version": "<volatile>",
       "program": "PROBE",
       "machine": "MCH_VGA",
@@ -122,11 +122,11 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "state_write save: matrix_a_stopped, 81352 bytes, PROBE <time>",
+  "summary": "state_write save: matrix_a_stopped, 81753 bytes, PROBE <time>",
   "status": "ok",
   "name": "matrix_a_stopped",
   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save/matrix_a_stopped.sav",
-  "bytes": 81352,
+  "bytes": 81753,
   "version": "<volatile>",
   "program": "PROBE",
   "machine": "MCH_VGA",

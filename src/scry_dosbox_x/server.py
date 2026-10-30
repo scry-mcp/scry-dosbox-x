@@ -244,8 +244,9 @@ def status() -> dict[str, Any]:
     (`stopped_on_its_own`) and applies what was queued while the guest ran
     (`applied_on_stop`).
 
-    Reply: `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`), `pending` (`arm` refs, a
-    `disarm` count, `symbols_load`, `base_remeasure`) and `presence`; with a session also `pid`,
+    Reply: `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`) and `pending` (`arm`
+    refs, a `disarm` count, `symbols_load`, `base_remeasure`), both unavailable or empty once a
+    session has ended; with a session also `presence`, `pid`,
     `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`, `elapsed_s`,
     `output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and `cpu_mode`;
     `symbols_held` (`path`, `base_from`, `waiting_for`) while a `start` table waits for its
@@ -258,10 +259,11 @@ def status() -> dict[str, Any]:
     if STATE.session is not None and STATE.session.alive():
         running.drain_if_stopped(STATE.session)   # `status` asks for no session, but uses one
         stopped = STATE.session.parked            # what the drain's own reading left
+    shown: dict[str, Any] = ({} if STATE.session is None
+                             else {"presence": lifecycle.presence_shown(STATE.session)})
     return st.reply(**st.process_facts(), last_stop=STATE.dated(),
                     pending=STATE.pending_summary(),
-                    **running.status_facts(STATE.session, stopped),
-                    presence=lifecycle.presence_shown(STATE.session))
+                    **running.status_facts(STATE.session, stopped), **shown)
 
 
 @tool("Close the session", summary=one_line.close, body_session=True, on_cancel="kill")

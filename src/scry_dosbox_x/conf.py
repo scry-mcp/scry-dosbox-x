@@ -19,7 +19,7 @@ def conf_mounts(conf: Path) -> list[str]:
     for line in text.splitlines():
         words = line.split()
         if line.strip().startswith("["):
-            section = line.strip().lower()
+            section = line.partition("#")[0].strip().lower()
         elif section == "[autoexec]" and words and words[0].lstrip("@").lower() in MOUNTING:
             letters = [w.rstrip(":").upper() for w in words[1:]
                        if len(w.rstrip(":")) == 1 and w[0].isalpha()]

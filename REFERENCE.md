@@ -56,10 +56,10 @@ While a session holds the window, an orange edge tells whoever sits at the host 
 | `cancelled` | object |
 | `session` | object |
 | `answers_while_running` | array |
-| `applied_on_stop` | object |
 | `exit_code` | integer or object |
 | `last_stop` | object |
 | `stopped_on_its_own` | object |
+| `applied_on_stop` | object |
 | `symbols_placed` | object |
 <!-- scry-reference:end envelope -->
 

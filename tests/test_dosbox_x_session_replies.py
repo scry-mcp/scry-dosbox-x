@@ -40,7 +40,7 @@ def test_a_write_one_byte_past_the_segment_is_refused_saying_where_it_would_end(
 def test_the_rom_guard_is_real_modes_and_judges_the_linear_range() -> None:
     s, sent, asked = _writing("Pr32")
     ds.Session.write_memory(s, 0x00A7, 0xC0000, b"\x01")
-    assert sent and sent[0].startswith("SM 00A7:C0000"), sent
+    assert sent and sent[0].startswith("SM 00A7:0C0000"), sent
     s, sent, asked = _writing()
     ds.Session.write_memory(s, 0xFFFF, 0x0010, b"\x01")            # linear 0x100000, past ROM
     assert sent and asked == [(0xFFFF, 0x0010, 1, "Real")], (sent, asked)

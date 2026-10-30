@@ -302,8 +302,8 @@ def _stop_reply(session: ds.Session, base: dict[str, Any]) -> dict[str, Any]:
 
 #: What a refused wait carries of the stop reply that recorded its stop; otherwise those accounts
 #: would be spent on a reply nobody sees.
-ENDED_KEYS = ("stop_seq", "cause", "regpoint_hit", "enrichment", "stopped_on_its_own",
-              "applied_on_stop")
+ENDED_KEYS = ("stop_seq", "cause", "regpoint_hit", "enrichment", "symbols_placed",
+              "stopped_on_its_own", "applied_on_stop")
 
 
 def _heard(session: ds.Session) -> bool:

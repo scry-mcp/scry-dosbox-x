@@ -118,9 +118,9 @@ def run_to(session: ds.Session, seg: int, off: int, seconds: float,
                           "a control proves the target COULD have fired, and the target "
                           "cannot prove that about itself")
     session.altered |= session.arming_writes()
-    session.command(f"BP {target}")
-    if ctl is not None:
-        session.command(f"BP {ctl}")
+    session.command(f"BP {dbg.typed_addr(seg, off)}")
+    if control is not None:
+        session.command(f"BP {dbg.typed_addr(*control)}")
     armed = session.breakpoints()
     for spelled in [target] + ([ctl] if ctl is not None else []):
         if not any(f"BP {spelled}" == b["entry"] for b in armed):

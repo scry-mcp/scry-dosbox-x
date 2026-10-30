@@ -333,6 +333,20 @@ def test_an_address_resolves_to_the_nearest_symbol_below_it_with_the_distance() 
     assert (best.name, delta) == ("_main", 4)
 
 
+def test_two_symbols_at_one_offset_resolve_to_the_first_row_of_the_table(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Both lookups by address agree with the other server: the file's order decides a tie."""
+    from scry_dosbox_x import placement
+    from scry_dosbox_x import state as dstate
+    table = [sym.Symbol("_zeta", 0x1000), sym.Symbol("_alpha", 0x1000), sym.Symbol("_next", 0x2000)]
+    found = sym.find_by_offset(table, 0x1004)
+    assert found is not None and found[0].name == "_zeta"
+    monkeypatch.setattr(dstate.STATE, "table", table)
+    monkeypatch.setattr(dstate.STATE, "table_generation", -9)
+    monkeypatch.setattr(dstate.STATE, "base", {"base": 0})
+    assert placement._nearest_offset(0x1004, sym.FLAT)["name"] == "_zeta"
+
+
 def test_an_address_below_every_symbol_is_none_and_not_the_lowest_one() -> None:
     table = [sym.Symbol("_x", 0x1000)]
     assert sym.find_by_offset(table, 0x10) is None

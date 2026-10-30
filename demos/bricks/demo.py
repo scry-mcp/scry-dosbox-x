@@ -166,12 +166,22 @@ STEPS = [
     Step("look", "disassemble", {"ref": "brick_hit", "length": 32}, listing),
     Step("break", "breakpoint_at", {"ref": "brick_hit"},
          lambda reply, run: f"breakpoint {reply['entry']}",
-         shown=("summary", "entry")),
+         shown=("summary", "entry"),
+         highlight=("A breakpoint asked for by name. `brick_hit` is a label in the symbol table "
+                    "the build generated, so the server turns it into the address the program "
+                    "actually loaded at and arms the debugger there; the reply says it was "
+                    "resolved `by: symbol`.")),
     Step("watch", "watch_add", {"ref": "score", "mode": "show", "fmt": "u16"},
          lambda reply, run: "score shown at every stop"),
     Step("first brick", "resume", {"seconds": WAIT_S},
          at_brick(FIRST_ROW, FIRST_COL, 0, "first"),
-         shown=("summary", "cause", "watches")),
+         shown=("summary", "cause", "watches"),
+         highlight=("`resume` hands the machine back and returns when the debugger stops it again. "
+                    "The stop carries what a person would otherwise type commands for: the "
+                    "registers, the instruction under the program counter with its symbol, the "
+                    "cause, and the value of the watch armed a step earlier, the score, read by "
+                    "name. The line the game itself wrote to the debugger's port E9 comes in the "
+                    "same reply: the game says which brick fell, the registers say where.")),
     Step("second brick", "resume", {"seconds": WAIT_S},
          at_brick(*SECOND_BRICK, FIRST_POINTS, "second")),
     Step("score", "read_memory", {"ref": "score", "length": 2}, score_is(FIRST_POINTS),
@@ -219,7 +229,10 @@ STEPS = [
          shown=("name",)),
     Step("halt", "stop", {}, stopped, volatile=BREAK_STOP),
     Step("restored", "read_memory", {"ref": "paddle_x", "length": 2}, restored,
-         shown=("summary", "hex")),
+         shown=("summary", "hex"),
+         highlight=("A saved state is the whole machine, not the game's own save. After the save "
+                    "the left arrow moves the paddle, the load puts the machine back, and the "
+                    "paddle read back is where it was before the arrow.")),
     Step("play on", "resume", {}, lambda reply, run: "the game runs"),
     Step("serve", "send_keys", {"keys": ["space"], "expect": "SERVE$", "seconds": 10},
          seen("SPACE served the ball that was waiting on the paddle"), volatile=INPUT_TIMING),

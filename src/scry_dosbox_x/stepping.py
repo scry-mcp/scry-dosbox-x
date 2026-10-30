@@ -108,7 +108,7 @@ def _one_step(ses: ds.Session, at: dict[str, str],
     armed = any(grammar.bp_row_target(b["entry"]) == ("BP", int(at["cs"], 16), nxt)
                 for b in ses.breakpoints())
     if not armed:
-        ses.command(f"BP {target}")
+        ses.command(f"BP {dbg.typed_addr(int(at['cs'], 16), nxt)}")
     began = time.monotonic()
     expired, cleanup = False, ""
     try:

@@ -89,7 +89,7 @@ def _spanning(lm: ModuleType, *, beside: bool) -> Any:
         lambda: m.judge("o-control", True))
     if beside:
         m.section("B", "beside", [lm.Cell("b1", "t")])(lambda: m.judge("b1", True))
-    m.section("O", "verdict", [lm.Cell("o-verdict", "t")], place=2, spans=True)(
+    m.section("O", "verdict", [lm.Cell("o-verdict", "t")], place=2)(
         lambda: m.block("o-verdict", "too little ran"))
     return m
 
@@ -104,6 +104,17 @@ def test_a_verdict_with_no_section_beside_it_is_named_when_the_run_is_planned(
     planned = next(i for i, line in enumerate(out) if line.startswith("PLANNED"))
     assert len(named) == 1 and named[0] == planned + 1, out
     assert not [x for x in out if x.startswith("cannot be judged") and "b1" in x]
+
+
+def test_the_real_focus_verdict_is_a_section_that_closes_the_run_and_is_named_alone() -> None:
+    """The registration the notice depends on: dropping `place=2` from the real section O would
+    leave a verdict that cannot be judged named by no one, with every unit case green."""
+    focus = importlib.import_module("matrix_focus")
+    section = next(s for s in focus.M.sections if s.run.__name__ == "section_o_verdict")
+    chosen = [section]
+    assert section.place == 2
+    named = importlib.import_module("matrix_ledger").cannot_be_judged(chosen)
+    assert [label for label, _ in named] == [c.label for c in section.cells] and named, named
 
 
 def test_a_verdict_with_a_section_beside_it_is_not_named(

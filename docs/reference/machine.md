@@ -187,7 +187,7 @@ leaves in it, and its `psp_seg` of `0000` says it is free. The MCB chain is chec
 (each block starts right past the one above, `END OF CHAIN` right past the last); a chain that
 breaks that walk is cut, and `mcbs` is absent.
 
-Each listing costs one round trip. `cpu_mode` is `real`, `protected` or `paged`, unavailable when the `CPU` listing is unreadable. `gdt` and `ldt` exist in protected mode. Row fields per section: `mcbs` (`memory`, `mcb_seg`, `size_bytes`, `psp_seg`, `notes`, `filename`), `devs` (`header`, `attr`, `strat`, `intr`, `name`), `kern` (`seg`, `size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems` (`handle`, `addr`, `size_bytes`, `name`), `ems_pages` (`handle`, `page`, `start`, `end`), `bios_mem` (`start`, `end`, `status`, `what`), `callbacks` (`number`, `desc`), `control` (control registers, flags, `gdtr`, `idt`, `tr`, `ldtr`), `gdt`/`ldt` (`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`), `paging` runs (`start`, `end`, `phy`, `flags`, `d`, `a`), `vga` (`mode`, `crtc`, `seq`, `gc`, `ac`, `dac`, `draw`). `omitted` and `how` name the sections of this mode that were not read. A section the debugger refused or printed in no known shape is absent rather than partial.
+Each listing costs one round trip. `cpu_mode` is `real`, `protected` or `paged`, unavailable when the `CPU` listing is unreadable. `gdt` and `ldt` exist in protected mode. Row fields per section: `mcbs` (`memory`, `mcb_seg`, `size_bytes`, `psp_seg`, `notes`, `filename`), `devs` (`header`, `attr`, `strat`, `intr`, `name`), `kern` (`seg`, `size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems` (`handle`, `addr`, `size_bytes`, `name`), `ems_pages` (`handle`, `page`, `start`, `end`), `bios_mem` (`start`, `end`, `status`, `what`), `callbacks` (`number`, `desc`), `control` (control registers, flags, `gdtr`, `idt`, `tr`, `ldtr`), `gdt`/`ldt` (`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`), `paging` runs (`start`, `end`, `phy`, `flags`, `d`, `a`), `vga` (`mode`, `crtc`, `seq`, `gc`, `ac`, `dac`, `draw`). `omitted` and `how` name the sections of this mode that were not read.
 
 <!-- scry-reference:begin interrupt_vectors -->
 ## `interrupt_vectors`
@@ -323,13 +323,13 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "log emulator /./: 40 of 135 lines",
+  "summary": "log emulator /./: 40 of 134 lines",
   "status": "ok",
   "pattern": ".",
   "channel": "emulator",
-  "lines_total": 135,
+  "lines_total": 134,
   "truncated": true,
-  "lines": ["-------------------------------------------------------------------------", "00. BPINT 21 AH=4B", "DEBUG: Breakpoint deletion success.", "Breakpoint list:", "-------------------------------------------------------------------------", "Breakpoint list:", "... 34 more"]
+  "lines": ["Breakpoint list:", "-------------------------------------------------------------------------", "00. BPINT 21 AH=4B", "DEBUG: Breakpoint deletion success.", "Breakpoint list:", "-------------------------------------------------------------------------", "... 34 more"]
 }
 ```
 <!-- scry-reference:end log -->
@@ -377,8 +377,6 @@ Reference: REFERENCE.md, The log.
 |---|---|
 | `already` | boolean |
 | `arrived_during` | integer |
-| `call` | object |
-| `calls_dropped` | integer |
 | `channel` | string |
 | `line` | string |
 | `lines_before` | integer |
@@ -387,6 +385,8 @@ Reference: REFERENCE.md, The log.
 | `pattern` | string |
 | `verdict` | string |
 | `waited_s` | number |
+| `call` | object |
+| `calls_dropped` | integer |
 
 Example, from a live run:
 
