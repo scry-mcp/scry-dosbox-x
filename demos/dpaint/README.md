@@ -11,7 +11,7 @@ current colour, tells the four static ones from the copies in the stack's frames
 the first, so every later pick shows its colour at the stop it lands on.
 
 [`demos/dpaint_maps/`](../dpaint_maps/README.md) drives the same program at 640 x 480 through
-its menus and a dialog, every screen found off a map of ten.
+its menus and a dialog, every screen found off a map of eleven.
 
 ## The program
 
