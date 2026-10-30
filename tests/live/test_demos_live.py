@@ -20,7 +20,7 @@ LINEUP = os.environ.get("LINEUP_MSDOS_DIR", "")
 MONKEY = os.environ.get("MONKEY_ISLAND_CD", "")
 
 
-@pytest.mark.parametrize(("name", "args"), [
+DEMOS = [
     ("bricks", []),
     ("mines", []),
     *(pytest.param(name, ["--cwd", DPAINT], marks=pytest.mark.skipif(
@@ -32,12 +32,35 @@ MONKEY = os.environ.get("MONKEY_ISLAND_CD", "")
                            "carries none of the game")),
     pytest.param("monkey", ["--cwd", MONKEY], marks=pytest.mark.skipif(
         not MONKEY, reason="set MONKEY_ISLAND_CD to the directory holding the 1992 Enhanced CD's "
-                           "monkey.cue and BINs: the repository carries none of the game"))])
-def test_a_demo_passes_and_matches_what_is_committed(name: str, args: list[str]) -> None:
-    demo = ROOT / "demos" / name
-    ran = subprocess.run([sys.executable, str(demo / "demo.py"), *args], cwd=ROOT,
-                         capture_output=True, text=True, timeout=TIMEOUT_S)
+                           "monkey.cue and BINs: the repository carries none of the game"))]
+
+#: The demos already run in this session: both tests below share one run per demo.
+_RUNS: dict[str, subprocess.CompletedProcess[str]] = {}
+
+
+def _run(name: str, args: list[str]) -> subprocess.CompletedProcess[str]:
+    if name not in _RUNS:
+        _RUNS[name] = subprocess.run([sys.executable, str(ROOT / "demos" / name / "demo.py"),
+                                      *args], cwd=ROOT, capture_output=True, text=True,
+                                     timeout=TIMEOUT_S)
+    return _RUNS[name]
+
+
+@pytest.mark.parametrize(("name", "args"), DEMOS)
+def test_a_demo_passes(name: str, args: list[str]) -> None:
+    ran = _run(name, args)
     verdict = [ln for ln in ran.stdout.splitlines() if ln.startswith(("DEMO", "FAIL", "INVALID"))]
     assert ran.returncode == 0, f"rc {ran.returncode}: {verdict} {ran.stderr.strip()[-300:]}"
+
+
+@pytest.mark.skipif(sys.platform != "darwin", reason=(
+    "the committed READMEs and screen.png are the Mac's run: a transcript carries the byte counts "
+    "of the pictures it saved, and a capture's bytes follow the host's display, so another host "
+    "cannot reproduce them; `test_a_demo_passes` is what that host judges"))
+@pytest.mark.parametrize(("name", "args"), DEMOS)
+def test_a_demo_matches_what_is_committed(name: str, args: list[str]) -> None:
+    demo = ROOT / "demos" / name
+    ran = _run(name, args)
+    assert ran.returncode == 0, f"the demo did not pass: rc {ran.returncode}"
     stale_files = stale(load(demo / "demo.py"), ROOT / "tmp" / "demos" / name)
     assert stale_files == [], stale_files
