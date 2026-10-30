@@ -215,22 +215,57 @@ def test_a_batch_is_timed_only_when_it_answered(tmp_path: Path, monkeypatch: pyt
     assert e.value.code == bench.INVALID_RC
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="the grandchild's pid comes through `sh`")
+#: A leader that starts a grandchild, says its pid, and waits: what `make` is to the emulator.
+LEADER = ("import subprocess, sys, time; "
+          "g = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)']); "
+          "open(sys.argv[1], 'w').write(str(g.pid)); time.sleep(60)")
+
+
+def _alive(pid: int) -> bool:
+    """Whether `pid` runs; `os.kill(pid, 0)` ends it on Windows, so `tasklist` answers there."""
+    if sys.platform == "win32":
+        done = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
+                              capture_output=True, text=True, check=True)
+        return f'"{pid}"' in done.stdout
+    else:
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return False
+        return True
+
+
+def _end(pid: int) -> None:
+    if sys.platform == "win32":
+        subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True, check=False)
+    else:
+        os.kill(pid, guardian.KILL)
+
+
 def test_a_batch_past_its_bound_takes_its_descendants_with_it(tmp_path: Path) -> None:
     """`make` runs the emulator as a grandchild: killing the leader alone leaves it running."""
     pidfile = tmp_path / "grandchild.pid"
     with pytest.raises(subprocess.TimeoutExpired):
-        bench.run_group(["sh", "-c", f"sleep 30 & echo $! > {pidfile}; wait"], tmp_path, 1.0)
+        bench.run_group([sys.executable, "-c", LEADER, str(pidfile)], tmp_path, 3.0)
     grandchild = int(pidfile.read_text())
     deadline = time.monotonic() + 5
     while time.monotonic() < deadline:
-        try:
-            os.kill(grandchild, 0)
-        except ProcessLookupError:
+        if not _alive(grandchild):
             return
         time.sleep(0.05)
-    os.kill(grandchild, guardian.KILL)
+    _end(grandchild)
     pytest.fail("the batch's grandchild outlived the batch's bound")
+
+
+def test_a_leader_that_survives_the_kill_does_not_hold_the_batch_past_a_bound(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The wait after the kill is bounded: a leader that never ends is left, not waited out."""
+    monkeypatch.setattr(bench, "_end_tree", lambda proc: None)
+    monkeypatch.setattr(bench, "KILL_WAIT_S", 0.5)
+    began = time.monotonic()
+    with pytest.raises(subprocess.TimeoutExpired) as raised:
+        bench.run_group([sys.executable, "-c", "import time; time.sleep(6)"], tmp_path, 0.3)
+    assert raised.value.timeout == 0.3 and time.monotonic() - began < 3
 
 
 def test_the_stamp_names_a_host_other_than_macos_by_its_platform(

@@ -58,6 +58,8 @@ M_CELLS = cells(
      "disassemble docstring: decoded from memory; known: read_memory over the same span"),
     ("M disassemble(start, 32) on the probe holds the bytes memory holds",
      "disassemble docstring: decoded from memory; known: read_memory over the same span"),
+    ("M disassemble holds memory's bytes at 128, 129 and the lengths whose tail reads as a flag",
+     "disassemble docstring: 1..1024; known: read_memory over the same span"),
     ("M resolved on the probe: emit and bump at delta 0, cnt at delta 1",
      "disassemble docstring: resolved; known: probe.sym"),
     ("M no resolved without a table", "disassemble docstring: with a symbol table loaded"),
@@ -258,6 +260,14 @@ def _probe() -> None:
     r = M.call(server.disassemble, ref="start", length=32)
     held, why = memory_holds(r)
     M.judge("M disassemble(start, 32) on the probe holds the bytes memory holds", held, why)
+    # The debugger is asked for length + 15 bytes: 157, 160, 192 and 208 land on 0xAC, 0xAF, 0xCF
+    # and 0xDF; 128 and 129 are the sizes either side of the one that always read fine.
+    sized = {n: memory_holds(M.call(server.disassemble, ref="start", length=n))
+             for n in (128, 129, 157, 160, 192, 208, code.LENGTH_MAX)}
+    M.judge("M disassemble holds memory's bytes at 128, 129 and the lengths whose tail reads as "
+            "a flag", all(held for held, _ in sized.values()),
+            "; ".join(f"{n}: {why}" for n, (held, why) in sized.items() if not held)
+            or f"{len(sized)} lengths")
     named = {(row.get("line"), row.get("kind")): (row.get("symbol"), row.get("delta"))
              for row in r.get("resolved") or []}
     M.judge("M resolved on the probe: emit and bump at delta 0, cnt at delta 1",

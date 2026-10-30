@@ -5,6 +5,7 @@ real `Process` from its defaults, the output's drain over a pipe, and what a clo
 from __future__ import annotations
 
 import asyncio
+import errno
 import os
 import socket
 import subprocess
@@ -283,6 +284,50 @@ def test_the_drain_gathers_while_idle_and_ends_at_end_of_file() -> None:
     assert not t.is_alive() and p.drain_failure == ""
     assert p._out is not None
     os.close(p._out)
+
+
+def test_the_drain_of_a_terminal_ends_clean_when_its_other_end_closes() -> None:
+    """The emulator's console is a pty; only a Linux host answers its closed end with `EIO`."""
+    if sys.platform == "win32":
+        pytest.skip("Windows has no pty")
+    else:
+        import pty
+        master, slave = pty.openpty()
+        try:
+            p = dprocess.Process()
+            p._out = master
+            t = threading.Thread(target=p._drain, daemon=True)
+            t.start()
+            os.write(slave, b"bye\n")
+            os.close(slave)
+            t.join(3)
+            assert not t.is_alive() and p.drain_failure == "", p.drain_failure
+            assert "bye" in p.output_tail(10)
+        finally:
+            os.close(master)
+
+
+@pytest.mark.parametrize(("code", "clean"), [(errno.EIO, True), (errno.EBADF, False)])
+def test_a_read_error_on_a_terminal_ends_the_drain_clean_only_for_eio(
+        monkeypatch: pytest.MonkeyPatch, code: int, clean: bool) -> None:
+    if sys.platform == "win32":
+        pytest.skip("Windows has no pty")
+    else:
+        import pty
+        master, slave = pty.openpty()
+        try:
+            def broken(fd: int, n: int) -> bytes:
+                raise OSError(code, os.strerror(code))
+            monkeypatch.setattr(os, "read", broken)
+            p = dprocess.Process()
+            p._out = master
+            t = threading.Thread(target=p._drain, daemon=True)
+            t.start()
+            t.join(3)
+            assert not t.is_alive() and (p.drain_failure == "") is clean, p.drain_failure
+        finally:
+            os.close(master)
+            os.close(slave)
 
 
 def test_the_drain_names_a_read_that_failed(monkeypatch: pytest.MonkeyPatch) -> None:

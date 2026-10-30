@@ -479,7 +479,7 @@ class Session(dprocess.Process):
         check_register_value(key, value)
         self.require_stopped("a register write")
         self.altered = True
-        out = self.command(f"SR {key} {value:x}")
+        out = self.command(f"SR {key} {dbg.typed_hex(value)}")
         regs = self.registers()
         reg, bits = READBACK[key]
         got = regs.get(reg)
@@ -495,7 +495,9 @@ class Session(dprocess.Process):
     def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
         """Break on an interrupt."""
         check_interrupt(number, ah)
-        arg = f"BPINT {number:02X}" + (f" {ah:02X}" if ah is not None else "")
+        arg = f"BPINT {dbg.typed_hex(number, 2)}"
+        if ah is not None:
+            arg += f" {dbg.typed_hex(ah, 2)}"
         out = self.command(arg)
         # READ THE LIST BACK, exactly as `run_to` and `watch` do, and for the reason this module
         # states everywhere else.
@@ -693,14 +695,14 @@ class Session(dprocess.Process):
         """Memory to a FILE, returning the path it ended up at."""
         check_segment(seg)
         check_dump_length(length)
-        return _dumped(self, f"MEMDUMPBIN {seg:04X}:{off:04X} {length:X} {MEMDUMP_FILE}", length,
-                       dest, (MEMDUMP_OK, MEMDUMP_FAIL), MEMDUMP_OK)
+        command = f"MEMDUMPBIN {seg:04X}:{off:04X} {dbg.typed_hex(length)} {MEMDUMP_FILE}"
+        return _dumped(self, command, length, dest, (MEMDUMP_OK, MEMDUMP_FAIL), MEMDUMP_OK)
 
     def vgamemdump(self, offset: int, length: int, dest: Path) -> Path:
         """Video memory, planes interleaved, to a file through `VGAMEMDUMP`; its path."""
         check_dump_length(length)
-        return _dumped(self, f"VGAMEMDUMP {offset:X} {length:X} {MEMDUMP_FILE}", length, dest,
-                       (VGAMEMDUMP_SAID,), VGAMEMDUMP_OK)
+        command = f"VGAMEMDUMP {dbg.typed_hex(offset)} {dbg.typed_hex(length)} {MEMDUMP_FILE}"
+        return _dumped(self, command, length, dest, (VGAMEMDUMP_SAID,), VGAMEMDUMP_OK)
 
     def intvec(self) -> str:
         """The interrupt vector table as the debugger's `INTVEC` writes it."""

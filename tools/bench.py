@@ -11,6 +11,7 @@ round trip. A run that is not a measurement prints INVALID on stderr and exits 3
 from __future__ import annotations
 
 import argparse
+import contextlib
 import functools
 import json
 import os
@@ -49,6 +50,8 @@ SETTLE_SAMPLES = 1
 #: The emulated seconds the batch plays; ten times that is an emulator that never ended.
 BATCH_SECS = 30
 BATCH_TIMEOUT_S = 10 * BATCH_SECS
+#: How long a killed batch is waited for: a leader outliving its kill is left, not waited out.
+KILL_WAIT_S = 10
 #: `sysctl` answers at once; one that does not is a host problem, said rather than waited out.
 PROBE_TIMEOUT_S = 10
 
@@ -121,19 +124,31 @@ def newest(log: Path) -> float | None:
     return max(found) if found else None
 
 
+def _end_tree(proc: subprocess.Popen[bytes]) -> None:
+    """End `proc` and everything it started: its process group, or on Windows (where a signal
+    reaches one pid) the tree by parent pid."""
+    if sys.platform == "win32":
+        with contextlib.suppress(subprocess.TimeoutExpired):
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                           capture_output=True, check=False, timeout=KILL_WAIT_S)
+    else:
+        dprocess.signal_group(proc.pid, guardian.KILL)
+
+
 def run_group(argv: list[str], cwd: Path, timeout_s: float) -> None:
-    """Run `argv` in a process group of its own to its end; past `timeout_s` the whole group goes
+    """Run `argv` in a process group of its own to its end; past `timeout_s` the whole tree goes
     (`make` runs the emulator as a grandchild, which killing the leader leaves running) and
     `TimeoutExpired` is raised."""
-    with subprocess.Popen(argv, cwd=str(cwd), stdout=subprocess.DEVNULL,
-                          stderr=subprocess.DEVNULL,
-                          start_new_session=sys.platform != "win32") as proc:
-        try:
-            proc.wait(timeout=timeout_s)
-        except subprocess.TimeoutExpired:
-            dprocess.signal_group(proc.pid, guardian.KILL)
-            proc.wait()
-            raise
+    proc = subprocess.Popen(argv, cwd=str(cwd), stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                            start_new_session=sys.platform != "win32")
+    try:
+        proc.wait(timeout=timeout_s)
+    except subprocess.TimeoutExpired:
+        _end_tree(proc)
+        with contextlib.suppress(subprocess.TimeoutExpired):
+            proc.wait(timeout=KILL_WAIT_S)
+        raise
 
 
 def batch_cost(cwd: Path, song: str) -> dict[str, float]:

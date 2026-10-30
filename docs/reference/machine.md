@@ -274,7 +274,8 @@ log(pattern, channel, limit=40, labels=false, since_mark=0)
 ```
 
 The session's log, one `channel` (`guest`, `emulator`, `all`, `dos`) filtered by the
-Python regex `pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`.
+Python regex `pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`, the
+matching lines counted by first word.
 `since_mark` (a byte position, from a `mark`) reads only what follows. Needs a session with
 `logfile`. `dos`, the guest's INT 21h calls and no other interrupt, instead needs a session
 started with `dos_calls`, matches `pattern` against each call's `line` (`#20 08BC:0139 psp

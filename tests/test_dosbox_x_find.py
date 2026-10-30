@@ -125,7 +125,7 @@ def test_scan_start_refuses_when_the_debugger_already_holds_one() -> None:
 
 
 def test_scan_start_refuses_the_range_the_debugger_refused() -> None:
-    s = session([("MEMFIND 0000:0 FFFFFF B", "range_exceeds")])
+    s = session([("MEMFIND 0000:0 0FFFFFF B", "range_exceeds")])
     with pytest.raises(ds.Invalid, match="past the memory"):
         finder.start_scan(s, 0, 0, 0xFFFFFF, 1)
 
@@ -184,7 +184,7 @@ def test_scan_filter_reports_a_finished_scan_as_closed_with_no_survivors() -> No
 
 def test_scan_filter_refuses_a_value_wider_than_the_cells() -> None:
     with pytest.raises(ds.Invalid, match="does not fit"):
-        finder.filter_scan(session([("MEMS =FFF", "too_wide")]), "=", 0xFFF)
+        finder.filter_scan(session([("MEMS =0FFF", "too_wide")]), "=", 0xFFF)
 
 
 def test_a_filter_refuses_when_nothing_is_open_and_names_the_start() -> None:
@@ -271,13 +271,13 @@ def test_scan_clear_refuses_an_answer_it_cannot_read() -> None:
 
 
 def test_scan_start_checks_the_echoed_range_and_closes_a_wrong_one() -> None:
-    s = session([("MEMFIND 0000:0 FFFFFF B", "opened_whole")])
+    s = session([("MEMFIND 0000:0 0FFFFFF B", "opened_whole")])
     got = finder.start_scan(s, 0, 0, 0xFFFFFF, 1)
     assert got["hits_total"] == 0xFFFFFF and got["addr"] == "0x00000000"
-    short = session([("MEMFIND 0000:0 FFFFFE B", "opened_whole"), ("MEMFIND !", "cancelled")])
+    short = session([("MEMFIND 0000:0 0FFFFFE B", "opened_whole"), ("MEMFIND !", "cancelled")])
     with pytest.raises(ds.Invalid, match="the range asked for"):
         finder.start_scan(short, 0, 0, 0xFFFFFE, 1)
-    assert short.sent == ["MEMFIND 0000:0 FFFFFE B", "MEMFIND !"]
+    assert short.sent == ["MEMFIND 0000:0 0FFFFFE B", "MEMFIND !"]
 
 
 def test_scan_start_accepts_an_offset_wider_than_sixteen_bits() -> None:
@@ -332,12 +332,12 @@ def test_a_scan_opened_at_a_width_takes_a_value_of_exactly_that_many_bytes(
     """The opening line names its cell width; the captured byte opening is edited to it."""
     said = "1 byte" if size == 1 else f"{size} bytes"
     opened = reply("opened_0400").replace("1 byte specified", f"{said} specified")
-    s = session([(f"MEMFIND 0000:400 100 {letter}", opened), (f"MEMS ={top:X}", "finished")])
+    s = session([(f"MEMFIND 0000:400 100 {letter}", opened), (f"MEMS =0{top:X}", "finished")])
     assert finder.start_scan(s, 0, 0x400, 0x100, size)["cell_bytes"] == size
     with pytest.raises(ds.Invalid, match="wider than"):
         finder.filter_scan(s, "=", top + 1)
     assert finder.filter_scan(s, "=", top)["closed"] is True
-    assert s.sent == [f"MEMFIND 0000:400 100 {letter}", f"MEMS ={top:X}"]
+    assert s.sent == [f"MEMFIND 0000:400 100 {letter}", f"MEMS =0{top:X}"]
 
 
 @pytest.mark.parametrize("line", [finder.SCAN_ACTIVE, finder.SCAN_NOT_ACTIVE],

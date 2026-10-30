@@ -1,8 +1,9 @@
 """Section O of the live matrix: DOSBox-X never came to the front and no Space moved during the run.
 
-The control opens the run and the verdict closes it; without a control that held, the verdict is
-BLOCKED, never green, though a stolen focus is still a FAIL. The control's start in front and its
-Space move take the owner's focus and Space, so they run only with SCRY_FOCUS_CONTROL=1.
+The control opens the run and the verdict closes it; without a control that held, or with no
+section between them, the verdict is BLOCKED, never green, though a stolen focus is still a FAIL.
+The control's start in front and its Space move take the owner's desk, so they run only with
+SCRY_FOCUS_CONTROL=1.
 """
 from __future__ import annotations
 
@@ -69,7 +70,7 @@ def section_o_control() -> None:
         SINCE.append(c.since)
 
 
-@M.section("O", "the focus gate's verdict, closing the run", O_VERDICT, place=2)
+@M.section("O", "the focus gate's verdict, closing the run", O_VERDICT, place=2, spans=True)
 def section_o_verdict() -> None:
     if not WATCH:
         M.block_rest("the control never started the watch")

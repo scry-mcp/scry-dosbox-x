@@ -68,7 +68,7 @@ def log_cpu(session: ds.Session, word: str, count: int, began: float, deadline: 
     if word not in ds.LOG_WORDS:
         raise ValueError(f"{word!r} is not a word of the LOG family")
     session.require_run_state("trace")
-    command = f"{word} {count:X}"
+    command = f"{word} {dbg.typed_hex(count)}"
     release(session, command)
     return ds.Session.await_stop(session, began, deadline, f"`{command}`", progress,
                               label=f"trace: `{command}`")

@@ -83,10 +83,11 @@ def check_port_write(**given: Any) -> None:
 
 def _devices(session: ds.Session, port: int) -> dict[str, bool]:
     """Which accesses of `port` reach a device, by one `PORTINFO`: `r8` .. `w32`."""
-    ok, lines = session.exec(f"{PORTINFO} {port:X}")
+    command = f"{PORTINFO} {dbg.typed_hex(port)}"
+    ok, lines = session.exec(command)
     found = next((m for m in map(PORTINFO_LINE.match, lines) if m is not None), None)
     if not ok or found is None or int(found.group(1), 16) != port:
-        raise Invalid("unexpected_answer", f"`{PORTINFO} {port:X}` answered "
+        raise Invalid("unexpected_answer", f"`{command}` answered "
                       f"{' / '.join(lines) or 'nothing'}, not its line for port 0x{port:X}")
     flags = [g == "1" for g in found.groups()[1:]]
     return dict(zip(("r8", "r16", "r32", "w8", "w16", "w32"), flags, strict=True))
@@ -115,14 +116,15 @@ def port_read(session: ds.Session, port: judges.NumberArg, bits: int = 8) -> dic
     # A read can change the device (3DAh resets the attribute flip-flop, 60h takes the key).
     session.altered = True
     word = BITS[bits][0]
-    ok, lines = session.exec(f"{word} {at:X}")
+    command = f"{word} {dbg.typed_hex(at)}"
+    ok, lines = session.exec(command)
     found = next((m for m in map(RESULT_LINE.match, lines) if m is not None), None)
     if not ok or found is None:
-        raise Invalid("unexpected_answer", f"`{word} {at:X}` answered "
+        raise Invalid("unexpected_answer", f"`{command}` answered "
                       f"{' / '.join(lines) or 'nothing'}, not a `Result:` line")
     value = int(found.group(1), 16)
     if value >> bits:
-        raise Invalid("unexpected_answer", f"`{word} {at:X}` answered {value:#x}, wider than "
+        raise Invalid("unexpected_answer", f"`{command}` answered {value:#x}, wider than "
                       f"the {bits} bits it reads")
     return st.reply(port=_hex(at, 16), bits=bits, value=_hex(value, bits))
 
@@ -135,9 +137,10 @@ def port_write(session: ds.Session, port: judges.NumberArg, value: judges.Number
     _reached(session, at, bits, True, 'port(method="write")')
     session.altered = True
     word = BITS[bits][1]
-    ok, lines = session.exec(f"{word} {at:X} {number:X}")
+    command = f"{word} {dbg.typed_hex(at)} {dbg.typed_hex(number)}"
+    ok, lines = session.exec(command)
     if not ok:
-        raise Invalid("unexpected_answer", f"`{word} {at:X} {number:X}` was not taken: "
+        raise Invalid("unexpected_answer", f"`{command}` was not taken: "
                       f"{' / '.join(lines) or 'nothing'}")
     return st.reply(port=_hex(at, 16), bits=bits, value=_hex(number, bits),
                     readback=unavailable("a port holds no value to read back: what a read of it "

@@ -45,6 +45,12 @@ SURVEY_NAMES = (*grammar.REGISTER_NAMES, "EFLAGS", "CR0")
 CR0_PE, CR0_PG, EFLAGS_VM = 1, 1 << 31, 1 << 17
 
 
+def typed_hex(value: int, width: int = 0) -> str:
+    """A debugger number: a bare `AF` is read as a name."""
+    text = f"{value:0{width}X}"
+    return f"0{text}" if text[0] in "ABCDEF" else text
+
+
 def exec_lines(session: ds.Session, command: str,
                seconds: float | None = None) -> tuple[bool, list[str]]:
     """`EXEC command`: whether the debugger took it, and every line it printed. A reply cut at

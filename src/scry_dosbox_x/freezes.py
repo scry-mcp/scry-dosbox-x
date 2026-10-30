@@ -13,6 +13,7 @@ from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
 from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import declarations as dec
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import taps
@@ -69,7 +70,7 @@ def arm(session: ds.Session, decl: dec.Declaration) -> Freeze:
     STATE.freezes[decl.ref] = freeze
     try:
         for i in range(width):
-            command = f"{FM} {seg:04X}:{off + i:X}"
+            command = f"{FM} {seg:04X}:{dbg.typed_hex(off + i)}"
             ok, lines = session.exec(command)
             found = next((m for line in lines if (m := _SET.match(line))), None)
             if not ok or found is None:

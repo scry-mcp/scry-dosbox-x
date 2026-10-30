@@ -82,6 +82,36 @@ def test_a_ledger_makes_no_directory_until_the_run_writes(lm: ModuleType, tmp_pa
     assert list(tmp_path.iterdir()) == []
 
 
+def _spanning(lm: ModuleType, *, beside: bool) -> Any:
+    """A control that opens the run and a verdict that closes it, with a section between or not."""
+    m = lm.Ledger()
+    m.section("O", "control", [lm.Cell("o-control", "t")], place=0)(
+        lambda: m.judge("o-control", True))
+    if beside:
+        m.section("B", "beside", [lm.Cell("b1", "t")])(lambda: m.judge("b1", True))
+    m.section("O", "verdict", [lm.Cell("o-verdict", "t")], place=2, spans=True)(
+        lambda: m.block("o-verdict", "too little ran"))
+    return m
+
+
+def test_a_verdict_with_no_section_beside_it_is_named_when_the_run_is_planned(
+        lm: ModuleType, capsys: pytest.CaptureFixture[str]) -> None:
+    m = _spanning(lm, beside=False)
+    assert _run(m) == lm.EXIT_PASS, "naming a cell it cannot judge does not refuse the run"
+    out = _out(capsys)
+    named = [i for i, line in enumerate(out) if line.startswith(
+        "cannot be judged in this selection: o-verdict")]
+    planned = next(i for i, line in enumerate(out) if line.startswith("PLANNED"))
+    assert len(named) == 1 and named[0] == planned + 1, out
+    assert not [x for x in out if x.startswith("cannot be judged") and "b1" in x]
+
+
+def test_a_verdict_with_a_section_beside_it_is_not_named(
+        lm: ModuleType, capsys: pytest.CaptureFixture[str]) -> None:
+    _run(_spanning(lm, beside=True))
+    assert not [x for x in _out(capsys) if x.startswith("cannot be judged")]
+
+
 def test_a_green_run_removes_its_scratch_and_its_jobs(
         lm: ModuleType, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     m = _ledger(lm, ("A", ["a1"], None), ("B", ["b1"], None))

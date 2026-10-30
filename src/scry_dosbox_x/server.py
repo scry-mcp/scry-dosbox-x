@@ -285,7 +285,8 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
         labels: bool = False,
         since_mark: Annotated[int, log_marks.SINCE_MARK_BOUND] = 0) -> dict[str, Any]:
     """The session's log, one `channel` (`guest`, `emulator`, `all`, `dos`) filtered by the
-    Python regex `pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`.
+    Python regex `pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`, the
+    matching lines counted by first word.
     `since_mark` (a byte position, from a `mark`) reads only what follows. Needs a session with
     `logfile`. `dos`, the guest's INT 21h calls and no other interrupt, instead needs a session
     started with `dos_calls`, matches `pattern` against each call's `line` (`#20 08BC:0139 psp
@@ -1570,9 +1571,9 @@ def perform(steps: list[dict[str, Any]],
     misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
     The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
     nothing run. `settle_seconds` bounds each wait for a stop before a step that needs one (0:
-    never wait). `until_frame=F` (with `summaries`, `run_for`) repeats the list until a stop
-    reads frame F, counted since power-on, within {UNTIL_STEPS_MAX} steps and {WAIT_MAX_S} s;
-    `no_channel` if the build counts no frames.
+    never wait). `until_frame=F` needs `summaries=True` (a window is hundreds of steps) and a
+    `run_for` step, and repeats the list until a stop reads frame F, counted since power-on, within
+    {UNTIL_STEPS_MAX} steps and {WAIT_MAX_S} s; `no_channel` if the build counts no frames.
 
     Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
     `verdict` (once the list waited; `TARGET` adds `stopped`, `TIMEOUT` `note`), else

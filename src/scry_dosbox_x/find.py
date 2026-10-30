@@ -21,6 +21,7 @@ from scry_core import scan_vocabulary as words
 from scry_core import vocabulary as vocab
 from scry_core.prose import counted
 
+from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import dump as dumping
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
@@ -194,7 +195,8 @@ def start_scan(session: ds.Session, seg: int, off: int, length: int,
     """Open the debugger's search instance over `length` bytes from `seg:off`."""
     check_scan_range(length, cell_bytes)
     letter, size = CELLS[cell_bytes], cell_bytes
-    out = session.command(f"MEMFIND {seg:04X}:{off:X} {length:X} {letter}")
+    where = f"{seg:04X}:{dbg.typed_hex(off)}"
+    out = session.command(f"MEMFIND {where} {dbg.typed_hex(length)} {letter}")
     last = _last_scan_line(out)
     _refuse(last, "open")
     opened = SCAN_OPENED.search(last)
@@ -242,7 +244,7 @@ def filter_scan(session: ds.Session, operator: str, value: int | None,
         raise ds.Invalid("bad_argument",
             f"value={value:#x} is wider than the open scan's {cell}-byte cell (at most "
             f"{(1 << (8 * cell)) - 1:#x}): nothing was sent")
-    arg = "" if value is None else f"{value:X}"
+    arg = "" if value is None else dbg.typed_hex(value)
     out = session.command(f"MEMS {operator}{arg}")
     last = _last_scan_line(out)
     _refuse(last, "filter")

@@ -38,6 +38,8 @@ DUMP_COMMAND = re.compile(
     r"MEMDUMPBIN (?P<seg>[0-9A-F]{4}):(?P<off>[0-9A-F]+) (?P<len>[0-9A-F]+)(?: (?P<name>\S+))?$")
 # Captured: `MEMDUMPBIN 0000:0000 20` wrote `00:0000 20`, the line from this offset on.
 ARGS_TAIL_FROM = len("MEMDUMPBIN 00")
+# `GetHexValue` reads an unquoted `AC`, `AF`, `CF` or `DF` as that flag, which is clear here.
+FLAG_NAMES = frozenset({"AC", "AF", "CF", "DF"})
 REAL_MEMORY = 0x110000                   # the megabyte and the HMA, A20 on as on the probe
 
 
@@ -76,7 +78,7 @@ class Debugger(FakeSession):
         line = text.upper()                 # `ParseCommand` upper-cases the line
         m = DUMP_COMMAND.match(line)
         assert m, text
-        seg, off, n = (int(m[g], 16) for g in ("seg", "off", "len"))
+        seg, off, n = (0 if m[g] in FLAG_NAMES else int(m[g], 16) for g in ("seg", "off", "len"))
         name = ((m["name"] or line[ARGS_TAIL_FROM:]) if self.takes_name
                 else ds.MEMDUMP_NAME.upper())
         if self.writes:
@@ -111,6 +113,15 @@ def test_the_takes_name_double_writes_the_files_the_captured_build_wrote(
     s.command("MEMDUMPBIN 0000:0000 20")
     assert {p.name: p.stat().st_size for p in tmp_path.iterdir()} == {
         "MCPDUMP.BIN": 0x10, "00:0000 20": 0x20}
+
+
+@pytest.mark.parametrize("length", [0xAB, 0xAC, 0xAE, 0xAF, 0xB0, 0xCE, 0xCF, 0xDE, 0xDF, 0xE0])
+def test_a_length_the_debugger_reads_as_a_flag_name_still_dumps_that_many_bytes(
+        tmp_path: Path, length: int) -> None:
+    """160 bytes of code and the 15 an instruction may need is 0xAF: `AF` unquoted is the flag."""
+    s = debugger(tmp_path)
+    got = s.memdump(0x0814, 0x0130, length, tmp_path / "out.bin")
+    assert got.read_bytes() == bytes(s.mem[0x8140 + 0x130 + x] for x in range(length))
 
 
 def debugger(tmp_path: Path, **kw: Any) -> Debugger:

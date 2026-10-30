@@ -52,6 +52,16 @@ class Section:
     judged: dict[str, str] = field(default_factory=dict)
     place: int = 1               # 0 opens the run, 2 closes it
     alone: bool = False          # opens a window: never pooled
+    spans: bool = False          # its verdict judges the run of the sections between place 0 and 2
+
+
+def cannot_be_judged(chosen: list[Section]) -> list[tuple[str, str]]:
+    """The cells a selection plans and can never judge: a `spans` section's, when no section of
+    place 1 is chosen beside it."""
+    if any(s.place == 1 for s in chosen):
+        return []
+    return [(c.label, f"[{s.letter}] judges what the other sections do, and none is chosen")
+            for s in chosen if s.spans for c in s.cells]
 
 
 def chosen_sections(raw: str) -> list[str]:
@@ -108,12 +118,12 @@ class Ledger:
         return self.host.made()
 
     def section(self, letter: str, title: str, cells: list[Cell], needs: str = "",
-                place: int = 1, alone: bool = False
+                place: int = 1, alone: bool = False, spans: bool = False
                 ) -> Callable[[Callable[[], None]], Callable[[], None]]:
         """Register a section and its cells."""
         def register(fn: Callable[[], None]) -> Callable[[], None]:
             self.sections.append(Section(letter, title, cells, fn, needs, place=place,
-                                         alone=alone))
+                                         alone=alone, spans=spans))
             return fn
         return register
 
@@ -291,6 +301,8 @@ class Ledger:
         planned = sum(len(s.cells) for s in chosen)
         print(f"PLANNED {planned} cells in {len(chosen)} sections "
               f"({', '.join(s.letter for s in chosen)})", flush=True)
+        for label, why in cannot_be_judged(chosen):
+            print(f"cannot be judged in this selection: {label}: {why}", flush=True)
         if twice:
             self.unfinished()
             print(f"==> LIVE MATRIX INVALID: the plan names these cells twice: {twice}",

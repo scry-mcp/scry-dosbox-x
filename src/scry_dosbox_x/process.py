@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import errno
 import os
 import signal
 import socket
@@ -194,14 +195,16 @@ class Process:
     def _drain(self) -> None:
         """Read the emulator's output while it lives, recording why it stopped short, if it did.
 
-        It ends at end of file, which is the emulator gone; overflow drops the oldest bytes,
-        counted.
+        It ends at end of file, which is the emulator gone (on a pty Linux reports that as
+        `EIO`); overflow drops the oldest bytes, counted.
         """
         assert self._out is not None
         while True:
             try:
                 chunk = os.read(self._out, 65536)
             except OSError as exc:
+                if exc.errno == errno.EIO and os.isatty(self._out):
+                    break
                 self.drain_failure = f"a read failed ({exc!r}), so the tails may be short"
                 break
             if not chunk:
