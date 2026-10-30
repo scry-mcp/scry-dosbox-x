@@ -1,6 +1,6 @@
 """The `dos` channel of `log` and `log_wait`: every INT 21h the guest made since `start`, as the
 debugger's `DOSTRACE` records it, one row as DOS takes a call and one as DOS hands it back,
-paired here by number into a call with its result (`docs/reference/read.md`, The DOS calls)."""
+paired here by number into a call with its result (`docs/reference/machine.md`, `log`)."""
 
 from __future__ import annotations
 
@@ -66,6 +66,11 @@ CARRY_ERA = 0x38
 POLL_S = 0.05
 #: How many patterns a trace remembers the matches of.
 PATTERNS_KEPT = 8
+#: How many calls the server holds: past it the oldest go, so a chatty program cannot grow the
+#: server without bound while the fork's file keeps every row.
+CALLS_KEPT = 50_000
+#: How much of the file one parse takes, so the window is enforced between slices.
+CHUNK_BYTES = 4 << 20
 
 
 @dataclass
@@ -77,6 +82,8 @@ class Trace:
     calls: list[dict[str, Any]] = field(default_factory=list)
     by_n: dict[int, dict[str, Any]] = field(default_factory=dict)
     capped: int | None = None
+    #: How many calls from the front have gone past `CALLS_KEPT`; `n` stays the file's number.
+    dropped: int = 0
     partial: bytes = b""
     #: How many calls from the front have their `line`; a returned call's is set at its return.
     rendered: int = 0
@@ -141,19 +148,26 @@ def _returned(call: dict[str, Any], found: re.Match[str]) -> None:
 
 
 def read(trace: Trace) -> Trace:
-    """Parse what the file gained since the last read."""
+    """Parse what the file gained since the last read, a slice at a time, so the window holds
+    however much the guest wrote while nobody asked."""
     if trace.broken is not None:
         raise Invalid("unexpected_answer", trace.broken)
     try:
         with trace.path.open("rb") as f:
             f.seek(trace.offset)
-            chunk = f.read()
+            while chunk := f.read(CHUNK_BYTES):
+                trace.offset += len(chunk)
+                _ingest(trace, chunk)
+                _trim(trace)
     except OSError as e:
         raise Invalid("host_failed", f"the DOS call trace {trace.path} could not be read: "
                       f"{e!r}") from None
-    trace.offset += len(chunk)
-    data = trace.partial + chunk
-    lines = data.split(b"\n")
+    return trace
+
+
+def _ingest(trace: Trace, chunk: bytes) -> None:
+    """The rows of `chunk`, after the cut line the last one left, into calls."""
+    lines = (trace.partial + chunk).split(b"\n")
     trace.partial = lines.pop()
     for raw in lines:
         # A trace written in text mode on Windows ends each row with CR LF.
@@ -178,7 +192,26 @@ def read(trace: Trace) -> Trace:
     for call in trace.calls[trace.rendered:]:
         call.setdefault("line", _render(call))
     trace.rendered = len(trace.calls)
-    return trace
+
+
+def _trim(trace: Trace) -> None:
+    """Let the oldest calls go past `CALLS_KEPT`, with everything that points at them."""
+    cut = len(trace.calls) - CALLS_KEPT
+    if cut <= 0:
+        return
+    for call in trace.calls[:cut]:
+        trace.by_n.pop(call["n"], None)
+    del trace.calls[:cut]
+    trace.dropped += cut
+    trace.rendered -= cut
+    first = trace.calls[0]["n"]
+    for pattern, (settled, kept) in trace.matched.items():
+        trace.matched[pattern] = (max(settled - cut, 0), [c for c in kept if c["n"] >= first])
+
+
+def seen(trace: Trace) -> int:
+    """How many calls the trace has had, dropped ones included: what a wait counts arrivals by."""
+    return trace.dropped + len(trace.calls)
 
 
 def begin(session: ds.Session) -> Trace:
@@ -230,6 +263,10 @@ def _capped(trace: Trace) -> dict[str, Any]:
                     "after that were not recorded"}
 
 
+def _dropped(trace: Trace) -> dict[str, Any]:
+    return {"calls_dropped": trace.dropped} if trace.dropped else {}
+
+
 def log(pattern: str, limit: int, since_mark: int, labels: bool = False) -> dict[str, Any]:
     """The body of `log(channel="dos")`."""
     if labels:
@@ -244,7 +281,8 @@ def log(pattern: str, limit: int, since_mark: int, labels: bool = False) -> dict
     trace = STATE.dos_calls
     assert trace is not None
     return st.reply(pattern=pattern, channel=CHANNEL, lines_total=len(hits),
-                    truncated=len(hits) > limit, calls=hits[-limit:], **_capped(trace))
+                    truncated=len(hits) > limit, calls=hits[-limit:], **_capped(trace),
+                    **_dropped(trace))
 
 
 def _peek(session: ds.Session) -> tuple[bool, bool]:
@@ -263,8 +301,8 @@ def _arrived(trace: Trace, pattern: str, call: dict[str, Any], before: int,
              ticker: Ticker) -> dict[str, Any]:
     return st.reply(verdict="TARGET", pattern=pattern, channel=CHANNEL, call=call,
                     already=False, waited_s=ticker.elapsed(), lines_before=before,
-                    lines_total=len(trace.calls), arrived_during=len(trace.calls) - before,
-                    lines_examined=len(trace.calls))
+                    lines_total=seen(trace), arrived_during=seen(trace) - before,
+                    lines_examined=len(trace.calls), **_dropped(trace))
 
 
 def log_wait(session: ds.Session, pattern: str, seconds: float, since_mark: int,
@@ -275,12 +313,13 @@ def log_wait(session: ds.Session, pattern: str, seconds: float, since_mark: int,
         raise Invalid("bad_argument", "`since_mark` is a byte of the session log, and the DOS "
                       "channel reads its own trace: narrow it with `pattern`")
     trace = _trace()
-    before = len(trace.calls)
+    before = seen(trace)
     hits = _matching(trace, pattern)
     if hits:
         return st.reply(verdict="TARGET", pattern=pattern, channel=CHANNEL, call=hits[0],
                         already=True, waited_s=0.0, lines_before=before,
-                        lines_total=len(trace.calls), arrived_during=0, lines_examined=before)
+                        lines_total=before, arrived_during=0, lines_examined=len(trace.calls),
+                        **_dropped(trace))
     ticker = Ticker(seconds, progress)
     parked = None
     while not ticker.expired():
@@ -292,13 +331,13 @@ def log_wait(session: ds.Session, pattern: str, seconds: float, since_mark: int,
         found = _matching(trace, pattern)
         if found:
             return _arrived(trace, pattern, found[0], before, ticker)
-        arrived = len(trace.calls) - before
+        arrived = seen(trace) - before
         if gone:
             raise Invalid("session_broken", core_wait.gone_message(
-                pattern, core_wait.Ended("GONE", arrived, len(trace.calls), ticker.elapsed()),
+                pattern, core_wait.Ended("GONE", arrived, seen(trace), ticker.elapsed()),
                 seconds))
         if stopped:
-            raise ds._wait_stopped(pattern, arrived, ticker.elapsed(), parked=parked is True,
+            raise ds.wait_stopped(pattern, arrived, ticker.elapsed(), parked=parked is True,
                                    at_bound=False)
         ticker.tick("waiting {elapsed:.0f} s for a DOS call matching {pattern!r}",
                     pattern=pattern)
@@ -310,6 +349,6 @@ def log_wait(session: ds.Session, pattern: str, seconds: float, since_mark: int,
     note = f"no DOS call matching {pattern!r} in {seconds:g} s"
     capped = _capped(trace).get("note")
     return st.reply(verdict="TIMEOUT", pattern=pattern, channel=CHANNEL,
-                    waited_s=ticker.elapsed(), arrived_during=len(trace.calls) - before,
-                    lines_examined=len(trace.calls),
+                    waited_s=ticker.elapsed(), arrived_during=seen(trace) - before,
+                    lines_examined=len(trace.calls), **_dropped(trace),
                     note=f"{note}; {capped}" if capped else note)

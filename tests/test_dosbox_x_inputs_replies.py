@@ -12,8 +12,7 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import _names, clean_session  # noqa: F401
 
-from scry_dosbox_x import debugger as dbg
-from scry_dosbox_x import inputs, retrace, server, taps
+from scry_dosbox_x import inputs, retrace, run_state, server, taps
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
 
@@ -149,7 +148,7 @@ def test_a_cancel_among_a_parked_posts_retraces_leaves_the_machine_stopped(
         return True
 
     monkeypatch.setattr(ds.Session, "stop_at_bound", stop_at_bound)
-    monkeypatch.setattr(dbg, "read_run_state", lambda _s: True)
+    monkeypatch.setattr(run_state, "read_run_state", lambda _s: True)
     session = SimpleNamespace(clock_ms=0.0)
     with pytest.raises(asyncio.CancelledError):
         inputs.Retraces(session)()  # type: ignore[arg-type]
@@ -160,7 +159,7 @@ def test_a_parked_posts_count_watch_counts_since_the_stop_the_post_began_at(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """Each retrace of the post is a stop that moves the baseline; the reply's `since_last_stop`
     is what the whole post saw, not the last retrace's share."""
-    monkeypatch.setattr(dbg, "read_run_state", lambda _s: True)
+    monkeypatch.setattr(run_state, "read_run_state", lambda _s: True)
     # Totals as the debugger lists them where the post begins: 10 and 9 are what the last stop a
     # tool reported held, and the stop the post found (an `observe_stop`) was 20 and 9 by then.
     monkeypatch.setattr(taps, "listed", lambda _s: {7: {"total": 20}, 8: {"total": 9}})

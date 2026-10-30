@@ -1,7 +1,7 @@
-"""Presence on DOSBox-X: the edge plus a pointer arrow, drawn by the emulator's `PRESENCE` command.
+"""Presence on DOSBox-X: the edge plus a pointer, drawn by the emulator's `PRESENCE` command.
 
 It draws into the scaled output after the frame went to capture, so no capture or screen read
-carries it. The arrow appears once the session has moved the guest's mouse.
+carries it. The pointer appears once the session has moved the guest's mouse.
 """
 
 from __future__ import annotations
@@ -38,13 +38,36 @@ NO_OUTPUT = ("this output cannot be drawn on (an 8-bit output, or the TrueType o
 NO_WINDOW = "a session started without `shared` has no window to draw on"
 #: The bare command names the build's version; a build that refuses the bare form is version 1.
 MIN_VERSION = 2
+#: The INT 33h driver's default graphics pointer, hot spot top-left: `X` outline, `o` fill, `.`
+#: untouched. One cell per guest pixel, it matches a DOS program's own pointer.
+POINTER = (
+    "XX.........",
+    "XoX........",
+    "XooX.......",
+    "XoooX......",
+    "XooooX.....",
+    "XoooooX....",
+    "XooooooX...",
+    "XoooooooX..",
+    "XooooooooX.",
+    "XoooooXXXXX",
+    "XooXooX....",
+    "XoXXXooX...",
+    "XX..XooX...",
+    ".....XooX..",
+    ".....XooX..",
+    "......XX...",
+)
+POINTER_OUTLINE_RGB = 0x2A1400
+#: A look, not a promise: the button may follow the move by one BIOS tick, which is shorter.
+POINTER_GLIDE_S = 0.1
 
 
 def channel_args(look: presence.Look = presence.LOOK) -> str:
         return (f"rgb={look.rgb:06X} edge={look.edge:g} steps={look.steps} "
             f"acting={look.acting_alpha:.3f} held={look.held_alpha:.3f} fade={look.fade_s:g} "
-            f"outline={look.pointer_outline_rgb:06X} glide={look.pointer_glide_s:g} "
-            f"sprite={'/'.join(look.pointer)}")
+            f"outline={POINTER_OUTLINE_RGB:06X} glide={POINTER_GLIDE_S:g} "
+            f"sprite={'/'.join(POINTER)}")
 
 
 class Debugger(Protocol):
@@ -69,7 +92,7 @@ class ChannelAdapter:
             self.version = build_version(self._session.exec("PRESENCE")[1])
         if self.version < MIN_VERSION:
             raise presence.Unavailable(
-                f"this DOSBox-X's PRESENCE is version {self.version}, which draws the arrow at a "
+                f"this DOSBox-X's PRESENCE is version {self.version}, which draws the pointer at a "
                 f"share of the window; version {MIN_VERSION} sizes it by the guest's pixels")
         ok, lines = self._session.exec(
             f"PRESENCE {state} {self._args} pointer={int(self.pointer)}")
@@ -100,7 +123,7 @@ def build_version(lines: list[str]) -> int:
 
 
 def pointer_moved(shown: presence.Shown) -> None:
-    """Turn the arrow on from the session's first mouse move."""
+    """Turn the pointer on from the session's first mouse move."""
     adapter = shown.adapter
     if shown.held is None or not isinstance(adapter, ChannelAdapter) or adapter.pointer:
         return

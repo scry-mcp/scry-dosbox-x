@@ -20,7 +20,7 @@ from scry_dosbox_x import stub_link
 
 def e9(ses: ds.Session, pattern: str, limit: int = 40) -> tuple[list[str], int]:
     """The guest's E9 lines matching `pattern`, filtered at the source."""
-    return dlogs.filter_e9(ses._e9_text(), pattern, limit)
+    return dlogs.filter_e9(ses.e9_text(), pattern, limit)
 
 
 def log(ses: ds.Session, pattern: str, limit: int, channel: str,
@@ -29,12 +29,12 @@ def log(ses: ds.Session, pattern: str, limit: int, channel: str,
     dlogs.check_channel(channel)
     if since_mark:
         if channel == "guest":
-            ses._e9_text()
+            ses.e9_text()
         lines, _ = core_wait.lines_since(log_file_from(ses, since_mark, channel), since_mark)
         return dlogs.filter_log("\n".join(lines), pattern, limit, channel)
     if channel == "guest":
-        return dlogs.filter_e9(ses._e9_text(), pattern, limit)
-    return dlogs.filter_log(ses._log_text(), pattern, limit, channel)
+        return dlogs.filter_e9(ses.e9_text(), pattern, limit)
+    return dlogs.filter_log(ses.log_text(), pattern, limit, channel)
 
 
 def log_file_from(ses: ds.Session, since_mark: int, channel: str) -> Path:
@@ -53,7 +53,7 @@ def require_logfile(ses: ds.Session, what: str) -> Path:
     return ses.launch.logfile
 
 
-def _log_text(ses: ds.Session) -> str:
+def log_text(ses: ds.Session) -> str:
     """The log text, or `no_channel` if there is no log yet."""
     log = require_logfile(ses, "log channel to filter")
     if not log.exists():
@@ -63,9 +63,9 @@ def _log_text(ses: ds.Session) -> str:
     return log.read_text(encoding="utf-8", errors="replace")
 
 
-def _e9_text(ses: ds.Session) -> str:
+def e9_text(ses: ds.Session) -> str:
     """The instrumentation log; no instrumentation at all is `no_channel`, not "no match"."""
-    text = ses._log_text()
+    text = ses.log_text()
     if dlogs.count_e9(text) == 0:
         raise Invalid("no_channel",
             f"{ses.launch.logfile} carries no instrumentation at all. That is "
@@ -75,7 +75,7 @@ def _e9_text(ses: ds.Session) -> str:
     return text
 
 
-def _e9_since(ses: ds.Session, offset: int, channel: str = "guest") -> tuple[list[str], int]:
+def e9_since(ses: ds.Session, offset: int, channel: str = "guest") -> tuple[list[str], int]:
     """The complete lines of `channel` after byte `offset`, and the new offset."""
     log = ses.launch.logfile
     assert log is not None            # the caller refuses a session without one
@@ -86,20 +86,20 @@ def _e9_since(ses: ds.Session, offset: int, channel: str = "guest") -> tuple[lis
 def e9_new_since(ses: ds.Session, offset: int) -> tuple[list[str], int]:
     """The complete instrumentation lines after byte `offset` and the next offset.
 
-    Refuses a log not created yet, unlike `_e9_since`, which a wait needs lenient.
+    Refuses a log not created yet, unlike `e9_since`, which a wait needs lenient.
     """
     log = require_logfile(ses, "instrumentation channel to summarise")
     if not log.exists():
         raise Invalid("no_channel",
             f"no log at {log}: the guest has not written "
                       f"anything yet, which is not the same as having nothing to say")
-    return ses._e9_since(offset)
+    return ses.e9_since(offset)
 
 
 def e9_since_mark(ses: ds.Session, mark: int) -> list[str]:
     """Every complete instrumentation line after byte `mark`, uncut."""
     require_logfile(ses, "instrumentation channel to look at")
-    lines, _ = ses._e9_since(mark)
+    lines, _ = ses.e9_since(mark)
     return lines
 
 
@@ -107,7 +107,7 @@ def e9_mark(ses: ds.Session) -> int:
     """The log's current size in bytes, the position `e9_wait(mark=)` starts from.
 
     The size, not the last newline: finding that would read the whole log, and a mark inside a
-    line is right because `_e9_since` drops a line begun before the mark.
+    line is right because `e9_since` drops a line begun before the mark.
     """
     log = require_logfile(ses, "instrumentation channel to mark a position in")
     return log.stat().st_size if log.exists() else 0
@@ -177,7 +177,7 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
 
     def fresh() -> list[str]:
         nonlocal offset
-        lines, offset = ses._e9_since(offset, channel)
+        lines, offset = ses.e9_since(offset, channel)
         return lines
 
     if advance is not None:
@@ -195,7 +195,7 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
         return {"verdict": contract.TARGET, "pattern": pattern, "channel": channel,
                 **got.fields()}
     if got.ending == "STOPPED":
-        raise ds._wait_stopped(pattern, got.arrived_during, got.waited_s,
+        raise ds.wait_stopped(pattern, got.arrived_during, got.waited_s,
                                parked=asked[:1] == [True], at_bound=got.at_bound)
     if got.ending == "GONE":
         raise Invalid("session_broken", core_wait.gone_message(pattern, got, seconds))

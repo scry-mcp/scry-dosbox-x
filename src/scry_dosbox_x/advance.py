@@ -10,6 +10,7 @@ from scry_core import screen_map
 
 from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import folds, placement, retrace, running
+from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
 from scry_dosbox_x.running import live
@@ -20,17 +21,21 @@ RUN_FOR_ONLY = frozenset({"polls", "emulated_before_s", "emulated_after_s", "fra
                           "frame_after", "cycles", "retrace_pending"})
 
 
-def run_to_screen(screen: str, seconds: float, progress: ds.Progress) -> dict[str, Any]:
-    """`run_to(screen=)` for a screen with no anchor: a retrace at a time until the map names
-    it, as `run_to` replies."""
+def run_to_screen(screen: str, control: str, seconds: float,
+                  progress: ds.Progress) -> dict[str, Any]:
+    """`run_to(screen=)`: a run to the screen's anchor, or a retrace at a time until the map
+    names a screen with none, as `run_to` replies."""
     session = live()
-    got = screen_map.run_until(
-        STATE.maps, screen,
-        lambda left: retrace.run_for(session, 1, 0, left, progress, who="a run to a screen"),
-        folds.map_read(session), seconds)
-    if got.get("status") != "ok":
-        return got
-    return {k: v for k, v in got.items() if k not in RUN_FOR_ONLY}
+
+    def stop_seq(_reply: dict[str, Any]) -> int | None:
+        current = STATE.as_of_current(session)
+        return None if current is None else current["stop_seq"]
+    return screen_map.run_to_screen(
+        STATE.maps, screen, control, seconds,
+        step=lambda left: retrace.run_for(session, 1, 0, left, progress,
+                                          who="a run to a screen"),
+        run_to_anchor=lambda anchor: run_to(anchor, control, seconds, progress),
+        read=folds.map_read(session), stop_seq=stop_seq, run_for_only=RUN_FOR_ONLY)
 
 
 def resume(seconds: float, detail: bool,
@@ -40,7 +45,7 @@ def resume(seconds: float, detail: bool,
     # Refused first: a `RUN` on a running guest does nothing, yet an `ok` would read as a release.
     if not session.at_debugger():
         if not session.has(dbg.RUNSTATE):
-            raise dbg.unknown_after_release("a resume")
+            raise rs.unknown_after_release("a resume")
         raise ds.NotStopped("the guest is already running, so there is nothing to resume")
     if seconds > 0:
         session.require_run_state("a resume with a bound")

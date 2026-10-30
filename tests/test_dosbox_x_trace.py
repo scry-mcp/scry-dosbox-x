@@ -22,7 +22,16 @@ from channel_double import NOT_RECOGNIZED, Machine, Stop, protected, session_ove
 from dosbox_x_server_support import clean_session, install, runnable  # noqa: F401
 from scry_core.host_program import MODE_BITS
 
-from scry_dosbox_x import arming, checks, grammar, machine, placement, server
+from scry_dosbox_x import (
+    arming,
+    checks,
+    grammar,
+    machine,
+    placement,
+    run_state,
+    server,
+    start_symbols,
+)
 from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import collect as dcollect
 from scry_dosbox_x import session as ds
@@ -352,6 +361,17 @@ def test_a_dynamic_core_is_refused_by_its_counter_and_the_file_is_kept(tmp_path:
     assert got["stop_seq"] and got["pc"].endswith(":00000106"), got
 
 
+def test_a_placement_said_at_the_trace_stop_survives_the_counter_refusing_the_trace(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    said = {"placed": True, "path": "/x/APP.MAP", "load_segment": "025C", "base": 0x25C0,
+            "loaded": 3}
+    monkeypatch.setattr(start_symbols, "place_if_due", lambda session: said)
+    tracer(tmp_path, [("probe-dynamic-cs_ip-16", "dynamic")])
+    got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
+                                            dest=str(tmp_path / "d.trace")))
+    assert got["code"] == "no_channel" and got["symbols_placed"] == said, got
+
+
 def cut(tmp_path: Path, close: str | None = "close") -> TraceMachine:
     """A breakpoint at the `dec bx` after the settle loop, and a trace asked past it."""
     machine = tracer(tmp_path, [("probe-cut-open", "ran"), (None, close)])
@@ -464,12 +484,12 @@ def test_a_log_command_is_a_release_and_clears_the_stopped_flag(
     running machine as parked; a `LOG` the debugger refused released nothing."""
     machine = TraceMachine(logs=[(None, None)])
     s = session_over(machine, cwd_of(tmp_path))
-    s._release(command)
+    s.release(command)
     assert s.parked is False
     refused = TraceMachine(logs=[(None, "refused")])
     kept = session_over(refused, cwd_of(tmp_path))
     with pytest.raises(ds.Invalid, match="refused"):
-        kept._release(command)
+        kept.release(command)
     assert kept.parked is True
 
 
@@ -1150,8 +1170,7 @@ def test_a_wait_that_breaks_off_remembers_the_log_it_released(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The log opens with the release: a wait that leaves by an exception (a client that went
     away, a read that failed) leaves it open, and the next trace has to know."""
-    from scry_dosbox_x import debugger as dbg
-    monkeypatch.setattr(dbg, "PROGRESS_EVERY_S", 0.0)
+    monkeypatch.setattr(run_state, "PROGRESS_EVERY_S", 0.0)
     machine = tracer(tmp_path, [("probe-settle-cs_ip-16", None)])
 
     def gone(*_args: object) -> None:

@@ -24,6 +24,7 @@ from scry_dosbox_x import (
     binary,
     capture_files,
     checks,
+    dos_calls,
     grammar,
     guest_files,
     inputs,
@@ -39,16 +40,18 @@ from scry_dosbox_x import state as st
 #: What every stop reply carries, named once for every tool that stops the machine.
 STOP_FIELDS = (
     "the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, "
-    "`watches`, `cause` and `e9`"
+    "`watches`, `cause`, `regpoint_hit` (a registerpoint stopped it) and `e9`"
 )
 
 DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES,
               **core_comments.DOC_VALUES,
+              **frame_window.DOC_VALUES,
               **recording.DOC_VALUES,
               "STOP_FIELDS": STOP_FIELDS,
+              "DOS_CALLS_KEPT": str(dos_calls.CALLS_KEPT),
+              "ADD_READ": "read", "ADD_PLACES": "in the screen's own units",
               "SPAN_TICKS": str(capture_files.SPAN_TICKS),
               "RECORD_MAX": str(sequence.RECORD_MAX),
-              "UNTIL_STEPS_MAX": str(frame_window.UNTIL_STEPS_MAX),
               **log_marks.DOC_VALUES,
               "LOG_LIMIT_MAX": str(logs.LOG_LIMIT_MAX), "WAIT_MAX_S": f"{vocab.WAIT_MAX_S:g}",
               "READ_MAX": str(grammar.READ_BYTES_MAX),

@@ -14,8 +14,8 @@ Run until a symbol or a `SEG:OFF` and say where it stopped.
 `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required with a `ref` or an anchored
 screen: a second ref known to be hot, counted when it fires, so a bound that expires with no
 control hit is INVALID, not "it did not arrive". Needs a stopped machine. Refused: an absent
-or ambiguous name. On a dynamic cpu core, which can pass over a breakpoint inside a compiled
-block, `note` says so.
+or ambiguous name. On a dynamic cpu core, or `auto` (protected-mode code runs dynamic),
+which can pass over a breakpoint inside a compiled block, `note` says so.
 
 `screen`: a mapped screen's name instead of `ref` (exactly one). With an `anchor`, run to it (`control`
 required): a `verified` map judges it there (`stale_map` when it no longer holds), a
@@ -40,6 +40,7 @@ Reference: REFERENCE.md, Advancing the machine.
 | reply field | type |
 |---|---|
 | `cause` | string |
+| `regpoint_hit` | object |
 | `control_hits` | integer |
 | `controls` | array |
 | `cpu_mode` | string or object |
@@ -154,7 +155,7 @@ Needs the machine stopped.
 Reply: `verdict` (`ELAPSED`, `OTHER_STOP`, `TIMEOUT`), `polls`, `emulated_before_s`,
 `emulated_after_s`, `frame_before`, `frame_after`, `cycles` (a count on the normal core, else
 unavailable with why), `retrace_pending` (a retrace stop is left armed), `note`,
-the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause` and `e9`. INVALID: `no_progress`, `unexpected_answer`.
+the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause`, `regpoint_hit` (a registerpoint stopped it) and `e9`. INVALID: `no_progress`, `unexpected_answer`.
 
 Reference: REFERENCE.md, Advancing the machine.
 
@@ -167,6 +168,7 @@ Reference: REFERENCE.md, Advancing the machine.
 | reply field | type |
 |---|---|
 | `cause` | string |
+| `regpoint_hit` | object |
 | `cpu_mode` | string or object |
 | `cycles` | integer or object |
 | `e9` | object |
@@ -286,6 +288,7 @@ Reference: REFERENCE.md, Advancing the machine.
 | reply field | type |
 |---|---|
 | `cause` | string |
+| `regpoint_hit` | object |
 | `cpu_mode` | string or object |
 | `e9` | object |
 | `frame` | integer or object |
@@ -412,6 +415,7 @@ Reference: REFERENCE.md, Input and the screen.
 |---|---|
 | `already` | boolean |
 | `cause` | string |
+| `regpoint_hit` | object |
 | `cpu_mode` | string |
 | `e9` | object |
 | `enrichment` | object |
@@ -482,6 +486,7 @@ stands, and no later step is sent. For longer runs `run_to`.
 | `after` | string |
 | `asked` | integer |
 | `cause` | string |
+| `regpoint_hit` | object |
 | `before` | string |
 | `cpu_mode` | string or object |
 | `e9` | object |
@@ -567,9 +572,9 @@ Let the machine run. `seconds` 0 (the default) returns at once with no deadline;
 up to 600 waits for a stop and, if none comes, leaves it running. Needs a stopped
 machine.
 
-Reply: with a bound, `verdict` (`OTHER_STOP` with the stop reply of `run_to`; `TIMEOUT`,
-`waited_s`, `note`). `output` (with `detail=True`: the last 2000 characters
-the debugger printed for `RUN`; else `omitted`).
+Reply: with a bound, `waited_s` and `verdict` (`OTHER_STOP` with the stop reply of `run_to`;
+`TIMEOUT`, left running, with a `note`). `output` (with `detail=True`: the last
+2000 characters the debugger printed for `RUN`; else `omitted`).
 
 Reference: REFERENCE.md, Advancing the machine.
 
@@ -581,6 +586,7 @@ Reference: REFERENCE.md, Advancing the machine.
 | reply field | type |
 |---|---|
 | `cause` | string |
+| `regpoint_hit` | object |
 | `clipped` | boolean |
 | `cpu_mode` | string or object |
 | `e9` | object |
@@ -636,6 +642,7 @@ Takes no argument.
 | reply field | type |
 |---|---|
 | `cause` | string |
+| `regpoint_hit` | object |
 | `cpu_mode` | string or object |
 | `e9` | object |
 | `frame` | integer or object |

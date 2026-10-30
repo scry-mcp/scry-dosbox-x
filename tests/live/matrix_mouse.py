@@ -17,6 +17,8 @@ from typing import Any
 from scry_dosbox_x import inputs, launch  # isort: skip
 from matrix_common import (
     GUEST,
+    MOUSE_CONF,
+    MOUSE_PROGRAM,
     M,
     boot,
     cells,
@@ -29,8 +31,6 @@ from matrix_common import (
     server,
 )
 
-MOUSE_CONF = GUEST / "mouse.conf"
-MOUSE_PROGRAM = "MOUSE.COM"
 KEYS_CONF = GUEST / "keys.conf"
 KEYS_PROGRAM = "KEYS.COM"
 #: Far more cycles a millisecond than the host executes: the guest's clock then runs well below
@@ -145,7 +145,7 @@ def _mouse_boot(conf: Any = MOUSE_CONF, **kw: Any) -> None:
     release_running()
 
 
-def _count(pattern: str) -> int | None:
+def _guest_line_count(pattern: str) -> int | None:
     """How many guest lines match so far, None when the log could not be read."""
     r = M.call(server.log, pattern=pattern, channel="guest", limit=1)
     total = r.get("lines_total")
@@ -184,12 +184,13 @@ def section_p() -> None:
            holds=ok(r) and r.get("route") == "guest")
     _pointer_cells()
     _buttons()
-    before = _count(r"MOUSE \. pos")
+    before = _guest_line_count(r"MOUSE \. pos")
     off = [M.call(server.send_mouse, x=320, y=0), M.call(server.send_mouse, x=0, y=200)]
     time.sleep(1)
     M.judge("P a target off the screen is refused and the pointer does not move",
             all(refused(r, "bad_argument") and "outside the screen" in str(r.get("message"))
-                for r in off) and before is not None and _count(r"MOUSE \. pos") == before,
+                for r in off)
+            and before is not None and _guest_line_count(r"MOUSE \. pos") == before,
             f"{said(off[0], 60)}; {said(off[1], 60)}")
     shot = M.fresh(".png")
     r = M.call(server.snapshot, dest=shot, seconds=WAIT_S)
@@ -207,7 +208,7 @@ def section_p() -> None:
 
 def _keys_spacing() -> None:
     """The guest's own tick count at each scan byte, with the emulator starved."""
-    label = P_CELLS[-4].label
+    label = next(c.label for c in P_CELLS if c.label.startswith("P with the emulator starved"))
     boot(conf=KEYS_CONF, program=KEYS_PROGRAM, flags=STARVED_CYCLES)
     release_running()
     must(_guest_line(r"KEYS \. up"), "the keys guest is up")
@@ -301,17 +302,19 @@ def _vbe_cells() -> None:
 
 
 def _buttons() -> None:
-    released = _count(r"b=0 presses=0$")
+    released = _guest_line_count(r"b=0 presses=0$")
     r = M.call(server.send_mouse, button="left", expect=r"b=1 presses=1$", seconds=WAIT_S)
     time.sleep(1)
     judged("P a left click is seen by the guest: pressed once, then released", reply=r,
-           holds=ok(r) and (r.get("pointer") or {}).get("buttons") == []
-           and released is not None and _count(r"b=0 presses=0$") == released + 1)
+           holds=ok(r) and (r.get("verify") or {}).get("seen") is True
+           and (r.get("pointer") or {}).get("buttons") == []
+           and released is not None and _guest_line_count(r"b=0 presses=0$") == released + 1)
     r = M.call(server.send_mouse, button="right", action="down", expect=r" b=2 ",
                seconds=WAIT_S)
     up = M.call(server.send_mouse, button="right", action="up")
     judged("P the right button is the driver's second bit, held and released", reply=r,
-           holds=ok(r) and (r.get("pointer") or {}).get("buttons") == ["right"]
+           holds=ok(r) and (r.get("verify") or {}).get("seen") is True
+           and (r.get("pointer") or {}).get("buttons") == ["right"]
            and ok(up) and (up.get("pointer") or {}).get("buttons") == [])
     before = M.call(server.log, pattern=r"b=1 presses=1$", channel="guest", limit=1)
     r = M.call(server.send_mouse, button="left", action="double")
@@ -347,9 +350,9 @@ def _twice(hooked: bool = False) -> None:
     r = M.call(server.send_keys, keys=["a", "b"], expect=r"MOUSE \. key=98$", seconds=WAIT_S)
     name = ("P a second copy stays out though a TSR took INT 1Ch above the first" if hooked
             else "P a second copy the conf also runs stays out, and keys still arrive whole")
-    copies = _count(r"STUB  \. scry device=present")
+    copies = _guest_line_count(r"STUB  \. scry device=present")
     judged(name, reply=r, holds=ok(twice) and ok(r) and copies == 1
-           and (not hooked or _count(r"HOOK1C \. int 1Ch hooked") == 2))
+           and (not hooked or _guest_line_count(r"HOOK1C \. int 1Ch hooked") == 2))
     must(M.call(server.close), "closing")
 
 
@@ -412,7 +415,7 @@ def _crop(name: str) -> str:
     return dest
 
 
-def _same(a: str, b: str) -> bool:
+def _screens_identical(a: str, b: str) -> bool:
     r = M.call(server.image_compare, method="image", a=a, b=b)
     return ok(r) and r.get("differing_pixels") == 0
 
@@ -424,7 +427,7 @@ def _main_screen() -> str:
     for _ in range(60):
         time.sleep(1)
         now = _crop("away")
-        if not _same(now, loading) and _same(now, previous):
+        if not _screens_identical(now, loading) and _screens_identical(now, previous):
             return now
         previous = now
     raise RuntimeError("ReChip's main screen never held still")

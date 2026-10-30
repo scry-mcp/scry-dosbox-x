@@ -314,7 +314,7 @@ def test_a_retrace_is_a_release_the_session_follows(tmp_path: Path) -> None:
     """Sending `VRT` clears the stopped flag, as `RUN` does."""
     live(frames(1), tmp_path)
     session = cast(ds.Session, dstate.STATE.session)
-    session._release(ds.RETRACE_COMMAND)
+    session.release(ds.RETRACE_COMMAND)
     assert session.parked is False
 
 

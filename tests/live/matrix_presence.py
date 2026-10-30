@@ -18,6 +18,8 @@ from typing import Any
 from matrix_common import (
     ENV,
     GUEST,
+    MOUSE_CONF,
+    MOUSE_PROGRAM,
     STOPPED,
     M,
     advanced,
@@ -43,8 +45,8 @@ TO_13H, TO_LAST = 4, 2
 #: Long enough for the writer to land a pending state and a stopped machine to repaint.
 QUIET_S = 0.5
 STRETCH_S = 2.0
-#: The most of the window the arrow alone may span.
-ARROW_SPAN = 0.25
+#: The most of the window the pointer alone may span.
+POINTER_SPAN = 0.25
 #: Bounds the captures a settled frame may take, so an unsettled window blocks the cell.
 SETTLE_CAPTURES = 6
 SETTLE_GAP_S = 0.5
@@ -69,18 +71,16 @@ R_CELLS = cells(
      "presence: NO_COMMAND"),
     ("R a session with no window says it has none, and one asked off says false",
      "presence: NO_WINDOW"),
-    ("R the first mouse move draws the arrow inside the picture, away from the edge, and only "
-     "the arrow: with it turned off the same screen differs by those pixels alone",
-     "REFERENCE.md, The presence indicator: an orange arrow stands on the guest's pointer"),
-    ("R in the graphics modes the arrow is the sprite's height in guest pixels: the same "
+    ("R the first mouse move draws the pointer inside the picture, away from the edge, and only "
+     "the pointer: with it turned off the same screen differs by those pixels alone",
+     "REFERENCE.md, The presence indicator: an orange pointer stands on it"),
+    ("R in the graphics modes the pointer is the sprite's height in guest pixels: the same "
      "number of rows at 320x200 and at 640x480",
      "REFERENCE.md, The presence indicator: sized by the guest's pixels"),
 )
-MOUSE_CONF = GUEST / "mouse.conf"
-MOUSE_PROGRAM = "MOUSE.COM"
 #: The mouse guest's mode keys and the rows each mode shows (`tests/guest/mouse.asm`).
 GRAPHICS_MODES = (("g", 200), ("v", 480))
-#: How far, as a share of the sprite's rows, the arrow's measured rows may be off: the window's
+#: How far, as a share of the sprite's rows, the pointer's measured rows may be off: the window's
 #: scaling smears an edge.
 ROWS_TOLERANCE = 0.3
 
@@ -111,10 +111,10 @@ def _put(adapter: dpresence.ChannelAdapter, state: str) -> int | None:
     else:
         adapter.show(state)  # type: ignore[arg-type]
     time.sleep(QUIET_S)
-    return _count(adapter)
+    return _frame_count(adapter)
 
 
-def _count(adapter: dpresence.ChannelAdapter) -> int | None:
+def _frame_count(adapter: dpresence.ChannelAdapter) -> int | None:
     """The emulator's frame count now, without changing what is drawn."""
     state = adapter.answer.split()[1] if len(adapter.answer.split()) > 1 else "off"
     ok_, lines = _debugger().exec(f"PRESENCE {state}")
@@ -184,10 +184,10 @@ def _spin_record(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
     on_shot = Path(M.fresh(".png"))
     on_snap = M.call(server.snapshot, dest=str(on_shot))
     # A still screen is redrawn only when the overlay moves, so count across a fade.
-    lit = _count(adapter)
+    lit = _frame_count(adapter)
     _put(adapter, "held")
     time.sleep(presence.LOOK.fade_s)
-    after = _count(adapter)
+    after = _frame_count(adapter)
     must(M.call(server.stop), "stopping the spin")
     out["snapshot"] = (_digest(off_shot) if ok(off_snap) else "",
                        _digest(on_shot) if ok(on_snap) else "")
@@ -211,7 +211,7 @@ def _start(**kw: Any) -> dict[str, Any]:
                 captures_dir=M.fresh("-cap"), flags=E9_OPEN, **kw)
 
 
-def _same(pair: Any) -> bool:
+def _pair_agrees(pair: Any) -> bool:
     return isinstance(pair, tuple | list) and len(pair) == 2 and all(pair) and pair[0] == pair[1]
 
 
@@ -242,7 +242,7 @@ def section_r() -> None:
         _judge_window(R_CELLS[2].label, off_window, on_window)
     M.judge(R_CELLS[3].label, all(off_stills.values()) and off_stills == on_stills,
             f"off {off_stills}, acting {on_stills}")
-    M.judge(R_CELLS[4].label, all(_same(spin[k]) for k in
+    M.judge(R_CELLS[4].label, all(_pair_agrees(spin[k]) for k in
                                   ("snapshot", "capture_frame", "series_capture")),
             f"{ {k: spin[k] for k in ('snapshot', 'capture_frame', 'series_capture')} } "
             f"from {spin['avi_frames']} frames of {spin['capture']}")
@@ -281,13 +281,13 @@ def section_r() -> None:
             and asked_off.get("presence") is False,
             f"headless {shown_headless!r}, asked off {asked_off.get('presence')!r}")
     close_whatever()
-    _arrow(R_CELLS[8].label)
-    _arrow_rows(R_CELLS[9].label)
+    _pointer(R_CELLS[8].label)
+    _pointer_rows(R_CELLS[9].label)
 
 
-def _arrow_difference(mode_key: str | None, x: int, y: int
+def _pointer_difference(mode_key: str | None, x: int, y: int
                       ) -> tuple[dict[str, Any], str, window_capture.Difference | str]:
-    """Captures after a mouse move and again with the arrow off: what differs is the arrow, or
+    """Captures after a mouse move and again with the pointer off: what differs is the pointer, or
     the reason it cannot be judged. `mode_key` first switches the mouse guest's BIOS mode."""
     boot(conf=MOUSE_CONF, program=MOUSE_PROGRAM, shared=True, background=True, presence=True)
     must(M.call(server.resume), "releasing the mouse guest")
@@ -297,18 +297,18 @@ def _arrow_difference(mode_key: str | None, x: int, y: int
              f"switching the mouse guest's mode with {mode_key!r}")
         time.sleep(QUIET_S)
     moved = M.call(server.send_mouse, x=x, y=y, units="screen")
-    # Edge back to held first, so the two captures differ by the arrow alone.
+    # Edge back to held first, so the two captures differ by the pointer alone.
     time.sleep(presence.LOOK.fade_s + QUIET_S)
     after = _settled("after-mouse")
     shown = dpresence.of(STATE.session)
     adapter = shown.adapter if isinstance(shown.adapter, dpresence.ChannelAdapter) else None
     answer = adapter.answer if adapter is not None else ""
-    # The control: the same screen with the arrow off.
+    # The control: the same screen with the pointer off.
     if adapter is not None and shown.held is not None:
         adapter.pointer = False
         shown.held.redeliver()
     time.sleep(QUIET_S)
-    hidden = _settled("arrow-off")
+    hidden = _settled("pointer-off")
     if isinstance(hidden, str) or isinstance(after, str):
         return moved, answer, hidden if isinstance(hidden, str) else str(after)
     try:
@@ -317,13 +317,13 @@ def _arrow_difference(mode_key: str | None, x: int, y: int
         return moved, answer, f"the window changed between its two captures: {e}"
 
 
-def _arrow(label: str) -> None:
-    moved, answer, d = _arrow_difference(None, 40, 12)      # a text cell
+def _pointer(label: str) -> None:
+    moved, answer, d = _pointer_difference(None, 40, 12)      # a text cell
     if isinstance(d, str):
         M.block(label, d)
     else:
         M.judge(label, ok(moved) and "pointer=1" in answer and d.changed > 0
-                and max(d.span) < ARROW_SPAN
+                and max(d.span) < POINTER_SPAN
                 and d.deepest > window_capture.EDGE_REACH * presence.LOOK.edge,
                 f"{said(moved)}; emulator {answer!r}; {d.changed} pixels changed over "
                 f"{d.span[0]:.2f} x {d.span[1]:.2f} of the window, the deepest "
@@ -331,14 +331,14 @@ def _arrow(label: str) -> None:
     close_whatever()
 
 
-def _arrow_rows(label: str) -> None:
-    """The arrow's height in guest rows, measured in two graphics modes: a share of the window
+def _pointer_rows(label: str) -> None:
+    """The pointer's height in guest rows, measured in two graphics modes: a share of the window
     would give a number of rows that follows the mode, the sprite's own does not."""
-    sprite_rows = len(presence.LOOK.pointer)
+    sprite_rows = len(dpresence.POINTER)
     measured: dict[str, float] = {}
     for key, guest_rows in GRAPHICS_MODES:
         close_whatever()
-        _moved, _answer, d = _arrow_difference(key, 40, guest_rows // 2)
+        _moved, _answer, d = _pointer_difference(key, 40, guest_rows // 2)
         if isinstance(d, str):
             M.block(label, d)
             close_whatever()
@@ -346,7 +346,7 @@ def _arrow_rows(label: str) -> None:
         measured[f"{guest_rows} rows"] = round(d.span[1] * guest_rows, 1)
     M.judge(label, all(abs(rows - sprite_rows) <= ROWS_TOLERANCE * sprite_rows
                        for rows in measured.values()),
-            f"guest rows the arrow spans, the sprite being {sprite_rows}: {measured}")
+            f"guest rows the pointer spans, the sprite being {sprite_rows}: {measured}")
     close_whatever()
 
 

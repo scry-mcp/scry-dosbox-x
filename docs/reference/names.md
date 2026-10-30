@@ -147,9 +147,9 @@ The debugger's list stores a `u16` count then 16-byte NUL-padded names with `u32
 symbols_find(name="", offset=null, section=null, linear="", limit=10)
 ```
 
-Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefixes up to
-`limit`, case ignored; a name keeps its own spelling in the reply. `offset` (an integer) or
-`linear` (hex text), with `section`: the nearest symbol at or below.
+Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefix matches by
+section and offset, case ignored, each in the spelling the map gave, up to `limit`. `offset` (an
+integer) or `linear` (hex text), with `section`: the nearest symbol at or below.
 
 Reply: `query`; by name, `symbols_total`, `symbols` (`name`, `offset`, `addr`), `truncated`;
 by address, the symbol's fields and `delta`. INVALID: no table.

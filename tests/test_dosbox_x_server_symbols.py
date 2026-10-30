@@ -1061,7 +1061,7 @@ def test_a_pending_measure_is_said_by_status_and_drained_by_the_next_contact(
 def test_a_load_refused_before_it_was_sent_replaced_nothing(tmp_path: Path) -> None:
     from scry_dosbox_x import saved_states as saved
     ses = SimpleNamespace(machine_replaced=True, state_sent=True,
-                          _state_dir=lambda: tmp_path)
+                          state_dir=lambda: tmp_path)
     with pytest.raises(ds.Invalid) as refusal:
         saved.load_state(cast(Any, ses), "nope")
     assert refusal.value.code == "unknown_ref" and ses.machine_replaced is False

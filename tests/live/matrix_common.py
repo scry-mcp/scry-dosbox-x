@@ -35,6 +35,8 @@ ENV = dict(os.environ)
 
 GUEST = guest_dir()
 PROBE_CONF = GUEST / "probe.conf"
+MOUSE_CONF = GUEST / "mouse.conf"
+MOUSE_PROGRAM = "MOUSE.COM"
 
 SESSION_S = 1200
 

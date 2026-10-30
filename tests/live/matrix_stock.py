@@ -7,8 +7,21 @@ from __future__ import annotations
 
 from typing import Any
 
-from matrix_common import ENV, M, boot, cells, close_whatever, must, ok, refused, said, server
-from matrix_presence import MOUSE_CONF, MOUSE_PROGRAM, STOCK_VAR
+from matrix_common import (
+    ENV,
+    MOUSE_CONF,
+    MOUSE_PROGRAM,
+    M,
+    boot,
+    cells,
+    close_whatever,
+    must,
+    ok,
+    refused,
+    said,
+    server,
+)
+from matrix_presence import STOCK_VAR
 
 from scry_dosbox_x.session import Session  # isort: skip -- found through the path the matrix sets
 

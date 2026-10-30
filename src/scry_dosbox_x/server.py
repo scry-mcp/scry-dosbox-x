@@ -208,7 +208,7 @@ def start(conf: str, cwd: str,
     COM1's TCP port, 0 a free one.
     `state_dir`: where `state_write` saves; empty, the session's scratch (gone at `close`).
     `dos_calls`: record every INT 21h for `log(channel="dos")`, up to the build's row cap; the
-    server holds the calls it has read in memory.
+    server holds the newest {DOS_CALLS_KEPT} calls it has read, `n` staying the file's number.
     `log_categories`: `[log]` category to level, into `logfile`. `guest_files`: host files the
     guest should leave, read by `guest_file` and `close`. `symbols`: a table `symbols_load`
     reads, judged here and placed at the first stop where DOS holds the program its stem names
@@ -268,11 +268,12 @@ def status() -> dict[str, Any]:
 def close(detail: bool = False, ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """End the session deliberately rather than waiting for its bound.
 
-    Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` (with a session),
-    `stdout_tail` and `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`.
-    `exit_code`, with a session, is an integer or unavailable with its `why`; `note` when the
-    output was not read to its end. `guest_files`: each file `start` named, with `guest_file`'s
-    `state`. `session` is the block as it is after the close (`alive` and `running` false).
+    Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` and
+    `exit_code`, each an integer, or unavailable with its `why` when no session was running;
+    `stdout_tail` and `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`;
+    `note` when the output was not read to its end. `guest_files`: each file `start` named, with
+    `guest_file`'s `state`. `session` is the block as it is after the close (`alive` and
+    `running` false).
     """
     return lifecycle.close(bridge(ctx), detail)
 
@@ -291,14 +292,16 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
     `logfile`. `dos`, the guest's INT 21h calls and no other interrupt, instead needs a session
     started with `dos_calls`, matches `pattern` against each call's `line` (`#20 08BC:0139 psp
     0x08BC 0x3D open MISSING.TXT -> error 2 file not found`), counts calls where the others count
-    lines, and takes no `since_mark` or `labels`. Works on a running guest.
+    lines (the matches among the calls the server holds), and takes no `since_mark` or `labels`;
+    past those, `calls_dropped` says how many of the oldest went. Works on a running guest.
 
     Reply: `channel`, `lines` (not on `dos`), `lines_total`, `truncated`, `labels`, `pattern`,
     `note`; on the DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`,
     `caller`, `psp`, `function`, `name`, `file`, `in`, `out`, `error`, `returned`, `returned_s`,
-    `switched`, `line`). INVALID with `code`: no `logfile`, no log yet, no guest instrumentation,
-    `limit` out of range, a bad pattern, an unknown channel (`process` is refused by name), a
-    `since_mark` naming no position. To wait for a line use `log_wait`.
+    `switched`, `line`), and `calls_dropped` (on `dos`, past the calls held). INVALID with `code`:
+    no `logfile`, no log yet, no guest instrumentation, `limit` out of range,
+    a bad pattern, an unknown channel (`process` is refused by name), a `since_mark` naming no
+    position. To wait for a line use `log_wait`.
 
     Reference: REFERENCE.md, The log.
     """
@@ -321,13 +324,14 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
     """When a line of `channel` matching `pattern` was logged: at once if the log already holds it,
     else wait up to `seconds`. `channel` and `since_mark` as in `log`. Works on a running guest.
 
-    Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the first match; `call` on `dos`),
-    `already`,
-    `waited_s`, `lines_before`, `lines_total`, `arrived_during`, `lines_examined`; on timeout
-    `verdict` `TIMEOUT` with `note`, `arrived_during`, `lines_examined`, `waited_s`. `status:
-    INVALID`: `wait_stopped` on a stopped machine whose log lacks the line, `session_broken`
-    when the emulator went away; no `logfile`, a bad `seconds`, regex, channel or `since_mark`
-    are refused.
+    Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the first match, not on `dos`),
+    `call` (on `dos`), `already`, `waited_s`, `lines_before`, `lines_total`, `arrived_during`,
+    `lines_examined` (the calls held on `dos`), `calls_dropped` (on `dos`, past the calls held);
+    on timeout `verdict` `TIMEOUT`
+    with `note`, `arrived_during`, `lines_examined`, `waited_s`. `status: INVALID`: `wait_stopped`
+    on a stopped machine whose
+    log lacks the line, `session_broken` when the emulator went away; no `logfile`, a bad
+    `seconds`, regex, channel or `since_mark` are refused.
 
     Reference: REFERENCE.md, The log.
     """
@@ -652,9 +656,9 @@ def resume(seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail:
     up to {WAIT_MAX_S} waits for a stop and, if none comes, leaves it running. Needs a stopped
     machine.
 
-    Reply: with a bound, `verdict` (`OTHER_STOP` with the stop reply of `run_to`; `TIMEOUT`,
-    `waited_s`, `note`). `output` (with `detail=True`: the last {DETAIL_TEXT_KEEP} characters
-    the debugger printed for `RUN`; else `omitted`).
+    Reply: with a bound, `waited_s` and `verdict` (`OTHER_STOP` with the stop reply of `run_to`;
+    `TIMEOUT`, left running, with a `note`). `output` (with `detail=True`: the last
+    {DETAIL_TEXT_KEEP} characters the debugger printed for `RUN`; else `omitted`).
 
     Reference: REFERENCE.md, Advancing the machine.
     """
@@ -717,8 +721,8 @@ def run_to(ref: str = "", *, control: str = "", screen: str = "",
     `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required with a `ref` or an anchored
     screen: a second ref known to be hot, counted when it fires, so a bound that expires with no
     control hit is INVALID, not "it did not arrive". Needs a stopped machine. Refused: an absent
-    or ambiguous name. On a dynamic cpu core, which can pass over a breakpoint inside a compiled
-    block, `note` says so.
+    or ambiguous name. On a dynamic cpu core, or `auto` (protected-mode code runs dynamic),
+    which can pass over a breakpoint inside a compiled block, `note` says so.
 
     {MAP_RUN_TO}
 
@@ -730,18 +734,15 @@ def run_to(ref: str = "", *, control: str = "", screen: str = "",
     Reference: REFERENCE.md, Advancing the machine.
     """
     session = live()
-    if screen and not STATE.maps.is_anchored(screen):
-        screen_map.check_frame_run(screen, control)
-        return advance.run_to_screen(screen, seconds, bridge(ctx))
-    if not control:
-        raise checks.no_control()
-    reply = advance.run_to(STATE.maps.anchor(screen) if screen else ref, control, seconds,
-                           bridge(ctx))
     if screen:
-        current = STATE.as_of_current(session)
-        reply = screen_map.at_anchor(STATE.maps, screen, reply, folds.map_read(session),
-                                     None if current is None else current["stop_seq"])
-    return dlaunch.with_dynamic_core_note(reply, session.launch)
+        reply = advance.run_to_screen(screen, control, seconds, bridge(ctx))
+        # A run by frames names no breakpoint, so the dynamic core's limit is not its to carry.
+        return (dlaunch.with_dynamic_core_note(reply, session.launch)
+                if STATE.maps.is_anchored(screen) else reply)
+    if not control:
+        raise screen_map.no_control()
+    return dlaunch.with_dynamic_core_note(
+        advance.run_to(ref, control, seconds, bridge(ctx)), session.launch)
 
 
 @tool("Run for frames or emulated time", summary=one_line.run_for, on_cancel="stop")
@@ -947,7 +948,7 @@ def breakpoint_interrupt(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)],
     `ah` are hex given as integers: `0x21` for DOS, not `21`. Pending while the guest runs.
 
     Reply: `ref` (e.g. `BPINT 21 AH=4B`, what `declaration_clear` takes), `stored`,
-    `already_stored`, `armed`, `state` (while the guest runs), `entry` (once armed at a stop);
+    `already_stored`, `armed`, `state` (while the guest runs), `entry` (once armed);
     with `detail=True` also `output`.
 
     Reference: REFERENCE.md, Declarations.
@@ -968,7 +969,7 @@ def regpoint_add(condition: str) -> dict[str, Any]:
     Refused: a term not in that shape (`bad_argument`); a build without `BPIF` (`no_channel`).
 
     Reply: `ref` (the condition as the debugger prints it back, what `declaration_clear` takes),
-    `stored`, `already_stored`, `armed`, `state`, `while_running`, `entry` (on a stopped machine),
+    `stored`, `already_stored`, `armed`, `state`, `while_running`, `entry` (once armed),
     `note`.
 
     Reference: REFERENCE.md, Declarations.
@@ -1019,9 +1020,9 @@ def symbols_find(name: str = "", offset: int | None = None,
                  linear: str = "",
                  limit: Annotated[int, vocab.bounds(1, placement.SYMBOLS_LIMIT_MAX)] = 10,
                  ) -> dict[str, Any]:
-    """Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefixes up to
-    `limit`, case ignored; a name keeps its own spelling in the reply. `offset` (an integer) or
-    `linear` (hex text), with `section`: the nearest symbol at or below.
+    """Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefix matches by
+    section and offset, case ignored, each in the spelling the map gave, up to `limit`. `offset` (an
+    integer) or `linear` (hex text), with `section`: the nearest symbol at or below.
 
     Reply: `query`; by name, `symbols_total`, `symbols` (`name`, `offset`, `addr`), `truncated`;
     by address, the symbol's fields and `delta`. INVALID: no table.
@@ -1244,13 +1245,9 @@ def screen_map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], scree
               anchor: str = "", path: str = "", scale: int | None = None,
               margin: list[int] | None = None, dest: str = "",
               overwrite: bool | None = None) -> dict[str, Any]:
-    """The screen map: an application's screens, each known by the signatures of its stable
-    regions, and their controls, in a session layer and a file layer.
+    """{MAP_WRITE}
 
-    `add`: the screen shown now as `screen` in the session layer, one read signing each `match`
-    crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own
-    units; needs the machine stopped. Reply: `screen`, `kind`, `size`, `cells`, `match`,
-    `controls`, `replaced`, `shadows_file`, `anchor` (when given).
+    {MAP_ADD}
 
     {MAP_CELLS}
 
@@ -1260,10 +1257,7 @@ def screen_map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], scree
 
     {MAP_SAVE}
 
-    Refused: an argument the method does not take; a misshapen name, crop, control, view or file;
-    an `add` without an `anchor` to a consolidated map, and a save of one holding a screen with
-    none (`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view`
-    refuses.
+    {MAP_REFUSED}; the modes `screen_view` refuses.
 
     Reference: REFERENCE.md, Screen maps.
     """
@@ -1309,10 +1303,11 @@ def breakpoint_at(ref: str, by: Annotated[str, vocab.enum(checks.BREAKPOINT_BY)]
     re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build.
 
     Refused: a name matching several symbols; an address another declaration holds, naming it. On
-    a dynamic cpu core, which can pass over it inside a compiled block, `note` says so. A symbol
+    a dynamic cpu core, or `auto` (protected-mode code runs dynamic), which can pass over it
+    inside a compiled block, `note` says so. A symbol
     absent from this build is stored `unresolved`.
 
-    Reply: `ref`, `stored`, `already_stored`, `armed`, `entry`, `state` (`armed`,
+    Reply: `ref`, `stored`, `already_stored`, `armed`, `entry` (once armed), `state` (`armed`,
     `unresolved`, `unarmable`, `pending` while the guest runs), `why`, `marked` and `note` for
     a linker-marked symbol.
 
@@ -1571,9 +1566,7 @@ def perform(steps: list[dict[str, Any]],
     misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
     The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
     nothing run. `settle_seconds` bounds each wait for a stop before a step that needs one (0:
-    never wait). `until_frame=F` needs `summaries=True` (a window is hundreds of steps) and a
-    `run_for` step, and repeats the list until a stop reads frame F, counted since power-on, within
-    {UNTIL_STEPS_MAX} steps and {WAIT_MAX_S} s; `no_channel` if the build counts no frames.
+    never wait). {UNTIL_FRAME} Frames count since power-on.
 
     Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
     `verdict` (once the list waited; `TARGET` adds `stopped`, `TIMEOUT` `note`), else

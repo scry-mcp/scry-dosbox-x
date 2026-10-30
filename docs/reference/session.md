@@ -77,7 +77,7 @@ as `perform` does, each wait bounded by `settle_seconds` (default 30). `input_po
 COM1's TCP port, 0 a free one.
 `state_dir`: where `state_write` saves; empty, the session's scratch (gone at `close`).
 `dos_calls`: record every INT 21h for `log(channel="dos")`, up to the build's row cap; the
-server holds the calls it has read in memory.
+server holds the newest 50000 calls it has read, `n` staying the file's number.
 `log_categories`: `[log]` category to level, into `logfile`. `guest_files`: host files the
 guest should leave, read by `guest_file` and `close`. `symbols`: a table `symbols_load`
 reads, judged here and placed at the first stop where DOS holds the program its stem names
@@ -232,7 +232,7 @@ Example, from a live run:
 
 **`program` loads the stub itself when the conf's autoexec does not run it**, which is why the autoexec must not `exit` before `program` runs.
 
-**`state_dir`** is what `state_write(method="save")` writes to; empty, `save` under the session's scratch, gone at `close`, as MAME's.
+**`state_dir`** is what `state_write(method="save")` writes to; empty, `save` under the session's scratch, gone at `close`; `start` and `status` name that folder.
 
 **Also refused before anything starts**: a missing conf, `cwd` or `logfile` directory, an unresolved binary, a glued or shredded `-set`, and no drive free for the stub. `captures_dir` and `state_dir` are created with their parents. The reply also carries `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background`, `presence` and `rearm_refused` (why, when stored raw breakpoints could not re-arm).
 
@@ -312,11 +312,12 @@ close(detail=false)
 
 End the session deliberately rather than waiting for its bound.
 
-Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` (with a session),
-`stdout_tail` and `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`.
-`exit_code`, with a session, is an integer or unavailable with its `why`; `note` when the
-output was not read to its end. `guest_files`: each file `start` named, with `guest_file`'s
-`state`. `session` is the block as it is after the close (`alive` and `running` false).
+Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` and
+`exit_code`, each an integer, or unavailable with its `why` when no session was running;
+`stdout_tail` and `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`;
+`note` when the output was not read to its end. `guest_files`: each file `start` named, with
+`guest_file`'s `state`. `session` is the block as it is after the close (`alive` and
+`running` false).
 
 | argument | type | default |
 |---|---|---|
@@ -334,7 +335,7 @@ output was not read to its end. `guest_files`: each file `start` named, with `gu
 | `ended_by` | string |
 | `errorlog_tail` | string or object |
 | `guest_files` | array |
-| `pid` | integer |
+| `pid` | integer or object |
 | `state_dir` | string |
 | `stdout_tail` | string |
 | `output_bytes_dropped` | integer |

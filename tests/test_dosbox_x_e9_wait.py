@@ -52,21 +52,21 @@ class LogSession:
     def state(self) -> dict[str, object]:
         return {"alive": self._alive, "running": False, "altered": False}
 
-    def _e9_text(self) -> str:
-        return ds.Session._e9_text(cast(ds.Session, self))
+    def e9_text(self) -> str:
+        return ds.Session.e9_text(cast(ds.Session, self))
 
     def e9_new_since(self, offset: int) -> tuple[list[str], int]:
         return ds.Session.e9_new_since(cast(ds.Session, self), offset)
 
-    def _log_text(self) -> str:
-        return ds.Session._log_text(cast(ds.Session, self))
+    def log_text(self) -> str:
+        return ds.Session.log_text(cast(ds.Session, self))
 
     def log(self, pattern: str, limit: int, channel: str,
             since_mark: int = 0) -> tuple[list[str], int]:
         return ds.Session.log(cast(ds.Session, self), pattern, limit, channel, since_mark)
 
-    def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
-        return ds.Session._e9_since(cast(ds.Session, self), offset, channel)
+    def e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
+        return ds.Session.e9_since(cast(ds.Session, self), offset, channel)
 
     def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
                 progress: ds.Progress = ds.no_progress) -> dict[str, object]:
@@ -327,11 +327,11 @@ class DyingLog(LogSession):
     def alive(self) -> bool:
         return not self.gone
 
-    def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
+    def e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
         self.polls += 1
         # The read answers first, and only then does the guest write and die; otherwise the
         # ordinary match path answers and the death path never runs.
-        got = super()._e9_since(offset, channel)
+        got = super().e9_since(offset, channel)
         if self.polls == self.write_after:
             with self.log_path.open("a", encoding="utf-8") as fh:
                 fh.write(self.line + "\n")
@@ -369,9 +369,9 @@ class LateLog(LogSession):
         self.burn = burn
         self.wrote = False
 
-    def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
+    def e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
         self.polls += 1
-        got = super()._e9_since(offset, channel)
+        got = super().e9_since(offset, channel)
         if self.polls >= 2 and not self.wrote:
             # Written after this read answered, then the bound is spent.
             self.wrote = True
@@ -504,9 +504,9 @@ class StopsAfterWriting(LogSession):
     def at_debugger(self) -> bool:
         return self.parks
 
-    def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
+    def e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
         self.polls += 1
-        got = super()._e9_since(offset, channel)
+        got = super().e9_since(offset, channel)
         if self.polls == 2:
             with self.launch.logfile.open("a", encoding="utf-8") as f:
                 f.write(self.line + "\n")

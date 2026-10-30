@@ -18,11 +18,11 @@ from scry_dosbox_x import paths
 from scry_dosbox_x import session as ds
 
 
-def _state_dir(ses: ds.Session) -> Path:
+def state_dir(ses: ds.Session) -> Path:
     return dlaunch.state_dir_of(ses.launch)
 
 
-def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> dict[str, object]:
+def state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> dict[str, object]:
     """`SAVESTATE` or `LOADSTATE` of `path`; a running guest is broken in on and released after.
     Returns `paused` (it had to be stopped)."""
     # a load cancelled in the break-in sent nothing and replaced nothing
@@ -100,7 +100,7 @@ def save_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     file, since the emulator writes in place and would otherwise hold the name broken."""
     dlaunch.check_state_name(name)
     vocab.check_wait(seconds)
-    state_dir = ses._state_dir()
+    state_dir = ses.state_dir()
     dest = state_dir / f"{name}.sav"
     if paths.taken(dest):         # a dangling link too: the save would write through it
         raise Invalid("bad_argument",
@@ -108,7 +108,7 @@ def save_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
                       "this never overwrites")
     state_dir.mkdir(parents=True, exist_ok=True)
     try:
-        outcome = ses._state_command("SAVESTATE", dest, seconds)
+        outcome = ses.state_command("SAVESTATE", dest, seconds)
     except BaseException:                  # a refusal, a cancel or a defect alike
         if not ses.state_answered:         # answered ok, only the release failed: it is whole
             dest.unlink(missing_ok=True)   # it was not there before this call
@@ -135,7 +135,7 @@ def load_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     ses.machine_replaced = False
     dlaunch.check_state_name(name)
     vocab.check_wait(seconds)
-    state_dir = ses._state_dir()
+    state_dir = ses.state_dir()
     source = state_dir / f"{name}.sav"
     if (why := state_files.not_a_state(source)) is not None:
         raise state_files.refused_load(name, source, why)
@@ -145,7 +145,7 @@ def load_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     meta = dlaunch.state_meta(source)
     parked = ses.at_debugger()
     try:
-        outcome = ses._state_command("LOADSTATE", source, seconds)
+        outcome = ses.state_command("LOADSTATE", source, seconds)
     except BaseException as e:
         # sent, then refused or cancelled: part of it may be loaded
         if ses.state_sent and not (isinstance(e, Invalid)
@@ -176,7 +176,7 @@ def _listed(path: Path) -> dict[str, object] | None:
 
 def state_list(ses: ds.Session) -> dict[str, object]:
     """Every `.sav` under the state directory; works while the machine runs."""
-    state_dir = ses._state_dir()
+    state_dir = ses.state_dir()
     files = sorted(state_dir.glob("*.sav")) if state_dir.is_dir() else []
     # the emulator's own numbered slot is not a named state
     named = [m for p in files if not p.stem.isdigit() and (m := _listed(p)) is not None]

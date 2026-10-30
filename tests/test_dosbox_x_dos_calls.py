@@ -83,6 +83,58 @@ def test_a_trace_cut_at_its_bound_says_so(tmp_path: Path) -> None:
     assert got["status"] == "ok" and "stopped at its" in got["note"], got
 
 
+def _call_rows(first: int, last: int, name: str | None = None) -> str:
+    """Paired rows in the shapes `DOSTRACE` writes for calls `first` to `last`."""
+    regs = " ".join(f"{r}=0000" for r in ("AX", "BX", "CX", "DX", "SI", "DI", "DS", "ES"))
+    return "".join(
+        f"E N={n} T={n}.0 M=R CS=08BC IP=011F PSP=08BC {regs} NAME={name or f'F{n}.TXT'}\n"
+        f"R N={n} T={n}.5 AX=0005 BX=0000 CX=0000 DX=0000 CF=0 SWITCHED=0\n"
+        for n in range(first, last + 1))
+
+
+def test_a_trace_past_its_window_keeps_the_newest_calls_and_counts_the_dropped(
+        tmp_path: Path) -> None:
+    path = tmp_path / "long.trace"
+    path.write_text(_call_rows(1, dos.CALLS_KEPT + 7))
+    trace = _read(path)
+    assert (len(trace.calls), trace.dropped) == (dos.CALLS_KEPT, 7)
+    assert trace.calls[0]["n"] == 8 and trace.calls[-1]["n"] == dos.CALLS_KEPT + 7
+    assert 7 not in trace.by_n and 8 in trace.by_n and len(trace.by_n) == dos.CALLS_KEPT
+    install()
+    dstate.STATE.dos_calls = trace
+    got = cast(dict[str, Any], server.log(pattern="F", channel="dos", limit=2))
+    assert got["calls_dropped"] == 7 and got["lines_total"] == dos.CALLS_KEPT, got
+
+
+def test_a_read_trims_as_it_goes_so_a_long_unread_file_never_sits_whole_in_memory(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    path = tmp_path / "long.trace"
+    path.write_text(_call_rows(1, dos.CALLS_KEPT * 3))
+    monkeypatch.setattr(dos, "CHUNK_BYTES", 1 << 20)
+    held: list[int] = []
+    trim = dos._trim
+
+    def watching(trace: dos.Trace) -> None:
+        held.append(len(trace.calls))
+        trim(trace)
+    monkeypatch.setattr(dos, "_trim", watching)
+    trace = _read(path)
+    assert trace.dropped == dos.CALLS_KEPT * 2 and trace.calls[-1]["n"] == dos.CALLS_KEPT * 3
+    assert len(held) > 1 and max(held) < dos.CALLS_KEPT * 2, held
+
+
+def test_a_pattern_cached_before_the_window_moved_answers_only_with_held_calls(
+        tmp_path: Path) -> None:
+    path = tmp_path / "long.trace"
+    path.write_text(_call_rows(1, dos.CALLS_KEPT))
+    trace = _read(path)
+    assert len(dos._matching(trace, r"F(1|2)\.TXT")) == 2
+    with path.open("a") as f:
+        f.write(_call_rows(dos.CALLS_KEPT + 1, dos.CALLS_KEPT + 1, name="F1.TXT"))
+    dos.read(trace)
+    assert [c["n"] for c in dos._matching(trace, r"F(1|2)\.TXT")] == [2, dos.CALLS_KEPT + 1]
+
+
 def test_log_on_the_dos_channel_filters_and_keeps_the_newest() -> None:
     install()
     dstate.STATE.dos_calls = dos.Trace(TRACE)

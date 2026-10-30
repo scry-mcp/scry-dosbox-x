@@ -17,6 +17,7 @@ from scry_core import vocabulary as vocab
 from scry_dosbox_x import arming, checks, inputs, media
 from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import running as guest
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
@@ -126,7 +127,12 @@ def _cause_key(stop: dict[str, Any]) -> str:
 
 #: This server's half of `scry_core.sequence_account`: a compact stop row keeps its number and
 #: cause; registers, watches and log stay in the full reply.
-SHAPE = account.Shape(kept=("stop_seq", "cause"), cause_key=_cause_key)
+def _stop_extra(reply: dict[str, Any], cut: dict[str, Any]) -> None:
+    if "regpoint_hit" in reply:
+        cut["regpoint_hit"] = reply["regpoint_hit"]
+
+
+SHAPE = account.Shape(kept=("stop_seq", "cause"), cause_key=_cause_key, extra=_stop_extra)
 
 
 def _batch_stem() -> Path:
@@ -228,7 +234,7 @@ def _until_from(session: ds.Session) -> int | None:
     """The frame a stopped machine stands in, None on a running one; a build whose `RUNSTATE`
     counts no frames is refused."""
     session.require_run_state("until_frame")
-    stopped = dbg.read_run_state(session)
+    stopped = rs.read_run_state(session)
     if session.frames is None:
         raise ds.Invalid("no_channel", f"until_frame needs a frame counter: {dbg.NO_FRAMES_WHY}; "
                          f"`run_for(frames=)` counts retraces from where the machine stands")
@@ -252,7 +258,7 @@ def _final_stop(session: ds.Session) -> dict[str, Any]:
     try:
         return guest.stop_reply(session, retrace_may_stop=True)
     except ds.Invalid as e:
-        return {"enrichment": {"available": False, "why": str(e)}}
+        return guest.unavailable_enrichment(e)
 
 
 def validate_wait(wait: float) -> None:

@@ -580,6 +580,8 @@ def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -
 def test_closing_when_there_was_nothing_is_not_a_failure() -> None:
     got = server.close()
     assert got["status"] == "ok" and got["closed"] is False
+    for field in ("pid", "exit_code"):
+        assert got[field]["available"] is False and "no session" in got[field]["why"], got
 
 
 def test_closing_a_live_session_closes_it_and_clears_it() -> None:

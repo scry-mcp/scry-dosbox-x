@@ -688,14 +688,15 @@ def index_by_name(symbols: list[Symbol]) -> NameIndex:
 
 
 def find_by_name(symbols: list[Symbol], name: str, index: NameIndex | None = None) -> list[Symbol]:
-    """Symbols whose full name matches, case ignored: exact outright, else by prefix. Each keeps
-    its own spelling."""
+    """Symbols whose full name matches, case ignored: exact outright, else by prefix, in section
+    and offset order. Each keeps its own spelling."""
     key = folded(name)
     exact = list(index[key]) if index is not None and key in index else (
         [s for s in symbols if folded(s.name) == key])
     if exact:
         return exact
-    return [s for s in symbols if folded(s.name).startswith(key)]
+    return sorted((s for s in symbols if folded(s.name).startswith(key)),
+                  key=lambda s: (s.section, s.offset))
 
 
 def _line_of(text: str, name: str) -> int | str:

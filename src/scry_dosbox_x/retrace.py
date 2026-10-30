@@ -15,6 +15,7 @@ from scry_core.prose import counted
 
 from scry_dosbox_x import arming, machine, running, screen, vga
 from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
 from scry_dosbox_x.state import STATE
@@ -60,7 +61,7 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
     """
     session.require_run_state("run_for")
     session.where_and_registers()
-    dbg.read_run_state(session)
+    rs.read_run_state(session)
     before = session.clock_ms
     cycles_before = session.cycles
     first_frame = session.frames
@@ -144,7 +145,7 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         reply = running.stop_reply(session, own=own, **fields)
         stopped_at: dict[str, str] | None = dict(STATE.last_stop["where"])
     except ds.Invalid as exc:
-        reply = st.reply(enrichment={"available": False, "why": str(exc)}, **fields)
+        reply = st.reply(**running.unavailable_enrichment(exc), **fields)
         stopped_at = None
     if verdict == contract.ELAPSED and STATE.last_stop.get("attribution", {}).get("attributed") \
             and stopped_at is not None:
@@ -301,7 +302,8 @@ def _stop_reply(session: ds.Session, base: dict[str, Any]) -> dict[str, Any]:
 
 #: What a refused wait carries of the stop reply that recorded its stop; otherwise those accounts
 #: would be spent on a reply nobody sees.
-ENDED_KEYS = ("stop_seq", "cause", "enrichment", "stopped_on_its_own", "applied_on_stop")
+ENDED_KEYS = ("stop_seq", "cause", "regpoint_hit", "enrichment", "stopped_on_its_own",
+              "applied_on_stop")
 
 
 def _heard(session: ds.Session) -> bool:

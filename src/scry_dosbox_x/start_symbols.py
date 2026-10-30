@@ -13,7 +13,7 @@ from typing import Any
 
 from scry_core import judges
 
-from scry_dosbox_x import coff, grammar, machine, placement
+from scry_dosbox_x import arming, coff, comments, grammar, machine, placement
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import symbols as sym
 from scry_dosbox_x.state import STATE
@@ -77,7 +77,6 @@ def place_if_due(session: ds.Session) -> dict[str, Any] | None:
     if segment is None or (not program and grammar.real_segments(session.where()["mode"])):
         return None             # a register base needs a descriptor, which real mode lacks
     STATE.start_symbols = None
-    from scry_dosbox_x import arming, comments
     try:
         loaded = placement.load(session, held.path, Path(held.path),
                                 segment * 16 if program else None,

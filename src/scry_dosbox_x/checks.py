@@ -197,7 +197,7 @@ def _send_mouse(x: int | None = None, y: int | None = None, button: str = "",
 
 def check_load_map(path: str = "", scale: object = 1, margin: object = None, **_: Any) -> None:
     screen_map.check_path("path", path)
-    screen_map.view(scale, margin)
+    screen_map.judged_view(scale, margin)
 
 
 def check_add_map(screen: str = "", match: Any = None, controls: Any = None,
@@ -236,19 +236,9 @@ def _run_to(ref: str = "", control: str = "", seconds: float = 30.0, screen: str
     if ref.strip():
         address_shape(ref)
     if not control and not screen:
-        raise no_control()
+        raise screen_map.no_control()
     if control:
         address_shape(control)
-
-
-def no_control() -> ds.Invalid:
-    """The refusal of a `run_to` to a place with no `control`."""
-    return ds.Invalid("bad_argument",
-        "no control is named: `run_to` measures nothing without one. A `control` is a "
-        "second ref known to be hot on this screen (the vblank or timer handler, a loop "
-        "the program is in): with it, a bound that expires with the control firing says "
-        "breakpoints work here and the target's did not fire; without it the silence "
-        "could be breakpoints never firing at all")
 
 
 def _count(name: str, value: object) -> int:
@@ -588,7 +578,7 @@ def _symbols_find(name: str = "", offset: int | None = None,
 
 
 # Debugger commands that let the guest run, by first word. One sent through `debug` does not clear
-# the stopped flag as `Session._release` does, so `last_stop` would keep naming the stop before it.
+# the stopped flag as `Session.release` does, so `last_stop` would keep naming the stop before it.
 DEBUG_RELEASES = re.compile(r"\s*(" + "|".join(("RUN", "VRT", "RUNWATCH", "INT", "STEPIN",
                                                 *ds.LOG_WORDS))
                             + r")(?:\s|$)", re.IGNORECASE)

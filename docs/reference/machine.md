@@ -280,14 +280,16 @@ matching lines counted by first word.
 `logfile`. `dos`, the guest's INT 21h calls and no other interrupt, instead needs a session
 started with `dos_calls`, matches `pattern` against each call's `line` (`#20 08BC:0139 psp
 0x08BC 0x3D open MISSING.TXT -> error 2 file not found`), counts calls where the others count
-lines, and takes no `since_mark` or `labels`. Works on a running guest.
+lines (the matches among the calls the server holds), and takes no `since_mark` or `labels`;
+past those, `calls_dropped` says how many of the oldest went. Works on a running guest.
 
 Reply: `channel`, `lines` (not on `dos`), `lines_total`, `truncated`, `labels`, `pattern`,
 `note`; on the DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`,
 `caller`, `psp`, `function`, `name`, `file`, `in`, `out`, `error`, `returned`, `returned_s`,
-`switched`, `line`). INVALID with `code`: no `logfile`, no log yet, no guest instrumentation,
-`limit` out of range, a bad pattern, an unknown channel (`process` is refused by name), a
-`since_mark` naming no position. To wait for a line use `log_wait`.
+`switched`, `line`), and `calls_dropped` (on `dos`, past the calls held). INVALID with `code`:
+no `logfile`, no log yet, no guest instrumentation, `limit` out of range,
+a bad pattern, an unknown channel (`process` is refused by name), a `since_mark` naming no
+position. To wait for a line use `log_wait`.
 
 Reference: REFERENCE.md, The log.
 
@@ -302,6 +304,7 @@ Reference: REFERENCE.md, The log.
 | reply field | type |
 |---|---|
 | `calls` | array |
+| `calls_dropped` | integer |
 | `channel` | string |
 | `labels` | object |
 | `lines` | array |
@@ -352,13 +355,14 @@ log_wait(pattern, channel, seconds=30.0, since_mark=0)
 When a line of `channel` matching `pattern` was logged: at once if the log already holds it,
 else wait up to `seconds`. `channel` and `since_mark` as in `log`. Works on a running guest.
 
-Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the first match; `call` on `dos`),
-`already`,
-`waited_s`, `lines_before`, `lines_total`, `arrived_during`, `lines_examined`; on timeout
-`verdict` `TIMEOUT` with `note`, `arrived_during`, `lines_examined`, `waited_s`. `status:
-INVALID`: `wait_stopped` on a stopped machine whose log lacks the line, `session_broken`
-when the emulator went away; no `logfile`, a bad `seconds`, regex, channel or `since_mark`
-are refused.
+Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the first match, not on `dos`),
+`call` (on `dos`), `already`, `waited_s`, `lines_before`, `lines_total`, `arrived_during`,
+`lines_examined` (the calls held on `dos`), `calls_dropped` (on `dos`, past the calls held);
+on timeout `verdict` `TIMEOUT`
+with `note`, `arrived_during`, `lines_examined`, `waited_s`. `status: INVALID`: `wait_stopped`
+on a stopped machine whose
+log lacks the line, `session_broken` when the emulator went away; no `logfile`, a bad
+`seconds`, regex, channel or `since_mark` are refused.
 
 Reference: REFERENCE.md, The log.
 
@@ -374,6 +378,7 @@ Reference: REFERENCE.md, The log.
 | `already` | boolean |
 | `arrived_during` | integer |
 | `call` | object |
+| `calls_dropped` | integer |
 | `channel` | string |
 | `line` | string |
 | `lines_before` | integer |

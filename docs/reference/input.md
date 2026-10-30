@@ -48,7 +48,7 @@ machine on a build with no `RUNSTATE` (`no_channel`).
 
 Reply: `route`, `posted`, `bytes`, `frames` (stub commands, a BIOS tick apart), `verify`
 (`verdict` `TARGET` or `TIMEOUT`, `seen`); from a stopped machine `polls` and the stop
-it was left at (the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause` and `e9`).
+it was left at (the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause`, `regpoint_hit` (a registerpoint stopped it) and `e9`).
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -62,6 +62,7 @@ Reference: REFERENCE.md, Input and the screen.
 | reply field | type |
 |---|---|
 | `cause` | string |
+| `regpoint_hit` | object |
 | `cpu_mode` | string or object |
 | `e9` | object |
 | `frame` | integer or object |
@@ -156,6 +157,7 @@ Reference: REFERENCE.md, Input and the screen.
 | reply field | type |
 |---|---|
 | `cause` | string |
+| `regpoint_hit` | object |
 | `cpu_mode` | string or object |
 | `e9` | object |
 | `frame` | integer or object |

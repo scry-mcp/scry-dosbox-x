@@ -31,6 +31,7 @@ from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
 from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import conf as dconf
 from scry_dosbox_x import control, paths
 
 # A ceiling as well as a floor: a bound so large it bounds nothing is no bound.
@@ -74,14 +75,12 @@ class Launch:
     background: bool = True
     # The `-savedir` slot directory; `start` names it (the session's scratch if none is given).
     state_dir: Path | None = None
-    # The session's own debugger listener, never a caller's.
     control_port: int | None = None
     # Whether the build's debugger runs with no screen (`binaries.debugger_headless`), and which
     # optional debugger commands it has (`binaries.debugger_commands`), read once at `start`.
     debugger_headless: bool = False
     debugger_commands: frozenset[str] = frozenset()
-    # `cpu_core`, read once at `start`.
-    core: str = "auto"
+    core: str = "auto"            # `conf.cpu_core`, read once at `start`
 
 
 def digest(path: Path) -> str:
@@ -162,52 +161,6 @@ GUEST_DIR = Path(__file__).resolve().with_name("guest")
 STUB_FILE = "SCRY.COM"
 # Drives for the stub: late first, where a conf rarely mounts, never one its `[autoexec]` mounted.
 STUB_DRIVES = "YXWVUTSRQPONMLKJIHGFED"
-MOUNTING = frozenset({"mount", "imgmount", "subst"})
-
-
-def conf_mounts(conf: Path) -> list[str]:
-    """The drive letters the conf's `[autoexec]` mounts, in order."""
-    found: list[str] = []
-    section = ""
-    try:
-        text = conf.read_text(encoding="utf-8-sig", errors="replace")
-    except OSError:
-        return found                    # gone since `start`: `conf_changed_on_disk` says so
-    for line in text.splitlines():
-        words = line.split()
-        if line.strip().startswith("["):
-            section = line.strip().lower()
-        elif section == "[autoexec]" and words and words[0].lstrip("@").lower() in MOUNTING:
-            letters = [w.rstrip(":").upper() for w in words[1:]
-                       if len(w.rstrip(":")) == 1 and w[0].isalpha()]
-            if letters and letters[0] not in found:
-                found.append(letters[0])
-    return found
-
-
-def cpu_core(conf: Path, flags: list[str]) -> str:
-    """The core a session boots with: the conf's `[cpu] core=`, then the last `-set` of `flags`."""
-    core = "auto"
-    try:
-        text = conf.read_text(encoding="utf-8-sig", errors="replace")
-    except OSError:
-        text = ""                       # gone since `start`: `conf_changed_on_disk` says so
-    section = ""
-    for line in text.splitlines():
-        line = line.strip()
-        if line.startswith("["):
-            section = line.partition("#")[0].strip().lower()
-        elif section == "[cpu]":
-            key, _, value = line.partition("=")
-            if key.strip().lower() == "core" and (cut := value.partition("#")[0].strip()):
-                core = cut.lower()
-    for flag, setting in zip(flags, flags[1:], strict=False):
-        words = setting.replace("=", " ").split()
-        if flag == "-set" and len(words) == 3 and [w.lower() for w in words[:2]] == ["cpu", "core"]:
-            core = words[2].lower()
-    return core
-
-
 #: The one wording `start`, `run_to` and `breakpoint_at` share.
 DYNAMIC_CORE_BREAKPOINTS = (
     "this session runs the dynamic core, which checks breakpoints only between compiled blocks, so "
@@ -227,6 +180,11 @@ def is_dynamic(core: str) -> bool:
     return core.startswith("dynamic")
 
 
+AUTO_CORE_BREAKPOINTS = (
+    "this session's core is auto: protected-mode code runs on the dynamic core, which checks "
+    "breakpoints only between compiled blocks, so a code breakpoint there can be passed over. "
+    "For a protected-mode program start on `flags=[\"-set\", \"cpu core=normal\"]`")
+
 AUTO_CORE_TAPS = (
     "this session's core is auto: protected-mode code runs on the dynamic core, which the "
     "debugger refuses a new tap on and which this tap is not proved to see. For a "
@@ -241,16 +199,17 @@ def with_auto_core_tap_note(reply: dict[str, Any], launch: Launch) -> dict[str, 
 
 
 def with_dynamic_core_note(reply: dict[str, Any], launch: Launch) -> dict[str, Any]:
-    """A code breakpoint's reply, its `note` carrying the dynamic core's limit when it applies."""
-    if not is_dynamic(launch.core):
+    """A code breakpoint's reply, its `note` carrying the core's limit (dynamic, or `auto`)."""
+    limit = (DYNAMIC_CORE_BREAKPOINTS if is_dynamic(launch.core)
+             else AUTO_CORE_BREAKPOINTS if launch.core == "auto" else None)
+    if limit is None:
         return reply
-    note = "; ".join(n for n in (reply.get("note"), DYNAMIC_CORE_BREAKPOINTS) if n)
-    return {**reply, "note": note}
+    return {**reply, "note": "; ".join(n for n in (reply.get("note"), limit) if n)}
 
 
 def stub_drive(conf: Path) -> str:
     """The first of `STUB_DRIVES` the conf leaves free, else a refusal."""
-    mounted = conf_mounts(conf)
+    mounted = dconf.conf_mounts(conf)
     free = [d for d in STUB_DRIVES if d not in mounted]
     if not free:
         raise Invalid("bad_argument",

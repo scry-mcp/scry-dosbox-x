@@ -41,7 +41,7 @@ class BreakpointAtReply(DosboxEnvelope, total=False):
     already_stored: Annotated[bool, OmitEmpty]
     armed: Required[bool]
     by: str
-    entry: Annotated[str, When("`armed`")]
+    entry: Annotated[str, When("once armed")]
     marked: Annotated[bool, OmitEmpty]
     ref: str
     state: Required[str]
@@ -53,7 +53,7 @@ class BreakpointInterruptReply(DosboxEnvelope, total=False):
     already_stored: Annotated[bool, OmitEmpty]
     armed: Required[bool]
     clipped: bool
-    entry: Annotated[str, When("once armed at a stop")]
+    entry: Annotated[str, When("once armed")]
     ref: Required[str]
     output: Annotated[str, When("with `detail=True`")]
     output_chars: int
@@ -66,7 +66,7 @@ class RegpointAddReply(DosboxEnvelope, total=False):
     armed: Required[bool]
     by: str
     condition: str
-    entry: Annotated[str, When("on a stopped machine")]
+    entry: Annotated[str, When("once armed")]
     ref: Required[str]
     state: Required[str]
     stored: Required[bool]
@@ -114,12 +114,13 @@ class CloseReply(DosboxEnvelope, total=False):
     ended_by: Required[str]
     errorlog_tail: Annotated[str | dict[str, Any], When("not a clean")]
     guest_files: Annotated[list[Any], When("each file")]
-    pid: Annotated[int, When("with a session")]
+    pid: Required[int | dict[str, Any]]
     state_dir: str
     stdout_tail: Annotated[str, When("not a clean")]
     output_bytes_dropped: Annotated[int, OmitEmpty]
     watched: Annotated[bool, OmitEmpty]
-    exit_code: Annotated[int | dict[str, Any], When("with a session")]
+    # The base leaves `exit_code` optional; this reply always carries it.
+    exit_code: Required[int | dict[str, Any]]  # type: ignore[misc]
 
 
 class CommentListReply(DosboxEnvelope, total=False):
@@ -175,6 +176,7 @@ class InterruptVectorsReply(DosboxEnvelope, total=False):
 
 class LogReply(DosboxEnvelope, total=False):
     calls: Annotated[list[Any], When("the DOS channel")]
+    calls_dropped: Annotated[int, When("on `dos`, past the calls held")]
     channel: str
     labels: dict[str, Any]
     lines: Annotated[list[Any], When("not on `dos`")]
@@ -186,7 +188,8 @@ class LogReply(DosboxEnvelope, total=False):
 class LogWaitReply(DosboxEnvelope, total=False):
     already: Annotated[bool, When("`verdict` `TARGET`")]
     arrived_during: Required[int]
-    call: dict[str, Any]
+    call: Annotated[dict[str, Any], When("on `dos`")]
+    calls_dropped: Annotated[int, When("on `dos`, past the calls held")]
     channel: str
     line: Annotated[str, When("`verdict` `TARGET`")]
     lines_before: Annotated[int, When("`verdict` `TARGET`")]
@@ -257,7 +260,6 @@ class PerformReply(DosboxEnvelope, account.SequenceFields, account.SequenceRun, 
     """The sequence's fields (`scry_core.sequence_account.SequenceFields`), and `operations` on
     a refusal for a step naming no operation."""
     failed: Annotated[dict[str, Any], When("`step_failed`")]
-    still_running: Annotated[bool, When("else")]
     verdict: Annotated[str, When("once the list waited")]
     frame_reached: Annotated[int | dict[str, Any], When("with `until_frame`")]
     operations: list[Any]
@@ -289,6 +291,7 @@ class RegistersReply(DosboxEnvelope, total=False):
 
 class ResumeReply(DosboxEnvelope, total=False):
     cause: str
+    regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
     clipped: bool
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
@@ -301,12 +304,13 @@ class ResumeReply(DosboxEnvelope, total=False):
     output_chars: int
     stop_seq: int
     verdict: Annotated[str, When("with a bound")]
-    waited_s: float
+    waited_s: Annotated[float, When("with a bound")]
     watches: list[Any]
 
 
 class RunForReply(DosboxEnvelope, total=False):
     cause: str
+    regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
     cpu_mode: str | dict[str, Any]
     cycles: Required[int | dict[str, Any]]
     e9: dict[str, Any]
@@ -357,6 +361,7 @@ class AudioRecordReply(RunForReply, total=False):
 
 class RunToReply(DosboxEnvelope, total=False):
     cause: str
+    regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
     control_hits: Annotated[int, When("a run to a ref or an anchor")]
     controls: Annotated[list[Any], When("a run to a ref or an anchor")]
     cpu_mode: str | dict[str, Any]
@@ -415,6 +420,7 @@ class ScreenViewReply(DosboxEnvelope, total=False):
 class ScreenWaitReply(DosboxEnvelope, total=False):
     already: bool
     cause: str
+    regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
     cpu_mode: str
     e9: dict[str, Any]
     enrichment: dict[str, Any]
@@ -433,18 +439,23 @@ class ScreenWaitReply(DosboxEnvelope, total=False):
     watches: list[Any]
 
 
+FROM_A_STOPPED_MACHINE = When("from a stopped machine")
+A_REGPOINT_STOPPED_IT = When("a registerpoint stopped it")
+
+
 class ParkedPost(TypedDict, total=False):
     """What an input sent to a parked machine adds: the retraces it ran and the stop it left."""
-    cause: str
-    cpu_mode: str | dict[str, Any]
-    e9: dict[str, Any]
-    frame: int | dict[str, Any]
-    instruction: DosboxInstruction
-    pc: str | dict[str, Any]
-    polls: int
-    regs: dict[str, Any]
-    stop_seq: int
-    watches: list[Any]
+    cause: Annotated[str, FROM_A_STOPPED_MACHINE]
+    regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
+    cpu_mode: Annotated[str | dict[str, Any], FROM_A_STOPPED_MACHINE]
+    e9: Annotated[dict[str, Any], FROM_A_STOPPED_MACHINE]
+    frame: Annotated[int | dict[str, Any], FROM_A_STOPPED_MACHINE]
+    instruction: Annotated[DosboxInstruction, FROM_A_STOPPED_MACHINE]
+    pc: Annotated[str | dict[str, Any], FROM_A_STOPPED_MACHINE]
+    polls: Annotated[int, FROM_A_STOPPED_MACHINE]
+    regs: Annotated[dict[str, Any], FROM_A_STOPPED_MACHINE]
+    stop_seq: Annotated[int, FROM_A_STOPPED_MACHINE]
+    watches: Annotated[list[Any], FROM_A_STOPPED_MACHINE]
 
 
 class SendKeysReply(DosboxEnvelope, ParkedPost, total=False):
@@ -462,7 +473,7 @@ class SendKeysReply(DosboxEnvelope, ParkedPost, total=False):
 class SendMouseReply(DosboxEnvelope, ParkedPost, total=False):
     action: str
     arrived: Required[bool]
-    asked: dict[str, Any]
+    asked: Annotated[dict[str, Any], When("else")]
     button: str
     delivered: bool
     identified_at_stop: int | dict[str, Any]
@@ -574,6 +585,7 @@ class StepReply(DosboxEnvelope, total=False):
     after: Required[str]
     asked: Required[int]
     cause: str
+    regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
     before: Required[str]
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
@@ -592,6 +604,7 @@ class StepReply(DosboxEnvelope, total=False):
 
 class StopReply(DosboxEnvelope, total=False):
     cause: str
+    regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     frame: int | dict[str, Any]
@@ -648,6 +661,7 @@ class SymbolsLoadReply(DosboxEnvelope, total=False):
 
 class TraceReply(DosboxEnvelope, total=False):
     cause: str
+    regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     frame: int | dict[str, Any]

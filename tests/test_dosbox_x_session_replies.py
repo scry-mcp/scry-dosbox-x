@@ -19,8 +19,7 @@ from scry_core.host_program import absolute as _abs
 from test_dosbox_x_session import _writer
 
 from scry_dosbox_x import collect as dcollect
-from scry_dosbox_x import debugger as dbg
-from scry_dosbox_x import grammar, stepping
+from scry_dosbox_x import grammar, run_state, stepping
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import session as ds
 
@@ -412,10 +411,10 @@ def test_a_dump_the_host_could_not_place_says_whether_its_file_was_removed(
 
 def test_a_wait_reports_its_progress_on_its_tick_in_its_own_words(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(dbg, "PROGRESS_EVERY_S", 0.04)
+    monkeypatch.setattr(run_state, "PROGRESS_EVERY_S", 0.04)
     machine = Machine(releases=[None])
     s = session_over(machine, tmp_path)
-    s._release("RUN")
+    s.release("RUN")
     said: list[tuple[float, Any, str]] = []
     began = time.monotonic()
     expired, _ = s.await_stop(began, began + 0.13, "T", lambda *a: said.append(a))
@@ -427,7 +426,7 @@ def test_a_wait_reports_its_progress_on_its_tick_in_its_own_words(
 def test_a_spent_bound_looks_once_only_when_asked_and_without_blocking(tmp_path: Path) -> None:
     machine = Machine(releases=[Stop()])
     s = session_over(machine, tmp_path)
-    s._release("RUN")
+    s.release("RUN")
     asked = len(machine.sent)
     assert s.await_stop(100.0, 100.0, "T") == (True, 0.0)
     assert len(machine.sent) == asked, "a spent bound asked the debugger"
@@ -438,7 +437,7 @@ def test_a_spent_bound_looks_once_only_when_asked_and_without_blocking(tmp_path:
 def test_a_wait_on_a_dead_emulator_names_its_bound_and_target(tmp_path: Path) -> None:
     machine = Machine(releases=[None])
     s = session_over(machine, tmp_path, alive=lambda: False)
-    s._release("RUN")
+    s.release("RUN")
     began = time.monotonic()
     with pytest.raises(ds.Invalid) as gone:
         s.await_stop(began, began + 5.04, "0814:0010")
@@ -475,7 +474,7 @@ def test_the_emulator_channel_is_read_as_asked_and_not_as_the_guest(tmp_path: Pa
     log.write_text("CONFIG:Loading primary settings\n"
                    "Bochs port E9h: [+   0.000] BOOT  . start\n", encoding="utf-8")
     s = SimpleNamespace(launch=SimpleNamespace(logfile=log))
-    emulator, _ = ds.Session._e9_since(s, 0, "emulator")  # type: ignore[arg-type]
+    emulator, _ = ds.Session.e9_since(s, 0, "emulator")  # type: ignore[arg-type]
     assert any("CONFIG" in ln for ln in emulator), emulator
-    guest, _ = ds.Session._e9_since(s, 0)  # type: ignore[arg-type]
+    guest, _ = ds.Session.e9_since(s, 0)  # type: ignore[arg-type]
     assert not any("CONFIG" in ln for ln in guest), guest

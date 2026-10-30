@@ -297,7 +297,7 @@ Refused: `frames` under 1, a video capture already on (`capture_video`), a build
 `CAPTURE`, a running machine.
 
 Reply: `verdict`, `kind`, `frames`, `began`, `ended`, `path`, `bytes`, `avi_frames`,
-`note`, the run's fields as `run_for` gives them, the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause` and `e9`.
+`note`, the run's fields as `run_for` gives them, the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause`, `regpoint_hit` (a registerpoint stopped it) and `e9`.
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -310,6 +310,7 @@ Reference: REFERENCE.md, Input and the screen.
 | reply field | type |
 |---|---|
 | `cause` | string |
+| `regpoint_hit` | object |
 | `cpu_mode` | string or object |
 | `cycles` | integer or object |
 | `e9` | object |
@@ -428,7 +429,7 @@ Reply: `verdict`, `kind`, `frames`, `began`, `ended`, `path` (none if the captur
 turned off), `bytes` (a file was written); a WAV's `channels`, `sample_rate_hz`, `samples`,
 `emulated_s`, `sample_min`, `sample_max`; a DRO's `opl_pairs`, `opl_ms` (the last file's);
 `files` (each `path`, `bytes`) when the OPL writer rolled over to a new file, `path` then the
-last; a MIDI file's `midi_bytes`; `note`, the run's fields, the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause` and `e9`.
+last; a MIDI file's `midi_bytes`; `note`, the run's fields, the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause`, `regpoint_hit` (a registerpoint stopped it) and `e9`.
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -442,6 +443,7 @@ Reference: REFERENCE.md, Input and the screen.
 | reply field | type |
 |---|---|
 | `cause` | string |
+| `regpoint_hit` | object |
 | `cpu_mode` | string or object |
 | `cycles` | integer or object |
 | `e9` | object |

@@ -136,8 +136,8 @@ class StateFake:
         return {"alive": True, "running": not self.parked, "altered": self.altered}
 
     e9_mark = ds.Session.e9_mark
-    _state_dir = ds.Session._state_dir
-    _state_command = ds.Session._state_command
+    state_dir = ds.Session.state_dir
+    state_command = ds.Session.state_command
     save_state = ds.Session.save_state
     load_state = ds.Session.load_state
     state_list = ds.Session.state_list

@@ -279,6 +279,12 @@ def test_an_exact_name_wins_outright_over_its_prefixes() -> None:
     assert len(sym.find_by_name(table, "_mai")) == 2
 
 
+def test_prefix_matches_come_in_section_and_offset_order() -> None:
+    table = [sym.Symbol("_late", 0x300), sym.Symbol("_early", 0x100),
+             sym.Symbol("_other", 0x100, section=2), sym.Symbol("_mid", 0x200)]
+    assert [s.name for s in sym.find_by_name(table, "_")] == ["_early", "_mid", "_late", "_other"]
+
+
 def test_the_name_index_answers_exactly_what_the_scan_answers() -> None:
     table = [sym.Symbol("_main", 0x100), sym.Symbol("_main_loop", 0x200),
              sym.Symbol("_main", 0x300)]

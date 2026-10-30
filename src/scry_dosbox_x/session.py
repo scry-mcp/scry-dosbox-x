@@ -104,7 +104,7 @@ class NotStopped(Invalid):
         super().__init__("not_stopped", message, **fields)
 
 
-def _wait_stopped(pattern: str, arrived: int, waited_s: float, *, parked: bool,
+def wait_stopped(pattern: str, arrived: int, waited_s: float, *, parked: bool,
                   at_bound: bool) -> Invalid:
     """The refusal a wait gives for a machine at the debugger."""
     return E9Stopped(
@@ -139,6 +139,11 @@ def avi_facts(data: bytes) -> dict[str, object]:
 # family, and the session methods call them first. They are also what `perform` runs over a
 # WHOLE list before its first step: a batch enters through the same checks the synchronous
 # call makes, so a value that would be refused mid-list is refused before anything ran.
+
+
+def entry_is(text: str) -> Callable[[str], bool]:
+    """A pick for `Session.delete_rows`: the row whose entry is `text`."""
+    return lambda entry: entry == text
 
 
 def check_register_name(name: str) -> str:
@@ -287,7 +292,7 @@ class Session(dprocess.Process):
         dprocess.Process.__init__(self)
         self._spawn(launch)
 
-    def _arming_writes(self) -> bool:
+    def arming_writes(self) -> bool:
         if self.plants_int3 is None:
             self.plants_int3 = not dbinary.heavy_debug(self.launch.binary)
         return self.plants_int3
@@ -305,7 +310,7 @@ class Session(dprocess.Process):
         if not self.has(dbg.RUNSTATE):
             return None
         try:
-            dbg.read_run_state(self)
+            run_state.read_run_state(self)
         except Invalid:
             return None
         return self.clock_ms
@@ -359,7 +364,7 @@ class Session(dprocess.Process):
             return True
         if not self.has(dbg.RUNSTATE):
             return False
-        return dbg.read_run_state(self)
+        return run_state.read_run_state(self)
 
     def require_stopped(self, what: str) -> None:
         """Refuse `what` unless the machine is stopped at the debugger."""
@@ -381,7 +386,7 @@ class Session(dprocess.Process):
 
     # ------------------------------------------------------------------ driving
 
-    def _release(self, command: str) -> list[str]:
+    def release(self, command: str) -> list[str]:
         """Let the machine run with `command`."""
         return driving.release(self, command)
 
@@ -539,7 +544,7 @@ class Session(dprocess.Process):
                    progress: Progress = no_progress, label: str = "",
                    look_once: bool = False) -> tuple[bool, float]:
         """Ask the debugger whether the machine stopped, until `deadline`."""
-        return dbg.await_stop(self, began, deadline, target, progress, label, look_once)
+        return run_state.await_stop(self, began, deadline, target, progress, label, look_once)
 
     def delete_rows(self, picks: list[Callable[[str], bool]]
                     ) -> list[tuple[dict[str, str] | None, bool]]:
@@ -601,7 +606,7 @@ class Session(dprocess.Process):
         check_segment(seg)
         grammar.check_offset(off, stopped["mode"])
         target = f"{seg:04X}:{off:04X}"
-        self.altered |= self._arming_writes()
+        self.altered |= self.arming_writes()
         self.command(f"BP {target}")
         held = self.breakpoints()
         want = ("BP", seg, off)
@@ -639,7 +644,7 @@ class Session(dprocess.Process):
         """Remove a condition breakpoint by its own ROW TEXT, and READ THE LIST BACK."""
         self.where()                      # refuses a running machine before the command
         want = f"{grammar.CONDITION_ROW}{row}"
-        [(held, removed)] = self.delete_rows([lambda e: e == want])
+        [(held, removed)] = self.delete_rows([entry_is(want)])
         if held is None:
             return {"entry": want, "removed": False, "note": "no such breakpoint to remove"}
         return {"entry": want, "removed": removed}
@@ -650,7 +655,7 @@ class Session(dprocess.Process):
         check_interrupt(number, ah)
         self.where()                      # refuses a running machine before the command
         want = grammar.interrupt_row(number, ah)
-        [(row, removed)] = self.delete_rows([lambda e: e == want])
+        [(row, removed)] = self.delete_rows([entry_is(want)])
         if row is None:
             return {"entry": want, "removed": False, "note": "no such breakpoint to remove"}
         return {"entry": want, "removed": removed}
@@ -664,14 +669,14 @@ class Session(dprocess.Process):
             since_mark: int = 0) -> tuple[list[str], int]:
         return log_reader.log(self, pattern, limit, channel, since_mark)
 
-    def _log_text(self) -> str:
-        return log_reader._log_text(self)
+    def log_text(self) -> str:
+        return log_reader.log_text(self)
 
-    def _e9_text(self) -> str:
-        return log_reader._e9_text(self)
+    def e9_text(self) -> str:
+        return log_reader.e9_text(self)
 
-    def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
-        return log_reader._e9_since(self, offset, channel)
+    def e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
+        return log_reader.e9_since(self, offset, channel)
 
     def e9_new_since(self, offset: int) -> tuple[list[str], int]:
         return log_reader.e9_new_since(self, offset)
@@ -785,8 +790,8 @@ class Session(dprocess.Process):
         return symbol_file.load_symbols(self, data)
 
     @staticmethod
-    def _acked(out: str, echo: str, name: str) -> None:
-        return symbol_file._acked(out, echo, name)
+    def acked(out: str, echo: str, name: str) -> None:
+        return symbol_file.acked(out, echo, name)
 
     # ------------------------------------------------------------------ capture
 
@@ -807,11 +812,11 @@ class Session(dprocess.Process):
         return run_state.break_in(
             self, run_state.BREAK_IN_WAIT_S if seconds is None else seconds)
 
-    def _state_dir(self) -> Path:
-        return saved_states._state_dir(self)
+    def state_dir(self) -> Path:
+        return saved_states.state_dir(self)
 
-    def _state_command(self, verb: str, path: Path, seconds: float) -> dict[str, object]:
-        return saved_states._state_command(self, verb, path, seconds)
+    def state_command(self, verb: str, path: Path, seconds: float) -> dict[str, object]:
+        return saved_states.state_command(self, verb, path, seconds)
 
     def save_state(self, name: str, seconds: float = STATE_WAIT_S) -> dict[str, object]:
         return saved_states.save_state(self, name, seconds)

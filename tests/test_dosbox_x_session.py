@@ -27,6 +27,7 @@ from scry_core.host_program import absolute as _abs
 from test_dosbox_x_spawn import Child
 from test_dosbox_x_stub_link import REPORT, Stub
 
+from scry_dosbox_x import conf as dconf
 from scry_dosbox_x import grammar, stepping, stub_link
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import logs as dlogs
@@ -839,20 +840,20 @@ def test_every_settable_name_has_the_pane_register_and_width_it_is_read_back_at(
 def test_an_ack_naming_a_truncated_filename_is_not_an_ack() -> None:
     """THE SILENT HAZARD IN THIS COMMAND."""
     ok = f"DEBUG: {ds.SYM_SAVE_ECHO} ({ds.SYM_SAVE_NAME}{ds.SYM_OK}\n"
-    ds.Session._acked(ok, ds.SYM_SAVE_ECHO, ds.SYM_SAVE_NAME)
+    ds.Session.acked(ok, ds.SYM_SAVE_ECHO, ds.SYM_SAVE_NAME)
 
     ok_load = f"DEBUG: {ds.SYM_LOAD_ECHO} ({ds.SYM_LOAD_NAME}{ds.SYM_OK}\n"
-    ds.Session._acked(ok_load, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
+    ds.Session.acked(ok_load, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
     with pytest.raises(ds.Invalid, match="did not acknowledge"):
-        ds.Session._acked(ok_load, ds.SYM_SAVE_ECHO, ds.SYM_SAVE_NAME)
+        ds.Session.acked(ok_load, ds.SYM_SAVE_ECHO, ds.SYM_SAVE_NAME)
 
     truncated = "DEBUG: Variable list save (ABCDEFGHIJKL) : ok.\n"
     with pytest.raises(ds.Invalid, match="truncates a filename"):
-        ds.Session._acked(truncated, ds.SYM_SAVE_ECHO, "ABCDEFGHIJKLMNOPQRST.BIN")
+        ds.Session.acked(truncated, ds.SYM_SAVE_ECHO, "ABCDEFGHIJKLMNOPQRST.BIN")
 
     failed = "DEBUG: Variable list save (/PRIVATE/TMP) : failure.\n"
     with pytest.raises(ds.Invalid, match="did not acknowledge"):
-        ds.Session._acked(failed, ds.SYM_SAVE_ECHO, _abs("private", "tmp", "x.bin"))
+        ds.Session.acked(failed, ds.SYM_SAVE_ECHO, _abs("private", "tmp", "x.bin"))
 
 
 def test_an_ok_from_an_earlier_call_does_not_acknowledge_this_one() -> None:
@@ -861,7 +862,7 @@ def test_an_ok_from_an_earlier_call_does_not_acknowledge_this_one() -> None:
              f"DEBUG: {ds.SYM_SAVE_ECHO} ({ds.SYM_SAVE_NAME}{ds.SYM_OK}\n"
              f"DEBUG: {ds.SYM_LOAD_ECHO} ({ds.SYM_LOAD_NAME}) : failure.\n")
     with pytest.raises(ds.Invalid, match="OLDER ok"):
-        ds.Session._acked(delta, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
+        ds.Session.acked(delta, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
 
 
 def test_both_filenames_this_module_uses_fit_inside_what_the_debugger_keeps() -> None:
@@ -871,7 +872,7 @@ def test_both_filenames_this_module_uses_fit_inside_what_the_debugger_keeps() ->
         assert len(name) <= ds.SYM_ARG_MAX, name
         assert name == name.upper(), (
             f"{name!r} is not upper case, and the debugger uppercases the filename it "
-            f"echoes back, so `_acked` would never match its own request")
+            f"echoes back, so `acked` would never match its own request")
 
 
 def _loader(tmp_path: Path, reply: Callable[[str], str] | None = None) -> Any:
@@ -885,7 +886,7 @@ def _loader(tmp_path: Path, reply: Callable[[str], str] | None = None) -> Any:
     return SimpleNamespace(launch=SimpleNamespace(cwd=tmp_path),
                            command=reply or default,
                            alive=lambda: True, vars_held=0,
-                           _acked=ds.Session._acked)
+                           acked=ds.Session.acked)
 
 
 GOOD_LIST = (b"\x01\x00" + b"_x" + b"\0" * 14 + b"\x10\x00\x00\x00")
@@ -965,7 +966,7 @@ def test_the_acknowledgement_refusal_keeps_the_tail_and_not_the_head() -> None:
     """WHAT SURVIVES THE 300-CHARACTER BOUND IS THE NEWEST EVIDENCE, not the oldest."""
     out = "HEADMARK " + "x" * 400 + " TAILMARK"
     with pytest.raises(ds.Invalid) as caught:
-        ds.Session._acked(out, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
+        ds.Session.acked(out, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
     said = str(caught.value)
     assert "TAILMARK" in said, said
     assert "HEADMARK" not in said, "it quoted the head, so the newest evidence is gone"
@@ -976,7 +977,7 @@ def test_a_missing_acknowledgement_names_every_cause_that_has_been_seen() -> Non
     running = ("\x1b7\x1b8\r\nBochs port E9h: [+ 00000.000] PROBE . tick"
                "\x1b7\x1b8\r\nBochs port E9h: [+ 00001.000] PROBE . tick")
     with pytest.raises(ds.Invalid) as caught:
-        ds.Session._acked(running, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
+        ds.Session.acked(running, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
     said = str(caught.value)
     for clause in ("truncates a filename", "OLDER ok", "EMPTY", "RUNNING",
                    "not a closed list"):
@@ -1053,7 +1054,7 @@ def test_the_descriptor_read_takes_the_big_bit_from_the_fourth_digit() -> None:
 
 
 def test_the_descriptor_read_takes_the_answer_to_this_question(tmp_path: Path) -> None:
-    """The OCCURRENCE axis, the sibling of `_acked`'s."""
+    """The OCCURRENCE axis, the sibling of `acked`'s."""
     screen = ("SelectorInfo CS:\r\n"
               "CS: b:00010000 type:1B parbg\nl:0000FFFF dpl : 3 10011\r\n"
               "SelectorInfo CS:\r\n"
@@ -1074,7 +1075,7 @@ def _bp_fake(tmp_path: Path, *, mode: str = "Pr32",
         where=lambda: {"cs": "00A7", "eip": "0", "mode": mode},
         command=lambda _t, **_k: "",
         breakpoints=lambda: list(held or []),
-        alive=lambda: True, altered=False, _arming_writes=lambda: False)
+        alive=lambda: True, altered=False, arming_writes=lambda: False)
     fake.delete_rows = lambda picks: ds.Session.delete_rows(fake, picks)  # type: ignore[arg-type]
     return fake
 
@@ -1345,7 +1346,7 @@ def test_the_stop_surveys_e9_reader_refuses_a_log_that_is_not_there_yet(tmp_path
     s.launch = SimpleNamespace(logfile=tmp_path / "not-yet.log")  # type: ignore[assignment]
     with pytest.raises(ds.Invalid, match="has not written anything yet"):
         ds.Session.e9_new_since(s, 0)
-    assert ds.Session._e9_since(s, 0) == ([], 0)
+    assert ds.Session.e9_since(s, 0) == ([], 0)
     (tmp_path / "not-yet.log").write_text("Bochs port E9h: [+ 0.000] BOOT  . start\n")
     lines, offset = ds.Session.e9_new_since(s, 0)
     assert len(lines) == 1 and offset > 0
@@ -1607,7 +1608,7 @@ def test_a_conf_s_mounts_are_read_past_options_case_and_a_bom(tmp_path: Path, au
     conf = tmp_path / "g.conf"
     head = "" if autoexec.startswith("[") else "[autoexec]\n"
     conf.write_text(f"{head}{autoexec}\n[sdl]\nmount q .\n", encoding="utf-8-sig")
-    assert dlaunch.conf_mounts(conf) == [taken], "a mount outside [autoexec] counted, or missed"
+    assert dconf.conf_mounts(conf) == [taken], "a mount outside [autoexec] counted, or missed"
 
 
 @pytest.mark.parametrize(("conf_text", "flags", "core"), [
@@ -1631,7 +1632,7 @@ def test_the_core_a_session_boots_with_is_the_flags_last_word_over_the_confs(
         tmp_path: Path, conf_text: str, flags: list[str], core: str) -> None:
     conf = tmp_path / "g.conf"
     conf.write_text(conf_text, encoding="utf-8")
-    assert dlaunch.cpu_core(conf, flags) == core
+    assert dconf.cpu_core(conf, flags) == core
 
 
 @pytest.mark.parametrize("from_zero", [False, True])

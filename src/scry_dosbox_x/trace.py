@@ -28,6 +28,7 @@ from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import collect as dcollect
 from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import grammar, machine, paths, placement, running
+from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
 from scry_dosbox_x.state import STATE
@@ -213,7 +214,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
         _close_log(session, places, "the log an earlier trace left open")
     session.require_run_state("a trace")
     armed_at, _ = session.where_and_registers()
-    dbg.read_run_state(session)              # the cycle count the trace proves itself against
+    rs.read_run_state(session)              # the cycle count the trace proves itself against
     before = session.cycles
     if before is None:
         raise ds.Invalid("unexpected_answer",
@@ -282,8 +283,10 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
     except ds.Invalid as exc:
         raise ds.Invalid("unexpected_answer",
             f"the stop the trace ended at could not be surveyed ({exc}), so its count cannot be "
-            f"proved; the log is at {collected}", trace=kept) from None
-    stop = {"stop_seq": reply.get("stop_seq"), "pc": reply["pc"], "cpu_mode": reply["cpu_mode"]}
+            f"proved; the log is at {collected}", trace=kept,
+            **running.placement_of(exc)) from None
+    stop = {"stop_seq": reply.get("stop_seq"), "pc": reply["pc"], "cpu_mode": reply["cpu_mode"],
+            **({"symbols_placed": reply["symbols_placed"]} if "symbols_placed" in reply else {})}
     if closed_early:
         raise ds.Invalid("readback_refused",
             f"the machine closed the debugger's log before the trace stopped ({MACHINE_CLOSES}), "

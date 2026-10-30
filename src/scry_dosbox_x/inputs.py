@@ -24,11 +24,11 @@ from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Code, unavailable
 from scry_core.screen_map import Pointer
 
-from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import placement, retrace, running, taps
 from scry_dosbox_x import pointer as dpointer
+from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
 from scry_dosbox_x.state import STATE
@@ -280,7 +280,7 @@ class Retraces:
         self.session = session
         self.run = 0
         self.last: dict[str, Any] = {}
-        dbg.read_run_state(session)
+        rs.read_run_state(session)
         self.clock_ms = session.clock_ms or 0.0
         self.e9_mark = STATE.e9_offset
         self.baseline = {str(tap.id): tap.last_total for tap in STATE.taps.values()}
@@ -329,7 +329,7 @@ class Retraces:
 RETRACE_BOUND_S = 5.0
 #: The stop a parked post leaves, as `run_for` reads it.
 STOP_KEYS = ("pc", "cpu_mode", "stop_seq", "frame", "instruction", "regs", "watches", "cause",
-             "e9")
+             "regpoint_hit", "e9")
 
 
 def _send(session: ds.Session, commands: list[bytes],

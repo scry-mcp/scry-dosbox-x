@@ -47,11 +47,11 @@ def load_symbols(ses: ds.Session, data: bytes) -> list[tuple[str, int]]:
                           f"the debugger's filename argument survives only "
                           f"{ds.SYM_ARG_MAX} characters") from None
         out = ses.command(f"LV {ds.SYM_LOAD_NAME}")
-        ses._acked(out, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
+        ses.acked(out, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
         # LV took them: the holding is at least this much more, whatever the read-back says
         ses.vars_held += int.from_bytes(data[:2], "little")
         out = ses.command(f"SV {ds.SYM_SAVE_NAME}")
-        ses._acked(out, ds.SYM_SAVE_ECHO, ds.SYM_SAVE_NAME)
+        ses.acked(out, ds.SYM_SAVE_ECHO, ds.SYM_SAVE_NAME)
         if not back.exists():
             raise Invalid("unexpected_answer",
                 f"the debugger reported saving {ds.SYM_SAVE_NAME} and no such file "
@@ -83,7 +83,7 @@ def vars_overflow(ses: ds.Session, data: bytes) -> str | None:
             "hold. Load a narrower `pattern`, or start the session again for an empty list")
 
 
-def _acked(out: str, echo: str, name: str) -> None:
+def acked(out: str, echo: str, name: str) -> None:
     """The debugger said ok for this file on this call.
 
     Reads the LAST line naming the file, the one this call's command printed.

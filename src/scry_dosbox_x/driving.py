@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import contextlib
 import time
-from collections.abc import Callable
 
 from scry_core import cancel
 from scry_core import reply_contract as contract
@@ -29,11 +28,6 @@ def still_armed(exc: Invalid, target: str, began: float, ctl: str | None = None)
                    f"{round(time.monotonic() - began, 1)}s: this call wrote a trap byte "
                     f"into the guest and could not read the machine back to remove it, so "
                     f"it will stop the next `resume`")
-
-
-def entry_is(text: str) -> Callable[[str], bool]:
-    """A pick for `Session.delete_rows`: the row whose entry is `text`."""
-    return lambda entry: entry == text
 
 
 def release(session: ds.Session, command: str) -> list[str]:
@@ -123,7 +117,7 @@ def run_to(session: ds.Session, seg: int, off: int, seconds: float,
                 f"the control {ctl} is the same address as the target {target}: "
                           "a control proves the target COULD have fired, and the target "
                           "cannot prove that about itself")
-    session.altered |= session._arming_writes()
+    session.altered |= session.arming_writes()
     session.command(f"BP {target}")
     if ctl is not None:
         session.command(f"BP {ctl}")
@@ -242,7 +236,7 @@ def remove_own(session: ds.Session, spelled: list[str]) -> list[tuple[bool, str]
     """Remove the breakpoints THIS call armed, on a stopped machine; for each, whether it
     went and the sentence a reply carries when it did not."""
     try:
-        gone = ds.Session.delete_rows(session, [entry_is(f"BP {s}") for s in spelled])
+        gone = ds.Session.delete_rows(session, [ds.entry_is(f"BP {s}") for s in spelled])
     except Invalid as exc:
         return [(False, f" The stop is sound; the cleanup could not be confirmed ({exc}). "
                         f"Assume the breakpoint at {s} is still armed.") for s in spelled]

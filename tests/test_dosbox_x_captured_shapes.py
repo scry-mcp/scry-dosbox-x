@@ -75,7 +75,7 @@ def test_a_state_the_emulator_refused_is_named_in_its_own_words(fixture: str, ve
     session.exec = lambda command, seconds=None: dbg.exec_lines(
         cast(ds.Session, session), command, seconds)
     with pytest.raises(ds.Invalid) as e:
-        states._state_command(cast(ds.Session, session), verb, Path("/dir/x.sav"), 5.0)
+        states.state_command(cast(ds.Session, session), verb, Path("/dir/x.sav"), 5.0)
     said = str(e.value)
     assert e.value.code == "unexpected_answer" and f"refused {verb}" in said, said
     if verb == "SAVESTATE":
@@ -86,7 +86,7 @@ def test_a_state_the_emulator_refused_is_named_in_its_own_words(fixture: str, ve
     logged = SimpleNamespace(**{**vars(session), "launch": SimpleNamespace(logfile=Path("/g")),
                                 "e9_mark": lambda: 0})
     with pytest.raises(ds.Invalid) as e:
-        states._state_command(cast(ds.Session, logged), verb, Path("/dir/x.sav"), 5.0)
+        states.state_command(cast(ds.Session, logged), verb, Path("/dir/x.sav"), 5.0)
     assert "log says more" in str(e.value), str(e.value)
 
 

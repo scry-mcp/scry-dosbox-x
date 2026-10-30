@@ -12,6 +12,7 @@ from scry_core import reply_contract as contract
 from scry_dosbox_x import arming, code, comments, grammar, start_symbols
 from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
 from scry_dosbox_x.state import STATE
@@ -91,6 +92,29 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
     # The table `start` holds is placed before the queue drains, so the re-arm sees it.
     if isinstance(placed, _Due):
         placed = start_symbols.place_if_due(session)
+    try:
+        return _surveyed_stop(session, placed, retrace_may_stop, made_by, asked_by, own, base)
+    except ds.Invalid as e:
+        # The placement is consumed as it is said: a survey cut after it must still carry it.
+        if placed is not None:
+            e.fields.setdefault("symbols_placed", placed)
+        raise
+
+
+def placement_of(exc: ds.Invalid) -> dict[str, Any]:
+    """The placement a cut `stop_reply` carried out before it failed, as a reply field."""
+    return {k: v for k, v in exc.fields.items() if k == "symbols_placed"}
+
+
+def unavailable_enrichment(exc: ds.Invalid) -> dict[str, Any]:
+    """The fields of a stop whose survey `exc` cut: the enrichment marked unavailable, and the
+    placement."""
+    return {"enrichment": {"available": False, "why": str(exc)}, **placement_of(exc)}
+
+
+def _surveyed_stop(session: ds.Session, placed: dict[str, Any] | None, retrace_may_stop: bool,
+                   made_by: dict[str, str] | None, asked_by: Literal["stop", "cancel"] | None,
+                   own: str, base: dict[str, Any]) -> dict[str, Any]:
     said: dict[str, Any] = {"symbols_placed": placed} if placed is not None else {}
     # One survey serves where, registers and the watches' list.
     arming.apply_pending(session)
@@ -121,10 +145,11 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
         attribution = STATE.last_stop["attribution"] = st.interrupt_stop(
             attribution, picture["instruction"], registers, held)
     e9 = e9_block(session)
-    frame = STATE.last_stop["frame"] = dbg.frame_at_stop(session)
+    frame = STATE.last_stop["frame"] = rs.frame_at_stop(session)
     return st.reply(**{**base, **position(where, session.paging)},
                     frame=frame, regs=st.shown_regs(registers), watches=watches,
                     cause=st.cause(attribution),
+                    **st.regpoint_hit(attribution),
                     e9=e9, stop_seq=STATE.last_stop["seq"], **picture, **said)
 
 
@@ -190,7 +215,8 @@ def recorded_head(recorded: dict[str, Any]) -> dict[str, Any]:
     """The head of a stop reply built off the record rather than a survey."""
     stop = STATE.last_stop
     return {**recorded, **position(dict(stop["where"]), stop.get("paging")),
-            **({"frame": stop["frame"]} if "frame" in stop else {})}
+            **({"frame": stop["frame"]} if "frame" in stop else {}),
+            **st.regpoint_hit(stop["attribution"])}
 
 
 PC_RUNNING_WHY = ("the guest is running: `pc` is read off a stopped machine's registers, and "

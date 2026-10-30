@@ -31,10 +31,10 @@ from scry_core import reply_contract as contract
 
 from scry_dosbox_x import arming, placement, running, server, start_symbols
 from scry_dosbox_x import code as dcode
-from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import declarations as dec
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import mcp as dosbox_mcp
+from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
 from scry_dosbox_x import symbols as dsym
@@ -88,7 +88,8 @@ def test_breakpoint_at_a_symbol_arms_stores_and_says_when_it_is_marked(
         tmp_path: Path) -> None:
     syms = [dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T"),
             dsym.Symbol("ATRCT_RUN", 0x599, kind="T", idle=True)]     # one marked public
-    _names(tmp_path, symbols=syms)
+    fake = _names(tmp_path, symbols=syms)
+    fake.launch = dataclasses.replace(fake.launch, core="normal")     # `auto` adds its own note
     got = server.breakpoint_at(ref="_uicue_apply")
     assert got["status"] == "ok" and got["armed"] is True
     assert got["entry"] == "BP 00A7:3D5E0"
@@ -109,6 +110,10 @@ def test_a_code_breakpoint_on_a_dynamic_core_is_armed_and_says_it_may_be_passed_
     assert got["status"] == "ok" and got["armed"] is True, got
     assert "cpu core=normal" in got["note"] and "dynamic" in got["note"], got
     fake.launch = dataclasses.replace(fake.launch, core="auto")
+    auto = cast(dict[str, Any], server.breakpoint_at(ref="_uicue_apply"))
+    assert auto["armed"] is True, auto
+    assert "protected-mode" in auto["note"] and "cpu core=normal" in auto["note"], auto
+    fake.launch = dataclasses.replace(fake.launch, core="normal")
     plain = cast(dict[str, Any], server.breakpoint_at(ref="_uicue_apply"))
     assert "dynamic" not in str(plain.get("note")), plain
 
@@ -283,7 +288,7 @@ def test_runstate_says_which_bpif_row_stopped_the_machine_only_when_it_did(
     fake = _names(tmp_path)
     fake.fired_entry = "BPIF stale"
     fake.rows = [{"index": "0A", "entry": "BPIF AX==1"}]
-    dbg.take_run_state(cast(ds.Session, fake), True, [line])
+    rs.take_run_state(cast(ds.Session, fake), True, [line])
     assert fake.fired_entry == fired and cast(Any, fake).frames == 3
 
 

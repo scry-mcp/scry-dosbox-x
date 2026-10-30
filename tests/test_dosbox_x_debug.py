@@ -287,7 +287,7 @@ def test_a_release_whose_reply_fails_is_not_believed_stopped(tmp_path: Path) -> 
         raise ds.Invalid("session_broken", "the debugger channel dropped")
     machine.hooks["RUN"] = dropped
     with pytest.raises(ds.Invalid):
-        s._release("RUN")
+        s.release("RUN")
     assert not s.parked
 
 
@@ -314,7 +314,7 @@ def test_a_loaded_state_is_read_afresh(tmp_path: Path) -> None:
     machine.hooks["LOADSTATE"] = loaded
     state = tmp_path / "a.sav"
     state.write_bytes(b"state")
-    s._state_command("LOADSTATE", state, 5.0)
+    s.state_command("LOADSTATE", state, 5.0)
     assert s.where()["eip"] == "00000777"
 
 
@@ -439,7 +439,7 @@ def test_a_cleanup_that_could_not_be_confirmed_is_said_beside_a_sound_arrival(
 
 def test_the_stop_wait_reports_its_progress(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                                              ) -> None:
-    monkeypatch.setattr(dbg, "PROGRESS_EVERY_S", 0.0)
+    monkeypatch.setattr(run_state, "PROGRESS_EVERY_S", 0.0)
     said: list[str] = []
     machine = Machine(releases=[None])
     s = session_over(machine, tmp_path)

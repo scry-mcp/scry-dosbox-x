@@ -416,13 +416,9 @@ Session layer first, then the file's; a screen matches when its kind and size ar
 screen_map_write(method, screen="", match=null, controls=null, cells="", anchor="", path="", scale=null, margin=null, dest="", overwrite=null)
 ```
 
-The screen map: an application's screens, each known by the signatures of its stable
-regions, and their controls, in a session layer and a file layer.
+The screen map: an application's screens, each known by the signatures of its stable regions, and their controls, in a session layer and a file layer.
 
-`add`: the screen shown now as `screen` in the session layer, one read signing each `match`
-crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own
-units; needs the machine stopped. Reply: `screen`, `kind`, `size`, `cells`, `match`,
-`controls`, `replaced`, `shadows_file`, `anchor` (when given).
+`add`: the screen shown now as `screen` in the session layer, one read signing each `match` crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own units; needs the machine stopped. Reply: `screen`, `kind`, `size`, `cells`, `match`, `controls`, `replaced`, `shadows_file`, `anchor` (when given).
 
 `add`'s `cells` `index` (a pixel screen; default
 `rgb`) signs the palette indices drawn, not the colours shown, so one map knows a program
@@ -442,10 +438,7 @@ crops are in the program's units. Reply: `path`, `application`, `mode`, `screens
 layer, in the loaded map's `mode` (`verified` when none was loaded). Reply: `path`,
 `application`, `mode`, `screens`, `controls`, `promoted`.
 
-Refused: an argument the method does not take; a misshapen name, crop, control, view or file;
-an `add` without an `anchor` to a consolidated map, and a save of one holding a screen with
-none (`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view`
-refuses.
+Refused: an argument the method does not take; a misshapen name, crop, control, view or file; an `add` without an `anchor` to a consolidated map, and a save of one holding a screen with none (`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view` refuses.
 
 Reference: REFERENCE.md, Screen maps.
 

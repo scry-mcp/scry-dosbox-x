@@ -1,6 +1,6 @@
 """`presence`: which tools drive, held against the registry; the look as the channel's
 `PRESENCE` takes it; what the emulator's answers mean (drawn, a build without the command, an
-output it cannot draw on); a session with no window; the arrow turned on by the first mouse
+output it cannot draw on); a session with no window; the pointer turned on by the first mouse
 move; and a start plan lighting the window."""
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ def test_every_registered_tool_is_declared_driving_or_still_and_no_other() -> No
                                      dpresence.STILL_TOOLS) == []
 
 
-def test_the_look_goes_to_the_channel_one_word_per_key_with_its_arrow() -> None:
+def test_the_look_goes_to_the_channel_one_word_per_key_with_its_pointer() -> None:
     words = dict(w.split("=", 1) for w in dpresence.channel_args().split(" "))
     assert list(words) == ["rgb", "edge", "steps", "acting", "held", "fade", "outline", "glide",
                            "sprite"]
@@ -33,9 +33,9 @@ def test_the_look_goes_to_the_channel_one_word_per_key_with_its_arrow() -> None:
     assert words == {"rgb": f"{look.rgb:06X}", "edge": f"{look.edge:g}",
                      "steps": str(look.steps), "acting": f"{look.acting_alpha:.3f}",
                      "held": f"{look.held_alpha:.3f}", "fade": f"{look.fade_s:g}",
-                     "outline": f"{look.pointer_outline_rgb:06X}",
-                     "glide": f"{look.pointer_glide_s:g}",
-                     "sprite": "/".join(look.pointer)}
+                     "outline": f"{dpresence.POINTER_OUTLINE_RGB:06X}",
+                     "glide": f"{dpresence.POINTER_GLIDE_S:g}",
+                     "sprite": "/".join(dpresence.POINTER)}
 
 
 class _Session:
@@ -126,7 +126,7 @@ def test_a_stand_in_with_no_presence_reads_as_never_drawn() -> None:
     assert dpresence.of(None).held is None
 
 
-def test_the_first_mouse_move_turns_the_arrow_on_once() -> None:
+def test_the_first_mouse_move_turns_the_pointer_on_once() -> None:
     shown, channel = _shown(DRAWN, DRAWN, DRAWN)
     dpresence.pointer_moved(shown)
     dpresence.pointer_moved(shown)
@@ -226,7 +226,7 @@ def test_a_mouse_move_keeps_its_reply_when_the_session_dies_after_it(
     ((False, ["PRESENCE needs a state", dbg.NOT_RECOGNIZED]), "version 1"),
     ((True, ["PRESENCE off frames=0 pointer=0 output=none version=1"]), "version 1"),
 ])
-def test_a_build_older_than_the_arrows_pixel_size_is_said_unavailable_by_version(
+def test_a_build_older_than_the_pointers_pixel_size_is_said_unavailable_by_version(
         bare: tuple[bool, list[str]], said: str) -> None:
     session = _Session(commands=frozenset({"PRESENCE"}))
     session.bare = bare
@@ -239,3 +239,19 @@ def test_a_build_older_than_the_arrows_pixel_size_is_said_unavailable_by_version
 def test_a_build_names_its_version_in_the_bare_answer() -> None:
     assert dpresence.build_version(["PRESENCE off frames=0 pointer=0 output=none version=2"]) == 2
     assert dpresence.build_version(["PRESENCE needs a state"]) == 1
+
+
+#: The INT 33h driver's default pointer, as DOSBox-X's driver holds it: a pixel is drawn where
+#: the screen mask bit is clear, white where the cursor bit is set, else black.
+SCREEN_MASK = (0x3FFF, 0x1FFF, 0x0FFF, 0x07FF, 0x03FF, 0x01FF, 0x00FF, 0x007F,
+               0x003F, 0x001F, 0x01FF, 0x00FF, 0x30FF, 0xF87F, 0xF87F, 0xFCFF)
+CURSOR_MASK = (0x0000, 0x4000, 0x6000, 0x7000, 0x7800, 0x7C00, 0x7E00, 0x7F00,
+               0x7F80, 0x7C00, 0x6C00, 0x4600, 0x0600, 0x0300, 0x0300, 0x0000)
+
+
+def test_the_pointer_is_the_dos_drivers_own_pointer() -> None:
+    rows = ["".join("." if s >> b & 1 else "o" if c >> b & 1 else "X" for b in range(15, -1, -1))
+            for s, c in zip(SCREEN_MASK, CURSOR_MASK, strict=True)]
+    width = len(dpresence.POINTER[0])
+    assert all(r[width:] == "." * (16 - width) for r in rows)
+    assert tuple(r[:width] for r in rows) == dpresence.POINTER

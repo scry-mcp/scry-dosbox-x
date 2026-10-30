@@ -21,7 +21,7 @@ import pytest
 from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: F401
 from test_dosbox_x_machine import listing
 
-from scry_dosbox_x import code, disasm, grammar, machine, running, server, start_symbols
+from scry_dosbox_x import code, disasm, grammar, machine, running, sequence, server, start_symbols
 from scry_dosbox_x import comments as dcomments
 from scry_dosbox_x import dump as dumping
 from scry_dosbox_x import session as ds
@@ -798,9 +798,8 @@ def test_a_stop_whose_survey_was_cut_carries_no_instruction() -> None:
     assert "instruction" not in reply and reply["enrichment"]["available"] is False, reply
 
 
-def test_a_placement_said_once_survives_a_stop_whose_survey_was_cut(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    """The placement is consumed as it is said: a survey cut after it must still carry it."""
+def _cut_after_placing(monkeypatch: pytest.MonkeyPatch) -> tuple[Any, dict[str, Any]]:
+    """A stopped session whose table is placed at this stop and whose survey is then cut."""
     s = StoppedCode("code-stop1")
     install()
     dstate.STATE.session = cast(ds.Session, s)
@@ -811,8 +810,33 @@ def test_a_placement_said_once_survives_a_stop_whose_survey_was_cut(
     def cut() -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
         raise ds.Invalid("unexpected_answer", "no register pane came back")
     s.stop_survey = cut  # type: ignore[method-assign]
+    return s, said
+
+
+def test_a_placement_said_once_survives_a_stop_whose_survey_was_cut(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The placement is consumed as it is said: a survey cut after it must still carry it."""
+    s, said = _cut_after_placing(monkeypatch)
     reply = running.stop_or_base(cast(ds.Session, s), True, {"halted": True})
     assert reply["enrichment"]["available"] is False and reply["symbols_placed"] == said, reply
+
+
+def test_a_stop_reply_cut_after_its_placement_hands_the_placement_to_whoever_catches_it(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    s, said = _cut_after_placing(monkeypatch)
+    with pytest.raises(ds.Invalid) as e:
+        running.stop_reply(cast(ds.Session, s))
+    assert e.value.fields["symbols_placed"] == said, e.value.fields
+    assert running.unavailable_enrichment(e.value) == {
+        "enrichment": {"available": False, "why": "no register pane came back"},
+        "symbols_placed": said}
+
+
+def test_the_end_of_a_sequence_keeps_a_placement_its_cut_survey_would_lose(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    s, said = _cut_after_placing(monkeypatch)
+    got = sequence._final_stop(cast(ds.Session, s))
+    assert got["enrichment"]["available"] is False and got["symbols_placed"] == said, got
 
 
 def test_a_stop_whose_registers_cannot_be_read_while_a_table_is_due_keeps_the_base_reply(

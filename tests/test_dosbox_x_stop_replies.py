@@ -15,7 +15,7 @@ import pytest
 from dosbox_x_server_support import NamesFake, _names, clean_session  # noqa: F401
 from scry_core import reply_contract as contract
 
-from scry_dosbox_x import arming, code, comments, running, server
+from scry_dosbox_x import arming, code, comments, inputs, retrace, running, sequence, server
 from scry_dosbox_x import state as dstate
 
 
@@ -158,6 +158,38 @@ def test_a_stop_call_names_a_declaration_there_before_itself(
         "attributed": True, "ref": "stop", "by": "stop", "at": "00A7:00000000"}
     _, words = dstate.STATE.stop_named(fake)  # type: ignore[arg-type]
     assert words == " at 00A7:00000000 (stop)", words
+
+
+def test_a_registerpoint_stop_carries_a_regpoint_hit_object(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _names(tmp_path)
+    _attributed(monkeypatch, {"attributed": True, "ref": "AX==1", "by": "regpoint",
+                              "at": "00A7:00000000"})
+    got = running.stop_reply(fake)  # type: ignore[arg-type]
+    assert got["regpoint_hit"] == {"ref": "AX==1", "condition": "AX==1", "pc": "00A7:00000000"}
+    assert got["cause"].startswith("registerpoint AX==1"), "the sentence stays beside the object"
+    _attributed(monkeypatch, {"attributed": True, "ref": "a", "by": "address",
+                              "at": "00A7:00000000"})
+    assert "regpoint_hit" not in running.stop_reply(fake)  # type: ignore[arg-type]
+    _attributed(monkeypatch, {"attributed": True, "ref": "AX==1", "by": "regpoint",
+                              "at": "00A7:00000000"})
+    made = running.stop_reply(fake, made_by={"ref": "T", "by": "run_to"})  # type: ignore[arg-type]
+    assert made["regpoint_hit"]["ref"] == "AX==1", "a run_to that met one too names it"
+
+
+def test_a_stop_built_off_the_record_keeps_the_registerpoint_that_made_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _names(tmp_path)
+    _attributed(monkeypatch, {"attributed": True, "ref": "AX==1", "by": "regpoint",
+                              "at": "00A7:00000000"})
+    running.stop_reply(fake)  # type: ignore[arg-type]
+    head = running.recorded_head(dstate.STATE.as_of() or {})
+    assert head["regpoint_hit"]["ref"] == "AX==1", head
+    row = sequence.SHAPE.extra
+    cut: dict[str, Any] = {}
+    row({"regpoint_hit": head["regpoint_hit"]}, cut)
+    assert cut == {"regpoint_hit": head["regpoint_hit"]}, "a compact row of a perform keeps it"
+    assert "regpoint_hit" in inputs.STOP_KEYS and "regpoint_hit" in retrace.ENDED_KEYS
 
 
 def test_only_a_caller_that_may_meet_the_retrace_stop_blames_it(tmp_path: Path) -> None:

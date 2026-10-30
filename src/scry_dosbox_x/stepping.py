@@ -101,7 +101,7 @@ def _one_step(ses: ds.Session, at: dict[str, str],
     sentence a reply carries when its own breakpoint could not be removed."""
     nxt = _step_over_target(ses, at) if mode == "over" else None
     if nxt is None:
-        ses._release("STEPIN")
+        ses.release("STEPIN")
         ses.mark_stopped()
         return ses.where(), False, ""
     target = f"{int(at['cs'], 16):04X}:{nxt:04X}"
@@ -112,7 +112,7 @@ def _one_step(ses: ds.Session, at: dict[str, str],
     began = time.monotonic()
     expired, cleanup = False, ""
     try:
-        ses._release("RUN")
+        ses.release("RUN")
         expired, _ = ds.Session.await_stop(ses, began, began + STEP_WAIT_S, target,
                                            label="step over")
         if expired:

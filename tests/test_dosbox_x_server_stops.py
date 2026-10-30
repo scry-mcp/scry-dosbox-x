@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import inspect
 import re
 import shutil
@@ -554,6 +555,7 @@ def test_resume_with_a_bound_comes_back_with_the_stop_when_the_run_state_says_st
 def test_run_to_summary_spells_a_control_that_never_counted_as_a_count_not_a_prefix(
         tmp_path: Path) -> None:
     fake = _names(tmp_path)
+    fake.launch = dataclasses.replace(fake.launch, core="normal")   # `auto` adds a note
     fake.runto_running = False
     fake.control_hits = 0
     got = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020", seconds=1))

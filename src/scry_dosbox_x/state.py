@@ -14,7 +14,7 @@ import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from scry_core import cancel, judges, narrowing, screen_map
 from scry_core import reply_contract as contract
@@ -23,6 +23,9 @@ from scry_dosbox_x import declarations as dec
 from scry_dosbox_x import grammar
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import symbols as sym
+
+if TYPE_CHECKING:
+    from scry_dosbox_x import start_symbols
 
 NO_STOP_YET_WHY = "this session has not stopped yet"
 UNREAD_STOP_WHY = ("the stop the machine is in was not readable yet (its survey failed; the "
@@ -78,7 +81,7 @@ class State:
         # The file layer outlasts sessions; the session layer does not.
         self.maps = screen_map.Maps()
         # `start(symbols=)`'s table until its program is in memory (`start_symbols`).
-        self.start_symbols: Any = None
+        self.start_symbols: start_symbols.Held | None = None
 
         # What the server can still say while the guest runs. Empty: no stop yet.
         self.last_stop: dict[str, Any] = {}
@@ -416,6 +419,15 @@ def interrupt_stop(attribution: dict[str, Any], instruction: dict[str, Any],
 
 
 _CAUSE_AT = re.compile(r" at [0-9A-Fa-f]{4}:[0-9A-Fa-f]{4,8}")
+
+
+def regpoint_hit(attribution: dict[str, Any]) -> dict[str, Any]:
+    """The `regpoint_hit` object of a stop a registerpoint made, or met beside a `run_to`'s
+    target: `ref`, `condition` and `pc`."""
+    ref = attribution["ref"] if attribution.get("by") == "regpoint" else attribution.get("regpoint")
+    if not ref:
+        return {}
+    return {"regpoint_hit": {"ref": ref, "condition": ref, "pc": attribution["at"]}}
 
 
 def cause(attribution: dict[str, Any]) -> str:

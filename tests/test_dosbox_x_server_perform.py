@@ -33,8 +33,7 @@ from scry_core import steps as step_judge
 from scry_core import vocabulary as vocab
 from scry_core.host_program import absolute as _abs
 
-from scry_dosbox_x import checks, inputs, machine, running, sequence, server
-from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import checks, inputs, machine, run_state, running, sequence, server
 from scry_dosbox_x import declarations as dec
 from scry_dosbox_x import docs as dosbox_docs
 from scry_dosbox_x import launch as dlaunch
@@ -993,7 +992,7 @@ def test_the_sequences_wait_for_a_stop_reports_its_progress(
     fake = _names(tmp_path)
     fake.halted = False
     fake.where_raises = True                    # running, and it stays running
-    monkeypatch.setattr(dbg, "PROGRESS_EVERY_S", 0.0)
+    monkeypatch.setattr(run_state, "PROGRESS_EVERY_S", 0.0)
     ticks: list[str] = []
     out = sequence.run_steps(fake, [{"op": "resume"}], 0.3, server._step_ops(),  # type: ignore[arg-type]
                              lambda p, t, m: ticks.append(m))
@@ -1009,7 +1008,7 @@ def test_the_sequences_wait_for_a_stop_asks_the_run_state_and_sends_nothing_else
     assert sequence._wait_for_stop(fake, 1.0) == "stopped"  # type: ignore[arg-type]
     assert fake.commands_sent == []
     fake.where_raises = True
-    monkeypatch.setattr(dbg, "PROGRESS_EVERY_S", 0.0)
+    monkeypatch.setattr(run_state, "PROGRESS_EVERY_S", 0.0)
     ticks: list[str] = []
     assert sequence._wait_for_stop(fake, 0.6, lambda p, t, m: ticks.append(m)) == "running"  # type: ignore[arg-type]
     assert ticks and ticks[0].startswith("waiting for the machine to stop: "), ticks
@@ -1057,7 +1056,7 @@ def test_perform_carries_the_clients_context_to_its_wait(
     fake = _names(tmp_path)
     fake.halted = False
     fake.where_raises = True
-    monkeypatch.setattr(dbg, "PROGRESS_EVERY_S", 0.0)
+    monkeypatch.setattr(run_state, "PROGRESS_EVERY_S", 0.0)
 
     async def main() -> None:
         await anyio.to_thread.run_sync(

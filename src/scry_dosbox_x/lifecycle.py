@@ -13,6 +13,7 @@ from scry_core import reply_contract as contract
 
 from scry_dosbox_x import arming, paths, placement, run_state, running, sequence, start_symbols
 from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import conf as dconf
 from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import declarations as dec
 from scry_dosbox_x import dos_calls as dos_calls_trace
@@ -98,7 +99,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         watched=shared,
         window_flags=window_flags,
         flags=list(flags or []),
-        core=dlaunch.cpu_core(conf_path, list(flags or [])),
+        core=dconf.cpu_core(conf_path, list(flags or [])),
         break_on_int3=break_on_int3,
         program=program or None,
         capture_video=capture_video,
@@ -236,7 +237,9 @@ def _log_tail(session: ds.Session) -> str | dict[str, Any]:
 def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
     """The body of the `close` tool."""
     if STATE.session is None:
-        return st.reply(closed=False, ended_by="none", note=session_block.NO_SESSION_CLOSE_NOTE)
+        none = contract.unavailable("no session was running")
+        return st.reply(closed=False, ended_by="none", pid=none, exit_code=none,
+                        note=session_block.NO_SESSION_CLOSE_NOTE)
     # Read before the session ends, so `pid` is the process this call ended.
     facts = st.process_facts()
     rc = STATE.session.close(progress=progress)

@@ -157,6 +157,30 @@ class FakeSession(SessionGates):
     def stub_replaced(self) -> None:
         """No input link here to prove again."""
 
+    def arming_writes(self) -> bool:
+        return False
+
+    def acked(self, out: str, echo: str, name: str) -> None:
+        return None
+
+    def log_text(self) -> str:
+        return ""
+
+    def e9_text(self) -> str:
+        return ""
+
+    def e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
+        return [], 0
+
+    def state_dir(self) -> Path:
+        raise ds.Invalid("no_channel", "this fake keeps no states")
+
+    def state_command(self, verb: str, path: Path, seconds: float) -> dict[str, object]:
+        raise ds.Invalid("no_channel", "this DOSBox-X has no `SAVESTATE` debugger command")
+
+    def release(self, command: str) -> list[str]:
+        return []
+
     def load_state(self, name: str, seconds: float = 20.0) -> dict[str, object]:
         raise ds.Invalid("no_channel", "this DOSBox-X has no `LOADSTATE` debugger command")
 
@@ -729,7 +753,7 @@ class NamesFake(SessionGates):
             raise self.wait_raises
         if self.stops_during_wait:
             self.running = False
-            raise ds._wait_stopped(pattern, 0, 0.4, parked=False, at_bound=False)
+            raise ds.wait_stopped(pattern, 0, 0.4, parked=False, at_bound=False)
         # the real method's answers: bad pattern or bound is `Invalid`, expiry the `TIMEOUT` verdict
         rx = dlogs.compiled(pattern)
         if not 0 < seconds <= vocab.WAIT_MAX_S:

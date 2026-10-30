@@ -13,10 +13,11 @@ Declare a code breakpoint at a symbol or `SEG:OFF`, and arm it if it can be. Sto
 re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build.
 
 Refused: a name matching several symbols; an address another declaration holds, naming it. On
-a dynamic cpu core, which can pass over it inside a compiled block, `note` says so. A symbol
+a dynamic cpu core, or `auto` (protected-mode code runs dynamic), which can pass over it
+inside a compiled block, `note` says so. A symbol
 absent from this build is stored `unresolved`.
 
-Reply: `ref`, `stored`, `already_stored`, `armed`, `entry`, `state` (`armed`,
+Reply: `ref`, `stored`, `already_stored`, `armed`, `entry` (once armed), `state` (`armed`,
 `unresolved`, `unarmable`, `pending` while the guest runs), `why`, `marked` and `note` for
 a linker-marked symbol.
 
@@ -80,7 +81,7 @@ Break on an interrupt, optionally one `ah` function. Arm it before `resume`. `nu
 `ah` are hex given as integers: `0x21` for DOS, not `21`. Pending while the guest runs.
 
 Reply: `ref` (e.g. `BPINT 21 AH=4B`, what `declaration_clear` takes), `stored`,
-`already_stored`, `armed`, `state` (while the guest runs), `entry` (once armed at a stop);
+`already_stored`, `armed`, `state` (while the guest runs), `entry` (once armed);
 with `detail=True` also `output`.
 
 Reference: REFERENCE.md, Declarations.
@@ -152,7 +153,7 @@ the guest runs. Needs the debugger's `BPIF`.
 Refused: a term not in that shape (`bad_argument`); a build without `BPIF` (`no_channel`).
 
 Reply: `ref` (the condition as the debugger prints it back, what `declaration_clear` takes),
-`stored`, `already_stored`, `armed`, `state`, `while_running`, `entry` (on a stopped machine),
+`stored`, `already_stored`, `armed`, `state`, `while_running`, `entry` (once armed),
 `note`.
 
 Reference: REFERENCE.md, Declarations.
