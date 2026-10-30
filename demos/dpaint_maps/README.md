@@ -141,7 +141,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": ["BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
@@ -168,23 +168,23 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 ```json
 {
-  "summary": "run_for 400 frames: ELAPSED, 400 polls, at 0E83:00000A83",
+  "summary": "run_for 400 frames: ELAPSED, 400 polls, at 0E83:00000B22",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 400,
-  "pc": "0E83:00000A83",
+  "pc": "0E83:00000B22",
   "cpu_mode": "real",
   "frame": 400,
   "regs": {
-    "EAX": "0x00006e42",
+    "EAX": "0x00000000",
     "EBX": "0x000003e4",
     "ECX": "0x005b0000",
     "EDX": "0x0000a57c",
     "ESI": "0x00000007",
     "EDI": "0x0000a0ae",
-    "EBP": "0x0000a006",
-    "ESP": "0x0000a004",
-    "EIP": "0x00000a83",
+    "EBP": "0x0000a010",
+    "ESP": "0x0000a010",
+    "EIP": "0x00000b22",
     "CS": "0x0e83",
     "DS": "0x31b0",
     "ES": "0x0000",
@@ -193,7 +193,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
     "SS": "0x31b0"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 0E83:00000A83",
+  "cause": "the retrace run_for ran to, at 0E83:00000B22",
   "e9": {
     "lines_total": 1,
     "truncated": false,
@@ -202,9 +202,9 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   },
   "stop_seq": 2,
   "instruction": {
-    "address": "0E83:00000A83",
-    "bytes": "50",
-    "text": "push ax",
+    "address": "0E83:00000B22",
+    "bytes": "8B4608",
+    "text": "mov ax, word ptr [bp + 8]",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
@@ -212,10 +212,10 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "emulated_before_s": 0.0007,
-  "emulated_after_s": 6.6465891,
+  "emulated_after_s": 6.646643699999999,
   "frame_before": 0,
   "frame_after": 400,
-  "cycles": 65734013,
+  "cycles": 65734582,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -313,7 +313,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
         "summary": "send_mouse: pointer at 251,5; posted, unverified, 16 retraces to frame 416",
         "status": "ok",
         "stop_seq": 18,
-        "cause": "the retrace the input's post ran to, at 0955:0000035D"
+        "cause": "the retrace the input's post ran to, at 1697:00000300"
       }
     },
     {
@@ -382,17 +382,17 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
         "summary": "send_mouse: pointer at 317,18; posted, unverified, 20 retraces to frame 436",
         "status": "ok",
         "stop_seq": 38,
-        "cause": "the retrace the input's post ran to, at 0DA5:000002C1"
+        "cause": "the retrace the input's post ran to, at 0DA5:000002C4"
       }
     },
     {
       "step": 1,
       "op": "run_to",
       "reply": {
-        "summary": "run_to screen palette (judged): TARGET at 0DA5:000000D3",
+        "summary": "run_to screen palette (judged): TARGET at 0DA5:000000AD",
         "status": "ok",
         "stop_seq": 39,
-        "cause": "the retrace a run to a screen ran to, at 0DA5:000000D3"
+        "cause": "the retrace a run to a screen ran to, at 0DA5:000000AD"
       }
     },
     {
@@ -649,17 +649,17 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 37,149; posted, unverified, 25 retraces to frame 521",
         "status": "ok",
         "stop_seq": 123,
-        "cause": "the retrace the input's post ran to, at 0DA5:000000BA"
+        "cause": "the retrace the input's post ran to, at 0DA5:000000D2"
       }
     },
     {
       "step": 1,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 1009:0000023A",
+        "summary": "run_for 20 frames: ELAPSED, 20 polls, at F000:0000CFC5",
         "status": "ok",
         "stop_seq": 124,
-        "cause": "the retrace run_for ran to, at 1009:0000023A"
+        "cause": "the retrace run_for ran to, at F000:0000CFC5"
       }
     },
     {
@@ -674,7 +674,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,142; posted, unverified, 21 retraces to frame 562",
         "status": "ok",
         "stop_seq": 145,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 1009:00000380"
       }
     },
     {
@@ -694,7 +694,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 587,259; posted, unverified, 30 retraces to frame 617",
         "status": "ok",
         "stop_seq": 200,
-        "cause": "the retrace the input's post ran to, at 0E83:00000A7C"
+        "cause": "the retrace the input's post ran to, at 1009:0000033F"
       }
     },
     {
@@ -704,7 +704,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 632",
         "status": "ok",
         "stop_seq": 215,
-        "cause": "the retrace the input's post ran to, at 1009:0000026B"
+        "cause": "the retrace the input's post ran to, at 1009:00000273"
       }
     },
     {
@@ -719,7 +719,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 634,142; posted, unverified, 25 retraces to frame 657",
         "status": "ok",
         "stop_seq": 240,
-        "cause": "the retrace the input's post ran to, at 1009:00000273"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -729,7 +729,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 682",
         "status": "ok",
         "stop_seq": 265,
-        "cause": "the retrace the input's post ran to, at 1009:000002A6"
+        "cause": "the retrace the input's post ran to, at 1009:0000025E"
       }
     },
     {
@@ -739,7 +739,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 356,259; posted, unverified, 30 retraces to frame 712",
         "status": "ok",
         "stop_seq": 295,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0E83:00000B4B"
       }
     },
     {
@@ -749,7 +749,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 727",
         "status": "ok",
         "stop_seq": 310,
-        "cause": "the retrace the input's post ran to, at 0955:00000029"
+        "cause": "the retrace the input's post ran to, at 1009:000002A7"
       }
     },
     {
@@ -784,7 +784,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 587,475; posted, unverified, 30 retraces to frame 807",
         "status": "ok",
         "stop_seq": 390,
-        "cause": "the retrace the input's post ran to, at 1009:000001BF"
+        "cause": "the retrace the input's post ran to, at 1009:00000311"
       }
     },
     {
@@ -794,7 +794,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 822",
         "status": "ok",
         "stop_seq": 405,
-        "cause": "the retrace the input's post ran to, at 13F6:000002DE"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -926,7 +926,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 872",
         "status": "ok",
         "stop_seq": 455,
-        "cause": "the retrace the input's post ran to, at 1009:000002AA"
+        "cause": "the retrace the input's post ran to, at 13F6:000002DF"
       }
     },
     {
@@ -936,7 +936,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 336,272; posted, unverified, 30 retraces to frame 902",
         "status": "ok",
         "stop_seq": 485,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0E83:00000B53"
       }
     },
     {
@@ -946,7 +946,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 322,284; posted, unverified, 30 retraces to frame 932",
         "status": "ok",
         "stop_seq": 515,
-        "cause": "the retrace the input's post ran to, at 1009:000001C9"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -956,7 +956,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 308,296; posted, unverified, 30 retraces to frame 962",
         "status": "ok",
         "stop_seq": 545,
-        "cause": "the retrace the input's post ran to, at 0DA5:00000350"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -966,7 +966,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 977",
         "status": "ok",
         "stop_seq": 560,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0955:0000002A"
       }
     },
     {
@@ -991,7 +991,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 604,323; posted, unverified, 25 retraces to frame 1027",
         "status": "ok",
         "stop_seq": 610,
-        "cause": "the retrace the input's post ran to, at 1009:00000346"
+        "cause": "the retrace the input's post ran to, at 13F6:0000021D"
       }
     },
     {
@@ -1001,7 +1001,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 180,395; posted, unverified, 30 retraces to frame 1057",
         "status": "ok",
         "stop_seq": 640,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0E83:00000377"
       }
     },
     {
@@ -1011,7 +1011,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1072",
         "status": "ok",
         "stop_seq": 655,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 1009:00000264"
       }
     },
     {
@@ -1123,7 +1123,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 605,89; posted, unverified, 25 retraces to frame 1097",
         "status": "ok",
         "stop_seq": 680,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 1009:000002D2"
       }
     },
     {
@@ -1133,7 +1133,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 604,323; posted, unverified, 25 retraces to frame 1122",
         "status": "ok",
         "stop_seq": 705,
-        "cause": "the retrace the input's post ran to, at 0955:0000003F"
+        "cause": "the retrace the input's post ran to, at 1009:00000367"
       }
     },
     {
@@ -1143,7 +1143,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 140,320; posted, unverified, 30 retraces to frame 1152",
         "status": "ok",
         "stop_seq": 735,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0E83:00000A90"
       }
     },
     {
@@ -1153,7 +1153,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1167",
         "status": "ok",
         "stop_seq": 750,
-        "cause": "the retrace the input's post ran to, at 13F6:00000225"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1168,7 +1168,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 1192",
         "status": "ok",
         "stop_seq": 775,
-        "cause": "the retrace the input's post ran to, at 0955:00000032"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1178,7 +1178,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 176,374; posted, unverified, 30 retraces to frame 1222",
         "status": "ok",
         "stop_seq": 805,
-        "cause": "the retrace the input's post ran to, at 1009:0000032D"
+        "cause": "the retrace the input's post ran to, at 1009:0000036A"
       }
     },
     {
@@ -1188,7 +1188,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 142,374; posted, unverified, 30 retraces to frame 1252",
         "status": "ok",
         "stop_seq": 835,
-        "cause": "the retrace the input's post ran to, at 1009:00000324"
+        "cause": "the retrace the input's post ran to, at 1009:000001B8"
       }
     },
     {
@@ -1198,7 +1198,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1267",
         "status": "ok",
         "stop_seq": 850,
-        "cause": "the retrace the input's post ran to, at 1009:0000025C"
+        "cause": "the retrace the input's post ran to, at 1009:00000260"
       }
     },
     {
@@ -1285,7 +1285,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 604,323; posted, unverified, 25 retraces to frame 1292",
         "status": "ok",
         "stop_seq": 875,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0955:00000032"
       }
     },
     {
@@ -1305,7 +1305,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1332",
         "status": "ok",
         "stop_seq": 915,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 1009:0000026B"
       }
     },
     {
@@ -1320,7 +1320,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 40,60; posted, unverified, 25 retraces to frame 1357",
         "status": "ok",
         "stop_seq": 940,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0DA5:00000350"
       }
     },
     {
@@ -1330,7 +1330,7 @@ Also attached: image/png.
         "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 1407",
         "status": "ok",
         "stop_seq": 990,
-        "cause": "the retrace the input's post ran to, at 2825:00000147"
+        "cause": "the retrace the input's post ran to, at 0955:00000058"
       }
     },
     {
@@ -1340,7 +1340,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 629,65; posted, unverified, 25 retraces to frame 1432",
         "status": "ok",
         "stop_seq": 1015,
-        "cause": "the retrace the input's post ran to, at 0955:0000004C"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1453,7 +1453,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 605,185; posted, unverified, 25 retraces to frame 1472",
         "status": "ok",
         "stop_seq": 1055,
-        "cause": "the retrace the input's post ran to, at 0955:0000003C"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1463,7 +1463,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1487",
         "status": "ok",
         "stop_seq": 1070,
-        "cause": "the retrace the input's post ran to, at 1009:00000311"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1478,17 +1478,17 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 184,399; posted, unverified, 30 retraces to frame 1517",
         "status": "ok",
         "stop_seq": 1100,
-        "cause": "the retrace the input's post ran to, at 0E83:00000AF4"
+        "cause": "the retrace the input's post ran to, at 0DA5:0000034E"
       }
     },
     {
       "step": 4,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 0E83:00000AFC",
+        "summary": "run_for 10 frames: ELAPSED, 10 polls, at F000:0000CFC0",
         "status": "ok",
         "stop_seq": 1101,
-        "cause": "the retrace run_for ran to, at 0E83:00000AFC"
+        "cause": "the retrace run_for ran to, at F000:0000CFC0"
       }
     },
     {
@@ -1498,7 +1498,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1538",
         "status": "ok",
         "stop_seq": 1112,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 13F6:000002D3"
       }
     },
     {
@@ -1513,7 +1513,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 203,5; posted, unverified, 20 retraces to frame 1558",
         "status": "ok",
         "stop_seq": 1132,
-        "cause": "the retrace the input's post ran to, at 0955:0000033D"
+        "cause": "the retrace the input's post ran to, at 0955:00000335"
       }
     },
     {
@@ -1528,17 +1528,17 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 269,18; posted, unverified, 20 retraces to frame 1578",
         "status": "ok",
         "stop_seq": 1152,
-        "cause": "the retrace the input's post ran to, at 19A5:000001C7"
+        "cause": "the retrace the input's post ran to, at 0DA5:000002DE"
       }
     },
     {
       "step": 10,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 0DA5:00000330",
+        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 19A5:000001DD",
         "status": "ok",
         "stop_seq": 1153,
-        "cause": "the retrace run_for ran to, at 0DA5:00000330"
+        "cause": "the retrace run_for ran to, at 19A5:000001DD"
       }
     },
     {
@@ -1548,7 +1548,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1609",
         "status": "ok",
         "stop_seq": 1164,
-        "cause": "the retrace the input's post ran to, at 1009:000002D2"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1563,17 +1563,17 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 440,357; posted, unverified, 25 retraces to frame 1634",
         "status": "ok",
         "stop_seq": 1189,
-        "cause": "the retrace the input's post ran to, at 1009:00000341"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 14,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 1009:00000367",
+        "summary": "run_for 10 frames: ELAPSED, 10 polls, at F000:0000CFC5",
         "status": "ok",
         "stop_seq": 1190,
-        "cause": "the retrace run_for ran to, at 1009:00000367"
+        "cause": "the retrace run_for ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1583,7 +1583,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1655",
         "status": "ok",
         "stop_seq": 1201,
-        "cause": "the retrace the input's post ran to, at 1009:0000026D"
+        "cause": "the retrace the input's post ran to, at 1009:00000273"
       }
     },
     {
@@ -1671,7 +1671,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 119,5; posted, unverified, 20 retraces to frame 1675",
         "status": "ok",
         "stop_seq": 1221,
-        "cause": "the retrace the input's post ran to, at 0955:0000033D"
+        "cause": "the retrace the input's post ran to, at 0955:0000035D"
       }
     },
     {
@@ -1686,17 +1686,17 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 119,5; posted, unverified, 15 retraces to frame 1690",
         "status": "ok",
         "stop_seq": 1236,
-        "cause": "the retrace the input's post ran to, at 13F6:00000228"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 3,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at F000:0000CFC5",
+        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 0955:0000003C",
         "status": "ok",
         "stop_seq": 1237,
-        "cause": "the retrace run_for ran to, at F000:0000CFC5"
+        "cause": "the retrace run_for ran to, at 0955:0000003C"
       }
     },
     {
@@ -1706,7 +1706,7 @@ Also attached: image/png.
         "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1711",
         "status": "ok",
         "stop_seq": 1248,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 1009:0000023F"
       }
     },
     {

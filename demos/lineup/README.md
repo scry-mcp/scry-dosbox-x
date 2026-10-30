@@ -85,7 +85,7 @@ Give this to an MCP client with this server connected:
   "status": "ok",
   "pid": "<volatile>",
   "conf": "./tmp/demos/lineup/lineup.conf",
-  "conf_digest": "ce1af912359f3aef",
+  "conf_digest": "7babdb45621110eb",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -97,7 +97,7 @@ Give this to an MCP client with this server connected:
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": ["BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
@@ -125,11 +125,11 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "run_for 2000 ms: ELAPSED, 141 polls, at 08ED:00001CAE",
+  "summary": "run_for 2000 ms: ELAPSED, 141 polls, at 08ED:00001CA9",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 141,
-  "pc": "08ED:00001CAE",
+  "pc": "08ED:00001CA9",
   "cpu_mode": "real",
   "frame": 141,
   "regs": {
@@ -141,7 +141,7 @@ Give this to an MCP client with this server connected:
     "EDI": "0x00000dfd",
     "EBP": "0x00004288",
     "ESP": "0x00004282",
-    "EIP": "0x00001cae",
+    "EIP": "0x00001ca9",
     "CS": "0x08ed",
     "DS": "0x138e",
     "ES": "0xa000",
@@ -150,21 +150,21 @@ Give this to an MCP client with this server connected:
     "SS": "0x138e"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:00001CAE",
+  "cause": "the retrace run_for ran to, at 08ED:00001CA9",
   "e9": {
     "available": false,
     "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
   },
   "stop_seq": 2,
   "instruction": {
-    "address": "08ED:00001CAE",
-    "bytes": "74F9",
-    "text": "je 0x1ca9",
-    "flow": "branch",
+    "address": "08ED:00001CA9",
+    "bytes": "833ECC0601",
+    "text": "cmp word ptr [0x6cc], 1",
+    "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": "Pal_Off",
-    "delta": 127
+    "delta": 122
   },
   "symbols_placed": {
     "placed": true,
@@ -177,7 +177,7 @@ Give this to an MCP client with this server connected:
   "emulated_after_s": 2.00347702,
   "frame_before": 0,
   "frame_after": 141,
-  "cycles": 96579553,
+  "cycles": 96580065,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -331,11 +331,11 @@ Give this to an MCP client with this server connected:
     "symbol": "Pal_Off",
     "delta": 127
   },
-  "emulated_before_s": 5.00021248,
+  "emulated_before_s": 5.00021262,
   "emulated_after_s": 6.5121853000000005,
   "frame_before": 351,
   "frame_after": 457,
-  "cycles": 73158830,
+  "cycles": 73158825,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -475,11 +475,11 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "run_for 1000 ms: ELAPSED, 71 polls, at 08ED:00001CAE",
+  "summary": "run_for 1000 ms: ELAPSED, 71 polls, at 08ED:00001CA9",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 71,
-  "pc": "08ED:00001CAE",
+  "pc": "08ED:00001CA9",
   "cpu_mode": "real",
   "frame": 534,
   "regs": {
@@ -491,7 +491,7 @@ Give this to an MCP client with this server connected:
     "EDI": "0x00000dfd",
     "EBP": "0x00004288",
     "ESP": "0x00004282",
-    "EIP": "0x00001cae",
+    "EIP": "0x00001ca9",
     "CS": "0x08ed",
     "DS": "0x138e",
     "ES": "0xa000",
@@ -500,27 +500,27 @@ Give this to an MCP client with this server connected:
     "SS": "0x138e"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:00001CAE",
+  "cause": "the retrace run_for ran to, at 08ED:00001CA9",
   "e9": {
     "available": false,
     "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
   },
   "stop_seq": 11,
   "instruction": {
-    "address": "08ED:00001CAE",
-    "bytes": "74F9",
-    "text": "je 0x1ca9",
-    "flow": "branch",
+    "address": "08ED:00001CA9",
+    "bytes": "833ECC0601",
+    "text": "cmp word ptr [0x6cc], 1",
+    "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": "Pal_Off",
-    "delta": 127
+    "delta": 122
   },
-  "emulated_before_s": 6.59778594,
+  "emulated_before_s": 6.59778582,
   "emulated_after_s": 7.61082626,
   "frame_before": 463,
   "frame_after": 534,
-  "cycles": 48952839,
+  "cycles": 48952845,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -600,30 +600,30 @@ Give this to an MCP client with this server connected:
   "bytes": 2,
   "frames": 2,
   "polls": 6,
-  "pc": "08ED:00009241",
+  "pc": "08ED:00009233",
   "cpu_mode": "real",
   "stop_seq": 17,
   "frame": 540,
   "instruction": {
-    "address": "08ED:00009241",
-    "bytes": "7407",
-    "text": "je 0x924a",
-    "flow": "branch",
+    "address": "08ED:00009233",
+    "bytes": "268807",
+    "text": "mov byte ptr es:[bx], al",
+    "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": "_gfx_load_bg",
-    "delta": 206
+    "delta": 192
   },
   "regs": {
-    "EAX": "0x0000013a",
-    "EBX": "0x0000df75",
+    "EAX": "0x00000183",
+    "EBX": "0x0000df76",
     "ECX": "0x005b423a",
     "EDX": "0x000067e8",
     "ESI": "0x00000200",
     "EDI": "0x000001da",
     "EBP": "0x00004266",
     "ESP": "0x00004254",
-    "EIP": "0x00009241",
+    "EIP": "0x00009233",
     "CS": "0x08ed",
     "DS": "0x138e",
     "ES": "0xa000",
@@ -632,7 +632,7 @@ Give this to an MCP client with this server connected:
     "SS": "0x138e"
   },
   "watches": [],
-  "cause": "the retrace the input's post ran to, at 08ED:00009241",
+  "cause": "the retrace the input's post ran to, at 08ED:00009233",
   "e9": {
     "available": false,
     "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
@@ -727,15 +727,15 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08ED:000004AF",
+  "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08ED:000004B3",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 15,
-  "pc": "08ED:000004AF",
+  "pc": "08ED:000004B3",
   "cpu_mode": "real",
   "frame": 563,
   "regs": {
-    "EAX": "0x00000191",
+    "EAX": "0x0000ffff",
     "EBX": "0x000058fe",
     "ECX": "0x005b0000",
     "EDX": "0x00000002",
@@ -743,7 +743,7 @@ Give this to an MCP client with this server connected:
     "EDI": "0x0000faa0",
     "EBP": "0x00004288",
     "ESP": "0x00004286",
-    "EIP": "0x000004af",
+    "EIP": "0x000004b3",
     "CS": "0x08ed",
     "DS": "0x138e",
     "ES": "0xa000",
@@ -752,27 +752,27 @@ Give this to an MCP client with this server connected:
     "SS": "0x138e"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:000004AF",
+  "cause": "the retrace run_for ran to, at 08ED:000004B3",
   "e9": {
     "available": false,
     "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
   },
   "stop_seq": 19,
   "instruction": {
-    "address": "08ED:000004AF",
-    "bytes": "2B066C12",
-    "text": "sub ax, word ptr [0x126c]",
-    "flow": "sequential",
+    "address": "08ED:000004B3",
+    "bytes": "78F7",
+    "text": "js 0x4ac",
+    "flow": "branch",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": "_lineup_run",
-    "delta": 91
+    "delta": 95
   },
-  "emulated_before_s": 7.82040952,
+  "emulated_before_s": 7.82040968,
   "emulated_after_s": 8.02460012,
   "frame_before": 548,
   "frame_after": 563,
-  "cycles": 10101742,
+  "cycles": 10101734,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -870,23 +870,23 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "run_for 3000 ms: ELAPSED, 211 polls, at 08ED:00009390",
+  "summary": "run_for 3000 ms: ELAPSED, 211 polls, at 08ED:00009380",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 211,
-  "pc": "08ED:00009390",
+  "pc": "08ED:00009380",
   "cpu_mode": "real",
   "frame": 774,
   "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x00000000",
-    "ECX": "0x005b420d",
+    "EAX": "0x00000007",
+    "EBX": "0x0000864a",
+    "ECX": "0x005b4203",
     "EDX": "0x00000000",
     "ESI": "0x00004ec8",
     "EDI": "0x00004ec6",
     "EBP": "0x0000425e",
     "ESP": "0x0000424a",
-    "EIP": "0x00009390",
+    "EIP": "0x00009380",
     "CS": "0x08ed",
     "DS": "0x138e",
     "ES": "0xa000",
@@ -895,21 +895,21 @@ Give this to an MCP client with this server connected:
     "SS": "0x138e"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:00009390",
+  "cause": "the retrace run_for ran to, at 08ED:00009380",
   "e9": {
     "available": false,
     "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
   },
   "stop_seq": 20,
   "instruction": {
-    "address": "08ED:00009390",
-    "bytes": "D3E3",
-    "text": "shl bx, cl",
+    "address": "08ED:00009380",
+    "bytes": "80F910",
+    "text": "cmp cl, 0x10",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": "F_LXRSH@",
-    "delta": 16
+    "delta": 0
   },
   "emulated_before_s": 8.02460012,
   "emulated_after_s": 11.03516166,
@@ -1056,23 +1056,23 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08ED:00006106",
+  "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08ED:00006103",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 15,
-  "pc": "08ED:00006106",
+  "pc": "08ED:00006103",
   "cpu_mode": "real",
   "frame": 805,
   "regs": {
     "EAX": "0x00004b83",
     "EBX": "0x00001680",
-    "ECX": "0x005b003e",
+    "ECX": "0x005b003f",
     "EDX": "0x0000000e",
     "ESI": "0x00001684",
-    "EDI": "0x00008573",
+    "EDI": "0x00008571",
     "EBP": "0x00004288",
     "ESP": "0x0000427a",
-    "EIP": "0x00006106",
+    "EIP": "0x00006103",
     "CS": "0x08ed",
     "DS": "0x4bef",
     "ES": "0xa000",
@@ -1081,27 +1081,27 @@ Give this to an MCP client with this server connected:
     "SS": "0x138e"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:00006106",
+  "cause": "the retrace run_for ran to, at 08ED:00006103",
   "e9": {
     "available": false,
     "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
   },
   "stop_seq": 37,
   "instruction": {
-    "address": "08ED:00006106",
-    "bytes": "E2FB",
-    "text": "loop 0x6103",
-    "flow": "branch",
+    "address": "08ED:00006103",
+    "bytes": "B083",
+    "text": "mov al, 0x83",
+    "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": "Del_Brush_Game",
-    "delta": 23
+    "delta": 20
   },
   "emulated_before_s": 11.26345068,
-  "emulated_after_s": 11.477471659999999,
+  "emulated_after_s": 11.47747164,
   "frame_before": 790,
   "frame_after": 805,
-  "cycles": 10580974,
+  "cycles": 10580975,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -1214,23 +1214,23 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08ED:0000871A",
+  "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08ED:0000870C",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 15,
-  "pc": "08ED:0000871A",
+  "pc": "08ED:0000870C",
   "cpu_mode": "real",
   "frame": 826,
   "regs": {
-    "EAX": "0x0000fef0",
+    "EAX": "0x0000ffff",
     "EBX": "0x00000000",
     "ECX": "0x005b420d",
     "EDX": "0x0000ffff",
-    "ESI": "0x00000151",
-    "EDI": "0x0000faa0",
+    "ESI": "0x00004ec0",
+    "EDI": "0x00004ebe",
     "EBP": "0x0000425e",
-    "ESP": "0x0000425e",
-    "EIP": "0x0000871a",
+    "ESP": "0x0000424e",
+    "EIP": "0x0000870c",
     "CS": "0x08ed",
     "DS": "0x138e",
     "ES": "0x88ee",
@@ -1239,21 +1239,21 @@ Give this to an MCP client with this server connected:
     "SS": "0x138e"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:0000871A",
+  "cause": "the retrace run_for ran to, at 08ED:0000870C",
   "e9": {
     "available": false,
     "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
   },
   "stop_seq": 44,
   "instruction": {
-    "address": "08ED:0000871A",
-    "bytes": "5D",
-    "text": "pop bp",
-    "flow": "sequential",
+    "address": "08ED:0000870C",
+    "bytes": "7E04",
+    "text": "jle 0x8712",
+    "flow": "branch",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": "_MENU_TEST",
-    "delta": 1742
+    "delta": 1728
   },
   "emulated_before_s": 11.563080040000001,
   "emulated_after_s": 11.777101,
@@ -1507,7 +1507,7 @@ Give this to an MCP client with this server connected:
   "emulated_after_s": 14.13133158,
   "frame_before": 850,
   "frame_after": 991,
-  "cycles": 99381475,
+  "cycles": 99381474,
   "kind": "wav",
   "frames": 141,
   "began": true,
@@ -1672,7 +1672,7 @@ Give this to an MCP client with this server connected:
   "closed": true,
   "pid": "<volatile>",
   "conf": "./tmp/demos/lineup/lineup.conf",
-  "conf_digest": "ce1af912359f3aef",
+  "conf_digest": "7babdb45621110eb",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
