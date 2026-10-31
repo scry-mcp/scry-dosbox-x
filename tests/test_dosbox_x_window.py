@@ -4,6 +4,7 @@ cannot retune it, and the `surface` output; the contract every server meets is c
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
@@ -102,6 +103,19 @@ def test_the_other_sdl_sets_still_pass_flags(tmp_path: Path,
                                   flags=["-set", "sdl autolock=false"])
     assert got["status"] == "ok", got
     server.close()
+
+
+def test_a_session_whose_emulator_has_died_is_session_broken_not_a_missing_window(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
+    try:
+        assert STATE.session is not None
+        STATE.session.alive_flag = False  # type: ignore[attr-defined]
+        STATE.session.proc = SimpleNamespace(poll=lambda: 3)  # type: ignore[assignment]
+        got = server.window()
+        assert got["status"] == "INVALID" and got["code"] == "session_broken", got
+    finally:
+        server.close()
 
 
 def test_the_background_hint_and_the_judge_are_core_s_not_a_copy() -> None:
