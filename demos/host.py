@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import live_host
-from scry_core.demo import Reply, Run, StepFailed
+from scry_core.demo import Reply, Run
+from scry_core.demo import expect as expect
 
 from scry_dosbox_x import binary as dosbox_binary
 
@@ -59,11 +60,6 @@ def isolated_store(demo: str) -> None:
 INPUT_TIMING = {key: "it depends on when the host delivered the input"
                 for key in ("lines_before", "seen_before_waiting", "lines_total", "lines_written",
                             "since_mark")}
-
-
-def expect(holds: bool, why: str) -> None:
-    if not holds:
-        raise StepFailed(why)
 
 
 def seen(what: str) -> Any:
