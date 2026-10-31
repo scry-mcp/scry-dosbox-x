@@ -181,13 +181,13 @@ def test_the_launch_points_the_emulator_at_the_session_s_channel(tmp_path: objec
 def test_a_caller_s_flags_cannot_repoint_the_channel(token: str) -> None:
     """Every spelling DOSBox-X's `-set` takes, the value after `=` or after a space."""
     with pytest.raises(Invalid) as e:
-        dlaunch.check_flags("flags", ["-set", token])
+        dlaunch.check_flags(["-set", token])
     assert e.value.code == "bad_argument" and "debugger channel" in str(e.value)
 
 
 def test_an_owned_key_is_found_with_its_value_after_a_space() -> None:
     with pytest.raises(Invalid) as e:
-        dlaunch.check_flags("flags", ["-set", "dos break on int3 true"])
+        dlaunch.check_flags(["-set", "dos break on int3 true"])
     assert e.value.code == "bad_argument" and "break_on_int3" in str(e.value)
 
 

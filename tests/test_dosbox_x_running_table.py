@@ -9,6 +9,7 @@ from typing import Any
 import fold_calls
 import pytest
 from dosbox_x_server_support import NM_TEXT, SessionGates, _names, clean_session  # noqa: F401
+from window_double import window_if
 
 from scry_dosbox_x import declarations as dec
 from scry_dosbox_x import folds, inputs, sequence, server
@@ -36,7 +37,7 @@ class RunningGuest(SessionGates):
         self.drain_failure = ""
         self.ended_how = "none"
         self.launch = dlaunch.Launch(conf=tmp_path / "g.conf", cwd=tmp_path / "cwd", seconds=60,
-                                watched=True)
+                                     window=window_if(True))
         self.stopped = False
         self.asked: list[str] = []           # every console method called while it ran
 

@@ -22,6 +22,7 @@ from channel_double import Machine, protected, session_over
 from dosbox_x_server_support import CASED_PATHS
 from scry_core import guardian
 from scry_core import vocabulary as vocab
+from scry_core import window as core_window
 from scry_core.host_program import MODE_BITS
 from scry_core.host_program import absolute as _abs
 from test_dosbox_x_spawn import Child
@@ -79,12 +80,24 @@ def test_headless_uses_the_emulators_own_video_property(conf: Path) -> None:
     assert "-silent" not in argv
 
 
-def test_a_watched_session_gets_no_dummy_driver_and_keeps_the_callers_flags(conf: Path) -> None:
-    """The IDENTITY axis"""
-    flags = ["-set", "sdl display=1", "-set", "sdl windowposition=0,0"]
-    argv = dlaunch.build_argv(launch(conf, watched=True, window_flags=flags))
+@pytest.mark.parametrize(("asked", "tail"), [
+    (core_window.WindowRequest(0, False), ["-set", "sdl display=0"]),
+    (core_window.WindowRequest(1, False), ["-set", "sdl display=1"]),
+    (core_window.WindowRequest(1, True), ["-set", "sdl display=1", "-fullscreen"]),
+])
+def test_a_watched_session_gets_no_dummy_driver_and_the_window_it_asked_for(
+        conf: Path, asked: core_window.WindowRequest, tail: list[str]) -> None:
+    """The IDENTITY axis: the window request is the one fact, and argv is computed from it."""
+    argv = dlaunch.build_argv(launch(conf, window=asked))
     assert not pair_at(argv, "sdl videodriver=dummy")
-    assert argv[-len(flags):] == flags
+    assert argv[-len(tail):] == tail
+    assert launch(conf, window=asked).watched is True
+
+
+def test_a_launch_with_no_window_is_unwatched_and_headless(conf: Path) -> None:
+    unwatched = launch(conf)
+    assert unwatched.watched is False
+    assert pair_at(dlaunch.build_argv(unwatched), "sdl videodriver=dummy")
 
 
 def test_every_launch_carries_its_bound(conf: Path) -> None:
@@ -214,7 +227,7 @@ def test_the_program_reaches_the_emulator_as_one_argv_element(conf: Path) -> Non
 def test_a_valid_launch_passes_validation_without_starting_anything(conf: Path) -> None:
     """The green beside every red below."""
     dlaunch.validate(launch(conf))
-    dlaunch.validate(launch(conf, watched=True, window_flags=["-set", "sdl x=1"]))
+    dlaunch.validate(launch(conf, window=core_window.WindowRequest(0, False)))
     dlaunch.validate(launch(conf, program="G.EXE", capture_video=True))
 
 
@@ -227,26 +240,6 @@ def test_a_missing_working_directory_is_refused_too(conf: Path, tmp_path: Path) 
     """It is guarded for the same reason the conf is, and for one more"""
     with pytest.raises(ds.Invalid, match="working directory"):
         dlaunch.validate(launch(conf, cwd=tmp_path / "nowhere"))
-
-
-def test_a_glued_placement_pair_is_refused(conf: Path) -> None:
-    """`-set` and its value are two tokens."""
-    with pytest.raises(ds.Invalid, match="GLUED into one token"):
-        dlaunch.validate(launch(conf, watched=True, window_flags=['-set "sdl display=1"']))
-    with pytest.raises(ds.Invalid, match="GLUED into one token"):
-        dlaunch.validate(launch(conf, watched=True, window_flags=["-set sdl display=1"]))
-
-
-def test_an_empty_placement_flag_is_refused(conf: Path) -> None:
-    """The OTHER malformation, which a single case would fold into its neighbour's."""
-    with pytest.raises(ds.Invalid, match="separate non-empty strings"):
-        dlaunch.validate(launch(conf, watched=True, window_flags=["-fullscreen", ""]))
-
-
-def test_a_value_holding_a_space_is_the_normal_case_and_passes(conf: Path) -> None:
-    """THE CONTROL."""
-    dlaunch.validate(launch(conf, watched=True,
-                       window_flags=["-set", "sdl display=1", "-fullscreen"]))
 
 
 def test_an_unbounded_session_is_refused(conf: Path) -> None:
@@ -1356,7 +1349,7 @@ def test_the_launch_turns_the_quit_warning_off_so_close_is_a_quit(conf: Path) ->
     """With a program loaded, the emulator answers a SIGTERM by asking whether to quit anyway."""
     argv = dlaunch.build_argv(launch(conf))
     assert argv[argv.index("dosbox quit warning=false") - 1] == "-set"
-    watched = dlaunch.build_argv(launch(conf, watched=True, window_flags=["-set", "sdl display=1"]))
+    watched = dlaunch.build_argv(launch(conf, window=core_window.WindowRequest(1, False)))
     assert watched.index("dosbox quit warning=false") < watched.index("sdl display=1")
 
 
@@ -1397,10 +1390,17 @@ def test_a_headless_caller_flag_reaches_argv(conf: Path) -> None:
     clock = ["-set", "cpu cycles=fixed 3000"]
     headless = dlaunch.build_argv(launch(conf, flags=clock))
     assert pair_at(headless, "cpu cycles=fixed 3000"), headless
-    watched = dlaunch.build_argv(launch(conf, watched=True, window_flags=["-set", "sdl display=1"],
-                                   flags=clock))
+    watched = dlaunch.build_argv(launch(conf, window=core_window.WindowRequest(1, False),
+                                        flags=clock))
     assert pair_at(watched, "cpu cycles=fixed 3000"), watched
     assert headless.index("cpu cycles=fixed 3000") > headless.index("dosbox quit warning=false")
+
+
+@pytest.mark.parametrize("flags", [["-set", "sdl autolock=false", ""], [""]])
+def test_an_empty_token_is_refused_before_any_rule_about_its_neighbours(
+        conf: Path, flags: list[str]) -> None:
+    with pytest.raises(ds.Invalid, match="separate non-empty strings"):
+        dlaunch.validate(launch(conf, flags=flags))
 
 
 @pytest.mark.parametrize("flags", [["-set", "cpu", "cycles=fixed 3000"],

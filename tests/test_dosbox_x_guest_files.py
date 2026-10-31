@@ -119,7 +119,7 @@ def test_log_categories_a_build_would_ignore_are_refused(given: dict[str, str], 
 
 def test_a_log_category_set_through_flags_is_refused_as_log_categories_own() -> None:
     with pytest.raises(Invalid) as e:
-        dlaunch.check_flags("flags", ["-set", "log files=debug"])
+        dlaunch.check_flags(["-set", "log files=debug"])
     assert "log_categories" in str(e.value)
 
 

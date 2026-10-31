@@ -9,9 +9,11 @@ It needs the scry-core that serves `scry_core.window`, not the 0.80.0 this relea
 - `start` takes `display` (the OS's index, the main display when omitted) and `fullscreen`, and a
   watched start answers `window`, proved in the host's window list; a window that never appears on
   the asked display is `window_not_visible`. `SCRY_EMULATOR_ARGS` is gone, and `flags` setting what
-  those two arguments own are refused by name. `fullscreen` on `sdl output=surface` is refused.
+  those two arguments own are refused by name (`sdl windowresolution` says the size is the conf's). `fullscreen` on `sdl output=surface` is refused.
 - A new tool, `window`, answers where the window is at any time, and with `front=true` brings it
-  in front of what covers it.
+  in front of what covers it. Without `front` it answers the window
+  wherever the owner put it, another display included. A `front` on a session started with
+  `background=true` says a background application cannot be brought to the front and what to do.
 - The cases that move the owner's Space carry the `window` marker and are out of every default run.
 
 ## 0.1.0

@@ -25,6 +25,7 @@ from scry_core import (
     screen_map,
 )
 from scry_core import vocabulary as vocab
+from window_double import window_if
 
 from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import declarations as dec
@@ -661,7 +662,7 @@ class NamesFake(SessionGates):
         self.stops_during_wait = False
         self.runto_calls: list[tuple[int, int, float]] = []
         self.launch = dlaunch.Launch(conf=conf or Path("/x.conf"), cwd=Path("/"), seconds=60,
-                                watched=watched, input_port=input_port)
+                                window=window_if(watched), input_port=input_port)
 
     def listing(self, command: str) -> str:
         """A debugger whose listings print nothing a parser takes."""
@@ -1019,8 +1020,8 @@ def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     def booted(launch: dlaunch.Launch) -> Booted:
         fake = Booted(conf=conf)
         fake.launch.input_port = launch.input_port
-        fake.launch.watched = launch.watched
-        fake.launch.window, fake.launch.window_flags = launch.window, launch.window_flags
+        fake.launch.window = launch.window
+        fake.launch.background = launch.background
         return fake
 
     with mock.patch("scry_dosbox_x.server.ds.Session", booted):

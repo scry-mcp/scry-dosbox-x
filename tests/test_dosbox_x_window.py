@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 from dosbox_x_server_support import _start_on_a_booted_fake
 from scry_core import window as core_window
-from window_double import Absent, Covered, ObeyingHost
+from window_double import Absent, Covered, Dragged, ObeyingHost, Stuck
 
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import server
@@ -18,7 +18,10 @@ from scry_dosbox_x.state import STATE
 
 def _flags() -> list[str]:
     assert STATE.session is not None
-    return STATE.session.launch.window_flags
+    argv = dlaunch.build_argv(STATE.session.launch)
+    at = next((i for i, t in enumerate(argv) if t.startswith("sdl display=")), None)
+    return [] if at is None else [*argv[at - 1:at + 1], *(["-fullscreen"] if "-fullscreen" in argv
+                                                          else [])]
 
 
 @pytest.mark.parametrize(("asked", "flags"), [
@@ -68,7 +71,6 @@ def test_a_display_past_the_host_s_count_is_refused_naming_the_count(
     (["-set", "sdl display=1"], "display"),
     (["-set", "sdl windowposition=0,0"], "display"),
     (["-set", "sdl fullscreen=true"], "fullscreen"),
-    (["-set", "sdl windowresolution=640x480"], "fullscreen"),
     (["-fullscreen"], "fullscreen"),
 ])
 def test_flags_cannot_retune_the_window_the_start_arguments_own(
@@ -76,6 +78,16 @@ def test_flags_cannot_retune_the_window_the_start_arguments_own(
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True, flags=flag)
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
     assert f"through `{owner}`" in got["message"], got
+
+
+def test_the_window_size_is_the_confs_and_the_refusal_says_so_not_fullscreen(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True,
+                                  flags=["-set", "sdl windowresolution=640x480"])
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    message = got["message"]
+    assert "the conf decides" in message and "[sdl]" in message and "windowresolution" in message
+    assert "fullscreen" not in message, "`fullscreen` cannot set a size"
 
 
 def test_the_other_sdl_sets_still_pass_flags(tmp_path: Path,
@@ -104,6 +116,37 @@ def test_window_answers_where_the_window_is_and_with_front_brings_it_forward(
     assert got["status"] == "ok" and got["window"]["display"] == 1, got
     forward = server.window(front=True)
     assert forward["status"] == "ok" and forward["window"]["front"] is True, forward
+    server.close()
+
+
+def test_window_answers_a_window_the_owner_dragged_to_another_display(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True, display=0)
+    monkeypatch.setattr(core_window, "host", lambda _platform="": Dragged())
+    got = server.window()
+    assert got["status"] == "ok" and got["window"]["display"] == 1, got
+    server.close()
+
+
+def test_window_front_on_a_background_session_says_a_background_app_cannot_come_forward(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(core_window, "host", lambda _platform="": Stuck())
+    monkeypatch.setattr("scry_dosbox_x.lifecycle.WINDOW_WAIT_S", 0.0)
+    _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True, background=True)
+    got = server.window(front=True)
+    assert got["status"] == "INVALID" and got["code"] == "window_not_visible", got
+    assert "background=true" in got["message"] and "background=false" in got["message"], got
+    server.close()
+
+
+def test_window_front_on_a_foreground_session_never_blames_the_background(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """THE CONTROL: the same stuck window, a session that was not launched behind."""
+    monkeypatch.setattr(core_window, "host", lambda _platform="": Stuck())
+    monkeypatch.setattr("scry_dosbox_x.lifecycle.WINDOW_WAIT_S", 0.0)
+    _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True, background=False)
+    got = server.window(front=True)
+    assert got["code"] == "window_not_visible" and "background" not in got["message"], got
     server.close()
 
 

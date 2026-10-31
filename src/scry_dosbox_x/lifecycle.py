@@ -52,13 +52,6 @@ def _refuse_fullscreen_that_cannot_show(wanted: core_window.WindowRequest | None
                          "other choices (`opengl`, `openglnb`), or start with `fullscreen=false`")
 
 
-def _window_flags(asked: core_window.WindowRequest | None) -> list[str]:
-    """The emulator's own words for the window: it centres itself on the display it is given."""
-    if asked is None:
-        return []
-    return ["-set", f"sdl display={asked.display}", *(["-fullscreen"] if asked.fullscreen else [])]
-
-
 def _refuse_unreaped(session: ds.Session, cause: ds.Invalid) -> None:
     """A start that failed after the emulator was killed, if the kill did not reap it."""
     if session.reap_failed:
@@ -110,9 +103,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     cwd_path = paths.resolved("cwd", cwd_given)
     launch = dlaunch.Launch(
         conf=conf_path, cwd=cwd_path, seconds=session_seconds,
-        watched=shared,
         window=wanted,
-        window_flags=_window_flags(wanted),
         flags=list(flags or []),
         core=dconf.cpu_core(conf_path, list(flags or [])),
         break_on_int3=break_on_int3,
@@ -235,13 +226,13 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
 
 def window(session: ds.Session, front: bool) -> dict[str, Any]:
     """The body of the `window` tool: where the watched window is, brought forward on `front`."""
-    asked = session.launch.window
-    if asked is None:
+    if session.launch.window is None:
         raise ds.Invalid("no_channel", "this session has no window: it was started without "
                          "`shared=true`. Close it and start again with `shared=true`")
     host = core_window.host()
-    state = (core_window.bring_front(session.pid, host, WINDOW_WAIT_S) if front
-             else core_window.wait_visible(session.pid, asked.display, 0.0, host))
+    state = (core_window.bring_front(session.pid, host, WINDOW_WAIT_S,
+                                     launched_behind=session.launch.background) if front
+             else core_window.observe(session.pid, host))
     return st.reply(window=state.block())
 
 

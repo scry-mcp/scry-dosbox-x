@@ -28,6 +28,7 @@ from scry_core import (
     log_marks,
 )
 from scry_core import vocabulary as vocab
+from window_double import window_if
 
 from scry_dosbox_x import arming, checks, folds, grammar, sequence, server
 from scry_dosbox_x import declarations as dec
@@ -523,7 +524,7 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
     assert out["status"] == "INVALID" and "is not a bound" in out["message"], out
     past = cast(dict[str, Any], server.resume(seconds=vocab.WAIT_MAX_S + 1))
     assert past["code"] == "bad_argument" and f"at most {vocab.WAIT_MAX_S:g}," in past["message"]
-    fake.launch.watched = True                   # a windowed session needs no stopper
+    fake.launch.window = window_if(True)         # a windowed session needs no stopper
     fake.where_raises = True                     # it runs, and nothing stops it
     monkeypatch = pytest.MonkeyPatch()
     monkeypatch.setattr(fake, "alive", lambda: True)
@@ -541,7 +542,7 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
 def test_resume_with_a_bound_comes_back_with_the_stop_when_the_run_state_says_stopped(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     fake = _names(tmp_path)
-    fake.launch.watched = True
+    fake.launch.window = window_if(True)
     monkeypatch.setattr(fake, "alive", lambda: True)
     out = cast(dict[str, Any], server.resume(seconds=2.0))
     assert out["status"] == "ok" and out["verdict"] == "OTHER_STOP" and "pc" in out, out

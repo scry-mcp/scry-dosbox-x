@@ -234,7 +234,7 @@ Example, from a live run:
 
 **`session_seconds` is a hard bound** because a DOSBox-X held at its debugger never reaches its own time limit. The emulator's `-time-limit` counts emulated time, which a machine held at the debugger never advances, so a guardian (`scry-dosbox-x-guardian` in the process list) also keeps the host's clock, ending the emulator a few seconds past the bound or within one poll of this server dying.
 
-**The window.** A watched start opens DOSBox-X's window on the display `display` names (the OS's index, 0 the main display and the default), which the emulator centres itself, and `fullscreen` makes it fill that display. The server then waits for the window to be listed on that display and answers it as `window`; one that never appears is `window_not_visible`, with the session left live to `window` or `close`. `flags` cannot retune it: a `-set` of `sdl display`, `sdl fullscreen`, `sdl windowposition` or `sdl windowresolution`, or `-fullscreen`, is refused naming the argument. `fullscreen` on `sdl output=surface` is refused too: that output fills the display by switching its video mode, and the window ends off screen. A headless start opens no window and takes none of these arguments.
+**The window.** A watched start opens DOSBox-X's window on the display `display` names (the OS's index, 0 the main display and the default), which the emulator centres itself, and `fullscreen` makes it fill that display. The server then waits for the window to be listed on that display and answers it as `window`; one that never appears is `window_not_visible`, with the session left live to `window` or `close`. `flags` cannot retune it: a `-set` of `sdl display`, `sdl fullscreen` or `sdl windowposition`, or `-fullscreen`, is refused naming the argument; one of `sdl windowresolution` is refused too, saying the size is the conf's. `fullscreen` on `sdl output=surface` is refused too: that output fills the display by switching its video mode, and the window ends off screen. A headless start opens no window and takes none of these arguments.
 
 **`flags` come after this server's defaults**, so a `-set` for the same key wins, except the ones a named argument sets (`-time-limit`, `sdl videodriver`, `log logfile`, the conf, the program...): refused naming the argument, because after ours the flag would quietly undo it.
 
@@ -331,8 +331,10 @@ Reply: `window` (`display`, the OS's index; `bounds`; `onscreen`; `front`, no ot
 application's window covering its centre; `fullscreen`).
 
 Refused: no session (`no_session`), a session started without `shared` (`no_channel`), a
-window not listed on the display it was asked for, or still covered after the activation
-(`window_not_visible`, naming what was seen).
+window that never appears or, with `front`, is still covered after the activation
+(`window_not_visible`, naming what was seen; on a `background=true` session it says a
+background application cannot come to the front). Without `front` the window is answered
+wherever the owner put it.
 
 Reference: REFERENCE.md, The session.
 

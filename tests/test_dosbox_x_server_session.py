@@ -44,6 +44,7 @@ from scry_core import (
     reply_schema,
     roster,
 )
+from scry_core import window as core_window
 from scry_core.host_program import absolute as _abs
 from scry_core.host_program import temporary as _tmp
 from test_dosbox_x_find import reply
@@ -504,8 +505,8 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
         proc=SimpleNamespace(pid=4242),
         alive=lambda: False, altered=True, conf_digest=dlaunch.digest(conf),
         started_at=time.monotonic() - 3.0, dropped=4096, _at_debugger=True,
-        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, watched=True,
-                         window_flags=["-set", "sdl display=1"]))
+        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60,
+                              window=core_window.WindowRequest(1, False)))
     got = ds.Session.state(fake)  # type: ignore[arg-type]
     assert set(got) == {"pid", "alive", "running", "altered", "conf", "conf_digest",
                         "conf_changed_on_disk", "watched", "bound_s",

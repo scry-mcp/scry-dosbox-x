@@ -20,6 +20,7 @@ from typing import Any, cast
 import pytest
 from scry_core import cancel
 from scry_core.host_program import MODE_BITS, POSIX_NAMES
+from window_double import window_if
 
 from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import debugger as dbg
@@ -88,7 +89,7 @@ class StateFake:
     def __init__(self, state_dir: Path, *, parked: bool = True, carries: bool = True,
                  watched: bool = False) -> None:
         self.launch = dlaunch.Launch(conf=state_dir.parent / "g.conf", cwd=state_dir.parent,
-                                seconds=60, watched=watched, state_dir=state_dir)
+                                seconds=60, window=window_if(watched), state_dir=state_dir)
         self.parked = parked
         self.control = Channel(self, carries)
         self.moves: list[str] = []
@@ -271,7 +272,7 @@ def test_state_load_needs_a_named_state_and_marks_altered(tmp_path: Path) -> Non
 
 def test_the_default_state_directory_is_one_spelling_for_start_and_the_session(
         tmp_path: Path) -> None:
-    bare = dlaunch.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60, watched=False)
+    bare = dlaunch.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60)
     assert dlaunch.state_dir_of(bare) == dlaunch.default_state_dir(tmp_path) == tmp_path / "save"
 
 
@@ -377,7 +378,7 @@ class ShotFake(StateFake):
     def __init__(self, state_dir: Path, **kw: Any) -> None:
         super().__init__(state_dir, **{"parked": False, **kw})
         self.launch = dlaunch.Launch(conf=state_dir.parent / "g.conf", cwd=state_dir.parent,
-                                seconds=60, watched=self.launch.watched,
+                                seconds=60, window=self.launch.window,
                                 captures_dir=state_dir.parent / "caps",
                                 logfile=state_dir.parent / "e9.log")
         self.shots = 0

@@ -55,9 +55,8 @@ class Launch:
     conf: Path
     cwd: Path
     seconds: int
-    watched: bool = False
+    # The window a watched start asked for; None is a headless run.
     window: core_window.WindowRequest | None = None
-    window_flags: list[str] = field(default_factory=list)
     # Every flag but placement, so a headless session carries them too.
     flags: list[str] = field(default_factory=list)
     # `[dos] break on int3`: a guest's own `int 3` stops at the debugger.
@@ -83,6 +82,10 @@ class Launch:
     debugger_headless: bool = False
     debugger_commands: frozenset[str] = frozenset()
     core: str = "auto"            # `conf.cpu_core`, read once at `start`
+
+    @property
+    def watched(self) -> bool:
+        return self.window is not None
 
 
 def digest(path: Path) -> str:
@@ -124,10 +127,12 @@ def build_argv(launch: Launch) -> list[str]:
     argv += ["-set", "dosbox saveremark=false"]
     if launch.state_dir is not None:
         argv += ["-savedir", str(launch.state_dir)]
-    if not launch.watched:
+    if launch.window is None:
         argv += ["-set", "sdl videodriver=dummy"]
     else:
-        argv += launch.window_flags
+        # The emulator centres itself on the display it is given.
+        argv += ["-set", f"sdl display={launch.window.display}",
+                 *(["-fullscreen"] if launch.window.fullscreen else [])]
     if launch.break_on_int3:
         argv += ["-set", "dos break on int3=true"]
     if launch.logfile is not None:
@@ -282,9 +287,12 @@ OWNED_OPTIONS = {"-conf": "conf", "-time-limit": "session_seconds", "-break-star
                  "-savedir": "state_dir", "-c": "program", "-fullscreen": "fullscreen"}
 
 
+#: The owner of a setting no start argument sets: the conf decides it.
+CONF_OWNS = "the conf"
+
 OWNED_SETS = {"sdl videodriver": "shared", "sdl display": "display",
               "sdl windowposition": "display", "sdl fullscreen": "fullscreen",
-              "sdl windowresolution": "fullscreen", "dos break on int3": "break_on_int3",
+              "sdl windowresolution": CONF_OWNS, "dos break on int3": "break_on_int3",
               "log logfile": "logfile", "serial serial1": "input_port",
               "cpu integration device": "input_port", "dosbox captures": "captures_dir",
               **{f"log {category}": "log_categories" for category in LOG_CATEGORIES}}
@@ -305,13 +313,13 @@ def _set_key(token: str) -> str:
     return " ".join(words)
 
 
-def check_flags(name: str, flags: list[str]) -> None:
+def check_flags(flags: list[str]) -> None:
     """Argv tokens are separate non-empty strings, never a glued option and value; DOSBox-X
-    hangs or ignores both."""
+    hangs or ignores both. A token the session owns is refused with the argument that sets it."""
     for i, flag in enumerate(flags):
         if not isinstance(flag, str) or not flag:
             raise Invalid("bad_argument",
-                f"{name} must be separate non-empty strings; got {flag!r}")
+                f"flags must be separate non-empty strings; got {flag!r}")
         # An option is one word, a value may hold spaces.
         if flag.startswith("-") and flag.split() != [flag]:
             raise Invalid("bad_argument",
@@ -322,23 +330,27 @@ def check_flags(name: str, flags: list[str]) -> None:
                           f"hangs on it")
         if flag == "-set" and (i + 1 >= len(flags) or " " not in str(flags[i + 1])):
             raise Invalid("bad_argument",
-                f"{name}: the `-set` at {i} is not followed by one `section key=value` "
+                f"flags: the `-set` at {i} is not followed by one `section key=value` "
                 f"token (a space inside it). A shredded `-set` is ignored by DOSBox-X at "
                 f"rc 0, so the setting would silently not apply")
-        if name == "flags":
-            owner = OWNED_OPTIONS.get(flag)
-            if flag == "-set":
-                key = _set_key(str(flags[i + 1]))
-                owner = OWNED_SETS.get(key)
-                if key in SESSION_SETS:
-                    raise Invalid("bad_argument",
-                        f"flags: the `-set` at {i} sets `{key}`, which every session sets "
-                        f"for its own debugger channel; it is not the caller's to change")
-            if owner is not None:
+        owner = OWNED_OPTIONS.get(flag)
+        if flag == "-set":
+            key = _set_key(str(flags[i + 1]))
+            owner = OWNED_SETS.get(key)
+            if key in SESSION_SETS:
                 raise Invalid("bad_argument",
-                    f"flags: {flag!r} at {i} sets what `{owner}` owns. Placed after this "
-                    f"server's own options it would quietly undo that argument, so set it "
-                    f"through `{owner}`")
+                    f"flags: the `-set` at {i} sets `{key}`, which every session sets "
+                    f"for its own debugger channel; it is not the caller's to change")
+        if owner == CONF_OWNS:
+            raise Invalid("bad_argument",
+                f"flags: the `-set` at {i} sets `{key}`, the window's size, which the conf "
+                f"decides: write `windowresolution` under `[sdl]` in the conf. No start "
+                f"argument sets a size")
+        if owner is not None:
+            raise Invalid("bad_argument",
+                f"flags: {flag!r} at {i} sets what `{owner}` owns. Placed after this "
+                f"server's own options it would quietly undo that argument, so set it "
+                f"through `{owner}`")
 
 
 def _judge_files(launch: Launch) -> None:
@@ -381,8 +393,7 @@ def validate(launch: Launch) -> None:
     except (OSError, ValueError) as e:     # a stat refused (before 3.14 it raises, not answers)
         raise Invalid("bad_argument",
                       f"a path of this launch cannot be looked at: {e}") from None
-    check_flags("window_flags", launch.window_flags)
-    check_flags("flags", launch.flags)
+    check_flags(launch.flags)
     if launch.seconds <= 0:
         raise Invalid("bad_argument", "a session without a bound is refused: DOSBox-X does not "
                       "reject an option it does not know, it hangs, so the bound "
