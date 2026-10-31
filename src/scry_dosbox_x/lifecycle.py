@@ -30,17 +30,6 @@ DEFAULT_STATE_DIR = ("the default state directory (the session's scratch, gone a
                      "`state_dir` names another)")
 
 
-#: Seconds a watched start waits for the emulator's window to be listed on the asked display.
-WINDOW_WAIT_S = 10.0
-
-
-def _window_request(shared: bool, display: int | None,
-                    fullscreen: bool | None) -> core_window.WindowRequest | None:
-    """The window a start asked for; the host's display count is read only for a watched one."""
-    count = len(core_window.host().displays()) if shared else 0
-    return core_window.request(display, fullscreen, shared=shared, display_count=count)
-
-
 def _refuse_fullscreen_that_cannot_show(wanted: core_window.WindowRequest | None, conf: Path,
                                         flags: list[str]) -> None:
     """`surface` fills the display by switching its video mode, and the window ends off screen."""
@@ -80,7 +69,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         paths.absolute("binary", binary)
     guest_paths = guest.check_guest_files(guest_files)
     held = start_symbols.check(symbols, base_from)
-    wanted = _window_request(shared, display, fullscreen)
+    wanted = core_window.requested(shared, display, fullscreen)
     _refuse_fullscreen_that_cannot_show(wanted, conf_path, list(flags or []))
     if STATE.session is not None:
         if STATE.session.alive():
@@ -179,15 +168,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     # A refusal here leaves the session live, as its message says: `window` and `close` still act.
     seen: dict[str, Any] = {}
     if wanted is not None:
-        proved = core_window.wait_visible(session.pid, wanted.display, WINDOW_WAIT_S,
-                                          core_window.host())
-        if wanted.fullscreen and not proved.fullscreen:
-            raise ds.Invalid("window_not_visible",
-                             "the window opened on the asked display but does not fill it, which "
-                             "`fullscreen` asked for: `close` and start again with "
-                             "`fullscreen=false`", asked_display=wanted.display,
-                             seen=proved.block())
-        seen = {"window": proved.block()}
+        seen = {"window": core_window.prove(session.pid, wanted).block()}
     session.presence = dpresence.open_shown(session, presence, shared)
     commands: dict[str, Any] = ({"debugger_commands": sorted(session.commands)}
                                 if session.commands else {})
@@ -226,14 +207,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
 
 def window(session: ds.Session, front: bool) -> dict[str, Any]:
     """The body of the `window` tool: where the watched window is, brought forward on `front`."""
-    if session.launch.window is None:
-        raise ds.Invalid("no_channel", "this session has no window: it was started without "
-                         "`shared=true`. Close it and start again with `shared=true`")
-    host = core_window.host()
-    state = (core_window.bring_front(session.pid, host, WINDOW_WAIT_S,
-                                     launched_behind=session.launch.background) if front
-             else core_window.observe(session.pid, host))
-    return st.reply(window=state.block())
+    return st.reply(**core_window.answer(session.pid, session.launch.window, front=front,
+                                         launched_behind=session.launch.background))
 
 
 def presence_shown(session: ds.Session) -> bool | dict[str, Any]:

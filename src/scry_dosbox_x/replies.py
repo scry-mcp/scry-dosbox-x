@@ -33,12 +33,8 @@ class DosboxEnvelope(RunEnvelope, total=False):
     symbols_placed: dict[str, Any]
 
 
-class WindowRefused(DosboxEnvelope, total=False):
+class WindowRefused(DosboxEnvelope, tool_replies.WindowRefusedFields, total=False):
     """What a `window_not_visible` refusal says of the window it looked for."""
-
-    activation: Annotated[str, When("`window_not_visible` after an activation")]
-    asked_display: Annotated[int, When("`window_not_visible`")]
-    seen: Annotated[dict[str, Any], When("`window_not_visible` with a window listed")]
 
 
 class BreakpointAtReply(DosboxEnvelope, total=False):

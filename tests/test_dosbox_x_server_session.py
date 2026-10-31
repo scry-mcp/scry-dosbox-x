@@ -1393,6 +1393,7 @@ def test_status_pc_is_where_the_machine_is_now_after_a_command_moved_it(tmp_path
 
 def test_every_tool_is_summarised_by_its_own_line() -> None:
     from scry_core import screen_map
+    from scry_core import window as core_window
     lines = dosbox_mcp.BOUNDARY.summaries
     folded = {"comment_write": folds.COMMENT, "screen_map_write": folds.MAP, "scan": folds.SCAN,
               "state_write": folds.STATE_METHODS, "port": folds.PORT, "pic": folds.PIC,
@@ -1411,6 +1412,8 @@ def test_every_tool_is_summarised_by_its_own_line() -> None:
             assert lines[name] is screen_map.find_line, name
         elif name == "perform_export":
             assert lines[name] is recording.export_summary, name
+        elif name == "window":
+            assert lines[name] is core_window.summary, name
         else:
             assert lines[name].__name__ == name, (name, lines[name])
 

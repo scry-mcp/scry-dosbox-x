@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from scry_core import window as core_window
 from stub_builds import build
-from window_double import ObeyingHost
+from window_double import obeying
 
 LIVE = Path(__file__).resolve().parent / "live"
 
@@ -31,4 +31,4 @@ def unit_case_host(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPat
 @pytest.fixture(autouse=True)
 def window_host(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
     if not request.node.path.is_relative_to(LIVE):
-        monkeypatch.setattr(core_window, "host", lambda _platform="": ObeyingHost())
+        monkeypatch.setattr(core_window, "host", lambda _platform="": obeying())
