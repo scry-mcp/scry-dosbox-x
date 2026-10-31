@@ -125,13 +125,13 @@ def _cause_key(stop: dict[str, Any]) -> str:
     return st.cause_key(str(stop.get("cause")))
 
 
-#: This server's half of `scry_core.sequence_account`: a compact stop row keeps its number and
-#: cause; registers, watches and log stay in the full reply.
 def _stop_extra(reply: dict[str, Any], cut: dict[str, Any]) -> None:
     if "regpoint_hit" in reply:
         cut["regpoint_hit"] = reply["regpoint_hit"]
 
 
+#: This server's half of `scry_core.sequence_account`: a compact stop row keeps its number, cause
+#: and `regpoint_hit`; registers, watches and log stay in the full reply.
 SHAPE = account.Shape(kept=("stop_seq", "cause"), cause_key=_cause_key, extra=_stop_extra)
 
 

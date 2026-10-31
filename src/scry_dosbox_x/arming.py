@@ -511,7 +511,7 @@ def _rearm_kept(session: ds.Session, decl: dec.Declaration, out: dict[str, Any])
             keeper.drop(session, decl.ref)
         keeper.arm(session, decl)
     except ds.Invalid as e:
-        state = "unresolved" if e.code == "unknown_ref" else "unarmable"
+        state = {"unknown_ref": "unresolved", "ambiguous_ref": "ambiguous"}.get(e.code, "unarmable")
         out[state].append({**row, "why": str(e)})
         return
     out["rearmed"].append(row)
@@ -1382,7 +1382,8 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
                                                          fmt="u8", watch_mode="show")),
             "DS", session)
         if probe["state"] in ("unresolved", "ambiguous") and "why" in probe:
-            raise ds.Invalid("unknown_ref", probe["why"])
+            raise ds.Invalid("ambiguous_ref" if probe["state"] == "ambiguous" else "unknown_ref",
+                             probe["why"])
     if fmt == "auto":
         # The type comes from the symbol table when the caller gave none; through a pointer, the
         # field's own format; else the default scalar of the given width.

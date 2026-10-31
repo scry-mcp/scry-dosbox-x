@@ -387,6 +387,15 @@ def test_breakpoint_at_an_ambiguous_name_is_refused_and_stores_nothing(
     assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
 
 
+def test_a_watch_through_a_pointer_whose_base_name_is_ambiguous_is_refused_as_ambiguous(
+        tmp_path: Path) -> None:
+    syms = [dsym.Symbol("dup", 0x1000, kind="d"), dsym.Symbol("dup", 0x2000, kind="d")]
+    _names(tmp_path, symbols=syms)
+    got = server.watch_add(ref="[dup]+0x4", mode="change", length=2)
+    assert got["status"] == "INVALID" and got["code"] == "ambiguous_ref", got
+    assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
+
+
 def test_breakpoint_at_an_unresolved_name_is_kept_not_armed(tmp_path: Path) -> None:
     _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T")])
     got = server.breakpoint_at(ref="ensure_soundfont")

@@ -390,6 +390,19 @@ def test_a_raw_tap_placed_in_real_mode_waits_at_a_protected_mode_stop(tmp_path: 
     assert "real-mode stop" in got["unarmable"][0]["why"]
 
 
+def test_a_tap_whose_symbol_became_ambiguous_waits_in_the_ambiguous_bucket(
+        tmp_path: Path) -> None:
+    machine = live(tmp_path)
+    dstate.STATE.install_table(sym.parse_nm("0000011d T w_inc\n"))
+    dstate.STATE.base = {"base": 0x8140}
+    _ok(server.watch_add(ref="w_inc", mode="count", length=2))
+    dstate.STATE.taps.clear()
+    machine.taps.clear()
+    dstate.STATE.install_table(sym.parse_nm("0000011d T w_inc\n00000130 T w_inc\n"))
+    got = arming.rearm_declarations(cast(Any, dstate.STATE.session))
+    assert [r["ref"] for r in got["ambiguous"]] == ["w_inc"] and machine.taps == {}, got
+
+
 def test_a_trigger_is_stored_in_one_spelling_and_never_through_a_pointer(tmp_path: Path) -> None:
     live(tmp_path)
     _ok(server.watch_add(ref="0814:013C", mode="capture", trigger="0814:138", length=2))

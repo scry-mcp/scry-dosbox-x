@@ -221,6 +221,38 @@ def test_a_wait_that_times_out_on_a_cut_trace_says_both(tmp_path: Path) -> None:
     assert "stopped at its" in got["note"]
 
 
+class _Writing:
+    """A running session whose guest makes more calls while the wait polls."""
+
+    parked = False
+
+    def __init__(self, path: Path, rows: str) -> None:
+        self.path, self.rows = path, rows
+
+    def alive(self) -> bool:
+        return True
+
+    def at_debugger(self) -> bool:
+        if self.rows:
+            with self.path.open("a") as f:
+                f.write(self.rows)
+            self.rows = ""
+        return False
+
+
+def test_a_wait_over_a_full_window_counts_the_calls_that_arrived_not_the_ones_held(
+        tmp_path: Path) -> None:
+    path = tmp_path / "full.trace"
+    path.write_text(_call_rows(1, dos.CALLS_KEPT))
+    install()
+    dstate.STATE.dos_calls = _read(path)
+    late = _call_rows(dos.CALLS_KEPT + 1, dos.CALLS_KEPT + 5, "LATE.TXT")
+    got = dos.log_wait(cast(Any, _Writing(path, late)), "LATE", 2.0, 0, lambda *_a: None)
+    assert got["verdict"] == "TARGET" and got["call"]["file"] == "LATE.TXT", got
+    assert got["lines_before"] == dos.CALLS_KEPT and got["arrived_during"] == 5, got
+    assert got["lines_total"] == dos.CALLS_KEPT + 5 and got["calls_dropped"] == 5, got
+
+
 def test_a_trace_written_with_crlf_reads_as_the_same_rows(tmp_path: Path) -> None:
     path = tmp_path / "t.trace"
     path.write_bytes(TRACE.read_bytes().replace(b"\n", b"\r\n"))

@@ -191,8 +191,8 @@ STEPS = [
          run: "breakpoint cleared"),
     Step("frames", "run_for", {"frames": 3, "seconds": WAIT_S}, frames,
          volatile={key: "a retrace stop lands at any instruction of the game's retrace poll"
-                   for key in ("summary", "regs", "instruction", "pc",
-                               "cause")}),
+                   for key in ("summary", "regs", "instruction", "pc", "cause",
+                               "emulated_before_s", "emulated_after_s")}),
     Step("ball", "read_memory", {"ref": "ball_x", "length": 8}, ball),
     Step("play", "resume", {}, lambda reply, run: "the game runs"),
     Step("keys", "drive", {"act": [{"op": "send_keys", "keys": ["right"], "expect": "KEY R",

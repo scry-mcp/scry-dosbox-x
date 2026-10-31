@@ -67,7 +67,7 @@ POLL_S = 0.05
 #: How many patterns a trace remembers the matches of.
 PATTERNS_KEPT = 8
 #: How many calls the server holds: past it the oldest go, so a chatty program cannot grow the
-#: server without bound while the fork's file keeps every row.
+#: server without bound.
 CALLS_KEPT = 50_000
 #: How much of the file one parse takes, so the window is enforced between slices.
 CHUNK_BYTES = 4 << 20

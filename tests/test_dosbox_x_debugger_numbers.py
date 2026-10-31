@@ -102,6 +102,11 @@ def _freeze_segment(s: Recorder, v: int) -> Any:
         return _freeze(s, v, Path("."), patched, segment=True)
 
 
+def _delete_row(s: Recorder, index: int) -> Any:
+    s.breakpoints = lambda: [{"index": f"{index:02X}", "entry": "BP 0814:0010"}]  # type: ignore[method-assign]
+    return ds.Session.delete_rows(cast(ds.Session, s), [lambda entry: True])
+
+
 #: Each sender, the command of it that carries the number, and the value it types.
 SENDERS: dict[str, tuple[str, Any]] = {
     "vgamemdump offset": ("VGAMEMDUMP", lambda s, v, d, mp: ds.Session.vgamemdump(s, v, 4, d)),
@@ -119,6 +124,7 @@ SENDERS: dict[str, tuple[str, Any]] = {
     "port_write value": ("OUTB", lambda s, v, d, mp: hardware.port_write(s, 0x21, v)),
     "log_cpu": ("LOGC", lambda s, v, d, mp: driving.log_cpu(s, "LOGC", v, 0.0, 1.0)),
     "freeze offset": ("FM", _freeze),
+    "delete_rows index": ("BPDEL", lambda s, v, d, mp: _delete_row(s, v)),
 }
 
 
