@@ -30,7 +30,17 @@ def conf_mounts(conf: Path) -> list[str]:
 
 def cpu_core(conf: Path, flags: list[str]) -> str:
     """The core a session boots with: the conf's `[cpu] core=`, then the last `-set` of `flags`."""
-    core = "auto"
+    return setting(conf, flags, "cpu", "core", "auto")
+
+
+def sdl_output(conf: Path, flags: list[str]) -> str:
+    """The `[sdl] output` a session boots with, `default` when nothing says."""
+    return setting(conf, flags, "sdl", "output", "default")
+
+
+def setting(conf: Path, flags: list[str], section_name: str, key_name: str, default: str) -> str:
+    """`[section] key` as the conf sets it, then the last `-set` of `flags`, lowercased."""
+    found = default
     try:
         text = conf.read_text(encoding="utf-8-sig", errors="replace")
     except OSError:
@@ -40,12 +50,13 @@ def cpu_core(conf: Path, flags: list[str]) -> str:
         line = line.strip()
         if line.startswith("["):
             section = line.partition("#")[0].strip().lower()
-        elif section == "[cpu]":
+        elif section == f"[{section_name}]":
             key, _, value = line.partition("=")
-            if key.strip().lower() == "core" and (cut := value.partition("#")[0].strip()):
-                core = cut.lower()
-    for flag, setting in zip(flags, flags[1:], strict=False):
-        words = setting.replace("=", " ").split()
-        if flag == "-set" and len(words) == 3 and [w.lower() for w in words[:2]] == ["cpu", "core"]:
-            core = words[2].lower()
-    return core
+            if key.strip().lower() == key_name and (cut := value.partition("#")[0].strip()):
+                found = cut.lower()
+    for flag, asked in zip(flags, flags[1:], strict=False):
+        words = asked.replace("=", " ").split()
+        if (flag == "-set" and len(words) == 3
+                and [w.lower() for w in words[:2]] == [section_name, key_name]):
+            found = words[2].lower()
+    return found

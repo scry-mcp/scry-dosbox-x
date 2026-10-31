@@ -6,7 +6,6 @@ import dataclasses
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
-from unittest import mock
 
 import pytest
 from dosbox_x_server_support import (  # noqa: E402
@@ -19,14 +18,10 @@ from dosbox_x_server_support import (  # noqa: E402
     _start_over_a_store,
     build_of,
     clean_session,  # noqa: E402, F401
-    hosted,
     install,
     stub_build,
 )
-from scry_core import (
-    declaration_rows,
-    host_args,
-)
+from scry_core import declaration_rows
 from scry_core import reply_contract as contract
 
 from scry_dosbox_x import arming, placement, running, server, start_symbols
@@ -1249,7 +1244,6 @@ def test_status_says_which_program_a_held_start_table_waits_for(
 @pytest.mark.parametrize(("shared", "said"), [(False, "headless"), (True, "shared")])
 def test_starts_line_names_how_the_session_is_watched(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, shared: bool, said: str) -> None:
-    hosted(monkeypatch, "-set\nsdl display=1\n")
     kw: dict[str, Any] = {"shared": True} if shared else {}
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, **kw)
     assert got["status"] == "ok" and got["summary"].startswith(f"start g.conf: {said} on "), got
@@ -1595,31 +1589,6 @@ def test_a_stop_named_while_the_machine_is_in_it_names_its_declaration_too() -> 
                          "at": "0814:00001A27"})
     stop, words = state.stop_named(cast(ds.Session, session))
     assert stop["pc"] == "0814:00001A27" and words == " at 0814:00001A27 (_tick)", words
-
-
-def test_a_watched_start_hands_dosbox_x_the_host_s_arguments_and_opens_with_none(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    hosted(monkeypatch, "-set\nsdl display=1\n")
-    seen: list[dlaunch.Launch] = []
-
-    def booted(launch: dlaunch.Launch) -> Any:
-        seen.append(launch)
-        raise ds.Invalid("session_broken", "recorded, not started")
-
-    monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
-    stub_build(monkeypatch)
-    monkeypatch.setattr("scry_core.binaries.version", lambda *_a, **_k: "DOSBox-X (a stub)")
-    conf = tmp_path / "g.conf"
-    conf.write_text("[sdl]\n", encoding="utf-8")
-    with mock.patch("scry_dosbox_x.server.ds.Session", booted):
-        server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60, shared=True)
-    assert seen and seen[0].window_flags == ["-set", "sdl display=1"], seen
-    got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
-    assert got["status"] == "ok" and "display" not in got, got
-    server.close()
-    monkeypatch.delenv(host_args.VARIABLE)
-    quiet = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
-    assert quiet["status"] == "ok", "nothing set: the window opens as the conf sizes it"
 
 
 def test_a_raw_breakpoint_stored_before_modes_were_kept_is_adopted_by_the_stop_that_places_it(

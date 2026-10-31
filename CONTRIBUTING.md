@@ -120,9 +120,11 @@ Nothing checks that for you. Three more things the overrides expect:
   case asks. A token that is already there makes that case report INVALID, which is the correct
   refusal and not a pass.
 
-The cases that open a watched window open it as `start` does, and the host's own arguments
-(*The window, and the host's own arguments*, on [`start`'s page](docs/reference/session.md#start))
-place it, so a host can keep those runs off the display somebody works on. The Deluxe Paint demos' cases also need `DELUXE_PAINT_DIR`, the directory holding version 1.0's
+The cases that open a watched window open it as `start` does, on the display they ask for
+(`display`, on [`start`'s page](docs/reference/session.md#start)). The cases that move the
+owner's Space carry the `window` marker and are out of every default run: `SCRY_FOCUS_CONTROL=1
+uv run pytest -o addopts="" -m 'live and window' tests/live` runs them (scry-core's README,
+*On-demand tiers*). The Deluxe Paint demos' cases also need `DELUXE_PAINT_DIR`, the directory holding version 1.0's
 `DP.EXE` (the demos refuse any other build); this repository carries none of the program, and
 without it they skip. The LineUp demo's case needs `LINEUP_MSDOS_DIR`, a copy of the game's PC port
 with its symbol map, and skips the same way. The Monkey Island demo's case needs `MONKEY_ISLAND_CD`,

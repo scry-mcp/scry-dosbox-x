@@ -1,7 +1,7 @@
 """Section G of the live matrix: the tools on a WINDOWED session (stop, the saved states, the
 screenshot, the video capture), on the probe guest and on the DPMI guest, and the mouse at two
-window sizes, which must change nothing the guest reads. It opens windows where the placement
-flags say, launched BEHIND (`background=True`): nothing here clicks a menu or takes the focus,
+window sizes, which must change nothing the guest reads. It opens windows on the main display,
+launched BEHIND (`background=True`): nothing here clicks a menu or takes the focus,
 and section O judges this stretch like any other."""
 from __future__ import annotations
 
@@ -25,6 +25,7 @@ from matrix_common import (
     server,
 )
 from matrix_dpmi import dpmi_boot, dpmi_leave
+from scry_core import window as core_window
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
@@ -45,9 +46,15 @@ G_CELLS = cells(
     ("G capture_frame refuses a % in dest", "capture_frame docstring"),
     ("G capture_frame refuses a dest that exists", "capture_frame docstring"),
     ("G capture_frame refuses a frame past the end", "capture_frame docstring"),
+    ("G start proves a window on the asked display, onscreen",
+     "start docstring: `window`, the display asked for"),
+    ("G the host lists that window where `window` says",
+     "window docstring: the OS's own window list"),
+    ("G a headless start opens no window and `window` refuses it",
+     "window docstring: no_channel without `shared`"),
     ("G in a window, cell 40,12 arrives at the driver's 320,96",
      "send_mouse docstring: inside the guest, so a window changes nothing"),
-    ("G at a 1280x800 window the same cell arrives at the same driver coordinates",
+    ("G in a full-screen window the same cell arrives at the same driver coordinates",
      "REFERENCE.md, Input and the screen: the window's scale changes nothing the guest sees"),
     (DPMI_CELLS[0], "snapshot docstring; the image is kept for the QA"),
     (DPMI_CELLS[1], "send_mouse docstring; known: the program logs `mouse btn=`"),
@@ -118,6 +125,31 @@ def _probe() -> None:
     close_whatever()
 
 
+def _window() -> None:
+    """The window `start` proves is the one the host lists, and a headless run has none."""
+    host = core_window.host()
+    r = boot(conf=conf_without_launch(PROBE_CONF, "PROBE.COM"), cwd=GUEST, shared=True,
+             display=0, background=True, program="PROBE.COM")
+    block = r.get("window")
+    judged("G start proves a window on the asked display, onscreen", reply=r,
+           holds=isinstance(block, dict) and block.get("display") == 0
+           and block.get("onscreen") is True)
+    listed = [w for w in host.windows() if w.pid == r.get("pid")]
+    said_by = M.call(server.window)
+    main = core_window.main_window(r.get("pid", 0), listed)
+    where = tuple((said_by.get("window") or {}).get("bounds", {}).values())
+    judged("G the host lists that window where `window` says", reply=said_by,
+           holds=ok(said_by) and main is not None and main.bounds == where)
+    close_whatever()
+    r = boot(conf=conf_without_launch(PROBE_CONF, "PROBE.COM"), cwd=GUEST, background=True,
+             program="PROBE.COM")
+    refusal = M.call(server.window)
+    judged("G a headless start opens no window and `window` refuses it", reply=refusal,
+           holds=refused(refusal, "no_channel")
+           and not [w for w in host.windows() if w.pid == r.get("pid")])
+    close_whatever()
+
+
 def _landed(r: dict[str, object]) -> bool:
     pointer = r.get("pointer")
     mouse = pointer.get("mouse") if isinstance(pointer, dict) else None
@@ -126,17 +158,16 @@ def _landed(r: dict[str, object]) -> bool:
 
 
 def _scaled() -> None:
-    """The probe guest again, its window drawn at twice the size: the pointer is set inside the
+    """The probe guest again, its window filling the display: the pointer is set inside the
     guest, so the same cell lands on the same driver coordinates."""
     conf = conf_without_launch(PROBE_CONF, "PROBE.COM")
-    flags = ["-set", "sdl output=opengl", "-set", "sdl windowresolution=1280x800"]
-    boot(conf=conf, cwd=GUEST, shared=True, flags=flags, background=True,
+    boot(conf=conf, cwd=GUEST, shared=True, display=0, fullscreen=True, background=True,
          program="PROBE.COM")
     must(M.call(server.resume), "releasing the probe")
     must(M.call(server.log_wait, pattern="PROBE", channel="guest", seconds=30),
          "the probe's first line")
     r = M.call(server.send_mouse, x=40, y=12)
-    judged("G at a 1280x800 window the same cell arrives at the same driver coordinates",
+    judged("G in a full-screen window the same cell arrives at the same driver coordinates",
            reply=r, holds=_landed(r))
     close_whatever()
 
@@ -163,8 +194,9 @@ def _dpmi() -> None:
 @M.section("G", "the windowed tools, on the probe guest and on the DPMI guest", G_CELLS,
            alone=True)
 def section_g() -> None:
-    print("  windows open behind, where the host's own arguments put them", flush=True)
+    print("  windows open behind, on the main display", flush=True)
     try:
+        _window()
         _probe()
         _scaled()
         _dpmi()

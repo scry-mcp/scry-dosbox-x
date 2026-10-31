@@ -16,7 +16,8 @@ from typing import Any, cast
 
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
-from scry_core import guardian, host_args, prose
+from scry_core import guardian, prose
+from scry_core import window as core_window
 from test_dosbox_x_live import (  # noqa: E402
     _OWN,
     CONF,
@@ -96,22 +97,37 @@ def test_start_headless_reaches_the_debugger_and_declares_what_it_launched() -> 
 
 
 @pytest.mark.windowed
-def test_start_shared_takes_the_host_s_arguments_and_adds_no_dummy_driver(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    """The WATCHED path, on the real emulator, bounded to seconds. A setting of its own, so the
-    case holds a token to look for whatever the host exported."""
-    window_flags = [*host_args.emulator_args(), "-set", "sdl autolock=false"]
-    monkeypatch.setenv(host_args.VARIABLE, "\n".join(window_flags))
-    reply = start_ok(session_seconds=30, shared=True)
+def test_start_shared_asks_for_the_display_and_adds_no_dummy_driver() -> None:
+    """The WATCHED path, on the real emulator, bounded to seconds."""
+    reply = start_ok(session_seconds=30, shared=True, display=0)
     argv = cast(list[str], reply["argv"])
     assert reply.get("shared", False) is True
     assert "sdl videodriver=dummy" not in argv, "a watched session was forced headless"
-    joined, want = "\x00".join(argv), "\x00".join(window_flags)
-    assert want in joined, f"the host's arguments did not arrive intact: {argv}"
+    assert "sdl display=0" in argv, f"the display did not reach the emulator: {argv}"
+    assert cast(dict[str, Any], reply["window"])["onscreen"] is True, reply
     assert reply.get("watched", False) is True, reply
     regs = cast(dict[str, Any], server.registers())
     assert regs["status"] == "ok", regs
     assert regs["regs"]["CS"] == "0xf000"
+
+
+@pytest.mark.windowed
+def test_window_answers_what_the_os_lists_and_a_headless_session_has_none() -> None:
+    """The reply is checked against the host's own window list, read here and not through the
+    server; the control is the headless session, which the list must show no window for."""
+    host = core_window.host()
+    reply = start_ok(session_seconds=30, shared=True, display=0, background=True)
+    pid = cast(int, reply["pid"])
+    listed = [w for w in host.windows() if w.pid == pid]
+    said = cast(dict[str, Any], server.window())["window"]
+    assert listed and said["display"] == 0 and said["onscreen"] is True, (said, listed)
+    main = core_window.main_window(pid, listed)
+    assert main is not None and main.bounds == tuple(said["bounds"].values()), (said, listed)
+    server.close()
+    reply = start_ok(session_seconds=30, background=True)
+    assert not [w for w in host.windows() if w.pid == reply["pid"]], "a headless run drew a window"
+    refused = cast(dict[str, Any], server.window())
+    assert refused["code"] == "no_channel", refused
 
 
 def test_stop_brings_a_running_headless_guest_back_through_the_debugger_channel() -> None:

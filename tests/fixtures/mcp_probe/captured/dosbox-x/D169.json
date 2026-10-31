@@ -1,0 +1,25 @@
+{
+ "task": {
+  "id": "D169",
+  "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching it over Moonlight, which streams only the main display, with the window filling that display.",
+  "tool": "start",
+  "args": {
+   "conf": "/opt/dosfury/fury.conf",
+   "cwd": "/opt/dosfury",
+   "session_seconds": 900,
+   "shared": true,
+   "fullscreen": true
+  },
+  "allow": [
+   "display"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}

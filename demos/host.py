@@ -28,7 +28,7 @@ def precheck(run: Run) -> str:
 
 #: Reply keys whose values differ between two honest runs on any host, hidden in every demo's
 #: transcript.
-VOLATILE = {"argv": "the emulator's command line, which ends with the host's own arguments",
+VOLATILE = {"argv": "the emulator's command line, which names this host's paths",
             "elapsed_s": "wall-clock time since the session started",
             "waited_s": "wall-clock time a wait took",
             "ready_after_s": "wall-clock time the debugger took to answer",

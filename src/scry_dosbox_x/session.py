@@ -871,6 +871,10 @@ class Session(dprocess.Process):
 
     # ------------------------------------------------------------------ closing
 
+    @property
+    def pid(self) -> int:
+        return self.proc.pid
+
     def state(self) -> dict[str, object]:
         """Everything the server says about the session."""
         changed: bool | dict[str, Any]

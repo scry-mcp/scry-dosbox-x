@@ -2179,6 +2179,26 @@
    "state": "evaluated"
   }
  },
+ "window": {
+  "from": "[G] the windowed tools, on the probe guest and on the DPMI guest: G the host lists that window where `window` says",
+  "call": {},
+  "reply": {
+   "summary": "window: display 0, on screen, covered",
+   "status": "ok",
+   "window": {
+    "display": 0,
+    "bounds": {
+     "x": 704,
+     "y": 359,
+     "width": 640,
+     "height": 432
+    },
+    "onscreen": true,
+    "front": false,
+    "fullscreen": false
+   }
+  }
+ },
  "write": {
   "from": "[A] every tool in every machine state, on the probe guest: A stopped write",
   "call": {

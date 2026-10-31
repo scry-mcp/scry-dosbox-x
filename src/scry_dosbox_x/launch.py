@@ -25,9 +25,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from scry_core import live_host, state_files
 from scry_core import reply_contract as contract
+from scry_core import state_files
 from scry_core import vocabulary as vocab
+from scry_core import window as core_window
 from scry_core.reply_contract import Invalid
 
 from scry_dosbox_x import binary as binaries
@@ -55,6 +56,7 @@ class Launch:
     cwd: Path
     seconds: int
     watched: bool = False
+    window: core_window.WindowRequest | None = None
     window_flags: list[str] = field(default_factory=list)
     # Every flag but placement, so a headless session carries them too.
     flags: list[str] = field(default_factory=list)
@@ -226,28 +228,15 @@ INPUT_CONNECT_S = 8.0     # seconds to wait for the emulator's serial port to di
 INPUT_HOST = control.LOCAL_HOST
 
 
-# A shared window launched with it never comes to the front (`live_host.BACKGROUND_VAR`).
-BACKGROUND_VAR = live_host.BACKGROUND_VAR
-
-
-def judge_background(background: bool | None, watched: bool) -> bool:
-    """`background` when given, else behind unless the session is watched."""
-    return not watched if background is None else background
-
-
 def launch_environment(background: bool, terminal: bool = False) -> dict[str, str]:
-    """The spawn environment; the background hint is set or removed, never inherited.
+    """The spawn environment, the background hint set or removed by scry-core's.
 
     The terminal and its size go only to a debugger that draws on the terminal nobody reads:
     Windows' release build, handed `LINES` and `COLUMNS`, resizes its console and dies."""
     spawned = {k: v for k, v in os.environ.items() if k not in ("LINES", "COLUMNS")}
     if terminal:
         spawned.update(TERM="xterm-256color", LINES="50", COLUMNS="132")
-    if background:
-        spawned[BACKGROUND_VAR] = "1"
-    else:
-        spawned.pop(BACKGROUND_VAR, None)
-    return spawned
+    return core_window.launch_environment(spawned, background)
 
 
 def binary_facts(resolved: binaries.Resolved, seconds: float) -> dict[str, Any]:
@@ -290,10 +279,12 @@ def accept_input(listener: socket.socket, seconds: float,
 
 # What a named argument owns, so `flags` cannot retune it, each with the argument that sets it.
 OWNED_OPTIONS = {"-conf": "conf", "-time-limit": "session_seconds", "-break-start": "start",
-                 "-savedir": "state_dir", "-c": "program"}
+                 "-savedir": "state_dir", "-c": "program", "-fullscreen": "fullscreen"}
 
 
-OWNED_SETS = {"sdl videodriver": "shared", "dos break on int3": "break_on_int3",
+OWNED_SETS = {"sdl videodriver": "shared", "sdl display": "display",
+              "sdl windowposition": "display", "sdl fullscreen": "fullscreen",
+              "sdl windowresolution": "fullscreen", "dos break on int3": "break_on_int3",
               "log logfile": "logfile", "serial serial1": "input_port",
               "cpu integration device": "input_port", "dosbox captures": "captures_dir",
               **{f"log {category}": "log_categories" for category in LOG_CATEGORIES}}

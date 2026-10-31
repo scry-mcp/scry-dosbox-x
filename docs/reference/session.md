@@ -64,13 +64,17 @@ A build without the debugger starts fine and then hangs `start` until its timeou
 *Start a DOSBox-X session*
 
 ```text
-start(conf, cwd, session_seconds, shared=false, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program")
+start(conf, cwd, session_seconds, shared=false, display=null, fullscreen=null, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program")
 ```
 
 Open one live DOSBox-X session from your conf, parked at the debugger.
 
 Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve.
 `session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
+`display`: the OS's display index for the window, 0 (the main display) when omitted;
+`fullscreen`: the window fills it. Both need `shared=true` and are refused otherwise; a
+`display` past the host's count is refused naming the count. The server waits for the window to
+be listed on that display and answers `window`.
 `flags`: argv tokens, a `-set` value one token. `logfile`: the guest's E9 channel, for `log`,
 `log_wait`, `drive`. `program` runs after autoexec; `capture_video` records it. `plan` runs
 as `perform` does, each wait bounded by `settle_seconds` (default 30). `input_port`:
@@ -86,13 +90,17 @@ measures one, at a protected-mode stop. That stop's reply says `symbols_placed` 
 (`placed`, `path`, `load_segment`, `base`, `loaded`; a placement refused: `placed: false`,
 `code`, `why`); a later `symbols_load` replaces it.
 
-Refused: a live session, a bad path or `symbols` table, `session_seconds` out of range,
-`capture_video` without `program`, an `input_port` other than 0 outside
-1024-65535, `log_categories` without `logfile`, `dos_calls` on a build
-with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
+Refused: a live session, a window that never appears on the asked display
+(`window_not_visible`, the session left live to `window` or `close`), `flags` setting what
+`display` or `fullscreen` own, `fullscreen` on `sdl output=surface` (it switches the display's
+video mode and leaves the window off screen), a bad path or `symbols` table,
+`session_seconds` out of range, `capture_video` without `program`, an `input_port` other than
+0 outside 1024-65535, `log_categories` without `logfile`, `dos_calls`
+on a build with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
 16, or busy.
 
-Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
+Reply: `pid`, `stub`, `window` (`display`, `bounds`, `onscreen`, `front`, `fullscreen`, with
+`shared`), `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
 `guest_files` (each when asked for: the trace's path, the categories set, each file as it was
 before the boot), `symbols` (`held`, `base_from`); with `plan`, these facts sit under `start`
 beside the plan's account. `note` when the conf or `flags` select a dynamic cpu core, which
@@ -106,6 +114,8 @@ Reference: REFERENCE.md, The session.
 | `cwd` | string | required |
 | `session_seconds` | integer (>= 1, <= 14400) | required |
 | `shared` | boolean | `false` |
+| `display` | integer or null | `null` |
+| `fullscreen` | boolean or null | `null` |
 | `flags` | array of string or null | `null` |
 | `break_on_int3` | boolean | `false` |
 | `program` | string | `""` |
@@ -129,6 +139,9 @@ Reference: REFERENCE.md, The session.
 
 | reply field | type |
 |---|---|
+| `activation` | string |
+| `asked_display` | integer |
+| `seen` | object |
 | `errors` | array |
 | `failed` | object |
 | `field` | string |
@@ -175,6 +188,7 @@ Reference: REFERENCE.md, The session.
 | `symbols` | object |
 | `version` | string or object |
 | `watched` | boolean |
+| `window` | object |
 
 Example, from a live run:
 
@@ -220,7 +234,7 @@ Example, from a live run:
 
 **`session_seconds` is a hard bound** because a DOSBox-X held at its debugger never reaches its own time limit. The emulator's `-time-limit` counts emulated time, which a machine held at the debugger never advances, so a guardian (`scry-dosbox-x-guardian` in the process list) also keeps the host's clock, ending the emulator a few seconds past the bound or within one poll of this server dying.
 
-**The window, and the host's own arguments.** A watched start opens DOSBox-X's window as the conf sizes it (`windowresolution`, with `output=opengl` to scale it), on any host and with nothing to set. `SCRY_EMULATOR_ARGS` in the server's environment holds the host's own DOSBox-X arguments, one token a line so a `-set` value keeps its space (`-set`, then `sdl display=1`). They go after this server's own on every watched start, so which display the window opens on is the host's to say; only the caller's `flags`, which come last, could override them. A headless start opens no window and takes none of them. A glued or shredded `-set` there refuses the start `host_failed` before anything else happens, for the same reasons as in `flags`.
+**The window.** A watched start opens DOSBox-X's window on the display `display` names (the OS's index, 0 the main display and the default), which the emulator centres itself, and `fullscreen` makes it fill that display. The server then waits for the window to be listed on that display and answers it as `window`; one that never appears is `window_not_visible`, with the session left live to `window` or `close`. `flags` cannot retune it: a `-set` of `sdl display`, `sdl fullscreen`, `sdl windowposition` or `sdl windowresolution`, or `-fullscreen`, is refused naming the argument. `fullscreen` on `sdl output=surface` is refused too: that output fills the display by switching its video mode, and the window ends off screen. A headless start opens no window and takes none of these arguments.
 
 **`flags` come after this server's defaults**, so a `-set` for the same key wins, except the ones a named argument sets (`-time-limit`, `sdl videodriver`, `log logfile`, the conf, the program...): refused naming the argument, because after ours the flag would quietly undo it.
 
@@ -300,6 +314,59 @@ Example, from a live run:
 **The alarms** are `conf_changed_on_disk` (the file changed since start; `false` also if gone), and `output_bytes_dropped` (the emulator's output overflowed what the server keeps). They ride in `session` only while they hold.
 
 **`pc` is read from the debugger at a stop**, so it is unavailable while the guest runs; `cpu_mode` is `real`, `protected`, `paged` or `VM86`. `last_stop` is unavailable with no session or a cut survey. `presence` is `true` drawn, `false` off, or why not, and is left out with no session. `declarations` is this server's own count.
+
+<!-- scry-reference:begin window -->
+## `window`
+
+*The session's window*
+
+```text
+window(front=false)
+```
+
+Where the watched window is on the host, at any time, a running guest included. `front`
+brings it in front of whatever covers it and reads that back.
+
+Reply: `window` (`display`, the OS's index; `bounds`; `onscreen`; `front`, no other
+application's window covering its centre; `fullscreen`).
+
+Refused: no session (`no_session`), a session started without `shared` (`no_channel`), a
+window not listed on the display it was asked for, or still covered after the activation
+(`window_not_visible`, naming what was seen).
+
+Reference: REFERENCE.md, The session.
+
+| argument | type | default |
+|---|---|---|
+| `front` | boolean | `false` |
+
+| reply field | type |
+|---|---|
+| `activation` | string |
+| `asked_display` | integer |
+| `seen` | object |
+| `window` | object |
+
+Example, from a live run:
+
+```json
+{}
+```
+
+```json
+{
+  "summary": "window: display 0, on screen, covered",
+  "status": "ok",
+  "window": {
+    "display": 0,
+    "bounds": {"x": 704, "y": 359, "width": 640, "height": 432},
+    "onscreen": true,
+    "front": false,
+    "fullscreen": false
+  }
+}
+```
+<!-- scry-reference:end window -->
 
 <!-- scry-reference:begin close -->
 ## `close`

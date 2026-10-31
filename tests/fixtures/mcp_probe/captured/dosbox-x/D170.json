@@ -1,0 +1,15 @@
+{
+ "task": {
+  "id": "D170",
+  "prompt": "Where is the DOSBox-X window right now: on which display, and is it on screen and in front?",
+  "tool": "window"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D170: {\"tool\": \"window\", \"args\": {}}"
+   ],
+   "right": true
+  }
+ ]
+}

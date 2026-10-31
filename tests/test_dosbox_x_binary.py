@@ -8,10 +8,10 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from scry_core import window as core_window
 from stub_builds import BANNER, build
 
 from scry_dosbox_x import binary as binaries
-from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import server
 from scry_dosbox_x import session as ds
 
@@ -62,11 +62,11 @@ def test_build_check_judges_the_build_by_its_bytes_and_never_waits_on_helpdebug(
 def test_the_version_probe_of_a_build_spawns_it_behind_as_a_session_does(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The probe runs behind, as a session does: an unknown option starts the emulator."""
-    monkeypatch.delenv(dlaunch.BACKGROUND_VAR, raising=False)
+    monkeypatch.delenv(core_window.BACKGROUND_VAR, raising=False)
     seen = tmp_path / "seen"
     def records(tag: str) -> str:
         return (f"open({str(seen)!r}, 'a').write("
-                f"'{tag}=' + os.environ.get({dlaunch.BACKGROUND_VAR!r}, '') + '\\n')")
+                f"'{tag}=' + os.environ.get({core_window.BACKGROUND_VAR!r}, '') + '\\n')")
     mine = build(tmp_path, version=f"{records('v')}; sys.stderr.write({BANNER!r}); sys.exit(1)",
                  helpdebug=f"{records('h')}; print('-break-start')")
     got = cast(dict[str, Any], server.build_check(binary=str(mine)))

@@ -19,12 +19,11 @@ from typing import Any, cast
 from unittest import mock
 
 import pytest
-from scry_core import (
-    host_args,
-    screen_map,
-)
 from scry_core import log_wait as core_wait
 from scry_core import reply_contract as contract
+from scry_core import (
+    screen_map,
+)
 from scry_core import vocabulary as vocab
 
 from scry_dosbox_x import binary as binaries
@@ -604,6 +603,7 @@ NM_FRAGMENT = (
 class NamesFake(SessionGates):
 
     survey_text = ""
+    pid = 4242
 
     def __init__(self, *, mode: str = "Pr32", cs: str = "00A7", ds_: str = "00AF",
                  conf: Path | None = None, arm_fails: bool = False,
@@ -999,9 +999,10 @@ E9_KEY_ACT = "Bochs port E9h: [+  66.628] ACT   . key_cue_a=0 b=-1 on=0"
 
 
 def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
-                            which: bool = True, **kw: Any) -> dict[str, Any]:
+                            which: bool = True, conf_text: str = "[sdl]\n",
+                            **kw: Any) -> dict[str, Any]:
     conf = tmp_path / "g.conf"
-    conf.write_text("[sdl]\n", encoding="utf-8")
+    conf.write_text(conf_text, encoding="utf-8")
 
     class Booted(NamesFake):
         argv = ["dosbox-x", "-conf", "g.conf"]
@@ -1018,6 +1019,8 @@ def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     def booted(launch: dlaunch.Launch) -> Booted:
         fake = Booted(conf=conf)
         fake.launch.input_port = launch.input_port
+        fake.launch.watched = launch.watched
+        fake.launch.window, fake.launch.window_flags = launch.window, launch.window_flags
         return fake
 
     with mock.patch("scry_dosbox_x.server.ds.Session", booted):
@@ -1091,11 +1094,6 @@ NO_SUCH_HOME = pytest.mark.skipif(sys.platform == "win32",
 def runnable(path: Path) -> Path:
     """`path` named as this host finds a program by name: with `.exe` on Windows."""
     return path.with_name(path.name + ".exe") if sys.platform == "win32" else path
-
-def hosted(monkeypatch: pytest.MonkeyPatch, said: str) -> None:
-    """The host's own emulator arguments, `said` one token a line, as the server reads them."""
-    monkeypatch.setenv(host_args.VARIABLE, said)
-
 
 def _ok(reply: dict[str, Any]) -> dict[str, Any]:
     assert reply["status"] == "ok", reply

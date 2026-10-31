@@ -8,25 +8,21 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from scry_core import host_args
+from scry_core import window as core_window
 
 from scry_dosbox_x import launch as dlaunch
-from scry_dosbox_x import lifecycle, server
+from scry_dosbox_x import server
 from scry_dosbox_x import session as ds
 
 
-@pytest.mark.parametrize(("background", "watched", "behind"), [
-    (None, False, True), (None, True, False), (True, True, True), (False, False, False)])
-def test_omitted_a_headless_start_goes_behind_and_a_shared_one_in_front(
-        background: bool | None, watched: bool, behind: bool) -> None:
-    assert dlaunch.judge_background(background, watched) is behind
-
-
-def test_the_hint_is_set_or_removed_never_inherited(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv(dlaunch.BACKGROUND_VAR, "1")
-    assert dlaunch.BACKGROUND_VAR not in dlaunch.launch_environment(False)
-    monkeypatch.delenv(dlaunch.BACKGROUND_VAR)
-    assert dlaunch.launch_environment(True)[dlaunch.BACKGROUND_VAR] == "1"
+def test_the_terminal_is_set_only_when_asked_and_the_hint_stays_core_s(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(core_window.BACKGROUND_VAR, "1")
+    assert core_window.BACKGROUND_VAR not in dlaunch.launch_environment(False)
+    monkeypatch.delenv(core_window.BACKGROUND_VAR)
+    assert dlaunch.launch_environment(True)[core_window.BACKGROUND_VAR] == "1"
+    monkeypatch.delenv("TERM", raising=False)
+    assert "TERM" not in dlaunch.launch_environment(True)
     assert dlaunch.launch_environment(True, terminal=True)["TERM"] == "xterm-256color"
 
 
@@ -73,7 +69,7 @@ def test_the_session_spawns_the_emulator_with_the_launch_s_answer(
         launch = dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, background=behind)
         with pytest.raises(OSError, match="not spawned"):
             ds.Session(launch)
-        assert (seen[-1].get(dlaunch.BACKGROUND_VAR) == "1") is behind, seen[-1]
+        assert (seen[-1].get(core_window.BACKGROUND_VAR) == "1") is behind, seen[-1]
 
 
 def test_start_says_what_the_process_was_told(tmp_path: Path,
@@ -89,8 +85,7 @@ def test_start_says_what_the_process_was_told(tmp_path: Path,
 
 def test_a_shared_start_goes_in_front_unless_told_otherwise(tmp_path: Path,
                                                            monkeypatch: pytest.MonkeyPatch) -> None:
-    from dosbox_x_server_support import _start_on_a_booted_fake, hosted
-    hosted(monkeypatch, "-set\nsdl display=1\n")
+    from dosbox_x_server_support import _start_on_a_booted_fake
     shared = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
     assert shared["status"] == "ok" and shared["background"] is False, shared
     server.close()
@@ -127,35 +122,3 @@ def test_a_live_runs_ledger_learns_the_emulator_the_session_spawned(
         with pytest.raises(RuntimeError, match="new thread"):
             ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, debugger_headless=True))
         assert (live_host.EmulatorLedger(ledger).recorded() == {4321: "dosbox-x"}) is named
-
-
-def test_a_watched_window_carries_the_host_s_arguments_and_a_headless_one_none(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    """With nothing set the window opens as the conf sizes it, never refused."""
-    assert lifecycle._window_flags(True) == [] == lifecycle._window_flags(False)
-    monkeypatch.setenv(host_args.VARIABLE, "-set\nsdl display=1\n-set\nsdl windowposition=0,0")
-    assert lifecycle._window_flags(True) == ["-set", "sdl display=1",
-                                             "-set", "sdl windowposition=0,0"]
-    assert lifecycle._window_flags(False) == [], "a headless session opens no window"
-
-
-@pytest.mark.parametrize("said", ["-set sdl display=1", "-set\nsdl"])
-def test_host_arguments_dosbox_x_would_hang_on_refuse_the_watched_start_naming_the_variable(
-        monkeypatch: pytest.MonkeyPatch, said: str) -> None:
-    monkeypatch.setenv(host_args.VARIABLE, said)
-    with pytest.raises(ds.Invalid) as e:
-        lifecycle._window_flags(True)
-    assert e.value.code == "host_failed" and host_args.VARIABLE in str(e.value), str(e.value)
-    assert "not an argument" in str(e.value)
-
-
-def test_host_arguments_that_refuse_are_refused_before_start_forgets_anything(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from scry_dosbox_x.state import STATE
-    monkeypatch.setenv(host_args.VARIABLE, "-set sdl display=1")
-    forgot: list[bool] = []
-    monkeypatch.setattr(STATE, "forget_symbols", lambda: forgot.append(True))
-    conf = tmp_path / "g.conf"
-    conf.write_text("[sdl]\n", encoding="utf-8")
-    got = server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60, shared=True)
-    assert got["code"] == "host_failed" and forgot == [], (got, forgot)

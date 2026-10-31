@@ -38,7 +38,7 @@ one instruction at a time (`step`), or arm a watch and leave it stopped (`watch`
 HONESTY, wired into the contract rather than into a prompt:
 
 - `start` refuses a session it cannot reproduce -- an unreadable config or working
-  directory, host arguments DOSBox-X would hang on, a session with no bound or
+  directory, `flags` DOSBox-X would hang on, a session with no bound or
   with one so large it bounds nothing -- and refuses it BEFORE the process exists.
   When a session comes up but never reaches its debugger, it is CLOSED before the
   refusal is returned: a guarantee that leaves alive what it just declared invalid is
@@ -55,7 +55,8 @@ HONESTY, wired into the contract rather than into a prompt:
   names the argument.
 
 The server knows no project: the conf, the working directory, the program and the
-window flags all come from the caller, so the same server serves every DOS project.
+flags all come from the caller (the window, from `display` and `fullscreen`), so the same
+server serves every DOS project.
 """
 
 from __future__ import annotations
@@ -183,7 +184,7 @@ def build_check(binary: str = "") -> dict[str, Any]:
 @tool("Start a DOSBox-X session", summary=one_line.start, on_cancel="kill")
 def start(conf: str, cwd: str,
           session_seconds: Annotated[int, vocab.bounds(1, dlaunch.MAX_SECONDS)],
-          shared: bool = False,
+          shared: bool = False, display: int | None = None, fullscreen: bool | None = None,
           flags: list[str] | None = None, break_on_int3: bool = False, program: str = "",
           logfile: str = "", capture_video: bool = False, captures_dir: str = "",
           plan: list[dict[str, Any]] | None = None,
@@ -202,6 +203,10 @@ def start(conf: str, cwd: str,
 
     Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve.
     `session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
+    `display`: the OS's display index for the window, 0 (the main display) when omitted;
+    `fullscreen`: the window fills it. Both need `shared=true` and are refused otherwise; a
+    `display` past the host's count is refused naming the count. The server waits for the window to
+    be listed on that display and answers `window`.
     `flags`: argv tokens, a `-set` value one token. `logfile`: the guest's E9 channel, for `log`,
     `log_wait`, `drive`. `program` runs after autoexec; `capture_video` records it. `plan` runs
     as `perform` does, each wait bounded by `settle_seconds` (default {SETTLE_S}). `input_port`:
@@ -217,13 +222,17 @@ def start(conf: str, cwd: str,
     (`placed`, `path`, `load_segment`, `base`, `loaded`; a placement refused: `placed: false`,
     `code`, `why`); a later `symbols_load` replaces it.
 
-    Refused: a live session, a bad path or `symbols` table, `session_seconds` out of range,
-    `capture_video` without `program`, an `input_port` other than 0 outside
-    {INPUT_PORT_MIN}-{INPUT_PORT_MAX}, `log_categories` without `logfile`, `dos_calls` on a build
-    with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
+    Refused: a live session, a window that never appears on the asked display
+    (`window_not_visible`, the session left live to `window` or `close`), `flags` setting what
+    `display` or `fullscreen` own, `fullscreen` on `sdl output=surface` (it switches the display's
+    video mode and leaves the window off screen), a bad path or `symbols` table,
+    `session_seconds` out of range, `capture_video` without `program`, an `input_port` other than
+    0 outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX}, `log_categories` without `logfile`, `dos_calls`
+    on a build with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
     {GUEST_FILES_MAX}, or busy.
 
-    Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
+    Reply: `pid`, `stub`, `window` (`display`, `bounds`, `onscreen`, `front`, `fullscreen`, with
+    `shared`), `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
     `guest_files` (each when asked for: the trace's path, the categories set, each file as it was
     before the boot), `symbols` (`held`, `base_from`); with `plan`, these facts sit under `start`
     beside the plan's account. `note` when the conf or `flags` select a dynamic cpu core, which
@@ -235,7 +244,25 @@ def start(conf: str, cwd: str,
                            break_on_int3, program, logfile, capture_video, captures_dir, plan,
                            settle_seconds, input_port, state_dir, binary, background,
                            presence, dos_calls, log_categories, guest_files, bridge(ctx),
-                           _step_ops, symbols=symbols, base_from=base_from)
+                           _step_ops, symbols=symbols, base_from=base_from, display=display,
+                           fullscreen=fullscreen)
+
+
+@tool("The session's window", summary=one_line.window)
+def window(front: bool = False) -> dict[str, Any]:
+    """Where the watched window is on the host, at any time, a running guest included. `front`
+    brings it in front of whatever covers it and reads that back.
+
+    Reply: `window` (`display`, the OS's index; `bounds`; `onscreen`; `front`, no other
+    application's window covering its centre; `fullscreen`).
+
+    Refused: no session (`no_session`), a session started without `shared` (`no_channel`), a
+    window not listed on the display it was asked for, or still covered after the activation
+    (`window_not_visible`, naming what was seen).
+
+    Reference: REFERENCE.md, The session.
+    """
+    return lifecycle.window(live(), front)
 
 
 @tool("Session status", summary=one_line.status, read_only=True)

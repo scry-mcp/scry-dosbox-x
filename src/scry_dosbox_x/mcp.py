@@ -37,7 +37,7 @@ _ANSWERS_WHILE_RUNNING = roster.answers_while_running(
 
 #: The tools by family, in the order the instructions list them.
 ROSTER = roster.Roster(families=(
-    ("Session", ("build_check", "start", "status", "close")),
+    ("Session", ("build_check", "start", "status", "window", "close")),
     ("Machine", ("machine_map", "interrupt_vectors", "log", "log_wait")),
     ("Read", ("registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
               "screen_map_find", "screen_map_write")),

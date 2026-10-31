@@ -152,7 +152,7 @@ _WITHOUT_SESSION: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
     "start": (lambda r: ok(r) and alive(r), "start docstring: opens one session, parked"),
 }
 
-_WINDOWED = ("snapshot",)
+_WINDOWED = ("snapshot", "window")
 _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
                "scan start",
                "scan filter", "scan clear", "debug", "set_register", "write", "step", "run_to",
@@ -223,7 +223,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         # the stopped cells save before they load; the running ones meet the load first, and
         # load the state the stopped cells saved
         "state_write load": {"name": "matrix_a_stopped", "seconds": 10},
-        "snapshot": {"dest": M.fresh(".png"), "seconds": 10},
+        "snapshot": {"dest": M.fresh(".png"), "seconds": 10}, "window": {},
         "record": {"frames": 2, "dest": M.fresh(".avi"), "seconds": 30},
         "audio_record": {"frames": 2, "dest": M.fresh(".wav"), "seconds": 30},
         "breakpoint_interrupt": {"number": 0x21, "ah": 0x4C},
@@ -386,6 +386,8 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                        "state_write load: docstring, by LOADSTATE, the state the stopped cells "
                        "saved"),
         "snapshot": (lambda r: refused(r), "snapshot docstring: refused parked, windowed"),
+        "window": (lambda r: refused(r, "no_channel") and "shared=true" in str(r.get("message")),
+                   "window docstring: a session started without `shared` has no window"),
         "record": (lambda r: ok(r) and r.get("verdict") == "ELAPSED" and r.get("ended") is True
                    and int(r.get("avi_frames") or 0) >= 1 and Path(str(r.get("path"))).is_file(),
                    "record docstring: two retraces, the AVI checked and moved to `dest`"),
@@ -653,6 +655,7 @@ _STOPPED_ORDER = [
     "screen_map_write add", "screen_map_find", "screen_map_write save", "screen_map_write load",
     "set_register", "write", "stop",
     "step", "run_to", "run_for", "trace", "state_write save", "state_write load", "snapshot",
+    "window",
                   "record", "audio_record", "state_list",
     "breakpoint_interrupt", "symbols_load", "symbols_find", "comment_write add", "comment_list",
     "comment_write save", "comment_write load", "comment_write delete", "breakpoint_at",

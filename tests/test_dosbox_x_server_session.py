@@ -308,7 +308,7 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
         "drive", "comment_list", "comment_write", "series_capture", "image_compare",
         "audio_compare", "screen_map_find", "screen_map_write", "record", "audio_record", "port",
         "pic", "a20",
-        "guest_file"}
+        "guest_file", "window"}
     got = dosbox_mcp.registered_tools()
     assert set(got) == expected
     # The registry is a dict keyed by name, so a length check cannot fail.
@@ -357,7 +357,7 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "scan start": lambda: server.scan("start", ref="0000:00000000", length=8),
         "scan filter": lambda: server.scan("filter", operator="=", value=0),
         "scan clear": lambda: server.scan("clear"),
-        "captures": server.captures,
+        "captures": server.captures, "window": server.window,
         "capture_frame": lambda: server.capture_frame(frame=0, dest=_tmp("x.png")),
         "log_wait": lambda: server.log_wait(channel="guest", pattern="x", seconds=1.0),
         "run_to": lambda: server.run_to(ref="0000:0000", control="0000:0020", seconds=1.0),

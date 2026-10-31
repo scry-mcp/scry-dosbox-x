@@ -1,4 +1,4 @@
-"""The bodies of the `start` and `close` tools, which the server registers."""
+"""The bodies of the `start`, `window` and `close` tools, which the server registers."""
 
 from __future__ import annotations
 
@@ -8,8 +8,9 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from scry_core import host_args, log_marks, narrowing, session_block
+from scry_core import log_marks, narrowing, session_block
 from scry_core import reply_contract as contract
+from scry_core import window as core_window
 
 from scry_dosbox_x import arming, paths, placement, run_state, running, sequence, start_symbols
 from scry_dosbox_x import binary as binaries
@@ -29,22 +30,33 @@ DEFAULT_STATE_DIR = ("the default state directory (the session's scratch, gone a
                      "`state_dir` names another)")
 
 
-def _window_flags(shared: bool) -> list[str]:
-    """A watched window's flags: the host's own (`host_args`), since DOSBox-X sizes the window
-    from the conf. A headless session opens none."""
-    if not shared:
+#: Seconds a watched start waits for the emulator's window to be listed on the asked display.
+WINDOW_WAIT_S = 10.0
+
+
+def _window_request(shared: bool, display: int | None,
+                    fullscreen: bool | None) -> core_window.WindowRequest | None:
+    """The window a start asked for; the host's display count is read only for a watched one."""
+    count = len(core_window.host().displays()) if shared else 0
+    return core_window.request(display, fullscreen, shared=shared, display_count=count)
+
+
+def _refuse_fullscreen_that_cannot_show(wanted: core_window.WindowRequest | None, conf: Path,
+                                        flags: list[str]) -> None:
+    """`surface` fills the display by switching its video mode, and the window ends off screen."""
+    if (wanted is not None and wanted.fullscreen
+            and dconf.sdl_output(conf, flags) == "surface"):
+        raise ds.Invalid("bad_argument",
+                         "`fullscreen` with `sdl output=surface` switches the display's video "
+                         "mode and leaves the window off screen: leave `output` to the conf's "
+                         "other choices (`opengl`, `openglnb`), or start with `fullscreen=false`")
+
+
+def _window_flags(asked: core_window.WindowRequest | None) -> list[str]:
+    """The emulator's own words for the window: it centres itself on the display it is given."""
+    if asked is None:
         return []
-    tokens = host_args.emulator_args()
-    try:
-        dlaunch.check_flags(host_args.VARIABLE, tokens)
-    except ds.Invalid:
-        raise ds.Invalid("host_failed", f"{host_args.VARIABLE}, the host's window arguments in "
-                         f"this server's environment, holds {tokens!r}, which DOSBox-X would "
-                         "hang on or ignore: it is one token a line, a `-set` alone on its line "
-                         "and its `section key=value` on the next. It is the host's to fix, not "
-                         "an argument of this call; a start without `shared` runs headless, with "
-                         "no window, meanwhile") from None
-    return tokens
+    return ["-set", f"sdl display={asked.display}", *(["-fullscreen"] if asked.fullscreen else [])]
 
 
 def _refuse_unreaped(session: ds.Session, cause: ds.Invalid) -> None:
@@ -62,7 +74,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
           state_dir: str, binary: str, background: bool | None, presence: bool,
           dos_calls: bool, log_categories: dict[str, str] | None, guest_files: list[str] | None,
           progress: ds.Progress, ops: Callable[[], sequence.Ops], *, symbols: str = "",
-          base_from: str = start_symbols.PROGRAM) -> dict[str, Any]:
+          base_from: str = start_symbols.PROGRAM, display: int | None = None,
+          fullscreen: bool | None = None) -> dict[str, Any]:
     """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`."""
     # Paths first: refused before anything acts (an expired session closed, symbols forgotten).
     cwd_given = paths.absolute("cwd", cwd)
@@ -74,7 +87,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         paths.absolute("binary", binary)
     guest_paths = guest.check_guest_files(guest_files)
     held = start_symbols.check(symbols, base_from)
-    window_flags = _window_flags(shared)
+    wanted = _window_request(shared, display, fullscreen)
+    _refuse_fullscreen_that_cannot_show(wanted, conf_path, list(flags or []))
     if STATE.session is not None:
         if STATE.session.alive():
             raise ds.Invalid("session_live", "a session is already live. `close` it first: two "
@@ -97,7 +111,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     launch = dlaunch.Launch(
         conf=conf_path, cwd=cwd_path, seconds=session_seconds,
         watched=shared,
-        window_flags=window_flags,
+        window=wanted,
+        window_flags=_window_flags(wanted),
         flags=list(flags or []),
         core=dconf.cpu_core(conf_path, list(flags or [])),
         break_on_int3=break_on_int3,
@@ -113,7 +128,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         binary=resolved.path,
         debugger_headless=binaries.debugger_headless(resolved.path),
         debugger_commands=commands_built,
-        background=dlaunch.judge_background(background, shared),
+        background=core_window.judge_background(background, shared),
     )
     dlaunch.validate(launch)
     if launch.program and launch.input_port is not None:
@@ -170,6 +185,18 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     rearm = arming.arm_at_start(session)   # before the park's survey, so the first stop lists them
     running.observe_stop(session)     # the park at the debugger is the session's first stop
     STATE.found_stop_last = {}        # ...its own, and never a stop "on its own" beside it
+    # A refusal here leaves the session live, as its message says: `window` and `close` still act.
+    seen: dict[str, Any] = {}
+    if wanted is not None:
+        proved = core_window.wait_visible(session.pid, wanted.display, WINDOW_WAIT_S,
+                                          core_window.host())
+        if wanted.fullscreen and not proved.fullscreen:
+            raise ds.Invalid("window_not_visible",
+                             "the window opened on the asked display but does not fill it, which "
+                             "`fullscreen` asked for: `close` and start again with "
+                             "`fullscreen=false`", asked_display=wanted.display,
+                             seen=proved.block())
+        seen = {"window": proved.block()}
     session.presence = dpresence.open_shown(session, presence, shared)
     commands: dict[str, Any] = ({"debugger_commands": sorted(session.commands)}
                                 if session.commands else {})
@@ -191,7 +218,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
                        input_port=contract.or_unavailable(session.launch.input_port,
                                                           "no input route was opened"),
                        background=launch.background, presence=dpresence.of(session).reply(),
-                       **channels, **rearm,
+                       **seen, **channels, **rearm,
                        **holding,
                        **({"note": dlaunch.DYNAMIC_CORE_BREAKPOINTS}
                           if dlaunch.is_dynamic(launch.core) else {}))
@@ -204,6 +231,18 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         ran = sequence.run_steps(session, plan, settle, ops())
     return st.extend(ran, start={k: v for k, v in started.items()
                                  if k not in ("status", "session")})
+
+
+def window(session: ds.Session, front: bool) -> dict[str, Any]:
+    """The body of the `window` tool: where the watched window is, brought forward on `front`."""
+    asked = session.launch.window
+    if asked is None:
+        raise ds.Invalid("no_channel", "this session has no window: it was started without "
+                         "`shared=true`. Close it and start again with `shared=true`")
+    host = core_window.host()
+    state = (core_window.bring_front(session.pid, host, WINDOW_WAIT_S) if front
+             else core_window.wait_visible(session.pid, asked.display, 0.0, host))
+    return st.reply(window=state.block())
 
 
 def presence_shown(session: ds.Session) -> bool | dict[str, Any]:

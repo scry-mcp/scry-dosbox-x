@@ -100,6 +100,13 @@ def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return f"status: alive, {'running' if why == running.PC_RUNNING_WHY else 'stopped'}"
 
 
+def window(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    seen = reply.get("window") or {}
+    return (f"window: display {seen.get('display')}, "
+            f"{'on screen' if seen.get('onscreen') else 'off screen'}, "
+            f"{'in front' if seen.get('front') else 'covered'}")
+
+
 def close(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if not reply.get("closed"):
         return session_block.NO_SESSION_CLOSE

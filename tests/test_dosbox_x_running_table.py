@@ -154,7 +154,7 @@ def _running(tmp_path: Path) -> RunningGuest:
     dstate.STATE.session = fake  # type: ignore[assignment]
     return fake
 
-NOT_STEPS = {"build_check", "start", "close", "perform", "drive", "perform_export"}
+NOT_STEPS = {"build_check", "start", "close", "perform", "drive", "perform_export", "window"}
 
 
 def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
@@ -244,9 +244,10 @@ def test_no_tool_of_the_table_types_at_a_running_guests_console(
     assert fake.asked == [], (probe, fake.asked)
 
 
-def test_answers_while_running_is_the_table_and_the_five_that_answer_outside_a_list() -> None:
+def test_answers_while_running_is_the_table_and_the_six_that_answer_outside_a_list() -> None:
     table = [*sorted(sequence.GATE.listed(folds.METHODS)),
-             "registers(from_last_stop=True)", "close", "drive", "perform", "perform_export"]
+             "registers(from_last_stop=True)", "close", "drive", "perform", "perform_export",
+             "window"]
     assert table == dosbox_mcp._ANSWERS_WHILE_RUNNING
 
 

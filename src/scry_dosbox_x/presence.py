@@ -29,7 +29,7 @@ STILL_TOOLS = frozenset({
     "log_wait", "machine_map", "screen_map_find", "screen_map_write", "memdump", "palette",
     "perform_export",
     "read_memory", "registers", "regpoint_add", "scan", "screen_signature", "screen_view",
-    "series_capture",
+    "series_capture", "window",
     "snapshot", "start", "state_list", "status", "symbols_find", "symbols_load", "watch_add"})
 
 NO_COMMAND = "this DOSBox-X's debugger has no PRESENCE command"

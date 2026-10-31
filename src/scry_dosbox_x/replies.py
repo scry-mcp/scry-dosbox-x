@@ -33,6 +33,14 @@ class DosboxEnvelope(RunEnvelope, total=False):
     symbols_placed: dict[str, Any]
 
 
+class WindowRefused(DosboxEnvelope, total=False):
+    """What a `window_not_visible` refusal says of the window it looked for."""
+
+    activation: Annotated[str, When("`window_not_visible` after an activation")]
+    asked_display: Annotated[int, When("`window_not_visible`")]
+    seen: Annotated[dict[str, Any], When("`window_not_visible` with a window listed")]
+
+
 class BreakpointAtReply(DosboxEnvelope, total=False):
     already_stored: Annotated[bool, OmitEmpty]
     armed: Required[bool]
@@ -497,7 +505,7 @@ class SnapshotReply(DosboxEnvelope, total=False):
     sha256: Required[str]
 
 
-class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
+class StartReply(WindowRefused, account.SequenceFields, total=False):
     failed_at: int | dict[str, Any]
     held: int
     ran: list[Any]
@@ -531,12 +539,17 @@ class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
     symbols: dict[str, Any]
     version: str | dict[str, Any]
     watched: Annotated[bool, OmitEmpty]
+    window: Annotated[dict[str, Any], When("with `shared`")]
 
 
 class StateListReply(DosboxEnvelope, total=False):
     state_dir: Required[str]
     states: Required[list[Any]]
     working_slot: Required[dict[str, Any]]
+
+
+class WindowReply(WindowRefused, total=False):
+    window: Required[dict[str, Any]]
 
 
 class StatusReply(DosboxEnvelope, total=False):
@@ -790,6 +803,7 @@ MODELS: dict[str, type] = {
     "capture_frame": CaptureFrameReply,
     "captures": CapturesReply,
     "close": CloseReply,
+    "window": WindowReply,
     "comment_list": CommentListReply,
     "debug": DebugReply,
     "disassemble": DisassembleReply,
