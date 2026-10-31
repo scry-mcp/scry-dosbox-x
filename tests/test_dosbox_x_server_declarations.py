@@ -1790,3 +1790,13 @@ def test_a_queued_clear_takes_out_every_identical_row_at_the_stop() -> None:
     got = arming.apply_pending(session)
     assert got["disarmed"] == ["BPIF X"] and not got.get("still_pending"), got
     assert dstate.STATE.pending["disarm"] == []
+
+
+@pytest.mark.parametrize(("state", "code"), [("ambiguous", "ambiguous_ref"),
+                                              ("unresolved", "unknown_ref"),
+                                              ("armable", "unknown_ref")])
+def test_a_placement_that_cannot_be_used_is_refused_by_the_one_seam(state: str, code: str) -> None:
+    refused = placement.refusal({"state": state, "why": "N is in the table twice"})
+    assert (refused.code, str(refused)) == (code, "N is in the table twice")
+    assert placement.refusal({"state": state}, "no place").args[-1] == "no place"
+

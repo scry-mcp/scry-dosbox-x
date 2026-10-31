@@ -299,7 +299,7 @@ def _the_ref(ref: str, places: _Places) -> tuple[str, str, dict[str, Any]]:
     canonical = dec.canonical_ref(ref, by)
     place = places.where(by, canonical)
     if place["state"] == "ambiguous":
-        raise ds.Invalid("ambiguous_ref", place["why"])
+        raise placement.refusal(place)
     if "refuse" in place:
         raise ds.Invalid("bad_argument", place["refuse"])
     return by, canonical, place

@@ -146,6 +146,13 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
     return (linear >> 4) & 0xFFFF, linear & 0xF
 
 
+def refusal(res: dict[str, Any], fallback: str = "") -> ds.Invalid:
+    """The refusal for a `resolve_ref` answer that cannot be placed: a name the table gives twice
+    is `ambiguous_ref`, anything else `unknown_ref`, worded by the answer's own `why`."""
+    why = str(res.get("why", fallback))
+    return ds.Invalid("ambiguous_ref" if res["state"] == "ambiguous" else "unknown_ref", why)
+
+
 def resolve_ref(decl: dec.Declaration, reg: str, session: ds.Session, *,
                  machine: tuple[str, dict[str, str]] | None = None) -> dict[str, Any]:
     """A declaration -> what the debugger needs to arm it, or the state that is not armable.
@@ -294,8 +301,7 @@ def read_target(ref: str, reg: str, session: ds.Session, *,
         raise ds.NotStopped(f"{why}; and a read needs the machine stopped anyway" if why else
                             f"the guest is running, so {ref!r} cannot be placed now, and a "
                             f"read needs the machine stopped anyway")
-    raise ds.Invalid("ambiguous_ref" if res["state"] == "ambiguous" else "unknown_ref",
-        str(res.get("why", f"{ref!r} cannot be resolved to an address")))
+    raise refusal(res, f"{ref!r} cannot be resolved to an address")
 
 
 def _placed(s: sym.Symbol) -> dict[str, Any]:

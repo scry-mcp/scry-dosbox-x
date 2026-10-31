@@ -1099,7 +1099,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
     # kept (it may resolve next build).
     res = placement.resolve_ref(decl, "CS", session)
     if res["state"] == "ambiguous":
-        raise ds.Invalid("ambiguous_ref", res["why"])   # refuse, and store nothing
+        raise placement.refusal(res)   # refuse, and store nothing
     # One row is one declaration: a second ref resolving to a held row's address would leave the
     # other declared over a row the debugger no longer has after a clear.
     if res["state"] == "armable":
@@ -1382,8 +1382,7 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
                                                          fmt="u8", watch_mode="show")),
             "DS", session)
         if probe["state"] in ("unresolved", "ambiguous") and "why" in probe:
-            raise ds.Invalid("ambiguous_ref" if probe["state"] == "ambiguous" else "unknown_ref",
-                             probe["why"])
+            raise placement.refusal(probe)
     if fmt == "auto":
         # The type comes from the symbol table when the caller gave none; through a pointer, the
         # field's own format; else the default scalar of the given width.
@@ -1422,7 +1421,7 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
     # A name matching several symbols is refused before storing, as in `breakpoint_at`: stored, the
     # change path read `seg` off a resolution that has none.
     if res["state"] == "ambiguous":
-        raise ds.Invalid("ambiguous_ref", res["why"])
+        raise placement.refusal(res)
     if mode == "change" and res["state"] == "armable":
         aliased = _aliased(ref, change_bytes(res["seg"], res["off"], width))
         if aliased is not None:
