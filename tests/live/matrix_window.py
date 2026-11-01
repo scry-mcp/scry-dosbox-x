@@ -1,8 +1,8 @@
 """Section G of the live matrix: the tools on a WINDOWED session (stop, the saved states, the
 screenshot, the video capture), on the probe guest and on the DPMI guest, and the mouse at two
-window sizes, which must change nothing the guest reads. It opens windows on the main display,
-launched BEHIND (`background=True`): nothing here clicks a menu or takes the focus,
-and section O judges this stretch like any other."""
+window sizes, which must change nothing the guest reads. It opens windows on the main display
+(two cells on display 1), launched BEHIND (`background=True`): nothing here clicks a menu or
+takes the focus, and section O judges this stretch like any other."""
 from __future__ import annotations
 
 import sys
@@ -234,7 +234,7 @@ def _dpmi() -> None:
 @M.section("G", "the windowed tools, on the probe guest and on the DPMI guest", G_CELLS,
            alone=True)
 def section_g() -> None:
-    print("  windows open behind, on the main display", flush=True)
+    print("  windows open behind, on the main display (two cells on display 1)", flush=True)
     try:
         _window()
         _probe()

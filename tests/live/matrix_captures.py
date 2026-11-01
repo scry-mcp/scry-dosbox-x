@@ -142,7 +142,7 @@ U_CELLS = cells(
     ("U a row names the display frame it was made in",
      "watch_add docstring: first_rows; known: tap.asm writes once a BIOS tick"),
     ("U a state load taps the declared watches again, and they go on counting",
-     "state_write docstring: load; known: the fork's load resets the page handlers"),
+     "state_write docstring: load; known: the scry build's load resets the page handlers"),
 )
 
 

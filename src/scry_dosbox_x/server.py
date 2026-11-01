@@ -227,7 +227,8 @@ def start(conf: str, cwd: str,
     Refused: a live session, a window that never appears on the asked display
     (`window_not_visible`, the session left live to `window` or `close`), `flags` setting what
     `display` or `fullscreen` own, `fullscreen` on `sdl output=surface` (it switches the display's
-    video mode and leaves the window off screen), a bad path or `symbols` table,
+    video mode and leaves the window off screen), `fullscreen` on a display other than 0 on macOS
+    (a halted start never reaches full screen there), a bad path or `symbols` table,
     `session_seconds` out of range, `capture_video` without `program`, an `input_port` other than
     0 outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX}, `log_categories` without `logfile`, `dos_calls`
     on a build with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than

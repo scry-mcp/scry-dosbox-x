@@ -432,7 +432,7 @@ def test_a_state_load_taps_the_declared_watches_again_and_says_so(tmp_path: Path
 
     def loaded(name: str, seconds: float) -> dict[str, object]:
         session.machine_replaced = True
-        _displaced(machine)          # the fork's load resets the page handlers
+        _displaced(machine)          # the scry build's load resets the page handlers
         return {"name": name, **_LOADED}
 
     session.machine_replaced = False

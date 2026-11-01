@@ -75,7 +75,7 @@ that can lie needs validation and validation nothing executes is a comment.
 Every pytest run judges the coverage floor: `--cov` is in `addopts` and the floor is
 `fail_under` in `pyproject.toml`. A partial run goes red on that floor by construction, because
 the floor is the whole repository's, so for a single file add `--no-cov` and read it as a run
-that judged no floor. The live tier is deselected by default (`-m 'not live'`).
+that judged no floor. The live tier is deselected by default (`-m 'not live and not window'`).
 
 The ruff and mypy configuration in `pyproject.toml` is scry-core's bar; mypy runs strict with no
 path list, so a new directory is covered without being added anywhere.

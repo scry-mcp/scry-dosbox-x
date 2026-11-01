@@ -1,6 +1,6 @@
 What the debugger printed for the machine tools and the DOS channel, captured from live runs of
 the DOS guest (`tests/guest/dosio.asm`, started as `DOSIO.COM W`) and of the dos-real16-alt bench,
-headless, on the fork's build carrying `PORTINFO` and `DOSTRACE`.
+headless, on the scry build carrying `PORTINFO` and `DOSTRACE`.
 
 dosio.trace               the file `DOSTRACE` wrote over the guest's run from the reset vector:
                           the shell EXECing mount.COM and the guest (`SWITCHED=1`), the guest's

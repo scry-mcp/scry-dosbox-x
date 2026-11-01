@@ -26,7 +26,7 @@ from matrix_presence import STOCK_VAR
 from scry_dosbox_x.session import Session  # isort: skip -- found through the path the matrix sets
 
 S_CELLS = cells(
-    ("S build_check answers the build with none of the fork's optional debugger commands",
+    ("S build_check answers the build with none of the scry build's optional debugger commands",
      "REFERENCE.md, Debugger commands: `debugger_commands`"),
     ("S start parks the guest at the debugger",
      "REFERENCE.md, Debugger commands: a session starts"),
@@ -41,7 +41,7 @@ S_CELLS = cells(
 )
 
 WAIT_S = 20
-#: The debugger commands a release carries; every other one is the fork's.
+#: The debugger commands a release carries; every other one is the scry build's.
 STOCK_COMMANDS = {"PIC", "A20"}
 #: What each refusal names; a release built without the CPU log refuses `trace` for that first.
 _NEEDS = {"run_to": ("RUNSTATE",), "run_for": ("RUNSTATE",), "trace": ("RUNSTATE", "heavy_debug"),
