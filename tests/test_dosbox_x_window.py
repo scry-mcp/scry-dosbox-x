@@ -29,14 +29,17 @@ class _Subject:
     def window(self, front: bool = False) -> dict[str, Any]:
         return cast(dict[str, Any], server.window(front=front))
 
-    def close(self) -> None:
-        server.close()
+    def close(self) -> dict[str, Any]:
+        return cast(dict[str, Any], server.close())
+
+    def status(self) -> dict[str, Any]:
+        return cast(dict[str, Any], server.status())
 
     def has_session(self) -> bool:
         return STATE.session is not None
 
 
-class TestDosboxXWindow(conformance.WindowContract):
+class TestDosboxXWindow(conformance.SessionContract):
     @pytest.fixture
     def subject(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> _Subject:
         return _Subject(tmp_path, monkeypatch)
