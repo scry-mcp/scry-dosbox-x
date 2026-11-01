@@ -277,5 +277,6 @@
   {"id": "D168", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching on their second display (display 1).", "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900, "shared": true, "display": 1}},
   {"id": "D169", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching it over Moonlight, which streams only the main display, with the window filling that display.", "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900, "shared": true, "fullscreen": true}, "allow": ["display"]},
   {"id": "D170", "prompt": "Where is the DOSBox-X window right now: on which display, and is it on screen and in front?", "tool": "window"},
-  {"id": "D171", "prompt": "The DOSBox-X window is hidden behind another application. Bring it to the front.", "tool": "window", "args": {"front": true}}
+  {"id": "D171", "prompt": "The DOSBox-X window is hidden behind another application. Bring it to the front.", "tool": "window", "args": {"front": true}},
+  {"id": "D172", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for the owner to watch. The owner is on Moonlight.", "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900, "shared": true, "fullscreen": true}, "allow": ["display"]}
 ]}

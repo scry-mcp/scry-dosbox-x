@@ -1,0 +1,109 @@
+{
+ "task": {
+  "id": "D172",
+  "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for the owner to watch. The owner is on Moonlight.",
+  "tool": "start",
+  "args": {
+   "conf": "/opt/dosfury/fury.conf",
+   "cwd": "/opt/dosfury",
+   "session_seconds": 900,
+   "shared": true,
+   "fullscreen": true
+  },
+  "allow": [
+   "display"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"display\": 0, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: CANNOT The task gives no conf path or working directory, and start requires both along with session_seconds."
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true, \"display\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}

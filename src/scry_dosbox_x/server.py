@@ -205,7 +205,8 @@ def start(conf: str, cwd: str,
     Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve.
     `session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
     `display`: the OS's display index for the window, 0 (the main display) when omitted;
-    `fullscreen`: the window fills it. Both need `shared=true` and are refused otherwise; a
+    `fullscreen`: the window fills it (a stream of the main display, Moonlight, wants it: a
+    pointer does not map inside a window). Both need `shared=true` and are refused otherwise; a
     `display` past the host's count is refused naming the count. The server waits for the window to
     be listed on that display and answers `window`.
     `flags`: argv tokens, a `-set` value one token. `logfile`: the guest's E9 channel, for `log`,
