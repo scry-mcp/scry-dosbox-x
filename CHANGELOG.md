@@ -4,7 +4,11 @@ What a client of the server notices.
 
 ## Unreleased
 
-It needs the scry-core that serves `scry_core.window`, not the 0.80.0 this release was cut on.
+It needs the scry-core that serves `scry_core.window`, not an older one: the tag pinned in
+`pyproject.toml` is the floor.
+
+- A `start` refused with `window_not_visible` leaves its session live with the `presence` it was
+  asked for drawn, so `window(front=true)` brings forward a window that carries it.
 
 - `start` takes `display` (the OS's index, the main display when omitted) and `fullscreen`, and a
   watched start answers `window`, proved in the host's window list; a window that never appears on

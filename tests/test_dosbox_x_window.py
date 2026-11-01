@@ -11,6 +11,8 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import _start_on_a_booted_fake
 from scry_core import conformance
+from scry_core import window as core_window
+from scry_core.window_stand_ins import hosts
 from window_double import asked as session_window
 
 from scry_dosbox_x import launch as dlaunch
@@ -110,6 +112,18 @@ def test_the_other_sdl_sets_still_pass_flags(tmp_path: Path,
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True,
                                   flags=["-set", "sdl autolock=false"])
     assert got["status"] == "ok", got
+    server.close()
+
+
+def test_a_start_refused_for_its_window_keeps_the_presence_it_was_asked_for(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(core_window, "WAIT_S", 0.0)
+    monkeypatch.setattr(core_window, "host", lambda _platform="": hosts.Dragged(session_window))
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True, display=0, presence=True)
+    assert got["status"] == "INVALID" and got["code"] == "window_not_visible", got
+    assert STATE.session is not None, "the refusal leaves the session live"
+    opened = getattr(STATE.session, "presence", None)
+    assert opened is not None and opened.reply() is not False, "presence never opened"
     server.close()
 
 

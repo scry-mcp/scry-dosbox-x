@@ -176,9 +176,11 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     STATE.found_stop_last = {}        # ...its own, and never a stop "on its own" beside it
     # A refusal here leaves the session live, as its message says: `window` and `close` still act.
     seen: dict[str, Any] = {}
-    if wanted is not None:
-        seen = {"window": core_window.prove(session.pid, wanted).block()}
-    session.presence = dpresence.open_shown(session, presence, shared)
+    try:
+        if wanted is not None:
+            seen = {"window": core_window.prove(session.pid, wanted).block()}
+    finally:    # the live session a refusal leaves carries the presence it was asked for
+        session.presence = dpresence.open_shown(session, presence, shared)
     commands: dict[str, Any] = ({"debugger_commands": sorted(session.commands)}
                                 if session.commands else {})
     channels: dict[str, Any] = {}
