@@ -5,6 +5,7 @@ launched BEHIND (`background=True`): nothing here clicks a menu or takes the foc
 and section O judges this stretch like any other."""
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import dpmi_guest as guest
@@ -12,6 +13,7 @@ from matrix_common import (
     GUEST,
     NEVER_RUNS_STOPPER,
     PROBE_CONF,
+    SESSION_S,
     M,
     boot,
     cells,
@@ -23,9 +25,12 @@ from matrix_common import (
     refused,
     release_running,
     server,
+    start_call,
 )
 from matrix_dpmi import dpmi_boot, dpmi_leave
 from scry_core import window as core_window
+
+from scry_dosbox_x import launch
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
@@ -50,6 +55,10 @@ G_CELLS = cells(
      "start docstring: `window`, the display asked for"),
     ("G the host lists that window where `window` says",
      "window docstring: the OS's own window list"),
+    ("G display 1 windowed: the window is listed inside display 1, onscreen",
+     "start docstring: `display`"),
+    ("G display 1 full screen is refused by name on macOS and fills display 1 elsewhere",
+     "start docstring: `display` with `fullscreen`"),
     ("G a headless start opens no window and `window` refuses it",
      "window docstring: no_channel without `shared`"),
     ("G in a window, cell 40,12 arrives at the driver's 320,96",
@@ -141,12 +150,43 @@ def _window() -> None:
     judged("G the host lists that window where `window` says", reply=said_by,
            holds=ok(said_by) and main is not None and main.bounds == where)
     close_whatever()
+    _on_display_one("G display 1 windowed: the window is listed inside display 1, onscreen", False)
+    _on_display_one("G display 1 full screen is refused by name on macOS and fills display 1 "
+                    "elsewhere", True)
     r = boot(conf=conf_without_launch(PROBE_CONF, "PROBE.COM"), cwd=GUEST, background=True,
              program="PROBE.COM")
     refusal = M.call(server.window)
     judged("G a headless start opens no window and `window` refuses it", reply=refusal,
            holds=refused(refusal, "no_channel")
            and not [w for w in host.windows() if w.pid == r.get("pid")])
+    close_whatever()
+
+
+def _on_display_one(label: str, fullscreen: bool) -> None:
+    """The window list, not the reply, says the window is on the second display: a host with one
+    display cannot ask."""
+    host = core_window.host()
+    shown = host.displays()
+    if len(shown) < 2:
+        M.block(label, f"this host has {len(shown)} display(s): display 1 does not exist")
+        return
+    if fullscreen and sys.platform == launch.MAIN_DISPLAY_FULLSCREEN_ON:
+        before = {w.number for w in host.windows()}
+        r = start_call(conf=str(conf_without_launch(PROBE_CONF, "PROBE.COM")), cwd=str(GUEST),
+                       shared=True, display=1, fullscreen=True, background=True,
+                       session_seconds=SESSION_S, program="PROBE.COM")
+        judged(label, reply=r, holds=refused(r, "bad_argument")
+               and {w.number for w in host.windows()} <= before)
+        return
+    r = boot(conf=conf_without_launch(PROBE_CONF, "PROBE.COM"), cwd=GUEST, shared=True,
+             display=1, fullscreen=fullscreen, background=True, program="PROBE.COM")
+    main = core_window.main_window(r.get("pid", 0), host.windows())
+    bounds = shown[1].bounds
+    holds = (ok(r) and main is not None and main.onscreen
+             and (main.bounds == bounds if fullscreen
+                  else bounds[0] <= main.bounds[0] < bounds[0] + bounds[2]
+                  and bounds[1] <= main.bounds[1] < bounds[1] + bounds[3]))
+    judged(label, reply=r, holds=holds)
     close_whatever()
 
 

@@ -130,9 +130,14 @@ def build_argv(launch: Launch) -> list[str]:
     if launch.window is None:
         argv += ["-set", "sdl videodriver=dummy"]
     else:
-        # The emulator centres itself on the display it is given.
-        argv += ["-set", f"sdl display={launch.window.display}",
-                 *(["-fullscreen"] if launch.window.fullscreen else [])]
+        # `sdl display` alone leaves a windowed run on display 0; a position places it.
+        window = launch.window
+        argv += ["-set", f"sdl display={window.display}"]
+        if window.fullscreen:
+            argv.append("-fullscreen")
+        else:
+            x, y = window.origin
+            argv += ["-set", f"sdl windowposition={x + WINDOW_MARGIN_PX},{y + WINDOW_MARGIN_PX}"]
     if launch.break_on_int3:
         argv += ["-set", "dos break on int3=true"]
     if launch.logfile is not None:
@@ -162,6 +167,10 @@ def build_argv(launch: Launch) -> list[str]:
         argv += ["-c", cmd]
     return argv
 
+
+#: Where a halted start reaches full screen on the main display only.
+MAIN_DISPLAY_FULLSCREEN_ON = "darwin"
+WINDOW_MARGIN_PX = 40
 
 GUEST_DIR = Path(__file__).resolve().with_name("guest")
 #: The resident stub the input route runs in the guest (`guest/scry.asm`).

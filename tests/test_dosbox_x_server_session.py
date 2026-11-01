@@ -506,7 +506,7 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
         alive=lambda: False, altered=True, conf_digest=dlaunch.digest(conf),
         started_at=time.monotonic() - 3.0, dropped=4096, _at_debugger=True,
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60,
-                              window=core_window.WindowRequest(1, False)))
+                              window=core_window.WindowRequest(1, False, (1920, 0))))
     got = ds.Session.state(fake)  # type: ignore[arg-type]
     assert set(got) == {"pid", "alive", "running", "altered", "conf", "conf_digest",
                         "conf_changed_on_disk", "watched", "bound_s",

@@ -3,6 +3,7 @@ cannot retune it, and the `surface` output; the contract every server meets is c
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -21,7 +22,7 @@ class _Subject:
     def __init__(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         self.tmp_path, self.monkeypatch = tmp_path, monkeypatch
         self.asked = session_window
-        self.shows_fullscreen = True
+        self.shows_fullscreen = sys.platform != dlaunch.MAIN_DISPLAY_FULLSCREEN_ON
 
     def start(self, **arguments: Any) -> dict[str, Any]:
         return _start_on_a_booted_fake(self.tmp_path, self.monkeypatch, **arguments)
@@ -46,18 +47,22 @@ class TestDosboxXWindow(conformance.SessionContract):
 
 
 def _flags() -> list[str]:
+    """The display, position and full-screen tokens of the live session's argv."""
     assert STATE.session is not None
     argv = dlaunch.build_argv(STATE.session.launch)
     at = next((i for i, t in enumerate(argv) if t.startswith("sdl display=")), None)
-    return [] if at is None else [*argv[at - 1:at + 1], *(["-fullscreen"] if "-fullscreen" in argv
-                                                          else [])]
+    if at is None:
+        return []
+    end = at + 3 if argv[at + 2].startswith("sdl windowposition=") else at + 1
+    return [*argv[at - 1:end], *(["-fullscreen"] if "-fullscreen" in argv else [])]
 
 
 @pytest.mark.parametrize(("asked", "flags"), [
-    ({}, ["-set", "sdl display=0"]),
-    ({"display": 1}, ["-set", "sdl display=1"]),
-    ({"display": 1, "fullscreen": True}, ["-set", "sdl display=1", "-fullscreen"]),
-    ({"fullscreen": False}, ["-set", "sdl display=0"]),
+    ({}, ["-set", "sdl display=0", "-set", "sdl windowposition=40,40"]),
+    ({"display": 1}, ["-set", "sdl display=1", "-set", "sdl windowposition=1960,40"]),
+    ({"display": 0, "fullscreen": True},
+     ["-set", "sdl display=0", "-fullscreen"]),
+    ({"fullscreen": False}, ["-set", "sdl display=0", "-set", "sdl windowposition=40,40"]),
 ])
 def test_a_watched_start_asks_the_emulator_for_the_display(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, asked: dict[str, Any],
@@ -142,6 +147,25 @@ def test_fullscreen_on_the_surface_output_is_refused_by_name_and_no_other_is(
     if refused:
         assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
         assert "output=surface" in got["message"] and "fullscreen" in got["message"], got
+    else:
+        assert got["status"] == "ok", got
+        server.close()
+
+
+@pytest.mark.parametrize(("platform", "display", "refused"), [
+    ("darwin", 1, True), ("darwin", 0, False), ("win32", 1, False)])
+def test_fullscreen_off_the_main_display_is_refused_where_a_halted_start_cannot_reach_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, platform: str, display: int,
+        refused: bool) -> None:
+    """The scry build on macOS goes full screen on another display only once the emulator runs,
+    and a start is halted at its first instruction: the window would stay windowed."""
+    monkeypatch.setattr("sys.platform", platform)
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True, fullscreen=True,
+                                  display=display)
+    if refused:
+        assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+        assert "display" in got["message"] and "fullscreen" in got["message"], got
+        assert STATE.session is None
     else:
         assert got["status"] == "ok", got
         server.close()

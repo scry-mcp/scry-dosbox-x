@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 import time
 from collections.abc import Callable
 from dataclasses import replace
@@ -32,7 +33,15 @@ DEFAULT_STATE_DIR = ("the default state directory (the session's scratch, gone a
 
 def _refuse_fullscreen_that_cannot_show(wanted: core_window.WindowRequest | None, conf: Path,
                                         flags: list[str]) -> None:
-    """`surface` fills the display by switching its video mode, and the window ends off screen."""
+    """`surface` fills the display by switching its video mode, and the window ends off screen;
+    on macOS the halted start never reaches full screen on a display other than the main one."""
+    if (wanted is not None and wanted.fullscreen and wanted.display != 0
+            and sys.platform == dlaunch.MAIN_DISPLAY_FULLSCREEN_ON):
+        raise ds.Invalid("bad_argument",
+                         "`fullscreen` on a display other than 0 needs the emulator running, and "
+                         "a start is halted at its first instruction, so the window would stay "
+                         "windowed: use `display=0` for full screen, or `fullscreen=false` on "
+                         f"display {wanted.display}")
     if (wanted is not None and wanted.fullscreen
             and dconf.sdl_output(conf, flags) == "surface"):
         raise ds.Invalid("bad_argument",

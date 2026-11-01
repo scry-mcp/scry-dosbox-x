@@ -81,9 +81,11 @@ def test_headless_uses_the_emulators_own_video_property(conf: Path) -> None:
 
 
 @pytest.mark.parametrize(("asked", "tail"), [
-    (core_window.WindowRequest(0, False), ["-set", "sdl display=0"]),
-    (core_window.WindowRequest(1, False), ["-set", "sdl display=1"]),
-    (core_window.WindowRequest(1, True), ["-set", "sdl display=1", "-fullscreen"]),
+    (core_window.WindowRequest(0, False, (0, 0)), ["-set", "sdl display=0",
+                                           "-set", "sdl windowposition=40,40"]),
+    (core_window.WindowRequest(1, False, (2048, 0)), ["-set", "sdl display=1",
+                                                      "-set", "sdl windowposition=2088,40"]),
+    (core_window.WindowRequest(0, True, (0, 0)), ["-set", "sdl display=0", "-fullscreen"]),
 ])
 def test_a_watched_session_gets_no_dummy_driver_and_the_window_it_asked_for(
         conf: Path, asked: core_window.WindowRequest, tail: list[str]) -> None:
@@ -227,7 +229,7 @@ def test_the_program_reaches_the_emulator_as_one_argv_element(conf: Path) -> Non
 def test_a_valid_launch_passes_validation_without_starting_anything(conf: Path) -> None:
     """The green beside every red below."""
     dlaunch.validate(launch(conf))
-    dlaunch.validate(launch(conf, window=core_window.WindowRequest(0, False)))
+    dlaunch.validate(launch(conf, window=core_window.WindowRequest(0, False, (0, 0))))
     dlaunch.validate(launch(conf, program="G.EXE", capture_video=True))
 
 
@@ -1349,7 +1351,8 @@ def test_the_launch_turns_the_quit_warning_off_so_close_is_a_quit(conf: Path) ->
     """With a program loaded, the emulator answers a SIGTERM by asking whether to quit anyway."""
     argv = dlaunch.build_argv(launch(conf))
     assert argv[argv.index("dosbox quit warning=false") - 1] == "-set"
-    watched = dlaunch.build_argv(launch(conf, window=core_window.WindowRequest(1, False)))
+    asked = core_window.WindowRequest(1, False, (2048, 0))
+    watched = dlaunch.build_argv(launch(conf, window=asked))
     assert watched.index("dosbox quit warning=false") < watched.index("sdl display=1")
 
 
@@ -1390,7 +1393,7 @@ def test_a_headless_caller_flag_reaches_argv(conf: Path) -> None:
     clock = ["-set", "cpu cycles=fixed 3000"]
     headless = dlaunch.build_argv(launch(conf, flags=clock))
     assert pair_at(headless, "cpu cycles=fixed 3000"), headless
-    watched = dlaunch.build_argv(launch(conf, window=core_window.WindowRequest(1, False),
+    watched = dlaunch.build_argv(launch(conf, window=core_window.WindowRequest(1, False, (2048, 0)),
                                         flags=clock))
     assert pair_at(watched, "cpu cycles=fixed 3000"), watched
     assert headless.index("cpu cycles=fixed 3000") > headless.index("dosbox quit warning=false")

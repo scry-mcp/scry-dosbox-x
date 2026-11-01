@@ -20,4 +20,4 @@ def obeying() -> hosts.Obeying:
 
 
 def window_if(watched: bool) -> WindowRequest | None:
-    return WindowRequest(0, False) if watched else None
+    return WindowRequest(0, False, (0, 0)) if watched else None
