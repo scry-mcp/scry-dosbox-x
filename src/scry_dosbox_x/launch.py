@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import reply_contract as contract
-from scry_core import state_files
+from scry_core import state_files, window_words
 from scry_core import vocabulary as vocab
 from scry_core import window as core_window
 from scry_core.reply_contract import Invalid
@@ -130,14 +130,7 @@ def build_argv(launch: Launch) -> list[str]:
     if launch.window is None:
         argv += ["-set", "sdl videodriver=dummy"]
     else:
-        # `sdl display` alone leaves a windowed run on display 0; a position places it.
-        window = launch.window
-        argv += ["-set", f"sdl display={window.display}"]
-        if window.fullscreen:
-            argv.append("-fullscreen")
-        else:
-            x, y = window.origin
-            argv += ["-set", f"sdl windowposition={x + WINDOW_MARGIN_PX},{y + WINDOW_MARGIN_PX}"]
+        argv += window_words.dosbox_x(launch.window)
     if launch.break_on_int3:
         argv += ["-set", "dos break on int3=true"]
     if launch.logfile is not None:
@@ -170,7 +163,6 @@ def build_argv(launch: Launch) -> list[str]:
 
 #: Where a halted start reaches full screen on the main display only.
 MAIN_DISPLAY_FULLSCREEN_ON = "darwin"
-WINDOW_MARGIN_PX = 40
 
 GUEST_DIR = Path(__file__).resolve().with_name("guest")
 #: The resident stub the input route runs in the guest (`guest/scry.asm`).
