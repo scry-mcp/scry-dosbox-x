@@ -141,8 +141,9 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
     if linear > 0xFFFFF:
         raise ds.Invalid("bad_argument",
             f"the symbol folds to linear 0x{linear:X}, past the 0xFFFFF this paragraph split "
-            f"can express; the split would drop bit 20 and arm the wrong "
-            f"address. Arm by an explicit SEG:OFF, or load this map in protected mode")
+            f"can express; the split would drop bit 20 and arm the wrong address. No SEG:OFF "
+            f"reaches it from a real-mode stop either (the debugger wraps a real-mode offset "
+            f"to 16 bits): arm or read it at a protected-mode stop")
     return (linear >> 4) & 0xFFFF, linear & 0xF
 
 

@@ -7,6 +7,12 @@ What a client of the server notices.
 It needs the scry-core that serves `scry_core.window`, not an older one: the tag pinned in
 `pyproject.toml` is the floor.
 
+- The `send_mouse` summary says `no button pressed` when the call named no `button`, so a move whose check
+  saw no effect is not read as a click that failed. A symbol that folds past the first megabyte at a
+  real-mode stop is refused saying that no `SEG:OFF` reaches it there either (the debugger wraps a
+  real-mode offset to 16 bits) and to arm or read it at a protected-mode stop; it used to advise an
+  explicit `SEG:OFF`, which is refused too.
+
 - `start` takes `size` (`WIDTHxHEIGHT` in the host's unit), sent to the emulator as `sdl windowresolution`
   (logical pixels where DOSBox-X is not DPI aware: from 200 % on Windows with the conf's default `dpi aware`,
   at any scale with `dpi aware=false` or `-nodpiaware`; real pixels with `true`; points on macOS).

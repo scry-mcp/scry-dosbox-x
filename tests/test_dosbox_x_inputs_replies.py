@@ -12,7 +12,7 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import _names, clean_session  # noqa: F401
 
-from scry_dosbox_x import inputs, retrace, run_state, server, taps
+from scry_dosbox_x import inputs, retrace, run_state, server, summaries, taps
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
 
@@ -173,3 +173,17 @@ def test_a_parked_posts_count_watch_counts_since_the_stop_the_post_began_at(
     assert (got[0]["since_last_stop"], "reset" in got[0]) == (5, False), got
     assert (got[1]["since_last_stop"], got[1]["reset"]) == (3, True), got
     assert got[2] == {"ref": "freeze", "mode": "freeze"}, got
+
+
+@pytest.mark.parametrize(("args", "said"), [
+    ({"x": 365, "y": 8}, True),
+    ({"x": 365, "y": 8, "button": ""}, True),
+    ({"x": 365, "y": 8, "button": "left"}, False),
+    ({"x": 365, "y": 8, "button": "left", "action": "drag"}, False),
+])
+def test_a_mouse_summary_says_when_no_button_was_pressed(args: dict[str, Any], said: bool) -> None:
+    """A move with no `button` presses nothing, which a check that saw no effect must not hide."""
+    reply = {"pointer": {"screen": {"x": 365, "y": 8}}, "arrived": True,
+             "verify": {"checked": True, "verdict": "TIMEOUT"}}
+    line = summaries.send_mouse(args, reply)
+    assert ("no button pressed" in line) is said, line

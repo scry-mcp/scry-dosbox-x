@@ -689,6 +689,17 @@ def test_real_mode_placement_at_its_exact_edges() -> None:
     assert seg * 16 + off == 0x20000 and off <= 0xFFFF, (hex(seg), hex(off))
 
 
+def test_a_symbol_past_the_first_megabyte_is_not_advised_an_explicit_seg_off_in_real_mode() -> None:
+    """The debugger wraps a real-mode offset to 16 bits, so no SEG:OFF reaches that high there."""
+    real = NamesFake(mode="Real")
+    dstate.STATE.base.clear()
+    dstate.STATE.base.update({"base": 0x8ED00, "limit": -1, "type": -1})
+    with pytest.raises(ds.Invalid) as raised:
+        placement.target_for(0x1E367C, "DS", real)   # type: ignore[arg-type]
+    text = str(raised.value)
+    assert "protected-mode stop" in text and "explicit SEG:OFF" not in text, text
+
+
 def test_a_sectioned_table_places_by_base_says_it_has_no_flat_one_and_counts_what_it_skipped(
         tmp_path: Path) -> None:
     fake = install()
