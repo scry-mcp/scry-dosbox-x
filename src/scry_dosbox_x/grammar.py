@@ -50,6 +50,11 @@ BPLIST_HEADER = "Breakpoint list:"
 READ_BYTES_MAX = 128
 
 
+#: A segment that says its offset is a LINEAR address, read by `MEMDUMPLIN`: a real-mode stop
+#: reaches no further than seg:off16 can.
+LINEAR = -1
+
+
 def offset_ceiling(mode: str) -> int:
     return 0xFFFFFFFF if mode.startswith("Pr") else 0xFFFF
 

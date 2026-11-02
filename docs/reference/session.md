@@ -16,7 +16,7 @@ refuses while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else the 
 `dosbox-x`; a named build that fails is refused.
 
 Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` and a freeze
-watch need it), `debugger_commands` (which of `RUNSTATE`, `STEPIN`, `SAVESTATE`, `LOADSTATE`, `PRESENCE`, `VGAMEMDUMP`, `BPIF`, `CAPTURE`, `TAP`, `PORTINFO`, `DOSTRACE`, `PIC`, `A20` the build's debugger has;
+watch need it), `debugger_commands` (which of `RUNSTATE`, `STEPIN`, `SAVESTATE`, `LOADSTATE`, `PRESENCE`, `VGAMEMDUMP`, `BPIF`, `CAPTURE`, `TAP`, `PORTINFO`, `DOSTRACE`, `PIC`, `A20`, `MEMDUMPLIN` the build's debugger has;
 omitted when none).
 
 | argument | type | default |

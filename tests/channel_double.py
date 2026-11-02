@@ -278,6 +278,13 @@ class Machine:
         (self.cwd / args[2]).write_bytes(data)
         return True, ["DEBUG: Memory dump binary success."]
 
+    def _do_memdumplin(self, args: list[str]) -> tuple[bool, list[str]]:
+        linear, length = int(args[0], 16), int(args[1], 16)
+        assert self.cwd is not None, "a dump needs the machine's cwd"
+        data = bytes(self.memory.get(linear + i, 0) for i in range(length))
+        (self.cwd / args[2]).write_bytes(data)
+        return True, ["DEBUG: Memory dump binary success."]
+
     def _do_sm(self, args: list[str]) -> tuple[bool, list[str]]:
         seg, off = (int(x, 16) for x in args[0].split(":"))
         base = seg * 16 + off if not self.regs["CR0"] & 1 else off

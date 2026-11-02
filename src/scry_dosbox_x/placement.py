@@ -134,7 +134,10 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
             "a real-mode symbol needs a FLAT base from symbols_load (`base`), and this table "
             "has none -- it is sectioned, or none is loaded. Load a real-mode map first")
     base_seg = STATE.base["base"] // 16
-    ds.check_segment(base_seg)              # a base past a megabyte addresses nothing in real mode
+    if base_seg > 0xFFFF:
+        raise ds.Invalid("bad_argument",
+            f"the table's base 0x{STATE.base['base']:X} is past the first megabyte, which no "
+            f"real-mode SEG:OFF reaches: read or arm the symbol at a protected-mode stop")
     if offset <= 0xFFFF:
         return base_seg, offset
     linear = base_seg * 16 + offset          # a high real-mode offset (a data segment)
@@ -145,6 +148,33 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
             f"reaches it from a real-mode stop either (the debugger wraps a real-mode offset "
             f"to 16 bits): arm or read it at a protected-mode stop")
     return (linear >> 4) & 0xFFFF, linear & 0xF
+
+
+def pointer_target(ref: str, session: ds.Session) -> tuple[int, int]:
+    """Where a program's own pointer is read: its `SEG:OFF`, or, when none reaches it from this
+    stop, `(grammar.LINEAR, address)`. A real-mode stop cannot address a DPMI program's data above
+    the first megabyte, so a table whose base is a selector's (a register, or one given by the
+    caller) places it linearly and `MEMDUMPLIN` reads it; a base that is the program's DOS load
+    segment is not where that data is, and keeps the refusal."""
+    try:
+        return read_target(ref, "DS", session)
+    except ds.Invalid as refused:
+        linear = _flat_linear(ref, session)
+        if linear is None:
+            raise refused from None
+        return grammar.LINEAR, linear
+
+
+def _flat_linear(ref: str, session: ds.Session) -> int | None:
+    if (decide_by(ref) != "symbol" or not session.has("MEMDUMPLIN")
+            or STATE.base_measured_from == "PROGRAM" or STATE.base.get("base", -1) < 0):
+        return None
+    found = dec.DeclarationStore.resolve_name(
+        dec.Declaration("breakpoint", "symbol", ref), STATE.table, STATE.name_index)
+    if found.state == "unresolved" or found.matches > 1 or found.offset is None:
+        return None
+    linear = STATE.base["base"] + found.offset
+    return linear if 0 <= linear <= 0xFFFFFFFF else None
 
 
 def refusal(res: dict[str, Any], fallback: str = "") -> ds.Invalid:

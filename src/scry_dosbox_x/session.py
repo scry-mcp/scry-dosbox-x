@@ -235,8 +235,8 @@ from scry_dosbox_x import (  # noqa: E402
 #: The commands after which a survey taken at the stop still holds: they leave the registers, the
 #: flags and CR0 as they were (memory and breakpoints they may write); any other drops it.
 KEEPS_SURVEY = frozenset({"EV", "BPLIST", "BP", "BPDEL", "BPINT", "BPM", "BPPM", "BPIF",
-                        "MEMDUMPBIN", "VGAMEMDUMP", "SELINFO", "RUNSTATE", "INTVEC", "SM", "SV",
-                        "LV", "MEMFIND", "MEMS",
+                        "MEMDUMPBIN", "MEMDUMPLIN", "VGAMEMDUMP", "SELINFO", "RUNSTATE", "INTVEC",
+                        "SM", "SV", "LV", "MEMFIND", "MEMS",
                         "CPU", "GDT", "LDT", "IDT", "PAGING", "DOS", "BIOS", "EMU",
                         "CALLBACKS", "VGA", "PRESENCE"})
 
@@ -470,11 +470,24 @@ class Session(dprocess.Process):
             raise Invalid("bad_argument",
                 f"read_bytes reads up to {grammar.READ_BYTES_MAX} bytes; {n} is a region -- use "
                 f"memdump")
-        check_segment(seg)
         self.require_stopped("a memory read")
+        if seg == grammar.LINEAR:
+            return self._read_linear(off, n)
+        check_segment(seg)
         grammar.check_offset(off, mode if mode is not None else self.where()["mode"])
         with tempfile.TemporaryDirectory(prefix="dosbox-read-") as scratch:
             return self.memdump(seg, off, n, Path(scratch) / "read.bin").read_bytes()
+
+    def _read_linear(self, linear: int, n: int) -> bytes:
+        """`n` bytes at a LINEAR address through the page tables of CR3, in any CPU mode."""
+        if not self.has("MEMDUMPLIN"):
+            raise dbg.missing("MEMDUMPLIN", "a read by linear address")
+        if not 0 <= linear <= 0xFFFFFFFF:
+            raise Invalid("bad_argument", f"a linear address is 0 to 0xFFFFFFFF; got {linear:#x}")
+        command = f"MEMDUMPLIN {dbg.typed_hex(linear)} {dbg.typed_hex(n)} {MEMDUMP_FILE}"
+        with tempfile.TemporaryDirectory(prefix="dosbox-read-") as scratch:
+            return _dumped(self, command, n, Path(scratch) / "read.bin", (MEMDUMP_OK, MEMDUMP_FAIL),
+                           MEMDUMP_OK).read_bytes()
 
     # How many bytes one `SM` carries: the debugger takes a list of values after the address on one
     # input line.

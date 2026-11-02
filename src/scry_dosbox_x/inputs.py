@@ -732,7 +732,7 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
     sized = before.units() is not None
     why_not = (None if program is None else
                dpointer.unsteered(parked is not None, target is not None, units, sized))
-    places = (dpointer.locate(program, lambda ref: placement.read_target(ref, "DS", session))
+    places = (dpointer.locate(program, lambda ref: placement.pointer_target(ref, session))
               if program is not None and target is not None and why_not is None else None)
 
     def post() -> dict[str, Any]:
