@@ -227,6 +227,7 @@ def test_a_size_under_an_output_that_ignores_it_is_refused_naming_the_output(
     ("[dosbox]\ndpi aware=auto\n", [], None), ("[dosbox]\n", [], None), ("", [], None),
     ("[dosbox]\ndpi aware=true\n", ["-set", "dosbox dpi aware=false"], False),
     ("[sdl]\ndpi aware=true\n", [], None),
+    ("[dosbox]\ndpi aware=true\n", ["-nodpiaware"], False),     # the flag ignores the setting
 ])
 def test_the_dpi_awareness_a_conf_or_a_set_states_is_read_as_true_false_or_auto(
         tmp_path: Path, conf_text: str, flags: list[str], aware: bool | None) -> None:
@@ -235,7 +236,9 @@ def test_the_dpi_awareness_a_conf_or_a_set_states_is_read_as_true_false_or_auto(
     assert dconf.dpi_awareness(conf, flags) is aware
 
 
-def test_the_request_carries_the_dpi_awareness_the_size_words_need(tmp_path: Path) -> None:
+def test_the_request_carries_the_dpi_awareness_the_size_words_need(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "platform", "win32")
     conf = tmp_path / "t.conf"
     conf.write_text("[dosbox]\ndpi aware=true\n")
     wanted = core_window.WindowRequest(0, False, (0, 0), size=(1280, 960))

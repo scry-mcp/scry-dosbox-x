@@ -1,5 +1,5 @@
-"""What a launch reads out of the conf file it is given: the drives its `[autoexec]` mounts and
-the cpu core it asks for, as the debugger will see them at boot."""
+"""What a launch reads out of the conf file it is given: the drives its `[autoexec]` mounts, the
+cpu core, the `sdl output`, a stated `windowresolution` and `dpi aware`, as boot will see them."""
 
 from __future__ import annotations
 
@@ -47,7 +47,10 @@ def honours_window_size(output: str, platform: str) -> bool:
 
 
 def dpi_awareness(conf: Path, flags: list[str]) -> bool | None:
-    """The `[dosbox] dpi aware` a run boots with: True, False, or None for auto."""
+    """The `[dosbox] dpi aware` a run boots with: True, False, or None for auto; `-nodpiaware`
+    wins over the setting."""
+    if "-nodpiaware" in flags:
+        return False
     return {"true": True, "1": True, "false": False, "0": False}.get(
         setting(conf, flags, "dosbox", "dpi aware", "auto"))
 

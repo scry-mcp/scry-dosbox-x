@@ -9,11 +9,10 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
 
 - `start` takes `size` (`WIDTHxHEIGHT` in the host's unit), sent to the emulator as `sdl windowresolution`
   (logical pixels where DOSBox-X is not DPI aware: from 200 % on Windows with the conf's default `dpi aware`,
-  at any scale with `dpi aware=false`; real pixels with `true`; points on macOS). The default `output` takes it
-  on Windows too, not only on macOS.
+  at any scale with `dpi aware=false` or `-nodpiaware`; real pixels with `true`; points on macOS).
   Without it a watched window keeps the size the conf states, else is the largest 4:3 one the display's
   usable area holds where the conf's `sdl output` takes a size (every OpenGL output and Direct3D; an
-  unset `output` on macOS). `size` is refused beside `fullscreen`, beyond the usable area with its
+  unset `output` on macOS and Windows). `size` is refused beside `fullscreen`, beyond the usable area with its
   frame and under an `output` that ignores it, and `window` judges a stated size. A `-set` of
   `sdl windowresolution` in `flags` is now refused naming `size`, no longer "the conf decides".
 - A `start` refused with `window_not_visible` leaves its session live with the `presence` it was
