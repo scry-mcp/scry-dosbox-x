@@ -39,6 +39,7 @@ def _judge_window(wanted: core_window.WindowRequest | None, conf: Path,
     one and the conf gives none of its own."""
     if wanted is None:
         return None
+    wanted = replace(wanted, dpi_aware=dconf.dpi_awareness(conf, flags))
     output = dconf.sdl_output(conf, flags)
     if wanted.fullscreen and output == "surface":
         raise ds.Invalid("bad_argument",

@@ -8,7 +8,9 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
 `pyproject.toml` is the floor.
 
 - `start` takes `size` (`WIDTHxHEIGHT` in the host's unit), sent to the emulator as `sdl windowresolution`
-  (logical pixels from 200 % on Windows, where DOSBox-X stops being DPI aware; points on macOS).
+  (logical pixels where DOSBox-X is not DPI aware: from 200 % on Windows with the conf's default `dpi aware`,
+  at any scale with `dpi aware=false`; real pixels with `true`; points on macOS). The default `output` takes it
+  on Windows too, not only on macOS.
   Without it a watched window keeps the size the conf states, else is the largest 4:3 one the display's
   usable area holds where the conf's `sdl output` takes a size (every OpenGL output and Direct3D; an
   unset `output` on macOS). `size` is refused beside `fullscreen`, beyond the usable area with its

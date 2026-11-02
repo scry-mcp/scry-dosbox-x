@@ -42,8 +42,14 @@ SIZED_OUTPUTS = ("opengl", "openglnb", "openglhq", "openglpp", "direct3d")
 
 
 def honours_window_size(output: str, platform: str) -> bool:
-    """Whether `output` reads `windowresolution`; unset it is `opengl` on macOS, `surface` there."""
-    return output in SIZED_OUTPUTS or (output == "default" and platform == "darwin")
+    """Whether `output` reads `windowresolution`; `surface` and the text outputs do not."""
+    return output in SIZED_OUTPUTS or (output == "default" and platform in ("darwin", "win32"))
+
+
+def dpi_awareness(conf: Path, flags: list[str]) -> bool | None:
+    """The `[dosbox] dpi aware` a run boots with: True, False, or None for auto."""
+    return {"true": True, "1": True, "false": False, "0": False}.get(
+        setting(conf, flags, "dosbox", "dpi aware", "auto"))
 
 
 def states_window_size(conf: Path, flags: list[str]) -> bool:
@@ -69,7 +75,8 @@ def setting(conf: Path, flags: list[str], section_name: str, key_name: str, defa
                 found = cut.lower()
     for flag, asked in zip(flags, flags[1:], strict=False):
         words = asked.replace("=", " ").split()
-        if (flag == "-set" and len(words) == 3
-                and [w.lower() for w in words[:2]] == [section_name, key_name]):
-            found = words[2].lower()
+        named = [section_name, *key_name.split()]
+        if (flag == "-set" and len(words) == len(named) + 1
+                and [w.lower() for w in words[:-1]] == named):
+            found = words[-1].lower()
     return found

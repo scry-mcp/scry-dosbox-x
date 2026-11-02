@@ -18,7 +18,7 @@ from window_double import asked as session_window
 
 from scry_dosbox_x import conf as dconf
 from scry_dosbox_x import launch as dlaunch
-from scry_dosbox_x import server
+from scry_dosbox_x import lifecycle, server
 from scry_dosbox_x.state import STATE
 
 
@@ -215,10 +215,32 @@ def test_a_size_that_cannot_act_is_refused_before_the_emulator_starts(
 @pytest.mark.parametrize(("output", "platform", "taken"), [
     ("opengl", "darwin", True), ("openglnb", "win32", True), ("openglhq", "win32", True),
     ("openglpp", "darwin", True), ("direct3d", "win32", True), ("default", "darwin", True),
-    ("default", "win32", False), ("surface", "darwin", False), ("ttf", "darwin", False)])
+    ("default", "win32", True), ("surface", "darwin", False), ("ttf", "darwin", False)])
 def test_a_size_under_an_output_that_ignores_it_is_refused_naming_the_output(
         output: str, platform: str, taken: bool) -> None:
     assert dconf.honours_window_size(output, platform) is taken
+
+
+@pytest.mark.parametrize(("conf_text", "flags", "aware"), [
+    ("[dosbox]\ndpi aware=true\n", [], True), ("[dosbox]\ndpi aware=1\n", [], True),
+    ("[dosbox]\ndpi aware=false\n", [], False), ("[dosbox]\ndpi aware=0\n", [], False),
+    ("[dosbox]\ndpi aware=auto\n", [], None), ("[dosbox]\n", [], None), ("", [], None),
+    ("[dosbox]\ndpi aware=true\n", ["-set", "dosbox dpi aware=false"], False),
+    ("[sdl]\ndpi aware=true\n", [], None),
+])
+def test_the_dpi_awareness_a_conf_or_a_set_states_is_read_as_true_false_or_auto(
+        tmp_path: Path, conf_text: str, flags: list[str], aware: bool | None) -> None:
+    conf = tmp_path / "t.conf"
+    conf.write_text(conf_text)
+    assert dconf.dpi_awareness(conf, flags) is aware
+
+
+def test_the_request_carries_the_dpi_awareness_the_size_words_need(tmp_path: Path) -> None:
+    conf = tmp_path / "t.conf"
+    conf.write_text("[dosbox]\ndpi aware=true\n")
+    wanted = core_window.WindowRequest(0, False, (0, 0), size=(1280, 960))
+    judged = lifecycle._judge_window(wanted, conf, [])
+    assert judged is not None and judged.dpi_aware is True
 
 
 class _WithUsable(hosts.Obeying):
