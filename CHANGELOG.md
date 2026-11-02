@@ -14,8 +14,8 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
 - `send_mouse` steers a protected-mode program's own pointer from the real-mode stop its retrace ends on: a build
   whose debugger has the new `MEMDUMPLIN` (a read by linear address, through the page tables of CR3 with paging on or
   off) places the map's pointer symbols as the table's base plus their offset, when the table was loaded at a
-  protected-mode stop from a register or with a `base`. `start`'s `debugger_commands` lists it. Without it, or with
-  a table measured from the program's load segment, the call is refused as before.
+  protected-mode stop from a register. `start`'s `debugger_commands` lists it. Without it, or with a table whose
+  base was given by hand or taken from the program's load segment, the call is refused as before.
 - The `send_mouse` summary says `no button pressed` when the call named no `button`, so a move whose check
   saw no effect is not read as a click that failed. A symbol that folds past the first megabyte at a
   real-mode stop is refused saying that no `SEG:OFF` reaches it there either (the debugger wraps a

@@ -153,11 +153,14 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
 def pointer_target(ref: str, session: ds.Session) -> tuple[int, int]:
     """Where a program's own pointer is read: its `SEG:OFF`, or, when none reaches it from this
     stop, `(grammar.LINEAR, address)`. A real-mode stop cannot address a DPMI program's data above
-    the first megabyte, so a table whose base is a selector's (a register, or one given by the
-    caller) places it linearly and `MEMDUMPLIN` reads it; a base that is the program's DOS load
-    segment is not where that data is, and keeps the refusal."""
+    the first megabyte, so a table whose base a register measured places it linearly and
+    `MEMDUMPLIN` reads it. That takes the flat layout `target_for` already assumes (DS and the
+    measured register share a base). Any other base keeps the refusal: the program's DOS load
+    segment, which `start(symbols=)` passes as a base, is not where that data is."""
     try:
         return read_target(ref, "DS", session)
+    except ds.NotStopped:
+        raise
     except ds.Invalid as refused:
         linear = _flat_linear(ref, session)
         if linear is None:
@@ -166,8 +169,8 @@ def pointer_target(ref: str, session: ds.Session) -> tuple[int, int]:
 
 
 def _flat_linear(ref: str, session: ds.Session) -> int | None:
-    if (decide_by(ref) != "symbol" or not session.has("MEMDUMPLIN")
-            or STATE.base_measured_from == "PROGRAM" or STATE.base.get("base", -1) < 0):
+    if (not session.has("MEMDUMPLIN") or STATE.base_measured_from is None
+            or STATE.base.get("base", -1) < 0):
         return None
     found = dec.DeclarationStore.resolve_name(
         dec.Declaration("breakpoint", "symbol", ref), STATE.table, STATE.name_index)
