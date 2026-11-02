@@ -55,7 +55,7 @@ HONESTY, wired into the contract rather than into a prompt:
   names the argument.
 
 The server knows no project: the conf, the working directory, the program and the
-flags all come from the caller (the window, from `display` and `fullscreen`), so the same
+flags all come from the caller (the window, from `display`, `fullscreen` and `size`), so the same
 server serves every DOS project.
 """
 
@@ -186,6 +186,7 @@ def build_check(binary: str = "") -> dict[str, Any]:
 def start(conf: str, cwd: str,
           session_seconds: Annotated[int, vocab.bounds(1, dlaunch.MAX_SECONDS)],
           shared: bool = False, display: int | None = None, fullscreen: bool | None = None,
+          size: str | None = None,
           flags: list[str] | None = None, break_on_int3: bool = False, program: str = "",
           logfile: str = "", capture_video: bool = False, captures_dir: str = "",
           plan: list[dict[str, Any]] | None = None,
@@ -206,9 +207,12 @@ def start(conf: str, cwd: str,
     `session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
     `display`: the OS's display index for the window, 0 (the main display) when omitted;
     `fullscreen`: the window fills it (a stream of the main display, Moonlight, wants it: a
-    pointer does not map inside a window). Both need `shared=true` and are refused otherwise; a
-    `display` past the host's count is refused naming the count. The server waits for the window to
-    be listed on that display and answers `window`.
+    pointer does not map inside a window); `size`: `WIDTHxHEIGHT` of the window in the host's unit,
+    else the largest 4:3 window the display's usable area holds. All three need `shared=true` and
+    are refused otherwise; `size` is also refused beside `fullscreen`, beyond the usable area
+    (naming it) and under an `sdl output` that ignores it; a `display` past the host's count is
+    refused naming the count. The server waits for the window to be listed on that display and
+    answers `window`; `window` judges the size once the guest runs.
     `flags`: argv tokens, a `-set` value one token. `logfile`: the guest's E9 channel, for `log`,
     `log_wait`, `drive`. `program` runs after autoexec; `capture_video` records it. `plan` runs
     as `perform` does, each wait bounded by `settle_seconds` (default {SETTLE_S}). `input_port`:
@@ -226,9 +230,9 @@ def start(conf: str, cwd: str,
 
     Refused: a live session, a window that never appears on the asked display
     (`window_not_visible`, the session left live to `window` or `close`), `flags` setting what
-    `display` or `fullscreen` own, `fullscreen` on `sdl output=surface` (it switches the display's
-    video mode and leaves the window off screen), `fullscreen` on a display other than 0 on macOS
-    (a halted start never reaches full screen there), a bad path or `symbols` table,
+    `display`, `fullscreen` or `size` own, `fullscreen` on `sdl output=surface` (it switches the
+    display's video mode and leaves the window off screen), `fullscreen` on a display other than 0
+    on macOS (a halted start never reaches full screen there), a bad path or `symbols` table,
     `session_seconds` out of range, `capture_video` without `program`, an `input_port` other than
     0 outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX}, `log_categories` without `logfile`, `dos_calls`
     on a build with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
@@ -248,7 +252,7 @@ def start(conf: str, cwd: str,
                            settle_seconds, input_port, state_dir, binary, background,
                            presence, dos_calls, log_categories, guest_files, bridge(ctx),
                            _step_ops, symbols=symbols, base_from=base_from, display=display,
-                           fullscreen=fullscreen)
+                           fullscreen=fullscreen, size=size)
 
 
 @tool("The session's window", summary=core_window.summary)
@@ -257,7 +261,9 @@ def window(front: bool = False) -> dict[str, Any]:
     brings it in front of whatever covers it and reads that back.
 
     Reply: `window` (`display`, the OS's index; `bounds`; `onscreen`; `front`, no other
-    application's window covering its centre; `fullscreen`).
+    application's window covering its centre; `fullscreen`); `size` when the session was started
+    with a stated `size`: `asked`, `seen`, which rectangle was `compared` (`client` or
+    `outer`), `tolerance_px`, `height_free` and `matches`.
 
     Refused: no session (`no_session`), a session started without `shared` (`no_channel`), a
     window that never appears or, with `front`, is still covered after the activation

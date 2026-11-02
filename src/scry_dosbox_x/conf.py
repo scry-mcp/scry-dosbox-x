@@ -38,6 +38,19 @@ def sdl_output(conf: Path, flags: list[str]) -> str:
     return setting(conf, flags, "sdl", "output", "default")
 
 
+SIZED_OUTPUTS = ("opengl", "openglnb", "openglhq", "openglpp", "direct3d")
+
+
+def honours_window_size(output: str, platform: str) -> bool:
+    """Whether `output` reads `windowresolution`; unset it is `opengl` on macOS, `surface` there."""
+    return output in SIZED_OUTPUTS or (output == "default" and platform == "darwin")
+
+
+def states_window_size(conf: Path, flags: list[str]) -> bool:
+    """Whether the conf or a `-set` gives `windowresolution` a size."""
+    return "x" in setting(conf, flags, "sdl", "windowresolution", "")
+
+
 def setting(conf: Path, flags: list[str], section_name: str, key_name: str, default: str) -> str:
     """`[section] key` as the conf sets it, then the last `-set` of `flags`, lowercased."""
     found = default

@@ -544,7 +544,7 @@ class StateListReply(DosboxEnvelope, total=False):
     working_slot: Required[dict[str, Any]]
 
 
-class WindowReply(WindowRefused, total=False):
+class WindowReply(WindowRefused, tool_replies.WindowSizeField, total=False):
     window: Required[dict[str, Any]]
 
 

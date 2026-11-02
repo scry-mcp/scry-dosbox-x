@@ -73,7 +73,8 @@ Any other MCP client starts the same command over stdio:
 Then ask your client to `start` your conf with `conf`, `cwd` and a `logfile` for the guest's log
 (your conf needs `bochs debug port e9 = true` for that log to exist). Every path you give is
 absolute or starts with `~`. A session nobody watches runs headless; a watched one (`shared`) opens
-DOSBox-X's window, sized by your conf. Everything about your project
+DOSBox-X's window, sized by `size` when you state one, else by your conf's `windowresolution`,
+else the largest 4:3 window the display holds. Everything about your project
 comes from you; the server carries no default that points anywhere.
 
 ## Platforms

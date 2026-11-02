@@ -29,8 +29,7 @@ from matrix_common import (
 )
 from matrix_dpmi import dpmi_boot, dpmi_leave
 from scry_core import window as core_window
-
-from scry_dosbox_x import launch
+from scry_core import window_size
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
@@ -170,7 +169,7 @@ def _on_display_one(label: str, fullscreen: bool) -> None:
     if len(shown) < 2:
         M.block(label, f"this host has {len(shown)} display(s): display 1 does not exist")
         return
-    if fullscreen and sys.platform == launch.MAIN_DISPLAY_FULLSCREEN_ON:
+    if fullscreen and sys.platform == window_size.DOSBOX_X_HALTED_MAIN_ONLY_ON:
         before = {w.number for w in host.windows()}
         r = start_call(conf=str(conf_without_launch(PROBE_CONF, "PROBE.COM")), cwd=str(GUEST),
                        shared=True, display=1, fullscreen=True, background=True,

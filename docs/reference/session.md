@@ -64,7 +64,7 @@ A build without the debugger starts fine and then hangs `start` until its timeou
 *Start a DOSBox-X session*
 
 ```text
-start(conf, cwd, session_seconds, shared=false, display=null, fullscreen=null, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program")
+start(conf, cwd, session_seconds, shared=false, display=null, fullscreen=null, size=null, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program")
 ```
 
 Open one live DOSBox-X session from your conf, parked at the debugger.
@@ -73,9 +73,12 @@ Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve.
 `session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
 `display`: the OS's display index for the window, 0 (the main display) when omitted;
 `fullscreen`: the window fills it (a stream of the main display, Moonlight, wants it: a
-pointer does not map inside a window). Both need `shared=true` and are refused otherwise; a
-`display` past the host's count is refused naming the count. The server waits for the window to
-be listed on that display and answers `window`.
+pointer does not map inside a window); `size`: `WIDTHxHEIGHT` of the window in the host's unit,
+else the largest 4:3 window the display's usable area holds. All three need `shared=true` and
+are refused otherwise; `size` is also refused beside `fullscreen`, beyond the usable area
+(naming it) and under an `sdl output` that ignores it; a `display` past the host's count is
+refused naming the count. The server waits for the window to be listed on that display and
+answers `window`; `window` judges the size once the guest runs.
 `flags`: argv tokens, a `-set` value one token. `logfile`: the guest's E9 channel, for `log`,
 `log_wait`, `drive`. `program` runs after autoexec; `capture_video` records it. `plan` runs
 as `perform` does, each wait bounded by `settle_seconds` (default 30). `input_port`:
@@ -93,9 +96,9 @@ measures one, at a protected-mode stop. That stop's reply says `symbols_placed` 
 
 Refused: a live session, a window that never appears on the asked display
 (`window_not_visible`, the session left live to `window` or `close`), `flags` setting what
-`display` or `fullscreen` own, `fullscreen` on `sdl output=surface` (it switches the display's
-video mode and leaves the window off screen), `fullscreen` on a display other than 0 on macOS
-(a halted start never reaches full screen there), a bad path or `symbols` table,
+`display`, `fullscreen` or `size` own, `fullscreen` on `sdl output=surface` (it switches the
+display's video mode and leaves the window off screen), `fullscreen` on a display other than 0
+on macOS (a halted start never reaches full screen there), a bad path or `symbols` table,
 `session_seconds` out of range, `capture_video` without `program`, an `input_port` other than
 0 outside 1024-65535, `log_categories` without `logfile`, `dos_calls`
 on a build with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
@@ -118,6 +121,7 @@ Reference: REFERENCE.md, The session.
 | `shared` | boolean | `false` |
 | `display` | integer or null | `null` |
 | `fullscreen` | boolean or null | `null` |
+| `size` | string or null | `null` |
 | `flags` | array of string or null | `null` |
 | `break_on_int3` | boolean | `false` |
 | `program` | string | `""` |
@@ -236,7 +240,15 @@ Example, from a live run:
 
 **`session_seconds` is a hard bound** because a DOSBox-X held at its debugger never reaches its own time limit. The emulator's `-time-limit` counts emulated time, which a machine held at the debugger never advances, so a guardian (`scry-dosbox-x-guardian` in the process list) also keeps the host's clock, ending the emulator a few seconds past the bound or within one poll of this server dying.
 
-**The window.** A watched start opens DOSBox-X's window on the display `display` names (the OS's index, 0 the main display and the default), placing a windowed run 40 px inside that display's corner, and `fullscreen` makes it fill that display. On macOS `fullscreen` is accepted on display 0 only: a start is halted at its first instruction, and on another display the window reaches full screen only once the emulator runs, so it is refused naming `display=0`. The server then waits for the window to be listed on that display and answers it as `window`; one that never appears is `window_not_visible`, with the session left live to `window` or `close`. `flags` cannot retune it: a `-set` of `sdl display`, `sdl fullscreen` or `sdl windowposition`, or `-fullscreen`, is refused naming the argument; one of `sdl windowresolution` is refused too, saying the size is the conf's. `fullscreen` on `sdl output=surface` is refused too: that output fills the display by switching its video mode, and the window ends off screen. A headless start opens no window and takes none of these arguments.
+**The window.** Three situations, one combination of arguments each:
+
+| Situation | `start` | Window |
+|---|---|---|
+| No window to lose focus to | `shared=false` (the default) | none; `window` refuses it as `no_channel` |
+| A window nobody watches, kept behind | `shared=true`, `background=true` | placed on the display, behind the caller's application |
+| A window somebody tests | `shared=true`, with `display` and `size` or `fullscreen`, `background=false` | placed on the display, in front, proved in the host's window list |
+
+A watched start opens DOSBox-X's window on the display `display` names (the OS's index, 0 the main display and the default), placing a windowed run 40 px inside that display's corner, and `fullscreen` makes it fill that display. Its size is `size` (`WIDTHxHEIGHT` in the host's unit: points on macOS, real pixels on Windows) when stated, else the size the conf states in `windowresolution`, else the largest 4:3 window the display's usable area holds (menu bar, Dock and taskbar excluded) when the host reports one. The size reaches the emulator as `-set "sdl windowresolution=..."`: on Windows DOSBox-X stops being DPI aware from 200 %, so there the number is in logical pixels (a display at 300 % gets a third of the size asked) and below 200 % it is in real pixels, sent as asked; on macOS high DPI is off and the unit is the point. It is refused naming the usable size and the frame's share of it when it does not fit, beside `fullscreen`, and under an `sdl output` that ignores a size: every OpenGL output and Direct3D take one, `surface` does not, and an unset `output` is OpenGL on macOS and was `surface` on the Windows build this was measured on. With an ignoring output and no `size` the conf's size stays. On macOS `fullscreen` is accepted on display 0 only: a start is halted at its first instruction, and on another display the window reaches full screen only once the emulator runs, so it is refused naming `display=0`. The same halt keeps a parked window at the conf's size until the guest runs, so `start` does not judge the size: `window` does, once the guest runs, comparing the window's client area on Windows and its outer rectangle on macOS (which has no client area, so a title bar's height is allowed on the height), with the tolerance in its reply. The server waits for the window to be listed on that display and answers it as `window`; one that never appears is `window_not_visible`, with the session left live to `window` or `close`. `flags` cannot retune it: a `-set` of `sdl display`, `sdl fullscreen`, `sdl windowposition` or `sdl windowresolution`, or `-fullscreen`, is refused naming the argument that owns it. `fullscreen` on `sdl output=surface` is refused too: that output fills the display by switching its video mode, and the window ends off screen. Linux is out of scope. A headless start takes none of these arguments.
 
 **`flags` come after this server's defaults**, so a `-set` for the same key wins, except the ones a named argument sets (`-time-limit`, `sdl videodriver`, `log logfile`, the conf, the program...): refused naming the argument, because after ours the flag would quietly undo it.
 
@@ -330,7 +342,9 @@ Where the watched window is on the host, at any time, a running guest included. 
 brings it in front of whatever covers it and reads that back.
 
 Reply: `window` (`display`, the OS's index; `bounds`; `onscreen`; `front`, no other
-application's window covering its centre; `fullscreen`).
+application's window covering its centre; `fullscreen`); `size` when the session was started
+with a stated `size`: `asked`, `seen`, which rectangle was `compared` (`client` or
+`outer`), `tolerance_px`, `height_free` and `matches`.
 
 Refused: no session (`no_session`), a session started without `shared` (`no_channel`), a
 window that never appears or, with `front`, is still covered after the activation
@@ -348,6 +362,7 @@ Reference: REFERENCE.md, The session.
 | `activation` | string |
 | `asked_display` | integer |
 | `seen` | object |
+| `size` | object |
 | `window` | object |
 
 Example, from a live run:

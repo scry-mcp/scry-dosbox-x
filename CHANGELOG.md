@@ -7,13 +7,20 @@ What a client of the server notices.
 It needs the scry-core that serves `scry_core.window`, not an older one: the tag pinned in
 `pyproject.toml` is the floor.
 
+- `start` takes `size` (`WIDTHxHEIGHT` in the host's unit), sent to the emulator as `sdl windowresolution`
+  (logical pixels from 200 % on Windows, where DOSBox-X stops being DPI aware; points on macOS).
+  Without it a watched window keeps the size the conf states, else is the largest 4:3 one the display's
+  usable area holds where the conf's `sdl output` takes a size (every OpenGL output and Direct3D; an
+  unset `output` on macOS). `size` is refused beside `fullscreen`, beyond the usable area with its
+  frame and under an `output` that ignores it, and `window` judges a stated size. A `-set` of
+  `sdl windowresolution` in `flags` is now refused naming `size`, no longer "the conf decides".
 - A `start` refused with `window_not_visible` leaves its session live with the `presence` it was
   asked for drawn, so `window(front=true)` brings forward a window that carries it.
 
 - `start` takes `display` (the OS's index, the main display when omitted) and `fullscreen`, and a
   watched start answers `window`, proved in the host's window list; a window that never appears on
   the asked display is `window_not_visible`. `SCRY_EMULATOR_ARGS` is gone, and `flags` setting what
-  those two arguments own are refused by name (`sdl windowresolution` says the size is the conf's). `fullscreen` on `sdl output=surface` is refused. A windowed start is placed 40 px inside the asked display's corner, since the scry build ignores `sdl display` alone on macOS; `fullscreen` on a display other than 0 is refused there, because a start is halted at its first instruction and the window reaches full screen on another display only once the emulator runs.
+  those two arguments own are refused by name. `fullscreen` on `sdl output=surface` is refused. A windowed start is placed 40 px inside the asked display's corner, since the scry build ignores `sdl display` alone on macOS; `fullscreen` on a display other than 0 is refused there, because a start is halted at its first instruction and the window reaches full screen on another display only once the emulator runs.
 - A new tool, `window`, answers where the window is at any time, and with `front=true` brings it
   in front of what covers it. Without `front` it answers the window
   wherever the owner put it, another display included. A `front` that fails on a session

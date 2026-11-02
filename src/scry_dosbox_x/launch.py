@@ -161,9 +161,6 @@ def build_argv(launch: Launch) -> list[str]:
     return argv
 
 
-#: Where a halted start reaches full screen on the main display only.
-MAIN_DISPLAY_FULLSCREEN_ON = "darwin"
-
 GUEST_DIR = Path(__file__).resolve().with_name("guest")
 #: The resident stub the input route runs in the guest (`guest/scry.asm`).
 STUB_FILE = "SCRY.COM"
@@ -288,12 +285,9 @@ OWNED_OPTIONS = {"-conf": "conf", "-time-limit": "session_seconds", "-break-star
                  "-savedir": "state_dir", "-c": "program", "-fullscreen": "fullscreen"}
 
 
-#: The owner of a setting no start argument sets: the conf decides it.
-CONF_OWNS = "the conf"
-
 OWNED_SETS = {"sdl videodriver": "shared", "sdl display": "display",
               "sdl windowposition": "display", "sdl fullscreen": "fullscreen",
-              "sdl windowresolution": CONF_OWNS, "dos break on int3": "break_on_int3",
+              "sdl windowresolution": "size", "dos break on int3": "break_on_int3",
               "log logfile": "logfile", "serial serial1": "input_port",
               "cpu integration device": "input_port", "dosbox captures": "captures_dir",
               **{f"log {category}": "log_categories" for category in LOG_CATEGORIES}}
@@ -342,11 +336,6 @@ def check_flags(flags: list[str]) -> None:
                 raise Invalid("bad_argument",
                     f"flags: the `-set` at {i} sets `{key}`, which every session sets "
                     f"for its own debugger channel; it is not the caller's to change")
-        if owner == CONF_OWNS:
-            raise Invalid("bad_argument",
-                f"flags: the `-set` at {i} sets `{key}`, the window's size, which the conf "
-                f"decides: write `windowresolution` under `[sdl]` in the conf. No start "
-                f"argument sets a size")
         if owner is not None:
             raise Invalid("bad_argument",
                 f"flags: {flag!r} at {i} sets what `{owner}` owns. Placed after this "

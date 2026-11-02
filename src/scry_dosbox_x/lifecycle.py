@@ -9,7 +9,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from scry_core import log_marks, narrowing, session_block
+from scry_core import log_marks, narrowing, session_block, window_size
 from scry_core import reply_contract as contract
 from scry_core import window as core_window
 
@@ -31,23 +31,31 @@ DEFAULT_STATE_DIR = ("the default state directory (the session's scratch, gone a
                      "`state_dir` names another)")
 
 
-def _refuse_fullscreen_that_cannot_show(wanted: core_window.WindowRequest | None, conf: Path,
-                                        flags: list[str]) -> None:
-    """`surface` fills the display by switching its video mode, and the window ends off screen;
-    on macOS the halted start never reaches full screen on a display other than the main one."""
-    if wanted is None or not wanted.fullscreen:
-        return
-    if wanted.display != 0 and sys.platform == dlaunch.MAIN_DISPLAY_FULLSCREEN_ON:
-        raise ds.Invalid("bad_argument",
-                         "`fullscreen` on a display other than 0 needs the emulator running, and "
-                         "a start is halted at its first instruction, so the window would stay "
-                         "windowed: use `display=0` for full screen, or `fullscreen=false` on "
-                         f"display {wanted.display}")
-    if dconf.sdl_output(conf, flags) == "surface":
+def _judge_window(wanted: core_window.WindowRequest | None, conf: Path,
+                  flags: list[str]) -> core_window.WindowRequest | None:
+    """What the conf's `sdl output` decides about the request: `surface` fills the display by
+    switching its video mode, leaving the window off screen, and ignores a size. A watched window
+    with no stated size gets the largest 4:3 one the usable area holds, where the output takes
+    one and the conf gives none of its own."""
+    if wanted is None:
+        return None
+    output = dconf.sdl_output(conf, flags)
+    if wanted.fullscreen and output == "surface":
         raise ds.Invalid("bad_argument",
                          "`fullscreen` with `sdl output=surface` switches the display's video "
                          "mode and leaves the window off screen: leave `output` to the conf's "
                          "other choices (`opengl`, `openglnb`), or start with `fullscreen=false`")
+    honoured = dconf.honours_window_size(output, sys.platform)
+    if wanted.size is not None and not honoured:
+        raise ds.Invalid("bad_argument",
+                         f"`size` is ignored under `sdl output={output}` on this host: the window "
+                         "would keep the conf's size. Use an OpenGL or Direct3D `output`, or "
+                         "start without `size`")
+    own = dconf.states_window_size(conf, flags)
+    if wanted.size is None and not wanted.fullscreen and honoured and wanted.usable and not own:
+        return replace(wanted, fitted=True, size=window_size.aspect_fit(
+            (4, 3), wanted.usable, wanted.scale, sys.platform))
+    return wanted
 
 
 def _refuse_unreaped(session: ds.Session, cause: ds.Invalid) -> None:
@@ -66,7 +74,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
           dos_calls: bool, log_categories: dict[str, str] | None, guest_files: list[str] | None,
           progress: ds.Progress, ops: Callable[[], sequence.Ops], *, symbols: str = "",
           base_from: str = start_symbols.PROGRAM, display: int | None = None,
-          fullscreen: bool | None = None) -> dict[str, Any]:
+          fullscreen: bool | None = None, size: str | None = None) -> dict[str, Any]:
     """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`."""
     # Paths first: refused before anything acts (an expired session closed, symbols forgotten).
     cwd_given = paths.absolute("cwd", cwd)
@@ -78,8 +86,9 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         paths.absolute("binary", binary)
     guest_paths = guest.check_guest_files(guest_files)
     held = start_symbols.check(symbols, base_from)
-    wanted = core_window.requested(shared, display, fullscreen)
-    _refuse_fullscreen_that_cannot_show(wanted, conf_path, list(flags or []))
+    wanted = _judge_window(core_window.requested(shared, display, fullscreen, size,
+                                                 emulator="dosbox-x"),
+                           conf_path, list(flags or []))
     if STATE.session is not None:
         if STATE.session.alive():
             raise ds.Invalid("session_live", "a session is already live. `close` it first: two "
