@@ -346,8 +346,7 @@ def _send(session: ds.Session, commands: list[bytes],
 
 
 # The stub's announce shares the program's channel, so a pattern it matches would be served as
-# the program reacting. Spelled without a space and under its own flags, so a caller's verbose
-# or case-blind pattern cannot change what it excludes.
+# the program reacting.
 STUB_LINE = dprogram.STUB_LINE
 _GLOBAL_FLAGS = re.compile(r"^(?:\(\?[aiLmsux]+\))+")
 

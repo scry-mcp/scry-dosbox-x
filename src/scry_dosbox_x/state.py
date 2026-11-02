@@ -375,6 +375,7 @@ def extend(built: dict[str, Any], **fields: Any) -> dict[str, Any]:
     """Add fields to a built body, keeping `close`'s `session` last."""
     tail = built.pop("session", None)
     built.update(fields)
+    _lead_the_note(built)
     if tail is not None:
         built["session"] = tail
     return built

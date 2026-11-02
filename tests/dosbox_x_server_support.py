@@ -84,6 +84,9 @@ class RunStateOnly:
 class SessionGates:
     """The real session's stop and build gates, run against a fake's own `at_debugger`."""
 
+    def watch_program(self) -> None:
+        """The program watch reads the debugger, which this double has no channel to."""
+
     @property
     def control(self) -> RunStateOnly:
         return RunStateOnly(self)

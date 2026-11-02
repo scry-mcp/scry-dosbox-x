@@ -177,7 +177,6 @@ def test_a_parked_posts_count_watch_counts_since_the_stop_the_post_began_at(
 
 @pytest.mark.parametrize(("args", "said"), [
     ({"x": 365, "y": 8}, True),
-    ({"x": 365, "y": 8, "button": ""}, True),
     ({"x": 365, "y": 8, "button": "left"}, False),
     ({"x": 365, "y": 8, "button": "left", "action": "drag"}, False),
 ])

@@ -635,6 +635,9 @@ class StoppedCode(CodeMachine):
         self.mem[LOAD * 16 + COM_START:LOAD * 16 + COM_START + len(data)] = data
         self.stop_count = 1
 
+    def watch_program(self) -> None:
+        """The program watch reads the debugger, which this double has no channel to."""
+
     def stop_survey(self) -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
         return self.where(), self.registers(), []
 

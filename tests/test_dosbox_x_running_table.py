@@ -123,6 +123,9 @@ class RunningGuest(SessionGates):
             raise ds.NotStopped("the guest is running: `breakpoints` took nothing")
         return []
 
+    def watch_program(self) -> None:
+        """The program watch reads the debugger, which this double has no channel to."""
+
     def stop_survey(self) -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
         return self.where(), self.registers(), []
 

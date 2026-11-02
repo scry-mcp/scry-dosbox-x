@@ -31,6 +31,7 @@ def observe_stop(session: ds.Session) -> None:
         where, registers, held = session.stop_survey()
     except ds.Invalid:
         return                                  # an unreadable stop: the next contact tries again
+    session.watch_program()
     machine = (where["mode"], registers)
     attribution = arming.attribute_stop(session, where=where, machine=machine,
                                         retrace_may_stop=True, held=held)
@@ -119,6 +120,7 @@ def _surveyed_stop(session: ds.Session, placed: dict[str, Any] | None, retrace_m
     # One survey serves where, registers and the watches' list.
     arming.apply_pending(session)
     where, registers, held = session.stop_survey()
+    session.watch_program()
     machine = (where["mode"], registers)
     watches = arming.evaluate_watches(session, machine=machine, held=held)
     attribution = arming.attribute_stop(session, where=where, machine=machine,
