@@ -508,9 +508,10 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60,
                               window=core_window.WindowRequest(1, False, (1920, 0))))
     got = ds.Session.state(fake)  # type: ignore[arg-type]
-    assert set(got) == {"pid", "alive", "running", "altered", "conf", "conf_digest",
+    assert set(got) == {"pid", "alive", "running", "altered", "program", "conf", "conf_digest",
                         "conf_changed_on_disk", "watched", "bound_s",
                         "elapsed_s", "output_bytes_dropped", "captures", "state_dir"}
+    assert got["program"] is None, "nothing has stopped, so nothing is known of the program"
     assert got["captures"] == "off"
     fake.launch = dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, capture_video=True,
                             program="X.EXE", captures_dir=tmp_path / "caps")

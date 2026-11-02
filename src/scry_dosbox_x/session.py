@@ -30,6 +30,7 @@ from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import grammar, paths, stub_link
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import process as dprocess
+from scry_dosbox_x import program as dprogram
 
 # WHERE EACH SETTABLE NAME IS READ BACK, and at what width in bits.
 READBACK: dict[str, tuple[str, int]] = {
@@ -409,7 +410,38 @@ class Session(dprocess.Process):
     def stop_survey(self) -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
         """Everything a STOP REPLY reads: where, registers and the breakpoints."""
         where, regs, self.paging = self._survey()
+        self._watch_program()
         return where, regs, self.breakpoints()
+
+    def _watch_program(self) -> None:
+        """Fold this stop's DOS process into the program watch. A reading that fails adds nothing
+        to a stop reply, which has its own refusal for a channel that is gone."""
+        try:
+            dprogram.observe(dprogram.watch_of(self), dbg.psp(self),
+                             lambda: self.listing("DOS MCBS"), self._text_rows, self._launched)
+        except Invalid:
+            return
+
+    def _launched(self) -> str | None:
+        """The program `start` ran, once the log says the guest has written a line of its own."""
+        words = (self.launch.program or "").split(maxsplit=1)
+        if not words or self.launch.logfile is None:
+            return None
+        lines = self.e9_since(0)[0]
+        if not any(not re.search(dprogram.STUB_LINE, line) for line in lines):
+            return None
+        return Path(words[0].replace("\\", "/")).stem.upper()
+
+    def _text_rows(self) -> list[str] | None:
+        """The text screen's rows at this stop, or None when it is not in a text mode."""
+        from scry_dosbox_x import screen  # screen imports this module
+        with tempfile.TemporaryDirectory(prefix="dosbox-x-fault-") as scratch:
+            try:
+                shown = screen.screen_view(self, None, 0, None, Path(scratch))
+            except Invalid:
+                return None
+        text = shown.get("text")
+        return [str(row) for row in text] if isinstance(text, list) else None
 
     def where_and_registers(self) -> tuple[dict[str, str], dict[str, str]]:
         """Both readings off ONE survey."""
@@ -890,6 +922,8 @@ class Session(dprocess.Process):
             # reply.
             "running": self.alive() and not self._at_debugger,
             "altered": self.altered,
+            # WHAT THE STOPS FOUND OF THE PROGRAM: a block once it is gone, else None.
+            "program": dprogram.gone(self),
             "conf": str(self.launch.conf),
             "conf_digest": self.conf_digest,
             "conf_changed_on_disk": changed,

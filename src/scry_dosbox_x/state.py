@@ -21,6 +21,7 @@ from scry_core import reply_contract as contract
 
 from scry_dosbox_x import declarations as dec
 from scry_dosbox_x import grammar
+from scry_dosbox_x import program as dprogram
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import symbols as sym
 
@@ -324,13 +325,30 @@ def reply(status: str = "ok", **fields: Any) -> dict[str, Any]:
     if STATE.found_stop_last and "stopped_on_its_own" not in out:
         out["stopped_on_its_own"] = dict(STATE.found_stop_last)
     STATE.found_stop_last = {}
+    _lead_the_note(out)
     return contract.check_envelope(out)
+
+
+def _lead_the_note(out: dict[str, Any]) -> None:
+    """A wait that expired says what is most likely first (`program.lead`): in its own `note`, or in
+    the `note` of the `verify` block an input carries."""
+    verify = out.get("verify")
+    wait = out if out.get("verdict") == contract.TIMEOUT else (
+        verify if isinstance(verify, dict) and verify.get("verdict") == contract.TIMEOUT
+        else None)
+    if wait is None or not wait.get("note"):
+        return
+    gone = None if STATE.session is None else dprogram.gone(STATE.session)
+    opening = dprogram.lead(wait, gone)
+    if opening and not str(wait["note"]).startswith(opening):
+        wait["note"] = opening + str(wait["note"])
 
 
 NO_SESSION_BLOCK: dict[str, Any] = {"alive": False, "running": False, "altered": False}
 
 
 _ALARM_WHEN: dict[str, Callable[[Any], bool]] = {
+    "program": lambda v: bool(v),
     "conf_changed_on_disk": lambda v: v is not False,
     "output_bytes_dropped": lambda v: bool(v),
 }
@@ -349,7 +367,8 @@ def process_facts() -> dict[str, Any]:
     """The process facts for the top of `start`, `status` and `close`; empty with no session."""
     if STATE.session is None:
         return {}
-    return {key: value for key, value in STATE.session.state().items() if key not in _ALWAYS}
+    return {key: value for key, value in STATE.session.state().items()
+            if key not in _ALWAYS and key != "program"}
 
 
 def extend(built: dict[str, Any], **fields: Any) -> dict[str, Any]:

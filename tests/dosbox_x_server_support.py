@@ -196,7 +196,7 @@ class FakeSession(SessionGates):
         # the real shape: a two-key stub let the `altered` guarantee be deleted with the suite green
         return {"pid": 4242, "alive": self._alive,
                 "running": self._alive and bool(getattr(self, "running", False)),
-                "altered": self.altered,
+                "altered": self.altered, "program": None,
                 "conf": "/x/g.conf", "conf_digest": "abc123", "conf_changed_on_disk": False,
                 "watched": False, "bound_s": 60, "elapsed_s": 1.0,
                 "output_bytes_dropped": 0, "captures": "off",
@@ -680,8 +680,8 @@ class NamesFake(SessionGates):
 
     def state(self) -> dict[str, object]:
         return {"pid": 4242, "alive": self.alive_flag, "running": self._running, "altered": False,
-                "conf": "/x/g.conf", "conf_digest": "abc123", "conf_changed_on_disk": False,
-                "watched": False, "bound_s": 60, "elapsed_s": 1.0,
+                "program": None, "conf": "/x/g.conf", "conf_digest": "abc123",
+                "conf_changed_on_disk": False, "watched": False, "bound_s": 60, "elapsed_s": 1.0,
                 "output_bytes_dropped": 0, "captures": "off",
                 "state_dir": "the emulator's own save/ under its working directory"}
 

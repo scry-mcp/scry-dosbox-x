@@ -98,6 +98,12 @@ def test_a_build_that_counts_frames_places_the_run_and_its_stop_by_frame(tmp_pat
     assert got["cause"] == "the retrace run_for ran to, at 0814:00000106", got["cause"]
 
 
+def surveys(machine: Machine) -> int:
+    """The register surveys sent: every `EV` but the one that reads DOS's current process, which
+    each stop reply adds once."""
+    return sum(c.startswith("EXEC EV ") and c != "EXEC EV PSPSEG" for c in machine.sent)
+
+
 def test_the_stop_run_for_lands_on_carries_the_e9_block_even_with_no_log(tmp_path: Path) -> None:
     live(frames(3), tmp_path)
     got = cast(dict[str, Any], server.run_for(frames=3))
@@ -109,7 +115,7 @@ def test_with_nothing_that_can_cut_it_no_frame_is_surveyed(tmp_path: Path) -> No
     """Fast path: nothing declared can cut a frame, so only the opening and closing surveys run."""
     machine = live(frames(3), tmp_path)
     server.run_for(frames=3)
-    assert sum(c.startswith("EXEC EV ") for c in machine.sent) == 2, machine.sent
+    assert surveys(machine) == 2, machine.sent
 
 
 def cut_on_the_second_frame(tmp_path: Path) -> Machine:
@@ -403,7 +409,7 @@ def test_a_timed_run_reads_each_frame_s_clock_from_the_stop_it_waited_for(
     """The clock comes with the stop: a frame costs its `VRT` and its `RUNSTATE`, no survey."""
     machine = live(frames(5), tmp_path)
     got = cast(dict[str, Any], server.run_for(milliseconds=30, seconds=2))
-    assert sum(c.startswith("EXEC EV ") for c in machine.sent) == 2, machine.sent
+    assert surveys(machine) == 2, machine.sent
     assert got["polls"] == 3
 
 

@@ -28,6 +28,7 @@ from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import placement, retrace, running, taps
 from scry_dosbox_x import pointer as dpointer
+from scry_dosbox_x import program as dprogram
 from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
@@ -347,7 +348,7 @@ def _send(session: ds.Session, commands: list[bytes],
 # The stub's announce shares the program's channel, so a pattern it matches would be served as
 # the program reacting. Spelled without a space and under its own flags, so a caller's verbose
 # or case-blind pattern cannot change what it excludes.
-STUB_LINE = r"(?-i:STUB[ ]{2}\.[ ])"
+STUB_LINE = dprogram.STUB_LINE
 _GLOBAL_FLAGS = re.compile(r"^(?:\(\?[aiLmsux]+\))+")
 
 

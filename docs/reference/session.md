@@ -326,7 +326,9 @@ Example, from a live run:
 ```
 <!-- scry-reference:end status -->
 
-**The alarms** are `conf_changed_on_disk` (the file changed since start; `false` also if gone), and `output_bytes_dropped` (the emulator's output overflowed what the server keeps). They ride in `session` only while they hold.
+**The alarms** are `conf_changed_on_disk` (the file changed since start; `false` also if gone), `output_bytes_dropped` (the emulator's output overflowed what the server keeps) and `program` (the program the guest was running is gone). They ride in `session` only while they hold.
+
+**`program` is read at the stops**: each one reads DOS's current process (`EV PSPSEG`) and, when it changed, its owner in the debugger's `DOS MCBS` listing, so a program that ends while the guest runs shows from the next stop on, and a session that never stops never learns it. It is `state: exited` once DOS's current process is the command interpreter's where it had been the program's, with `name` and `seen_by` (what was read); or `state: fault` when the text screen then holds the message DJGPP writes as a program dies (it never reaches the E9 log), quoted in `fault` from its first line to the prompt. A program started afterwards clears it. A wait that expired opens its `note` with it, or, when the guest wrote no line in the wait, with that fact; lines that kept arriving add nothing.
 
 **`pc` is read from the debugger at a stop**, so it is unavailable while the guest runs; `cpu_mode` is `real`, `protected`, `paged` or `VM86`. `last_stop` is unavailable with no session or a cut survey. `presence` is `true` drawn, `false` off, or why not, and is left out with no session. `declarations` is this server's own count.
 

@@ -7,6 +7,10 @@ What a client of the server notices.
 It needs the scry-core that serves `scry_core.window`, not an older one: the tag pinned in
 `pyproject.toml` is the floor.
 
+- The `session` block carries `program` once the program the guest was running is gone: `exited`, or `fault` with
+  the message DJGPP left on the text screen quoted from there (it never reaches the E9 log). It is read at the
+  stops, from DOS's current process. A wait that expired opens its `note` with that, or with the fact that the
+  guest wrote no line in the wait, instead of leaving the cause among a list of guesses.
 - The `send_mouse` summary says `no button pressed` when the call named no `button`, so a move whose check
   saw no effect is not read as a click that failed. A symbol that folds past the first megabyte at a
   real-mode stop is refused saying that no `SEG:OFF` reaches it there either (the debugger wraps a

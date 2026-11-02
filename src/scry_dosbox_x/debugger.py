@@ -77,6 +77,13 @@ def _ev(session: ds.Session, names: tuple[str, ...]) -> dict[str, int]:
     return {name: int(value, 16) for name, value in zip(names, values, strict=True)}
 
 
+def psp(session: ds.Session) -> int | None:
+    """DOS's current PSP segment, by `EV PSPSEG`; None when the debugger prints no number."""
+    ok, lines = exec_lines(session, "EV PSPSEG")
+    value = lines[-1].strip() if ok and lines else ""
+    return int(value, 16) if re.fullmatch(r"[0-9a-fA-F]+", value) else None
+
+
 def _spelled(name: str, value: int) -> str:
     return f"{value:04X}" if name in grammar.SEGMENT_NAMES else f"{value:08X}"
 
