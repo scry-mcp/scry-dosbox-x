@@ -228,6 +228,8 @@ def test_a_size_under_an_output_that_ignores_it_is_refused_naming_the_output(
     ("[dosbox]\ndpi aware=true\n", ["-set", "dosbox dpi aware=false"], False),
     ("[sdl]\ndpi aware=true\n", [], None),
     ("[dosbox]\ndpi aware=true\n", ["-nodpiaware"], False),     # the flag ignores the setting
+    ("[dosbox]\ndpi aware=true\n", ["-set", "dpi aware=false"], False),   # no section named
+    ("[dosbox]\ndpi aware=false\n", ["-set", "dpi aware=true"], True),
 ])
 def test_the_dpi_awareness_a_conf_or_a_set_states_is_read_as_true_false_or_auto(
         tmp_path: Path, conf_text: str, flags: list[str], aware: bool | None) -> None:

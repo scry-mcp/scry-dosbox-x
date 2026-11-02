@@ -78,8 +78,8 @@ def setting(conf: Path, flags: list[str], section_name: str, key_name: str, defa
                 found = cut.lower()
     for flag, asked in zip(flags, flags[1:], strict=False):
         words = asked.replace("=", " ").split()
-        named = [section_name, *key_name.split()]
-        if (flag == "-set" and len(words) == len(named) + 1
-                and [w.lower() for w in words[:-1]] == named):
+        wanted = key_name.split()
+        named = [w.lower() for w in words[:-1]]
+        if flag == "-set" and named in ([section_name, *wanted], wanted):
             found = words[-1].lower()
     return found
