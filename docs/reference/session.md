@@ -67,13 +67,14 @@ A build without the debugger starts fine and then hangs `start` until its timeou
 start(conf, cwd, session_seconds, shared=false, display=null, fullscreen=null, size=null, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program")
 ```
 
-Open one live DOSBox-X session from your conf, parked at the debugger.
+Open one live DOSBox-X session from your conf, parked at the debugger. Somebody watching
+through a stream (Moonlight) needs `shared=true` and `fullscreen=true`: a pointer does not
+map inside a window.
 
 Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve.
 `session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
 `display`: the OS's display index for the window, 0 (the main display) when omitted;
-`fullscreen`: the window fills it (a stream of the main display, Moonlight, wants it: a
-pointer does not map inside a window); `size`: `WIDTHxHEIGHT` of the window in the host's unit,
+`fullscreen`: the window fills it; `size`: `WIDTHxHEIGHT` of the window in the host's unit,
 else the largest 4:3 window the display's usable area holds. All three need `shared=true` and
 are refused otherwise; `size` is also refused beside `fullscreen`, beyond the usable area
 (naming it) and under an `sdl output` that ignores it; a `display` past the host's count is
