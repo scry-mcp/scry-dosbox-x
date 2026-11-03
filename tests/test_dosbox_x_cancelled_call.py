@@ -21,6 +21,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: E402,F401
 
+from scry_dosbox_x import binary as binaries  # noqa: E402
 from scry_dosbox_x import (
     checks,  # noqa: E402
     retrace,  # noqa: E402
@@ -110,11 +111,13 @@ def test_a_cancelled_wait_that_ends_stopped_breaks_in_and_the_next_reply_says_so
     assert "cancelled" not in server.status(), "the record rode on a second reply"
 
 
+@pytest.mark.parametrize("commands", [binaries.COMMANDS, ()], ids=["runstate", "no-runstate"])
 @pytest.mark.parametrize(("at_debugger", "word"), [(True, "stopped"), (False, "running")])
 def test_the_status_summary_word_is_the_state_the_session_block_carries(
-        at_debugger: bool, word: str) -> None:
+        at_debugger: bool, word: str, commands: tuple[str, ...]) -> None:
     install()
     ses = _running()
+    ses.commands = frozenset(commands)
     ses.at = at_debugger
     ses.running = not at_debugger      # what the fake's block reads, as the real one reads its flag
     out = server.status()

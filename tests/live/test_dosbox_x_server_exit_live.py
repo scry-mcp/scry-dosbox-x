@@ -44,13 +44,13 @@ def _call(proc: subprocess.Popen[bytes], mid: int, tool: str, **arguments: Any) 
     return body
 
 
-def _guardians_of(server_pid: int) -> list[str]:
-    """`pid comm` of the server's children named as the guardian is: the process table's own
+def _guardians_of(server_pid: int) -> list[int]:
+    """The pids of the server's children named as the guardian is: the process table's own
     answer, so another server on this machine is never counted."""
     table = subprocess.run(["ps", "-c", "-axo", "pid=,ppid=,comm="], capture_output=True,
                            text=True, check=True).stdout.splitlines()
     rows = [line.split(None, 2) for line in table]
-    return [f"{r[0]} {r[2]}" for r in rows
+    return [int(r[0]) for r in rows
             if len(r) == 3 and r[1] == str(server_pid) and r[2] == dprocess.GUARDIAN_NAME]
 
 
@@ -91,7 +91,8 @@ def test_the_emulator_ends_with_the_server(ended_by: str, code: int, state: str,
         assert process_tree.pid_alive(pid), "the emulator the start reported is not running"
         # the control: the table must show the guardian while the session is up, or its absence
         # after the end proves nothing
-        assert _guardians_of(proc.pid), "no guardian beside a live session"
+        guards = _guardians_of(proc.pid)
+        assert guards, "no guardian beside a live session"
         _put_in_state(proc, state)
         if ended_by == "close":
             closed = _call(proc, 11, "close")
@@ -112,7 +113,10 @@ def test_the_emulator_ends_with_the_server(ended_by: str, code: int, state: str,
             f"{GONE_WITHIN_S:g} s; ps: {seen or 'nothing'}; "
             f"server: {errors.read_text(errors='replace')[-600:]}")
         assert proc.wait(GONE_WITHIN_S) == code, errors.read_text(errors="replace")[-600:]
-        assert not _guardians_of(proc.pid), f"a guardian outlived the server, state {state}"
+        # by the pid seen while the server lived: a guardian that outlives it is reparented, so
+        # a lookup by parent would no longer list it
+        left = [g for g in guards if process_tree.pid_alive(g)]
+        assert not left, f"a guardian outlived the server, state {state}: {left}"
     finally:
         silent.cancel()
         if pid is not None and process_tree.pid_alive(pid):

@@ -97,7 +97,8 @@ def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
     why = reply.get("pc", {}).get("why") if isinstance(reply.get("pc"), dict) else None
     if why == running.PC_GONE_WHY:
         return "status: DOSBox-X has exited, `close` it"
-    return f"status: alive, {'running' if why == running.PC_RUNNING_WHY else 'stopped'}"
+    released = why in (running.PC_RUNNING_WHY, running.PC_UNKNOWN_WHY)
+    return f"status: alive, {'running' if released else 'stopped'}"
 
 
 def close(args: dict[str, Any], reply: dict[str, Any]) -> str:
