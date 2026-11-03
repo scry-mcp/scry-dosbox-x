@@ -74,9 +74,11 @@ class Clamped:
     def nudge(self, dx: int, _dy: int) -> None:
         self.move(self.driver + dx)
 
-    def resync(self) -> None:
+    def resync(self) -> tuple[tuple[int, int], tuple[int, int]]:
         self.move(0)
+        low = self.seen()
         self.move(self.max)
+        return low, self.seen()
 
 
 def test_a_pointer_lagging_a_driver_at_its_edge_is_resynced_by_a_sweep_and_steered() -> None:
@@ -90,6 +92,20 @@ def test_a_pointer_the_sweep_cannot_help_is_still_given_up_on() -> None:
     world = Clamped(driver=0, program=0, limit=0)
     got = pointer.steer((100, 0), world.seen, world.nudge, (2.0, 2.0), world.resync)
     assert not got.arrived and got.corrections <= 2 * pointer.CORRECTIONS + 1, got
+
+
+def test_an_aim_outside_the_window_the_driver_maps_to_is_given_up_on_with_that_window() -> None:
+    """A program whose pointer stops at 219 cannot be aimed at 300: the sweep's two corners are
+    the span the reply names, instead of only missing."""
+    world = Clamped(driver=0, program=100, ratio=1.0, limit=219)
+    got = pointer.steer((300, 0), world.seen, world.nudge, (1.0, 1.0), world.resync)
+    assert not got.arrived and got.reach is not None, got
+    assert pointer.shown(got)["reach"] == {"x": [0, 219], "y": [0, 0]}, pointer.shown(got)
+
+
+def test_a_pointer_that_arrived_carries_no_reach() -> None:
+    steered = pointer.Steered((5, 6), True, 2, ((0, 0), (9, 9)))
+    assert pointer.shown(steered) == {"x": 5, "y": 6, "corrections": 2}
 
 
 def _place(ref: str) -> tuple[int, int]:

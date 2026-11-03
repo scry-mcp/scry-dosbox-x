@@ -10,7 +10,7 @@ import pytest
 from channel_double import EVERY_COMMAND, REAL_STOP, Machine, protected, session_over
 from scry_core.screen_map import Pointer
 
-from scry_dosbox_x import grammar, placement
+from scry_dosbox_x import grammar, inputs, placement
 from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
@@ -130,3 +130,20 @@ def test_the_pointer_is_read_through_the_linear_place(tmp_path: Path) -> None:
     declared = Pointer("_mouse_x", "_mouse_y", 4)
     places = dpointer.locate(declared, lambda ref: placement.pointer_target(ref, session))
     assert dpointer.program_at(session.read_bytes, declared, places) == (519, 130)
+
+
+def test_the_pointer_is_placed_again_at_each_stop_the_steering_reads_from(tmp_path: Path) -> None:
+    """A retrace stop after a nudge can be in a BIOS handler in real mode while the first stop was
+    the program's: the selector placed at the first one is not an address there."""
+    machine = protected(Machine())
+    session = session_over(machine, tmp_path)
+    _table(BASE, "DS")
+    dstate.STATE.base.update({"selector_DS": 0xAF})
+    machine.selinfo["DS"] = machine.selinfo["DS"]
+    machine.memory.update({BASE + MOUSE_X + i: v for i, v in enumerate((7, 2, 0, 0))})
+    machine.memory.update({BASE + MOUSE_X - 4 + i: v for i, v in enumerate((130, 0, 0, 0))})
+    declared = Pointer("_mouse_x", "_mouse_y", 4)
+    seen = inputs.program_reader(session, declared)
+    machine.regs.update(REAL_STOP)
+    session.forget_stop()
+    assert seen() == (519, 130)

@@ -18,6 +18,7 @@ class Steered:
     seen: tuple[int, int]
     arrived: bool
     corrections: int
+    reach: tuple[tuple[int, int], tuple[int, int]] | None = None
 
 
 def locate(declared: Pointer, place: Callable[[str], tuple[int, int]]) -> tuple[
@@ -32,6 +33,16 @@ def program_at(read: Callable[[int, int, int], bytes], declared: Pointer,
     def axis(at: tuple[int, int]) -> int:
         return int.from_bytes(read(at[0], at[1], declared.bytes), "little", signed=True)
     return axis(places[0]), axis(places[1])
+
+
+def shown(steered: Steered) -> dict[str, object]:
+    """The reply's `pointer.program`; `reach` is the span at the driver's corners, when it missed."""
+    reply: dict[str, object] = {"x": steered.seen[0], "y": steered.seen[1],
+                                "corrections": steered.corrections}
+    if steered.reach is not None and not steered.arrived:
+        (x0, y0), (x1, y1) = steered.reach
+        reply["reach"] = {"x": sorted((x0, x1)), "y": sorted((y0, y1))}
+    return reply
 
 
 def arrived(steered: Steered | None, driver_landed: bool, drag: bool) -> bool:
@@ -54,17 +65,17 @@ def unsteered(parked: bool, moved: bool, units: str, sized: bool) -> str | None:
 
 def steer(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
           nudge: Callable[[int, int], None], ratio: tuple[float, float],
-          resync: Callable[[], None] | None = None) -> Steered:
+          resync: Callable[[], tuple[tuple[int, int], tuple[int, int]]] | None = None) -> Steered:
     """Nudge the driver by the gap to `aim` until the pointer is on it or stops moving; `ratio` is
     driver units a program unit. A driver at its edge loses the motion its program never sees, so
-    when the nudges fail `resync` (a sweep to both edges, where each clamps) runs once and the
-    steering starts again."""
+    when the nudges fail `resync` (a sweep to both edges, where each clamps; it returns the
+    program's pointer at each) runs once and the steering starts again."""
     steered, ratio = _chase(aim, seen_now, nudge, ratio)
     if steered.arrived or resync is None:
         return steered
-    resync()
+    reach = resync()
     again, _ = _chase(aim, seen_now, nudge, ratio)
-    return Steered(again.seen, again.arrived, steered.corrections + again.corrections)
+    return Steered(again.seen, again.arrived, steered.corrections + again.corrections, reach)
 
 
 def _chase(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],

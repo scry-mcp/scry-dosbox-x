@@ -16,6 +16,10 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
   off) places the map's pointer symbols as the table's base plus their offset, when the table was loaded at a
   protected-mode stop from a register. `start`'s `debugger_commands` lists it. Without it, or with a table whose
   base was given by hand or taken from the program's load segment, the call is refused as before.
+- A steered `send_mouse` places the program's pointer again at every stop it reads from, so a retrace stop in
+  real mode after a nudge no longer fails on the selector placed at the first one. When the pointer does not
+  arrive after the sweep, `pointer.program.reach` gives the span it took at the driver's two corners: a program
+  can show the driver's range on a window of its screen, and an aim outside it cannot be reached.
 - The `send_mouse` summary says `no button pressed` when the call named no `button`, so a move whose check
   saw no effect is not read as a click that failed. A symbol that folds past the first megabyte at a
   real-mode stop is refused saying that no `SEG:OFF` reaches it there either (the debugger wraps a

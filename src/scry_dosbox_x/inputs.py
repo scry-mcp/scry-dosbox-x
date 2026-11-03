@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import contextlib
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, cast
 
@@ -651,6 +652,15 @@ def _pointer(report: Report) -> dict[str, Any]:
             **({"vbe_mode": f"{report.vbe:#05x}"} if report.is_vbe() else {})}
 
 
+def program_reader(session: ds.Session, program: Pointer) -> Callable[[], tuple[int, int]]:
+    """The program's pointer read where the machine is stopped now: each retrace stop after a
+    nudge can be in another mode, so the refs are placed again, not once for the first stop."""
+    def seen() -> tuple[int, int]:
+        places = dpointer.locate(program, lambda ref: placement.pointer_target(ref, session))
+        return dpointer.program_at(session.read_bytes, program, places)
+    return seen
+
+
 def _steer(session: ds.Session, parked: Retraces, program: Pointer,
            places: tuple[tuple[int, int], tuple[int, int]], aim: tuple[int, int],
            after: Report) -> tuple[Report, dpointer.Steered | None]:
@@ -666,13 +676,18 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
         _send(session, [move_command(min(max(here.x + dx, 0), here.max_x),
                                      min(max(here.y + dy, 0), here.max_y))], parked)
         latest[0] = _report(session, parked)
-    def resync() -> None:
+    seen_now = program_reader(session, program)
+
+    def resync() -> tuple[tuple[int, int], tuple[int, int]]:
         here = latest[0]
-        _send(session, [move_command(0, 0), move_command(here.max_x, here.max_y)], parked)
+        _send(session, [move_command(0, 0)], parked)
+        low = seen_now()
+        _send(session, [move_command(here.max_x, here.max_y)], parked)
         latest[0] = _report(session, parked)
+        return low, seen_now()
     steered = dpointer.steer(
         aim,
-        lambda: dpointer.program_at(session.read_bytes, program, places),
+        seen_now,
         nudge, ((after.max_x + 1) / size[0], (after.max_y + 1) / size[1]), resync)
     return latest[0], steered
 
@@ -765,8 +780,7 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
                                                 to_y if end else y, units), end is not None)
         shown = _pointer(after)
         if steered is not None:
-            shown["program"] = {"x": steered.seen[0], "y": steered.seen[1],
-                                "corrections": steered.corrections}
+            shown["program"] = dpointer.shown(steered)
         elif why_not is not None:
             shown["program"] = unavailable(why_not)
         fields: dict[str, Any] = {"route": "guest", "pointer": shown,
