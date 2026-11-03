@@ -45,6 +45,7 @@ RUNSTATE_CELL = ("AA RUNSTATE names the BPIF row that stopped the machine, and n
                  "a step")
 FRAMES_CELL = "AA RUNSTATE's frames stands still while the machine is stopped and a VRD redraws"
 RUNWATCH_CELL = "AA a BPIF stop reached under RUNWATCH still names its row, until the next step"
+CHANNEL_CELL = "AA a debugger request is answered without waiting out the channel's socket poll"
 TAP_CELL = "AA TAP refuses an offset past 32 bits and installs nothing"
 DYNAMIC_CELL = "AA the dynamic core runs 3000 STI, 3000 CLI and 1500 STI;NOP and exits 0"
 AA_CELLS = cells(
@@ -57,6 +58,7 @@ AA_CELLS = cells(
     (RUNSTATE_CELL, "RUNSTATE: `bpif=` rides the stop a BPIF row made and goes with the next run"),
     (FRAMES_CELL, "README.debugger RUNSTATE: frames counts the frames the guest started"),
     (RUNWATCH_CELL, "README.debugger RUNSTATE: bpif= stays until a run, a step or the row goes"),
+    (CHANNEL_CELL, "debug_mcp: while a request is owed a reply the I/O thread polls at 1 ms"),
     (TAP_CELL, "TAP usage text: hex seg:off, a 32-bit offset"),
     (DYNAMIC_CELL, "dynrec: a run of one-byte instructions no longer overruns the stub slots"),
 )
@@ -202,6 +204,29 @@ def _runwatch() -> None:
     close_whatever()
 
 
+#: Requests asked back to back; the poll the reply used to wait out is 50 ms, a served one is a
+#: few ms.
+CHANNEL_REQUESTS = 40
+CHANNEL_MEDIAN_LIMIT_S = 0.02
+
+
+def _channel_latency() -> None:
+    boot()
+    spans: list[float] = []
+    for _ in range(CHANNEL_REQUESTS):
+        began = time.monotonic()
+        took, _ = _says("RUNSTATE")
+        spans.append(time.monotonic() - began)
+        if not took:
+            break
+    spans.sort()
+    median = spans[len(spans) // 2]
+    M.judge(CHANNEL_CELL, len(spans) == CHANNEL_REQUESTS and median < CHANNEL_MEDIAN_LIMIT_S,
+            f"median {median * 1000:.1f} ms of {len(spans)} requests, limit "
+            f"{CHANNEL_MEDIAN_LIMIT_S * 1000:.0f} ms")
+    close_whatever()
+
+
 def _dynamic_core() -> None:
     binary = ENV.get("DOSBOX_X_BINARY", "")
     if not binary or not Path(binary).is_file():
@@ -235,6 +260,7 @@ def _dynamic_core() -> None:
 def section_aa() -> None:
     _scrub()
     _dynamic_core()
+    _channel_latency()
     folds = not _case_sensitive(GUEST)
     if folds:
         for label in (FILE_CELLS[0], FILE_CELLS[1], FILE_CELLS[3]):
