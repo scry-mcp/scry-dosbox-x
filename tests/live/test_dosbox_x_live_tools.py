@@ -9,6 +9,8 @@ never merely that it returned.
 
 from __future__ import annotations
 
+import os
+import shutil
 import signal
 import time
 from pathlib import Path
@@ -29,6 +31,7 @@ from test_dosbox_x_live import (  # noqa: E402
     conf_that_does_not_exit,
 )
 
+from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import grammar, machine, server
 from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import mcp as dosbox_mcp
@@ -720,6 +723,28 @@ def status_mode() -> Any:
     return cast(dict[str, Any], server.status()).get("cpu_mode")
 
 
+def _a_build_without_runstate() -> str:
+    """A release binary of this machine: `DOSBOX_X_RELEASE_BINARY`, else the PATH's, and only
+    one that lacks `RUNSTATE`, since a build that has it cannot answer the negative."""
+    held = os.environ.get("DOSBOX_X_RELEASE_BINARY") or shutil.which("dosbox-x") or ""
+    if not held or not binaries.debugger(held) or "RUNSTATE" in binaries.debugger_commands(held):
+        pytest.skip("no DOSBox-X release without RUNSTATE here: set DOSBOX_X_RELEASE_BINARY")
+    return held
+
+
+def test_a_tool_that_waits_is_refused_by_name_on_a_build_without_runstate() -> None:
+    """The negative of the cell above: the same call on a release is `no_channel` naming the
+    command, and `build_check` of that binary says what it lacks and what that disables."""
+    release = _a_build_without_runstate()
+    checked = cast(dict[str, Any], server.build_check(binary=release))
+    absent = {row["command"]: row["disables"] for row in checked["debugger_commands_missing"]}
+    assert "run_for" in absent["RUNSTATE"], checked
+    start_ok(session_seconds=60, binary=release)
+    refused = cast(dict[str, Any], server.run_for(frames=1))
+    assert refused["code"] == "no_channel" and "RUNSTATE" in refused["message"], refused
+    assert refused["session"]["running"] is False, "a refused wait must not release the machine"
+
+
 def test_run_for_lands_its_retraces_and_the_pane_clock_says_how_far() -> None:
     """Frames are the debugger's retraces, and the known answer is the display's own rate:"""
     start_ok(session_seconds=120)
@@ -859,6 +884,28 @@ def test_a_bound_that_expires_reports_a_machine_at_rest_and_its_breakpoint_gone(
     assert reply["session"]["running"] is False and ":" in str(reply["pc"]), reply
     assert reply["target_disarmed"] is True, reply
     assert "was removed" in str(reply["note"]), reply
+
+def test_a_second_resume_after_run_to_does_not_stop_where_run_to_arrived() -> None:
+    """The timer handler runs every few milliseconds, so a breakpoint `run_to` left behind would
+    stop the next release at once; the same address armed by hand is the control that does."""
+    start_ok(session_seconds=90)
+    seg, off = a_return_address_in_ram()
+    into = cast(dict[str, Any], server.run_to(ref=f"{seg:04X}:{off:04X}", seconds=30,
+                                              control="0000:0001"))
+    assert into["verdict"] == "TARGET", into
+    hot = a_hot_address()
+    assert hot != "0000:0000", "the vector table is filled once the BIOS ran"
+    arrived = cast(dict[str, Any], server.run_to(ref=hot, seconds=10, control="0000:0001"))
+    assert arrived["verdict"] == "TARGET" and arrived["target_disarmed"] is True, arrived
+    again = cast(dict[str, Any], server.resume(seconds=2))
+    assert again["status"] == "ok" and again["verdict"] == "TIMEOUT", again
+    assert server.stop()["status"] == "ok"
+    server.debug(command=f"BP {hot}")
+    armed = cast(dict[str, Any], server.resume(seconds=10))
+    assert armed["verdict"] == "OTHER_STOP" and armed["pc"] == arrived["pc"], (
+        f"the control did not stop at the handler by hand, so the silence above measured "
+        f"nothing: {armed}")
+
 
 def test_e9_wait_answers_a_line_that_had_already_gone_past(tmp_path: Path) -> None:
     """THE QUERY HALF, against a real guest."""

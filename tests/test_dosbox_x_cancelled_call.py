@@ -33,6 +33,8 @@ from scry_dosbox_x import state as st  # noqa: E402
 class _Running(FakeSession):
     """A guest that runs until a `BREAK` brings it back to the debugger."""
 
+    running = False                            # what the fake's session block reads
+
     def __init__(self) -> None:
         super().__init__()
         self.at = False
@@ -106,6 +108,18 @@ def test_a_cancelled_wait_that_ends_stopped_breaks_in_and_the_next_reply_says_so
     assert out["summary"].startswith("after a cancelled wait_stop (stopped): "), out["summary"]
     assert list(out)[-1] == "session" and list(out)[-2] == "cancelled", list(out)
     assert "cancelled" not in server.status(), "the record rode on a second reply"
+
+
+@pytest.mark.parametrize(("at_debugger", "word"), [(True, "stopped"), (False, "running")])
+def test_the_status_summary_word_is_the_state_the_session_block_carries(
+        at_debugger: bool, word: str) -> None:
+    install()
+    ses = _running()
+    ses.at = at_debugger
+    ses.running = not at_debugger      # what the fake's block reads, as the real one reads its flag
+    out = server.status()
+    assert out["session"]["running"] is (not at_debugger), out
+    assert out["summary"] == f"status: alive, {word}", out
 
 
 def test_a_cancelled_wait_that_ends_as_it_was_leaves_the_guest_running(
