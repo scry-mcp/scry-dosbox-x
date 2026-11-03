@@ -47,6 +47,30 @@ def test_build_check_on_a_build_with_no_version_still_answers(tmp_path: Path) ->
 
 
 
+def test_build_check_names_each_missing_command_with_the_tools_it_disables(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    mine = build(tmp_path)
+    monkeypatch.setattr(binaries, "debugger_commands", lambda _path: ["PIC", "A20"])
+    got = cast(dict[str, Any], server.build_check(binary=str(mine)))
+    missing = {row["command"]: row["disables"] for row in got["debugger_commands_missing"]}
+    assert list(missing) == [c for c in binaries.COMMANDS if c not in ("PIC", "A20")], got
+    assert {"run_to", "run_for", "trace", "screen_wait"} <= set(missing["RUNSTATE"]), got
+    assert got["debugger_commands"] == ["PIC", "A20"], got
+
+
+def test_build_check_omits_the_missing_field_when_the_build_has_every_command(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    mine = build(tmp_path)
+    monkeypatch.setattr(binaries, "debugger_commands", lambda _path: list(binaries.COMMANDS))
+    got = cast(dict[str, Any], server.build_check(binary=str(mine)))
+    assert got["status"] == "ok" and "debugger_commands_missing" not in got, got
+
+
+def test_every_optional_command_says_what_it_disables() -> None:
+    assert set(binaries.DISABLES) == set(binaries.COMMANDS)
+    assert all(binaries.DISABLES[name] for name in binaries.COMMANDS)
+
+
 def test_build_check_judges_the_build_by_its_bytes_and_never_waits_on_helpdebug(
         tmp_path: Path) -> None:
     """Windows' GUI build prints `-helpdebug` to no stream and does not exit: a build whose

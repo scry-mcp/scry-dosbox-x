@@ -153,7 +153,8 @@ def build_check(binary: str = "") -> dict[str, Any]:
 
     Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` and a freeze
     watch need it), `debugger_commands` (which of {DEBUGGER_COMMANDS} the build's debugger has;
-    omitted when none).
+    omitted when none), `debugger_commands_missing` (each one it lacks, with the tools that
+    command disables; omitted when none is missing).
     """
     if binary:          # the shape first, as every path's, whatever the session is
         paths.absolute("binary", binary)
@@ -175,6 +176,8 @@ def build_check(binary: str = "") -> dict[str, Any]:
             f"not")
     found = binaries.debugger_commands(resolved.path)
     commands: dict[str, Any] = {"debugger_commands": found} if found else {}
+    if absent := binaries.debugger_commands_missing(found):
+        commands["debugger_commands_missing"] = absent
     return st.reply(**dlaunch.binary_facts(resolved, binaries.VERSION_TIMEOUT_S), debugger=True,
                     heavy_debug=binaries.heavy_debug(resolved.path), **commands,
                     tools=registered_tools())

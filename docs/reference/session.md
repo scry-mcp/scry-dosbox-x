@@ -17,7 +17,8 @@ refuses while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else the 
 
 Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` and a freeze
 watch need it), `debugger_commands` (which of `RUNSTATE`, `STEPIN`, `SAVESTATE`, `LOADSTATE`, `PRESENCE`, `VGAMEMDUMP`, `BPIF`, `CAPTURE`, `TAP`, `PORTINFO`, `DOSTRACE`, `PIC`, `A20`, `MEMDUMPLIN` the build's debugger has;
-omitted when none).
+omitted when none), `debugger_commands_missing` (each one it lacks, with the tools that
+command disables; omitted when none is missing).
 
 | argument | type | default |
 |---|---|---|
@@ -29,6 +30,7 @@ omitted when none).
 | `binary_origin` | string |
 | `debugger` | boolean |
 | `debugger_commands` | array |
+| `debugger_commands_missing` | array |
 | `heavy_debug` | boolean |
 | `tools` | array |
 | `version` | string or object |

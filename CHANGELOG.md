@@ -7,6 +7,9 @@ What a client of the server notices.
 It needs the scry-core that serves `scry_core.window`, not an older one: the tag pinned in
 `pyproject.toml` is the floor.
 
+- `build_check` answers `debugger_commands_missing`: each debugger command the build lacks, with the tools it
+  takes away (a build without `RUNSTATE` lists `run_to`, `run_for`, `trace`, `screen_wait` and the rest); it is
+  omitted when the build has every command.
 - The `session` block carries `program` once the program the guest was running is gone: `exited`, or `fault` with
   the message DJGPP left on the text screen quoted from there (it never reaches the E9 log). It is read at the
   stops that answer a call, from DOS's current process. A wait that expired opens its `note` with that, or with

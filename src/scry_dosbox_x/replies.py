@@ -78,6 +78,7 @@ class BuildCheckReply(DosboxEnvelope, total=False):
     binary_origin: Required[str]
     debugger: Required[bool]
     debugger_commands: Annotated[list[Any], OmitEmpty]
+    debugger_commands_missing: Annotated[list[Any], OmitEmpty]
     heavy_debug: Required[bool]
     tools: list[Any]
     version: Required[str | dict[str, Any]]

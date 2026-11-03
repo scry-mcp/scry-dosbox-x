@@ -36,6 +36,24 @@ DEBUGGER_MARK = b"Debugger command not recognized"
 #: Commands a build may lack, found as the parser's NUL-bounded literals, not the help text's.
 COMMANDS = ("RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "BPIF",
             "CAPTURE", "TAP", "PORTINFO", "DOSTRACE", "PIC", "A20", "MEMDUMPLIN")
+#: The tools a build without the command cannot serve, as REFERENCE.md's command table says.
+DISABLES = {
+    "RUNSTATE": ("run_to", "run_for", "trace", "screen_wait", "step (mode over)",
+                 "resume (with a bound)", "input to a stopped machine", "readings after a release"),
+    "STEPIN": ("step",),
+    "SAVESTATE": ("state_write",),
+    "LOADSTATE": ("state_write",),
+    "PRESENCE": ("the presence indicator",),
+    "VGAMEMDUMP": ("screen_view and screen_signature in a planar, unchained or linear mode",),
+    "BPIF": ("regpoint_add",),
+    "CAPTURE": ("record", "audio_record"),
+    "TAP": ("watch_add (mode count or capture)",),
+    "PORTINFO": ("port",),
+    "DOSTRACE": ("log and log_wait on the dos channel", "start (dos_calls)"),
+    "PIC": ("pic",),
+    "A20": ("a20",),
+    "MEMDUMPLIN": ("reads by linear address", "send_mouse steering a protected-mode pointer"),
+}
 #: Bare names a release also carries for something else: found by a literal only the command has.
 USAGE_MARKS = {name: b"\0DEBUG: " + name.encode() + b" usage: " for name in ("CAPTURE", "TAP")}
 USAGE_MARKS |= {"PIC": b"\0MASKIRQ\0", "A20": b"A20 gate is %s"}
@@ -84,3 +102,9 @@ def debugger_commands(binary: str) -> list[str]:
     """Which of `COMMANDS` the build's debugger parses, in `COMMANDS`' order."""
     return [name for name in COMMANDS
             if _carries(binary, command_mark(name), f"the `{name}` command")]
+
+
+def debugger_commands_missing(found: list[str]) -> list[dict[str, object]]:
+    """Each of `COMMANDS` not in `found`, with the tools it takes away."""
+    return [{"command": name, "disables": list(DISABLES[name])}
+            for name in COMMANDS if name not in found]
