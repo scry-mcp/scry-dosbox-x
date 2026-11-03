@@ -13,7 +13,16 @@ from scry_core import log_marks, narrowing, session_block, window_size
 from scry_core import reply_contract as contract
 from scry_core import window as core_window
 
-from scry_dosbox_x import arming, paths, placement, run_state, running, sequence, start_symbols
+from scry_dosbox_x import (
+    arming,
+    inputs,
+    paths,
+    placement,
+    run_state,
+    running,
+    sequence,
+    start_symbols,
+)
 from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import conf as dconf
 from scry_dosbox_x import debugger as dbg
@@ -213,8 +222,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
                        background=launch.background, presence=dpresence.of(session).reply(),
                        **seen, **channels, **rearm,
                        **holding,
-                       **({"note": dlaunch.DYNAMIC_CORE_BREAKPOINTS}
-                          if dlaunch.is_dynamic(launch.core) else {}))
+                       **_notes(launch))
     if not plan:
         return started
     # A failing plan leaves the session open where it stopped, as `perform` does.
@@ -224,6 +232,18 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         ran = sequence.run_steps(session, plan, settle, ops())
     return st.extend(ran, start={k: v for k, v in started.items()
                                  if k not in ("status", "session")})
+
+
+def _notes(launch: dlaunch.Launch) -> dict[str, str]:
+    """What `start` has to say beyond its facts: the dynamic core's limit, and a stub the conf runs
+    that speaks another protocol than this server, which would only show at the first input."""
+    said = [dlaunch.DYNAMIC_CORE_BREAKPOINTS] if dlaunch.is_dynamic(launch.core) else []
+    said += [f"the conf runs {where}, a stub of protocol {proto}, and this server speaks "
+             f"{inputs.STUB_PROTOCOL}: its first key or mouse call will be refused (`no_channel`); "
+             f"mount this package's `guest` directory instead"
+             for where, proto in dconf.stub_protocols(launch.conf, launch.cwd)
+             if proto != inputs.STUB_PROTOCOL]
+    return {"note": " ".join(said)} if said else {}
 
 
 def window(session: ds.Session, front: bool) -> dict[str, Any]:

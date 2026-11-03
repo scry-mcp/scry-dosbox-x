@@ -3,6 +3,7 @@ cpu core, the `sdl output`, a stated `windowresolution` and `dpi aware`, as boot
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 MOUNTING = frozenset({"mount", "imgmount", "subst"})
@@ -25,6 +26,40 @@ def conf_mounts(conf: Path) -> list[str]:
                        if len(w.rstrip(":")) == 1 and w[0].isalpha()]
             if letters and letters[0] not in found:
                 found.append(letters[0])
+    return found
+
+
+_STUB_RUN = re.compile(r"^@?([A-Za-z]):[\\/](?:.*[\\/])?scry(?:\.com)?$", re.IGNORECASE)
+_STUB_SIGNATURE = re.compile(rb"SCRY-INJECT-(\d+)")
+
+
+def stub_protocols(conf: Path, cwd: Path) -> list[tuple[str, str]]:
+    """Each stub the conf's `[autoexec]` runs off a drive it mounted, with the protocol that file
+    carries: a conf can mount a copy older than the server."""
+    try:
+        text = conf.read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
+        return []
+    mounts: dict[str, Path] = {}
+    found: list[tuple[str, str]] = []
+    section = ""
+    for line in text.splitlines():
+        words = line.split()
+        if line.strip().startswith("["):
+            section = line.partition("#")[0].strip().lower()
+        if section != "[autoexec]" or not words:
+            continue
+        if words[0].lstrip("@").lower() == "mount":
+            args = [w.strip('"') for w in words[1:] if not w.startswith("-")]
+            if len(args) >= 2 and len(args[0].rstrip(":")) == 1:
+                mounts[args[0].rstrip(":").upper()] = cwd / args[1]
+        elif (run := _STUB_RUN.match(words[0])) is not None and run[1].upper() in mounts:
+            try:
+                carried = _STUB_SIGNATURE.search((mounts[run[1].upper()] / "SCRY.COM").read_bytes())
+            except OSError:
+                continue
+            if carried is not None:
+                found.append((words[0], carried[1].decode()))
     return found
 
 

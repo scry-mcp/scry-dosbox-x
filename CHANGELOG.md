@@ -19,6 +19,8 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
   command (protocol 7: a conf that mounts an older `SCRY.COM` is refused), and `range_widened` is in the `session`
   block of every reply from then on. A `perform` list that ends on a missed `expect` quotes that step's own reply in
   its `note`.
+- `start` notes a stub the conf runs off a mounted drive that speaks another protocol than the server, instead of
+  leaving it to the first key or mouse call; the `send_mouse` summary says when the driver's range was widened.
 - `symbols_load` takes a selector as `base_from` (four hex digits, `00AF` for a DJGPP program under CWSDPMI): the
   debugger reads its descriptor in any CPU mode, so a table can be loaded, and `send_mouse` can steer the program's
   pointer, at a real-mode stop without waiting for a protected-mode one.

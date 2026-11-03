@@ -452,6 +452,10 @@ def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if "driver_arrived" in reply:
         arrived += ", program's own pointer not read"
     pressed = "" if args.get("button") or reply.get("button") else "; no button pressed"
+    program = pointer.get("program")
+    widened = program.get("range_widened") if isinstance(program, dict) else None
+    if isinstance(widened, dict):
+        arrived += f", driver range widened to {widened['x']} x {widened['y']}"
     return (f"send_mouse: pointer at {at}{arrived}{pressed}; "
             f"{_effect(_block(reply, 'verify'), 'posted, unverified')}{_parked(reply)}")
 

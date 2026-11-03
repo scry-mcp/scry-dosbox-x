@@ -207,6 +207,7 @@ def test_a_stated_size_reaches_the_command_line_as_windowresolution_and_the_wind
                                        {"shared": True, "size": "640x480", "fullscreen": True}])
 def test_a_size_that_cannot_act_is_refused_before_the_emulator_starts(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, arguments: dict[str, Any]) -> None:
+    monkeypatch.setattr(sys, "platform", "darwin")      # on Linux the host check answers first
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, **arguments)
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
     assert STATE.session is None

@@ -175,6 +175,17 @@ def test_a_parked_posts_count_watch_counts_since_the_stop_the_post_began_at(
     assert got[2] == {"ref": "freeze", "mode": "freeze"}, got
 
 
+def test_a_mouse_summary_says_when_the_move_widened_the_drivers_range() -> None:
+    program: dict[str, Any] = {"x": 900, "y": 600, "corrections": 5,
+                               "range_widened": {"x": 2050, "y": 767}}
+    reply: dict[str, Any] = {"pointer": {"screen": {"x": 900, "y": 600}, "program": program},
+                             "arrived": True, "verify": {"checked": False}}
+    args = {"x": 900, "y": 600, "button": "left"}
+    assert "driver range widened to 2050 x 767" in summaries.send_mouse(args, reply)
+    program.pop("range_widened")
+    assert "widened" not in summaries.send_mouse(args, reply)
+
+
 @pytest.mark.parametrize(("args", "said"), [
     ({"x": 365, "y": 8}, True),
     ({"x": 365, "y": 8, "button": "left"}, False),

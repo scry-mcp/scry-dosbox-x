@@ -29,7 +29,7 @@ from test_dosbox_x_spawn import Child
 from test_dosbox_x_stub_link import REPORT, Stub
 
 from scry_dosbox_x import conf as dconf
-from scry_dosbox_x import grammar, stepping, stub_link
+from scry_dosbox_x import grammar, inputs, lifecycle, stepping, stub_link
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import process as dprocess
@@ -1613,6 +1613,29 @@ def test_a_conf_s_mounts_are_read_past_options_case_and_a_bom(tmp_path: Path, au
     head = "" if autoexec.startswith("[") else "[autoexec]\n"
     conf.write_text(f"{head}{autoexec}\n[sdl]\nmount q .\n", encoding="utf-8-sig")
     assert dconf.conf_mounts(conf) == [taken], "a mount outside [autoexec] counted, or missed"
+
+
+def test_a_stub_the_conf_runs_is_judged_by_the_protocol_it_carries(tmp_path: Path) -> None:
+    for name, proto in (("old", 6), ("new", 7)):
+        (tmp_path / name).mkdir()
+        (tmp_path / name / "SCRY.COM").write_bytes(b"\x90SCRY-INJECT-%d\x00" % proto)
+    conf = tmp_path / "g.conf"
+    conf.write_text('[autoexec]\nmount g "old" -ro\ng:\\SCRY.COM\nmount H new\n@h:\\scry.com\n'
+                    'mount i missing\ni:\\SCRY.COM\n[sdl]\nj:\\SCRY.COM\n', encoding="utf-8")
+    assert dconf.stub_protocols(conf, tmp_path) == [("g:\\SCRY.COM", "6"),
+                                                    ("@h:\\scry.com", "7")]
+
+
+def test_start_says_when_the_conf_runs_a_stub_of_another_protocol(tmp_path: Path) -> None:
+    for name, proto in (("old", 6), ("new", int(inputs.STUB_PROTOCOL))):
+        (tmp_path / name).mkdir()
+        (tmp_path / name / "SCRY.COM").write_bytes(b"SCRY-INJECT-%d" % proto)
+    conf = tmp_path / "g.conf"
+    conf.write_text('[cpu]\ncore=normal\n[autoexec]\nmount g old\ng:\\SCRY.COM\n', encoding="utf-8")
+    note = lifecycle._notes(launch(conf))["note"]
+    assert "stub of protocol 6" in note and f"speaks {inputs.STUB_PROTOCOL}" in note, note
+    conf.write_text('[cpu]\ncore=normal\n[autoexec]\nmount g new\ng:\\SCRY.COM\n', encoding="utf-8")
+    assert lifecycle._notes(launch(conf)) == {}, "a stub of this protocol is nothing to say"
 
 
 @pytest.mark.parametrize(("conf_text", "flags", "core"), [
