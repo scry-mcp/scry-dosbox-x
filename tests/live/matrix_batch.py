@@ -8,8 +8,11 @@ guests are copied there; a volume that folds case is detected and the cells are 
 """
 from __future__ import annotations
 
+import contextlib
 import os
+import re
 import subprocess
+import time
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +30,8 @@ from matrix_common import (
 )
 from matrix_dpmi import dpmi_client
 
+from scry_dosbox_x import state as dstate
+
 MIXED_NAME = "MixedCase.Bin"
 FILE_CELLS = (
     "AA MEMDUMPLIN keeps the file name's case and holds the bytes the flat selector reads",
@@ -38,6 +43,9 @@ PORT_CELL = ("AA PORTINFO answers port 60 with R1=1 and an unclaimed port with z
              "refuses 10000")
 RUNSTATE_CELL = ("AA RUNSTATE names the BPIF row that stopped the machine, and no longer after "
                  "a step")
+FRAMES_CELL = "AA RUNSTATE's frames stands still while the machine is stopped and a VRD redraws"
+RUNWATCH_CELL = "AA a BPIF stop reached under RUNWATCH still names its row, until the next step"
+TAP_CELL = "AA TAP refuses an offset past 32 bits and installs nothing"
 DYNAMIC_CELL = "AA the dynamic core runs 3000 STI, 3000 CLI and 1500 STI;NOP and exits 0"
 AA_CELLS = cells(
     (FILE_CELLS[0], "MEMDUMPLIN usage text: a dump by linear address, the name as typed"),
@@ -47,6 +55,9 @@ AA_CELLS = cells(
     (FILE_CELLS[3], "VGAMEMDUMP usage text: the file name as typed"),
     (PORT_CELL, "PORTINFO usage text: R1/R2/R4/W1/W2/W4 per port, hex within the I/O space"),
     (RUNSTATE_CELL, "RUNSTATE: `bpif=` rides the stop a BPIF row made and goes with the next run"),
+    (FRAMES_CELL, "README.debugger RUNSTATE: frames counts the frames the guest started"),
+    (RUNWATCH_CELL, "README.debugger RUNSTATE: bpif= stays until a run, a step or the row goes"),
+    (TAP_CELL, "TAP usage text: hex seg:off, a 32-bit offset"),
     (DYNAMIC_CELL, "dynrec: a run of one-byte instructions no longer overruns the stub slots"),
 )
 #: A run of STI, of CLI and of STI;NOP pairs, each ended by RET.
@@ -144,6 +155,50 @@ def _before_page_tables(folds: bool) -> None:
     after_ok, after = _says("RUNSTATE")
     M.judge(RUNSTATE_CELL, ok(armed) and ok(stop) and ok(stepped) and named_ok and after_ok
             and "bpif=" in named and "bpif=" not in after, f"{named[:90]!r} / {after[:90]!r}")
+    _frames_and_tap()
+    close_whatever()
+    _runwatch()
+
+
+def _frames(text: str) -> int | None:
+    found = re.search(r"frames=(\d+)", text)
+    return int(found.group(1)) if found else None
+
+
+def _frames_and_tap() -> None:
+    _, before = _says("RUNSTATE")
+    redraw_ok, _ = _says("VRD")
+    _, after = _says("RUNSTATE")
+    M.judge(FRAMES_CELL, redraw_ok and _frames(before) is not None
+            and _frames(before) == _frames(after), f"{before[-40:]!r} / {after[-40:]!r}")
+    took, tapped = _says("TAP W 0:100000010 tap-off.txt")
+    listed_ok, listing = _says("TAPLIST")
+    leftover = (GUEST / "tap-off.txt").exists()
+    _says("TAPDEL *")
+    with contextlib.suppress(OSError):
+        (GUEST / "tap-off.txt").unlink(missing_ok=True)
+    M.judge(TAP_CELL, took and "usage" in tapped and listed_ok and "INSTALLED=1" not in listing
+            and not leftover, f"{tapped[:80]!r} / {listing[:60]!r}")
+
+
+def _runwatch() -> None:
+    """A BPIF stop reached by RUNWATCH, sent to the session directly: the server's `debug` tool
+    refuses the commands that release the guest."""
+    boot()
+    armed = M.call(server.regpoint_add, condition="bx == 0x100")
+    ses = dstate.STATE.session
+    named, after = "", ""
+    if ses is not None and ok(armed):
+        ses.exec("RUNWATCH")
+        for _ in range(10):
+            time.sleep(2)
+            named = "\n".join(ses.exec("RUNSTATE")[1])
+            if "stopped" in named:
+                break
+        ses.exec("STEPIN")
+        after = "\n".join(ses.exec("RUNSTATE")[1])
+    M.judge(RUNWATCH_CELL, "stopped" in named and "bpif=" in named and "stopped" in after
+            and "bpif=" not in after, f"{named[-60:]!r} / {after[-60:]!r}")
     close_whatever()
 
 
