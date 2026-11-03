@@ -200,8 +200,13 @@ def _scaled() -> None:
     """The probe guest again, its window filling the display: the pointer is set inside the
     guest, so the same cell lands on the same driver coordinates."""
     conf = conf_without_launch(PROBE_CONF, "PROBE.COM")
-    boot(conf=conf, cwd=GUEST, shared=True, display=0, fullscreen=True, background=True,
-         program="PROBE.COM")
+    r = start_call(conf=str(conf), cwd=str(GUEST), session_seconds=SESSION_S,
+                   logfile=M.fresh(".log"), state_dir=M.fresh("-save"), shared=True, display=0,
+                   fullscreen=True, background=True, program="PROBE.COM")
+    # A build that takes its window settings only at the guest's first video mode refuses a
+    # parked full-screen start and leaves the session live; the refusal names `resume`.
+    if not refused(r, "window_not_visible"):
+        must(r, "start did not come up")
     must(M.call(server.resume), "releasing the probe")
     must(M.call(server.log_wait, pattern="PROBE", channel="guest", seconds=30),
          "the probe's first line")
