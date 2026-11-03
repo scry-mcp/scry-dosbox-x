@@ -69,7 +69,7 @@ Example, from a live run:
 
 ```json
 {
-  "path": "/path/to/scry-dosbox-x/tests/fixtures/borland-tlink16/MAPDEMO.MAP",
+  "path": "~/Code/scry-dosbox-x-run/tests/fixtures/borland-tlink16/MAPDEMO.MAP",
   "base": "8000"
 }
 ```

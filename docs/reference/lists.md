@@ -81,9 +81,9 @@ Example, from a live run:
         "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
         "conf_digest": "78bdc38f360b9b4a",
         "bound_s": 1200,
-        "elapsed_s": 4.3,
+        "elapsed_s": 4.6,
         "captures": "off",
-        "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save",
+        "state_dir": "$TMPDIR/jobs-scratch/A/n998-save",
         "last_stop": {
           "stop_seq": 11,
           "pc": "0814:00000130",
@@ -155,15 +155,15 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1821.json"
+  "dest": "$TMPDIR/jobs-scratch/A/n1845.json"
 }
 ```
 
 ```json
 {
-  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1821.json",
+  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/jobs-scratch/A/n1845.json",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1821.json",
+  "path": "$TMPDIR/jobs-scratch/A/n1845.json",
   "steps": 1,
   "checks": 0,
   "dropped": [],
@@ -173,7 +173,7 @@ Example, from a live run:
     "op": "resume",
     "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches; it stopped inside frame 0, the one it began in"
   },
-  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1821.json"
+  "replay": "uv run python -m scry_core.replay $TMPDIR/jobs-scratch/A/n1845.json"
 }
 ```
 <!-- scry-reference:end perform_export -->
@@ -247,9 +247,9 @@ Example, from a live run:
           "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
           "conf_digest": "78bdc38f360b9b4a",
           "bound_s": 1200,
-          "elapsed_s": 4.3,
+          "elapsed_s": 4.6,
           "captures": "off",
-          "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save",
+          "state_dir": "$TMPDIR/jobs-scratch/A/n998-save",
           "last_stop": {
             "stop_seq": 11,
             "pc": "0814:00000130",
@@ -277,7 +277,7 @@ Example, from a live run:
   "looked": {
     "guest": {
       "available": true,
-      "since_mark": 93931,
+      "since_mark": 96339,
       "lines_written": 0,
       "lines_total": 0,
       "truncated": false,

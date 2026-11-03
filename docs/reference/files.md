@@ -209,7 +209,7 @@ Example, from a live run:
 ```json
 {
   "method": "measure",
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
+  "path": "$TMPDIR/jobs-scratch/T/n4.wav"
 }
 ```
 
@@ -250,7 +250,7 @@ Example, from a live run:
     }
   ],
   "pcm_sha256": "e60ff11bce0c03f6caa4a04e9e3654b9e40a70a8c156d9e6d2ec7c33a3703a62",
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
+  "path": "$TMPDIR/jobs-scratch/T/n4.wav"
 }
 ```
 <!-- scry-reference:end audio_compare -->
@@ -294,16 +294,19 @@ Example, from a live run:
 
 ```json
 {
-  "path": "/nonexistent/OUT.TXT"
+  "path": "$TMPDIR/jobs-scratch/Y/n1-dosio/OUT.TXT"
 }
 ```
 
 ```json
 {
-  "summary": "guest_file: INVALID (bad_argument), /nonexistent/OUT.TXT was not fingerprinted at `start`, so whether it changed since cannot be told;...",
-  "status": "INVALID",
-  "code": "bad_argument",
-  "message": "/nonexistent/OUT.TXT was not fingerprinted at `start`, so whether it changed since cannot be told; `start(guest_files=[...])` names the files (this session's: none)"
+  "summary": "guest_file $TMPDIR/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
+  "status": "ok",
+  "path": "$TMPDIR/jobs-scratch/Y/n1-dosio/OUT.TXT",
+  "state": "written",
+  "before": {"exists": false},
+  "bytes": 4,
+  "sha256": "580175b2969134a0d8c6f325b442c6d25cf5b10f0643150ed45ffd3a8905bcba"
 }
 ```
 <!-- scry-reference:end guest_file -->

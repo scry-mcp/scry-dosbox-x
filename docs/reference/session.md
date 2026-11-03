@@ -12,8 +12,8 @@ build_check(binary="")
 ```
 
 Whether a DOSBox-X binary resolves and carries the debugger. Run before `start`; it
-refuses while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else the PATH's
-`dosbox-x`; a named build that fails is refused.
+refuses `session_live` while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else
+the PATH's `dosbox-x`; a named build that fails is refused.
 
 Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` and a freeze
 watch need it), `debugger_commands` (which of `RUNSTATE`, `STEPIN`, `SAVESTATE`, `LOADSTATE`, `PRESENCE`, `VGAMEMDUMP`, `BPIF`, `CAPTURE`, `TAP`, `PORTINFO`, `DOSTRACE`, `PIC`, `A20`, `MEMDUMPLIN` the build's debugger has;
@@ -43,15 +43,15 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "build_check: /path/to/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
   "status": "ok",
-  "binary": "/path/to/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "<volatile>",
   "debugger": true,
   "heavy_debug": true,
-  "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "... 7 more"],
-  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 53 more"]
+  "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "... 8 more"],
+  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 54 more"]
 }
 ```
 <!-- scry-reference:end build_check -->
@@ -105,7 +105,7 @@ on macOS (a halted start never reaches full screen there), a bad path or `symbol
 `session_seconds` out of range, `capture_video` without `program`, an `input_port` other than
 0 outside 1024-65535, `log_categories` without `logfile`, `dos_calls`
 on a build with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
-16, or busy.
+16, or a session already live (`session_live`).
 
 Reply: `pid`, `stub`, `window` (`display`, `bounds`, `onscreen`, `front`, `fullscreen`, with
 `shared`), `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
@@ -206,29 +206,29 @@ Example, from a live run:
   "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
   "cwd": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest",
   "session_seconds": 1200,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n985.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save"
+  "logfile": "$TMPDIR/jobs-scratch/A/n997.log",
+  "state_dir": "$TMPDIR/jobs-scratch/A/n998-save"
 }
 ```
 
 ```json
 {
-  "summary": "start probe.conf: headless on /path/to/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.187s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.277s",
   "status": "ok",
   "pid": "<volatile>",
   "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
   "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.5,
+  "elapsed_s": 0.8,
   "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n986-save",
-  "ready_after_s": 0.187,
-  "argv": ["/path/to/dosbox-x", "-conf", "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
-  "binary": "/path/to/dosbox-x",
+  "state_dir": "$TMPDIR/jobs-scratch/A/n998-save",
+  "ready_after_s": 0.277,
+  "argv": ["~/.local/state/dosbox-x-builds/scry/dosbox-x", "-conf", "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
+  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "<volatile>",
-  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "... 7 more"],
-  "stub": "/path/to/scry-dosbox-x/src/scry_dosbox_x/guest/SCRY.COM",
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "... 8 more"],
+  "stub": "~/Code/scry-dosbox-x-run/src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": true,
   "presence": {"available": false, "why": "a session started without `shared` has no window to draw on"},
@@ -262,6 +262,8 @@ A watched start opens DOSBox-X's window on the display `display` names (the OS's
 **`flags` are argv tokens, so a `-set` value with spaces is one token**; a glued `-set` is refused because DOSBox-X hangs on it, a shredded one because DOSBox-X ignores it at rc 0 and the setting would silently not apply.
 
 **`program` loads the stub itself when the conf's autoexec does not run it**, which is why the autoexec must not `exit` before `program` runs.
+
+**The server derives no conf and mounts its own stub.** `start` runs the conf you name as it is and adds, on the command line, a mount of its guest directory on a drive the conf's `[autoexec]` does not use, running `SCRY.COM` from it. A conf taken from a repository's launch script therefore has to drop its boot line and its `exit`, which would end the session before `program` runs, and must not run a copy of `SCRY.COM` of its own: one that speaks another protocol is noted at `start`. What else a repository may declare to the server is [scry-core#123](https://github.com/scry-mcp/scry-core/issues/123).
 
 **`state_dir`** is what `state_write(method="save")` writes to; empty, `save` under the session's scratch, gone at `close`; `start` and `status` name that folder.
 
@@ -382,7 +384,7 @@ Example, from a live run:
   "status": "ok",
   "window": {
     "display": 0,
-    "bounds": {"x": 704, "y": 359, "width": 640, "height": 432},
+    "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
     "onscreen": true,
     "front": false,
     "fullscreen": false

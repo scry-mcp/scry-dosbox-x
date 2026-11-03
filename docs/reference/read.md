@@ -12,7 +12,7 @@ registers(from_last_stop=false)
 ```
 
 The registers at this stop. `from_last_stop=True` returns the registers of the last stop,
-never the current value; refused before any stop.
+never the current value; refused (`no_stop`) before any stop.
 
 Reply: `regs` (hex strings), `superseded` (with `from_last_stop`). CR0, CR3 and descriptor
 tables: `machine_map(sections=["control"])`.
@@ -272,18 +272,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1107.bin"
+  "dest": "$TMPDIR/jobs-scratch/A/n1119.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1107.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/jobs-scratch/A/n1119.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1107.bin",
+  "path": "$TMPDIR/jobs-scratch/A/n1119.bin",
   "bytes": 16
 }
 ```

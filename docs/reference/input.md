@@ -198,7 +198,7 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "send_mouse: pointer at 0,0; posted, unverified",
+  "summary": "send_mouse: pointer at 0,0, program's own pointer not read; no button pressed; posted, unverified",
   "status": "ok",
   "x": 0,
   "y": 0,
@@ -210,7 +210,7 @@ Example, from a live run:
     "buttons": [],
     "bios_mode": "0x03"
   },
-  "arrived": true,
+  "driver_arrived": true,
   "motion": true,
   "verify": {
     "checked": false,

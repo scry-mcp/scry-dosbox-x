@@ -7,6 +7,9 @@ What a client of the server notices.
 It needs the scry-core that serves `scry_core.window`, not an older one: the tag pinned in
 `pyproject.toml` is the floor.
 
+- The descriptions of `build_check` and `start` name `session_live`, `registers` names `no_stop` and `snapshot` names
+  `wait_expired`, the codes they answer; the README says how to watch a session, and `start`'s page says who mounts
+  the stub and what a repository's conf must drop.
 - `build_check` answers `debugger_commands_missing`: each debugger command the build lacks, with the tools it
   takes away (a build without `RUNSTATE` lists `run_to`, `run_for`, `trace`, `screen_wait` and the rest); it is
   omitted when the build has every command.

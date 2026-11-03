@@ -323,13 +323,13 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "log emulator /./: 40 of 134 lines",
+  "summary": "log emulator /./: 40 of 166 lines",
   "status": "ok",
   "pattern": ".",
   "channel": "emulator",
-  "lines_total": 134,
+  "lines_total": 166,
   "truncated": true,
-  "lines": ["Breakpoint list:", "-------------------------------------------------------------------------", "00. BPINT 21 AH=4B", "DEBUG: Breakpoint deletion success.", "Breakpoint list:", "-------------------------------------------------------------------------", "... 34 more"]
+  "lines": ["surface consider=720x400 final=720x400", "DEBUG: RUNSTATE running cycles=222452 ms=23.000100000 frames=2", "DEBUG: RUNSTATE running cycles=262318 ms=27.000100000 frames=2", "DEBUG: RUNSTATE running cycles=302186 ms=31.000100000 frames=2", "DEBUG: RUNSTATE running cycles=342097 ms=35.000100000 frames=3", "DEBUG: RUNSTATE running cycles=371996 ms=38.000100000 frames=3", "... 34 more"]
 }
 ```
 <!-- scry-reference:end log -->

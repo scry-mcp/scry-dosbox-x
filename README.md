@@ -77,6 +77,14 @@ DOSBox-X's window, sized by `size` when you state one, else by your conf's `wind
 else the largest 4:3 window the display holds. Everything about your project
 comes from you; the server carries no default that points anywhere.
 
+To watch it, `start` takes `shared=true`, `display` (the OS's display index, 0 the main display),
+`fullscreen` and `size`, and proves the window is on the display you asked, refusing by name
+(`window_not_visible`) when it is not, which includes a DOSBox-X that keeps its default window
+until the guest runs: `resume`, then `window`. Somebody watching through a stream (Moonlight)
+needs `shared=true` and `fullscreen=true`, because a pointer does not map inside a window; the
+`presence` indicator draws the orange edge that tells the watcher a session is live. All of it is
+on [`start`'s page](docs/reference/session.md#start).
+
 ## Platforms
 
 macOS and Windows: the server and its tests run on both. The server talks to DOSBox-X's debugger

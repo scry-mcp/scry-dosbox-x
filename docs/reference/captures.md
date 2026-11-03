@@ -43,12 +43,7 @@ Example, from a live run:
   "summary": "captures: 7 files",
   "status": "ok",
   "captures": [
-    {
-      "kind": "bin",
-      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1107.bin",
-      "present": true,
-      "bytes": 16
-    },
+    {"kind": "bin", "path": "$TMPDIR/jobs-scratch/A/n1119.bin", "present": true, "bytes": 16},
     {
       "kind": "png",
       "path": "$TMPDIR/dosbox-x-session-<run>/gfx/palette-1.png",
@@ -57,19 +52,14 @@ Example, from a live run:
     },
     {
       "kind": "json",
-      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1284-stopped.screen-map.json",
+      "path": "$TMPDIR/jobs-scratch/A/n1296-stopped.screen-map.json",
       "present": true,
       "bytes": 341
     },
-    {
-      "kind": "trace",
-      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1372.trace",
-      "present": true,
-      "bytes": 238
-    },
+    {"kind": "trace", "path": "$TMPDIR/jobs-scratch/A/n1384.trace", "present": true, "bytes": 238},
     {
       "kind": "avi",
-      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1422.avi",
+      "path": "$TMPDIR/jobs-scratch/A/n1446.avi",
       "present": true,
       "bytes": 36314,
       "riff_avi": true,
@@ -78,7 +68,7 @@ Example, from a live run:
     },
     {
       "kind": "wav",
-      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1435.wav",
+      "path": "$TMPDIR/jobs-scratch/A/n1459.wav",
       "present": true,
       "bytes": 5420,
       "complete": true,
@@ -128,19 +118,19 @@ Example, from a live run:
 ```json
 {
   "frame": 2,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n11.png",
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n6-cap/screen_001.avi"
+  "dest": "$TMPDIR/jobs-scratch/J/n11.png",
+  "capture_path": "$TMPDIR/jobs-scratch/J/n6-cap/screen_001.avi"
 }
 ```
 
 ```json
 {
-  "summary": "capture_frame 2: 5072 bytes to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n11.png",
+  "summary": "capture_frame 2: 5072 bytes to $TMPDIR/jobs-scratch/J/n11.png",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n11.png",
+  "path": "$TMPDIR/jobs-scratch/J/n11.png",
   "bytes": 5072,
   "sha256": "aee93b1749a9c93112b4fca12509d5ad9da94fc94b41bf781612e590a0a4342b",
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n6-cap/screen_001.avi",
+  "capture_path": "$TMPDIR/jobs-scratch/J/n6-cap/screen_001.avi",
   "frame": 2
 }
 ```
@@ -198,7 +188,7 @@ Example, from a live run:
   "first": 0,
   "last": 4,
   "crop": [0, 0, 320, 8],
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Q/n1-cap/screen_001.avi"
+  "capture_path": "$TMPDIR/jobs-scratch/Q/n1-cap/screen_001.avi"
 }
 ```
 
@@ -214,7 +204,7 @@ Example, from a live run:
   "frames_asked": 5,
   "kept_after_close": false,
   "frame_source": "avi",
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Q/n1-cap/screen_001.avi",
+  "capture_path": "$TMPDIR/jobs-scratch/Q/n1-cap/screen_001.avi",
   "crop": [0, 0, 320, 8]
 }
 ```
@@ -232,10 +222,10 @@ snapshot(dest="", seconds=10.0)
 ```
 
 A still of the screen as a PNG, at `dest` if given (absolute, new). Running: taken in the
-guest into the captures directory within `seconds` (`route` `guest`); refused with no `logfile`
-or no stub in the log. At a stop: written from video memory through `screen_view`'s decoder
-(`route` `video_memory`), unscaled, without running the machine; a text mode is refused
-(`no_channel`), and `seconds` is not used.
+guest into the captures directory within `seconds` (`route` `guest`; `wait_expired` when none
+appears); refused with no `logfile` or no stub in the log. At a stop: written from video
+memory through `screen_view`'s decoder (`route` `video_memory`), unscaled, without running the
+machine; a text mode is refused (`no_channel`), and `seconds` is not used.
 
 Reply: `route`, `path`, `bytes`, `sha256`.
 
@@ -255,17 +245,17 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/P/n4.png",
+  "dest": "$TMPDIR/jobs-scratch/P/n4.png",
   "seconds": 20
 }
 ```
 
 ```json
 {
-  "summary": "snapshot: 885 bytes at $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/P/n4.png",
+  "summary": "snapshot: 885 bytes at $TMPDIR/jobs-scratch/P/n4.png",
   "status": "ok",
   "route": "guest",
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/P/n4.png",
+  "path": "$TMPDIR/jobs-scratch/P/n4.png",
   "bytes": 885,
   "sha256": "5053cd8f49a0d5bea6531db5520c7dfb0c06340f05b59d4baff51012d24313f5"
 }
@@ -341,14 +331,14 @@ Example, from a live run:
 ```json
 {
   "frames": 2,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1422.avi",
+  "dest": "$TMPDIR/jobs-scratch/A/n1446.avi",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "record 2 frames: ELAPSED, 1 frame at $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1422.avi",
+  "summary": "record 2 frames: ELAPSED, 1 frame at $TMPDIR/jobs-scratch/A/n1446.avi",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 2,
@@ -358,7 +348,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b8",
-    "ECX": "0x00006a92",
+    "ECX": "0x00006a9a",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -374,7 +364,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 86806},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 89145},
   "stop_seq": 10,
   "instruction": {
     "address": "0814:00000130",
@@ -395,7 +385,7 @@ Example, from a live run:
   "frames": 2,
   "began": true,
   "ended": true,
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1422.avi",
+  "path": "$TMPDIR/jobs-scratch/A/n1446.avi",
   "bytes": 36314,
   "avi_frames": 1
 }
@@ -483,14 +473,14 @@ Example, from a live run:
 ```json
 {
   "frames": 2,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1435.wav",
+  "dest": "$TMPDIR/jobs-scratch/A/n1459.wav",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "audio_record wav 2 frames: ELAPSED, 1344 samples at 48000 Hz, silent at $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1435.wav",
+  "summary": "audio_record wav 2 frames: ELAPSED, 1344 samples at 48000 Hz, silent at $TMPDIR/jobs-scratch/A/n1459.wav",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 2,
@@ -500,7 +490,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b4",
-    "ECX": "0x00001350",
+    "ECX": "0x00001358",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -516,7 +506,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 90317},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 92702},
   "stop_seq": 11,
   "instruction": {
     "address": "0814:00000130",
@@ -537,7 +527,7 @@ Example, from a live run:
   "frames": 2,
   "began": true,
   "ended": true,
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1435.wav",
+  "path": "$TMPDIR/jobs-scratch/A/n1459.wav",
   "bytes": 5420,
   "channels": 2,
   "sample_rate_hz": 48000,

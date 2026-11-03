@@ -148,8 +148,8 @@ from scry_dosbox_x.state import STATE  # noqa: E402
 @tool("Check the build", summary=one_line.build_check, read_only=True)
 def build_check(binary: str = "") -> dict[str, Any]:
     """Whether a DOSBox-X binary resolves and carries the debugger. Run before `start`; it
-    refuses while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else the PATH's
-    `dosbox-x`; a named build that fails is refused.
+    refuses `session_live` while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else
+    the PATH's `dosbox-x`; a named build that fails is refused.
 
     Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` and a freeze
     watch need it), `debugger_commands` (which of {DEBUGGER_COMMANDS} the build's debugger has;
@@ -240,7 +240,7 @@ def start(conf: str, cwd: str,
     `session_seconds` out of range, `capture_video` without `program`, an `input_port` other than
     0 outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX}, `log_categories` without `logfile`, `dos_calls`
     on a build with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
-    {GUEST_FILES_MAX}, or busy.
+    {GUEST_FILES_MAX}, or a session already live (`session_live`).
 
     Reply: `pid`, `stub`, `window` (`display`, `bounds`, `onscreen`, `front`, `fullscreen`, with
     `shared`), `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
@@ -408,7 +408,7 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
 @tool("Read the registers", summary=one_line.registers, read_only=True, replay=("regs",))
 def registers(from_last_stop: bool = False) -> dict[str, Any]:
     """The registers at this stop. `from_last_stop=True` returns the registers of the last stop,
-    never the current value; refused before any stop.
+    never the current value; refused (`no_stop`) before any stop.
 
     Reply: `regs` (hex strings), `superseded` (with `from_last_stop`). CR0, CR3 and descriptor
     tables: `machine_map(sections=["control"])`.
@@ -862,10 +862,10 @@ def screen_wait(text: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
 def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.SNAPSHOT_WAIT_S,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """A still of the screen as a PNG, at `dest` if given (absolute, new). Running: taken in the
-    guest into the captures directory within `seconds` (`route` `guest`); refused with no `logfile`
-    or no stub in the log. At a stop: written from video memory through `screen_view`'s decoder
-    (`route` `video_memory`), unscaled, without running the machine; a text mode is refused
-    (`no_channel`), and `seconds` is not used.
+    guest into the captures directory within `seconds` (`route` `guest`; `wait_expired` when none
+    appears); refused with no `logfile` or no stub in the log. At a stop: written from video
+    memory through `screen_view`'s decoder (`route` `video_memory`), unscaled, without running the
+    machine; a text mode is refused (`no_channel`), and `seconds` is not used.
 
     Reply: `route`, `path`, `bytes`, `sha256`.
     """
