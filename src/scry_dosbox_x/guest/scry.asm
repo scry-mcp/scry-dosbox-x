@@ -16,7 +16,7 @@
 ; is still hooked, for what only a clock can do: dropping a frame left short, and draining COM1
 ; when a program masked IRQ 4. Both entries run one routine, never at once.
 ;
-; A FRAME (protocol 6): SYNC (A5h), a sequence byte (1 to 255), then the command, an opcode
+; A FRAME (protocol 7): SYNC (A5h), a sequence byte (1 to 255), then the command, an opcode
 ; byte and a fixed payload, then a CHECK: every byte after SYNC XORed into FFh. A SYNC byte can sit
 ; inside a payload (A5h is the break of a key), so a frame short of a byte can be completed by the
 ; next one's: the check is what makes that frame not add up. One that does not, or whose opcode
@@ -39,6 +39,9 @@
 ;                      pressed or released, the low bits which button (0 left, 1 right, 2 middle)
 ;   'M' xl xh yl yh    the pointer AT these driver coordinates, exactly (INT 33h AX=04h),
 ;                      reached first as motion through the device where the build takes it
+;   'W' xl xh yl yh    the driver's RANGE becomes 0..x and 0..y (INT 33h AX=07h and AX=08h): a
+;                      program whose own pointer moves by the driver's motion is steered over
+;                      the driver's range, 640 x 200 by default, however big its screen is
 ;   'R'                report, on COM1 after its acknowledgement (a repeat too: it reads,
 ;                      it changes nothing), one line ending CR LF:
 ;                      INT 33h AX=03h (position, buttons), AX=26h (the driver's range), the
@@ -66,7 +69,7 @@
 ; DOSBox-X's video BIOS answers behind a callback: under a VBE mode the BIOS mode byte holds the
 ; emulated card's own number, and only VBE says which mode that is and how large.
 ;
-; It announces itself on the E9 port (`STUB  . scry device=present proto=6 motion=1`) so a host
+; It announces itself on the E9 port (`STUB  . scry device=present proto=7 motion=1`) so a host
 ; reading the log can tell whether the device answered, which protocol it speaks and whether a move
 ; carries motion, before it trusts the route. A build whose device does not answer exits with a
 ; code and stays out of memory.
@@ -211,7 +214,7 @@ start:
 ; Each runs with interrupts off and `service` never turns them on, so `busy` is only ever found
 ; set by an entry that came in under a driver call of the stub's own (INT 33h): that entry
 ; leaves the bytes to the next one.
-signature db 'SCRY-INJECT-6'      ; what the already-resident check reads before the entries
+signature db 'SCRY-INJECT-7'      ; what the already-resident check reads before the entries
 SIG_LEN equ $ - signature
 tick:
         pushf
@@ -309,6 +312,8 @@ parse:
         mov     cl, 7
         cmp     al, 'M'
         je      .len
+        cmp     al, 'W'
+        je      .len
         mov     cl, 3
         cmp     al, 'R'
         je      .len
@@ -396,7 +401,18 @@ carry:
         mov     dx, [frame+4]
         int     33h
         jmp     .acked
-.notm:  cmp     al, 'R'
+.notm:  cmp     al, 'W'
+        jne     .notw
+        mov     ax, 7
+        xor     cx, cx
+        mov     dx, [frame+2]
+        int     33h
+        mov     ax, 8
+        xor     cx, cx
+        mov     dx, [frame+4]
+        int     33h
+        jmp     .acked
+.notw:  cmp     al, 'R'
         je      .acked              ; the report goes out after its acknowledgement
         mov     eax, REG_SCREENSHOT ; 'S', the last opcode `parse` lets through
         call    write_regsel
@@ -691,7 +707,7 @@ com_tx:                             ; al -> COM1, once its holding register is e
 ; ---------------------------------------------------------------- data
 old1c       dd 0
 ; No timestamp: a stamp is the guest program's own clock, and this is not the program.
-msg_present db 'STUB  . scry device=present proto=6 motion=$'
+msg_present db 'STUB  . scry device=present proto=7 motion=$'
 msg_rep db 'STUB  . mouse x=$'
 msg_y db ' y=$'
 msg_b db ' buttons=$'

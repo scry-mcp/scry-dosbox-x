@@ -5,7 +5,13 @@
   "tool": "send_mouse",
   "args": {
    "target": "serve",
-   "button": "left"
+   "button": "left",
+   "action": {
+    "any_of": [
+     "",
+     "click"
+    ]
+   }
   },
   "grammar": [
    "left"

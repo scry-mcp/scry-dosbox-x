@@ -103,6 +103,53 @@ def test_an_aim_outside_the_window_the_driver_maps_to_is_given_up_on_with_that_w
     assert pointer.shown(got)["reach"] == {"x": [0, 219], "y": [0, 0]}, pointer.shown(got)
 
 
+class Narrow:
+    """A program whose pointer starts at `base` for a driver at 0 and follows it at `ratio` driver
+    units a program unit, over a driver range that stops at `max`; widening the range is the only
+    way past it."""
+
+    def __init__(self, base: int = 352, ratio: float = 2.0, max_: int = 639) -> None:
+        self.base, self.ratio, self.max, self.driver = base, ratio, max_, 320
+        self.widened: list[int] = []
+
+    def seen(self) -> tuple[int, int]:
+        return self.base + round(self.driver / self.ratio), 0
+
+    def nudge(self, dx: int, _dy: int) -> None:
+        self.driver = min(max(self.driver + dx, 0), self.max)
+
+    def resync(self) -> tuple[tuple[int, int], tuple[int, int]]:
+        self.driver = 0
+        low = self.seen()
+        self.driver = self.max
+        return low, self.seen()
+
+    def widen(self, reach: tuple[tuple[int, int], tuple[int, int]]) -> tuple[float, float]:
+        self.widened.append(reach[1][0] - reach[0][0])
+        self.max = 2047
+        return (self.ratio, self.ratio)
+
+
+def test_an_aim_past_the_drivers_range_widens_it_and_is_steered_there() -> None:
+    world = Narrow()
+    got = pointer.steer((900, 0), world.seen, world.nudge, (2.0, 2.0), world.resync, world.widen)
+    assert got.arrived and got.seen == (900, 0), got
+    assert world.widened == [320], "the sweep's span reached the widening"
+
+
+def test_an_aim_the_range_already_covers_widens_nothing() -> None:
+    world = Narrow()
+    got = pointer.steer((600, 0), world.seen, world.nudge, (2.0, 2.0), world.resync, world.widen)
+    assert got.arrived and world.widened == [], (got, world.widened)
+
+
+def test_a_widening_that_lets_the_program_fall_short_is_still_said_with_its_reach() -> None:
+    world = Narrow()
+    world.widen = lambda reach: (2.0, 2.0)               # type: ignore[method-assign]
+    got = pointer.steer((900, 0), world.seen, world.nudge, (2.0, 2.0), world.resync, world.widen)
+    assert not got.arrived and got.reach is not None, got
+
+
 def test_a_pointer_that_arrived_carries_no_reach() -> None:
     steered = pointer.Steered((5, 6), True, 2, ((0, 0), (9, 9)))
     assert pointer.shown(steered) == {"x": 5, "y": 6, "corrections": 2}

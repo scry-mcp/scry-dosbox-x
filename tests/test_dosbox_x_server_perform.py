@@ -134,7 +134,7 @@ def test_send_mouse_moves_presses_and_reads_the_pointer_back(tmp_path: Path) -> 
     # two coordinates, y stays.
     assert fake.commands_sent == [[b"R"], [b"M" + (201).to_bytes(2, "little")
                                           + (50).to_bytes(2, "little")], [b"R"]]
-    assert moved["arrived"] is True and "asked" not in moved
+    assert moved["driver_arrived"] is True and "asked" not in moved
     assert moved["pointer"]["screen"] == {"x": 100, "y": 50, "width": 320, "height": 200}
     assert moved["pointer"]["mouse"] == {"x": 201, "y": 50, "max_x": 639, "max_y": 199}
     assert moved["pointer"]["bios_mode"] == "0x13" and moved["pointer"]["buttons"] == []
@@ -154,17 +154,47 @@ def test_send_mouse_moves_presses_and_reads_the_pointer_back(tmp_path: Path) -> 
     assert raw["pointer"]["screen"]["x"] == 319
 
 
+def test_an_action_with_no_button_presses_the_left_one_and_a_bare_move_presses_none(
+        tmp_path: Path) -> None:
+    fake = _guest(tmp_path)
+    fake.video_mode, fake.mouse_max = 0x13, (639, 199)
+    bare = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert [c for c in fake.commands_sent if c and c[0][:1] == b"B"] == [], fake.commands_sent
+    assert "button" not in bare, bare
+    fake.commands_sent.clear()
+    clicked = cast(dict[str, Any], server.send_mouse(x=100, y=50, action="click"))
+    assert fake.commands_sent[1] == [b"M" + (201).to_bytes(2, "little")
+                                     + (50).to_bytes(2, "little"), b"B\x80", b"B\x00"], \
+        fake.commands_sent
+    assert clicked["button"] == "left" and clicked["action"] == "click", clicked
+    assert "no button pressed" not in clicked["summary"], clicked["summary"]
+    fake.commands_sent.clear()
+    server.send_mouse(button="right")                  # a button alone clicks it, as ever
+    assert fake.commands_sent[1] == [b"B\x81", b"B\x01"], fake.commands_sent
+
+
+def test_a_screen_move_no_program_pointer_judged_is_the_drivers_word_only(
+        tmp_path: Path) -> None:
+    fake = _guest(tmp_path)
+    fake.video_mode, fake.mouse_max = 0x13, (639, 199)
+    unjudged = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert unjudged["driver_arrived"] is True and "arrived" not in unjudged, unjudged
+    assert "program's own pointer not read" in unjudged["summary"], unjudged["summary"]
+    driver = cast(dict[str, Any], server.send_mouse(x=100, y=50, units="mouse"))
+    assert driver["arrived"] is True and "driver_arrived" not in driver, driver
+
+
 def test_a_move_the_driver_placed_elsewhere_is_said_never_rounded_away(tmp_path: Path) -> None:
     fake = _guest(tmp_path)
     fake.pointer_snaps = 8
     exact = cast(dict[str, Any], server.send_mouse(x=10, y=3))         # cell (10, 3)
-    assert exact["arrived"] is True and exact["pointer"]["screen"]["x"] == 10, exact
+    assert exact["driver_arrived"] is True and exact["pointer"]["screen"]["x"] == 10, exact
     off = cast(dict[str, Any], server.send_mouse(x=21, y=3, units="mouse"))
     assert off["status"] == "ok" and off["arrived"] is False, off
     assert off["asked"] == {"x": 21, "y": 3} and off["pointer"]["mouse"]["x"] == 16, off
     fake.pointer_snaps = 16                                             # cell 11 snaps into 10
     missed = cast(dict[str, Any], server.send_mouse(x=11, y=3))
-    assert missed["arrived"] is False and missed["pointer"]["screen"]["x"] == 10, missed
+    assert missed["driver_arrived"] is False and missed["pointer"]["screen"]["x"] == 10, missed
     assert missed["asked"] == {"x": 92, "y": 28}, missed
 
 
@@ -173,7 +203,7 @@ def test_a_program_s_own_range_is_landed_on_through_the_tool(tmp_path: Path) -> 
     fake = _guest(tmp_path)
     fake.video_mode, fake.mouse_max, fake.pointer_snaps = 0x13, (2552, 1592), 2
     got = cast(dict[str, Any], server.send_mouse(x=40, y=60))
-    assert got["arrived"] is True and got["pointer"]["screen"]["x"] == 40, got
+    assert got["driver_arrived"] is True and got["pointer"]["screen"]["x"] == 40, got
     assert (got["pointer"]["mouse"]["x"] // 8, got["pointer"]["mouse"]["y"] // 8) == (40, 60), got
 
 
@@ -189,7 +219,6 @@ def test_send_mouse_refuses_before_anything_is_sent(tmp_path: Path) -> None:
         (lambda: server.send_mouse(x=0, y=2**31, units="mouse"), "to 32767"),
         (lambda: server.send_mouse(button="wheel"), "button is one of"),
         (lambda: server.send_mouse(button="left", action="triple"), "action is one of"),
-        (lambda: server.send_mouse(x=1, y=1, action="down"), "acts on a `button`"),
         (lambda: server.send_mouse(x=1, y=1, units="pixels"), "units is one of"),
     ]
     for call, words in cases:
@@ -361,6 +390,9 @@ def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Pa
     assert out["status"] == "ok" and out["verdict"] == "TIMEOUT", out
     assert out["steps_completed"] == 1 and "step 1 ('send_keys')" in out["note"], out
     assert out["ran"][0]["reply"]["posted"] == 1, out["ran"][0]
+    # the missed step's own words are in the list's note, not only in `ran`
+    assert "its own reply: send_keys (guest): effect not seen (TIMEOUT)" in out["note"], out
+    assert "the guest wrote no line in the 1 s waited" in out["note"], out
     assert "status" not in [r["op"] for r in out["ran"]], "the steps after it were not sent"
 
 

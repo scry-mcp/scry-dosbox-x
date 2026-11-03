@@ -354,7 +354,7 @@ def test_a_stop_at_the_shell_after_a_free_run_names_the_program_the_log_shows_ra
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     session = _launched_over(
         tmp_path, monkeypatch,
-        "Bochs port E9h: [+   0.100] STUB  . scry device=present proto=6 motion=1\n"
+        "Bochs port E9h: [+   0.100] STUB  . scry device=present proto=7 motion=1\n"
         "Bochs port E9h: [+  11.257] PERF  . audio play=1\n")
     session.control.hooks["EV"] = lambda body: (  # type: ignore[attr-defined]
         (True, ["701"]) if body == "EV PSPSEG" else None)
@@ -369,7 +369,7 @@ def test_a_log_with_only_the_stubs_lines_does_not_say_the_program_ran(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     session = _launched_over(
         tmp_path, monkeypatch,
-        "Bochs port E9h: [+   0.100] STUB  . scry device=present proto=6 motion=1\n")
+        "Bochs port E9h: [+   0.100] STUB  . scry device=present proto=7 motion=1\n")
     session.control.hooks["EV"] = lambda body: (  # type: ignore[attr-defined]
         (True, ["701"]) if body == "EV PSPSEG" else None)
     monkeypatch.setattr(dstate.STATE, "session", session)

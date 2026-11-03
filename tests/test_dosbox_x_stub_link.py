@@ -231,7 +231,15 @@ def test_the_protocol_constants_are_the_stubs_own() -> None:
 
 
 def test_the_frame_lengths_are_read_off_the_stubs_parser() -> None:
-    assert {ord("K"): 4, ord("B"): 4, ord("M"): 7, ord("R"): 3, ord("S"): 3} == LENGTHS
+    assert {ord("K"): 4, ord("B"): 4, ord("M"): 7, ord("W"): 7, ord("R"): 3, ord("S"): 3} == LENGTHS
+
+
+def test_a_range_frame_is_carried_whole_between_a_move_and_a_button(pair: Any) -> None:
+    host, guest = pair
+    stub = Stub(guest)
+    frames = [b"M\x10\x00\x20\x00", inputs.range_command(2047, 767), b"B\x80"]
+    assert link.Link(host).send(frames) == []
+    assert stub.carried == frames and frames[1] == b"W\xff\x07\xff\x02"
 
 
 @pytest.mark.parametrize("entry", [{"timer_owned": True}, {"masked": True}],

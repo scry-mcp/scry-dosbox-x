@@ -355,6 +355,7 @@ NO_SESSION_BLOCK: dict[str, Any] = {"alive": False, "running": False, "altered":
 
 _ALARM_WHEN: dict[str, Callable[[Any], bool]] = {
     "program": lambda v: bool(v),
+    "range_widened": lambda v: bool(v),
     "conf_changed_on_disk": lambda v: v is not False,
     "output_bytes_dropped": lambda v: bool(v),
 }
@@ -374,7 +375,7 @@ def process_facts() -> dict[str, Any]:
     if STATE.session is None:
         return {}
     return {key: value for key, value in STATE.session.state().items()
-            if key not in _ALWAYS and key != "program"}
+            if key not in _ALWAYS and key not in ("program", "range_widened")}
 
 
 def extend(built: dict[str, Any], **fields: Any) -> dict[str, Any]:

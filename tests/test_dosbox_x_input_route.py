@@ -8,6 +8,7 @@ from __future__ import annotations
 import dataclasses
 from collections.abc import Callable
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
@@ -102,12 +103,34 @@ def test_a_vbe_mode_whose_size_vbe_did_not_say_maps_no_units() -> None:
     assert report.units() is None
 
 
+@pytest.mark.parametrize(("screen", "max_", "span", "wanted"), [
+    (1024, 639, 319, 2050),     # ReChip!'s x: 320 program units over 640 driver ones
+    (768, 199, 199, 767),       # its y: one for one
+    (1024, 639, 0, 639),        # a sweep that measured nothing leaves the range alone
+    (2**20, 639, 1, inputs.MAX_COORD),
+])
+def test_the_range_that_spans_a_screen_comes_from_what_a_sweep_measured(
+        screen: int, max_: int, span: int, wanted: int) -> None:
+    assert inputs._range_for(screen, max_, span) == wanted
+
+
+def test_a_widened_range_is_in_every_session_block_while_it_holds(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    facts: dict[str, Any] = {"alive": True, "running": False, "altered": True, "pid": 1,
+                             "range_widened": None}
+    monkeypatch.setattr(dstate.STATE, "session", SimpleNamespace(state=lambda: dict(facts)))
+    assert "range_widened" not in dstate.session_block(), dstate.session_block()
+    facts["range_widened"] = {"x": 2050, "y": 767}
+    assert dstate.session_block()["range_widened"] == {"x": 2050, "y": 767}
+    assert "range_widened" not in dstate.process_facts()
+
+
 def test_a_vbe_mode_s_pixel_lands_one_to_one_and_is_said(tmp_path: Path) -> None:
     fake = _guest(tmp_path)
     fake.video_mode, fake.vbe = 0x6B, (0x103, 0x9B, 800, 600)
     fake.mouse_max = (799, 599)
     got = cast(dict[str, Any], server.send_mouse(x=799, y=599))
-    assert got["status"] == "ok" and got["arrived"] is True, got
+    assert got["status"] == "ok" and got["driver_arrived"] is True, got
     assert fake.commands_sent[-2] == [inputs.move_command(799, 599)]
     assert got["pointer"]["screen"] == {"x": 799, "y": 599, "width": 800, "height": 600}, got
     assert got["pointer"]["vbe_mode"] == "0x103", got
@@ -138,7 +161,7 @@ def test_both_axes_are_bounded_on_the_screen_and_in_the_driver(tmp_path: Path) -
         got = cast(dict[str, Any], server.send_mouse(**kw))
         assert got["status"] == "INVALID" and words in got["message"], (kw, got)
     edge = cast(dict[str, Any], server.send_mouse(x=79, y=24))
-    assert edge["status"] == "ok" and edge["arrived"] is True, edge
+    assert edge["status"] == "ok" and edge["driver_arrived"] is True, edge
     assert fake.commands_sent[-2] == [inputs.move_command(636, 196)]
 
 
@@ -176,7 +199,7 @@ def test_a_drag_presses_at_its_start_moves_and_releases_at_its_end(tmp_path: Pat
     fake = _guest(tmp_path)
     got = cast(dict[str, Any], server.send_mouse(x=10, y=5, button="left", action="drag",
                                                  to_x=40, to_y=10))
-    assert got["status"] == "ok" and got["arrived"] is True, got
+    assert got["status"] == "ok" and got["driver_arrived"] is True, got
     acted = [c for c in fake.commands_sent if c != [inputs.OP_REPORT]]
     end = (inputs.to_driver(40, 80, 639), inputs.to_driver(10, 25, 199))
     assert acted == [[inputs.move_command(84, 44), b"B\x80", inputs.move_command(*end),
@@ -188,7 +211,6 @@ def test_a_drag_presses_at_its_start_moves_and_releases_at_its_end(tmp_path: Pat
     ({"x": 10, "y": 5, "button": "left", "action": "drag"}, "`to_x` and `to_y`"),
     ({"x": 10, "y": 5, "button": "left", "action": "drag", "to_x": 3}, "BOTH `to_x` and `to_y`"),
     ({"button": "left", "action": "drag", "to_x": 3, "to_y": 4}, "starts at"),
-    ({"x": 10, "y": 5, "action": "drag", "to_x": 3, "to_y": 4}, "acts on a `button`"),
     ({"x": 10, "y": 5, "button": "left", "to_x": 3, "to_y": 4}, "action='drag'"),
     ({"x": 10, "y": 5, "button": "left", "action": "drag", "to_x": 99999, "to_y": 4},
      "`to_x` is a whole number"),

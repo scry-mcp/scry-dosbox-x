@@ -65,17 +65,31 @@ def unsteered(parked: bool, moved: bool, units: str, sized: bool) -> str | None:
 
 def steer(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
           nudge: Callable[[int, int], None], ratio: tuple[float, float],
-          resync: Callable[[], tuple[tuple[int, int], tuple[int, int]]] | None = None) -> Steered:
+          resync: Callable[[], tuple[tuple[int, int], tuple[int, int]]] | None = None,
+          widen: Callable[[tuple[tuple[int, int], tuple[int, int]]], tuple[float, float] | None]
+          | None = None) -> Steered:
     """Nudge the driver by the gap to `aim` until the pointer is on it or stops moving; `ratio` is
     driver units a program unit. A driver at its edge loses the motion its program never sees, so
     when the nudges fail `resync` (a sweep to both edges, where each clamps; it returns the
-    program's pointer at each) runs once and the steering starts again."""
+    program's pointer at each) runs once and the steering starts again. An aim outside the span
+    that sweep found is past the driver's range: `widen` (given the span) widens the range and
+    returns the new ratio, or None when it left the range alone, and the sweep is made again."""
     steered, ratio = _chase(aim, seen_now, nudge, ratio)
     if steered.arrived or resync is None:
         return steered
     reach = resync()
+    if widen is not None and not _inside(aim, reach):
+        widened = widen(reach)
+        if widened is not None:
+            ratio = widened
+            reach = resync()
     again, _ = _chase(aim, seen_now, nudge, ratio)
     return Steered(again.seen, again.arrived, steered.corrections + again.corrections, reach)
+
+
+def _inside(aim: tuple[int, int], reach: tuple[tuple[int, int], tuple[int, int]]) -> bool:
+    (x0, y0), (x1, y1) = reach
+    return min(x0, x1) <= aim[0] <= max(x0, x1) and min(y0, y1) <= aim[1] <= max(y0, y1)
 
 
 def _chase(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],

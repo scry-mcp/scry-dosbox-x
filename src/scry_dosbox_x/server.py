@@ -1471,7 +1471,7 @@ def send_keys(keys: list[str],
 def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = None,
                y: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = None,
                button: Annotated[str, vocab.enum(("", *inputs.BUTTON_WORDS))] = "",
-               action: Annotated[str, vocab.enum(inputs.ACTIONS)] = "click",
+               action: Annotated[str, vocab.enum(("", *inputs.ACTIONS))] = "",
                units: Annotated[str, vocab.enum(inputs.UNITS)] = "screen", expect: str = "",
                seconds: Annotated[float, vocab.WAIT_BOUNDS] | None = None, target: str = "",
                to_x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = None,
@@ -1480,7 +1480,9 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
     """Move the guest's mouse pointer, press buttons, and read the pointer back; `expect`
     proves the program reacted, as in `send_keys`.
 
-    `x`, `y`: both or neither, in `units`. `target`: a control of the latest `screen_map_find`
+    `x`, `y`: both or neither, in `units`. `action` names what the button does; with an `action`
+    and no `button` the left one is used, and with neither only the pointer moves. `target`: a
+    control of the latest `screen_map_find`
     screen, instead of `x`, `y`. `action="drag"` presses at that place and releases at `to_x`,
     `to_y`, with the move between. A stopped machine is run as for `send_keys`; under a map that
     declares the program's own pointer, a move there nudges the driver until that pointer is on
@@ -1492,12 +1494,15 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
     both ends, `to_x` and `to_y` without a drag (`bad_argument`);
     no `screen_map_find` match (`needs_call`); an unknown control (`unknown_ref`).
 
-    Reply: `route`, `pointer`, `arrived` (else `asked`), `motion` (a move reached the motion
+    Reply: `route`, `pointer`, `arrived` (the program's pointer read, or `units="mouse"`; else
+    `driver_arrived` and `asked`: only the driver is known), `motion` (a move reached the motion
     counters too), `verify`; with `target`: `target`, `screen`, `identified_at_stop`; from a
     stopped machine, `send_keys`' `polls` and stop.
 
     Reference: REFERENCE.md, Input and the screen.
     """
+    button = button or ("left" if action else "")      # naming an action presses the left button
+    action = action or "click"
     if not target:
         moved = inputs.send_mouse(live(), x, y, button or None, action, units, expect or None,
                                   seconds, bridge(ctx), to_x=to_x, to_y=to_y,

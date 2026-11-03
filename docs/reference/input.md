@@ -16,7 +16,7 @@ Each command is a numbered, checked frame, acknowledged on the same link before 
 
 The conf owes the route one line: its autoexec runs the stub before the program. A session started with `program` needs none: `start` loads the stub itself, on the first drive from Y: down that `[autoexec]` does not mount (a conf mounting them all is refused). A conf that configures `serial1` itself loses it to the route.
 
-The stub announces itself on the E9 (`STUB  . scry device=present proto=6 motion=1`), and the first input refuses (`no_channel`) when that line is missing or the protocol differs, because an older stub would read the frames as other commands. `motion` says whether the build's device takes relative motion (below). Without a `logfile` there is no line to read and input goes out on the conf's word.
+The stub announces itself on the E9 (`STUB  . scry device=present proto=7 motion=1`), and the first input refuses (`no_channel`) when that line is missing or the protocol differs, because an older stub would read the frames as other commands. `motion` says whether the build's device takes relative motion (below). Without a `logfile` there is no line to read and input goes out on the conf's word.
 
 ## An input that went in is not one the program took
 
@@ -117,13 +117,15 @@ A stop during the `expect` wait is INVALID (`wait_stopped`) with `last_stop`. `v
 *Send mouse input*
 
 ```text
-send_mouse(x=null, y=null, button="", action="click", units="screen", expect="", seconds=null, target="", to_x=null, to_y=null)
+send_mouse(x=null, y=null, button="", action="", units="screen", expect="", seconds=null, target="", to_x=null, to_y=null)
 ```
 
 Move the guest's mouse pointer, press buttons, and read the pointer back; `expect`
 proves the program reacted, as in `send_keys`.
 
-`x`, `y`: both or neither, in `units`. `target`: a control of the latest `screen_map_find`
+`x`, `y`: both or neither, in `units`. `action` names what the button does; with an `action`
+and no `button` the left one is used, and with neither only the pointer moves. `target`: a
+control of the latest `screen_map_find`
 screen, instead of `x`, `y`. `action="drag"` presses at that place and releases at `to_x`,
 `to_y`, with the move between. A stopped machine is run as for `send_keys`; under a map that
 declares the program's own pointer, a move there nudges the driver until that pointer is on
@@ -135,7 +137,8 @@ machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"`, a drag 
 both ends, `to_x` and `to_y` without a drag (`bad_argument`);
 no `screen_map_find` match (`needs_call`); an unknown control (`unknown_ref`).
 
-Reply: `route`, `pointer`, `arrived` (else `asked`), `motion` (a move reached the motion
+Reply: `route`, `pointer`, `arrived` (the program's pointer read, or `units="mouse"`; else
+`driver_arrived` and `asked`: only the driver is known), `motion` (a move reached the motion
 counters too), `verify`; with `target`: `target`, `screen`, `identified_at_stop`; from a
 stopped machine, `send_keys`' `polls` and stop.
 
@@ -146,7 +149,7 @@ Reference: REFERENCE.md, Input and the screen.
 | `x` | integer (>= 0, <= 32767) or null | `null` |
 | `y` | integer (>= 0, <= 32767) or null | `null` |
 | `button` | one of `""`, `"left"`, `"right"`, `"middle"` | `""` |
-| `action` | one of `"click"`, `"double"`, `"down"`, `"up"`, `"drag"` | `"click"` |
+| `action` | one of `""`, `"click"`, `"double"`, `"down"`, `"up"`, `"drag"` | `""` |
 | `units` | one of `"screen"`, `"mouse"` | `"screen"` |
 | `expect` | string | `""` |
 | `seconds` | number (> 0, <= 600.0) or null | `null` |
@@ -172,6 +175,7 @@ Reference: REFERENCE.md, Input and the screen.
 | `asked` | object |
 | `button` | string |
 | `delivered` | boolean |
+| `driver_arrived` | boolean |
 | `identified_at_stop` | integer or object |
 | `motion` | boolean or object |
 | `pointer` | object |

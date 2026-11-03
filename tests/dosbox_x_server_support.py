@@ -89,6 +89,8 @@ class RunStateOnly:
 class SessionGates:
     """The real session's stop and build gates, run against a fake's own `at_debugger`."""
 
+    driver_range: dict[str, int] | None = None
+
     def watch_program(self) -> None:
         """The program watch reads the debugger, which this double has no channel to."""
 
@@ -145,6 +147,7 @@ class FakeSession(SessionGates):
 
     reap_failed = ""
     drain_failure = ""
+    driver_range: dict[str, int] | None = None
     survey_text = ""
     ended_how = "none"
     # this double never counts a stop, so the server never takes it for one nobody read
@@ -204,7 +207,7 @@ class FakeSession(SessionGates):
         # the real shape: a two-key stub let the `altered` guarantee be deleted with the suite green
         return {"pid": 4242, "alive": self._alive,
                 "running": self._alive and bool(getattr(self, "running", False)),
-                "altered": self.altered, "program": None,
+                "altered": self.altered, "range_widened": None, "program": None,
                 "conf": "/x/g.conf", "conf_digest": "abc123", "conf_changed_on_disk": False,
                 "watched": False, "bound_s": 60, "elapsed_s": 1.0,
                 "output_bytes_dropped": 0, "captures": "off",

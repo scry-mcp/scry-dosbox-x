@@ -12,6 +12,13 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
   stops that answer a call, from DOS's current process. A wait that expired opens its `note` with that, or with
   the fact that the guest wrote no line in the wait, instead of leaving the cause among a list of guesses.
   A `run_to` whose control stayed silent opens its `message` with it too, since a gone program is why.
+- `send_mouse`: naming an `action` with no `button` presses the left one (a `click` used to press nothing; with
+  neither, the pointer only moves); a screen-unit move that no program pointer judged answers `driver_arrived` (where
+  the driver is), not `arrived`; and when a program's pointer can only follow the driver over a range smaller than its
+  screen (Allegro's default DOS mouse: 640 x 200 for a 1024 x 768 screen) the range is widened once, by a new stub
+  command (protocol 7: a conf that mounts an older `SCRY.COM` is refused), and `range_widened` is in the `session`
+  block of every reply from then on. A `perform` list that ends on a missed `expect` quotes that step's own reply in
+  its `note`.
 - `symbols_load` takes a selector as `base_from` (four hex digits, `00AF` for a DJGPP program under CWSDPMI): the
   debugger reads its descriptor in any CPU mode, so a table can be loaded, and `send_mouse` can steer the program's
   pointer, at a real-mode stop without waiting for a protected-mode one.

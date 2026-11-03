@@ -503,12 +503,13 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
     conf.write_text("[sdl]\n", encoding="utf-8")
     fake = SimpleNamespace(
         proc=SimpleNamespace(pid=4242),
-        alive=lambda: False, altered=True, conf_digest=dlaunch.digest(conf),
+        alive=lambda: False, altered=True, driver_range=None, conf_digest=dlaunch.digest(conf),
         started_at=time.monotonic() - 3.0, dropped=4096, _at_debugger=True,
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60,
                               window=core_window.WindowRequest(1, False, (1920, 0))))
     got = ds.Session.state(fake)  # type: ignore[arg-type]
-    assert set(got) == {"pid", "alive", "running", "altered", "program", "conf", "conf_digest",
+    assert set(got) == {"pid", "alive", "running", "altered", "range_widened", "program", "conf",
+                        "conf_digest",
                         "conf_changed_on_disk", "watched", "bound_s",
                         "elapsed_s", "output_bytes_dropped", "captures", "state_dir"}
     assert got["program"] is None, "nothing has stopped, so nothing is known of the program"
@@ -541,7 +542,7 @@ def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -
     conf.write_text("[sdl]\n", encoding="utf-8")
     fake = SimpleNamespace(
         proc=SimpleNamespace(pid=4242),
-        alive=lambda: True, altered=False, conf_digest="x",
+        alive=lambda: True, altered=False, driver_range=None, conf_digest="x",
         started_at=time.monotonic(), dropped=0, _at_debugger=False,
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60))
     real = ds.Session.state(fake)  # type: ignore[arg-type]

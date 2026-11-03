@@ -456,10 +456,11 @@ class SendKeysReply(DosboxEnvelope, ParkedPost, total=False):
 
 class SendMouseReply(DosboxEnvelope, ParkedPost, total=False):
     action: str
-    arrived: Required[bool]
+    arrived: Annotated[bool, When("the program's pointer read")]
     asked: Annotated[dict[str, Any], When("else")]
     button: str
     delivered: bool
+    driver_arrived: Annotated[bool, When("else")]
     identified_at_stop: int | dict[str, Any]
     motion: Annotated[bool | dict[str, Any], When("a move")]
     pointer: Required[dict[str, Any]]

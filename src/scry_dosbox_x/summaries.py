@@ -447,8 +447,11 @@ def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:
     screen, mouse = pointer.get("screen"), pointer.get("mouse")
     at = (f"{screen['x']},{screen['y']}" if isinstance(screen, dict) and "x" in screen else
           f"{mouse['x']},{mouse['y']} (driver)" if isinstance(mouse, dict) else "unread")
-    arrived = "" if reply.get("arrived", True) else ", NOT where asked"
-    pressed = "" if args.get("button") else "; no button pressed"
+    arrived = ("" if reply.get("arrived", reply.get("driver_arrived", True))
+               else ", NOT where asked")
+    if "driver_arrived" in reply:
+        arrived += ", program's own pointer not read"
+    pressed = "" if args.get("button") or reply.get("button") else "; no button pressed"
     return (f"send_mouse: pointer at {at}{arrived}{pressed}; "
             f"{_effect(_block(reply, 'verify'), 'posted, unverified')}{_parked(reply)}")
 

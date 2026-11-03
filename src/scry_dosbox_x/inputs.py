@@ -93,8 +93,8 @@ def scan_sequence(keys: list[str], mods: str) -> bytes:
 
 
 # The opcodes `guest/scry.asm` reads; its header is the contract.
-OP_KEY, OP_BUTTON, OP_MOVE, OP_REPORT = b"K", b"B", b"M", b"R"
-STUB_PROTOCOL = "6"
+OP_KEY, OP_BUTTON, OP_MOVE, OP_REPORT, OP_RANGE = b"K", b"B", b"M", b"R", b"W"
+STUB_PROTOCOL = "7"
 # `inject` is the stub's former name: matching it lets its announce read as another protocol,
 # not as none.
 STUB_ANNOUNCE = re.compile(r"STUB  \. (?:scry|inject) device=(\w+)(?: proto=(\d+))?"
@@ -220,6 +220,11 @@ def button_commands(button: str, action: str) -> list[bytes]:
 
 def move_command(x: int, y: int) -> bytes:
     return OP_MOVE + x.to_bytes(2, "little") + y.to_bytes(2, "little")
+
+
+def range_command(max_x: int, max_y: int) -> bytes:
+    """The driver's range becomes 0..`max_x` and 0..`max_y` (INT 33h AX=07h and AX=08h)."""
+    return OP_RANGE + max_x.to_bytes(2, "little") + max_y.to_bytes(2, "little")
 
 
 def require_stub(session: ds.Session) -> None:
@@ -542,7 +547,7 @@ def check_mouse(x: int | None, y: int | None, button: str | None, action: str = 
         if units != "screen":
             raise ds.Invalid("bad_argument", "a control's place is in the screen's units: "
                              "`target` goes with units 'screen'")
-    if x is None and y is None and button is None and target is None:
+    if x is None and y is None and button is None and target is None and not action:
         raise ds.Invalid("bad_argument",
             "name a move (`x` and `y`, or a `target`), a `button`, or both (the move goes first)")
     if (x is None) != (y is None):
@@ -555,9 +560,7 @@ def check_mouse(x: int | None, y: int | None, button: str | None, action: str = 
                 f"`{name}` is a whole number from 0 to {MAX_COORD}, in `units`; got {value!r}")
     if button is not None:
         vocab.one_of("button", button, BUTTON_WORDS)
-    vocab.one_of("action", action, ACTIONS)
-    if action != "click" and button is None:
-        raise ds.Invalid("bad_argument", f"`action={action!r}` acts on a `button`; name one")
+    vocab.one_of("action", action, ("", *ACTIONS))
     if (to_x is None) != (to_y is None):
         raise ds.Invalid("bad_argument", "a drag's end needs BOTH `to_x` and `to_y`")
     if action == "drag":
@@ -685,11 +688,34 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
         _send(session, [move_command(here.max_x, here.max_y)], parked)
         latest[0] = _report(session, parked)
         return low, seen_now()
+    def widen(reach: tuple[tuple[int, int], tuple[int, int]]) -> tuple[float, float] | None:
+        """The aim is past what the driver's range lets the program's pointer reach: widen the
+        range to the program's whole screen, at the ratio the sweep just measured."""
+        here = latest[0]
+        if session.driver_range is not None:
+            return None
+        wanted = (_range_for(size[0], here.max_x, abs(reach[1][0] - reach[0][0])),
+                  _range_for(size[1], here.max_y, abs(reach[1][1] - reach[0][1])))
+        if wanted[0] <= here.max_x and wanted[1] <= here.max_y:
+            return None
+        _send(session, [range_command(*wanted)], parked)
+        session.driver_range = {"x": wanted[0], "y": wanted[1]}
+        session.altered = True
+        latest[0] = _report(session, parked)
+        return (latest[0].max_x + 1) / size[0], (latest[0].max_y + 1) / size[1]
     steered = dpointer.steer(
         aim,
         seen_now,
-        nudge, ((after.max_x + 1) / size[0], (after.max_y + 1) / size[1]), resync)
+        nudge, ((after.max_x + 1) / size[0], (after.max_y + 1) / size[1]), resync, widen)
     return latest[0], steered
+
+
+def _range_for(screen: int, max_: int, span: int) -> int:
+    """The driver range that spans a `screen` of program units, given that `max_` moved the
+    program's pointer `span` units; unchanged when the sweep measured nothing."""
+    if span <= 0:
+        return max_
+    return min(MAX_COORD, -(-(screen - 1) * max_ // span))
 
 
 def send_mouse_at(session: ds.Session, aimed: dict[str, Any], button: str | None, action: str,
@@ -760,6 +786,7 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         elif button is not None:
             buttons = button_commands(button, action)
         steered: dpointer.Steered | None = None
+        range_before = session.driver_range is not None
         try:
             if program is not None and places is not None and parked is not None:
                 assert x is not None and y is not None
@@ -781,10 +808,16 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         shown = _pointer(after)
         if steered is not None:
             shown["program"] = dpointer.shown(steered)
+            if session.driver_range is not None and not range_before:
+                shown["program"]["range_widened"] = dict(session.driver_range)
         elif why_not is not None:
             shown["program"] = unavailable(why_not)
+        # A screen-unit move that no program pointer judged proves only where the DRIVER is, which
+        # a program with its own pointer tracking can disagree with.
+        judged = steered is not None or arrival is None or units == "mouse"
         fields: dict[str, Any] = {"route": "guest", "pointer": shown,
-                                  "arrived": landed, **_parked_fields(parked)}
+                                  "arrived" if judged else "driver_arrived": landed,
+                                  **_parked_fields(parked)}
         if target is not None:
             fields["motion"] = _motion(session)
         if arrival is not None and not landed:

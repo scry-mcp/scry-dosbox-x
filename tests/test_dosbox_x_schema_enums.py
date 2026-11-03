@@ -47,7 +47,7 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("watch_add", "mode", dec.WATCH_MODES),
     ("watch_add", "trigger_type", dec.TRIGGER_TYPES),
     ("send_mouse", "button", ("", *inputs.BUTTON_WORDS)),
-    ("send_mouse", "action", inputs.ACTIONS), ("send_mouse", "units", inputs.UNITS),
+    ("send_mouse", "action", ("", *inputs.ACTIONS)), ("send_mouse", "units", inputs.UNITS),
     ("machine_map", "sections", machine.SECTION_NAMES),
     ("declaration_list", "kind", ("", *folds.KINDS)), ("declaration_clear", "kind", folds.KINDS),
     ("screen_map_write", "cells", screen_map.CELLS_WORDS),

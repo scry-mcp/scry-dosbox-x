@@ -265,6 +265,8 @@ class Session(dprocess.Process):
     # instruction against its list and leaves memory alone. A memory watch plants nothing. Read
     # off the build at the first arming; None until then.
     plants_int3: bool | None = None
+    # The range `send_mouse` widened; kept, because restoring it would jump the program's pointer.
+    driver_range: dict[str, int] | None = None
 
     def __init__(self, launch: dlaunch.Launch) -> None:
         dlaunch.validate(launch)
@@ -952,6 +954,7 @@ class Session(dprocess.Process):
             # reply.
             "running": self.alive() and not self._at_debugger,
             "altered": self.altered,
+            "range_widened": self.driver_range,
             # WHAT THE STOPS FOUND OF THE PROGRAM: a block once it is gone, else None.
             "program": dprogram.gone(self),
             "conf": str(self.launch.conf),

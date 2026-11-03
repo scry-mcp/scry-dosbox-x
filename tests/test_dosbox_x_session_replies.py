@@ -69,6 +69,7 @@ def _launch(tmp_path: Path, **kw: Any) -> dlaunch.Launch:
 
 def _stating(tmp_path: Path, **kw: Any) -> Any:
     fake = SimpleNamespace(proc=SimpleNamespace(pid=4242), alive=lambda: True, altered=False,
+                           driver_range=None,
                            conf_digest="x", started_at=100.0, dropped=0, _at_debugger=False,
                            launch=_launch(tmp_path))
     for k, v in kw.items():

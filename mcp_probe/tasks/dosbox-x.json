@@ -224,7 +224,7 @@
   {"id": "D119", "prompt": "The guest is stopped on its title screen, a text mode. Map it as title, known by the row at column 0, row 0, 40 cells wide and 1 high, with a control named play at column 10, row 12, 20 cells wide and 1 high.", "tool": "screen_map_write", "args": {"method": "add", "screen": "title", "match": [[0, 0, 40, 1]], "controls": [{"name": "play", "rect": [10, 12, 20, 1]}]}, "grammar": ["add"]},
   {"id": "D120", "prompt": "The guest is stopped. Which of the mapped screens is it showing right now?", "tool": "screen_map_find", "args": {}},
   {"id": "D121", "prompt": "Write this session's screen maps to /tmp/maps/bricks.screen-map.json, replacing the file that is there.", "tool": "screen_map_write", "args": {"method": "save", "dest": "/tmp/maps/bricks.screen-map.json", "overwrite": true}, "grammar": ["save"]},
-  {"id": "D122", "prompt": "The guest is running. Left-click the control named serve on the screen the last identification matched.", "tool": "send_mouse", "args": {"target": "serve", "button": "left"}, "grammar": ["left"]},
+  {"id": "D122", "prompt": "The guest is running. Left-click the control named serve on the screen the last identification matched.", "tool": "send_mouse", "args": {"target": "serve", "button": "left", "action": {"any_of": ["", "click"]}}, "grammar": ["left"]},
   {"id": "D125", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, with nobody watching. Do not mark its window with the edge that shows a session is holding it.",
    "tool": "start",
    "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900,
