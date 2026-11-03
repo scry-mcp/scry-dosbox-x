@@ -845,6 +845,12 @@ def _remeasure(session: ds.Session, out: dict[str, Any]) -> None:
                 "program's protected-mode code, so the next one that is measures it")
             return
         desc = session.selector(reg)
+        if (ds.SELECTOR_NUMBER.fullmatch(reg)
+                and session.selector("CS")["base"] != desc["base"]):
+            out["still_pending"].append(
+                f"measuring the table's base again after the load: selector {reg} does not "
+                f"share CS's base at this stop, so it is not the program's")
+            return
     except (ds.Invalid, ValueError) as e:
         out["still_pending"].append(f"measuring the table's base again after the load: {e}")
         return

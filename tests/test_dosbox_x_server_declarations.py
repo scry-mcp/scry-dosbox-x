@@ -1619,6 +1619,28 @@ def test_a_re_arm_that_fails_after_the_base_moved_queues_what_it_would_arm(
     assert any("the pane was cut" in w for w in out["still_pending"]), out
 
 
+def test_a_numbered_selector_is_remeasured_only_where_it_shares_the_programs_base(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _loaded_then_restored(tmp_path, monkeypatch)
+    dstate.STATE.base_measured_from = "00AF"
+    asked: list[str] = []
+
+    def selector(_self: Any, reg: str) -> dict[str, int]:
+        asked.append(reg)
+        return {"base": 0x00500000 if reg == "00AF" else 0x00600000,
+                "limit": 0x0023FFFF, "type": 0x1B}
+
+    monkeypatch.setattr(type(fake), "selector", selector)
+    out = arming.apply_pending(cast(Any, fake))
+    assert "base_remeasured" not in out, out
+    assert any("00AF" in w and "CS" in w for w in out["still_pending"]), out
+    assert dstate.STATE.pending["remeasure"], "a refused re-measure must stay pending"
+    monkeypatch.setattr(type(fake), "selector",
+                        lambda _self, _reg: {"base": 0x00500000, "limit": 0x0023FFFF, "type": 0x1B})
+    moved = arming.apply_pending(cast(Any, fake))
+    assert moved["base_remeasured"]["to"] == "0x00500000", moved
+
+
 def test_one_row_that_cannot_be_adopted_is_that_row_s_answer(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     fake = _names(tmp_path, mode="Real")

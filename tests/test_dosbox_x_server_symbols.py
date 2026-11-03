@@ -304,9 +304,26 @@ def test_a_selector_number_places_a_table_at_a_real_mode_stop(tmp_path: Path) ->
     assert got["status"] == "ok" and got["base"] == MEASURED_BASE, got
     assert "SELINFO 00AF" in s.executed, s.executed
     assert dstate.STATE.base_measured_from == "00AF", dstate.STATE.base_measured_from
-    for refused in ("ZZZZ", "12345", ""):
+    protected = FakeSession(mode="Pr32")
+    dstate.STATE.session = protected                        # type: ignore[assignment]
+    for refused in ("ZZZZ", "12345", "123", "00AG", ""):
         bad = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path), base_from=refused))
         assert bad["status"] == "INVALID" and bad["code"] == "bad_argument", (refused, bad)
+        assert "is one of" in bad["message"] and "real mode" not in bad["message"].lower(), bad
+    assert not any(c.startswith("SELINFO") for c in protected.executed), protected.executed
+
+
+def test_an_absent_numbered_selector_is_refused_naming_the_number(tmp_path: Path) -> None:
+    class Absent(FakeSession):
+        def exec(self, command: str, seconds: float | None = None) -> tuple[bool, list[str]]:
+            self.executed.append(command)
+            return True, ["SelectorInfo 0099:", "  : b:00000000 type:00 parbg",
+                          "    l:00000000 dpl : 0 00000"]
+
+    dstate.STATE.session = Absent()                         # type: ignore[assignment]
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path), base_from="0099"))
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert "selector 0099" in got["message"] and "REAL MODE" not in got["message"], got
 
 
 def test_a_real_mode_map_with_no_base_is_refused_before_selinfo_is_asked(

@@ -834,6 +834,11 @@ class Session(dprocess.Process):
         base, kind, limit = (int(m.group(1), 16), int(m.group(2), 16),
                              int(m.group(3), 16))
         # AN ABSENT DESCRIPTOR IS REFUSED RATHER THAN REPORTED AS BASE 0.
+        if kind == SELINFO_ABSENT and numbered:
+            raise Invalid("bad_argument",
+                f"selector {name} has no present descriptor (type:00, base 0, limit 0): "
+                f"nothing has set it up in this machine's tables, so check the number "
+                f"against a protected-mode stop's `CS` and `DS`")
         if kind == SELINFO_ABSENT:
             raise Invalid("bad_argument",
                 f"{name} has no present descriptor (type:00, base 0, limit 0). Either "
