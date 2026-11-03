@@ -77,6 +77,12 @@ SELINFO_FIELDS = re.compile(
 # module can give: zero.
 SELINFO_ABSENT = 0
 SELINFO_REGS = ("CS", "DS", "ES", "SS", "FS", "GS")
+#: A selector named by its number, which `SELINFO` answers in any CPU mode, unlike a register.
+SELECTOR_NUMBER = re.compile(r"[0-9A-Fa-f]{4}")
+#: `symbols_load`'s `base_from` as a schema pattern: a register in any case, or a selector number.
+BASE_FROM_PATTERN = "^({})$".format("|".join(
+    ["".join(f"[{c.lower()}{c.upper()}]" for c in reg) for reg in SELINFO_REGS]
+    + [SELECTOR_NUMBER.pattern]))
 
 # `SV`/`LV` acknowledge with `Variable list save (NAME) : ok.` / `: failure.`.
 SYM_SAVE_ECHO = "Variable list save"
@@ -800,12 +806,14 @@ class Session(dprocess.Process):
         bit."""
         # ASCII ONLY BEFORE THE CASE IS FOLDED: `upper()` turns `ſs` into `SS`, which the published
         # pattern refuses.
-        if not (reg.isascii() and reg.upper() in SELINFO_REGS):
+        numbered = reg.isascii() and SELECTOR_NUMBER.fullmatch(reg) is not None
+        if not numbered and not (reg.isascii() and reg.upper() in SELINFO_REGS):
             vocab.one_of("base_from", reg, SELINFO_REGS,
-                         ", any case taken. The debugger answers any other register with a "
-                         "ZEROED descriptor rather than an error, which reads as a real "
-                         "selector based at 0")
+                         ", any case taken, or a selector as four hex digits. The debugger "
+                         "answers any other register with a ZEROED descriptor rather than an "
+                         "error, which reads as a real selector based at 0")
         name = reg.upper()
+        label = "  " if numbered else name      # a number leaves the line's own name blank
         out = self.command(f"SELINFO {name}")
         marker = f"{SELINFO_ECHO} {name}:"
         at = out.rfind(marker)
@@ -815,8 +823,8 @@ class Session(dprocess.Process):
                 f"{'running' if self.alive() else 'GONE'}). What it printed: "
                 f"{out.strip()[-300:]!r}")
         # ANCHORED ON THE ANSWER'S OWN LINE, which begins with the register's name.
-        line = out.find(f"{name}: b:", at)
-        m = SELINFO_FIELDS.match(out, line + len(name) + 2) if line >= 0 else None
+        line = out.find(f"{label}: b:", at)
+        m = SELINFO_FIELDS.match(out, line + len(label) + 2) if line >= 0 else None
         if m is None:
             raise Invalid("unexpected_answer",
                 f"`{marker}` came back with no complete base/type/limit on a "

@@ -297,6 +297,18 @@ def test_a_start_refused_because_a_session_is_live_keeps_the_table(
                 server.symbols_find(name="_main"))["status"] == "ok"
 
 
+def test_a_selector_number_places_a_table_at_a_real_mode_stop(tmp_path: Path) -> None:
+    s = FakeSession()                                       # real mode
+    dstate.STATE.session = s                                # type: ignore[assignment]
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path), base_from="00af"))
+    assert got["status"] == "ok" and got["base"] == MEASURED_BASE, got
+    assert "SELINFO 00AF" in s.executed, s.executed
+    assert dstate.STATE.base_measured_from == "00AF", dstate.STATE.base_measured_from
+    for refused in ("ZZZZ", "12345", ""):
+        bad = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path), base_from=refused))
+        assert bad["status"] == "INVALID" and bad["code"] == "bad_argument", (refused, bad)
+
+
 def test_a_real_mode_map_with_no_base_is_refused_before_selinfo_is_asked(
         tmp_path: Path) -> None:
     class RealModeProgram(FakeSession):

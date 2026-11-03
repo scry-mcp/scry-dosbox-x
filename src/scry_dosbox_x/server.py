@@ -1021,19 +1021,22 @@ def regpoint_add(condition: str) -> dict[str, Any]:
 
 @tool("Load a symbol table", summary=one_line.symbols_load)
 def symbols_load(path: str, base: str = "",
-                 base_from: Annotated[str, vocab.folded(ds.SELINFO_REGS)] = "CS",
+                 base_from: Annotated[str, Field(json_schema_extra={
+                     "pattern": ds.BASE_FROM_PATTERN})] = "CS",
                  pattern: str = "", keep_noise: bool = False,
                  section_bases: dict[str, str] | None = None, types: str = "",
                  ) -> dict[str, Any]:
     """Load a toolchain's symbol list so other tools take names. Stop inside the program first;
     with an explicit `base` a running guest works too (`pending: true`).
 
-    `path`: `nm` output or a GNU `ld`, Borland or Watcom map. Flat lists take `base` (hex text,
-    required in real mode); sectioned maps take `section_bases`. `types`, `pattern`,
-    `keep_noise` filter and type rows.
+    `path`: `nm` output or a GNU `ld`, Borland or Watcom map. Flat lists take `base` (hex text) or
+    `base_from`, a register or a selector as four hex digits (`00AF`), whose descriptor the
+    debugger reads in any CPU mode, so a real-mode stop can load a protected-mode program's table;
+    sectioned maps take `section_bases`. `types`, `pattern`, `keep_noise` filter and type rows.
 
     Refused (INVALID): both `base` and `section_bases`; a sectioned map without
-    `section_bases`; real mode or a running machine without `base`; a mostly unreadable file;
+    `section_bases`; real mode or a running machine without `base` or a selector number; a
+    mostly unreadable file;
     a table the `<stem>.exe` contradicts; a table in which two names differ only in case, naming
     both lines.
 

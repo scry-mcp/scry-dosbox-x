@@ -12,6 +12,9 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
   stops that answer a call, from DOS's current process. A wait that expired opens its `note` with that, or with
   the fact that the guest wrote no line in the wait, instead of leaving the cause among a list of guesses.
   A `run_to` whose control stayed silent opens its `message` with it too, since a gone program is why.
+- `symbols_load` takes a selector as `base_from` (four hex digits, `00AF` for a DJGPP program under CWSDPMI): the
+  debugger reads its descriptor in any CPU mode, so a table can be loaded, and `send_mouse` can steer the program's
+  pointer, at a real-mode stop without waiting for a protected-mode one.
 - `send_mouse` steers a protected-mode program's own pointer from the real-mode stop its retrace ends on: a build
   whose debugger has the new `MEMDUMPLIN` (a read by linear address, through the page tables of CR3 with paging on or
   off) places the map's pointer symbols as the table's base plus their offset, when the table was loaded at a

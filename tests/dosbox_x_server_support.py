@@ -44,6 +44,11 @@ SELINFO_CAPTURED = {
                         .read_text(encoding="utf-8"))["exchanges"]
     if e["request"].startswith("EXEC SELINFO ")}
 
+#: `SELINFO 00AF` at a real-mode stop of a DJGPP program: the debugger names the selector by its
+#: number and leaves the line's own name blank.
+SELINFO_CAPTURED["00AF"] = ["SelectorInfo 00AF:", "  : b:00400000 type:13 parbg",
+                            "    l:0516FFFF dpl : 3 10011"]
+
 MEASURED_BASE = 0x00400000
 
 

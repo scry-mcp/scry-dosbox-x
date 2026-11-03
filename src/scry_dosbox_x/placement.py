@@ -405,10 +405,12 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
     else:
         # `SELINFO` prints no descriptor line in real mode, so the parser's refusal would
         # name the wrong cause.
-        if base is None and grammar.real_segments(session.where()["mode"]):
+        if (base is None and ds.SELECTOR_NUMBER.fullmatch(base_from) is None
+                and grammar.real_segments(session.where()["mode"])):
             raise ds.Invalid("bad_argument",
-                "the machine is in real mode, where there is no descriptor to measure a base "
-                "from: pass `base` (a flat map) as hex text, the load segment * 16 (segment "
+                "the machine is in real mode, where a register holds no descriptor to measure a "
+                "base from: pass `base_from` as a selector number (four hex digits), or `base` "
+                "(a flat map) as hex text, the load segment * 16 (segment "
                 "0x0800 is \"8000\"), or `section_bases` (a sectioned map). Placed at base 0, "
                 "every symbol would sit at its raw offset")
         desc = (session.selector(base_from) if base is None

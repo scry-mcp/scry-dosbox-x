@@ -12,12 +12,14 @@ symbols_load(path, base="", base_from="CS", pattern="", keep_noise=false, sectio
 Load a toolchain's symbol list so other tools take names. Stop inside the program first;
 with an explicit `base` a running guest works too (`pending: true`).
 
-`path`: `nm` output or a GNU `ld`, Borland or Watcom map. Flat lists take `base` (hex text,
-required in real mode); sectioned maps take `section_bases`. `types`, `pattern`,
-`keep_noise` filter and type rows.
+`path`: `nm` output or a GNU `ld`, Borland or Watcom map. Flat lists take `base` (hex text) or
+`base_from`, a register or a selector as four hex digits (`00AF`), whose descriptor the
+debugger reads in any CPU mode, so a real-mode stop can load a protected-mode program's table;
+sectioned maps take `section_bases`. `types`, `pattern`, `keep_noise` filter and type rows.
 
 Refused (INVALID): both `base` and `section_bases`; a sectioned map without
-`section_bases`; real mode or a running machine without `base`; a mostly unreadable file;
+`section_bases`; real mode or a running machine without `base` or a selector number; a
+mostly unreadable file;
 a table the `<stem>.exe` contradicts; a table in which two names differ only in case, naming
 both lines.
 
@@ -30,7 +32,7 @@ Reference: REFERENCE.md, Names for addresses.
 |---|---|---|
 | `path` | string | required |
 | `base` | string | `""` |
-| `base_from` | string (matching `^([cC][sS]\|[dD][sS]\|[eE][sS]\|[sS][sS]\|[fF][sS]\|[gG][sS])$`) | `"CS"` |
+| `base_from` | string (matching `^([cC][sS]\|[dD][sS]\|[eE][sS]\|[sS][sS]\|[fF][sS]\|[gG][sS]\|[0-9A-Fa-f]{4})$`) | `"CS"` |
 | `pattern` | string | `""` |
 | `keep_noise` | boolean | `false` |
 | `section_bases` | object or null | `null` |
