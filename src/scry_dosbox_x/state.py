@@ -332,6 +332,12 @@ def reply(status: str = "ok", **fields: Any) -> dict[str, Any]:
 def _lead_the_note(out: dict[str, Any]) -> None:
     """A wait that expired says what is most likely first (`program.lead`): in its own `note`, or in
     the `note` of the `verify` block an input carries."""
+    if out.get("code") == "control_silent" and out.get("message"):
+        gone = None if STATE.session is None else dprogram.gone(STATE.session)
+        opening = dprogram.lead({}, gone)
+        if opening and not str(out["message"]).startswith(opening):
+            out["message"] = opening + str(out["message"])
+        return
     verify = out.get("verify")
     wait = out if out.get("verdict") == contract.TIMEOUT else (
         verify if isinstance(verify, dict) and verify.get("verdict") == contract.TIMEOUT

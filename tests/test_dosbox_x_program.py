@@ -325,6 +325,21 @@ def test_a_program_that_is_gone_leads_every_expired_wait_of_the_session(
     assert got["note"].startswith("RECHIPD has ended on a fault"), got
 
 
+def test_a_run_to_whose_control_stayed_silent_says_the_program_is_gone(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    session, now = _stopped_over(tmp_path, monkeypatch, FAULT)
+    monkeypatch.setattr(dstate.STATE, "session", session)
+    session.stop_survey()
+    session.watch_program()
+    now["psp"] = 0x701
+    _next_stop(session)
+    silent = dstate.reply(status="INVALID", code="control_silent",
+                          message="the control 1000:0 never fired within 3 s")
+    assert silent["message"].startswith("RECHIPD has ended on a fault"), silent
+    other = dstate.reply(status="INVALID", code="cut_by_other_stop", message="another stop")
+    assert other["message"] == "another stop", other
+
+
 def _launched_over(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, log: str) -> ds.Session:
     """A session whose start ran `RECHIPD.EXE`, whose log holds `log`, stopped at the shell."""
     session, _ = _stopped_over(tmp_path, monkeypatch, FAULT)

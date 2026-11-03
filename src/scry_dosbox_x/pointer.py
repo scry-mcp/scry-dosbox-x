@@ -36,7 +36,7 @@ def program_at(read: Callable[[int, int, int], bytes], declared: Pointer,
 
 
 def shown(steered: Steered) -> dict[str, object]:
-    """The reply's `pointer.program`; `reach` is the span at the driver's corners, when it missed."""
+    """The reply's `pointer.program`; `reach` is the span at the driver's corners if it missed."""
     reply: dict[str, object] = {"x": steered.seen[0], "y": steered.seen[1],
                                 "corrections": steered.corrections}
     if steered.reach is not None and not steered.arrived:
