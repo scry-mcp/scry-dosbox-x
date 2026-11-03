@@ -157,6 +157,13 @@ def pointer_target(ref: str, session: ds.Session) -> tuple[int, int]:
     `MEMDUMPLIN` reads it. That takes the flat layout `target_for` already assumes (DS and the
     measured register share a base). Any other base keeps the refusal: the program's DOS load
     segment, which `start(symbols=)` passes as a base, is not where that data is."""
+    if decide_by(ref) != "address" and "selector_DS" not in STATE.base:
+        # No program DS was stored with the table, so the DS of this stop is anyone's: a mouse
+        # callback or a DPMI host reads another variable at the same offset.
+        _listening(session)
+        linear = _flat_linear(ref, session)
+        if linear is not None:
+            return grammar.LINEAR, linear
     try:
         return read_target(ref, "DS", session)
     except ds.NotStopped:

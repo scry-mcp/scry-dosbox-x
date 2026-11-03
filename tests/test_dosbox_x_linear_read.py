@@ -113,6 +113,18 @@ def test_a_protected_mode_stop_keeps_the_selector_and_never_goes_linear(tmp_path
     assert got == (0xAF, MOUSE_X), got
 
 
+def test_a_protected_mode_stop_with_no_stored_selector_reads_by_linear_address(
+        tmp_path: Path) -> None:
+    """A table measured at a real-mode stop (`base_from` a selector number) stores no selector,
+    and a later protected-mode stop (a mouse callback, a DPMI host) holds a DS that is not the
+    program's: the register's base would read another variable."""
+    machine = protected(Machine())
+    session = session_over(machine, tmp_path)
+    _table(BASE, "00AF")
+    got = placement.pointer_target("_mouse_x", session)
+    assert got == (grammar.LINEAR, BASE + MOUSE_X), got
+
+
 def test_an_explicit_seg_off_is_read_as_given_and_a_malformed_one_is_not_made_linear(
         tmp_path: Path) -> None:
     session, _ = _real(tmp_path)
