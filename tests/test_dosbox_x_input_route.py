@@ -13,6 +13,7 @@ from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import _guest, _names
+from scry_core.screen_map import Pointer
 
 from scry_dosbox_x import inputs, running, server
 from scry_dosbox_x import launch as dlaunch
@@ -112,6 +113,77 @@ def test_a_vbe_mode_whose_size_vbe_did_not_say_maps_no_units() -> None:
 def test_the_range_that_spans_a_screen_comes_from_what_a_sweep_measured(
         screen: int, max_: int, span: int, wanted: int) -> None:
     assert inputs._range_for(screen, max_, span) == wanted
+
+
+class _World:
+    """The stub's driver and a program that follows its motion: the program's pointer is `base`
+    plus the driver's position over `per` driver units a program unit, whatever the range."""
+
+    def __init__(self, max_: tuple[int, int] = (639, 199), per: tuple[float, float] = (2.0, 1.0),
+                 base: tuple[int, int] = (352, 284)) -> None:
+        self.driver, self.max, self.per, self.base = [320, 100], list(max_), per, base
+        self.ranges: list[bytes] = []
+        self.driver_range: dict[str, int] | None = None
+        self.driver_range_seen: tuple[int, int] | None = None
+        self.altered = False
+
+    def program(self) -> tuple[int, int]:
+        return (self.base[0] + round(self.driver[0] / self.per[0]),
+                self.base[1] + round(self.driver[1] / self.per[1]))
+
+    def line(self) -> str:
+        return (f"STUB  . mouse x={self.driver[0]} y={self.driver[1]} buttons=0 "
+                f"max={self.max[0]},{self.max[1]} mode=0 screen=720x400 vbe=261 attr=155 "
+                f"res=1024x768")
+
+    def send_commands(self, commands: list[bytes], advance: Any = None) -> list[str]:
+        out = []
+        for c in commands:
+            if c[:1] == b"M":
+                self.driver = [min(int.from_bytes(c[1:3], "little"), self.max[0]),
+                               min(int.from_bytes(c[3:5], "little"), self.max[1])]
+            elif c[:1] == b"W":
+                self.ranges.append(c)
+                self.max = [int.from_bytes(c[1:3], "little"), int.from_bytes(c[3:5], "little")]
+                self.driver = [min(self.driver[0], self.max[0]), min(self.driver[1], self.max[1])]
+            elif c[:1] == b"R":
+                out.append(self.line())
+        return out
+
+
+def _steered(world: _World, aim: tuple[int, int],
+             monkeypatch: pytest.MonkeyPatch) -> Any:
+    monkeypatch.setattr(inputs, "program_reader", lambda _s, _p: world.program)
+    after = inputs.parse_report(world.line())
+    return inputs._steer(cast(Any, world), cast(Any, None), Pointer("a", "b", 2),
+                         ((0, 0), (0, 0)), aim, after)
+
+
+def test_an_aim_past_the_drivers_range_widens_it_once_and_the_pointer_arrives(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    world = _World()
+    _report, steered = _steered(world, (900, 600), monkeypatch)
+    assert steered is not None and steered.arrived and steered.seen == (900, 600), steered
+    assert world.ranges == [inputs.range_command(2043, 767)], world.ranges
+    assert world.driver_range == {"x": 2043, "y": 767} and world.altered
+    _report, again = _steered(world, (600, 650), monkeypatch)
+    assert again is not None and again.arrived and len(world.ranges) == 1, world.ranges
+
+
+def test_a_range_the_program_reset_is_widened_again(monkeypatch: pytest.MonkeyPatch) -> None:
+    world = _World()
+    _steered(world, (900, 600), monkeypatch)
+    world.max = [639, 199]                         # INT 33h AX=0 put the default range back
+    _report, steered = _steered(world, (950, 650), monkeypatch)
+    assert steered is not None and steered.arrived, steered
+    assert len(world.ranges) == 2, "a reset range is not the one the server remembers"
+
+
+def test_a_widening_never_narrows_an_axis_the_range_already_covers(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    world = _World(max_=(639, 1500))
+    _steered(world, (900, 600), monkeypatch)
+    assert world.max[1] == 1500 and world.max[0] >= 2043, world.max
 
 
 def test_a_widened_range_is_in_every_session_block_while_it_holds(

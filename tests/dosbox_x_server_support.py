@@ -691,8 +691,9 @@ class NamesFake(SessionGates):
 
     def state(self) -> dict[str, object]:
         return {"pid": 4242, "alive": self.alive_flag, "running": self._running, "altered": False,
-                "program": None, "conf": "/x/g.conf", "conf_digest": "abc123",
-                "conf_changed_on_disk": False, "watched": False, "bound_s": 60, "elapsed_s": 1.0,
+                "range_widened": None, "program": None, "conf": "/x/g.conf",
+                "conf_digest": "abc123", "conf_changed_on_disk": False, "watched": False,
+                "bound_s": 60, "elapsed_s": 1.0,
                 "output_bytes_dropped": 0, "captures": "off",
                 "state_dir": "the emulator's own save/ under its working directory"}
 

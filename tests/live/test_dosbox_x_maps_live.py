@@ -53,7 +53,8 @@ def test_bricks_map_finds_the_play_screen_and_a_control_is_clicked_by_name(
         assert (clicked["target"], clicked["screen"]) == ("court", "play")
         assert clicked["identified_at_stop"] == at
         pointer = clicked["pointer"]["screen"]
-        assert [pointer["x"], pointer["y"]] == COURT_CENTRE and clicked["arrived"] is True
+        assert [pointer["x"], pointer["y"]] == COURT_CENTRE
+        assert clicked.get("arrived", clicked.get("driver_arrived")) is True
         assert clicked["verify"]["seen"] is True, clicked["verify"]
         # Negative: the control match first, then one pixel of the header `S` flipped
         # (mode 13h: A000:0000, a byte a pixel, 320 a row).

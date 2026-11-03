@@ -267,6 +267,8 @@ class Session(dprocess.Process):
     plants_int3: bool | None = None
     # The range `send_mouse` widened; kept, because restoring it would jump the program's pointer.
     driver_range: dict[str, int] | None = None
+    # What the driver's report said right after, to tell that range from a reset to the default.
+    driver_range_seen: tuple[int, int] | None = None
 
     def __init__(self, launch: dlaunch.Launch) -> None:
         dlaunch.validate(launch)

@@ -160,7 +160,7 @@ def _arrived(r: dict[str, Any], screen: tuple[int, int], mouse: tuple[int, int])
     pointer = r.get("pointer") or {}
     at_screen = pointer.get("screen") or {}
     at_mouse = pointer.get("mouse") or {}
-    return (ok(r) and r.get("arrived") is True
+    return (ok(r) and r.get("arrived", r.get("driver_arrived")) is True
             and (at_screen.get("x"), at_screen.get("y")) == screen
             and (at_mouse.get("x"), at_mouse.get("y")) == mouse)
 

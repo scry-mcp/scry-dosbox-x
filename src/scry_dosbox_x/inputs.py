@@ -693,15 +693,18 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
         range to the program's whole screen, at the ratio the sweep just measured."""
         here = latest[0]
         if session.driver_range is not None:
-            return None
-        wanted = (_range_for(size[0], here.max_x, abs(reach[1][0] - reach[0][0])),
-                  _range_for(size[1], here.max_y, abs(reach[1][1] - reach[0][1])))
-        if wanted[0] <= here.max_x and wanted[1] <= here.max_y:
+            if (here.max_x, here.max_y) == session.driver_range_seen:
+                return None
+            session.driver_range = None       # the program reset the driver: its range is back
+        wanted = (max(_range_for(size[0], here.max_x, abs(reach[1][0] - reach[0][0])), here.max_x),
+                  max(_range_for(size[1], here.max_y, abs(reach[1][1] - reach[0][1])), here.max_y))
+        if wanted == (here.max_x, here.max_y):
             return None
         _send(session, [range_command(*wanted)], parked)
-        session.driver_range = {"x": wanted[0], "y": wanted[1]}
-        session.altered = True
         latest[0] = _report(session, parked)
+        session.driver_range = {"x": wanted[0], "y": wanted[1]}
+        session.driver_range_seen = (latest[0].max_x, latest[0].max_y)
+        session.altered = True
         return (latest[0].max_x + 1) / size[0], (latest[0].max_y + 1) / size[1]
     steered = dpointer.steer(
         aim,
@@ -776,15 +779,18 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
     places = (dpointer.locate(program, lambda ref: placement.pointer_target(ref, session))
               if program is not None and target is not None and why_not is None else None)
 
+    def pressing(end_at: tuple[int, int] | None) -> list[bytes]:
+        if button is None:
+            return []
+        if action != "drag":
+            return button_commands(button, action)
+        assert end_at is not None
+        return [*button_commands(button, "down"), move_command(*end_at),
+                *button_commands(button, "up")]
+
     def post() -> dict[str, Any]:
         moves = [] if target is None else [move_command(*target)]
-        buttons: list[bytes] = []
-        if button is not None and action == "drag":
-            assert end is not None
-            buttons = [*button_commands(button, "down"), move_command(*end),
-                       *button_commands(button, "up")]
-        elif button is not None:
-            buttons = button_commands(button, action)
+        end_at = end
         steered: dpointer.Steered | None = None
         range_before = session.driver_range is not None
         try:
@@ -793,18 +799,20 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
                 _send(session, moves, parked)
                 after = _report(session, parked)
                 after, steered = _steer(session, parked, program, places, (x, y), after)
-                if buttons:
+                if to_x is not None and to_y is not None:
+                    end_at = _target(after, to_x, to_y, units)    # the range may have grown
+                if buttons := pressing(end_at):
                     _send(session, buttons, parked)
                     after = _report(session, parked)
             else:
-                _send(session, moves + buttons, parked)
+                _send(session, moves + pressing(end_at), parked)
                 after = _report(session, parked)
         except ds.Invalid as e:
             raise _delivered(e, parked) from None
-        arrival = end or target
+        arrival = end_at or target
         landed = dpointer.arrived(
-            steered, arrival is None or _landed(after, arrival, to_x if end else x,
-                                                to_y if end else y, units), end is not None)
+            steered, arrival is None or _landed(after, arrival, to_x if end_at else x,
+                                                to_y if end_at else y, units), end_at is not None)
         shown = _pointer(after)
         if steered is not None:
             shown["program"] = dpointer.shown(steered)

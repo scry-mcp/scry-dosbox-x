@@ -192,7 +192,7 @@ def _on_display_one(label: str, fullscreen: bool) -> None:
 def _landed(r: dict[str, object]) -> bool:
     pointer = r.get("pointer")
     mouse = pointer.get("mouse") if isinstance(pointer, dict) else None
-    return (ok(r) and r.get("arrived") is True and isinstance(mouse, dict)
+    return (ok(r) and r.get("arrived", r.get("driver_arrived")) is True and isinstance(mouse, dict)
             and (mouse.get("x"), mouse.get("y")) == (320, 96))
 
 
