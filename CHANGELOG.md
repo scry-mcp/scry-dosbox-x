@@ -11,7 +11,8 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
   the message DJGPP left on the text screen quoted from there (it never reaches the E9 log). It is read at the
   stops that answer a call, from DOS's current process. A wait that expired opens its `note` with that, or with
   the fact that the guest wrote no line in the wait, instead of leaving the cause among a list of guesses.
-  A `run_to` whose control stayed silent opens its `message` with it too, since a gone program is why.
+  A `run_to` whose control stayed silent, and a wait refused with `wait_stopped`, open their `message` with it too,
+  since a gone program is why.
 - `send_mouse`: naming an `action` with no `button` presses the left one (a `click` used to press nothing; with
   neither, the pointer only moves); a screen-unit move that no program pointer judged answers `driver_arrived` (where
   the driver is), not `arrived`; and when a program's pointer can only follow the driver over a range smaller than its

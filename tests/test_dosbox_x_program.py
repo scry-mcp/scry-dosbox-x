@@ -340,6 +340,20 @@ def test_a_run_to_whose_control_stayed_silent_says_the_program_is_gone(
     assert other["message"] == "another stop", other
 
 
+def test_a_wait_that_cannot_end_because_the_machine_is_stopped_says_the_program_is_gone(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    session, now = _stopped_over(tmp_path, monkeypatch, FAULT)
+    monkeypatch.setattr(dstate.STATE, "session", session)
+    session.stop_survey()
+    session.watch_program()
+    now["psp"] = 0x701
+    _next_stop(session)
+    refused = dstate.reply(status="INVALID", code="wait_stopped",
+                           message="the machine is at the debugger")
+    assert refused["message"].startswith("RECHIPD has ended on a fault"), refused
+    assert refused["message"].endswith("the machine is at the debugger"), refused
+
+
 def _launched_over(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, log: str) -> ds.Session:
     """A session whose start ran `RECHIPD.EXE`, whose log holds `log`, stopped at the shell."""
     session, _ = _stopped_over(tmp_path, monkeypatch, FAULT)
