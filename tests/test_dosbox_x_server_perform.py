@@ -125,6 +125,20 @@ def test_send_keys_composes_the_scan_bytes_as_key_commands(tmp_path: Path) -> No
     assert len(fake.commands_sent) == 1, "a refused call must not have sent anything"
 
 
+def test_a_held_key_is_sent_as_its_makes_and_released_as_its_breaks(tmp_path: Path) -> None:
+    fake = _names(tmp_path, watched=False)
+    fake.running = True
+    down = cast(dict[str, Any], server.send_keys(keys=["right"], modifiers=["shift"],
+                                                 action="down"))
+    assert down["status"] == "ok" and down["bytes"] == 3, down
+    up = cast(dict[str, Any], server.send_keys(keys=["right"], modifiers=["shift"], action="up"))
+    assert up["status"] == "ok", up
+    sent = [list(batch) for batch in fake.commands_sent]
+    assert sent == [[b"K\x2A", b"K\xE0", b"K\x4D"], [b"K\xE0", b"K\xCD", b"K\xAA"]], sent
+    bad = cast(dict[str, Any], server.send_keys(keys=["a"], action="hold"))
+    assert bad["status"] == "INVALID", bad
+
+
 def test_send_mouse_moves_presses_and_reads_the_pointer_back(tmp_path: Path) -> None:
     fake = _guest(tmp_path)
     fake.video_mode, fake.mouse_max = 0x13, (639, 199)
@@ -149,6 +163,8 @@ def test_send_mouse_moves_presses_and_reads_the_pointer_back(tmp_path: Path) -> 
     assert fake.commands_sent[-2] == [b"B\x00"] and fake.buttons == 0
     server.send_mouse(button="middle", action="double")
     assert fake.commands_sent[-2] == [b"B\x82", b"B\x02", b"B\x82", b"B\x02"]
+    server.send_mouse(button="left", action="triple")
+    assert fake.commands_sent[-2] == [b"B\x80", b"B\x00"] * 3
     raw = cast(dict[str, Any], server.send_mouse(x=639, y=199, units="mouse"))
     assert raw["status"] == "ok" and raw["pointer"]["mouse"]["x"] == 639, raw
     assert raw["pointer"]["screen"]["x"] == 319
@@ -218,7 +234,7 @@ def test_send_mouse_refuses_before_anything_is_sent(tmp_path: Path) -> None:
         (lambda: server.send_mouse(x=inputs.MAX_COORD + 1, y=0, units="mouse"), "to 32767"),
         (lambda: server.send_mouse(x=0, y=2**31, units="mouse"), "to 32767"),
         (lambda: server.send_mouse(button="wheel"), "button is one of"),
-        (lambda: server.send_mouse(button="left", action="triple"), "action is one of"),
+        (lambda: server.send_mouse(button="left", action="swipe"), "action is one of"),
         (lambda: server.send_mouse(x=1, y=1, units="pixels"), "units is one of"),
     ]
     for call, words in cases:
@@ -403,6 +419,10 @@ def test_scan_sequence_composes_set1_makes_and_breaks_in_order() -> None:
     assert inputs.scan_sequence(["up"], "ctrl+alt") == bytes(
         [0x1D, 0x38, 0xE0, 0x48, 0xE0, 0xC8, 0xB8, 0x9D])
     assert inputs.scan_sequence(["F11"], "-") == bytes([0x57, 0xD7])   # names are case-free
+    assert inputs.scan_sequence(["a"], "shift", "down") == bytes([0x2A, 0x1E])
+    assert inputs.scan_sequence(["a"], "shift", "up") == bytes([0x9E, 0xAA])
+    assert inputs.scan_sequence(["up"], "-", "down") == bytes([0xE0, 0x48])
+    assert inputs.scan_sequence(["up"], "-", "up") == bytes([0xE0, 0xC8])
     with pytest.raises(ds.Invalid, match="unknown key name"):
         inputs.scan_sequence(["a", "bogus"], "-")
     with pytest.raises(ds.Invalid, match="no command key"):

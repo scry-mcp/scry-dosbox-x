@@ -65,8 +65,11 @@ SCAN_MODIFIERS: dict[str, tuple[int, ...]] = {
 }
 
 
-def scan_sequence(keys: list[str], mods: str) -> bytes:
-    """The scan bytes of pressing `keys` with `mods` held; unknown names are refused."""
+def scan_sequence(keys: list[str], mods: str, action: str = "press") -> bytes:
+    """The scan bytes of pressing `keys` with `mods` held; unknown names are refused. `down`
+    holds the modifiers and presses the keys and nothing more; `up` releases them."""
+    if action not in KEY_ACTIONS:
+        raise ds.Invalid("bad_argument", f"action is one of {list(KEY_ACTIONS)}; got {action!r}")
     held: list[tuple[int, ...]] = []
     if mods != "-":
         for m in mods.split("+"):
@@ -76,18 +79,22 @@ def scan_sequence(keys: list[str], mods: str) -> bytes:
                                  f"no command key)")
             held.append(SCAN_MODIFIERS[m.lower()])
     out = bytearray()
-    for code in held:
-        out.extend(code)
+    if action != "up":
+        for code in held:
+            out.extend(code)
     for name in keys:
         key_code = SCAN_SET1.get(name.lower())
         if key_code is None:
             raise ds.Invalid("bad_argument",
                 f"unknown key name {name!r}; the names "
                              f"are {sorted(SCAN_SET1)}")
-        out.extend(key_code)
-        out.extend(key_code[:-1] + (key_code[-1] | 0x80,))
-    for code in reversed(held):
-        out.extend(code[:-1] + (code[-1] | 0x80,))
+        if action != "up":
+            out.extend(key_code)
+        if action != "down":
+            out.extend(key_code[:-1] + (key_code[-1] | 0x80,))
+    if action != "down":
+        for code in reversed(held):
+            out.extend(code[:-1] + (code[-1] | 0x80,))
     return bytes(out)
 
 
@@ -109,7 +116,9 @@ MAX_COORD = 0x7FFF      # INT 33h takes a coordinate in a signed 16-bit register
 MODIFIER_WORDS = tuple(SCAN_MODIFIERS)
 #: The buttons as `send_mouse` names them.
 BUTTON_WORDS = tuple(BUTTONS)
-ACTIONS = ("click", "double", "down", "up", "drag")
+ACTIONS = ("click", "double", "triple", "down", "up", "drag")
+#: What `send_keys` does with the keys: tap them, only press them, only release them.
+KEY_ACTIONS = ("press", "down", "up")
 UNITS = ("screen", "mouse")
 
 # The units `screen_view` answers in per BIOS mode: cells for text, pixels for graphics. The
@@ -210,11 +219,14 @@ def key_commands(seq: bytes) -> list[bytes]:
     return [OP_KEY + bytes([b]) for b in seq]
 
 
+CLICKS = {"click": 1, "double": 2, "triple": 3}
+
+
 def button_commands(button: str, action: str) -> list[bytes]:
     """The press and release bytes of an action; a double click is two clicks, frames apart."""
     press, release = bytes([0x80 | BUTTONS[button]]), bytes([BUTTONS[button]])
     one = {"down": [press], "up": [release], "click": [press, release]}
-    steps = one["click"] * 2 if action == "double" else one[action]
+    steps = one["click"] * CLICKS.get(action, 1) if action in CLICKS else one[action]
     return [OP_BUTTON + b for b in steps]
 
 
@@ -579,11 +591,11 @@ def check_mouse(x: int | None, y: int | None, button: str | None, action: str = 
 
 def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
               expect: str | None, seconds: float | None,
-              progress: ds.Progress = ds.no_progress) -> dict[str, Any]:
+              progress: ds.Progress = ds.no_progress, action: str = "press") -> dict[str, Any]:
     """The body of the `send_keys` tool."""
     check_keys(keys, modifiers, expect, seconds)
     parked = _ready(session, "a key", expect)
-    seq = scan_sequence(keys, "+".join(modifiers) if modifiers else "-")
+    seq = scan_sequence(keys, "+".join(modifiers) if modifiers else "-", action)
 
     def post() -> dict[str, Any]:
         try:

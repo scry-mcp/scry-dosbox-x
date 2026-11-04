@@ -46,6 +46,7 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("breakpoint_at", "by", checks.BREAKPOINT_BY), ("watch_add", "by", checks.WATCH_BY),
     ("watch_add", "mode", dec.WATCH_MODES),
     ("watch_add", "trigger_type", dec.TRIGGER_TYPES),
+    ("send_keys", "action", inputs.KEY_ACTIONS),
     ("send_mouse", "button", ("", *inputs.BUTTON_WORDS)),
     ("send_mouse", "action", ("", *inputs.ACTIONS)), ("send_mouse", "units", inputs.UNITS),
     ("machine_map", "sections", machine.SECTION_NAMES),

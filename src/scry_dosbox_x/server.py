@@ -1450,11 +1450,14 @@ def watch_add(ref: str, mode: Annotated[str, vocab.enum(dec.WATCH_MODES)], lengt
 def send_keys(keys: list[str],
               modifiers: list[Annotated[str, vocab.folded(inputs.MODIFIER_WORDS)]] | None = None,
               expect: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] | None = None,
+              action: Annotated[str, vocab.enum(inputs.KEY_ACTIONS)] = "press",
               ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Send keystrokes to the guest; with `expect`, prove the program took them.
 
-    `keys`: at most {KEYS_MAX}. `expect`: a regex over the E9 log the program's
-    reaction writes, waited up to `seconds` (default {EFFECT_WAIT_S}). A stopped machine is
+    `keys`: at most {KEYS_MAX}. `action`: `press` taps them; `down` holds the modifiers and
+    presses the keys, `up` releases them, so a held key spans the calls between. `expect`: a
+    regex over the E9 log the program's reaction writes, waited up to `seconds` (default
+    {EFFECT_WAIT_S}). A stopped machine is
     run retrace by retrace until the stub takes each key, and left stopped at a retrace; its
     `expect` waits `seconds` of the guest's own time.
 
@@ -1467,7 +1470,7 @@ def send_keys(keys: list[str],
 
     Reference: REFERENCE.md, Input and the screen.
     """
-    return inputs.send_keys(live(), keys, modifiers, expect or None, seconds, bridge(ctx))
+    return inputs.send_keys(live(), keys, modifiers, expect or None, seconds, bridge(ctx), action)
 
 
 @tool("Send mouse input", summary=one_line.send_mouse, on_cancel="none")
@@ -1617,7 +1620,8 @@ def perform(steps: list[dict[str, Any]],
     misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
     The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
     nothing run. `settle_seconds` bounds each wait for a stop before a step that needs one (0:
-    never wait). {UNTIL_FRAME} Frames count since power-on.
+    never wait). {UNTIL_FRAME} Frames count since power-on. A `screen_view` step inlines its
+    text; its picture is written to its `path` and answers `not_inlined: nested`.
 
     Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
     `verdict` (once the list waited; `TARGET` adds `stopped`, `TIMEOUT` `note`), else

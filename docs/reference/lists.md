@@ -17,7 +17,8 @@ failure.
 misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
 The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
 nothing run. `settle_seconds` bounds each wait for a stop before a step that needs one (0:
-never wait). `until_frame=F` needs `summaries=True` (a window is hundreds of steps) and a `run_for` step, and repeats the list until a stop reads frame F, within 5000 steps and 600 s; `no_channel` if there is no frame counter. Frames count since power-on.
+never wait). `until_frame=F` needs `summaries=True` (a window is hundreds of steps) and a `run_for` step, and repeats the list until a stop reads frame F, within 5000 steps and 600 s; `no_channel` if there is no frame counter. Frames count since power-on. A `screen_view` step inlines its
+text; its picture is written to its `path` and answers `not_inlined: nested`.
 
 Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
 `verdict` (once the list waited; `TARGET` adds `stopped`, `TIMEOUT` `note`), else

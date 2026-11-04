@@ -33,13 +33,15 @@ The stub announces itself on the E9 (`STUB  . scry device=present proto=7 motion
 *Send keystrokes*
 
 ```text
-send_keys(keys, modifiers=null, expect="", seconds=null)
+send_keys(keys, modifiers=null, expect="", seconds=null, action="press")
 ```
 
 Send keystrokes to the guest; with `expect`, prove the program took them.
 
-`keys`: at most 64. `expect`: a regex over the E9 log the program's
-reaction writes, waited up to `seconds` (default 10). A stopped machine is
+`keys`: at most 64. `action`: `press` taps them; `down` holds the modifiers and
+presses the keys, `up` releases them, so a held key spans the calls between. `expect`: a
+regex over the E9 log the program's reaction writes, waited up to `seconds` (default
+10). A stopped machine is
 run retrace by retrace until the stub takes each key, and left stopped at a retrace; its
 `expect` waits `seconds` of the guest's own time.
 
@@ -58,6 +60,7 @@ Reference: REFERENCE.md, Input and the screen.
 | `modifiers` | array of string (matching `^([sS][hH][iI][fF][tT]\|[cC][tT][rR][lL]\|[cC][oO][nN][tT][rR][oO][lL]\|[aA][lL][tT]\|[oO][pP][tT][iI][oO][nN])$`) or null | `null` |
 | `expect` | string | `""` |
 | `seconds` | number (> 0, <= 600.0) or null | `null` |
+| `action` | one of `"press"`, `"down"`, `"up"` | `"press"` |
 
 | reply field | type |
 |---|---|
@@ -149,7 +152,7 @@ Reference: REFERENCE.md, Input and the screen.
 | `x` | integer (>= 0, <= 32767) or null | `null` |
 | `y` | integer (>= 0, <= 32767) or null | `null` |
 | `button` | one of `""`, `"left"`, `"right"`, `"middle"` | `""` |
-| `action` | one of `""`, `"click"`, `"double"`, `"down"`, `"up"`, `"drag"` | `""` |
+| `action` | one of `""`, `"click"`, `"double"`, `"triple"`, `"down"`, `"up"`, `"drag"` | `""` |
 | `units` | one of `"screen"`, `"mouse"` | `"screen"` |
 | `expect` | string | `""` |
 | `seconds` | number (> 0, <= 600.0) or null | `null` |
@@ -226,6 +229,6 @@ Example, from a live run:
 
 `target` is explained in [Screen maps](files.md#screen-maps).
 
-`pointer` carries `screen` (`x`, `y`, `width`, `height`; unavailable in an unmapped mode), `mouse` (`x`, `y`, `max_x`, `max_y`), `buttons`, `bios_mode`, under a VBE mode `vbe_mode`, and under a map that declares the program's pointer `program` (`x`, `y`, `corrections` before the press, and `reach` when it did not arrive after the sweep; unavailable, saying why, when it was not read). `screen` units are character cells in a text mode and pixels in a graphics one. Under a VBE mode the BIOS mode byte holds the emulated card's own number, which says nothing portable, so the stub asks VBE itself for the mode and its resolution (INT 10h 4F03h, 4F01h) and the units are that resolution, in pixels or, for a VBE text mode, in cells. Each unit is a span of the driver's coordinates: the move aims at the middle of the span, because the driver rounds to its own granularity and a program divides its range back out (Deluxe Paint sets eight coordinates a pixel and divides by eight), so the span's first coordinate can land in the unit before. `arrived` is judged in the units asked: any coordinate in the span is the unit, and it is false when the driver's rounding or a program's own range put the pointer in another one; `asked` then gives the driver coordinates sent. It is only said when something judged the move: the program's own pointer (a map that declares it) or the driver's own coordinates (`units="mouse"`). A screen-unit move nothing judged answers `driver_arrived` instead, which is where the DRIVER is and no more. `double` is two clicks a tick apart; a button with no `x`, `y` acts where the pointer is, and a move and a button in one call move first. A read-back that fails after the commands went in is INVALID with `delivered: true`, so nothing is sent twice. With no `logfile` the mouse goes in unchecked.
+`pointer` carries `screen` (`x`, `y`, `width`, `height`; unavailable in an unmapped mode), `mouse` (`x`, `y`, `max_x`, `max_y`), `buttons`, `bios_mode`, under a VBE mode `vbe_mode`, and under a map that declares the program's pointer `program` (`x`, `y`, `corrections` before the press, and `reach` when it did not arrive after the sweep; unavailable, saying why, when it was not read). `screen` units are character cells in a text mode and pixels in a graphics one. Under a VBE mode the BIOS mode byte holds the emulated card's own number, which says nothing portable, so the stub asks VBE itself for the mode and its resolution (INT 10h 4F03h, 4F01h) and the units are that resolution, in pixels or, for a VBE text mode, in cells. Each unit is a span of the driver's coordinates: the move aims at the middle of the span, because the driver rounds to its own granularity and a program divides its range back out (Deluxe Paint sets eight coordinates a pixel and divides by eight), so the span's first coordinate can land in the unit before. `arrived` is judged in the units asked: any coordinate in the span is the unit, and it is false when the driver's rounding or a program's own range put the pointer in another one; `asked` then gives the driver coordinates sent. It is only said when something judged the move: the program's own pointer (a map that declares it) or the driver's own coordinates (`units="mouse"`). A screen-unit move nothing judged answers `driver_arrived` instead, which is where the DRIVER is and no more. `double` and `triple` are two and three clicks a tick apart, close enough for a program that counts them; a button with no `x`, `y` acts where the pointer is, and a move and a button in one call move first. A read-back that fails after the commands went in is INVALID with `delivered: true`, so nothing is sent twice. With no `logfile` the mouse goes in unchecked.
 
 **The driver's pointer is the one placed.** A program that keeps its own pointer from the motion counters alone moves with the motion but never reads the driver's position, so its pointer starts where it already was and stops at the edge of its own range: without a screen map that declares where the program keeps its own pointer (Screen maps, *A program that keeps a pointer of its own*) the reply can only say `driver_arrived`. With that map, when the aim is past what the driver's range lets the program's pointer reach, the range is widened once through the stub and `range_widened` says so in every reply's `session` block from then on. Allegro's default DOS mouse driver works that way; with `mouse = I33` in the program's `allegro.cfg` it reads the driver and sets the range to its screen, eight coordinates a pixel, and is pointed at by pixel like any other.

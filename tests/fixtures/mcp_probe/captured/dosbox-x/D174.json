@@ -1,0 +1,37 @@
+{
+ "task": {
+  "id": "D174",
+  "prompt": "Hold the right arrow key down on the running guest and leave it held.",
+  "tool": "send_keys",
+  "args": {
+   "keys": [
+    "right"
+   ],
+   "action": "down"
+  },
+  "grammar": [
+   "right",
+   "down"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\":\"send_keys\",\"args\":{\"keys\":[\"right\"],\"action\":\"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  }
+ ]
+}
