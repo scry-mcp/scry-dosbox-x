@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import os
 import shutil
-import signal
 import time
 from pathlib import Path
 from typing import Any, cast
@@ -390,9 +389,8 @@ def test_a_close_after_the_emulator_died_carries_the_last_words_of_both_channels
     assert gone["stdout_tail"].strip() and gone["errorlog_tail"].strip(), gone
     start_ok(session_seconds=60, logfile=str(log))
     clean = cast(dict[str, Any], server.close())
-    assert clean["ended_by"] == ("killed" if dprocess.TERMINATES else "quit"), clean
-    if not dprocess.TERMINATES:         # a kill is never clean, so its tails come back
-        assert set(clean["omitted"]) == {"stdout_tail", "errorlog_tail"}, clean
+    assert clean["ended_by"] == "quit", clean
+    assert set(clean["omitted"]) == {"stdout_tail", "errorlog_tail"}, clean
     start_ok(session_seconds=60, logfile=str(log))
     asked = cast(dict[str, Any], server.close(detail=True))
     assert asked["stdout_tail"].strip() and asked["errorlog_tail"].strip(), asked
@@ -429,13 +427,11 @@ def test_closing_a_running_session_does_not_wait_out_a_signal_it_ignores() -> No
     assert proc.poll() is not None, (
         "the emulator is STILL RUNNING after close returned. `closed: true` says a "
         "session was there, not that it ended")
-    assert reply["ended_by"] == ("killed" if dprocess.TERMINATES else "quit"), (
+    assert reply["ended_by"] == "quit", (
         f"close ended a running session by {reply['ended_by']!r}, not a clean quit: the "
         f"emulator ignored the TERM, so the quit warning is back on")
-    want = int(signal.SIGTERM) if dprocess.TERMINATES else 0
-    assert cast(int, reply["exit_code"]) == want, (
-        f"exit code {reply['exit_code']}: SIGTERM ends the emulator with {want} here (a clean "
-        f"quit exits 0; Windows terminates the process, which reports the signal's number)")
+    assert cast(int, reply["exit_code"]) == 0, (
+        f"exit code {reply['exit_code']}: a clean quit exits 0")
     assert took < 5.0, (
         f"closing a running session took {took:.2f}s. With the quit warning off the "
         f"emulator answers the TERM at once; a wait this long means it is sitting behind "

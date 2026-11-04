@@ -15,6 +15,7 @@ from typing import Any
 from scry_core import cancel, guardian, live_host
 from scry_core import reply_contract as contract
 from scry_core.progress import PROGRESS_EVERY_S, Progress, no_progress
+from scry_core.reply_contract import Invalid
 
 from scry_dosbox_x import control, stub_link
 from scry_dosbox_x import launch as dlaunch
@@ -61,7 +62,7 @@ GUARDIAN_GRACE_S = 10.0
 DRAIN_KEEP = 4 * 1024 * 1024
 
 DRAIN_JOIN_SECS = 2.0
-#: Windows has no SIGTERM to ask with: `signal_group` terminates, a kill and never a quit.
+#: Windows has no SIGTERM to ask with: `signal_group` terminates, so a quit is asked on the channel.
 TERMINATES = sys.platform == "win32"
 
 # Small: with the quit warning off a guest answers SIGTERM at once, so what ignores it is deaf.
@@ -261,14 +262,14 @@ class Process:
         dpresence.of(self).close()
         try:
             if self.proc.poll() is not None:
-                self.ended_how = (("killed" if TERMINATES else "quit")
-                                  if getattr(self, "_termed", False) else "died")
+                asked = getattr(self, "_asked_to_leave", None)
+                self.ended_how = "died" if asked is None else "quit" if asked else "killed"
             else:
-                self._signal_group(signal.SIGTERM)
-                self._termed = True
-                if wait_exit(self.proc, TERM_GRACE, progress,
-                             "close: waiting for the emulator to leave on SIGTERM") is not None:
-                    self.ended_how = "killed" if TERMINATES else "quit"
+                self._asked_to_leave = self._ask_to_leave()
+                if self._asked_to_leave and wait_exit(
+                        self.proc, TERM_GRACE, progress,
+                        "close: waiting for the emulator to leave on SIGTERM") is not None:
+                    self.ended_how = "quit"
                 else:
                     self.ended_how = "killed"
                     self._signal_group(guardian.KILL)
@@ -307,6 +308,20 @@ class Process:
 
     def _signal_group(self, sig: int) -> None:
         signal_group(self.proc.pid, sig)
+
+    def _ask_to_leave(self) -> bool:
+        """SIGTERM, or on Windows the debugger's `QUIT`; False when nothing was asked."""
+        if not TERMINATES:
+            self._signal_group(signal.SIGTERM)
+            return True
+        channel = getattr(self, "control", None)
+        if channel is None:
+            return False
+        try:
+            channel.request("EXEC QUIT", TERM_GRACE)
+        except Invalid as e:
+            return e.code == "session_broken"
+        return True
 
 
 def signal_group(pid: int, sig: int) -> None:

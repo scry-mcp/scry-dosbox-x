@@ -16,6 +16,7 @@ from typing import Any
 
 import pytest
 from scry_core import guardian
+from scry_core.reply_contract import Invalid
 
 from scry_dosbox_x import process as dprocess
 from scry_dosbox_x import session as ds
@@ -123,10 +124,50 @@ def test_a_close_names_a_terminated_emulator_killed_not_quit(
     p.close()
     assert p.ended_how == said
     # A rerun after a cancelled wait finds the emulator gone after this close's own signal.
-    again = _process(_Deaf(clock, 0.0, None), _termed=True)
+    again = _process(_Deaf(clock, 0.0, None), _asked_to_leave=not terminates)
     again.proc.returncode = 0
     again._close()
     assert again.ended_how == said
+
+
+class _Channel:
+    """The debugger channel as a close meets it: `QUIT` ends the emulator and the emulator closes
+    the channel on its way out, which the real one reports as `session_broken`."""
+
+    def __init__(self, child: _Deaf, answer: str | None) -> None:
+        self.child, self.answer = child, answer
+        self.asked: list[str] = []
+
+    def request(self, command: str, seconds: float = 5.0) -> tuple[bool, list[str]]:
+        self.asked.append(command)
+        if self.answer == "left":
+            self.child.term_s = 0.0
+            raise Invalid("session_broken", "the emulator closed it")
+        if self.answer is None:
+            raise Invalid("host_failed", "no reply")
+        return True, []
+
+    def close(self) -> None:
+        pass
+
+
+@pytest.mark.parametrize(("answer", "ended", "sent"), [
+    ("left", "quit", []), (None, "killed", [guardian.KILL]),
+    ("ignored", "killed", [guardian.KILL])],
+    ids=["the emulator leaves on QUIT", "the channel does not answer", "QUIT is ignored"])
+def test_a_close_on_windows_asks_the_emulator_to_quit_before_terminating_it(
+        monkeypatch: pytest.MonkeyPatch, answer: str | None, ended: str, sent: list[int]) -> None:
+    clock = _Clock(monkeypatch)
+    monkeypatch.setattr(dprocess, "TERMINATES", True)
+    child = _Deaf(clock, None, None)
+    p = _process(child, control=_Channel(child, answer))
+    p.close()
+    assert p.control.asked == ["EXEC QUIT"], p.control.asked  # type: ignore[attr-defined]
+    assert (p.ended_how, child.sent) == (ended, sent), (p.ended_how, child.sent)
+    again = _process(_Deaf(clock, 0.0, None), _termed=True, _asked_to_leave=(answer == "left"))
+    again.proc.returncode = 0
+    again._close()
+    assert again.ended_how == ended
 
 
 @NO_SIGKILL

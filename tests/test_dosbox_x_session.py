@@ -335,6 +335,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     fake = SimpleNamespace(
         proc=NeverDies(), reap_failed="", drain_failure="", _drainer=None,
         _out=None, _signal_group=sent.append)
+    fake._ask_to_leave = lambda: ds.Session._ask_to_leave(fake)  # type: ignore[arg-type]
     rc = ds.Session._close(fake, grace=0)  # type: ignore[arg-type]
     assert rc is None, "a child that was never reaped has no exit code"
     assert fake.reap_failed.startswith("SIGKILL was sent"), (
@@ -367,6 +368,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     ok = SimpleNamespace(
         proc=proc, reap_failed="", drain_failure="", _drainer=None,
         _out=None, _signal_group=ok_sent.append)
+    ok._ask_to_leave = lambda: ds.Session._ask_to_leave(ok)  # type: ignore[arg-type]
     assert ds.Session._close(ok) == -9  # type: ignore[arg-type]
     assert ok_sent == [signal.SIGTERM, guardian.KILL], ok_sent
     assert proc.stretches == 2, "the control never reached the SIGKILL wait"
