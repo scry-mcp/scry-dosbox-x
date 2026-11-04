@@ -55,6 +55,9 @@ P_CELLS = cells(
      "guest/scry.asm: IRQ 4's vector asked too; known: hook1c.com logs its hook"),
     ("P a triple click is three presses the guest counts",
      "send_mouse docstring: `action`; known: mouse.asm counts the presses"),
+    ("P a stopped machine's screen signature settles after a key and reads the same two stops "
+     "running",
+     "input.md: stop, run_for a few frames, read screen_signature until two reads agree"),
     ("P a held key arrives as its make alone, and its break only on the release",
      "send_keys docstring: `action`; known: keys.asm logs every scan byte INT 9 takes"),
     ("P a key reaches the guest: a is logged as key=97",
@@ -206,8 +209,30 @@ def section_p() -> None:
     _twice()
     _twice(hooked=True)
     _no_log()
+    _quiet_stop()
     _keys_spacing()
     _rechip()
+
+
+def _quiet_stop() -> None:
+    """The recipe for a quiet stop: stop, send, run a few frames at a time, and read the signature
+    until two in a row agree."""
+    _mouse_boot()
+    must(M.call(server.stop), "stopping the machine")
+    before = M.call(server.screen_signature)
+    keyed = M.call(server.send_keys, keys=["g"])
+    sigs = []
+    for _ in range(2):
+        must(M.call(server.run_for, frames=3), "running three frames")
+        sigs.append(M.call(server.screen_signature))
+    M.judge("P a stopped machine's screen signature settles after a key and reads the same two "
+            "stops running",
+            all(ok(r) for r in (before, keyed, *sigs))
+            and before.get("signature") != sigs[0].get("signature")
+            and sigs[0].get("signature") == sigs[1].get("signature"),
+            f"{before.get('signature')} then {sigs[0].get('signature')}, "
+            f"{sigs[1].get('signature')}")
+    must(M.call(server.close), "closing the quiet stop guest")
 
 
 def _keys_spacing() -> None:
