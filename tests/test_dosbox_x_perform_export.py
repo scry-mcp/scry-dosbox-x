@@ -120,7 +120,7 @@ DECLARED = {
     "image_compare": {"image": "drop", "series": "drop", "region": "drop",
                       "golden": ("matched", "differing_total", "missing_total", "extra_total",
                                  "differing", "missing", "extra")},
-    "screen_map_write": {"add": "step", "load": "step", "save": "drop"},
+    "screen_map_write": {"add": "step", "load": "step", "pointer": "step", "save": "drop"},
     "resume": "wall", "stop": "wall",
     "screen_wait": recording.Counted("run_for", "frames", "polls"),
     **dict.fromkeys(("memdump", "scan", "snapshot", "capture_frame", "series_capture",

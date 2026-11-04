@@ -280,5 +280,6 @@
   {"id": "D170", "prompt": "Where is the DOSBox-X window right now: on which display, and is it on screen and in front?", "tool": "window"},
   {"id": "D171", "prompt": "The DOSBox-X window is hidden behind another application. Bring it to the front.", "tool": "window", "args": {"front": true}},
   {"id": "D172", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for the owner to watch. The owner is on Moonlight.", "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900, "shared": true, "fullscreen": true}, "allow": ["display"]},
-  {"id": "D174", "prompt": "Hold the right arrow key down on the running guest and leave it held.", "tool": "send_keys", "args": {"keys": ["right"], "action": "down"}, "grammar": ["right", "down"]}
+  {"id": "D174", "prompt": "Hold the right arrow key down on the running guest and leave it held.", "tool": "send_keys", "args": {"keys": ["right"], "action": "down"}, "grammar": ["right", "down"]},
+  {"id": "D175", "prompt": "The game keeps its own mouse pointer in memory, x at 2000:94CA and y at 2000:94CC, two bytes each. Tell the screen map where the pointer is.", "tool": "screen_map_write", "args": {"method": "pointer", "pointer": {"x": "2000:94CA", "y": "2000:94CC", "bytes": 2}}, "grammar": ["pointer"]}
 ]}

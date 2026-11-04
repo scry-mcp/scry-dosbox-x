@@ -413,12 +413,15 @@ Session layer first, then the file's; a screen matches when its kind and size ar
 *Write the screen map*
 
 ```text
-screen_map_write(method, screen="", match=null, controls=null, cells="", anchor="", path="", scale=null, margin=null, dest="", overwrite=null)
+screen_map_write(method, screen="", match=null, controls=null, cells="", anchor="", path="", scale=null, margin=null, dest="", overwrite=null, pointer=null)
 ```
 
 The screen map: an application's screens, each known by the signatures of its stable regions, and their controls, in a session layer and a file layer.
 
 `add`: the screen shown now as `screen` in the session layer, one read signing each `match` crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own units; needs the machine stopped. Reply: `screen`, `kind`, `size`, `cells`, `match`, `controls`, `replaced`, `shadows_file`, `anchor` (when given).
+
+`pointer`: the program's own pointer as an object, `{"x": ref, "y": ref, "bytes": 2}` (a symbol or
+`SEG:OFF` for each axis; `bytes` 1, 2 or 4), as a map file declares it; kept by `save`, replaced by a `load`; a misshapen object is `bad_argument`. Reply: `pointer`.
 
 `add`'s `cells` `index` (a pixel screen; default
 `rgb`) signs the palette indices drawn, not the colours shown, so one map knows a program
@@ -444,7 +447,7 @@ Reference: REFERENCE.md, Screen maps.
 
 | argument | type | default |
 |---|---|---|
-| `method` | one of `"add"`, `"load"`, `"save"` | required |
+| `method` | one of `"add"`, `"pointer"`, `"load"`, `"save"` | required |
 | `screen` | string | `""` |
 | `match` | array of array of integer or null | `null` |
 | `controls` | array of object or null | `null` |
@@ -455,6 +458,7 @@ Reference: REFERENCE.md, Screen maps.
 | `margin` | array of integer or null | `null` |
 | `dest` | string | `""` |
 | `overwrite` | boolean or null | `null` |
+| `pointer` | object or null | `null` |
 
 | reply field | type |
 |---|---|

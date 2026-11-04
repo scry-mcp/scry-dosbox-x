@@ -97,8 +97,13 @@ def _save_map(dest: str, overwrite: bool = False) -> dict[str, Any]:
     return st.reply(**STATE.maps.save(dest, overwrite))
 
 
+def _set_pointer(pointer: dict[str, Any] | None = None) -> dict[str, Any]:
+    return st.reply(**STATE.maps.set_pointer(pointer))
+
+
 MAP = {
     "add": Method(_add_map, checks.check_add_map, screen_map.add_line),
+    "pointer": Method(_set_pointer, checks.check_pointer_map, screen_map.pointer_line),
     "load": Method(_load_map, checks.check_load_map, screen_map.load_line),
     "save": Method(_save_map, checks.check_save_map, screen_map.save_line),
 }

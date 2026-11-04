@@ -87,6 +87,20 @@ def test_saved_screens_become_the_file_layer_and_load_back(tmp_path: Path) -> No
     assert _ok(server.screen_map_find())["layer"] == "file"
 
 
+def test_the_programs_pointer_is_declared_through_the_tool_and_saved(tmp_path: Path) -> None:
+    screen_bench("probe-booted", tmp_path)
+    got = _ok(server.screen_map_write("pointer", pointer={"x": "2000:94CA", "y": "2000:94CC"}))
+    assert got["pointer"] == {"x": "2000:94CA", "y": "2000:94CC", "bytes": 2}, got
+    _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT]))
+    path = tmp_path / "probe.screen-map.json"
+    _ok(server.screen_map_write("save", dest=str(path)))
+    assert json.loads(path.read_text())["pointer"] == got["pointer"]
+    refused = cast(dict[str, Any], server.screen_map_write("pointer", pointer={"x": "a"}))
+    assert refused["code"] == "bad_argument", refused
+    refused = cast(dict[str, Any], server.screen_map_write("pointer"))
+    assert refused["code"] == "bad_argument", refused
+
+
 def test_a_start_empties_the_session_layer_and_keeps_the_file(tmp_path: Path,
                                                               monkeypatch: pytest.MonkeyPatch,
                                                               ) -> None:

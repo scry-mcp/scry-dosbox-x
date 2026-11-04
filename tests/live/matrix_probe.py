@@ -253,6 +253,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "screen_map_write add": {"screen": f"probe_{state}", "match": [[0, 0, 8, 1]]},
         "screen_map_find": {},
         "screen_map_write save": {"dest": M.fresh(f"-{state}.screen-map.json"), "overwrite": True},
+        "screen_map_write pointer": {"pointer": {"x": "2000:94CA", "y": "2000:94CC"}},
         # IRQ 3 (COM2) is masked on this machine and nothing raises it: unmasked and masked back,
         # then raised, lowered and acknowledged while masked, so the guest never takes it.
         "port read": {"port": 0x3DA}, "port write": {"port": 0x3C8, "value": 0},
@@ -574,6 +575,11 @@ def _expect(tool: str, state: str) -> tuple[Callable[[dict[str, Any]], bool], st
         return ((lambda r: refused(r, "bad_argument") and "no map file" in str(r.get("message"))),
                 "screen_map_write load docstring: any state; a file that is not there refused "
                 "by name")
+    if tool == "screen_map_write pointer":
+        live = state in ("stopped", "running")
+        return ((lambda r: ok(r) and (r.get("pointer") or {}).get("bytes") == 2
+                 and (alive(r) if live else no_session(r))),
+                "screen_map_write pointer docstring: any state; the declaration answered back")
     if tool == "guest_file":
         return ((lambda r: refused(r, "bad_argument")
                  and "not fingerprinted" in str(r.get("message"))),
@@ -652,7 +658,7 @@ _STOPPED_ORDER = [
     "disassemble", "call_stack", "memdump",
     "find", "scan start", "scan filter", "scan clear", "debug", "machine_map",
     "interrupt_vectors", "palette", "screen_view", "screen_signature", "screen_wait",
-    "screen_map_write add", "screen_map_find", "screen_map_write save", "screen_map_write load",
+    "screen_map_write add", "screen_map_find", "screen_map_write save", "screen_map_write load", "screen_map_write pointer",
     "set_register", "write", "stop",
     "step", "run_to", "run_for", "trace", "state_write save", "state_write load", "snapshot",
     "window",

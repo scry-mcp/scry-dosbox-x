@@ -15,6 +15,8 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
   takes `action="triple"`, three clicks a tick apart, and the range widening of a program's pointer measures a
   sweep that a screen edge clamped from a shorter distance, so `pointer.mouse.max_*` no longer comes out several
   times too large. `perform`'s description says a `screen_view` step answers its picture as `not_inlined: nested`.
+- `screen_map_write` takes `method="pointer"` and `pointer={"x": ref, "y": ref, "bytes": 2}`: the program's own
+  pointer declared by a call instead of by editing the saved map; `save` keeps it and a `load` replaces it.
 - `build_check` answers `debugger_commands_missing`: each debugger command the build lacks, with the tools it
   takes away (a build without `RUNSTATE` lists `run_to`, `run_for`, `trace`, `screen_wait` and the rest); it is
   omitted when the build has every command.

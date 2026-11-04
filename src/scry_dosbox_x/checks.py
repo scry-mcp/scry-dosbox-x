@@ -206,6 +206,10 @@ def check_add_map(screen: str = "", match: Any = None, controls: Any = None,
     screen_map.check_add(screen, match, controls, cells, anchor)
 
 
+def check_pointer_map(pointer: object = None, **_: Any) -> None:
+    screen_map.check_pointer(pointer)
+
+
 def check_save_map(dest: str = "", overwrite: bool = False, **_: Any) -> None:
     screen_map.check_save(dest, overwrite)
 

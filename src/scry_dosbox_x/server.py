@@ -1284,16 +1284,19 @@ def screen_map_find() -> dict[str, Any]:
 
 
 @tool("Write the screen map", summary=methods.fold_line("screen_map_write", folds.MAP),
-      replay={"add": "step", "load": "step", "save": "drop"})
+      replay={"add": "step", "load": "step", "pointer": "step", "save": "drop"})
 def screen_map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], screen: str = "",
               match: list[list[int]] | None = None, controls: list[dict[str, Any]] | None = None,
               cells: Annotated[str, vocab.enum(screen_map.CELLS_WORDS)] = "",
               anchor: str = "", path: str = "", scale: int | None = None,
               margin: list[int] | None = None, dest: str = "",
-              overwrite: bool | None = None) -> dict[str, Any]:
+              overwrite: bool | None = None,
+              pointer: dict[str, Any] | None = None) -> dict[str, Any]:
     """{MAP_WRITE}
 
     {MAP_ADD}
+
+    {MAP_POINTER}
 
     {MAP_CELLS}
 

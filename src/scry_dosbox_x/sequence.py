@@ -43,7 +43,7 @@ RUNNING_OK_OPS = frozenset({
 #: Methods of a folded tool that answer on a running guest; its others need a stop. Both state
 #: methods go down the debugger channel, breaking in on a running guest and releasing it after.
 RUNNING_METHODS: dict[str, tuple[str, ...]] = {"comment_write": ("save",),
-                                                "screen_map_write": ("load", "save"),
+                                                "screen_map_write": ("load", "save", "pointer"),
                                                 "state_write": ("save", "load")}
 GATE = roster.RunningGate(ops=RUNNING_OK_OPS, methods=RUNNING_METHODS)
 

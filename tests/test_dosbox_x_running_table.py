@@ -205,6 +205,7 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
         "audio_compare diff": {"a": "/nonexistent/a.wav", "b": "/nonexistent/b.wav"},
         "screen_map_write load": {"path": str(tmp_path / "none.screen-map.json")},
         "screen_map_write save": {"dest": str(tmp_path / "x.screen-map.json")},
+        "screen_map_write pointer": {"pointer": {"x": "2000:94CA", "y": "2000:94CC"}},
         "screen_map_write add": {"screen": "s", "match": [[0, 0, 1, 1]]}, "screen_map_find": {},
         "port read": {"port": 0x3DA}, "port write": {"port": 0x3C8, "value": 1},
         "pic read": {},
