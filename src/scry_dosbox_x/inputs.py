@@ -688,6 +688,24 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
         _send(session, [move_command(here.max_x, here.max_y)], parked)
         latest[0] = _report(session, parked)
         return low, seen_now()
+    def interior_reach(reach: tuple[tuple[int, int], tuple[int, int]]
+                       ) -> tuple[tuple[int, int], tuple[int, int]]:
+        """Per axis, a driver distance and the program units it moved the pointer. A sweep end
+        pinned at the program's last unit measures a span that is too short, so that distance is
+        halved until the pointer is off the edge; a pointer that never leaves it keeps the first."""
+        here = latest[0]
+        driver = [here.max_x, here.max_y]
+        low, high = list(reach[0]), list(reach[1])
+        for _ in range(CLAMP_HALVINGS):
+            pinned = [axis for axis in (0, 1) if high[axis] >= size[axis] - 1 and driver[axis] > 1]
+            if not pinned:
+                break
+            for axis in pinned:
+                driver[axis] //= 2
+            _send(session, [move_command(*driver)], parked)
+            high = list(seen_now())
+        return ((driver[0], abs(high[0] - low[0])), (driver[1], abs(high[1] - low[1])))
+
     def widen(reach: tuple[tuple[int, int], tuple[int, int]]) -> tuple[float, float] | None:
         """The aim is past what the driver's range lets the program's pointer reach: widen the
         range to the program's whole screen, at the ratio the sweep just measured."""
@@ -696,8 +714,9 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
             if (here.max_x, here.max_y) == session.driver_range_seen:
                 return None
             session.driver_range = None       # the program reset the driver: its range is back
-        wanted = (max(_range_for(size[0], here.max_x, abs(reach[1][0] - reach[0][0])), here.max_x),
-                  max(_range_for(size[1], here.max_y, abs(reach[1][1] - reach[0][1])), here.max_y))
+        (reach_x, reach_y) = interior_reach(reach)
+        wanted = (max(_range_for(size[0], reach_x[0], reach_x[1]), here.max_x),
+                  max(_range_for(size[1], reach_y[0], reach_y[1]), here.max_y))
         if wanted == (here.max_x, here.max_y):
             return None
         _send(session, [range_command(*wanted)], parked)
@@ -711,6 +730,10 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
         seen_now,
         nudge, ((after.max_x + 1) / size[0], (after.max_y + 1) / size[1]), resync, widen)
     return latest[0], steered
+
+
+#: How many times a pinned sweep's far end is moved back toward the origin.
+CLAMP_HALVINGS = 6
 
 
 def _range_for(screen: int, max_: int, span: int) -> int:

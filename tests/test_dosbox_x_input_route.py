@@ -117,19 +117,22 @@ def test_the_range_that_spans_a_screen_comes_from_what_a_sweep_measured(
 
 class _World:
     """The stub's driver and a program that follows its motion: the program's pointer is `base`
-    plus the driver's position over `per` driver units a program unit, whatever the range."""
+    plus the driver's position over `per` driver units a program unit, whatever the range, and
+    held on the program's own screen when `edge` is given."""
 
     def __init__(self, max_: tuple[int, int] = (639, 199), per: tuple[float, float] = (2.0, 1.0),
-                 base: tuple[int, int] = (352, 284)) -> None:
+                 base: tuple[int, int] = (352, 284), edge: tuple[int, int] | None = None) -> None:
         self.driver, self.max, self.per, self.base = [320, 100], list(max_), per, base
+        self.edge = edge
         self.ranges: list[bytes] = []
         self.driver_range: dict[str, int] | None = None
         self.driver_range_seen: tuple[int, int] | None = None
         self.altered = False
 
     def program(self) -> tuple[int, int]:
-        return (self.base[0] + round(self.driver[0] / self.per[0]),
-                self.base[1] + round(self.driver[1] / self.per[1]))
+        x = self.base[0] + round(self.driver[0] / self.per[0])
+        y = self.base[1] + round(self.driver[1] / self.per[1])
+        return (x, y) if self.edge is None else (min(x, self.edge[0]), min(y, self.edge[1]))
 
     def line(self) -> str:
         return (f"STUB  . mouse x={self.driver[0]} y={self.driver[1]} buttons=0 "
@@ -168,6 +171,16 @@ def test_an_aim_past_the_drivers_range_widens_it_once_and_the_pointer_arrives(
     assert world.driver_range == {"x": 2043, "y": 767} and world.altered
     _report, again = _steered(world, (600, 650), monkeypatch)
     assert again is not None and again.arrived and len(world.ranges) == 1, world.ranges
+
+
+def test_a_sweep_that_a_screen_edge_clamped_still_widens_to_the_whole_screen(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The pointer starts at x=900 and the sweep's far end is pinned at the screen's last unit:
+    the span between the corners is 123, and the range asked for was 5315 instead of 2043."""
+    world = _World(base=(900, 284), edge=(1023, 767))
+    _steered(world, (1000, 600), monkeypatch)
+    wide = int.from_bytes(world.ranges[0][1:3], "little")
+    assert len(world.ranges) == 1 and 2030 <= wide <= 2060, world.ranges
 
 
 def test_a_range_the_program_reset_is_widened_again(monkeypatch: pytest.MonkeyPatch) -> None:
