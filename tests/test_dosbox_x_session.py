@@ -1407,9 +1407,11 @@ def test_an_empty_token_is_refused_before_any_rule_about_its_neighbours(
 
 
 @pytest.mark.parametrize("flags", [["-set", "cpu", "cycles=fixed 3000"],
-                                   ["-set cpu cycles=fixed 3000"], ["-set", ""]])
+                                   ["-set cpu cycles=fixed 3000"], ["-set", ""],
+                                   ["-set", "sdl"], ["-set", "cpu cycles 3000"]])
 def test_a_shredded_or_glued_set_is_refused(conf: Path, flags: list[str]) -> None:
-    """A `-set` whose value holds no space arrived shredded."""
+    """A `-set` with no `=` is ignored by DOSBox-X at rc 0, whether shredded or the value after a
+    space."""
     with pytest.raises(ds.Invalid, match="bad_argument|-set"):
         dlaunch.validate(launch(conf, flags=flags))
 
@@ -1419,6 +1421,8 @@ def test_a_shredded_or_glued_set_is_refused(conf: Path, flags: list[str]) -> Non
     ["-set", "sdl videodriver=cocoa"], ["-set", "log logfile=elsewhere.log"],
     ["-set", "dos  break on int3=false"], ["-set", "serial serial1=disabled"],
     ["-set", "cpu integration device=false"], ["-set", "dosbox captures=/tmp/x"],
+    ["-set", "break on int3=false"], ["-set", "integration device=false"],
+    ["-set", "windowresolution=800x600"], ["-set", "display=1"],
     ["-savedir", _abs("tmp", "states")], ["-c", "GAME.EXE"]])
 def test_flags_may_not_retune_what_a_named_argument_owns(conf: Path, flags: list[str]) -> None:
     """`flags` carries the emulator's options, never one a named argument owns."""
@@ -1427,9 +1431,10 @@ def test_flags_may_not_retune_what_a_named_argument_owns(conf: Path, flags: list
 
 
 def test_flags_may_still_retune_the_defaults_no_argument_owns(conf: Path) -> None:
-    """The quit warning and the clock are the caller's to set"""
+    """The quit warning and the clock are the caller's to set, with or without a section: the
+    emulator takes `key=value` alone."""
     dlaunch.validate(launch(conf, flags=["-set", "dosbox quit warning=true",
-                                    "-set", "cpu cycles=fixed 3000"]))
+                                    "-set", "cpu cycles=fixed 3000", "-set", "cycles=max"]))
 
 
 def test_the_paging_mark_is_the_stop_surveys_and_a_later_survey_does_not_move_it(
@@ -1616,14 +1621,16 @@ def test_a_conf_s_mounts_are_read_past_options_case_and_a_bom(tmp_path: Path, au
 
 
 def test_a_stub_the_conf_runs_is_judged_by_the_protocol_it_carries(tmp_path: Path) -> None:
-    for name, proto in (("old", 6), ("new", 7)):
+    for name, proto in (("old", 6), ("new", 7), ("stale build", 6)):
         (tmp_path / name).mkdir()
         (tmp_path / name / "SCRY.COM").write_bytes(b"\x90SCRY-INJECT-%d\x00" % proto)
     conf = tmp_path / "g.conf"
     conf.write_text('[autoexec]\nmount g "old" -ro\ng:\\SCRY.COM\nmount H new\n@h:\\scry.com\n'
-                    'mount i missing\ni:\\SCRY.COM\n[sdl]\nj:\\SCRY.COM\n', encoding="utf-8")
+                    'mount i missing\ni:\\SCRY.COM\nmount k "stale build"\nk:\\SCRY.COM\n'
+                    '[sdl]\nj:\\SCRY.COM\n', encoding="utf-8")
     assert dconf.stub_protocols(conf, tmp_path) == [("g:\\SCRY.COM", "6"),
-                                                    ("@h:\\scry.com", "7")]
+                                                    ("@h:\\scry.com", "7"),
+                                                    ("k:\\SCRY.COM", "6")]
 
 
 def test_start_says_when_the_conf_runs_a_stub_of_another_protocol(tmp_path: Path) -> None:

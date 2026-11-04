@@ -298,13 +298,21 @@ OWNED_SETS = {"sdl videodriver": "shared", "sdl display": "display",
 SESSION_SETS = {"dosbox mcp_server", "dosbox debugger headless"}
 
 
+# A `-set` may carry no section; log categories stay out, as `cpu` is also a section.
+_SECTIONLESS = {key.partition(" ")[2]: key for key in (*OWNED_SETS, *SESSION_SETS)
+                if not key.startswith("log ") or key == "log logfile"}
+
+
 def _set_key(token: str) -> str:
-    """The `section key` a `-set` token names; DOSBox-X also takes `section key value`."""
+    """The `section key` a `-set` token names, with or without its section."""
     words = token.split("=", 1)[0].lower().split()
     for n in range(len(words), 1, -1):
         key = " ".join(words[:n])
         if key in OWNED_SETS or key in SESSION_SETS:
             return key
+    for n in range(len(words), 0, -1):
+        if (owned := _SECTIONLESS.get(" ".join(words[:n]))) is not None:
+            return owned
     return " ".join(words)
 
 
@@ -323,19 +331,23 @@ def check_flags(flags: list[str]) -> None:
                           f"display=1'], not ['-set \"sdl display=1\"'] -- because "
                           f"DOSBox-X does not refuse an argument it cannot parse, it "
                           f"hangs on it")
-        if flag == "-set" and (i + 1 >= len(flags) or " " not in str(flags[i + 1])):
-            raise Invalid("bad_argument",
-                f"flags: the `-set` at {i} is not followed by one `section key=value` "
-                f"token (a space inside it). A shredded `-set` is ignored by DOSBox-X at "
-                f"rc 0, so the setting would silently not apply")
+        if flag == "-set" and i + 1 >= len(flags):
+            raise Invalid("bad_argument", f"flags: the `-set` at {i} has no token after it")
         owner = OWNED_OPTIONS.get(flag)
         if flag == "-set":
-            key = _set_key(str(flags[i + 1]))
+            token = str(flags[i + 1])
+            key = _set_key(token)
             owner = OWNED_SETS.get(key)
             if key in SESSION_SETS:
                 raise Invalid("bad_argument",
                     f"flags: the `-set` at {i} sets `{key}`, which every session sets "
                     f"for its own debugger channel; it is not the caller's to change")
+            if owner is None and "=" not in token:
+                raise Invalid("bad_argument",
+                    f"flags: the `-set` at {i} is not followed by one `section key=value` "
+                    f"token (or `key=value`). DOSBox-X ignores a `-set` with no `=` at rc 0, "
+                    f"whether shredded or with the value after a space, so the setting would "
+                    f"silently not apply")
         if owner is not None:
             raise Invalid("bad_argument",
                 f"flags: {flag!r} at {i} sets what `{owner}` owns. Placed after this "

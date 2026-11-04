@@ -9,10 +9,9 @@ from scry_core.reply_contract import Invalid
 #: `ps` shows this name when `start` gets no `binary`.
 LADDER = binaries.Ladder(product="DOSBox-X", executable="dosbox-x", variable="DOSBOX_X_BINARY")
 EXECUTABLE_NAME, VARIABLE = LADDER.executable, LADDER.variable
-ARGUMENT, PATH_RUNG = binaries.ARGUMENT, binaries.PATH_RUNG
 Resolved = binaries.Resolved
 resolve = LADDER.resolve
-why_not, version, facts = binaries.why_not, binaries.version, binaries.facts
+facts = binaries.facts
 VERSION_TIMEOUT_S = binaries.VERSION_TIMEOUT_S
 
 

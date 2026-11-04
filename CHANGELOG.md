@@ -15,6 +15,14 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
   takes `action="triple"`, three clicks a tick apart, and the range widening of a program's pointer measures a
   sweep that a screen edge clamped from a shorter distance, so `pointer.mouse.max_*` no longer comes out several
   times too large. `perform`'s description says a `screen_view` step answers its picture as `not_inlined: nested`.
+- `window` says why a size reads `matches: false` while the guest has never run (the emulator takes the size at its
+  first video mode) and what to do: `resume` and read again.
+- `flags` takes a `-set` as `key=value` with no section too, as DOSBox-X does, and refuses a key the server owns in that
+  spelling (`break on int3=false`, `integration device=false`, `debugger headless=false`); a `-set` with no `=`, the
+  value after a space included, is refused because DOSBox-X ignores it. `symbols_find` by `linear` in a section the
+  table lacks answers `unknown_ref`, a real-mode base off a paragraph keeps its low bits, a conf's
+  `windowresolution=desktop` or `original` is no longer overridden by the fitted size, and a quoted `mount` path with
+  a space is read.
 - `screen_map_write` takes `method="pointer"` and `pointer={"x": ref, "y": ref, "bytes": 2}`: the program's own
   pointer declared by a call instead of by editing the saved map; `save` keeps it and a `load` replaces it.
 - `build_check` answers `debugger_commands_missing`: each debugger command the build lacks, with the tools it

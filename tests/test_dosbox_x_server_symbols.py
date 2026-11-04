@@ -657,6 +657,13 @@ def test_target_for_takes_the_selector_in_protected_mode_and_the_paragraph_in_re
     assert seg * 16 + off == 0x7DF0 + 0x140E0 and off <= 0xFFFF
 
 
+def test_target_for_keeps_the_low_bits_of_a_base_that_is_not_paragraph_aligned() -> None:
+    dstate.STATE.base.clear()
+    dstate.STATE.base.update({"base": 0x10005, "limit": -1, "type": -1})
+    seg, off = placement.target_for(0x10, "CS", NamesFake(mode="Real"))   # type: ignore[arg-type]
+    assert seg * 16 + off == 0x10015
+
+
 def test_run_to_takes_a_symbol_or_an_address_like_the_readers_do(tmp_path: Path) -> None:
     fake = _names(tmp_path, symbols=[dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T"),
                                      dsym.Symbol("twice", 0x10, kind="t"),

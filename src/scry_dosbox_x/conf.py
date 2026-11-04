@@ -4,6 +4,7 @@ cpu core, the `sdl output`, a stated `windowresolution` and `dpi aware`, as boot
 from __future__ import annotations
 
 import re
+import shlex
 from pathlib import Path
 
 MOUNTING = frozenset({"mount", "imgmount", "subst"})
@@ -50,7 +51,11 @@ def stub_protocols(conf: Path, cwd: Path) -> list[tuple[str, str]]:
         if section != "[autoexec]" or not words:
             continue
         if words[0].lstrip("@").lower() == "mount":
-            args = [w.strip('"') for w in words[1:] if not w.startswith("-")]
+            try:
+                parts = shlex.split(line, posix=False)
+            except ValueError:
+                continue
+            args = [w.strip('"') for w in parts[1:] if not w.startswith("-")]
             if len(args) >= 2 and len(args[0].rstrip(":")) == 1:
                 mounts[args[0].rstrip(":").upper()] = cwd / args[1]
         elif (run := _STUB_RUN.match(words[0])) is not None and run[1].upper() in mounts:
@@ -92,7 +97,7 @@ def dpi_awareness(conf: Path, flags: list[str]) -> bool | None:
 
 def states_window_size(conf: Path, flags: list[str]) -> bool:
     """Whether the conf or a `-set` gives `windowresolution` a size."""
-    return "x" in setting(conf, flags, "sdl", "windowresolution", "")
+    return bool(setting(conf, flags, "sdl", "windowresolution", ""))
 
 
 def setting(conf: Path, flags: list[str], section_name: str, key_name: str, default: str) -> str:

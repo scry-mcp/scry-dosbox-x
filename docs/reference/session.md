@@ -259,7 +259,7 @@ A watched start opens DOSBox-X's window on the display `display` names (the OS's
 
 **`binary` and `background`**: `binary` omitted is `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`, as `build_check` resolves it. `background` `true` starts behind, `false` in front, omitted by `shared`.
 
-**`flags` are argv tokens, so a `-set` value with spaces is one token**; a glued `-set` is refused because DOSBox-X hangs on it, a shredded one because DOSBox-X ignores it at rc 0 and the setting would silently not apply.
+**`flags` are argv tokens, so a `-set` value with spaces is one token**; a glued `-set` is refused because DOSBox-X hangs on it, a `-set` with no `=` (shredded, or with the value after a space) because DOSBox-X ignores it at rc 0 and the setting would silently not apply. `key=value` with no section is taken, and a key the server owns is refused in that spelling too.
 
 **`program` loads the stub itself when the conf's autoexec does not run it**, which is why the autoexec must not `exit` before `program` runs.
 

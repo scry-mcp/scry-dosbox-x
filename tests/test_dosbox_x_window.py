@@ -202,6 +202,20 @@ def test_a_stated_size_reaches_the_command_line_as_windowresolution_and_the_wind
         server.close()
 
 
+@pytest.mark.parametrize(("matches", "stop_count", "parked", "noted"), [
+    (False, 1, True, True), (False, 2, True, False), (False, 1, False, False),
+    (True, 1, True, False)])
+def test_a_window_without_its_size_says_why_only_while_the_guest_has_never_run(
+        monkeypatch: pytest.MonkeyPatch, matches: bool, stop_count: int, parked: bool,
+        noted: bool) -> None:
+    reply = {"window": {"display": 0}, "size": {"matches": matches}}
+    monkeypatch.setattr(core_window, "answer", lambda *a, **k: dict(reply))
+    session = SimpleNamespace(pid=1, launch=SimpleNamespace(window=None, background=False),
+                              parked=parked, stop_count=stop_count)
+    got = lifecycle.window(cast(Any, session), False)
+    assert ("first video mode" in str(got.get("note", ""))) is noted, got
+
+
 @pytest.mark.parametrize("arguments", [{"size": "1280x960"}, {"shared": True, "size": "wide"},
                                        {"shared": True, "size": "99999x99999"},
                                        {"shared": True, "size": "640x480", "fullscreen": True}])
@@ -292,9 +306,10 @@ def test_a_watched_window_with_no_size_gets_the_largest_4_3_one_the_usable_area_
         server.close()
 
 
+@pytest.mark.parametrize("size", ["800x600", "desktop", "original"])
 def test_a_size_the_conf_states_is_not_overridden_by_the_fit(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    got = _started(tmp_path, monkeypatch, conf_text="[sdl]\nwindowresolution=800x600\n")
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, size: str) -> None:
+    got = _started(tmp_path, monkeypatch, conf_text=f"[sdl]\nwindowresolution={size}\n")
     try:
         assert got["status"] == "ok", got
         assert not [t for t in _argv_window_words() if "windowresolution" in t]

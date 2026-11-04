@@ -133,14 +133,14 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
         raise ds.Invalid("bad_argument",
             "a real-mode symbol needs a FLAT base from symbols_load (`base`), and this table "
             "has none -- it is sectioned, or none is loaded. Load a real-mode map first")
-    base_seg = STATE.base["base"] // 16
-    if base_seg > 0xFFFF:
+    base = STATE.base["base"]
+    if base // 16 > 0xFFFF:
         raise ds.Invalid("bad_argument",
-            f"the table's base 0x{STATE.base['base']:X} is past the first megabyte, which no "
+            f"the table's base 0x{base:X} is past the first megabyte, which no "
             f"real-mode SEG:OFF reaches: read or arm the symbol at a protected-mode stop")
-    if offset <= 0xFFFF:
-        return base_seg, offset
-    linear = base_seg * 16 + offset          # a high real-mode offset (a data segment)
+    if base % 16 == 0 and offset <= 0xFFFF:
+        return base // 16, offset
+    linear = base + offset      # a high offset (a data segment), or a base off a paragraph
     if linear > 0xFFFFF:
         raise ds.Invalid("bad_argument",
             f"the symbol folds to linear 0x{linear:X}, past the 0xFFFFF this paragraph split "
@@ -651,7 +651,14 @@ def find(name: str | None, offset: int | None, section: int | None,
         want = offset
     else:
         assert linear is not None      # exactly one of the three was given, checked above
-        base = (STATE.section_bases[want_section] if STATE.section_bases else STATE.base["base"])
+        if not STATE.section_bases:
+            base = STATE.base["base"]
+        elif want_section in STATE.section_bases:
+            base = STATE.section_bases[want_section]
+        else:
+            raise ds.Invalid("unknown_ref",
+                f"nothing in section {want_section}: this table's sections are "
+                f"{sorted(STATE.section_bases)}")
         want = linear - base
     return st.reply(**_nearest_offset(want, want_section))
 

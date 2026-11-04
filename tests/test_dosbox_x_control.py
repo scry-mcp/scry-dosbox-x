@@ -177,7 +177,8 @@ def test_the_launch_points_the_emulator_at_the_session_s_channel(tmp_path: objec
 
 
 @pytest.mark.parametrize("token", ["dosbox mcp_server=9", "dosbox mcp_server 9",
-                                   "DOSBOX  MCP_SERVER=9"])
+                                   "DOSBOX  MCP_SERVER=9", "mcp_server 9",
+                                   "debugger headless=false"])
 def test_a_caller_s_flags_cannot_repoint_the_channel(token: str) -> None:
     """Every spelling DOSBox-X's `-set` takes, the value after `=` or after a space."""
     with pytest.raises(Invalid) as e:

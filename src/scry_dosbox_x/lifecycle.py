@@ -248,8 +248,15 @@ def _notes(launch: dlaunch.Launch) -> dict[str, str]:
 
 def window(session: ds.Session, front: bool) -> dict[str, Any]:
     """The body of the `window` tool: where the watched window is, brought forward on `front`."""
-    return st.reply(**core_window.answer(session.pid, session.launch.window, front=front,
-                                         launched_behind=session.launch.background))
+    fields = core_window.answer(session.pid, session.launch.window, front=front,
+                                launched_behind=session.launch.background)
+    size = fields.get("size")
+    if (isinstance(size, dict) and size.get("matches") is False and session.parked
+            and session.stop_count <= 1 and "note" not in fields):
+        fields["note"] = ("the window takes the size asked at the guest's first video mode, so it "
+                          "reads the emulator's own size until the guest has run: `resume` it and "
+                          "read `window` again")
+    return st.reply(**fields)
 
 
 def presence_shown(session: ds.Session) -> bool | dict[str, Any]:

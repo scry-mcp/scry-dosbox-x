@@ -182,6 +182,15 @@ def test_a_section_the_table_does_not_hold_is_refused_by_name(tmp_path: Path) ->
     assert "nothing in section 4" in got["message"], got
 
 
+def test_a_linear_address_in_a_section_the_table_does_not_hold_is_refused_by_name(
+        tmp_path: Path) -> None:
+    _names(tmp_path)
+    _ok(server.symbols_load(path=str(ILINK32_MAP), section_bases=ILINK32_BASES))
+    got = cast(dict[str, Any], server.symbols_find(linear="10", section=4))
+    assert got["status"] == "INVALID" and got["code"] == "unknown_ref", got
+    assert "nothing in section 4" in got["message"], got
+
+
 def test_section_bases_that_are_no_mapping_are_refused_naming_them() -> None:
     with pytest.raises(ds.Invalid) as refused:
         placement.hex_bases("400000")  # type: ignore[arg-type]
