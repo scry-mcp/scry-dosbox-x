@@ -8,6 +8,7 @@ import re
 import socket
 import subprocess
 import sys
+import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
@@ -42,6 +43,8 @@ SESSION_S = 1200
 
 #: Addresses no guest executes (interrupt vector table bytes): stopper, bound-ended target, control.
 NEVER_RUNS_STOPPER = "0000:0001"
+RELEASE_TRIES = 5
+RELEASE_SETTLE_S = 0.5
 NEVER_RUNS_TARGET = "0000:0003"
 NEVER_RUNS_CONTROL = "0000:0005"
 
@@ -276,6 +279,17 @@ def release_running(stopper: str = NEVER_RUNS_STOPPER) -> None:
         r = M.call(server.resume)
     if not (ok(r) and "stop_seq" not in r):
         raise RuntimeError(f"the machine did not run: {said(r)}")
+    # A pending retrace stop can meet the guest after that reply: settle, then check `status`.
+    for _ in range(RELEASE_TRIES):
+        time.sleep(RELEASE_SETTLE_S)
+        seen = M.call(server.status)
+        running = (seen.get("session") or {}).get("running") is True
+        if ok(seen) and "stopped_on_its_own" not in seen and running:
+            return
+        again = M.call(server.resume)
+        if not (ok(again) and "stop_seq" not in again):
+            raise RuntimeError(f"the machine did not run again: {said(again)}")
+    raise RuntimeError("the machine kept stopping on its own after every release")
 
 
 def free_port() -> int:
