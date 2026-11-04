@@ -31,6 +31,7 @@ from scry_dosbox_x import dos_calls as dos_calls_trace
 from scry_dosbox_x import guest_files as guest
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import presence as dpresence
+from scry_dosbox_x import process as dprocess
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
 from scry_dosbox_x.state import STATE
@@ -282,6 +283,10 @@ def _log_tail(session: ds.Session) -> str | dict[str, Any]:
         return contract.unavailable(f"the logfile could not be read: {e}")
 
 
+TERMINATED_NOTE = ("on Windows a close terminates the emulator, as it has no quit signal, so "
+                   "`killed` and exit code 15 are how every close ends there")
+
+
 def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
     """The body of the `close` tool."""
     if STATE.session is None:
@@ -309,8 +314,9 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
         None if unreaped else rc,
         f"the emulator was SIGKILLed and not reaped ({unreaped}): it may still be on the "
         f"machine" if unreaped else "the emulator's exit code could not be read")
+    notes = ([f"the emulator's output reader: {drained}"] if drained else []) + (
+        [TERMINATED_NOTE] if dprocess.TERMINATES and ended_by == "killed" and not unreaped else [])
     return {"status": "ok", "closed": True, **facts, "ended_by": ended_by,
             "exit_code": exit_code, **tails, **left,
-            **({"note": f"the emulator's output reader: {drained}"}
-               if drained else {}),
+            **({"note": " ".join(notes)} if notes else {}),
             "session": st.session_block()}

@@ -54,6 +54,7 @@ from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import dos_calls as dos_calls_trace
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import mcp as dosbox_mcp
+from scry_dosbox_x import process as dprocess
 from scry_dosbox_x import replies as dosbox_replies
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
@@ -1161,6 +1162,22 @@ def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
     own.write_bytes(b"RIFF")
     named = server.capture_frame(frame=3, dest=str(tmp_path / "g.png"), capture_path=str(own))
     assert named["capture_path"] == str(own)
+
+
+@pytest.mark.parametrize(("terminates", "noted"), [(True, True), (False, False)])
+def test_close_explains_a_terminated_emulator_where_every_close_ends_that_way(
+        monkeypatch: pytest.MonkeyPatch, terminates: bool, noted: bool) -> None:
+    class Ended(FakeSession):
+        def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
+            self.ended_how = "killed"
+            self._alive = False
+            return 15
+
+    monkeypatch.setattr(dprocess, "TERMINATES", terminates)
+    dstate.STATE.session = Ended()  # type: ignore[assignment]
+    got = cast(dict[str, Any], server.close())
+    assert got["ended_by"] == "killed" and got["exit_code"] == 15
+    assert ("note" in got) is noted, got
 
 
 def test_close_says_how_the_session_ended() -> None:

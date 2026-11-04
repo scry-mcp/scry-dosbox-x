@@ -7,6 +7,11 @@ What a client of the server notices.
 It needs the scry-core that serves `scry_core.window`, not an older one: the tag pinned in
 `pyproject.toml` is the floor.
 
+- `start` and `build_check` on Windows read the build's `version` from the executable's version resource instead of
+  running `-version`, which opens a console and waits for a key there: a `start` no longer waits for the probe's
+  bound and the reply carries the version.
+- `close` on Windows carries a note that the emulator is terminated there, which has no quit signal: `ended_by:
+  killed` and exit code 15 are how every close ends on that host.
 - The descriptions of `build_check` and `start` name `session_live`, `registers` names `no_stop` and `snapshot` names
   `wait_expired`, the codes they answer; the README says how to watch a session, and `start`'s page says who mounts
   the stub and what a repository's conf must drop.

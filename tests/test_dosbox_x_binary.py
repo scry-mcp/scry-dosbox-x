@@ -12,6 +12,7 @@ from scry_core import window as core_window
 from stub_builds import BANNER, build
 
 from scry_dosbox_x import binary as binaries
+from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import server
 from scry_dosbox_x import session as ds
 
@@ -45,6 +46,24 @@ def test_build_check_on_a_build_with_no_version_still_answers(tmp_path: Path) ->
 
 
 
+
+
+@pytest.mark.parametrize("resource", ["2026.10.01", None])
+def test_a_build_on_windows_reads_its_version_from_the_file_and_never_runs_the_probe(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, resource: str | None) -> None:
+    """DOSBox-X's own `-version` opens a console there and waits for a key, so it never returns."""
+    seen = tmp_path / "seen"
+    mine = build(tmp_path, version=f"open({str(seen)!r}, 'a').write('v'); "
+                 f"sys.stderr.write({BANNER!r}); sys.exit(1)")
+    monkeypatch.setattr(dlaunch, "VERSION_PROBE_HANGS", True)
+    monkeypatch.setattr(dlaunch, "file_version", lambda _path: resource)
+    got = cast(dict[str, Any], server.build_check(binary=str(mine)))
+    assert got["status"] == "ok", got
+    if resource is None:
+        assert got["version"]["available"] is False, got
+    else:
+        assert resource in got["version"], got
+    assert not seen.exists(), "`-version` was spawned on a host where it never returns"
 
 
 def test_build_check_names_each_missing_command_with_the_tools_it_disables(

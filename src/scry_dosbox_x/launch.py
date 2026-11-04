@@ -18,6 +18,8 @@ import hashlib
 import lzma
 import os
 import socket
+import struct
+import sys
 import zipfile
 import zlib
 from collections.abc import Callable
@@ -242,9 +244,45 @@ def launch_environment(background: bool, terminal: bool = False) -> dict[str, st
     return core_window.launch_environment(spawned, background)
 
 
+# On Windows DOSBox-X's `-version` opens a console and waits for a key: it never returns.
+VERSION_PROBE_HANGS = sys.platform == "win32"
+
+
+if sys.platform == "win32":
+    def file_version(path: str) -> str | None:
+        """The `FileVersion` of an executable's version resource; None when it has none."""
+        import ctypes
+        api = ctypes.windll.version
+        size = api.GetFileVersionInfoSizeW(path, None)
+        data = ctypes.create_string_buffer(size)
+        if not size or not api.GetFileVersionInfoW(path, 0, size, data):
+            return None
+        where, length = ctypes.c_void_p(), ctypes.c_uint()
+        if not api.VerQueryValueW(data, "\\VarFileInfo\\Translation", ctypes.byref(where),
+                                  ctypes.byref(length)) or not where.value or length.value < 4:
+            return None
+        lang, page = struct.unpack("<HH", ctypes.string_at(where, 4))
+        if not api.VerQueryValueW(data, f"\\StringFileInfo\\{lang:04x}{page:04x}\\FileVersion",
+                                  ctypes.byref(where), ctypes.byref(length)) or not where.value:
+            return None
+        return ctypes.wstring_at(where.value, length.value).rstrip("\0") or None
+else:
+    def file_version(path: str) -> str | None:
+        """Only a Windows executable has a version resource to read."""
+        return None
+
+
 def binary_facts(resolved: binaries.Resolved, seconds: float) -> dict[str, Any]:
-    """The build's facts, its `-version` probe spawned behind and bounded."""
-    return binaries.facts(resolved, env=launch_environment(True), seconds=seconds)
+    """The build's facts, its `-version` probe spawned behind and bounded; where that probe never
+    returns, the version is read from the file."""
+    if not VERSION_PROBE_HANGS:
+        return binaries.facts(resolved, env=launch_environment(True), seconds=seconds)
+    found = file_version(resolved.path)
+    return {"binary": resolved.path, "binary_origin": resolved.origin,
+            "version": (f"DOSBox-X version {found} (from the file's version resource: `-version` "
+                        f"waits for a key on Windows)" if found else contract.unavailable(
+                "DOSBox-X's `-version` on Windows waits for a key, so it is not run, and the "
+                "file has no version resource"))}
 
 
 def listen_input(port: int) -> socket.socket:
