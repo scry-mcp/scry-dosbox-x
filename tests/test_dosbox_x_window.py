@@ -27,6 +27,7 @@ class _Subject:
         self.tmp_path, self.monkeypatch = tmp_path, monkeypatch
         self.asked = session_window
         self.shows_fullscreen = sys.platform != window_size.DOSBOX_X_HALTED_MAIN_ONLY_ON
+        self.takes_fullscreen = True
 
     def start(self, **arguments: Any) -> dict[str, Any]:
         return _start_on_a_booted_fake(self.tmp_path, self.monkeypatch, **arguments)
