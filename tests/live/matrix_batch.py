@@ -8,11 +8,14 @@ guests are copied there; a volume that folds case is detected and the cells are 
 """
 from __future__ import annotations
 
+import array
 import contextlib
+import math
 import os
 import re
 import subprocess
 import time
+import wave
 from pathlib import Path
 from typing import Any
 
@@ -50,6 +53,7 @@ TAP_CELL = "AA TAP refuses an offset past 32 bits and installs nothing"
 DYNAMIC_CELL = "AA the dynrec core runs 3000 STI, 3000 CLI and 1500 STI;NOP and exits 0"
 TAPDEL_CELL = "AA TAP then TAPDEL under core=auto leave the emulator alive and silent"
 TRACE_CELL = "AA a DOSTRACE restarted with a call open gives the new file no row for that call"
+CDVOL_CELL = "AA full MSCDEX channel volume plays the track at its own level, not amplified"
 EDGE_CELL = "AA a BPIF row stops the machine once per false-to-true change, not while it holds"
 AA_CELLS = cells(
     (FILE_CELLS[0], "MEMDUMPLIN usage text: a dump by linear address, the name as typed"),
@@ -66,6 +70,7 @@ AA_CELLS = cells(
     (DYNAMIC_CELL, "dynrec: a run of one-byte instructions no longer overruns the stub slots"),
     (TAPDEL_CELL, "README.debugger TAPDEL: the page handler is put back and the machine goes on"),
     (TRACE_CELL, "dos.cpp DOSTRACE: a call begun in an earlier trace has no row in the new file"),
+    (CDVOL_CELL, "cdrom_image.cpp: the volume scales each sample once, not the mixer too"),
     (EDGE_CELL, "README.debugger BPIF: a row rises once per false-to-true change of its condition"),
 )
 #: A run of STI, of CLI and of STI;NOP pairs, each ended by RET.
@@ -271,6 +276,70 @@ def _bpif_edge() -> None:
 
 TAP_RUN_S = 3
 
+#: Sets the audio channel volume of drive D: (MSCDEX IOCTL output, control block 3) to 255 on both
+#: channels, then plays 20 s of the first audio track (red book 00:02:00, 1500 sectors); built from
+#: a source of 91 bytes. The two volume bytes sit in `0300ff01ff02`.
+CDVOL_GUEST = bytes.fromhex(
+    "8c0e32010e07b81015b90300bb2201cd2fb81015b90300bb4501cd2fb400cd16ebfa1a000c0000000000000000"
+    "0000003c01000009000000000000000300ff01ff02000300160084000000000000000000000100020000dc0500"
+    "00")
+CDVOL_TONE_PEAK = 8000
+CDVOL_RUN_S = 4
+#: Full volume must give the track back at its own level, within this share.
+CDVOL_LEVEL_TOLERANCE = 0.1
+CDVOL_FRAMES = 40
+
+
+def _cd_tone(where: Path) -> None:
+    """20 s of a 441 Hz sine in 44.1 kHz 16-bit stereo, as a raw red book track and its cue."""
+    one = [round(CDVOL_TONE_PEAK * math.sin(2 * math.pi * i / 100)) for i in range(100)]
+    pcm = array.array("h")
+    for _ in range(44100 * 20 // 100):
+        for v in one:
+            pcm.extend((v, v))
+    (where / "tone.bin").write_bytes(pcm.tobytes())
+    cue = 'FILE "tone.bin" BINARY\n  TRACK 01 AUDIO\n    INDEX 01 00:00:00\n'
+    (where / "tone.cue").write_text(cue, encoding="ascii")
+
+
+def _wav_peak(path: Path) -> int:
+    with wave.open(str(path), "rb") as w:
+        samples = array.array("h", w.readframes(w.getnframes()))
+    return max((abs(v) for v in samples), default=0)
+
+
+def _cd_peak(where: Path, volume: int) -> tuple[int, str]:
+    """The loudest sample of the mixer's output while the guest plays the tone at `volume`."""
+    guest = bytearray(CDVOL_GUEST)
+    at = guest.index(bytes.fromhex("0300ff01ff02"))
+    guest[at + 2] = guest[at + 4] = volume
+    (where / "CDVOL.COM").write_bytes(bytes(guest))
+    conf = where / f"cdvol{volume}.conf"
+    conf.write_text("[sdl]\nautolock=false\n[dosbox]\nmachine=svga_s3\nmemsize=16\n[cpu]\n"
+                    "core=normal\ncputype=pentium\ncycles=fixed 10000\n[autoexec]\n"
+                    f'mount c "{where}"\nimgmount d "{where / "tone.cue"}" -t iso\nc:\nCDVOL.COM\n',
+                    encoding="ascii")
+    boot(conf=conf, cwd=where, captures_dir=M.fresh("-cap"))
+    M.call(server.resume, seconds=CDVOL_RUN_S)
+    M.call(server.stop)
+    wav = M.call(server.audio_record, frames=CDVOL_FRAMES, seconds=20,
+                     dest=M.fresh(".wav"))
+    peak = _wav_peak(Path(str(wav.get("path")))) if ok(wav) and wav.get("path") else 0
+    close_whatever()
+    return peak, said(wav, 70)
+
+
+def _cd_volume() -> None:
+    where = M.tmp("-cdvol-")
+    _cd_tone(where)
+    full, said_full = _cd_peak(where, 255)
+    half, said_half = _cd_peak(where, 128)
+    ratio = half / full if full else 0.0
+    M.judge(CDVOL_CELL, abs(full / CDVOL_TONE_PEAK - 1) < CDVOL_LEVEL_TOLERANCE
+            and abs(ratio - 128 / 255) < CDVOL_LEVEL_TOLERANCE,
+            f"peak {full} at volume 255 and {half} at 128 (ratio {ratio:.3f}); the tone's own peak "
+            f"is {CDVOL_TONE_PEAK}; {said_full}; {said_half}")
+
 #: `mov ah,8; int 21h` (waits for a key, inside DOS), then echoes it with AH=2 and exits.
 TRACE_GUEST = bytes.fromhex("b408cd2188c2b402cd21b8004ccd21")
 TRACE_WAIT_S = 3
@@ -405,6 +474,7 @@ def section_aa() -> None:
     _bpif_edge()
     _tapdel_auto()
     _dostrace_restart()
+    _cd_volume()
     folds = not _case_sensitive(GUEST)
     if folds:
         for label in (FILE_CELLS[0], FILE_CELLS[1], FILE_CELLS[3]):
