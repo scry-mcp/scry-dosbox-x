@@ -13,6 +13,7 @@ from typing import Any
 import live_private  # isort: skip -- first: a pooled job's working copies
 import pytest
 from scry_core import guardian, process_tree
+from scry_core.live_host import COMM_MAX
 
 from scry_dosbox_x import process as dprocess
 
@@ -51,7 +52,8 @@ def _guardians_of(server_pid: int) -> list[int]:
                            text=True, check=True).stdout.splitlines()
     rows = [line.split(None, 2) for line in table]
     return [int(r[0]) for r in rows
-            if len(r) == 3 and r[1] == str(server_pid) and r[2] == dprocess.GUARDIAN_NAME]
+            if len(r) == 3 and r[1] == str(server_pid)
+            and r[2] in (dprocess.GUARDIAN_NAME, dprocess.GUARDIAN_NAME[:COMM_MAX])]
 
 
 def _put_in_state(proc: subprocess.Popen[bytes], state: str) -> None:
