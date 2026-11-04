@@ -47,7 +47,7 @@ FRAMES_CELL = "AA RUNSTATE's frames stands still while the machine is stopped an
 RUNWATCH_CELL = "AA a BPIF stop reached under RUNWATCH still names its row, until the next step"
 CHANNEL_CELL = "AA a debugger request is answered without waiting out the channel's socket poll"
 TAP_CELL = "AA TAP refuses an offset past 32 bits and installs nothing"
-DYNAMIC_CELL = "AA the dynamic core runs 3000 STI, 3000 CLI and 1500 STI;NOP and exits 0"
+DYNAMIC_CELL = "AA the dynrec core runs 3000 STI, 3000 CLI and 1500 STI;NOP and exits 0"
 AA_CELLS = cells(
     (FILE_CELLS[0], "MEMDUMPLIN usage text: a dump by linear address, the name as typed"),
     (FILE_CELLS[1], "MEMDUMPLIN: a dump past the end of the 32-bit linear space"),
@@ -238,7 +238,7 @@ def _dynamic_core() -> None:
     for name, body in DYNAMIC_PROGRAMS.items():
         (where / name).write_bytes(body)
         conf = where / f"{name}.conf"
-        conf.write_text(f'[cpu]\ncore=dynamic\ncputype=pentium\n[autoexec]\nmount c "{where}"\n'
+        conf.write_text(f'[cpu]\ncore=dynamic_rec\ncputype=pentium\n[autoexec]\nmount c "{where}"\n'
                         f"c:\n{name}\nexit\n", encoding="ascii")
         run_env: dict[str, Any] = {**os.environ, "SDL_VIDEODRIVER": "dummy"}
         try:
