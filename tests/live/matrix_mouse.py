@@ -53,6 +53,10 @@ P_CELLS = cells(
      "guest/scry.asm: already resident; known: the guest logs `key=97` for a"),
     ("P a second copy stays out though a TSR took INT 1Ch above the first",
      "guest/scry.asm: IRQ 4's vector asked too; known: hook1c.com logs its hook"),
+    ("P a triple click is three presses the guest counts",
+     "send_mouse docstring: `action`; known: mouse.asm counts the presses"),
+    ("P a held key arrives as its make alone, and its break only on the release",
+     "send_keys docstring: `action`; known: keys.asm logs every scan byte INT 9 takes"),
     ("P a key reaches the guest: a is logged as key=97",
      "send_keys docstring; known: mouse.asm logs each key's ASCII"),
     ("P text mode: x=0 y=0 arrives, the driver at 0,0",
@@ -230,7 +234,24 @@ def _keys_spacing() -> None:
         M.judge(label, ok(sent) and len(gaps) == 3 and all(gap >= 1 for gap in gaps.values()),
                 f"{said(sent, 60)}; ticks from each make to its break {gaps}, "
                 f"{emulated_s:.2f} s of the guest's time in {wall_s:.2f} s")
+    _held_key()
     must(M.call(server.close), "closing")
+
+
+def _held_key() -> None:
+    """`down` sends the make and nothing else; the break comes with `up`. The guest's keys log
+    holds every scan byte INT 9 took, so a break that came early would be in it."""
+    down = M.call(server.send_keys, keys=["right"], action="down", expect=r"KEYS \. 4D t=",
+                  seconds=WAIT_S)
+    time.sleep(1)
+    held = " ".join(M.call(server.log, pattern=KEY_LINE.pattern, channel="guest",
+                           limit=40).get("lines", []))
+    up = M.call(server.send_keys, keys=["right"], action="up", expect=r"KEYS \. CD t=",
+                seconds=WAIT_S)
+    M.judge("P a held key arrives as its make alone, and its break only on the release",
+            ok(down) and ok(up) and "KEYS . 4D" in held and "KEYS . CD" not in held
+            and (up.get("verify") or {}).get("seen") is True,
+            f"{said(down, 50)}; {said(up, 50)}; before the release: {held[-60:]!r}")
 
 
 def _timer_owned() -> None:
@@ -323,6 +344,14 @@ def _buttons() -> None:
     pressed = (after.get("lines_total") or 0) - (before.get("lines_total") or 0)
     M.judge("P a double click is two presses the guest counts",
             ok(r) and ok(before) and ok(after) and pressed == 2,
+            f"{pressed} presses counted; {said(r, 60)}")
+    before = M.call(server.log, pattern=r"b=1 presses=1$", channel="guest", limit=1)
+    r = M.call(server.send_mouse, button="left", action="triple")
+    time.sleep(1)
+    after = M.call(server.log, pattern=r"b=1 presses=1$", channel="guest", limit=1)
+    pressed = (after.get("lines_total") or 0) - (before.get("lines_total") or 0)
+    M.judge("P a triple click is three presses the guest counts",
+            ok(r) and ok(before) and ok(after) and pressed == 3,
             f"{pressed} presses counted; {said(r, 60)}")
     down = M.call(server.send_mouse, button="left", action="down")
     moved = M.call(server.send_mouse, x=150, y=60)
