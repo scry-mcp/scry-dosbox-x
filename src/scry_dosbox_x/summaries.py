@@ -470,14 +470,8 @@ def palette(args: dict[str, Any], reply: dict[str, Any]) -> str:
     colors = reply.get("colors") or []
     which = (f"entry {first} {colors[0]}" if count == 1 and colors
              else f"entries {first} to {first + count - 1}")
-    return f"palette: {which} of {reply.get('entries')}; {_picture(reply)}"
+    return f"palette: {which} of {reply.get('entries')}; {prose.picture(reply)}"
 
-
-def _picture(reply: dict[str, Any]) -> str:
-    """The picture's half of a view's line: its size, its scale and whether it is attached."""
-    image = reply.get("image") or {}
-    shown = "inline" if image.get("inline") else "not inlined"
-    return f"{image.get('width')}x{image.get('height')} PNG x{image.get('scale')}, {shown}"
 
 
 def _region(reply: dict[str, Any]) -> str:
@@ -497,12 +491,14 @@ def screen_view(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if mode == "isolate":
         return (f"screen_view isolate {reply.get('vga_mode')}: "
                 f"{_said(reply.get('pixels'), 'pixel')} of pens {reply.get('pens')} in "
-                f"{_region(reply)}; {_picture(reply)}")
+                f"{_region(reply)}; {prose.picture(reply)}")
     if mode == "pixel":
         return (f"screen_view pixel {reply.get('vga_mode')}: ({reply.get('x')}, {reply.get('y')}) "
-                f"is pen {int(reply.get('pen') or 0):#x} {reply.get('color')}; {_picture(reply)}")
+                f"is pen {int(reply.get('pen') or 0):#x} {reply.get('color')}; "
+                f"{prose.picture(reply)}")
     if isinstance(reply.get("image"), dict):
-        return f"screen_view {reply.get('vga_mode')}: {_region(reply)} pixels; {_picture(reply)}"
+        return (f"screen_view {reply.get('vga_mode')}: {_region(reply)} pixels; "
+                f"{prose.picture(reply)}")
     cursor = reply.get("cursor")
     at = f", cursor at {cursor[0]},{cursor[1]}" if isinstance(cursor, list) else ""
     return f"screen_view {reply.get('vga_mode')}: {_region(reply)} text{at}"

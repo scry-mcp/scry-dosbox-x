@@ -62,10 +62,10 @@ def _judge_window(wanted: core_window.WindowRequest | None, conf: Path,
                          "would keep the conf's size. Use an OpenGL or Direct3D `output`, or "
                          "start without `size`")
     own = dconf.states_window_size(conf, flags)
-    if wanted.size is None and not wanted.fullscreen and honoured and wanted.usable and not own:
-        return replace(wanted, fitted=True, size=window_size.aspect_fit(
-            (4, 3), wanted.usable, wanted.scale, sys.platform))
-    return wanted
+    if not honoured or own:
+        return wanted
+    return core_window.fit_size(
+        wanted, lambda usable, scale: window_size.aspect_fit((4, 3), usable, scale, sys.platform))
 
 
 def _refuse_unreaped(session: ds.Session, cause: ds.Invalid) -> None:
@@ -277,10 +277,7 @@ def _log_tail(session: ds.Session) -> str | dict[str, Any]:
     if logfile is None:
         return contract.unavailable("this session was started without a logfile")
     try:
-        # A guest log can run to hundreds of megabytes; 4 bytes covers any UTF-8 character.
-        with Path(logfile).open("rb") as f:
-            f.seek(max(f.seek(0, 2) - 4 * log_marks.TAIL_CHARS, 0))
-            return f.read().decode("utf-8", errors="replace")[-log_marks.TAIL_CHARS:]
+        return log_marks.tail(Path(logfile))
     except OSError as e:
         return contract.unavailable(f"the logfile could not be read: {e}")
 
@@ -298,9 +295,9 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
     left = {"guest_files": guest.at_close()} if STATE.guest_files else {}
     # Read after the exit so the tails hold what the emulator said on the way out.
     clean = STATE.session.ended_how == "quit" and rc == 0
-    tails = ({"stdout_tail": STATE.session.stdout_tail(log_marks.TAIL_CHARS),
-              "errorlog_tail": _log_tail(STATE.session)} if detail or not clean
-             else narrowing.omission(["stdout_tail", "errorlog_tail"], CLOSE_HOW))
+    tails = narrowing.last_words(
+        {"stdout_tail": STATE.session.stdout_tail(log_marks.TAIL_CHARS),
+         "errorlog_tail": _log_tail(STATE.session)}, clean=clean, detail=detail, how=CLOSE_HOW)
     # Set only by the close: a SIGKILLed, unreaped child has no exit code.
     unreaped = STATE.session.reap_failed
     drained = STATE.session.drain_failure
