@@ -90,9 +90,13 @@ class Launch:
         return self.window is not None
 
 
+def _short(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()[:16]
+
+
 def digest(path: Path) -> str:
     """A short content digest of the conf."""
-    return hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+    return _short(path.read_bytes())
 
 
 _digests: dict[Path, tuple[tuple[int, int, int], str]] = {}
@@ -109,9 +113,8 @@ def current_digest(path: Path) -> str:
 
 
 def fingerprint(conf: Path) -> str:
-    """The stamp of the conf."""
-    return hashlib.sha256(conf.read_bytes() if conf.exists()
-                          else str(conf).encode()).hexdigest()[:16]
+    """`digest`, or of the path's own name once the conf is gone."""
+    return digest(conf) if conf.exists() else _short(str(conf).encode())
 
 
 def build_argv(launch: Launch) -> list[str]:
@@ -343,7 +346,7 @@ _SECTIONLESS = {key.partition(" ")[2]: key for key in (*OWNED_SETS, *SESSION_SET
 
 def _set_key(token: str) -> str:
     """The `section key` a `-set` token names, with or without its section."""
-    words = token.split("=", 1)[0].lower().split()
+    words, _ = dconf.split_set(token)
     for n in range(len(words), 1, -1):
         key = " ".join(words[:n])
         if key in OWNED_SETS or key in SESSION_SETS:

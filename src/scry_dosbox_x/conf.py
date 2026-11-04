@@ -100,6 +100,12 @@ def states_window_size(conf: Path, flags: list[str]) -> bool:
     return bool(setting(conf, flags, "sdl", "windowresolution", ""))
 
 
+def split_set(token: str) -> tuple[list[str], str]:
+    """A `-set` token as the lowercased words of its key and its value."""
+    key, _, value = token.partition("=")
+    return key.lower().split(), value.strip().lower()
+
+
 def setting(conf: Path, flags: list[str], section_name: str, key_name: str, default: str) -> str:
     """`[section] key` as the conf sets it, then the last `-set` of `flags`, lowercased."""
     found = default
@@ -116,10 +122,9 @@ def setting(conf: Path, flags: list[str], section_name: str, key_name: str, defa
             key, _, value = line.partition("=")
             if key.strip().lower() == key_name and (cut := value.partition("#")[0].strip()):
                 found = cut.lower()
+    wanted = key_name.split()
     for flag, asked in zip(flags, flags[1:], strict=False):
-        words = asked.replace("=", " ").split()
-        wanted = key_name.split()
-        named = [w.lower() for w in words[:-1]]
-        if flag == "-set" and named in ([section_name, *wanted], wanted):
-            found = words[-1].lower()
+        named, value = split_set(asked)
+        if flag == "-set" and value and named in ([section_name, *wanted], wanted):
+            found = value
     return found

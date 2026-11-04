@@ -1671,6 +1671,18 @@ def test_the_core_a_session_boots_with_is_the_flags_last_word_over_the_confs(
     assert dconf.cpu_core(conf, flags) == core
 
 
+@pytest.mark.parametrize(("token", "key", "value"), [
+    ("cpu core=dynamic", ["cpu", "core"], "dynamic"),
+    ("CPU CORE = Dynamic ", ["cpu", "core"], "dynamic"),
+    ("core=auto", ["core"], "auto"),
+    ("sdl windowresolution=1280x720", ["sdl", "windowresolution"], "1280x720"),
+    ("cpu", ["cpu"], ""),
+])
+def test_a_set_token_is_read_once_into_its_key_words_and_its_value(
+        token: str, key: list[str], value: str) -> None:
+    assert dconf.split_set(token) == (key, value)
+
+
 @pytest.mark.parametrize("from_zero", [False, True])
 def test_a_wait_bound_takes_its_maximum_and_refuses_one_past_it(from_zero: bool) -> None:
     zero_means = "no wait" if from_zero else ""
