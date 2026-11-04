@@ -11,7 +11,7 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
   `wait_expired`, the codes they answer; the README says how to watch a session, and `start`'s page says who mounts
   the stub and what a repository's conf must drop.
 - `send_keys` takes `action`: `down` holds the modifiers and presses the keys, `up` releases them, and `press` (the
-  default) taps them as before, so a program that reads the keyboard state can be tested with a key held. `send_mouse`
+  default) taps them as before, so a program that reads the keyboard state can be tested with a key held (no repeats of its own: each is a further `down`). `send_mouse`
   takes `action="triple"`, three clicks a tick apart, and the range widening of a program's pointer measures a
   sweep that a screen edge clamped from a shorter distance, so `pointer.mouse.max_*` no longer comes out several
   times too large. `perform`'s description says a `screen_view` step answers its picture as `not_inlined: nested`.

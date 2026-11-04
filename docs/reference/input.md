@@ -39,9 +39,10 @@ send_keys(keys, modifiers=null, expect="", seconds=null, action="press")
 Send keystrokes to the guest; with `expect`, prove the program took them.
 
 `keys`: at most 64. `action`: `press` taps them; `down` holds the modifiers and
-presses the keys, `up` releases them, so a held key spans the calls between. `expect`: a
-regex over the E9 log the program's reaction writes, waited up to `seconds` (default
-10). A stopped machine is
+presses the keys, `up` releases them, so a held key spans the calls between; a held key
+makes no repeats of its own, each repeat is a further `down`. `expect`: a regex over the
+E9 log the program's reaction writes, waited up to `seconds` (default 10).
+A stopped machine is
 run retrace by retrace until the stub takes each key, and left stopped at a retrace; its
 `expect` waits `seconds` of the guest's own time.
 
