@@ -114,7 +114,7 @@ def _booting(tmp_path: Path, stopped_after_polls: int | None, exits: list[int | 
         return None
     machine.hooks["RUNSTATE"] = runstate
     s.proc = SimpleNamespace(poll=lambda: exits.pop(0) if len(exits) > 1 else exits[0],
-                             pid=1)  # type: ignore[assignment]
+                             pid=1)
     s.output_tail = lambda chars: "AAAABBBB"  # type: ignore[method-assign]
     return s, machine
 
@@ -234,7 +234,7 @@ def test_a_new_session_starts_unaltered_unread_and_at_no_stop(
     launch = _launch(tmp_path)
     ses = ds.Session(launch)
     # A pid no process holds, so nothing reached through it can signal a real one.
-    ses.proc = SimpleNamespace(pid=999999, poll=lambda: None)  # type: ignore[assignment]
+    ses.proc = SimpleNamespace(pid=999999, poll=lambda: None)
     assert ses.launch is launch and ses.conf_digest == dlaunch.digest(launch.conf)
     assert ses.altered is False and ses.stop_count == 0 and ses.commands == frozenset()
     assert (ses.paging, ses.clock_ms, ses.cycles) == (None, None, None)

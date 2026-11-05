@@ -134,6 +134,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         state_dir=(state_path if state_path is not None
                    else STATE.session_scratch() / dlaunch.DEFAULT_STATE_SUBDIR),
         binary=resolved.path,
+        bundle=resolved.bundle or "",
         debugger_headless=binaries.debugger_headless(resolved.path),
         debugger_commands=commands_built,
         background=core_window.judge_background(background, shared),

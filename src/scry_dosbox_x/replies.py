@@ -106,6 +106,7 @@ class CapturesReply(DosboxEnvelope, media_replies.CapturesFields, total=False):
 
 class CloseReply(DosboxEnvelope, total=False):
     bound_s: float
+    bundle: str
     captures: str
     closed: Required[bool]
     conf: str
@@ -513,6 +514,7 @@ class StartReply(WindowRefused, account.SequenceFields, total=False):
     binary: str
     binary_origin: str
     bound_s: float
+    bundle: str
     captures: str
     conf: str
     conf_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
@@ -552,6 +554,7 @@ class WindowReply(WindowRefused, tool_replies.WindowSizeField, total=False):
 
 class StatusReply(DosboxEnvelope, total=False):
     bound_s: Annotated[float, When("with a session")]
+    bundle: str
     captures: Annotated[str, When("with a session")]
     conf: Annotated[str, When("with a session")]
     conf_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]

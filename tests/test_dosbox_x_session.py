@@ -1238,7 +1238,7 @@ def test_close_records_which_ending_it_got() -> None:
             polls[:] = [0]
             return 0
 
-        s.proc = SimpleNamespace(poll=poll, wait=wait, pid=1, returncode=0)  # type: ignore[assignment]
+        s.proc = SimpleNamespace(poll=poll, wait=wait, pid=1, returncode=0)
         s._signal_group = lambda sig: None  # type: ignore[method-assign]
         s._drainer = None
         s._out = None

@@ -12,8 +12,9 @@ import time
 from dataclasses import replace
 from typing import Any
 
-from scry_core import cancel, guardian, live_host
+from scry_core import app_launch, cancel, guardian, live_host
 from scry_core import reply_contract as contract
+from scry_core import window as core_window
 from scry_core.progress import PROGRESS_EVERY_S, Progress, no_progress
 from scry_core.reply_contract import Invalid
 
@@ -71,7 +72,7 @@ TERM_GRACE = 2.0
 EXIT_POLL_S = 0.1
 
 
-def wait_exit(proc: subprocess.Popen[Any], seconds: float, progress: Progress,
+def wait_exit(proc: app_launch.Spawned, seconds: float, progress: Progress,
               what: str) -> int | None:
     """The process's exit code within `seconds`, or None, reporting progress while it waits."""
     t0 = time.monotonic()
@@ -95,7 +96,7 @@ class Process:
 
     guard: guardian.Guard | None = None
     launch: dlaunch.Launch
-    proc: subprocess.Popen[bytes]
+    proc: app_launch.Spawned
 
     def __init__(self) -> None:
         # `dropped` is how a caller tells a whole stream from one with a hole in it.
@@ -129,7 +130,7 @@ class Process:
         try:
             self.control = control.ControlChannel(lambda: self.proc.poll())
             launch = self.launch = replace(launch, control_port=self.control.port)
-            ends = _streams(launch.debugger_headless)
+            ends = None if launch.bundle else _streams(launch.debugger_headless)
         except BaseException:
             if listener is not None:
                 listener.close()
@@ -147,11 +148,19 @@ class Process:
         try:
             self.argv = dlaunch.build_argv(launch)
             try:
-                self.proc = subprocess.Popen(
-                    self.argv, cwd=str(launch.cwd),
-                    env=dlaunch.launch_environment(launch.background, terminal=terminal),
-                    close_fds=True,
-                    **streams, **_console())
+                if launch.bundle:
+                    # `open` writes nothing back: this server's debugger channel is its own TCP
+                    # port, and the app's console is the one it was given.
+                    self.proc = app_launch.launch(
+                        launch.bundle, self.argv,
+                        env=core_window.launch_environment({}, launch.background),
+                        token=f"mcp_server={launch.control_port}")
+                else:
+                    self.proc = subprocess.Popen(
+                        self.argv, cwd=str(launch.cwd),
+                        env=dlaunch.launch_environment(launch.background, terminal=terminal),
+                        close_fds=True,
+                        **streams, **_console())
             finally:
                 # The child holds its own copy: closed here, the drain reads end of file the
                 # moment nobody writes any more.

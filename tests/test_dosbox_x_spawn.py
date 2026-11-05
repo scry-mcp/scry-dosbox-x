@@ -7,6 +7,7 @@ everything down in order."""
 from __future__ import annotations
 
 import os
+import plistlib
 import re
 import socket
 import subprocess
@@ -17,7 +18,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
-from scry_core import guardian
+from scry_core import app_launch, guardian
 
 from scry_dosbox_x import control
 from scry_dosbox_x import launch as dlaunch
@@ -296,3 +297,71 @@ def test_a_write_end_that_will_not_close_neither_masks_a_failure_nor_fails_a_sta
     monkeypatch.setattr(dlaunch, "INPUT_CONNECT_S", 0.3)
     with pytest.raises(ds.Invalid, match="never dialled the serial input port"):
         ds.Session(launch(conf, tmp_path, input_port=0))
+
+
+def _app_bundle(tmp_path: Path) -> Path:
+    """A `.app` whose plist names an emulator; nothing is spawned from what it holds."""
+    contents = tmp_path / "Probe.app" / "Contents"
+    (contents / "MacOS").mkdir(parents=True)
+    (contents / "MacOS" / "dosbox-x").write_text("#!/bin/sh\n")
+    (contents / "Info.plist").write_bytes(plistlib.dumps(
+        {"CFBundleExecutable": "dosbox-x", "CFBundlePackageType": "APPL"}))
+    return tmp_path / "Probe.app"
+
+
+def test_a_bundle_launches_through_open_into_the_session_s_own_cwd(
+        conf: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`open` starts the app, two `-set`s put it in `cwd`, and the pid is the app's own."""
+    children: list[Any] = []
+    monkeypatch.setattr(guardian, "spawn", lambda child, *a, **k: children.append(child))
+    monkeypatch.setattr(guardian, "stop", lambda guard: None)
+    monkeypatch.setattr(ds.Session, "_signal_group", lambda self, sig: None)
+
+    def no_popen(*a: Any, **k: Any) -> Any:
+        raise AssertionError("Popen was used for the app route")
+
+    monkeypatch.setattr(subprocess, "Popen", no_popen)
+    seen: dict[str, Any] = {}
+
+    def run_open(cmd: list[str]) -> subprocess.CompletedProcess[str]:
+        seen["cmd"] = cmd
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+
+    monkeypatch.setattr(app_launch, "run_open", run_open)
+    monkeypatch.setattr(app_launch, "find_pid", lambda token, timeout: 4242)
+    bundle = _app_bundle(tmp_path)
+    ses = ds.Session(launch(conf, tmp_path, bundle=str(bundle),
+                            binary=str(bundle / "Contents" / "MacOS" / "dosbox-x")))
+    try:
+        assert isinstance(ses.proc, app_launch.AppProcess), ses.proc
+        assert ses.proc.pid == 4242
+        cmd = seen["cmd"]
+        assert cmd[:4] == ["/usr/bin/open", "-n", "-a", str(bundle)], cmd
+        assert "-i" not in cmd and "-o" not in cmd, "the app route carries no channel of ours"
+        argv = cmd[cmd.index("--args") + 1:]
+        assert "sdl working directory option=force" in argv, argv
+        assert f"sdl working directory default={tmp_path}" in argv, argv
+        assert ses._drainer is None and ses.captures_output is False
+        assert children == [ses.proc], "the guardian watches the app's pid"
+        assert ses.state()["bundle"] == str(bundle)
+    finally:
+        _done(ses)
+
+
+def test_a_plain_binary_goes_through_popen_and_never_through_open(
+        conf: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The control: the route is taken only by a session that asked for it."""
+
+    def boom(cmd: list[str]) -> Any:
+        raise AssertionError("open was called for a plain binary")
+
+    monkeypatch.setattr(app_launch, "run_open", boom)
+    emu = Emulator(monkeypatch)
+    ses = ds.Session(launch(conf, tmp_path))
+    try:
+        assert emu.argv and "-conf" in emu.argv
+        assert not isinstance(ses.proc, app_launch.AppProcess)
+        assert "bundle" not in ses.state()
+    finally:
+        _done(ses)
+        emu.close()

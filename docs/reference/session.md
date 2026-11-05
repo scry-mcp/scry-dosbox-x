@@ -73,7 +73,10 @@ Open one live DOSBox-X session from your conf, parked at the debugger. Somebody 
 through a stream (Moonlight) needs `shared=true` and `fullscreen=true`: a pointer does not
 map inside a window.
 
-Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve.
+Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve. `binary`:
+an executable or a `.app` carrying one, which `open` launches (macOS alone): that route
+keeps `cwd` through DOSBox-X's own `sdl working directory` setting, names the bundle in
+`bundle`, and leaves the exit status to launchd, so `close` answers `unavailable` for it.
 `session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
 `display`: the OS's display index for the window, 0 (the main display) when omitted;
 `fullscreen`: the window fills it; `size`: `WIDTHxHEIGHT` of the window in the host's unit,
@@ -173,6 +176,7 @@ Reference: REFERENCE.md, The session.
 | `binary` | string |
 | `binary_origin` | string |
 | `bound_s` | number |
+| `bundle` | string |
 | `captures` | string |
 | `conf` | string |
 | `conf_changed_on_disk` | boolean or object |
@@ -300,6 +304,7 @@ Takes no argument.
 | reply field | type |
 |---|---|
 | `bound_s` | number |
+| `bundle` | string |
 | `captures` | string |
 | `conf` | string |
 | `conf_changed_on_disk` | boolean or object |
@@ -420,6 +425,7 @@ Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` and
 | reply field | type |
 |---|---|
 | `bound_s` | number |
+| `bundle` | string |
 | `captures` | string |
 | `closed` | boolean |
 | `conf` | string |

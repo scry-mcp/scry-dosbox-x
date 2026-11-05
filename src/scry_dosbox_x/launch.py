@@ -71,6 +71,8 @@ class Launch:
     log_categories: dict[str, str] = field(default_factory=dict)
     # The absolute path `start` resolved; the bare name is the PATH's.
     binary: str = binaries.EXECUTABLE_NAME
+    # The `.app` the caller named instead of an executable; empty goes through `Popen`.
+    bundle: str = ""
     # TCP port the emulator's COM1 dials, read by `guest/SCRY.COM`; 0 takes a free one.
     input_port: int | None = None
     # Chosen once at `start`, so later replies name the drive used.
@@ -130,6 +132,11 @@ def build_argv(launch: Launch) -> list[str]:
         argv += ["-set", "dosbox debugger headless=true"]
     # With `saveremark` on, `Save state` opens a dialog that hangs the window.
     argv += ["-set", "dosbox saveremark=false"]
+    if launch.bundle:
+        # `open` gives the app `/` as its working directory, and the conf's mounts are relative
+        # to `cwd`: DOSBox-X is told to change into it before its `[autoexec]`.
+        argv += ["-set", "sdl working directory option=force",
+                 "-set", f"sdl working directory default={launch.cwd}"]
     if launch.state_dir is not None:
         argv += ["-savedir", str(launch.state_dir)]
     if launch.window is None:
@@ -429,6 +436,10 @@ def _judge_files(launch: Launch) -> None:
 
 
 def validate(launch: Launch) -> None:
+    if launch.bundle and sys.platform != "darwin":
+        raise Invalid("bad_argument",
+                      f"`binary` names {launch.bundle}, an app bundle, and `open` launches one on "
+                      "macOS alone: name the executable instead, or run on a Mac")
     """Everything that makes a session refusable, decided before any process exists, so a
     removed guard fails a test instead of starting a real emulator."""
     try:

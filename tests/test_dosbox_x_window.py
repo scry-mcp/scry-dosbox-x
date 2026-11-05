@@ -127,7 +127,7 @@ def test_a_session_whose_emulator_has_died_is_session_broken_not_a_missing_windo
     try:
         assert STATE.session is not None
         STATE.session.alive_flag = False  # type: ignore[attr-defined]
-        STATE.session.proc = SimpleNamespace(poll=lambda: 3)  # type: ignore[assignment]
+        STATE.session.proc = SimpleNamespace(poll=lambda: 3)
         got = server.window()
         assert got["status"] == "INVALID" and got["code"] == "session_broken", got
     finally:

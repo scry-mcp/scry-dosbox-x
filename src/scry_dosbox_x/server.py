@@ -208,7 +208,10 @@ def start(conf: str, cwd: str,
     through a stream (Moonlight) needs `shared=true` and `fullscreen=true`: a pointer does not
     map inside a window.
 
-    Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve.
+    Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve. `binary`:
+    an executable or a `.app` carrying one, which `open` launches (macOS alone): that route
+    keeps `cwd` through DOSBox-X's own `sdl working directory` setting, names the bundle in
+    `bundle`, and leaves the exit status to launchd, so `close` answers `unavailable` for it.
     `session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
     `display`: the OS's display index for the window, 0 (the main display) when omitted;
     `fullscreen`: the window fills it; `size`: `WIDTHxHEIGHT` of the window in the host's unit,

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
-from scry_core import guardian
+from scry_core import app_launch, guardian
 
 from scry_dosbox_x import process as dprocess
 from scry_dosbox_x import server
@@ -35,7 +35,7 @@ def _drop() -> None:
         raise AssertionError(f"an emulator may still be running after close: {code.get('why')}")
 
 
-def _kill_if_still_there(proc: subprocess.Popen[bytes]) -> str:
+def _kill_if_still_there(proc: app_launch.Spawned) -> str:
     """SIGKILL the process group if close left it; return the failure text."""
     if proc.poll() is not None:
         return ""

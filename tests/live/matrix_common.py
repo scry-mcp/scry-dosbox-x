@@ -18,7 +18,7 @@ sys.path.insert(0, str(PKG))
 
 from live_private import guest_dir  # noqa: E402
 from matrix_ledger import SCRATCH_PREFIX, SUMMARY_VAR, Cell, Ledger  # noqa: E402
-from scry_core import guardian  # noqa: E402
+from scry_core import app_launch, guardian  # noqa: E402
 from scry_core import reply_contract as contract  # noqa: E402
 
 from scry_dosbox_x import (  # noqa: E402
@@ -186,7 +186,7 @@ def session_files() -> tuple[Path | None, Path | None]:
     return ses.launch.conf, ses.launch.logfile
 
 
-SPAWNED: list[subprocess.Popen[bytes]] = []
+SPAWNED: list[app_launch.Spawned] = []
 
 
 def note_spawn() -> None:

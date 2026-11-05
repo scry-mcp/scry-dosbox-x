@@ -960,6 +960,7 @@ class Session(dprocess.Process):
             # WHAT THE STOPS FOUND OF THE PROGRAM: a block once it is gone, else None.
             "program": dprogram.gone(self),
             "conf": str(self.launch.conf),
+            **({"bundle": self.launch.bundle} if self.launch.bundle else {}),
             "conf_digest": self.conf_digest,
             "conf_changed_on_disk": changed,
             "watched": self.launch.watched,

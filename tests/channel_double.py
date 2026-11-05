@@ -362,7 +362,7 @@ def session_over(machine: Machine, cwd: Path, *, logfile: Path | None = None,
     s.fired_entry = None
     s.vars_held, s.stub_protocol = 0, ""
     s._link, s._input = None, None
-    s.proc = SimpleNamespace(poll=lambda: None if machine.alive else -9, pid=4242)  # type: ignore[assignment]
+    s.proc = SimpleNamespace(poll=lambda: None if machine.alive else -9, pid=4242)
     if alive is not None:
         s.alive = alive  # type: ignore[method-assign]
     if machine.stopped:
