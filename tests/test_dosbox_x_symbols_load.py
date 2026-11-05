@@ -55,6 +55,23 @@ def test_a_load_stamps_the_executable_it_checked_the_table_against(tmp_path: Pat
     assert fake.image is None, fake.image
 
 
+def test_a_load_that_refuses_leaves_the_stamp_of_the_table_in_force(tmp_path: Path) -> None:
+    """The alarm describes the table loaded now: a refused load installs none of its own."""
+    shutil.copy(GUEST / "dpmi.exe", tmp_path / "dpmi.exe")
+    shutil.copy(GUEST / "dpmi.sym", tmp_path / "dpmi.sym")
+    fake = _names(tmp_path)
+    _ok(server.symbols_load(path=str(tmp_path / "dpmi.sym"), base="400000"))
+    stamp = fake.image
+    assert stamp is not None and str(stamp["path"]).endswith("dpmi.exe"), fake.image
+    typed = tmp_path / "types.txt"
+    typed.write_text("a_name_the_table_lacks:u8\n", encoding="utf-8")
+    refused = server.symbols_load(
+        path=_map(tmp_path, "try.nm", "00001000 T _main\n"), base="400000",
+        types=str(typed))
+    assert refused["status"] == "INVALID", refused
+    assert fake.image == stamp, fake.image
+
+
 def _asking(fake: NamesFake) -> list[str]:
     asked: list[str] = []
     real = fake.selector
