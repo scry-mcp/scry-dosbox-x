@@ -141,6 +141,8 @@ class FakeSession(SessionGates):
         self.log_calls: list[tuple[str, int, str]] = []
         self.since_marks: list[int] = []
         self.loaded: list[tuple[str, int]] = []
+        # the real session's own count of what the debugger holds, `LV` appending included
+        self.vars_held = 0
         # what the address-taking tools were handed: tells a forwarded address from a forwarded zero
         self.memdump_calls: list[tuple[int, int, int]] = []
         self.conditions: list[str] = []
@@ -209,6 +211,7 @@ class FakeSession(SessionGates):
                 "running": self._alive and bool(getattr(self, "running", False)),
                 "altered": self.altered, "range_widened": None, "program": None,
                 "conf": "/x/g.conf", "conf_digest": "abc123", "conf_changed_on_disk": False,
+                "image_changed_on_disk": False,
                 "watched": False, "bound_s": 60, "elapsed_s": 1.0,
                 "output_bytes_dropped": 0, "captures": "off",
                 "state_dir": "the emulator's own save/ under its working directory"}
@@ -421,6 +424,7 @@ class FakeSession(SessionGates):
     def load_symbols(self, data: bytes) -> list[tuple[str, int]]:
         """What the debugger would hold afterwards, INCLUDING what it already held."""
         self.loaded += dsym.decode(data)
+        self.vars_held = len(self.loaded)
         return list(self.loaded)
 
 
@@ -623,6 +627,8 @@ class NamesFake(SessionGates):
         self.mode, self.cs, self.ds = mode, cs, ds_
         self._peek_carry = ""
         self.vars_held = 0
+        # what a load checked its table against, as the real session keeps it
+        self.image: dict[str, Any] | None = None
         self.arm_fails = arm_fails
         # the guest runs: every console method refuses as the real ones do, `at_debugger()` says so
         self._running = False
@@ -963,6 +969,7 @@ class NamesFake(SessionGates):
                              "commands")
         self.loads = getattr(self, "loads", 0) + 1
         self.held_vars = [*getattr(self, "held_vars", []), *dsym.decode(data)]
+        self.vars_held = len(self.held_vars)
         return list(self.held_vars)
 
     def selector(self, reg: str) -> dict[str, int]:
@@ -1059,7 +1066,8 @@ def build_of(conf: Path, nm_text: str, base: int = 0x400000) -> str:
 def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                         stamped: dict[str, str | None], double: type[NamesFake] = _Booted,
                         conf_text: str = "[sdl]\n",
-                        regpoints: tuple[str, ...] = ()) -> tuple[dict[str, Any], NamesFake]:
+                        regpoints: tuple[str, ...] = (),
+                        symbols: tuple[str, ...] = ()) -> tuple[dict[str, Any], NamesFake]:
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     conf = tmp_path / "g.conf"
     conf.write_text(conf_text, encoding="utf-8")
@@ -1070,6 +1078,8 @@ def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
         store.add(dec.Declaration("breakpoint", "address", ref, created_at="t0", origin="s1",
                                   fingerprint=fp or dlaunch.fingerprint(conf.resolve()),
                                   cpu_mode=mode))
+    for ref in symbols:
+        store.add(dec.Declaration("breakpoint", "symbol", ref, created_at="t0", origin="s1"))
     for row in regpoints:
         store.add(dec.Declaration("regpoint", "expr", row, created_at="t0", origin="s1"))
     monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")

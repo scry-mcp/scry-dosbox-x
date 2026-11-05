@@ -3,9 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 import mapsweep
+import pytest
 
 # Both publics sections print the same set, so de-duplication is exercised.
 SMALL_MAP = (

@@ -92,6 +92,16 @@ def executable_beside(table: Path) -> Path | None:
         return None
 
 
+def stamp(path: Path) -> dict[str, Any] | None:
+    """A file's identity as the disk holds it now, or None when it cannot be read: what tells a
+    later reply that the executable moved under the running session."""
+    try:
+        held = path.stat()
+    except OSError:
+        return None
+    return {"path": str(path), "size": held.st_size, "mtime_ns": held.st_mtime_ns}
+
+
 def check(table: Path, symbols: list[sym.Symbol]) -> dict[str, Any]:
     """The table's global code symbols against the executable beside it: `against` and `agree`
     when all match, unavailable when nothing can be compared, a refusal when any differs."""

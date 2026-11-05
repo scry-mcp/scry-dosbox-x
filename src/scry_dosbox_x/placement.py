@@ -194,6 +194,16 @@ def refusal(res: dict[str, Any], fallback: str = "") -> ds.Invalid:
     return ds.Invalid("ambiguous_ref" if res["state"] == "ambiguous" else "unknown_ref", why)
 
 
+def unresolved_why(ref: str) -> str:
+    """Why a name resolves in no table now, and what would place it: a name is kept across
+    builds, since `-O3` inlining makes a vanished symbol ordinary."""
+    if not STATE.table:
+        return (f"no symbol table is loaded: `symbols_load` one and {ref!r} is placed against "
+                f"it")
+    return (f"{ref!r} is not a symbol of the table loaded now: kept, it may be back after a "
+            f"rebuild")
+
+
 def resolve_ref(decl: dec.Declaration, reg: str, session: ds.Session, *,
                  machine: tuple[str, dict[str, str]] | None = None) -> dict[str, Any]:
     """A declaration -> what the debugger needs to arm it, or the state that is not armable.
@@ -220,7 +230,7 @@ def resolve_ref(decl: dec.Declaration, reg: str, session: ds.Session, *,
     # Same `resolve_name` as `symbols_load`'s re-resolution; only the live seg:off is added here.
     r = dec.DeclarationStore.resolve_name(decl, STATE.table, STATE.name_index)
     if r.state == "unresolved":
-        return {"state": "unresolved"}
+        return {"state": "unresolved", "why": unresolved_why(decl.ref)}
     if r.matches > 1:
         return {"state": "ambiguous", "matches": r.matches,
                 "why": prose.ambiguous_name(decl.ref, candidates(decl.ref), IN_THIS_BUILD)}
@@ -391,6 +401,10 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
         raise ds.Invalid("bad_argument", f"{source}: {e}") from None
     # A stale table resolves every name a few bytes off and nothing in it says so.
     checked = coff.check(src, syms)
+    # THE FILE THE CHECK USED, stamped once its table is in force below: a relink under this
+    # session then moves it, and a reply says so instead of the table quietly describing
+    # another build. A load that refuses before installing leaves the previous stamp alone.
+    against = checked.get("against")
     # No file prefix: a pattern that will not compile is not the file's fault.
     try:
         plan = sym.plan(syms, pattern=pattern, keep_noise=keep_noise,
@@ -457,6 +471,9 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
             data = sym.joined(queued, data)
         except sym.BadSymbolText as e:
             raise ds.Invalid("bad_argument", str(e)) from None
+    # THE ROWS THE DEBUGGER ALREADY HOLDS: `LV` appends, so its read-back is a total across
+    # loads and can pass the table's own count. What this load put in is the difference.
+    held_before = session.vars_held
     if session.at_debugger():
         held = session.load_symbols(data)
         STATE.pending["load"] = None
@@ -466,7 +483,10 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
         STATE.pending["load"] = data
         STATE.pending["dirty"] = True
         held, pending = [], True
+    holds = len(held)
+    loaded = 0 if pending else max(0, holds - held_before)
     STATE.install_table(plan.symbols, accumulate=same_place)
+    session.image = coff.stamp(Path(against)) if isinstance(against, str) else None
     table_mode = "accumulated" if same_place else "replaced"
     if not same_place:
         STATE.symbol_types.clear()
@@ -491,6 +511,7 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
             f"the symbols are loaded and the re-arm ran, but {unwritten}: the comments this "
             "session placed before any map keep their place as it was, and a later load "
             "takes them")
+    extra: dict[str, Any] = {"debugger_holds": holds} if holds != loaded else {}
     return st.reply(base=desc["base"], limit=desc["limit"], descriptor=desc["type"],
                   declarations=rearm, pending=pending, checked=checked,
                   base_from=("caller" if base is not None else base_from.upper()),
@@ -507,7 +528,8 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
                   # A subset of `kept`, not a bucket beside it.
                   overlay_idle=plan.overlay_idle,
                   table_mode=table_mode, table_total=len(STATE.table),
-                  loaded=len(held), bytes=len(data), symbols_typed=len(types or {}))
+                  loaded=loaded, bytes=len(data), symbols_typed=len(types or {}),
+                  **extra)
 
 
 def take_the_batch(symbols: list[sym.Symbol], accumulate: bool) -> None:

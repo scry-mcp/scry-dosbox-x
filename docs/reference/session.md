@@ -180,6 +180,7 @@ Reference: REFERENCE.md, The session.
 | `captures` | string |
 | `conf` | string |
 | `conf_changed_on_disk` | boolean or object |
+| `image_changed_on_disk` | boolean or object |
 | `conf_digest` | string |
 | `debugger_commands` | array |
 | `declarations` | object |
@@ -291,8 +292,9 @@ What the session is right now. It records a stop no tool has reported
 Reply: `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`) and `pending` (`arm`
 refs, a `disarm` count, `symbols_load`, `base_remeasure`), both unavailable or empty once a
 session has ended; with a session also `presence`, `pid`,
-`conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`, `elapsed_s`,
-`output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and `cpu_mode`;
+`conf`, `conf_digest`, `conf_changed_on_disk`, `image_changed_on_disk`, `watched`, `bound_s`,
+`elapsed_s`, `output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and
+`cpu_mode`;
 `symbols_held` (`path`, `base_from`, `waiting_for`) while a `start` table waits for its
 program, which costs a memory-chain read at every stop. `session` carries `alive`,
 `running`, `altered` and each alarm while it holds.
@@ -308,6 +310,7 @@ Takes no argument.
 | `captures` | string |
 | `conf` | string |
 | `conf_changed_on_disk` | boolean or object |
+| `image_changed_on_disk` | boolean or object |
 | `conf_digest` | string |
 | `cpu_mode` | string or object |
 | `declarations` | object |
@@ -337,7 +340,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end status -->
 
-**The alarms** are `conf_changed_on_disk` (the file changed since start; `false` also if gone), `output_bytes_dropped` (the emulator's output overflowed what the server keeps) and `program` (the program the guest was running is gone). They ride in `session` only while they hold.
+**The alarms** are `conf_changed_on_disk` (the file changed since start; `false` also if gone), `image_changed_on_disk` (the executable the loaded table was checked against was written since, as a relink under a live session does), `output_bytes_dropped` (the emulator's output overflowed what the server keeps) and `program` (the program the guest was running is gone). They ride in `session` only while they hold.
 
 **`program` is read at the stops that answer a call**, not at each frame of a timed run: each reads DOS's current process (`EV PSPSEG`) and, when it changed, its owner in the debugger's `DOS MCBS` listing, so a program that ends while the guest runs shows from the next such stop on, and a session that never stops never learns it. The program is the one `start` launched by `program` (any other, when it named none), never the resident stub; only the first command interpreter counts as DOS being back at the prompt, not one the program opened. It is `state: exited` once DOS's current process is that interpreter's where it had been the program's, with `name` and `seen_by` (what was read); or `state: fault` when the text screen then holds, below the row that ran the program, the message DJGPP writes as a program dies (it never reaches the E9 log), quoted in `fault` from its first line to the prompt. A first stop that finds the prompt where none had seen the program names it from the start's `program`, but only when the log shows the program wrote a line of its own. A program started again clears it only when a stop sees it run: one relaunched and dead between two stops leaves the first exit in place. A wait that expired opens its `note` with it, or, when the guest wrote no line in the wait and the note does not already say so, with that fact; a wait in which lines kept arriving gets neither.
 
@@ -430,6 +433,7 @@ Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` and
 | `closed` | boolean |
 | `conf` | string |
 | `conf_changed_on_disk` | boolean or object |
+| `image_changed_on_disk` | boolean or object |
 | `conf_digest` | string |
 | `elapsed_s` | number |
 | `ended_by` | string |

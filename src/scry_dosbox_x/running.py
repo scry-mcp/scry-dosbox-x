@@ -148,6 +148,10 @@ def _surveyed_stop(session: ds.Session, placed: dict[str, Any] | None, retrace_m
             attribution, picture["instruction"], registers, held)
     e9 = e9_block(session)
     frame = STATE.last_stop["frame"] = rs.frame_at_stop(session)
+    # THE POSITION IS HONEST AND NOT THE ONE ASKED FOR: a break into the BIOS says so and says
+    # what leaves it, which is the loop the caller would otherwise walk by hand.
+    if rom := landed_in_rom(where):
+        base["note"] = f"{rom} {base['note']}" if base.get("note") else rom
     return st.reply(**{**base, **position(where, session.paging)},
                     frame=frame, regs=st.shown_regs(registers), watches=watches,
                     cause=st.cause(attribution),
@@ -211,6 +215,23 @@ def position(where: dict[str, str] | None, paging: bool | None) -> dict[str, Any
         return {"pc": contract.unavailable(CUT_POSITION_WHY),
                 "cpu_mode": contract.unavailable(CUT_POSITION_WHY)}
     return {"pc": f"{where['cs']}:{where['eip']}", "cpu_mode": cpu_mode_of(where["mode"], paging)}
+
+
+#: A stop inside the ROM is a handler the guest called into, not the program: `step` walks
+#: inside it, so the reply names the call that leaves it instead of leaving a caller to loop.
+ROM_STOP_WHY = ("the stop landed in {pc} (linear 0x{linear:X}), inside a ROM handler the program "
+                "called into rather than in the program: `run_for` or `resume` leaves it, and "
+                "`step` moves one instruction inside the handler")
+
+
+def landed_in_rom(where: dict[str, str] | None) -> str:
+    """Why a stop inside the ROM is no stop of the program's own, or "" when it is elsewhere."""
+    if where is None or not grammar.real_segments(where["mode"]):
+        return ""
+    linear = int(where["cs"], 16) * 16 + int(where["eip"], 16)
+    if not ds.Session.ROM_LINEAR[0] <= linear <= ds.Session.ROM_LINEAR[1]:
+        return ""
+    return ROM_STOP_WHY.format(pc=f"{where['cs']}:{where['eip']}", linear=linear)
 
 
 def recorded_head(recorded: dict[str, Any]) -> dict[str, Any]:

@@ -357,6 +357,7 @@ _ALARM_WHEN: dict[str, Callable[[Any], bool]] = {
     "program": lambda v: bool(v),
     "range_widened": lambda v: bool(v),
     "conf_changed_on_disk": lambda v: v is not False,
+    "image_changed_on_disk": lambda v: v is not False,
     "output_bytes_dropped": lambda v: bool(v),
 }
 _ALWAYS = ("alive", "running", "altered")

@@ -98,7 +98,9 @@ def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if why == running.PC_GONE_WHY:
         return "status: DOSBox-X has exited, `close` it"
     released = why in (running.PC_RUNNING_WHY, running.PC_UNKNOWN_WHY)
-    return f"status: alive, {'running' if released else 'stopped'}"
+    moved = (", the executable moved since its table was checked"
+             if reply.get("image_changed_on_disk") is True else "")
+    return f"status: alive, {'running' if released else 'stopped'}{moved}"
 
 
 def close(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -294,8 +296,18 @@ def audio_record(args: dict[str, Any], reply: dict[str, Any]) -> str:
 # ---------------------------------------------------------------- names for addresses
 
 def symbols_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"symbols_load: {reply.get('loaded')} loaded of {reply.get('parsed')} parsed, base "
+    # A LOAD WITH NOTHING TO CHECK WOULD READ LIKE A PROVED ONE: the line says which of the
+    # two it is, and the full `why` stays in the reply's `checked`.
+    line = (f"symbols_load: {reply.get('loaded')} loaded of {reply.get('parsed')} parsed, base "
             f"{reply.get('base')}")
+    held = reply.get("debugger_holds")
+    if isinstance(held, int) and not isinstance(held, bool):
+        line += f", the debugger holds {_said(held, 'row')} (`LV` appends)"
+    checked = _block(reply, "checked")
+    if checked.get("available") is False:
+        return f"{line}, not checked against a build: {clipped(str(checked.get('why', '')))}"
+    against = checked.get("against")
+    return (f"{line}, checked against {Path(against).name}" if isinstance(against, str) else line)
 
 
 def symbols_find(args: dict[str, Any], reply: dict[str, Any]) -> str:

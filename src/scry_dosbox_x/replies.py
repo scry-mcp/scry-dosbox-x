@@ -111,6 +111,8 @@ class CloseReply(DosboxEnvelope, total=False):
     closed: Required[bool]
     conf: str
     conf_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
+    #: The executable a loaded table was checked against, written since.
+    image_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
     conf_digest: str
     elapsed_s: float
     ended_by: Required[str]
@@ -523,6 +525,8 @@ class StartReply(WindowRefused, account.SequenceFields, total=False):
     captures: str
     conf: str
     conf_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
+    #: The executable a loaded table was checked against, written since.
+    image_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
     conf_digest: str
     debugger_commands: Annotated[list[Any], OmitEmpty]
     declarations: Annotated[dict[str, Any], When("under `start`")]
@@ -563,6 +567,7 @@ class StatusReply(DosboxEnvelope, total=False):
     captures: Annotated[str, When("with a session")]
     conf: Annotated[str, When("with a session")]
     conf_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
+    image_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
     conf_digest: Annotated[str, When("with a session")]
     cpu_mode: Annotated[str | dict[str, Any], When("with a session")]
     declarations: Annotated[dict[str, Any], When("with a session")]
@@ -634,6 +639,8 @@ class SymbolsLoadReply(DosboxEnvelope, total=False):
     base: int
     base_from: str
     bytes: int
+    #: Every row the debugger holds now (`LV` appends), beside what this load put in.
+    debugger_holds: Annotated[int, When("an earlier load's rows are still in the debugger")]
     declarations: Required[dict[str, Any]]
     descriptor: int
     disambiguated: int

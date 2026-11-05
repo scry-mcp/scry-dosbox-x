@@ -279,6 +279,8 @@ class Session(dprocess.Process):
         self.stub_protocol = ""
         self.stub_motion: bool | None = None    # whether a move carries motion; None: unread
         self.vars_held = 0          # the names the debugger's list held at the last read-back
+        # THE EXECUTABLE A LOADED TABLE WAS CHECKED AGAINST, as the disk held it then.
+        self.image: dict[str, Any] | None = None
         self.started_at = time.monotonic()
         # WHICH OF THE DEBUGGER'S OPTIONAL COMMANDS THIS BUILD PARSES, as `start` read them.
         self.commands = launch.debugger_commands
@@ -949,6 +951,17 @@ class Session(dprocess.Process):
                        and dlaunch.current_digest(self.launch.conf) != self.conf_digest)
         except OSError as e:
             changed = contract.unavailable(f"the conf could not be read: {e}")
+        # A RELINK UNDER A LIVE SESSION leaves the guest running the image on screen while the
+        # table was checked against another one: the stamp the load took says whether it moved.
+        image: bool | dict[str, Any] = False
+        if self.image is not None:
+            try:
+                held = Path(str(self.image["path"])).stat()
+            except OSError as e:
+                image = contract.unavailable(f"the executable could not be read: {e}")
+            else:
+                image = ((held.st_size, held.st_mtime_ns)
+                         != (self.image["size"], self.image["mtime_ns"]))
         return {
             "pid": self.proc.pid,
             "alive": self.alive(),
@@ -963,6 +976,7 @@ class Session(dprocess.Process):
             **({"bundle": self.launch.bundle} if self.launch.bundle else {}),
             "conf_digest": self.conf_digest,
             "conf_changed_on_disk": changed,
+            "image_changed_on_disk": image,
             "watched": self.launch.watched,
             "bound_s": self.launch.seconds,
             "elapsed_s": round(time.monotonic() - self.started_at, 1),

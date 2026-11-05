@@ -86,6 +86,17 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
   wherever the owner put it, another display included. A `front` that fails on a session
   started with `background=true` names that as what may keep it behind and what to do.
 - The cases that move the owner's Space carry the `window` marker and are out of every default run.
+- `symbols_load`'s summary says whether the table was checked against a build beside it, and against which
+  executable, so a table nothing could check no longer reads like a proved one.
+- A second `symbols_load` answers `loaded` with what that load put in, the count that can be judged
+  against `parsed` and `table_total`; `debugger_holds` carries every row the debugger still holds,
+  since `LV` appends, and comes only when it is larger.
+- A stored declaration whose name no loaded table resolves says in its row why, and what would
+  place it, instead of reading as a symbol this build lost.
+- The `session` block carries `image_changed_on_disk` once the executable a loaded table was checked
+  against is written again, which is a relink under a live session; `status` says it on its line.
+- A `stop` that lands inside the ROM says so in its `note`, with the address, and says that
+  `run_for` or `resume` leaves it while `step` stays in the handler.
 
 ## 0.1.0
 
