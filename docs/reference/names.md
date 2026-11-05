@@ -24,7 +24,8 @@ a table the `<stem>.exe` contradicts; a table in which two names differ only in 
 both lines.
 
 Reply: `parsed`, `kept`, `loaded`, `table_mode`, `table_total`, `renamed`, `pending`,
-`base`, `checked`, `declarations`.
+`base`, `checked`, `declarations`, and `debugger_holds` when an earlier load's rows are
+still in the debugger.
 
 Reference: REFERENCE.md, Names for addresses.
 
@@ -43,6 +44,7 @@ Reference: REFERENCE.md, Names for addresses.
 | `base` | integer |
 | `base_from` | string |
 | `bytes` | integer |
+| `debugger_holds` | integer |
 | `declarations` | object |
 | `descriptor` | integer |
 | `disambiguated` | integer |
@@ -121,7 +123,7 @@ Example, from a live run:
 
 **A 32-bit Borland row is a SECTION INDEX and an offset inside it**, so `seg * 16` would invent an address. The vendor's documentation suggests the `Start` column is a full address, but every `Start` offset in an ILINK32 map is zero, so under a flat model the sections overlap. The bases live in the linked image, which this server does not read, hence `section_bases`. Such a map describes a Win32 program: it is read anyway, so if every breakpoint refuses afterwards, that is why.
 
-**`LV` appends**, so `loaded` can exceed `kept`. A load that MOVES the program replaces the table, because carrying the old offsets across would re-place them at addresses nobody measured; on a replace the old rows stay in the debugger, invisible to `symbols_find`, until `close` and a fresh `start`. A load that fails after `LV` leaves the debugger holding the list while the reply is INVALID, and retrying adds a second copy there; a guest that runs another program at another base is not re-measured. `SV` cannot save more than 65535 names, so a load that would pass it is refused before `LV`.
+**`LV` appends**, and the reply keeps the two counts apart: `loaded` is what this load put in, `debugger_holds` is every row the debugger holds now, said only when it is larger. A load that MOVES the program replaces the table, because carrying the old offsets across would re-place them at addresses nobody measured; on a replace the old rows stay in the debugger, invisible to `symbols_find`, until `close` and a fresh `start`. A load that fails after `LV` leaves the debugger holding the list while the reply is INVALID, and retrying adds a second copy there; a guest that runs another program at another base is not re-measured. `SV` cannot save more than 65535 names, so a load that would pass it is refused before `LV`.
 
 **`loaded` is read back with `SV`** because a `SV`/`LV` filename is silently cut to twelve characters and reported `ok`; both files live in the emulator's working directory, an existing one is refused, and both are removed on exit.
 

@@ -141,6 +141,8 @@ class FakeSession(SessionGates):
         self.log_calls: list[tuple[str, int, str]] = []
         self.since_marks: list[int] = []
         self.loaded: list[tuple[str, int]] = []
+        # the real session's own count of what the debugger holds, `LV` appending included
+        self.vars_held = 0
         # what the address-taking tools were handed: tells a forwarded address from a forwarded zero
         self.memdump_calls: list[tuple[int, int, int]] = []
         self.conditions: list[str] = []
@@ -421,6 +423,7 @@ class FakeSession(SessionGates):
     def load_symbols(self, data: bytes) -> list[tuple[str, int]]:
         """What the debugger would hold afterwards, INCLUDING what it already held."""
         self.loaded += dsym.decode(data)
+        self.vars_held = len(self.loaded)
         return list(self.loaded)
 
 
@@ -963,6 +966,7 @@ class NamesFake(SessionGates):
                              "commands")
         self.loads = getattr(self, "loads", 0) + 1
         self.held_vars = [*getattr(self, "held_vars", []), *dsym.decode(data)]
+        self.vars_held = len(self.held_vars)
         return list(self.held_vars)
 
     def selector(self, reg: str) -> dict[str, int]:

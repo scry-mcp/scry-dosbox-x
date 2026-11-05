@@ -298,6 +298,9 @@ def symbols_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
     # two it is, and the full `why` stays in the reply's `checked`.
     line = (f"symbols_load: {reply.get('loaded')} loaded of {reply.get('parsed')} parsed, base "
             f"{reply.get('base')}")
+    held = reply.get("debugger_holds")
+    if isinstance(held, int) and not isinstance(held, bool):
+        line += f", the debugger holds {_said(held, 'row')} (`LV` appends)"
     checked = _block(reply, "checked")
     if checked.get("available") is False:
         return f"{line}, not checked against a build: {clipped(str(checked.get('why', '')))}"

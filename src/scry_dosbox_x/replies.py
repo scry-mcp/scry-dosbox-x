@@ -634,6 +634,8 @@ class SymbolsLoadReply(DosboxEnvelope, total=False):
     base: int
     base_from: str
     bytes: int
+    #: Every row the debugger holds now (`LV` appends), beside what this load put in.
+    debugger_holds: Annotated[int, When("an earlier load's rows are still in the debugger")]
     declarations: Required[dict[str, Any]]
     descriptor: int
     disambiguated: int

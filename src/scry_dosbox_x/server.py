@@ -1058,7 +1058,8 @@ def symbols_load(path: str, base: str = "",
     both lines.
 
     Reply: `parsed`, `kept`, `loaded`, `table_mode`, `table_total`, `renamed`, `pending`,
-    `base`, `checked`, `declarations`.
+    `base`, `checked`, `declarations`, and `debugger_holds` when an earlier load's rows are
+    still in the debugger.
 
     Reference: REFERENCE.md, Names for addresses.
     """

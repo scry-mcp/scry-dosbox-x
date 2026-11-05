@@ -93,16 +93,35 @@ def test_the_accounting_still_sums_when_the_unencodable_list_is_truncated(
             + got["unencodable_total"]) == got["parsed"], got
 
 
-def test_loaded_is_read_back_out_of_the_debugger_and_lv_appends(
+def test_loaded_counts_this_load_and_debugger_holds_what_lv_kept(
         tmp_path: Path) -> None:
-    """`ok` is not evidence: this emulator prints it for a filename it truncated."""
+    """`ok` is not evidence: this emulator prints it for a filename it truncated. `loaded` is
+    read back as what this load put in; `LV` appends, so the debugger's own total is said
+    apart, and only when it is larger."""
     install(mode="Pr32")
     src = _source(tmp_path)
     first = cast(dict[str, Any], server.symbols_load(path=src))
-    assert first["loaded"] == first["kept"] == 3, first
+    assert (first["loaded"], first["kept"], first["table_total"]) == (3, 3, 3), first
+    assert "debugger_holds" not in first, first
     second = cast(dict[str, Any], server.symbols_load(path=src))
-    assert second["kept"] == 3, second
-    assert second["loaded"] == 6, second
+    assert (second["loaded"], second["kept"], second["table_total"]) == (3, 3, 3), second
+    assert second["debugger_holds"] == 6, second
+
+
+def test_a_second_table_is_counted_with_itself_beside_what_the_debugger_still_holds(
+        tmp_path: Path) -> None:
+    """The pair a second load used to answer, `14335` beside `7041`, was two different
+    questions in adjacent fields."""
+    install(mode="Pr32")
+    first = tmp_path / "djgpp32.sym"
+    first.write_text("00001000 T _main\n00002000 T _tick\n00003000 T _rate\n", encoding="utf-8")
+    _ok(server.symbols_load(path=str(first)))
+    second = tmp_path / "second.sym"
+    second.write_text("00001000 T _main\n00004000 T _new\n", encoding="utf-8")
+    got = _ok(server.symbols_load(path=str(second)))
+    # the table merges by name, so `_main` counts once: three asked before, four now
+    assert (got["loaded"], got["parsed"], got["table_total"]) == (2, 2, 4), got
+    assert got["debugger_holds"] == 5, got
 
 
 def test_the_bytes_that_went_in_carry_the_measured_linear_address(
