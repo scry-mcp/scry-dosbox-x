@@ -115,30 +115,32 @@ Example, from a live run:
 
 ```json
 {
-  "method": "region",
-  "manifest": "$TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json",
-  "measure": "changed_pixels"
+  "method": "image",
+  "a": "$TMPDIR/jobs-scratch/P/n22-away.png",
+  "b": "$TMPDIR/jobs-scratch/P/n21-away.png"
 }
 ```
 
 ```json
 {
-  "summary": "image_compare region: changed_pixels, 1 transition over 5 frames",
+  "summary": "image_compare image: no pixel differs over 48x40 at [0, 0]",
   "status": "ok",
-  "measure": "changed_pixels",
-  "crop": [0, 0, 320, 8],
-  "frames": 5,
-  "start": {
-    "available": false,
-    "why": "`changed_pixels` counts a change from the frame before, and the first frame has none"
+  "differing_pixels": 0,
+  "bbox": {"available": false, "why": "no pixel differs"},
+  "max_delta": [0, 0, 0],
+  "width": 48,
+  "height": 40,
+  "crop": [0, 0, 48, 40],
+  "shift": [0, 0],
+  "tolerance": 0,
+  "a": {
+    "path": "$TMPDIR/jobs-scratch/P/n22-away.png",
+    "sha256": "53b883b4f3a951b66be1a08574b075740bb0c26493474fbd18fb4eb3af116be5"
   },
-  "transitions": [
-    [4, 2560]
-  ],
-  "gaps": [],
-  "transitions_total": 1,
-  "path": "$TMPDIR/dosbox-x-session-<run>/series/series-1/track-1.json",
-  "manifest": "$TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json"
+  "b": {
+    "path": "$TMPDIR/jobs-scratch/P/n21-away.png",
+    "sha256": "53b883b4f3a951b66be1a08574b075740bb0c26493474fbd18fb4eb3af116be5"
+  }
 }
 ```
 <!-- scry-reference:end image_compare -->

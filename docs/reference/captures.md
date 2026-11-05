@@ -43,23 +43,23 @@ Example, from a live run:
   "summary": "captures: 7 files",
   "status": "ok",
   "captures": [
-    {"kind": "bin", "path": "$TMPDIR/jobs-scratch/A/n1119.bin", "present": true, "bytes": 16},
+    {"kind": "bin", "path": "$TMPDIR/jobs-scratch/A/n1131.bin", "present": true, "bytes": 16},
     {
       "kind": "png",
-      "path": "$TMPDIR/dosbox-x-session-<run>/gfx/palette-1.png",
+      "path": "/var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/dosbox-x-session-<run>/gfx/palette-1.png",
       "present": true,
       "bytes": 1009
     },
     {
       "kind": "json",
-      "path": "$TMPDIR/jobs-scratch/A/n1296-stopped.screen-map.json",
+      "path": "$TMPDIR/jobs-scratch/A/n1308-stopped.screen-map.json",
       "present": true,
-      "bytes": 341
+      "bytes": 412
     },
-    {"kind": "trace", "path": "$TMPDIR/jobs-scratch/A/n1384.trace", "present": true, "bytes": 238},
+    {"kind": "trace", "path": "$TMPDIR/jobs-scratch/A/n1408.trace", "present": true, "bytes": 238},
     {
       "kind": "avi",
-      "path": "$TMPDIR/jobs-scratch/A/n1446.avi",
+      "path": "$TMPDIR/jobs-scratch/A/n1470.avi",
       "present": true,
       "bytes": 36314,
       "riff_avi": true,
@@ -68,7 +68,7 @@ Example, from a live run:
     },
     {
       "kind": "wav",
-      "path": "$TMPDIR/jobs-scratch/A/n1459.wav",
+      "path": "$TMPDIR/jobs-scratch/A/n1483.wav",
       "present": true,
       "bytes": 5420,
       "complete": true,
@@ -194,9 +194,9 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "series_capture: 5 AVI frames 0..4, 2 distinct, manifest $TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json",
+  "summary": "series_capture: 5 AVI frames 0..4, 2 distinct, manifest /var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/dosbox-x-session-<run>/series/series-1/manifest.json",
   "status": "ok",
-  "manifest": "$TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json",
+  "manifest": "/var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/dosbox-x-session-<run>/series/series-1/manifest.json",
   "count": 5,
   "first": 0,
   "last": 4,
@@ -331,14 +331,14 @@ Example, from a live run:
 ```json
 {
   "frames": 2,
-  "dest": "$TMPDIR/jobs-scratch/A/n1446.avi",
+  "dest": "$TMPDIR/jobs-scratch/A/n1470.avi",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "record 2 frames: ELAPSED, 1 frame at $TMPDIR/jobs-scratch/A/n1446.avi",
+  "summary": "record 2 frames: ELAPSED, 1 frame at $TMPDIR/jobs-scratch/A/n1470.avi",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 2,
@@ -348,7 +348,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b8",
-    "ECX": "0x00006a9a",
+    "ECX": "0x00006a98",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -364,7 +364,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 89145},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 88994},
   "stop_seq": 10,
   "instruction": {
     "address": "0814:00000130",
@@ -385,7 +385,7 @@ Example, from a live run:
   "frames": 2,
   "began": true,
   "ended": true,
-  "path": "$TMPDIR/jobs-scratch/A/n1446.avi",
+  "path": "$TMPDIR/jobs-scratch/A/n1470.avi",
   "bytes": 36314,
   "avi_frames": 1
 }
@@ -473,14 +473,14 @@ Example, from a live run:
 ```json
 {
   "frames": 2,
-  "dest": "$TMPDIR/jobs-scratch/A/n1459.wav",
+  "dest": "$TMPDIR/jobs-scratch/A/n1483.wav",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "audio_record wav 2 frames: ELAPSED, 1344 samples at 48000 Hz, silent at $TMPDIR/jobs-scratch/A/n1459.wav",
+  "summary": "audio_record wav 2 frames: ELAPSED, 1344 samples at 48000 Hz, silent at $TMPDIR/jobs-scratch/A/n1483.wav",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 2,
@@ -490,7 +490,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b4",
-    "ECX": "0x00001358",
+    "ECX": "0x00001356",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -506,7 +506,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 92702},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 92555},
   "stop_seq": 11,
   "instruction": {
     "address": "0814:00000130",
@@ -527,7 +527,7 @@ Example, from a live run:
   "frames": 2,
   "began": true,
   "ended": true,
-  "path": "$TMPDIR/jobs-scratch/A/n1459.wav",
+  "path": "$TMPDIR/jobs-scratch/A/n1483.wav",
   "bytes": 5420,
   "channels": 2,
   "sample_rate_hz": 48000,

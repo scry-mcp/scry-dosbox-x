@@ -329,7 +329,7 @@ Example, from a live run:
   "channel": "emulator",
   "lines_total": 166,
   "truncated": true,
-  "lines": ["surface consider=720x400 final=720x400", "DEBUG: RUNSTATE running cycles=222452 ms=23.000100000 frames=2", "DEBUG: RUNSTATE running cycles=262318 ms=27.000100000 frames=2", "DEBUG: RUNSTATE running cycles=302186 ms=31.000100000 frames=2", "DEBUG: RUNSTATE running cycles=342097 ms=35.000100000 frames=3", "DEBUG: RUNSTATE running cycles=371996 ms=38.000100000 frames=3", "... 34 more"]
+  "lines": ["surface consider=720x400 final=720x400", "DEBUG: RUNSTATE running cycles=222452 ms=23.000100000 frames=2", "DEBUG: RUNSTATE running cycles=262318 ms=27.000100000 frames=2", "DEBUG: RUNSTATE running cycles=302186 ms=31.000100000 frames=2", "DEBUG: RUNSTATE running cycles=342097 ms=35.000100000 frames=3", "DEBUG: RUNSTATE running cycles=381963 ms=39.000100000 frames=3", "... 34 more"]
 }
 ```
 <!-- scry-reference:end log -->

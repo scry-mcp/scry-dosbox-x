@@ -40,14 +40,14 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "state_list: 1 state in $TMPDIR/jobs-scratch/A/n998-save",
+  "summary": "state_list: 1 state in $TMPDIR/jobs-scratch/A/n1010-save",
   "status": "ok",
-  "state_dir": "$TMPDIR/jobs-scratch/A/n998-save",
+  "state_dir": "$TMPDIR/jobs-scratch/A/n1010-save",
   "states": [
     {
       "name": "matrix_a_stopped",
-      "path": "$TMPDIR/jobs-scratch/A/n998-save/matrix_a_stopped.sav",
-      "bytes": 81429,
+      "path": "$TMPDIR/jobs-scratch/A/n1010-save/matrix_a_stopped.sav",
+      "bytes": 81762,
       "version": "<volatile>",
       "program": "PROBE",
       "machine": "MCH_VGA",
@@ -122,11 +122,11 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "state_write save: matrix_a_stopped, 81429 bytes, PROBE <time>",
+  "summary": "state_write save: matrix_a_stopped, 81762 bytes, PROBE <time>",
   "status": "ok",
   "name": "matrix_a_stopped",
-  "path": "$TMPDIR/jobs-scratch/A/n998-save/matrix_a_stopped.sav",
-  "bytes": 81429,
+  "path": "$TMPDIR/jobs-scratch/A/n1010-save/matrix_a_stopped.sav",
+  "bytes": 81762,
   "version": "<volatile>",
   "program": "PROBE",
   "machine": "MCH_VGA",

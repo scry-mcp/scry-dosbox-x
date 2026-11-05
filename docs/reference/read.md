@@ -272,18 +272,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "$TMPDIR/jobs-scratch/A/n1119.bin"
+  "dest": "$TMPDIR/jobs-scratch/A/n1131.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/jobs-scratch/A/n1119.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/jobs-scratch/A/n1131.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "$TMPDIR/jobs-scratch/A/n1119.bin",
+  "path": "$TMPDIR/jobs-scratch/A/n1131.bin",
   "bytes": 16
 }
 ```
@@ -482,28 +482,16 @@ Example, from a live run:
 
 ```json
 {
-  "method": "add",
-  "screen": "probe_stopped",
-  "match": [
-    [0, 0, 8, 1]
-  ]
+  "method": "pointer",
+  "pointer": {"x": "2000:94CA", "y": "2000:94CC"}
 }
 ```
 
 ```json
 {
-  "summary": "screen_map_write add: probe_stopped (text 80x25), 1 region, 0 controls",
+  "summary": "screen_map_write pointer: the program's pointer at 2000:94CA and 2000:94CC, 2 bytes each",
   "status": "ok",
-  "screen": "probe_stopped",
-  "kind": "text",
-  "size": [80, 25],
-  "cells": "rgb",
-  "match": [
-    {"crop": [0, 0, 8, 1], "signature": "ed0b26b4f25ef236"}
-  ],
-  "controls": 0,
-  "replaced": false,
-  "shadows_file": false
+  "pointer": {"x": "2000:94CA", "y": "2000:94CC", "bytes": 2}
 }
 ```
 <!-- scry-reference:end screen_map_write -->
