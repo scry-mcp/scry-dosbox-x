@@ -14,7 +14,7 @@ from types import ModuleType
 from typing import Any
 
 import pytest
-from scry_core import live_host
+from scry_core import live_host, live_pool
 from scry_core.demo import Run
 
 from demos import host as demo_host
@@ -42,7 +42,7 @@ def lm() -> ModuleType:
 
 
 def _ledger(lm: ModuleType, *sections: tuple[str, list[str], Any]) -> Any:
-    m = lm.Ledger()
+    m = lm.Ledger(lm.SCRATCH_PREFIX, lm.SUMMARY_VAR)
     for letter, labels, body in sections:
         m.section(letter, letter, [lm.Cell(x, "test") for x in labels])(
             (lambda b=body: b(m)) if body else (lambda: None))
@@ -62,8 +62,8 @@ def _launched() -> None:
         ledger.record(99999999, "dosbox-x")
 
 
-def _pool(lm: ModuleType, outcomes: dict[str, str], invalid: str = "") -> Any:
-    lp = lm.live_pool
+def _pool(outcomes: dict[str, live_pool.Outcome], invalid: str = "") -> Any:
+    lp = live_pool
 
     def run(_sections: Any) -> Any:
         _launched()
@@ -76,7 +76,7 @@ def _out(capsys: pytest.CaptureFixture[str]) -> list[str]:
 
 
 def test_a_ledger_makes_no_directory_until_the_run_writes(lm: ModuleType, tmp_path: Path) -> None:
-    m = lm.Ledger()
+    m = lm.Ledger(lm.SCRATCH_PREFIX, lm.SUMMARY_VAR)
     assert not m.scratch.exists() and list(tmp_path.iterdir()) == []
     m.unfinished()
     assert list(tmp_path.iterdir()) == []
@@ -84,12 +84,12 @@ def test_a_ledger_makes_no_directory_until_the_run_writes(lm: ModuleType, tmp_pa
 
 def _spanning(lm: ModuleType, *, beside: bool) -> Any:
     """A control that opens the run and a verdict that closes it, with a section between or not."""
-    m = lm.Ledger()
-    m.section("O", "control", [lm.Cell("o-control", "t")], place=0)(
+    m = lm.Ledger(lm.SCRATCH_PREFIX, lm.SUMMARY_VAR)
+    m.section("O", "control", [lm.Cell("o-control", "t")], opens=True)(
         lambda: m.judge("o-control", True))
     if beside:
         m.section("B", "beside", [lm.Cell("b1", "t")])(lambda: m.judge("b1", True))
-    m.section("O", "verdict", [lm.Cell("o-verdict", "t")], place=2)(
+    m.section("O", "verdict", [lm.Cell("o-verdict", "t")], spans=True)(
         lambda: m.block("o-verdict", "too little ran"))
     return m
 
@@ -131,7 +131,7 @@ def test_a_green_run_removes_its_scratch_and_its_jobs(
         job.mkdir(parents=True)
         assert job.parent.parent == m.scratch
     m.host.begin(None, "DOSBox-X")
-    assert _run(m, pool=_pool(lm, {"a1": "OK", "b1": "OK"})) == lm.EXIT_PASS
+    assert _run(m, pool=_pool({"a1": "OK", "b1": "OK"})) == lm.EXIT_PASS
     assert "scratch removed, the transcript with it" in _out(capsys)
     assert list(tmp_path.iterdir()) == []
 
@@ -166,7 +166,7 @@ def test_a_run_that_ends_invalid_keeps_its_scratch_and_says_invalid_last(
         pool: tuple[str] | None) -> None:
     m = _ledger(lm, *plan)
     m.made()
-    pooled = _pool(lm, {"a1": "OK", "b1": "OK"}, pool[0]) if pool else None
+    pooled = _pool({"a1": "OK", "b1": "OK"}, pool[0]) if pool else None
     assert _run(m, pool=pooled) == lm.EXIT_INVALID
     m.unfinished()  # what `main`'s `finally` runs
     out = _out(capsys)
@@ -213,7 +213,8 @@ def matrix(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
     module = importlib.import_module("dosbox_x_live_matrix")
     monkeypatch.setattr(module.signal, "signal", lambda *_a: None)
     monkeypatch.setattr(module, "ENV", {})
-    fresh = importlib.import_module("matrix_ledger").Ledger()
+    lm = importlib.import_module("matrix_ledger")
+    fresh = lm.Ledger(lm.SCRATCH_PREFIX, lm.SUMMARY_VAR)
     fresh.sections = module.M.sections
     monkeypatch.setattr(module, "M", fresh)
     monkeypatch.setattr(fresh, "run", lambda *_a, **_k: pytest.fail("a section ran"))
@@ -270,7 +271,7 @@ def test_the_pool_hands_each_job_a_scratch_inside_the_runs(
         seen.extend(jobs)
         return lp.PoolResult([], "", {}, {})
     monkeypatch.setattr(lp, "run_pool", run_pool)
-    matrix._pool(2)([s for s in matrix.M.sections if s.letter in "AB"])
+    matrix._pool(2)([s for s in matrix.M.sections if s.block in "AB"])
     assert seen and all(Path(j.env[live_host.SCRATCH_VAR]).parent.parent == matrix.M.scratch
                         for j in seen)
 
@@ -293,7 +294,7 @@ def test_each_job_s_copies_go_as_that_job_ends_not_at_the_pool_s_end(
         return lp.PoolResult([], "", {}, {})
 
     monkeypatch.setattr(lp, "run_pool", run_pool)
-    matrix._pool(2)([s for s in matrix.M.sections if s.letter in "AB"])
+    matrix._pool(2)([s for s in matrix.M.sections if s.block in "AB"])
     assert gone_by_then == [True, True], gone_by_then
 
 

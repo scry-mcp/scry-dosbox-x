@@ -17,7 +17,7 @@ PKG = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PKG))
 
 from live_private import guest_dir  # noqa: E402
-from matrix_ledger import Cell, Ledger  # noqa: E402
+from matrix_ledger import SCRATCH_PREFIX, SUMMARY_VAR, Cell, Ledger  # noqa: E402
 from scry_core import guardian  # noqa: E402
 from scry_core import reply_contract as contract  # noqa: E402
 
@@ -31,7 +31,7 @@ from scry_dosbox_x import state as dstate  # noqa: E402
 
 __all__ = ["ds", "server"]
 
-M = Ledger()
+M = Ledger(SCRATCH_PREFIX, SUMMARY_VAR)
 ENV = dict(os.environ)
 
 GUEST = guest_dir()

@@ -53,7 +53,7 @@ def _hold(background: bool) -> tuple[int, int]:
     return began, focus_watch.now_ms()
 
 
-@M.section("O", "the focus gate's control, opening the run", O_CONTROL, place=0)
+@M.section("O", "the focus gate's control, opening the run", O_CONTROL, opens=True)
 def section_o_control() -> None:
     tsv = Path(M.fresh("-focus.tsv"))
     watch = focus_watch.FocusWatch(tsv)
@@ -70,7 +70,7 @@ def section_o_control() -> None:
         SINCE.append(c.since)
 
 
-@M.section("O", "the focus gate's verdict, closing the run", O_VERDICT, place=2)
+@M.section("O", "the focus gate's verdict, closing the run", O_VERDICT, spans=True)
 def section_o_verdict() -> None:
     if not WATCH:
         M.block_rest("the control never started the watch")

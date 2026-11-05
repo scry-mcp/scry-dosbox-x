@@ -65,7 +65,7 @@ def _pool(workers: int) -> Callable[[list[Section]], live_pool.PoolResult]:
     def run(sections: list[Section]) -> live_pool.PoolResult:
         out = Path(M.fresh("-jobs"))
         print(f"jobs: {workers} at once, logs and summaries in {out}", flush=True)
-        letters = sorted({s.letter for s in sections})
+        letters = sorted({s.block for s in sections})
 
         def ended(r: live_pool.JobResult) -> None:
             copies.ended(r.job.name)
@@ -78,7 +78,7 @@ def _pool(workers: int) -> Callable[[list[Section]], live_pool.PoolResult]:
                         letter, [sys.executable, str(Path(__file__).resolve())],
                         env={SECTIONS_VAR: f"{letter},", JOBS_VAR: "1", **copies.env(letter),
                              **M.host.job_env(letter)},
-                        planned=tuple(c.label for s in sections if s.letter == letter
+                        planned=tuple(c.label for s in sections if s.block == letter
                                       for c in s.cells))
                     for letter in letters]
             return live_pool.run_pool(jobs, workers, out, SUMMARY_VAR, on_done=ended)
@@ -99,7 +99,7 @@ def _main() -> int:
         print(f"usage: {sys.argv[0]} (no arguments; see the docstring for the variables)",
               file=sys.stderr)
         return 2
-    letters = {s.letter for s in M.sections}
+    letters = {s.block for s in M.sections}
     wanted = chosen_sections(ENV.get(SECTIONS_VAR, ""))
     unknown = sorted(set(wanted) - letters)
     if unknown:
