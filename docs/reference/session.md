@@ -113,8 +113,9 @@ on a build with no `DOSTRACE`, `guest_files` naming a directory, one file twice 
 Reply: `pid`, `stub`, `window` (`display`, `bounds`, `onscreen`, `front`, `fullscreen`, with
 `shared`), `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
 `guest_files` (each when asked for: the trace's path, the categories set, each file as it was
-before the boot), `symbols` (`held`, `base_from`); with `plan`, these facts sit under `start`
-beside the plan's account. `note` when the conf or `flags` select a dynamic cpu core, which
+before the boot), `symbols` (`held`, `base_from`, `checked`); with `plan`, these facts sit
+under `start` beside the plan's account. `note` when the conf or `flags` select a dynamic
+cpu core, which
 can pass over code breakpoints: start on `flags=["-set", "cpu core=normal"]`.
 
 Reference: REFERENCE.md, The session.
@@ -267,6 +268,8 @@ A watched start opens DOSBox-X's window on the display `display` names (the OS's
 **`flags` are argv tokens, so a `-set` value with spaces is one token**; a glued `-set` is refused because DOSBox-X hangs on it, a `-set` with no `=` (shredded, or with the value after a space) because DOSBox-X ignores it at rc 0 and the setting would silently not apply. `key=value` with no section is taken, and a key the server owns is refused in that spelling too.
 
 **`program` loads the stub itself when the conf's autoexec does not run it**, which is why the autoexec must not `exit` before `program` runs.
+
+**A `symbols` table is judged before the boot and answered there.** `start` refuses one the executable beside it contradicts, without an emulator having run, and `symbols.checked` says what the comparison found: the executable and how many global code symbols agreed, or why nothing could be compared. The placement at the first stop compares again, since the executable can be relinked while the boot happens: a table that disagrees then is `symbols_placed`'s own refusal, said once.
 
 **The server derives no conf and mounts its own stub.** `start` runs the conf you name as it is and adds, on the command line, a mount of its guest directory on a drive the conf's `[autoexec]` does not use, running `SCRY.COM` from it. A conf taken from a repository's launch script therefore has to drop its boot line and its `exit`, which would end the session before `program` runs, and must not run a copy of `SCRY.COM` of its own: one that speaks another protocol is noted at `start`. What else a repository may declare to the server is [scry-core#123](https://github.com/scry-mcp/scry-core/issues/123).
 

@@ -211,7 +211,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     if STATE.guest_files:
         channels["guest_files"] = [{"path": str(p), "before": f.shown()}
                                    for p, f in STATE.guest_files.items()]
-    holding: dict[str, Any] = ({"symbols": {"held": held.path, "base_from": held.base_from}}
+    holding: dict[str, Any] = ({"symbols": {"held": held.path, "base_from": held.base_from,
+                                            "checked": held.checked}}
                                if held is not None else {})
     started = st.reply(**st.process_facts(), shared=shared,
                        ready_after_s=ready,

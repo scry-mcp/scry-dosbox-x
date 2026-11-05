@@ -248,8 +248,9 @@ def start(conf: str, cwd: str,
     Reply: `pid`, `stub`, `window` (`display`, `bounds`, `onscreen`, `front`, `fullscreen`, with
     `shared`), `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
     `guest_files` (each when asked for: the trace's path, the categories set, each file as it was
-    before the boot), `symbols` (`held`, `base_from`); with `plan`, these facts sit under `start`
-    beside the plan's account. `note` when the conf or `flags` select a dynamic cpu core, which
+    before the boot), `symbols` (`held`, `base_from`, `checked`); with `plan`, these facts sit
+    under `start` beside the plan's account. `note` when the conf or `flags` select a dynamic
+    cpu core, which
     can pass over code breakpoints: start on `flags=["-set", "cpu core=normal"]`.
 
     Reference: REFERENCE.md, The session.
