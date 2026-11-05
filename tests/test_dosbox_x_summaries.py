@@ -62,3 +62,19 @@ def test_a_cut_scan_filter_says_how_much_of_the_list_it_holds() -> None:
     none = one_line.filter_scan({"operator": "!"}, {"hits_total": 900, "truncated": True,
                                                     "hits": [], "note": "..."})
     assert some.endswith("the first 2 listed") and "none listed" in none, (some, none)
+
+
+def test_a_table_nothing_could_check_says_so_on_its_own_line() -> None:
+    """The line is what a caller reads of a load; a table with no build beside it would
+    otherwise read exactly like a proved one."""
+    why = ("no executable named prod.exe beside the table, so it could not be checked against "
+           "its build")
+    line = one_line.symbols_load({}, {"loaded": 3, "parsed": 3, "base": 0,
+                                      "checked": {"available": False, "why": why}})
+    assert "not checked" in line and "prod.exe" in line, line
+
+
+def test_a_checked_table_says_what_it_was_checked_against() -> None:
+    line = one_line.symbols_load({}, {"loaded": 3, "parsed": 3, "base": 0,
+                                      "checked": {"against": "/a/b/prod.exe", "agree": 3}})
+    assert line.endswith("checked against prod.exe"), line
