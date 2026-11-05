@@ -39,11 +39,15 @@ def test_a_free_block_with_the_programs_stale_name_is_no_program() -> None:
 def test_start_judges_the_table_and_its_base_before_the_boot(tmp_path: Path) -> None:
     table = tmp_path / "LINEUP.SYM"
     table.write_text("00000100 T start\n")
-    assert ss.check(str(table), "program") == ss.Held(str(table), "program")
-    assert ss.check(str(table), "ds") == ss.Held(str(table), "DS")
-    assert ss.check(str(table), "Program") == ss.Held(str(table), "program")
+    for base_from, word in (("program", "program"), ("ds", "DS"), ("Program", "program")):
+        got = ss.check(str(table), base_from)
+        assert got is not None
+        assert (got.path, got.base_from, got.com) == (str(table), word, False), got
+        # THE ANSWER THE CHECK WOULD HAVE DROPPED: no executable beside it, said in the reply
+        assert got.checked["available"] is False and "LINEUP.exe" in got.checked["why"], got
     (tmp_path / "LINEUP.COM").write_bytes(b"\xc3")
-    assert ss.check(str(table), "program") == ss.Held(str(table), "program", com=True)
+    com = ss.check(str(table), "program")
+    assert com is not None and (com.base_from, com.com) == ("program", True), com
     assert ss.check("", "program") is None
     folded = tmp_path / "GAME.SYM"
     folded.write_text("00000100 T ShowCredits\n00000200 T SHOWCREDITS\n")

@@ -40,6 +40,8 @@ def _lengths() -> dict[int, int]:
 LENGTHS = _lengths()
 STALE_TICKS = int(re.search(r"^STALE_TICKS\s+equ\s+(\d+)", ASM, re.M).group(1))  # type: ignore[union-attr]
 TICK_S = 0.005
+#: How long a settle may take before the stub is called stuck: a bound, never a wait.
+SETTLE_S = 30.0
 SPACING_S = link.FRAME_SPACING_S
 REPORT = (b"STUB  . mouse x=1 y=2 buttons=0 max=639,199 mode=19 screen=320x200 "
           b"vbe=19 attr=0 res=0x0\r\n")
@@ -70,8 +72,21 @@ class Stub:
         self.most_queued = 0
         self.closed = False
         self._cli = threading.RLock()
-        for target in (self._receive, self._clock):
-            threading.Thread(target=target, daemon=True).start()
+        self._threads = [threading.Thread(target=target, daemon=True)
+                         for target in (self._receive, self._clock)]
+        for thread in self._threads:
+            thread.start()
+
+    def settle(self, host: socket.socket) -> None:
+        """Everything the host wrote before this call is carried, with no sleep and nothing
+        assumed about the machine's load: the receive loop ends at the socket's EOF and the
+        tick follows it out. A thread that outlives its socket is a reading that examined
+        nothing, so it is INVALID rather than a shorter list."""
+        host.close()
+        for thread in self._threads:
+            thread.join(timeout=SETTLE_S)
+        assert not any(t.is_alive() for t in self._threads), \
+            "the stub's threads outlived their socket: what was carried is not a reading"
 
     def _receive(self) -> None:
         try:
@@ -307,7 +322,9 @@ def test_a_send_cancelled_between_a_make_and_its_break_sends_the_break_it_owes(
     monkeypatch.setattr(cancel, "check", cancelled_before_the_break)
     with pytest.raises(asyncio.CancelledError):
         link.Link(host).send([b"K\xe0", b"K\x48", b"K\xe0", b"K\xc8", b"B\x80"])
-    time.sleep(0.1)     # a frame written when the cancel landed is still being carried
+    # the frame written when the cancel landed is still being carried: the settle waits for
+    # it to arrive, where a sleep bet on the machine's load
+    stub.settle(host)
     assert stub.carried == [b"K\xe0", b"K\x48", b"K\xe0", b"K\xc8"], stub.carried
 
 
@@ -328,7 +345,7 @@ def test_a_send_cancelled_after_every_key_was_released_owes_nothing(
     monkeypatch.setattr(cancel, "check", cancelled_late)
     with pytest.raises(asyncio.CancelledError):
         link.Link(host).send([b"K\x1e", b"K\x9e", b"B\x80", b"B\x00"])
-    time.sleep(0.1)
+    stub.settle(host)
     assert stub.carried[:2] == [b"K\x1e", b"K\x9e"], stub.carried
     assert stub.carried.count(b"K\x9e") == 1, stub.carried
 

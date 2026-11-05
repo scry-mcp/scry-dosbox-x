@@ -7,7 +7,7 @@ an EXE's table counts from one PSP past it, a COM's (`ORG 100h`) from the PSP it
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +28,8 @@ class Held:
     path: str
     base_from: str
     com: bool = False
+    #: The table's comparison with the executable beside it, as `coff.check` answered it.
+    checked: dict[str, Any] = field(default_factory=dict)
 
 
 def check(symbols: str, base_from: str) -> Held | None:
@@ -48,10 +50,10 @@ def check(symbols: str, base_from: str) -> Held | None:
         sym.check_folded(parsed, text)
     except sym.BadSymbolText as e:
         raise ds.Invalid("bad_argument", f"symbols: {e}") from None
-    coff.check(path, parsed)
+    checked = coff.check(path, parsed)
     com = any(p.suffix.lower() == ".com" and p.stem.upper() == path.stem.upper()
               for p in path.parent.iterdir())
-    return Held(str(path), word, com)
+    return Held(str(path), word, com, checked)
 
 
 def load_segment(rows: list[dict[str, Any]], program: str, com: bool = False) -> int | None:

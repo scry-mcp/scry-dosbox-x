@@ -1253,6 +1253,28 @@ def test_status_says_which_program_a_held_start_table_waits_for(
                                    "waiting_for": waits_for}, got
 
 
+def test_a_start_table_nothing_could_check_says_so_in_its_reply(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`start(symbols=)` refuses a table its executable contradicts; a table with no executable
+    beside it must not then read like one that was compared."""
+    table = tmp_path / "LINEUP.SYM"
+    table.write_text("00000100 T start\n", encoding="utf-8")
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, symbols=str(table))
+    assert got["status"] == "ok", got
+    checked = got["symbols"]["checked"]
+    assert checked["available"] is False and "LINEUP.exe" in checked["why"], got["symbols"]
+
+
+def test_a_start_table_with_its_executable_says_what_it_was_checked_against(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    guest = Path(__file__).resolve().parent / "guest"
+    for name in ("dpmi.exe", "dpmi.sym"):
+        (tmp_path / name).write_bytes((guest / name).read_bytes())
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, symbols=str(tmp_path / "dpmi.sym"))
+    assert got["status"] == "ok", got
+    assert str(got["symbols"]["checked"].get("against", "")).endswith("dpmi.exe"), got["symbols"]
+
+
 @pytest.mark.parametrize(("shared", "said"), [(False, "headless"), (True, "shared")])
 def test_starts_line_names_how_the_session_is_watched(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, shared: bool, said: str) -> None:
