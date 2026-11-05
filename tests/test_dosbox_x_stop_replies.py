@@ -34,6 +34,19 @@ def test_a_stop_no_survey_placed_has_neither_pc_nor_mode() -> None:
     assert running.position(None, None) == {"pc": cut, "cpu_mode": cut}
 
 
+def test_a_stop_inside_the_rom_says_it_is_in_a_handler_and_what_leaves_it(
+        tmp_path: Path) -> None:
+    """The mouse handler the BIOS runs is not the program: a caller that reads only the
+    position loops with `step` and stays there."""
+    fake = _names(tmp_path, mode="Real")
+    fake.cs, fake.eip = "F000", "0000D224"
+    got = running.stop_reply(fake)  # type: ignore[arg-type]
+    note = got.get("note", "")
+    assert "ROM" in note and "0xFD224" in note and "run_for" in note, got
+    fake.cs, fake.eip = "0814", "00000130"
+    assert "note" not in running.stop_reply(fake), "an ordinary stop needs no note"  # type: ignore[arg-type]
+
+
 def test_a_stop_reply_and_a_reply_off_the_record_carry_the_paging_mark(tmp_path: Path) -> None:
     fake = _names(tmp_path)
     fake.paging = True
