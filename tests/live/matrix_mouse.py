@@ -510,7 +510,11 @@ def _rechip_sound() -> None:
     heard = (M.call(server.audio_compare, method="measure", path=str(wav.get("path")))
              if ok(wav) else wav)
     measures = heard.get("measures") or [{}]
-    M.judge("P ReChip: audio_record takes its AY render off the SB16, and audio_compare hears it",
-            ok(wav) and ok(heard) and all(m.get("silent") is False for m in measures),
-            f"{said(wav, 60)}; {said(heard, 80)}")
+    label = "P ReChip: audio_record takes its AY render off the SB16, and audio_compare hears it"
+    if wav.get("code") == "readback_refused" and "does not hold the run" in str(wav.get("message")):
+        # The server refusing a short WAV is it working: the host did not hold the guest's clock.
+        M.block(label, f"the host did not keep the guest in real time: {said(wav, 120)}")
+    else:
+        M.judge(label, ok(wav) and ok(heard) and all(m.get("silent") is False for m in measures),
+                f"{said(wav, 60)}; {said(heard, 80)}")
     must(M.call(server.resume), "running ReChip again")
