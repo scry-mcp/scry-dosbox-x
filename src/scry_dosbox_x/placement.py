@@ -194,6 +194,16 @@ def refusal(res: dict[str, Any], fallback: str = "") -> ds.Invalid:
     return ds.Invalid("ambiguous_ref" if res["state"] == "ambiguous" else "unknown_ref", why)
 
 
+def unresolved_why(ref: str) -> str:
+    """Why a name resolves in no table now, and what would place it: a name is kept across
+    builds, since `-O3` inlining makes a vanished symbol ordinary."""
+    if not STATE.table:
+        return (f"no symbol table is loaded: `symbols_load` one and {ref!r} is placed against "
+                f"it")
+    return (f"{ref!r} is not a symbol of the table loaded now: kept, it may be back after a "
+            f"rebuild")
+
+
 def resolve_ref(decl: dec.Declaration, reg: str, session: ds.Session, *,
                  machine: tuple[str, dict[str, str]] | None = None) -> dict[str, Any]:
     """A declaration -> what the debugger needs to arm it, or the state that is not armable.
@@ -220,7 +230,7 @@ def resolve_ref(decl: dec.Declaration, reg: str, session: ds.Session, *,
     # Same `resolve_name` as `symbols_load`'s re-resolution; only the live seg:off is added here.
     r = dec.DeclarationStore.resolve_name(decl, STATE.table, STATE.name_index)
     if r.state == "unresolved":
-        return {"state": "unresolved"}
+        return {"state": "unresolved", "why": unresolved_why(decl.ref)}
     if r.matches > 1:
         return {"state": "ambiguous", "matches": r.matches,
                 "why": prose.ambiguous_name(decl.ref, candidates(decl.ref), IN_THIS_BUILD)}

@@ -946,6 +946,18 @@ def test_start_with_nothing_to_re_arm_does_not_read_the_list(
     assert booted.bp_calls == 0, booted.bp_calls
 
 
+def test_a_start_lists_an_unresolved_name_with_what_would_place_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A name no table loaded in this session resolves is kept for the next build; the row has
+    to say so, or `unresolved` reads as this build having lost the symbol."""
+    got, _ = _start_over_a_store(tmp_path, monkeypatch, {}, regpoints=("AX==13",),
+                                 symbols=("_engine_pos",))
+    rows = got["declarations"]["rearm"]["unresolved"]
+    assert [r["ref"] for r in rows] == ["_engine_pos"], got["declarations"]
+    assert "symbols_load" in rows[0]["why"], rows[0]
+    assert rows[0]["inherited"] is True, rows[0]
+
+
 def test_start_answers_each_stored_breakpoint_as_a_row_saying_whose_and_how_old(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     got, _ = _start_over_a_store(tmp_path, monkeypatch, {

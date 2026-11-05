@@ -1063,7 +1063,8 @@ def build_of(conf: Path, nm_text: str, base: int = 0x400000) -> str:
 def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                         stamped: dict[str, str | None], double: type[NamesFake] = _Booted,
                         conf_text: str = "[sdl]\n",
-                        regpoints: tuple[str, ...] = ()) -> tuple[dict[str, Any], NamesFake]:
+                        regpoints: tuple[str, ...] = (),
+                        symbols: tuple[str, ...] = ()) -> tuple[dict[str, Any], NamesFake]:
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     conf = tmp_path / "g.conf"
     conf.write_text(conf_text, encoding="utf-8")
@@ -1074,6 +1075,8 @@ def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
         store.add(dec.Declaration("breakpoint", "address", ref, created_at="t0", origin="s1",
                                   fingerprint=fp or dlaunch.fingerprint(conf.resolve()),
                                   cpu_mode=mode))
+    for ref in symbols:
+        store.add(dec.Declaration("breakpoint", "symbol", ref, created_at="t0", origin="s1"))
     for row in regpoints:
         store.add(dec.Declaration("regpoint", "expr", row, created_at="t0", origin="s1"))
     monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")

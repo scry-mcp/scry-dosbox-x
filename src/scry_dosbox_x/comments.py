@@ -149,13 +149,9 @@ def _waits_for_a_selector(seg: int, off: int) -> str:
 
 def _symbol_place(name: str) -> dict[str, Any]:
     """A symbol's place against the table loaded now, or why there is none."""
-    if not STATE.table:
-        return {"state": "unresolved", "why": "no symbol table is loaded: `symbols_load` one and "
-                                              "this comment is placed against it"}
     hits = STATE.name_index.get(sym.folded(name), [])
-    if not hits:
-        return {"state": "unresolved", "why": f"{name!r} is not a symbol of the table loaded "
-                                              "now: kept, it may be back after a rebuild"}
+    if not STATE.table or not hits:
+        return {"state": "unresolved", "why": placement.unresolved_why(name)}
     if len(hits) > 1:
         return {"state": "ambiguous", "why": prose.ambiguous_name(
             name, placement.candidates(name), placement.IN_THIS_BUILD)}
