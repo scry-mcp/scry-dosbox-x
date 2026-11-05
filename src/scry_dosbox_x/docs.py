@@ -75,6 +75,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "DEBUG_TEXT_KEEP": str(st.DEBUG_TEXT_KEEP),
               "DETAIL_TEXT_KEEP": str(st.DETAIL_TEXT_KEEP),
               "SCREEN_TEXT_MAX": str(checks.SCREEN_TEXT_MAX),
+              "PALETTES": ", ".join(f"`{p}`" for p in checks.PALETTES),
               "SYMBOLS_SHOWN": str(trace.SYMBOLS_SHOWN)}
 
 

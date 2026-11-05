@@ -386,29 +386,39 @@ breakpoint's address stops there again with nothing executed. The machine can cl
 <!-- scry-reference:begin screen_wait -->
 ## `screen_wait`
 
-*Run until text is on screen*
+*Wait for a screen, its text or its palette*
 
 ```text
-screen_wait(text, seconds=30.0)
+screen_wait(text="", screen="", palette="", every=0, seconds=30.0)
 ```
 
-Run the machine retrace by retrace until `text` is on the TEXT screen, and stop there.
-`text` (1 to 132 code page 437 characters) is matched literally,
-case-sensitive, inside one row as `screen_view` reads it. Needs a stopped machine and
-`RUNSTATE`. Already on screen: answered at once. Each retrace costs a stop and a reading of the
-screen, so `run_for` first for a distant string.
+Run the machine retrace by retrace until ONE predicate holds, and stop there.
 
-Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`) or
-`TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of `run_to`
-with its `frame` (unless the text was already there). Refused: `bad_argument`, `wait_stopped`
-(a declared breakpoint stopped it), `no_channel` (a screen it cannot read, or a build with no
-`RUNSTATE`).
+Exactly one of: `text` (1 to 132 code page 437 characters, matched literally and
+case-sensitive inside one row as `screen_view` reads it), `screen` (a name of the loaded
+screen map, `screen_map_write`; the frame it names), `palette` (`black`: every DAC entry
+black, which is how a fade ends). None or several is `bad_argument`.
+
+`every`: 0 judges every retrace; N judges every Nth, for a predicate whose read is a full
+frame, and a screen that lasts fewer than N retraces is passed over. Needs a stopped machine
+and `RUNSTATE`. Already true: answered at once, the machine not moved. Each poll costs a stop
+and a read, so `run_for` first for a distant screen.
+
+Reply: `verdict` `TARGET` (`predicate`, `already`, `waited_s`, `polls`, `sampled_every`;
+text adds `point` `[column, row]` and `line`, screen adds `screen`, palette adds `entries`) or
+`TIMEOUT` (the same, with `retrace_pending`), `note`, the stop reply of `run_to` with its
+`frame` (unless the predicate was already true). Refused: `bad_argument`, `unknown_ref` (no
+such mapped screen), `wait_stopped` (a declared breakpoint stopped it), `no_channel` (a
+screen it cannot read, or a build with no `RUNSTATE`).
 
 Reference: REFERENCE.md, Input and the screen.
 
 | argument | type | default |
 |---|---|---|
-| `text` | string | required |
+| `text` | string | `""` |
+| `screen` | string | `""` |
+| `palette` | string | `""` |
+| `every` | integer (>= 0, <= 600) | `0` |
 | `seconds` | number (> 0, <= 600.0) | `30.0` |
 
 | reply field | type |
@@ -419,14 +429,19 @@ Reference: REFERENCE.md, Input and the screen.
 | `cpu_mode` | string |
 | `e9` | object |
 | `enrichment` | object |
+| `entries` | integer |
 | `frame` | integer or object |
 | `instruction` | DosboxInstruction |
 | `line` | string |
+| `palette` | string |
 | `pc` | string |
 | `point` | array |
 | `polls` | integer |
+| `predicate` | string |
 | `regs` | object |
 | `retrace_pending` | boolean |
+| `sampled_every` | integer |
+| `screen` | object |
 | `stop_seq` | integer |
 | `text` | array |
 | `verdict` | string |

@@ -39,7 +39,6 @@ from scry_dosbox_x import (
     media,
     paths,
     placement,
-    screen,
     sequence,
     stepping,
 )
@@ -557,16 +556,37 @@ def _screen_signature(crop: list[int] | None = None, **_: Any) -> None:
 
 #: The longest text a wait looks for: a row of the widest text mode.
 SCREEN_TEXT_MAX = 132
+#: `screen_wait`'s palette predicates: every DAC entry black, which is how a fade ends.
+PALETTES = ("black",)
+#: The largest sampling step it takes: at 70 Hz, 600 retraces is already 8.5 s of blind running.
+SAMPLED_EVERY_MAX = 600
 
 
-def _screen_wait(text: object, seconds: float = 30.0, **_: Any) -> None:
+def _screen_wait(text: object = "", screen: object = "", palette: object = "", every: int = 0,
+                 seconds: float = 30.0, **_: Any) -> None:
+    named = [n for n, v in (("text", text), ("screen", screen), ("palette", palette)) if v]
+    if len(named) != 1:
+        raise ds.Invalid("bad_argument",
+                         "screen_wait runs on exactly one of `text`, `screen` or `palette`; got "
+                         f"{len(named)} of them. Each is a different read of the screen, and a "
+                         "frame has the budget of one")
+    if palette:
+        vocab.one_of("palette", palette, PALETTES)
+    if not isinstance(every, int) or isinstance(every, bool) or not 0 <= every <= SAMPLED_EVERY_MAX:
+        raise ds.Invalid("bad_argument",
+                         f"every={every!r} is 0 to {SAMPLED_EVERY_MAX} retraces: the step a "
+                         "wait reads the screen at")
+    if not text:
+        return
     if not isinstance(text, str) or not 1 <= len(text) <= SCREEN_TEXT_MAX \
             or _CONTROL_CHARACTER.search(text):
         raise ds.Invalid("bad_argument",
             f"text={text!r} is not 1 to {SCREEN_TEXT_MAX} printable characters: it is matched "
             f"inside one row of the screen")
     # A row is read without trailing blanks and drawn in code page 437.
-    undrawable = sorted(set(text) - set(screen.CP437))
+    # Imported here: `screen_wait`'s parameter shadows the module at the top of the function.
+    from scry_dosbox_x import screen as dscreen
+    undrawable = sorted(set(text) - set(dscreen.CP437))
     if text.endswith(" ") or undrawable:
         raise ds.Invalid("bad_argument",
             f"text={text!r} " + (f"holds {undrawable}, which code page 437 does not draw"

@@ -1,285 +1,2478 @@
-{"tasks": [
-  {"id": "D01", "prompt": "Do this server's preconditions hold: is the dosbox-x binary there, and does that build carry the debugger?", "tool": "build_check"},
-  {"id": "D02", "prompt": "Open a DOSBox-X session from the conf /opt/dosfury/fury.conf in the working directory /opt/dosfury, bounded to 5400 seconds, with nobody watching. Run the program FURY.EXE after the autoexec and record it to video in /opt/dosfury/caps, write the guest's E9 instrumentation to /opt/dosfury/e9.log, and open the serial input route on TCP port 5823.",
+{
+ "tasks": [
+  {
+   "id": "D01",
+   "prompt": "Do this server's preconditions hold: is the dosbox-x binary there, and does that build carry the debugger?",
+   "tool": "build_check"
+  },
+  {
+   "id": "D02",
+   "prompt": "Open a DOSBox-X session from the conf /opt/dosfury/fury.conf in the working directory /opt/dosfury, bounded to 5400 seconds, with nobody watching. Run the program FURY.EXE after the autoexec and record it to video in /opt/dosfury/caps, write the guest's E9 instrumentation to /opt/dosfury/e9.log, and open the serial input route on TCP port 5823.",
    "tool": "start",
-   "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury",
-            "session_seconds": 5400, "program": "FURY.EXE", "capture_video": true,
-            "captures_dir": "/opt/dosfury/caps",
-            "logfile": "/opt/dosfury/e9.log", "input_port": 5823},
-   "allow": ["shared"]},
-  {"id": "D03", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody who is watching. Keep its savestates in /opt/dosfury/states, and on the fresh session run the plan of one operation, reading the registers, waiting at most 12 seconds for a stop.",
+   "args": {
+    "conf": "/opt/dosfury/fury.conf",
+    "cwd": "/opt/dosfury",
+    "session_seconds": 5400,
+    "program": "FURY.EXE",
+    "capture_video": true,
+    "captures_dir": "/opt/dosfury/caps",
+    "logfile": "/opt/dosfury/e9.log",
+    "input_port": 5823
+   },
+   "allow": [
+    "shared"
+   ]
+  },
+  {
+   "id": "D03",
+   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody who is watching. Keep its savestates in /opt/dosfury/states, and on the fresh session run the plan of one operation, reading the registers, waiting at most 12 seconds for a stop.",
    "tool": "start",
-   "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury",
-            "session_seconds": 900, "shared": true,
-            "state_dir": "/opt/dosfury/states",
-            "plan": [{"op": "registers"}], "settle_seconds": 12},
-   "grammar": ["shared", "registers"]},
-  {"id": "D04", "prompt": "What is the session right now?", "tool": "status"},
-  {"id": "D05", "prompt": "End the DOSBox-X session now, rather than waiting for its bound.", "tool": "close"},
-  {"id": "D06", "prompt": "Show the newest 30 lines of the guest's own E9 instrumentation that match ^SCORE, with a count of the matching lines per first word.",
-   "tool": "log", "args": {"pattern": "^SCORE", "channel": "guest", "limit": 30, "labels": true},
-   "grammar": ["guest"]},
-  {"id": "D07", "prompt": "When did DOSBox-X's own log (not the guest's) print a line matching LEVEL [0-9]+ START? Wait up to 45 seconds for it.",
+   "args": {
+    "conf": "/opt/dosfury/fury.conf",
+    "cwd": "/opt/dosfury",
+    "session_seconds": 900,
+    "shared": true,
+    "state_dir": "/opt/dosfury/states",
+    "plan": [
+     {
+      "op": "registers"
+     }
+    ],
+    "settle_seconds": 12
+   },
+   "grammar": [
+    "shared",
+    "registers"
+   ]
+  },
+  {
+   "id": "D04",
+   "prompt": "What is the session right now?",
+   "tool": "status"
+  },
+  {
+   "id": "D05",
+   "prompt": "End the DOSBox-X session now, rather than waiting for its bound.",
+   "tool": "close"
+  },
+  {
+   "id": "D06",
+   "prompt": "Show the newest 30 lines of the guest's own E9 instrumentation that match ^SCORE, with a count of the matching lines per first word.",
+   "tool": "log",
+   "args": {
+    "pattern": "^SCORE",
+    "channel": "guest",
+    "limit": 30,
+    "labels": true
+   },
+   "grammar": [
+    "guest"
+   ]
+  },
+  {
+   "id": "D07",
+   "prompt": "When did DOSBox-X's own log (not the guest's) print a line matching LEVEL [0-9]+ START? Wait up to 45 seconds for it.",
    "tool": "log_wait",
-   "args": {"pattern": "LEVEL [0-9]+ START", "channel": "emulator", "seconds": 45},
-   "grammar": ["emulator"]},
-  {"id": "D08", "prompt": "The guest is running. Give me the registers as they were at the last stop.",
-   "tool": "registers", "args": {"from_last_stop": true}},
-  {"id": "D09", "prompt": "Read 24 bytes of memory at 1A2B:0040.",
+   "args": {
+    "pattern": "LEVEL [0-9]+ START",
+    "channel": "emulator",
+    "seconds": 45
+   },
+   "grammar": [
+    "emulator"
+   ]
+  },
+  {
+   "id": "D08",
+   "prompt": "The guest is running. Give me the registers as they were at the last stop.",
+   "tool": "registers",
+   "args": {
+    "from_last_stop": true
+   }
+  },
+  {
+   "id": "D09",
+   "prompt": "Read 24 bytes of memory at 1A2B:0040.",
    "tool": "read_memory",
-   "args": {"ref": {"any_of": ["1A2B:0040", "1a2b:0040", "1A2B:40", "1a2b:40"]}, "length": 24}},
-  {"id": "D10", "prompt": "Dump 4096 bytes of memory from the symbol _vram_copy to the file /tmp/mcp-probe-dos.bin.",
+   "args": {
+    "ref": {
+     "any_of": [
+      "1A2B:0040",
+      "1a2b:0040",
+      "1A2B:40",
+      "1a2b:40"
+     ]
+    },
+    "length": 24
+   }
+  },
+  {
+   "id": "D10",
+   "prompt": "Dump 4096 bytes of memory from the symbol _vram_copy to the file /tmp/mcp-probe-dos.bin.",
    "tool": "memdump",
-   "args": {"ref": "_vram_copy", "length": 4096, "dest": "/tmp/mcp-probe-dos.bin"}},
-  {"id": "D11", "prompt": "Find every address holding the bytes CD 21 in the 3000 bytes from 0800:0000.",
+   "args": {
+    "ref": "_vram_copy",
+    "length": 4096,
+    "dest": "/tmp/mcp-probe-dos.bin"
+   }
+  },
+  {
+   "id": "D11",
+   "prompt": "Find every address holding the bytes CD 21 in the 3000 bytes from 0800:0000.",
    "tool": "find",
-   "args": {"ref": {"any_of": ["0800:0000", "0800:0", "800:0000", "800:0"]}, "length": 3000,
-            "data_hex": {"any_of": ["CD21", "CD 21", "cd21", "cd 21"]}}},
-  {"id": "D12", "prompt": "This program has no map. Open a value search over the 8192 bytes from 2000:0000, in 16-bit cells.", "tool": "scan", "args": {"method": "start", "ref": {"any_of": ["2000:0000", "2000:0"]}, "length": 8192, "cell_bytes": 2}, "grammar": ["start"]},
-  {"id": "D13", "prompt": "Keep only the scanned cells that now hold the value 305.", "tool": "scan", "args": {"method": "filter", "value": 305}, "allow": ["operator"], "grammar": ["filter"]},
-  {"id": "D14", "prompt": "Keep only the scanned cells whose value grew since the scan was opened.", "tool": "scan", "args": {"method": "filter", "operator": ">"}, "grammar": [">", "filter"]},
-  {"id": "D15", "prompt": "Cancel the debugger's open value scan.", "tool": "scan", "args": {"method": "clear"}, "grammar": ["clear"]},
-  {"id": "D16", "prompt": "Send the raw debugger command TIMERIRQ and show me what the screen produced.",
-   "tool": "debug", "args": {"command": "TIMERIRQ"}},
-  {"id": "D17", "prompt": "Force register bx to the decimal value 1234.",
-   "tool": "set_register", "args": {"name": {"any_of": ["bx", "BX"]}, "value": 1234}},
-  {"id": "D18", "prompt": "Write the bytes 90 90 at 1A2B:0100.",
+   "args": {
+    "ref": {
+     "any_of": [
+      "0800:0000",
+      "0800:0",
+      "800:0000",
+      "800:0"
+     ]
+    },
+    "length": 3000,
+    "data_hex": {
+     "any_of": [
+      "CD21",
+      "CD 21",
+      "cd21",
+      "cd 21"
+     ]
+    }
+   }
+  },
+  {
+   "id": "D12",
+   "prompt": "This program has no map. Open a value search over the 8192 bytes from 2000:0000, in 16-bit cells.",
+   "tool": "scan",
+   "args": {
+    "method": "start",
+    "ref": {
+     "any_of": [
+      "2000:0000",
+      "2000:0"
+     ]
+    },
+    "length": 8192,
+    "cell_bytes": 2
+   },
+   "grammar": [
+    "start"
+   ]
+  },
+  {
+   "id": "D13",
+   "prompt": "Keep only the scanned cells that now hold the value 305.",
+   "tool": "scan",
+   "args": {
+    "method": "filter",
+    "value": 305
+   },
+   "allow": [
+    "operator"
+   ],
+   "grammar": [
+    "filter"
+   ]
+  },
+  {
+   "id": "D14",
+   "prompt": "Keep only the scanned cells whose value grew since the scan was opened.",
+   "tool": "scan",
+   "args": {
+    "method": "filter",
+    "operator": ">"
+   },
+   "grammar": [
+    ">",
+    "filter"
+   ]
+  },
+  {
+   "id": "D15",
+   "prompt": "Cancel the debugger's open value scan.",
+   "tool": "scan",
+   "args": {
+    "method": "clear"
+   },
+   "grammar": [
+    "clear"
+   ]
+  },
+  {
+   "id": "D16",
+   "prompt": "Send the raw debugger command TIMERIRQ and show me what the screen produced.",
+   "tool": "debug",
+   "args": {
+    "command": "TIMERIRQ"
+   }
+  },
+  {
+   "id": "D17",
+   "prompt": "Force register bx to the decimal value 1234.",
+   "tool": "set_register",
+   "args": {
+    "name": {
+     "any_of": [
+      "bx",
+      "BX"
+     ]
+    },
+    "value": 1234
+   }
+  },
+  {
+   "id": "D18",
+   "prompt": "Write the bytes 90 90 at 1A2B:0100.",
    "tool": "write",
-   "args": {"ref": {"any_of": ["1A2B:0100", "1a2b:0100", "1A2B:100", "1a2b:100"]},
-            "data_hex": {"any_of": ["9090", "90 90"]}}},
-  {"id": "D19", "prompt": "This session is headless and nothing is declared that could stop the guest. Let it run and come back at once; it will be stopped later.",
-   "tool": "resume"},
-  {"id": "D20", "prompt": "Let the guest run and wait up to 25 seconds for a stop; when it stops I also want the E9 lines the guest wrote since the previous stop.",
+   "args": {
+    "ref": {
+     "any_of": [
+      "1A2B:0100",
+      "1a2b:0100",
+      "1A2B:100",
+      "1a2b:100"
+     ]
+    },
+    "data_hex": {
+     "any_of": [
+      "9090",
+      "90 90"
+     ]
+    }
+   }
+  },
+  {
+   "id": "D19",
+   "prompt": "This session is headless and nothing is declared that could stop the guest. Let it run and come back at once; it will be stopped later.",
+   "tool": "resume"
+  },
+  {
+   "id": "D20",
+   "prompt": "Let the guest run and wait up to 25 seconds for a stop; when it stops I also want the E9 lines the guest wrote since the previous stop.",
    "tool": "resume",
-   "args": {"seconds": 25}},
-  {"id": "D21", "prompt": "The headless guest is running: bring it back to the debugger.", "tool": "stop"},
-  {"id": "D22", "prompt": "Step into the next 4 instructions, following calls, and show me the E9 lines the guest wrote since the previous stop.",
-   "tool": "step", "args": {"mode": "into", "count": 4},
-   "grammar": ["into"]},
-  {"id": "D23", "prompt": "Run until the symbol _draw_hud, with _vsync as the control that is known to fire often, within 50 seconds, and show me the guest's newest E9 lines when it stops.",
+   "args": {
+    "seconds": 25
+   }
+  },
+  {
+   "id": "D21",
+   "prompt": "The headless guest is running: bring it back to the debugger.",
+   "tool": "stop"
+  },
+  {
+   "id": "D22",
+   "prompt": "Step into the next 4 instructions, following calls, and show me the E9 lines the guest wrote since the previous stop.",
+   "tool": "step",
+   "args": {
+    "mode": "into",
+    "count": 4
+   },
+   "grammar": [
+    "into"
+   ]
+  },
+  {
+   "id": "D23",
+   "prompt": "Run until the symbol _draw_hud, with _vsync as the control that is known to fire often, within 50 seconds, and show me the guest's newest E9 lines when it stops.",
    "tool": "run_to",
-   "args": {"ref": "_draw_hud", "control": "_vsync", "seconds": 50}},
-  {"id": "D24", "prompt": "Save the running machine as the state level3, waiting up to 90 seconds.", "tool": "state_write", "args": {"method": "save", "name": "level3", "seconds": 90}, "grammar": ["save"]},
-  {"id": "D25", "prompt": "Load the state level3 into the running machine, waiting up to 75 seconds.", "tool": "state_write", "args": {"method": "load", "name": "level3", "seconds": 75}, "grammar": ["load"]},
-  {"id": "D26", "prompt": "Take one still of the running screen and move it to /tmp/mcp-probe-dos.png, waiting up to 20 seconds.",
-   "tool": "snapshot", "args": {"dest": "/tmp/mcp-probe-dos.png", "seconds": 20}},
-  {"id": "D27", "prompt": "List every state in the session's save directory.", "tool": "state_list"},
-  {"id": "D28", "prompt": "Break when the guest calls the BIOS video function 0Eh (teletype output) through INT 10h.",
-   "tool": "breakpoint_interrupt", "args": {"number": 16, "ah": 14}},
-  {"id": "D29", "prompt": "Load the Borland map /opt/dosfury/FURY.MAP of the real-mode program loaded at segment 0x0A00, so at base 0xA000, keeping only the names in which the regex sfx is found, and keeping the section and compiler-label symbols too.",
+   "args": {
+    "ref": "_draw_hud",
+    "control": "_vsync",
+    "seconds": 50
+   }
+  },
+  {
+   "id": "D24",
+   "prompt": "Save the running machine as the state level3, waiting up to 90 seconds.",
+   "tool": "state_write",
+   "args": {
+    "method": "save",
+    "name": "level3",
+    "seconds": 90
+   },
+   "grammar": [
+    "save"
+   ]
+  },
+  {
+   "id": "D25",
+   "prompt": "Load the state level3 into the running machine, waiting up to 75 seconds.",
+   "tool": "state_write",
+   "args": {
+    "method": "load",
+    "name": "level3",
+    "seconds": 75
+   },
+   "grammar": [
+    "load"
+   ]
+  },
+  {
+   "id": "D26",
+   "prompt": "Take one still of the running screen and move it to /tmp/mcp-probe-dos.png, waiting up to 20 seconds.",
+   "tool": "snapshot",
+   "args": {
+    "dest": "/tmp/mcp-probe-dos.png",
+    "seconds": 20
+   }
+  },
+  {
+   "id": "D27",
+   "prompt": "List every state in the session's save directory.",
+   "tool": "state_list"
+  },
+  {
+   "id": "D28",
+   "prompt": "Break when the guest calls the BIOS video function 0Eh (teletype output) through INT 10h.",
+   "tool": "breakpoint_interrupt",
+   "args": {
+    "number": 16,
+    "ah": 14
+   }
+  },
+  {
+   "id": "D29",
+   "prompt": "Load the Borland map /opt/dosfury/FURY.MAP of the real-mode program loaded at segment 0x0A00, so at base 0xA000, keeping only the names in which the regex sfx is found, and keeping the section and compiler-label symbols too.",
    "tool": "symbols_load",
-   "args": {"path": "/opt/dosfury/FURY.MAP", "base": {"any_of": ["A000", "0xA000", "a000", "0xa000", "0A000", "0x0A000"]}, "pattern": "sfx", "keep_noise": true}},
-  {"id": "D30", "prompt": "Load the nm output /opt/game/game.sym of a DJGPP program, measuring its base off the DS selector, and type its symbols with the file /opt/game/game.types.",
-   "tool": "symbols_load", "args": {"path": "/opt/game/game.sym", "base_from": "DS", "types": "/opt/game/game.types"},
-   "grammar": ["DS"]},
-  {"id": "D31", "prompt": "Load the Open Watcom map /opt/game/game.map, whose section 2 is based at 0x501000.",
-   "tool": "symbols_load", "args": {"path": "/opt/game/game.map", "section_bases": {"2": {"any_of": ["0x501000", "501000"]}}}},
-  {"id": "D32", "prompt": "Look up the symbols whose names start with _snd_, at most 15 of them.",
-   "tool": "symbols_find", "args": {"name": "_snd_", "limit": 15}},
-  {"id": "D33", "prompt": "Which symbol holds the toolchain offset 7340 of section 2?",
-   "tool": "symbols_find", "args": {"offset": 7340, "section": 2}},
-  {"id": "D34", "prompt": "Which symbol is the linear address 0x11F000 inside?",
-   "tool": "symbols_find", "args": {"linear": {"any_of": ["0x11F000", "11F000", "0x11f000", "11f000", "0x0011F000", "0011F000"]}}},
-  {"id": "D35", "prompt": "Declare a code breakpoint at 1A2B:0200, forcing it to be taken as an address.",
+   "args": {
+    "path": "/opt/dosfury/FURY.MAP",
+    "base": {
+     "any_of": [
+      "A000",
+      "0xA000",
+      "a000",
+      "0xa000",
+      "0A000",
+      "0x0A000"
+     ]
+    },
+    "pattern": "sfx",
+    "keep_noise": true
+   }
+  },
+  {
+   "id": "D30",
+   "prompt": "Load the nm output /opt/game/game.sym of a DJGPP program, measuring its base off the DS selector, and type its symbols with the file /opt/game/game.types.",
+   "tool": "symbols_load",
+   "args": {
+    "path": "/opt/game/game.sym",
+    "base_from": "DS",
+    "types": "/opt/game/game.types"
+   },
+   "grammar": [
+    "DS"
+   ]
+  },
+  {
+   "id": "D31",
+   "prompt": "Load the Open Watcom map /opt/game/game.map, whose section 2 is based at 0x501000.",
+   "tool": "symbols_load",
+   "args": {
+    "path": "/opt/game/game.map",
+    "section_bases": {
+     "2": {
+      "any_of": [
+       "0x501000",
+       "501000"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "D32",
+   "prompt": "Look up the symbols whose names start with _snd_, at most 15 of them.",
+   "tool": "symbols_find",
+   "args": {
+    "name": "_snd_",
+    "limit": 15
+   }
+  },
+  {
+   "id": "D33",
+   "prompt": "Which symbol holds the toolchain offset 7340 of section 2?",
+   "tool": "symbols_find",
+   "args": {
+    "offset": 7340,
+    "section": 2
+   }
+  },
+  {
+   "id": "D34",
+   "prompt": "Which symbol is the linear address 0x11F000 inside?",
+   "tool": "symbols_find",
+   "args": {
+    "linear": {
+     "any_of": [
+      "0x11F000",
+      "11F000",
+      "0x11f000",
+      "11f000",
+      "0x0011F000",
+      "0011F000"
+     ]
+    }
+   }
+  },
+  {
+   "id": "D35",
+   "prompt": "Declare a code breakpoint at 1A2B:0200, forcing it to be taken as an address.",
    "tool": "breakpoint_at",
-   "args": {"ref": {"any_of": ["1A2B:0200", "1a2b:0200", "1A2B:200", "1a2b:200"]}, "by": "address"},
-   "grammar": ["address"]},
-  {"id": "D36", "prompt": "List every breakpoint declaration and its state.", "tool": "declaration_list", "args": {"any_of": [{"kind": "breakpoint"}, {}]}, "grammar": ["breakpoint"]},
-  {"id": "D37", "prompt": "Clear the breakpoint declared as BPINT 10 AH=0E.", "tool": "declaration_clear", "args": {"kind": "breakpoint", "ref": "BPINT 10 AH=0E"}, "grammar": ["breakpoint"]},
-  {"id": "D123", "prompt": "Clear every breakpoint this session has declared, whatever it is.", "tool": "declaration_clear", "args": {"kind": "breakpoint", "all": true}, "grammar": ["breakpoint"]},
-  {"id": "D38", "prompt": "Stop the machine when the byte reached through the pointer held in _player_ptr, 0x1C bytes past where it points, changes; read it as a signed byte.",
+   "args": {
+    "ref": {
+     "any_of": [
+      "1A2B:0200",
+      "1a2b:0200",
+      "1A2B:200",
+      "1a2b:200"
+     ]
+    },
+    "by": "address"
+   },
+   "grammar": [
+    "address"
+   ]
+  },
+  {
+   "id": "D36",
+   "prompt": "List every breakpoint declaration and its state.",
+   "tool": "declaration_list",
+   "args": {
+    "any_of": [
+     {
+      "kind": "breakpoint"
+     },
+     {}
+    ]
+   },
+   "grammar": [
+    "breakpoint"
+   ]
+  },
+  {
+   "id": "D37",
+   "prompt": "Clear the breakpoint declared as BPINT 10 AH=0E.",
+   "tool": "declaration_clear",
+   "args": {
+    "kind": "breakpoint",
+    "ref": "BPINT 10 AH=0E"
+   },
+   "grammar": [
+    "breakpoint"
+   ]
+  },
+  {
+   "id": "D123",
+   "prompt": "Clear every breakpoint this session has declared, whatever it is.",
+   "tool": "declaration_clear",
+   "args": {
+    "kind": "breakpoint",
+    "all": true
+   },
+   "grammar": [
+    "breakpoint"
+   ]
+  },
+  {
+   "id": "D38",
+   "prompt": "Stop the machine when the byte reached through the pointer held in _player_ptr, 0x1C bytes past where it points, changes; read it as a signed byte.",
    "tool": "watch_add",
-   "args": {"ref": {"any_of": ["[_player_ptr]+0x1C", "[_player_ptr]+0x1c"]}, "mode": "change", "fmt": "i8"},
-   "allow": ["length", "by"], "grammar": ["change", "i8"]},
-  {"id": "D39", "prompt": "At every stop, read the 10 bytes at 1A2B:0300 as a 10-character string, forcing 1A2B:0300 to be taken as an address.",
+   "args": {
+    "ref": {
+     "any_of": [
+      "[_player_ptr]+0x1C",
+      "[_player_ptr]+0x1c"
+     ]
+    },
+    "mode": "change",
+    "fmt": "i8"
+   },
+   "allow": [
+    "length",
+    "by"
+   ],
+   "grammar": [
+    "change",
+    "i8"
+   ]
+  },
+  {
+   "id": "D39",
+   "prompt": "At every stop, read the 10 bytes at 1A2B:0300 as a 10-character string, forcing 1A2B:0300 to be taken as an address.",
    "tool": "watch_add",
-   "args": {"ref": {"any_of": ["1A2B:0300", "1a2b:0300", "1A2B:300", "1a2b:300"]}, "mode": "show",
-            "fmt": "char[10]", "by": "address"},
-   "allow": ["length"], "grammar": ["show", "address"]},
-  {"id": "D40", "prompt": "List every watch declaration and its state.", "tool": "declaration_list", "args": {"kind": "watch"}, "grammar": ["watch"]},
-  {"id": "D41", "prompt": "Clear every watch declaration.", "tool": "declaration_clear", "args": {"kind": "watch", "all": true}, "grammar": ["watch"]},
-  {"id": "D42", "prompt": "Clear the watch declared as [_player_ptr]+0x1C.", "tool": "declaration_clear", "args": {"kind": "watch", "ref": "[_player_ptr]+0x1C"}, "grammar": ["watch"]},
-  {"id": "D43", "prompt": "Type ctrl+s to the running guest and prove the program took it by an E9 line matching SAVED OK within 6 seconds.",
-   "tool": "send_keys", "args": {"keys": ["s"], "modifiers": ["ctrl"], "expect": "SAVED OK", "seconds": 6},
-   "grammar": ["s", "ctrl"]},
-  {"id": "D44", "prompt": "Put the guest's mouse pointer on the pixel at column 160, row 100 of the screen.",
-   "tool": "send_mouse", "args": {"x": 160, "y": 100}},
-  {"id": "D45", "prompt": "Click the left mouse button where the guest's pointer is now.",
-   "tool": "send_mouse", "args": {"button": "left"}, "grammar": ["left"]},
-  {"id": "D46", "prompt": "Double-click the right mouse button at screen pixel 40, 25 and prove it with an E9 line matching ^MOUSE within 5 seconds.",
-   "tool": "send_mouse", "args": {"x": 40, "y": 25, "button": "right", "action": "double", "expect": "^MOUSE", "seconds": 5},
-   "grammar": ["right", "double"]},
-  {"id": "D47", "prompt": "The guest runs in a VESA mode: put its mouse pointer at the DOS driver's own coordinates 812, 455.",
-   "tool": "send_mouse", "args": {"x": 812, "y": 455, "units": "mouse"}, "grammar": ["mouse"]},
-  {"id": "D48", "prompt": "Which video captures did this session record?", "tool": "captures"},
-  {"id": "D49", "prompt": "Extract frame 1440 of the capture /opt/dosfury/caps/fury_001.avi to /tmp/mcp-probe-frame.png.",
+   "args": {
+    "ref": {
+     "any_of": [
+      "1A2B:0300",
+      "1a2b:0300",
+      "1A2B:300",
+      "1a2b:300"
+     ]
+    },
+    "mode": "show",
+    "fmt": "char[10]",
+    "by": "address"
+   },
+   "allow": [
+    "length"
+   ],
+   "grammar": [
+    "show",
+    "address"
+   ]
+  },
+  {
+   "id": "D40",
+   "prompt": "List every watch declaration and its state.",
+   "tool": "declaration_list",
+   "args": {
+    "kind": "watch"
+   },
+   "grammar": [
+    "watch"
+   ]
+  },
+  {
+   "id": "D41",
+   "prompt": "Clear every watch declaration.",
+   "tool": "declaration_clear",
+   "args": {
+    "kind": "watch",
+    "all": true
+   },
+   "grammar": [
+    "watch"
+   ]
+  },
+  {
+   "id": "D42",
+   "prompt": "Clear the watch declared as [_player_ptr]+0x1C.",
+   "tool": "declaration_clear",
+   "args": {
+    "kind": "watch",
+    "ref": "[_player_ptr]+0x1C"
+   },
+   "grammar": [
+    "watch"
+   ]
+  },
+  {
+   "id": "D43",
+   "prompt": "Type ctrl+s to the running guest and prove the program took it by an E9 line matching SAVED OK within 6 seconds.",
+   "tool": "send_keys",
+   "args": {
+    "keys": [
+     "s"
+    ],
+    "modifiers": [
+     "ctrl"
+    ],
+    "expect": "SAVED OK",
+    "seconds": 6
+   },
+   "grammar": [
+    "s",
+    "ctrl"
+   ]
+  },
+  {
+   "id": "D44",
+   "prompt": "Put the guest's mouse pointer on the pixel at column 160, row 100 of the screen.",
+   "tool": "send_mouse",
+   "args": {
+    "x": 160,
+    "y": 100
+   }
+  },
+  {
+   "id": "D45",
+   "prompt": "Click the left mouse button where the guest's pointer is now.",
+   "tool": "send_mouse",
+   "args": {
+    "button": "left"
+   },
+   "grammar": [
+    "left"
+   ]
+  },
+  {
+   "id": "D46",
+   "prompt": "Double-click the right mouse button at screen pixel 40, 25 and prove it with an E9 line matching ^MOUSE within 5 seconds.",
+   "tool": "send_mouse",
+   "args": {
+    "x": 40,
+    "y": 25,
+    "button": "right",
+    "action": "double",
+    "expect": "^MOUSE",
+    "seconds": 5
+   },
+   "grammar": [
+    "right",
+    "double"
+   ]
+  },
+  {
+   "id": "D47",
+   "prompt": "The guest runs in a VESA mode: put its mouse pointer at the DOS driver's own coordinates 812, 455.",
+   "tool": "send_mouse",
+   "args": {
+    "x": 812,
+    "y": 455,
+    "units": "mouse"
+   },
+   "grammar": [
+    "mouse"
+   ]
+  },
+  {
+   "id": "D48",
+   "prompt": "Which video captures did this session record?",
+   "tool": "captures"
+  },
+  {
+   "id": "D49",
+   "prompt": "Extract frame 1440 of the capture /opt/dosfury/caps/fury_001.avi to /tmp/mcp-probe-frame.png.",
    "tool": "capture_frame",
-   "args": {"frame": 1440, "dest": "/tmp/mcp-probe-frame.png", "capture_path": "/opt/dosfury/caps/fury_001.avi"}},
-  {"id": "D50", "prompt": "In one round trip: step into 2 instructions, then read the registers. Wait at most 15 seconds for a stop between steps.",
+   "args": {
+    "frame": 1440,
+    "dest": "/tmp/mcp-probe-frame.png",
+    "capture_path": "/opt/dosfury/caps/fury_001.avi"
+   }
+  },
+  {
+   "id": "D50",
+   "prompt": "In one round trip: step into 2 instructions, then read the registers. Wait at most 15 seconds for a stop between steps.",
    "tool": "perform",
-   "args": {"steps": {"any_of": [[{"op": "step", "mode": "into", "count": 2}, {"op": "registers"}],
-                                 [{"op": "step", "count": 2}, {"op": "registers"}]]}, "settle_seconds": 15},
-   "grammar": ["step", "into", "registers"]},
-  {"id": "D51", "prompt": "Press enter on the running guest, then check that a new E9 line matching ^MENU arrives within 12 seconds, and show me the last 30 E9 lines that match MENU|KEY. A console step inside waits at most 18 seconds for a stop.",
+   "args": {
+    "steps": {
+     "any_of": [
+      [
+       {
+        "op": "step",
+        "mode": "into",
+        "count": 2
+       },
+       {
+        "op": "registers"
+       }
+      ],
+      [
+       {
+        "op": "step",
+        "count": 2
+       },
+       {
+        "op": "registers"
+       }
+      ]
+     ]
+    },
+    "settle_seconds": 15
+   },
+   "grammar": [
+    "step",
+    "into",
+    "registers"
+   ]
+  },
+  {
+   "id": "D51",
+   "prompt": "Press enter on the running guest, then check that a new E9 line matching ^MENU arrives within 12 seconds, and show me the last 30 E9 lines that match MENU|KEY. A console step inside waits at most 18 seconds for a stop.",
    "tool": "drive",
-   "args": {"any_of": [
-     {"act": [{"op": "send_keys", "keys": ["enter"]}], "expect": "^MENU", "seconds": 12,
-      "pattern": "MENU|KEY", "limit": 30, "settle_seconds": 18},
-     {"act": [{"op": "send_keys", "keys": ["enter"], "expect": "^MENU", "seconds": 12}],
-      "pattern": "MENU|KEY", "limit": 30, "settle_seconds": 18}]},
-   "grammar": ["send_keys", "enter"]},
-  {"id": "D52", "prompt": "Step the guest BACKWARDS by 3 instructions, undoing what they did.",
-   "expect": "CANNOT", "about": "step"},
-  {"id": "D53", "prompt": "Show the newest lines DOSBox-X's own process wrote to its stdout, the debugger's terminal.",
-   "expect": "CANNOT", "about": "log"},
-  {"id": "D54", "prompt": "The guest runs in a HEADLESS session with nothing declared that could stop it: bring it back to the debugger right now.",
-   "tool": "stop"},
-  {"id": "D55", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 600 seconds, nobody watching, with the emulator's CPU clock forced by the two command-line tokens -set and cpu cycles=fixed 2500, and with the guest's own int 3 instructions stopping it at the debugger.",
+   "args": {
+    "any_of": [
+     {
+      "act": [
+       {
+        "op": "send_keys",
+        "keys": [
+         "enter"
+        ]
+       }
+      ],
+      "expect": "^MENU",
+      "seconds": 12,
+      "pattern": "MENU|KEY",
+      "limit": 30,
+      "settle_seconds": 18
+     },
+     {
+      "act": [
+       {
+        "op": "send_keys",
+        "keys": [
+         "enter"
+        ],
+        "expect": "^MENU",
+        "seconds": 12
+       }
+      ],
+      "pattern": "MENU|KEY",
+      "limit": 30,
+      "settle_seconds": 18
+     }
+    ]
+   },
+   "grammar": [
+    "send_keys",
+    "enter"
+   ]
+  },
+  {
+   "id": "D52",
+   "prompt": "Step the guest BACKWARDS by 3 instructions, undoing what they did.",
+   "expect": "CANNOT",
+   "about": "step"
+  },
+  {
+   "id": "D53",
+   "prompt": "Show the newest lines DOSBox-X's own process wrote to its stdout, the debugger's terminal.",
+   "expect": "CANNOT",
+   "about": "log"
+  },
+  {
+   "id": "D54",
+   "prompt": "The guest runs in a HEADLESS session with nothing declared that could stop it: bring it back to the debugger right now.",
+   "tool": "stop"
+  },
+  {
+   "id": "D55",
+   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 600 seconds, nobody watching, with the emulator's CPU clock forced by the two command-line tokens -set and cpu cycles=fixed 2500, and with the guest's own int 3 instructions stopping it at the debugger.",
    "tool": "start",
-   "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury",
-            "session_seconds": 600, "flags": ["-set", "cpu cycles=fixed 2500"], "break_on_int3": true},
-   "allow": ["shared"], "grammar": ["-set"]},
-  {"id": "D56", "prompt": "In one round trip: run to _game_tick counting the control declared at _vbl_handler, then read 16 bytes at _score. Wait at most 40 seconds for each stop between steps, and cut each step's account to its summary.",
+   "args": {
+    "conf": "/opt/dosfury/fury.conf",
+    "cwd": "/opt/dosfury",
+    "session_seconds": 600,
+    "flags": [
+     "-set",
+     "cpu cycles=fixed 2500"
+    ],
+    "break_on_int3": true
+   },
+   "allow": [
+    "shared"
+   ],
+   "grammar": [
+    "-set"
+   ]
+  },
+  {
+   "id": "D56",
+   "prompt": "In one round trip: run to _game_tick counting the control declared at _vbl_handler, then read 16 bytes at _score. Wait at most 40 seconds for each stop between steps, and cut each step's account to its summary.",
    "tool": "perform",
-   "args": {"steps": {"any_of": [
-              [{"op": "run_to", "ref": "_game_tick", "control": "_vbl_handler"},
-               {"op": "read_memory", "ref": "_score", "length": 16}],
-              [{"op": "run_to", "ref": "_game_tick", "control": "_vbl_handler", "seconds": 40},
-               {"op": "read_memory", "ref": "_score", "length": 16}]]},
-            "settle_seconds": 40, "summaries": true},
-   "grammar": ["run_to", "read_memory"]},
-  {"id": "D57", "prompt": "Press enter on the running guest, then check that a new E9 line matching ^MENU arrives within 12 seconds, and show me the last 20 E9 lines that match MENU. Cut each step's account to its summary.",
+   "args": {
+    "steps": {
+     "any_of": [
+      [
+       {
+        "op": "run_to",
+        "ref": "_game_tick",
+        "control": "_vbl_handler"
+       },
+       {
+        "op": "read_memory",
+        "ref": "_score",
+        "length": 16
+       }
+      ],
+      [
+       {
+        "op": "run_to",
+        "ref": "_game_tick",
+        "control": "_vbl_handler",
+        "seconds": 40
+       },
+       {
+        "op": "read_memory",
+        "ref": "_score",
+        "length": 16
+       }
+      ]
+     ]
+    },
+    "settle_seconds": 40,
+    "summaries": true
+   },
+   "grammar": [
+    "run_to",
+    "read_memory"
+   ]
+  },
+  {
+   "id": "D57",
+   "prompt": "Press enter on the running guest, then check that a new E9 line matching ^MENU arrives within 12 seconds, and show me the last 20 E9 lines that match MENU. Cut each step's account to its summary.",
    "tool": "drive",
-   "args": {"any_of": [
-     {"act": [{"op": "send_keys", "keys": ["enter"]}], "expect": "^MENU", "seconds": 12,
-      "pattern": "MENU", "limit": 20, "summaries": true},
-     {"act": [{"op": "send_keys", "keys": ["enter"], "expect": "^MENU", "seconds": 12}],
-      "pattern": "MENU", "limit": 20, "summaries": true},
-     {"act": [{"op": "send_keys", "keys": ["enter"], "expect": "^MENU", "seconds": 12}],
-      "expect": "^MENU", "seconds": 12, "pattern": "MENU", "limit": 20, "summaries": true}]},
-   "allow": ["settle_seconds"], "grammar": ["send_keys", "enter"]},
-  {"id": "D58", "prompt": "Keep only the scanned cells whose value changed since the scan was opened.", "tool": "scan", "args": {"method": "filter", "operator": "!"}, "grammar": ["!", "filter"]},
-  {"id": "D59", "prompt": "Advance the guest by 12 frames of the display and stop there, within 20 seconds, and show me the E9 lines it wrote since the previous stop.", "tool": "run_for", "args": {"frames": 12, "seconds": 20}},
-  {"id": "D61", "prompt": "Let the guest run for 250 milliseconds of its own emulated time and stop there, allowing up to 40 seconds of wall clock.", "tool": "run_for", "args": {"milliseconds": 250, "seconds": 40}},
-  {"id": "D62", "prompt": "The guest is stopped. Tell me what the DOS machine is right now: which memory blocks each resident program owns and where, the device drivers, and the XMS and EMS handles.", "tool": "machine_map", "args": {}, "allow": ["sections"]},
-  {"id": "D63", "prompt": "The guest is running and must not be stopped: list the DOS memory control blocks it holds at this moment.", "expect": "CANNOT", "about": "machine_map"},
-  {"id": "D64", "prompt": "The guest is stopped. Which handler does interrupt 0x1C point at, and in whose memory block does it lie?", "tool": "interrupt_vectors", "args": {"number": 28}},
-  {"id": "D65", "prompt": "Show me which interrupt vectors have changed since the moment the session was started.", "expect": "CANNOT", "about": "interrupt_vectors"},
-  {"id": "D66", "prompt": "The guest is stopped. Show me the colours the VGA's DAC holds for entries 4, 5 and 6, and only those.", "tool": "palette", "args": {"first": 4, "count": 3}},
-  {"id": "D67", "prompt": "The guest is stopped. Write every colour of the VGA's DAC as a picture to /tmp/dac.png.", "tool": "palette", "args": {"any_of": [{"dest": "/tmp/dac.png"}, {"first": 0, "count": 256, "dest": "/tmp/dac.png"}]}, "grammar": [256]},
-  {"id": "D68", "prompt": "The guest is stopped. Show me the colour of entry 300 of the VGA's DAC.", "expect": "CANNOT", "about": "palette"},
-  {"id": "D69", "prompt": "The guest is stopped in a DOS text mode. What text is on the screen right now, and where is the cursor?", "tool": "screen_view", "args": {}},
-  {"id": "D70", "prompt": "The guest is stopped in mode 13h. Save what is on the screen as a picture to /tmp/frame.png.", "tool": "screen_view", "args": {"dest": "/tmp/frame.png"}},
-  {"id": "D71", "prompt": "The guest is stopped in a 16-colour planar mode (12h). Write the screen's pixels from video memory to a picture.", "tool": "screen_view", "args": {}, "allow": ["dest", "attach", "scale", "crop"]},
-  {"id": "D72", "prompt": "The guest is stopped. Give me a signature of what is on screen now, so I can tell later whether anything changed.", "tool": "screen_signature", "args": {}},
-  {"id": "D73", "prompt": "The guest is stopped in mode 13h, 320 by 200. Give me a signature of the top-left quarter of the screen only, ignoring the rest.", "tool": "screen_signature", "args": {"crop": [0, 0, 160, 100]}},
-  {"id": "D74", "prompt": "The guest is stopped. Let it run until the words GAME OVER appear on the text screen, waiting at most 90 seconds, and stop it there.", "tool": "screen_wait", "args": {"text": "GAME OVER", "seconds": 90}},
-  {"id": "D75", "prompt": "The guest is stopped. Let it run until the word READY shows up anywhere in the 320x200 graphics picture, as pixels.", "expect": "CANNOT", "about": "screen_wait"},
-  {"id": "D76", "prompt": "The guest is stopped. Execute exactly 5000 instructions with the debugger's CPU log on, and keep the log in the session's captures directory.", "tool": "trace", "args": {"instructions": 5000}},
-  {"id": "D77", "prompt": "The guest is stopped. Trace the next 2000 instructions, recording nothing but the address of each one, into /tmp/addrs.trace.", "tool": "trace", "args": {"instructions": 2000, "shape": "cs_ip", "dest": "/tmp/addrs.trace"}, "grammar": ["cs_ip"]},
-  {"id": "D78", "prompt": "The guest is stopped. Trace 800 instructions in the shape that also records each one's emulated time and CR0, into /tmp/full.trace.", "tool": "trace", "args": {"instructions": 800, "shape": "long", "dest": "/tmp/full.trace"}, "grammar": ["long"]},
-  {"id": "D79", "prompt": "The guest is stopped. Trace 250000 instructions with their registers into /tmp/big.trace, allowing the call up to 300 seconds of wall time.", "tool": "trace", "args": {"instructions": 250000, "dest": "/tmp/big.trace", "seconds": 300}},
-  {"id": "D80", "prompt": "The guest is stopped. Show me the last 100 instructions it executed before reaching this stop.", "expect": "CANNOT", "about": "trace"},
-  {"id": "D81", "prompt": "The guest is stopped and its symbol table is loaded. Run the next 4000 instructions and tell me which routines ran and how many instructions each executed, keeping the log in /tmp/cov.trace.", "tool": "trace", "args": {"instructions": 4000, "dest": "/tmp/cov.trace"}, "allow": ["shape"]},
-  {"id": "D82", "prompt": "The guest is stopped and its symbol table is loaded. Show me the first 48 bytes of the routine draw_sprite as instructions.", "tool": "disassemble", "args": {"ref": "draw_sprite", "length": 48}},
-  {"id": "D83", "prompt": "The guest is stopped. There is a call somewhere in the 20 bytes at 1A2B:0040; which address does it go to?", "tool": "disassemble", "args": {"ref": "1A2B:0040", "length": 20}},
-  {"id": "D84", "prompt": "The guest is stopped inside some routine. Which routines called it, and from where?", "tool": "call_stack", "args": {}},
-  {"id": "D85", "prompt": "The guest is stopped and its symbol table is loaded. Note on the routine draw_sprite that it clears the back buffer first.", "tool": "comment_write", "args": {"method": "add", "ref": "draw_sprite", "text": "clears the back buffer first"}, "grammar": ["add"]},
-  {"id": "D86", "prompt": "Which notes have I left on places in this program so far?", "tool": "comment_list", "args": {}},
-  {"id": "D87", "prompt": "The guest is stopped. Remove the note I left at 0814:010B.", "tool": "comment_write", "args": {"method": "delete", "ref": "0814:010B"}, "grammar": ["delete"]},
-  {"id": "D88", "prompt": "Write every note I have left on this program to /tmp/game.comments.tsv so I can commit it with the map.", "tool": "comment_write", "args": {"method": "save", "dest": "/tmp/game.comments.tsv"}, "grammar": ["save"]},
-  {"id": "D89", "prompt": "The guest is stopped. Bring in the notes the project keeps in /tmp/game.comments.tsv.", "tool": "comment_write", "args": {"method": "load", "path": "/tmp/game.comments.tsv"}, "grammar": ["load"]},
-  {"id": "D90", "prompt": "Show my notes inline on the disassembly of draw_sprite, each beside the instruction it is on.", "tool": "disassemble", "args": {"ref": "draw_sprite"}, "allow": ["length"]},
-  {"id": "D91", "prompt": "Before I start anything: does the DOSBox-X I built at /opt/dbx-dev/src/dosbox-x carry the debugger? Ask about that build, not the installed one.", "tool": "build_check", "args": {"binary": "/opt/dbx-dev/src/dosbox-x"}},
-  {"id": "D92", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 1200 seconds, nobody watching, running the emulator I built at /opt/dbx-dev/src/dosbox-x instead of the installed one.", "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 1200, "binary": "/opt/dbx-dev/src/dosbox-x"}, "allow": ["shared"]},
-  {"id": "D93", "prompt": "Hold the left mouse button down on the guest so a drag can follow.",
-   "tool": "send_mouse", "args": {"button": "left", "action": "down"}, "grammar": ["left", "down"]},
-  {"id": "D94", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody who is watching, but launched behind my own windows so it does not take my focus.",
-   "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900, "shared": true, "background": true},
-   "grammar": ["shared"]},
-  {"id": "D95", "prompt": "Keep only the scanned cells that now hold the value 7, and list up to 200 of the survivors with their values.", "tool": "scan", "args": {"method": "filter", "value": 7, "limit": 200}, "allow": ["operator"], "grammar": ["filter"]},
-  {"id": "D96", "prompt": "The guest is stopped. I only need its page runs and its GDT, nothing else of the machine map.", "tool": "machine_map", "args": {"sections": {"any_of": [["paging", "gdt"], ["gdt", "paging"]]}}, "grammar": ["paging", "gdt"]},
-  {"id": "D97", "prompt": "The guest is stopped. Write the machine map to the file /tmp/mcp-probe-map.json with no row cut.", "tool": "machine_map", "args": {"dest": "/tmp/mcp-probe-map.json"}},
-  {"id": "D98", "prompt": "Let the guest run and come back at once, and include the debugger's own repaint of the screen in the answer.", "tool": "resume", "args": {"detail": true}},
-  {"id": "D99", "prompt": "Break on every multiplex interrupt call (INT 2Fh), and show me the debugger's acknowledgement screen as well.", "tool": "breakpoint_interrupt", "args": {"number": 47, "detail": true}},
-  {"id": "D100", "prompt": "The guest is stopped. Show me the swatch of all 256 DAC colours at their natural size, with no enlargement.", "tool": "palette", "args": {"any_of": [{"scale": 1}, {"first": 0, "scale": 1}, {"count": 0, "scale": 1}, {"first": 0, "count": 0, "scale": 1}, {"count": 256, "scale": 1}, {"first": 0, "count": 256, "scale": 1}]}, "grammar": [256]},
-  {"id": "D101", "prompt": "The guest is stopped in mode 13h. Show me only the rectangle at x 40, y 30, 64 by 48 of the screen, enlarged 3 times.", "tool": "screen_view", "args": {"crop": [40, 30, 64, 48], "scale": 3}, "grammar": [64]},
-  {"id": "D102", "prompt": "Make a series of frames 100 to 160 of the session's video capture, every 4th frame, only the region at x 0, y 0, 320 by 20, into the new directory /tmp/dx-series.", "tool": "series_capture", "args": {"first": 100, "last": 160, "step": 4, "crop": [0, 0, 320, 20], "dest": "/tmp/dx-series"}},
-  {"id": "D103", "prompt": "Make a series of exactly frames 12, 48 and 96 of the capture /opt/dosfury/caps/fury_001.avi; it can go to the session's scratch.", "tool": "series_capture", "args": {"at_frames": [12, 48, 96], "capture_path": "/opt/dosfury/caps/fury_001.avi"}},
-  {"id": "D104", "prompt": "Compare /tmp/a/f000010.png with /tmp/a/f000011.png, reading the second 2 pixels to the right of the first, and count a channel within 3 as equal.", "tool": "image_compare", "args": {"method": "image", "a": "/tmp/a/f000010.png", "b": "/tmp/a/f000011.png", "shift": [2, 0], "tolerance": 3}, "grammar": ["image"]},
-  {"id": "D105", "prompt": "Compare the pictures /tmp/a/before.png and /tmp/b/after.png, which are not the same size, over the rectangle at x 0, y 0, 200 by 150 they share.", "tool": "image_compare", "args": {"method": "image", "a": "/tmp/a/before.png", "b": "/tmp/b/after.png", "crop": [0, 0, 200, 150]}, "grammar": ["image"]},
-  {"id": "D106", "prompt": "Compare the series /tmp/run1/manifest.json against /tmp/run2/manifest.json, only over the rectangle at x 8, y 8, 32 by 16.", "tool": "image_compare", "args": {"method": "series", "a": "/tmp/run1/manifest.json", "b": "/tmp/run2/manifest.json", "crop": [8, 8, 32, 16]}, "grammar": ["series"]},
-  {"id": "D107", "prompt": "In the series /tmp/run1/manifest.json, when does the rectangle at x 100, y 20, 24 by 8 match the picture /tmp/ref/digit.png in 95% or more of its pixels? List at most 10 changes.", "tool": "image_compare", "args": {"method": "region", "manifest": "/tmp/run1/manifest.json", "crop": [100, 20, 24, 8], "measure": "match", "ref": "/tmp/ref/digit.png", "threshold": 0.95, "limit": 10}, "grammar": ["match", "region"]},
-  {"id": "D108", "prompt": "In the series /tmp/run1/manifest.json, how many pixels of the rectangle at x 0, y 180, 320 by 20 changed from the frame before, on each frame where some did?", "tool": "image_compare", "args": {"method": "region", "manifest": "/tmp/run1/manifest.json", "crop": [0, 180, 320, 20], "measure": "changed_pixels"}, "grammar": ["changed_pixels", "region"]},
-  {"id": "D109", "prompt": "Check the frames of the series /tmp/run1/manifest.json against the goldens listed in /tmp/goldens.sha256.", "tool": "image_compare", "args": {"method": "golden", "manifest": "/tmp/run1/manifest.json", "checksums": "/tmp/goldens.sha256"}, "grammar": ["golden"]},
-  {"id": "D110", "prompt": "Check the PNGs in the directory /tmp/shots against the goldens listed in /tmp/shots.sha256.", "tool": "image_compare", "args": {"method": "golden", "dir": "/tmp/shots", "checksums": "/tmp/shots.sha256"}, "grammar": ["golden"]},
-  {"id": "D111", "prompt": "Write what this session has done so far as a replay document to /tmp/bench/bricks.json.", "tool": "perform_export", "args": {"dest": "/tmp/bench/bricks.json"}},
-  {"id": "D112", "prompt": "Export this session as a replay to /tmp/bench/bricks.json, replacing the document already there.", "tool": "perform_export", "args": {"dest": "/tmp/bench/bricks.json", "overwrite": true}},
-  {"id": "D113", "prompt": "Save the session as a replay document named session.json in the bench folder of my home directory.", "tool": "perform_export", "args": {"dest": "~/bench/session.json"}},
-  {"id": "D114", "prompt": "In one call, read 2 bytes at 0100:0000 and have the call stop as diverged unless they read as hex 4f6b.", "tool": "perform", "args": {"steps": [{"op": "read_memory", "ref": "0100:0000", "length": 2, "recorded": {"hex": {"any_of": ["4f6b", "4F6B"]}}}]}, "allow": ["settle_seconds", "summaries"], "grammar": ["read_memory"]},
-  {"id": "D115", "prompt": "Export only the last ten calls of this session as a replay document.", "expect": "CANNOT", "about": "perform_export"},
-  {"id": "D116", "prompt": "The guest is stopped in mode 13h. Save what is on the screen to /tmp/quiet.png, but do not attach the picture to your reply: I only need the file.", "tool": "screen_view", "args": {"dest": "/tmp/quiet.png", "attach": false}},
-  {"id": "D117", "prompt": "Check the PNGs in the directory /tmp/shots against the goldens listed in /tmp/shots.sha256, listing at most 5 names in each list.", "tool": "image_compare", "args": {"method": "golden", "dir": "/tmp/shots", "checksums": "/tmp/shots.sha256", "limit": 5}, "grammar": ["golden"]},
-  {"id": "D118", "prompt": "Load the screen map /tmp/maps/bricks.screen-map.json.", "tool": "screen_map_write", "args": {"method": "load", "path": "/tmp/maps/bricks.screen-map.json"}, "grammar": ["load"]},
-  {"id": "D119", "prompt": "The guest is stopped on its title screen, a text mode. Map it as title, known by the row at column 0, row 0, 40 cells wide and 1 high, with a control named play at column 10, row 12, 20 cells wide and 1 high.", "tool": "screen_map_write", "args": {"method": "add", "screen": "title", "match": [[0, 0, 40, 1]], "controls": [{"name": "play", "rect": [10, 12, 20, 1]}]}, "grammar": ["add"]},
-  {"id": "D120", "prompt": "The guest is stopped. Which of the mapped screens is it showing right now?", "tool": "screen_map_find", "args": {}},
-  {"id": "D121", "prompt": "Write this session's screen maps to /tmp/maps/bricks.screen-map.json, replacing the file that is there.", "tool": "screen_map_write", "args": {"method": "save", "dest": "/tmp/maps/bricks.screen-map.json", "overwrite": true}, "grammar": ["save"]},
-  {"id": "D122", "prompt": "The guest is running. Left-click the control named serve on the screen the last identification matched.", "tool": "send_mouse", "args": {"target": "serve", "button": "left", "action": {"any_of": ["", "click"]}}, "grammar": ["left"]},
-  {"id": "D125", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, with nobody watching. Do not mark its window with the edge that shows a session is holding it.",
+   "args": {
+    "any_of": [
+     {
+      "act": [
+       {
+        "op": "send_keys",
+        "keys": [
+         "enter"
+        ]
+       }
+      ],
+      "expect": "^MENU",
+      "seconds": 12,
+      "pattern": "MENU",
+      "limit": 20,
+      "summaries": true
+     },
+     {
+      "act": [
+       {
+        "op": "send_keys",
+        "keys": [
+         "enter"
+        ],
+        "expect": "^MENU",
+        "seconds": 12
+       }
+      ],
+      "pattern": "MENU",
+      "limit": 20,
+      "summaries": true
+     },
+     {
+      "act": [
+       {
+        "op": "send_keys",
+        "keys": [
+         "enter"
+        ],
+        "expect": "^MENU",
+        "seconds": 12
+       }
+      ],
+      "expect": "^MENU",
+      "seconds": 12,
+      "pattern": "MENU",
+      "limit": 20,
+      "summaries": true
+     }
+    ]
+   },
+   "allow": [
+    "settle_seconds"
+   ],
+   "grammar": [
+    "send_keys",
+    "enter"
+   ]
+  },
+  {
+   "id": "D58",
+   "prompt": "Keep only the scanned cells whose value changed since the scan was opened.",
+   "tool": "scan",
+   "args": {
+    "method": "filter",
+    "operator": "!"
+   },
+   "grammar": [
+    "!",
+    "filter"
+   ]
+  },
+  {
+   "id": "D59",
+   "prompt": "Advance the guest by 12 frames of the display and stop there, within 20 seconds, and show me the E9 lines it wrote since the previous stop.",
+   "tool": "run_for",
+   "args": {
+    "frames": 12,
+    "seconds": 20
+   }
+  },
+  {
+   "id": "D61",
+   "prompt": "Let the guest run for 250 milliseconds of its own emulated time and stop there, allowing up to 40 seconds of wall clock.",
+   "tool": "run_for",
+   "args": {
+    "milliseconds": 250,
+    "seconds": 40
+   }
+  },
+  {
+   "id": "D62",
+   "prompt": "The guest is stopped. Tell me what the DOS machine is right now: which memory blocks each resident program owns and where, the device drivers, and the XMS and EMS handles.",
+   "tool": "machine_map",
+   "args": {},
+   "allow": [
+    "sections"
+   ]
+  },
+  {
+   "id": "D63",
+   "prompt": "The guest is running and must not be stopped: list the DOS memory control blocks it holds at this moment.",
+   "expect": "CANNOT",
+   "about": "machine_map"
+  },
+  {
+   "id": "D64",
+   "prompt": "The guest is stopped. Which handler does interrupt 0x1C point at, and in whose memory block does it lie?",
+   "tool": "interrupt_vectors",
+   "args": {
+    "number": 28
+   }
+  },
+  {
+   "id": "D65",
+   "prompt": "Show me which interrupt vectors have changed since the moment the session was started.",
+   "expect": "CANNOT",
+   "about": "interrupt_vectors"
+  },
+  {
+   "id": "D66",
+   "prompt": "The guest is stopped. Show me the colours the VGA's DAC holds for entries 4, 5 and 6, and only those.",
+   "tool": "palette",
+   "args": {
+    "first": 4,
+    "count": 3
+   }
+  },
+  {
+   "id": "D67",
+   "prompt": "The guest is stopped. Write every colour of the VGA's DAC as a picture to /tmp/dac.png.",
+   "tool": "palette",
+   "args": {
+    "any_of": [
+     {
+      "dest": "/tmp/dac.png"
+     },
+     {
+      "first": 0,
+      "count": 256,
+      "dest": "/tmp/dac.png"
+     }
+    ]
+   },
+   "grammar": [
+    256
+   ]
+  },
+  {
+   "id": "D68",
+   "prompt": "The guest is stopped. Show me the colour of entry 300 of the VGA's DAC.",
+   "expect": "CANNOT",
+   "about": "palette"
+  },
+  {
+   "id": "D69",
+   "prompt": "The guest is stopped in a DOS text mode. What text is on the screen right now, and where is the cursor?",
+   "tool": "screen_view",
+   "args": {}
+  },
+  {
+   "id": "D70",
+   "prompt": "The guest is stopped in mode 13h. Save what is on the screen as a picture to /tmp/frame.png.",
+   "tool": "screen_view",
+   "args": {
+    "dest": "/tmp/frame.png"
+   }
+  },
+  {
+   "id": "D71",
+   "prompt": "The guest is stopped in a 16-colour planar mode (12h). Write the screen's pixels from video memory to a picture.",
+   "tool": "screen_view",
+   "args": {},
+   "allow": [
+    "dest",
+    "attach",
+    "scale",
+    "crop"
+   ]
+  },
+  {
+   "id": "D72",
+   "prompt": "The guest is stopped. Give me a signature of what is on screen now, so I can tell later whether anything changed.",
+   "tool": "screen_signature",
+   "args": {}
+  },
+  {
+   "id": "D73",
+   "prompt": "The guest is stopped in mode 13h, 320 by 200. Give me a signature of the top-left quarter of the screen only, ignoring the rest.",
+   "tool": "screen_signature",
+   "args": {
+    "crop": [
+     0,
+     0,
+     160,
+     100
+    ]
+   }
+  },
+  {
+   "id": "D74",
+   "prompt": "The guest is stopped. Let it run until the words GAME OVER appear on the text screen, waiting at most 90 seconds, and stop it there.",
+   "tool": "screen_wait",
+   "args": {
+    "text": "GAME OVER",
+    "seconds": 90
+   }
+  },
+  {
+   "id": "D75",
+   "prompt": "The guest is stopped. Let it run until the word READY shows up anywhere in the 320x200 graphics picture, as pixels.",
+   "expect": "CANNOT",
+   "about": "screen_wait"
+  },
+  {
+   "id": "D76",
+   "prompt": "The guest is stopped. Execute exactly 5000 instructions with the debugger's CPU log on, and keep the log in the session's captures directory.",
+   "tool": "trace",
+   "args": {
+    "instructions": 5000
+   }
+  },
+  {
+   "id": "D77",
+   "prompt": "The guest is stopped. Trace the next 2000 instructions, recording nothing but the address of each one, into /tmp/addrs.trace.",
+   "tool": "trace",
+   "args": {
+    "instructions": 2000,
+    "shape": "cs_ip",
+    "dest": "/tmp/addrs.trace"
+   },
+   "grammar": [
+    "cs_ip"
+   ]
+  },
+  {
+   "id": "D78",
+   "prompt": "The guest is stopped. Trace 800 instructions in the shape that also records each one's emulated time and CR0, into /tmp/full.trace.",
+   "tool": "trace",
+   "args": {
+    "instructions": 800,
+    "shape": "long",
+    "dest": "/tmp/full.trace"
+   },
+   "grammar": [
+    "long"
+   ]
+  },
+  {
+   "id": "D79",
+   "prompt": "The guest is stopped. Trace 250000 instructions with their registers into /tmp/big.trace, allowing the call up to 300 seconds of wall time.",
+   "tool": "trace",
+   "args": {
+    "instructions": 250000,
+    "dest": "/tmp/big.trace",
+    "seconds": 300
+   }
+  },
+  {
+   "id": "D80",
+   "prompt": "The guest is stopped. Show me the last 100 instructions it executed before reaching this stop.",
+   "expect": "CANNOT",
+   "about": "trace"
+  },
+  {
+   "id": "D81",
+   "prompt": "The guest is stopped and its symbol table is loaded. Run the next 4000 instructions and tell me which routines ran and how many instructions each executed, keeping the log in /tmp/cov.trace.",
+   "tool": "trace",
+   "args": {
+    "instructions": 4000,
+    "dest": "/tmp/cov.trace"
+   },
+   "allow": [
+    "shape"
+   ]
+  },
+  {
+   "id": "D82",
+   "prompt": "The guest is stopped and its symbol table is loaded. Show me the first 48 bytes of the routine draw_sprite as instructions.",
+   "tool": "disassemble",
+   "args": {
+    "ref": "draw_sprite",
+    "length": 48
+   }
+  },
+  {
+   "id": "D83",
+   "prompt": "The guest is stopped. There is a call somewhere in the 20 bytes at 1A2B:0040; which address does it go to?",
+   "tool": "disassemble",
+   "args": {
+    "ref": "1A2B:0040",
+    "length": 20
+   }
+  },
+  {
+   "id": "D84",
+   "prompt": "The guest is stopped inside some routine. Which routines called it, and from where?",
+   "tool": "call_stack",
+   "args": {}
+  },
+  {
+   "id": "D85",
+   "prompt": "The guest is stopped and its symbol table is loaded. Note on the routine draw_sprite that it clears the back buffer first.",
+   "tool": "comment_write",
+   "args": {
+    "method": "add",
+    "ref": "draw_sprite",
+    "text": "clears the back buffer first"
+   },
+   "grammar": [
+    "add"
+   ]
+  },
+  {
+   "id": "D86",
+   "prompt": "Which notes have I left on places in this program so far?",
+   "tool": "comment_list",
+   "args": {}
+  },
+  {
+   "id": "D87",
+   "prompt": "The guest is stopped. Remove the note I left at 0814:010B.",
+   "tool": "comment_write",
+   "args": {
+    "method": "delete",
+    "ref": "0814:010B"
+   },
+   "grammar": [
+    "delete"
+   ]
+  },
+  {
+   "id": "D88",
+   "prompt": "Write every note I have left on this program to /tmp/game.comments.tsv so I can commit it with the map.",
+   "tool": "comment_write",
+   "args": {
+    "method": "save",
+    "dest": "/tmp/game.comments.tsv"
+   },
+   "grammar": [
+    "save"
+   ]
+  },
+  {
+   "id": "D89",
+   "prompt": "The guest is stopped. Bring in the notes the project keeps in /tmp/game.comments.tsv.",
+   "tool": "comment_write",
+   "args": {
+    "method": "load",
+    "path": "/tmp/game.comments.tsv"
+   },
+   "grammar": [
+    "load"
+   ]
+  },
+  {
+   "id": "D90",
+   "prompt": "Show my notes inline on the disassembly of draw_sprite, each beside the instruction it is on.",
+   "tool": "disassemble",
+   "args": {
+    "ref": "draw_sprite"
+   },
+   "allow": [
+    "length"
+   ]
+  },
+  {
+   "id": "D91",
+   "prompt": "Before I start anything: does the DOSBox-X I built at /opt/dbx-dev/src/dosbox-x carry the debugger? Ask about that build, not the installed one.",
+   "tool": "build_check",
+   "args": {
+    "binary": "/opt/dbx-dev/src/dosbox-x"
+   }
+  },
+  {
+   "id": "D92",
+   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 1200 seconds, nobody watching, running the emulator I built at /opt/dbx-dev/src/dosbox-x instead of the installed one.",
    "tool": "start",
-   "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900,
-            "presence": false}},
-  {"id": "D126", "prompt": "Is the edge that marks this session's window being drawn, or could it not be drawn, and why?", "tool": "status"},
-  {"id": "D127", "prompt": "A state was just loaded and its reply gave the mark 30715 for the guest channel. Show the newest 25 lines of the guest's E9 instrumentation matching TICK [0-9]+ that were written after that mark.",
-   "tool": "log", "args": {"pattern": "TICK [0-9]+", "channel": "guest", "limit": 25, "since_mark": 30715}, "grammar": ["guest"]},
-  {"id": "D128", "prompt": "After a state load whose reply gave the mark 8820 for the guest channel, wait up to 40 seconds for a guest line matching LEVEL 3, counting only what the guest wrote after that mark.",
-   "tool": "log_wait", "args": {"pattern": "LEVEL 3", "channel": "guest", "seconds": 40, "since_mark": 8820}, "grammar": ["guest"]},
-  {"id": "D129", "prompt": "The last stop's E9 block was cut: it counted 57 lines from mark 9120 and showed only the newest. Read all 57 of them.",
-   "tool": "log", "args": {"channel": "guest", "since_mark": 9120, "limit": {"any_of": [57, 400]}}, "allow": ["pattern", "labels"], "grammar": ["guest"]},
-  {"id": "D130", "prompt": "The guest is stopped. I only need the cpu's control registers: cr0, cr3 and the descriptor table registers.", "tool": "machine_map", "args": {"sections": {"any_of": [["control"]]}}, "grammar": ["control"]},
-  {"id": "D131", "prompt": "End the DOSBox-X session, and even if it quits cleanly I want the last words of the console and of the log in the answer.", "tool": "close", "args": {"detail": true}},
-  {"id": "D132", "prompt": "Stop the machine whenever AH becomes 4Ch, wherever in the program that happens, whoever puts it there.", "tool": "regpoint_add", "args": {"condition": {"any_of": ["AH==4C", "AH==0x4C", "AH==4c", "ah==4c", "ah==0x4c", "AH == 4C", "AH == 0x4C", "ah == 0x4c", "ah == 4c"]}}},
-  {"id": "D133", "prompt": "The guest is stopped. Record the next 35 display frames of the screen to a video file at /tmp/mcp-probe-frames.avi.", "tool": "record", "args": {"frames": 35, "dest": "/tmp/mcp-probe-frames.avi"}, "allow": ["seconds"]},
-  {"id": "D134", "prompt": "The guest is stopped. Record what it sounds like over the next 20 frames to a WAV file.", "tool": "audio_record", "args": {"frames": 20}, "allow": ["dest", "seconds"], "grammar": ["wav"]},
-  {"id": "D135", "prompt": "The guest is stopped. Keep the raw AdLib (OPL) register writes it makes over the next 70 frames in a file.", "tool": "audio_record", "args": {"frames": 70, "kind": "dro"}, "allow": ["dest", "seconds"], "grammar": ["dro"]},
-  {"id": "D136", "prompt": "The guest is stopped. Save the MIDI bytes the program sends during the next 10 frames to a file.", "tool": "audio_record", "args": {"frames": 10, "kind": "mid"}, "allow": ["dest", "seconds"], "grammar": ["mid"]},
-  {"id": "D137", "prompt": "Without ever stopping the machine for it, count every value written into the 2-byte variable _score, and which instructions wrote them.", "tool": "watch_add", "args": {"ref": "_score", "mode": "count"}, "allow": ["length", "fmt", "by"], "grammar": ["count"]},
-  {"id": "D138", "prompt": "Each time the byte _frame_flag is written, keep a copy of the 24 bytes at _sprite_table as they stood at that moment, without stopping the machine.", "tool": "watch_add", "args": {"ref": "_sprite_table", "mode": "capture", "trigger": "_frame_flag", "length": 24}, "allow": ["fmt", "by", "trigger_type"], "grammar": ["capture"]},
-  {"id": "D139", "prompt": "Keep a row for every read the program makes of the byte at 1A2B:0040, with the beam line and the time of each, without stopping the machine.", "tool": "watch_add", "args": {"ref": {"any_of": ["1A2B:0040", "1a2b:0040", "1A2B:40", "1a2b:40"]}, "mode": "capture", "trigger_type": "r"}, "allow": ["by"], "grammar": ["capture", "r"]},
-  {"id": "D140", "prompt": "Record the next 20 frames of sound as a multi-track AVI, one audio track per mixer channel.", "expect": "CANNOT", "about": "audio_record"},
-  {"id": "D141", "prompt": "Open a DOSBox-X session from /opt/build/tasm.conf in /opt/build, bounded to 600 seconds, headless, writing its log to /opt/build/run.log. Record every DOS INT 21h call the guest makes, and fingerprint /opt/build/OUT.TXT before it boots so I can tell later whether the guest wrote it.", "tool": "start", "args": {"conf": "/opt/build/tasm.conf", "cwd": "/opt/build", "session_seconds": 600, "logfile": "/opt/build/run.log", "dos_calls": true, "guest_files": ["/opt/build/OUT.TXT"]}, "allow": ["shared"]},
-  {"id": "D142", "prompt": "Open a DOSBox-X session from /opt/game/game.conf in /opt/game for 900 seconds with its log in /opt/game/emu.log, and have the emulator log its file operations at debug level and its PIT at warn level into that log.", "tool": "start", "args": {"conf": "/opt/game/game.conf", "cwd": "/opt/game", "session_seconds": 900, "logfile": "/opt/game/emu.log", "log_categories": {"files": "debug", "pit": "warn"}}, "allow": ["shared"], "grammar": ["files", "pit", "debug", "warn"]},
-  {"id": "D143", "prompt": "Read the VGA input status register, port 3DA, once, as a byte.", "tool": "port", "args": {"method": "read", "port": {"any_of": [986, "0x3DA", "0x3da"]}}, "allow": ["bits"], "grammar": ["read"]},
-  {"id": "D144", "prompt": "Write the value 5 to I/O port 3C8 (the DAC write index), one byte.", "tool": "port", "args": {"method": "write", "port": {"any_of": [968, "0x3C8", "0x3c8"]}, "value": {"any_of": [5, "0x5", "0x05"]}}, "allow": ["bits"], "grammar": ["write"]},
-  {"id": "D145", "prompt": "Read the 16-bit word at I/O port 220h.", "tool": "port", "args": {"method": "read", "port": {"any_of": [544, "0x220"]}, "bits": 16}, "grammar": ["read", 16]},
-  {"id": "D146", "prompt": "Mask the timer interrupt, IRQ 0, at the interrupt controller.", "tool": "pic", "args": {"method": "mask", "irq": 0}, "grammar": ["mask"]},
-  {"id": "D147", "prompt": "Fire the timer interrupt once by hand, so its handler runs at the next instruction.", "tool": "pic", "args": {"method": "raise", "irq": 0}, "grammar": ["raise"]},
-  {"id": "D148", "prompt": "Show me the state of both interrupt controllers: which lines are masked, requested or in service.", "tool": "pic", "args": {"method": "read"}, "grammar": ["read"]},
-  {"id": "D149", "prompt": "Turn the A20 gate off.", "tool": "a20", "args": {"method": "off"}, "grammar": ["off"]},
-  {"id": "D150", "prompt": "Did the guest write /opt/build/OUT.TXT during this run, leave it empty, or leave the old one untouched?", "tool": "guest_file", "args": {"path": "/opt/build/OUT.TXT"}},
-  {"id": "D151", "prompt": "Keep the byte at the symbol _lives at its current value while the game runs, whatever the game writes to it.", "tool": "watch_add", "args": {"ref": "_lives", "mode": "freeze"}, "allow": ["length", "fmt", "by"], "grammar": ["freeze"]},
-  {"id": "D152", "prompt": "Which file did the program fail to open? List the DOS open calls it made that came back with an error.", "tool": "log", "args": {"channel": "dos", "pattern": {"regex": {"lines": ["#17 08BC:011F psp 0x08BC 0x3D open IN.TXT -> AX=0x0005", "#18 08BC:012D psp 0x08BC 0x3F read -> AX=0x0004", "#19 08BC:0131 psp 0x08BC 0x3E close -> AX=0x3E01", "#20 08BC:0139 psp 0x08BC 0x3D open MISSING.TXT -> error 2 file not found", "#21 08BC:0157 psp 0x08BC 0x3C create OUT.TXT -> AX=0x0005", "#22 08BC:016D psp 0x08BC 0x40 write -> AX=0x0004", "#23 08BC:0171 psp 0x08BC 0x3E close -> AX=0x3E01"], "hits": [3], "example": "open .* -> error", "also": [0]}}}, "allow": ["limit", "labels"], "grammar": ["dos"]},
-  {"id": "D153", "prompt": "For every INT 10h video BIOS call the program has made, give me the AX it returned.", "expect": "CANNOT", "about": "log"},
-  {"id": "D154", "prompt": "The DOS machine is stopped in display frame 400, counted since it powered on. In one call, advance one frame at a time until a stop reads frame 470, keeping every stop a watch or breakpoint makes on the way and letting the server count the steps; I cannot know in advance how many steps that takes.", "tool": "perform", "args": {"steps": [{"op": "run_for", "frames": 1}], "summaries": true, "until_frame": 470}, "allow": ["settle_seconds"], "grammar": ["run_for"]},
-  {"id": "D155", "prompt": "Measure the Sound Blaster recording /tmp/rec/fanfare.wav between 0.5 and 2 seconds, only its left channel: did it sound, how loud, and when did it start?", "tool": "audio_compare", "args": {"method": "measure", "path": "/tmp/rec/fanfare.wav", "window": [0.5, 2], "channel": 0}, "grammar": ["measure"]},
-  {"id": "D156", "prompt": "Measure the whole recording /tmp/rec/menu.wav, every channel.", "tool": "audio_compare", "args": {"method": "measure", "path": "/tmp/rec/menu.wav"}, "grammar": ["measure"]},
-  {"id": "D157", "prompt": "Compare the recording /tmp/rec/new.wav with the reference /tmp/rec/ref.wav over their first 3 seconds, without lining up their onsets first.", "tool": "audio_compare", "args": {"method": "diff", "a": "/tmp/rec/new.wav", "b": "/tmp/rec/ref.wav", "window": [0, 3], "align": false}, "grammar": ["diff"]},
-  {"id": "D158", "prompt": "The machine is stopped on the play screen of a game whose arcade original draws the same pixels through a palette of other colours. Map this screen as play, known by the strip at x 0, y 0, 320 wide and 8 high, signed so that one map knows it on both machines.", "tool": "screen_map_write", "args": {"method": "add", "screen": "play", "match": [[0, 0, 320, 8]], "cells": "index"}, "grammar": ["add", "index"]},
-  {"id": "D159", "prompt": "The guest is stopped in mode 13h. Show where the pixels drawn with palette entries 40 and 41 are on the screen, and how many there are.", "tool": "screen_view", "args": {"mode": "isolate", "pens": [40, 41]}, "allow": ["crop", "scale", "dest", "attach"], "grammar": ["isolate"]},
-  {"id": "D160", "prompt": "The guest is stopped in mode 13h. Which palette entries does the screen use, and which does it leave unused? I do not need a picture.", "tool": "screen_view", "args": {"mode": "histogram"}, "allow": ["crop"], "grammar": ["histogram"]},
-  {"id": "D161", "prompt": "The guest is stopped in mode 13h. Which palette entry is the pixel at x 120, y 75, and what colour is it?", "tool": "screen_view", "args": {"mode": "pixel", "point": [120, 75]}, "allow": ["scale", "dest", "attach"], "grammar": ["pixel"]},
-  {"id": "D162", "prompt": "The screen map is loaded, and its title screen names an anchor. Run to the title screen, with the control at main_loop counting on the way.", "tool": "run_to", "args": {"screen": "title", "control": "main_loop"}},
-  {"id": "D163", "prompt": "Load the screen map /tmp/maps/speedf.screen-map.json for a machine that shows the game's picture twice as large, with 40 rows of border above and below it.", "tool": "screen_map_write", "args": {"method": "load", "path": "/tmp/maps/speedf.screen-map.json", "scale": 2, "margin": [0, 40]}, "grammar": ["load"]},
-  {"id": "D164", "prompt": "Start DOSBox-X on the conf /opt/lineup/lineup.conf with /opt/lineup as the working directory, for at most 900 seconds. Load the linker map /opt/lineup/EXES/LINEUP.MAP with the session, so its names are there as soon as DOS has loaded the game, wherever it puts it.", "tool": "start", "args": {"conf": "/opt/lineup/lineup.conf", "cwd": "/opt/lineup", "session_seconds": 900, "symbols": "/opt/lineup/EXES/LINEUP.MAP"}, "allow": ["base_from"]},
-  {"id": "D165", "prompt": "Drag with the left mouse button held: press it at screen pixel 100, 50 and release it at screen pixel 220, 90, in one call.", "tool": "send_mouse", "args": {"x": 100, "y": 50, "button": "left", "action": "drag", "to_x": 220, "to_y": 90}, "grammar": ["left", "drag"]},
-  {"id": "D166", "prompt": "The screen map is loaded, and its screen named palette has no anchor. Run until the machine shows the palette screen, giving up after 20 seconds.", "tool": "run_to", "args": {"screen": "palette", "seconds": 20}},
-  {"id": "D167", "prompt": "The screen map loaded is consolidated, and the guest is stopped on its title screen, which is whole once DrawTitle has run. Map it as title, known by the row at column 0, row 0, 40 cells wide and 1 high, entered by that routine.", "tool": "screen_map_write", "args": {"method": "add", "screen": "title", "match": [[0, 0, 40, 1]], "anchor": "DrawTitle"}, "grammar": ["add"]},
-  {"id": "D168", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching on their second display (display 1).", "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900, "shared": true, "display": 1}},
-  {"id": "D169", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching it over Moonlight, which streams only the main display, with the window filling that display.", "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900, "shared": true, "fullscreen": true}, "allow": ["display"]},
-  {"id": "D173", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching it in a window of exactly 1280 by 960.", "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900, "shared": true, "size": "1280x960"}},
-  {"id": "D170", "prompt": "Where is the DOSBox-X window right now: on which display, and is it on screen and in front?", "tool": "window"},
-  {"id": "D171", "prompt": "The DOSBox-X window is hidden behind another application. Bring it to the front.", "tool": "window", "args": {"front": true}},
-  {"id": "D172", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for the owner to watch. The owner is on Moonlight.", "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900, "shared": true, "fullscreen": true}, "allow": ["display"]},
-  {"id": "D174", "prompt": "Hold the right arrow key down on the running guest and leave it held.", "tool": "send_keys", "args": {"keys": ["right"], "action": "down"}, "grammar": ["right", "down"]},
-  {"id": "D175", "prompt": "The game keeps its own mouse pointer in memory, x at 2000:94CA and y at 2000:94CC, two bytes each. Tell the screen map where the pointer is.", "tool": "screen_map_write", "args": {"method": "pointer", "pointer": {"x": "2000:94CA", "y": "2000:94CC", "bytes": 2}}, "grammar": ["pointer"]}
-]}
+   "args": {
+    "conf": "/opt/dosfury/fury.conf",
+    "cwd": "/opt/dosfury",
+    "session_seconds": 1200,
+    "binary": "/opt/dbx-dev/src/dosbox-x"
+   },
+   "allow": [
+    "shared"
+   ]
+  },
+  {
+   "id": "D93",
+   "prompt": "Hold the left mouse button down on the guest so a drag can follow.",
+   "tool": "send_mouse",
+   "args": {
+    "button": "left",
+    "action": "down"
+   },
+   "grammar": [
+    "left",
+    "down"
+   ]
+  },
+  {
+   "id": "D94",
+   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody who is watching, but launched behind my own windows so it does not take my focus.",
+   "tool": "start",
+   "args": {
+    "conf": "/opt/dosfury/fury.conf",
+    "cwd": "/opt/dosfury",
+    "session_seconds": 900,
+    "shared": true,
+    "background": true
+   },
+   "grammar": [
+    "shared"
+   ]
+  },
+  {
+   "id": "D95",
+   "prompt": "Keep only the scanned cells that now hold the value 7, and list up to 200 of the survivors with their values.",
+   "tool": "scan",
+   "args": {
+    "method": "filter",
+    "value": 7,
+    "limit": 200
+   },
+   "allow": [
+    "operator"
+   ],
+   "grammar": [
+    "filter"
+   ]
+  },
+  {
+   "id": "D96",
+   "prompt": "The guest is stopped. I only need its page runs and its GDT, nothing else of the machine map.",
+   "tool": "machine_map",
+   "args": {
+    "sections": {
+     "any_of": [
+      [
+       "paging",
+       "gdt"
+      ],
+      [
+       "gdt",
+       "paging"
+      ]
+     ]
+    }
+   },
+   "grammar": [
+    "paging",
+    "gdt"
+   ]
+  },
+  {
+   "id": "D97",
+   "prompt": "The guest is stopped. Write the machine map to the file /tmp/mcp-probe-map.json with no row cut.",
+   "tool": "machine_map",
+   "args": {
+    "dest": "/tmp/mcp-probe-map.json"
+   }
+  },
+  {
+   "id": "D98",
+   "prompt": "Let the guest run and come back at once, and include the debugger's own repaint of the screen in the answer.",
+   "tool": "resume",
+   "args": {
+    "detail": true
+   }
+  },
+  {
+   "id": "D99",
+   "prompt": "Break on every multiplex interrupt call (INT 2Fh), and show me the debugger's acknowledgement screen as well.",
+   "tool": "breakpoint_interrupt",
+   "args": {
+    "number": 47,
+    "detail": true
+   }
+  },
+  {
+   "id": "D100",
+   "prompt": "The guest is stopped. Show me the swatch of all 256 DAC colours at their natural size, with no enlargement.",
+   "tool": "palette",
+   "args": {
+    "any_of": [
+     {
+      "scale": 1
+     },
+     {
+      "first": 0,
+      "scale": 1
+     },
+     {
+      "count": 0,
+      "scale": 1
+     },
+     {
+      "first": 0,
+      "count": 0,
+      "scale": 1
+     },
+     {
+      "count": 256,
+      "scale": 1
+     },
+     {
+      "first": 0,
+      "count": 256,
+      "scale": 1
+     }
+    ]
+   },
+   "grammar": [
+    256
+   ]
+  },
+  {
+   "id": "D101",
+   "prompt": "The guest is stopped in mode 13h. Show me only the rectangle at x 40, y 30, 64 by 48 of the screen, enlarged 3 times.",
+   "tool": "screen_view",
+   "args": {
+    "crop": [
+     40,
+     30,
+     64,
+     48
+    ],
+    "scale": 3
+   },
+   "grammar": [
+    64
+   ]
+  },
+  {
+   "id": "D102",
+   "prompt": "Make a series of frames 100 to 160 of the session's video capture, every 4th frame, only the region at x 0, y 0, 320 by 20, into the new directory /tmp/dx-series.",
+   "tool": "series_capture",
+   "args": {
+    "first": 100,
+    "last": 160,
+    "step": 4,
+    "crop": [
+     0,
+     0,
+     320,
+     20
+    ],
+    "dest": "/tmp/dx-series"
+   }
+  },
+  {
+   "id": "D103",
+   "prompt": "Make a series of exactly frames 12, 48 and 96 of the capture /opt/dosfury/caps/fury_001.avi; it can go to the session's scratch.",
+   "tool": "series_capture",
+   "args": {
+    "at_frames": [
+     12,
+     48,
+     96
+    ],
+    "capture_path": "/opt/dosfury/caps/fury_001.avi"
+   }
+  },
+  {
+   "id": "D104",
+   "prompt": "Compare /tmp/a/f000010.png with /tmp/a/f000011.png, reading the second 2 pixels to the right of the first, and count a channel within 3 as equal.",
+   "tool": "image_compare",
+   "args": {
+    "method": "image",
+    "a": "/tmp/a/f000010.png",
+    "b": "/tmp/a/f000011.png",
+    "shift": [
+     2,
+     0
+    ],
+    "tolerance": 3
+   },
+   "grammar": [
+    "image"
+   ]
+  },
+  {
+   "id": "D105",
+   "prompt": "Compare the pictures /tmp/a/before.png and /tmp/b/after.png, which are not the same size, over the rectangle at x 0, y 0, 200 by 150 they share.",
+   "tool": "image_compare",
+   "args": {
+    "method": "image",
+    "a": "/tmp/a/before.png",
+    "b": "/tmp/b/after.png",
+    "crop": [
+     0,
+     0,
+     200,
+     150
+    ]
+   },
+   "grammar": [
+    "image"
+   ]
+  },
+  {
+   "id": "D106",
+   "prompt": "Compare the series /tmp/run1/manifest.json against /tmp/run2/manifest.json, only over the rectangle at x 8, y 8, 32 by 16.",
+   "tool": "image_compare",
+   "args": {
+    "method": "series",
+    "a": "/tmp/run1/manifest.json",
+    "b": "/tmp/run2/manifest.json",
+    "crop": [
+     8,
+     8,
+     32,
+     16
+    ]
+   },
+   "grammar": [
+    "series"
+   ]
+  },
+  {
+   "id": "D107",
+   "prompt": "In the series /tmp/run1/manifest.json, when does the rectangle at x 100, y 20, 24 by 8 match the picture /tmp/ref/digit.png in 95% or more of its pixels? List at most 10 changes.",
+   "tool": "image_compare",
+   "args": {
+    "method": "region",
+    "manifest": "/tmp/run1/manifest.json",
+    "crop": [
+     100,
+     20,
+     24,
+     8
+    ],
+    "measure": "match",
+    "ref": "/tmp/ref/digit.png",
+    "threshold": 0.95,
+    "limit": 10
+   },
+   "grammar": [
+    "match",
+    "region"
+   ]
+  },
+  {
+   "id": "D108",
+   "prompt": "In the series /tmp/run1/manifest.json, how many pixels of the rectangle at x 0, y 180, 320 by 20 changed from the frame before, on each frame where some did?",
+   "tool": "image_compare",
+   "args": {
+    "method": "region",
+    "manifest": "/tmp/run1/manifest.json",
+    "crop": [
+     0,
+     180,
+     320,
+     20
+    ],
+    "measure": "changed_pixels"
+   },
+   "grammar": [
+    "changed_pixels",
+    "region"
+   ]
+  },
+  {
+   "id": "D109",
+   "prompt": "Check the frames of the series /tmp/run1/manifest.json against the goldens listed in /tmp/goldens.sha256.",
+   "tool": "image_compare",
+   "args": {
+    "method": "golden",
+    "manifest": "/tmp/run1/manifest.json",
+    "checksums": "/tmp/goldens.sha256"
+   },
+   "grammar": [
+    "golden"
+   ]
+  },
+  {
+   "id": "D110",
+   "prompt": "Check the PNGs in the directory /tmp/shots against the goldens listed in /tmp/shots.sha256.",
+   "tool": "image_compare",
+   "args": {
+    "method": "golden",
+    "dir": "/tmp/shots",
+    "checksums": "/tmp/shots.sha256"
+   },
+   "grammar": [
+    "golden"
+   ]
+  },
+  {
+   "id": "D111",
+   "prompt": "Write what this session has done so far as a replay document to /tmp/bench/bricks.json.",
+   "tool": "perform_export",
+   "args": {
+    "dest": "/tmp/bench/bricks.json"
+   }
+  },
+  {
+   "id": "D112",
+   "prompt": "Export this session as a replay to /tmp/bench/bricks.json, replacing the document already there.",
+   "tool": "perform_export",
+   "args": {
+    "dest": "/tmp/bench/bricks.json",
+    "overwrite": true
+   }
+  },
+  {
+   "id": "D113",
+   "prompt": "Save the session as a replay document named session.json in the bench folder of my home directory.",
+   "tool": "perform_export",
+   "args": {
+    "dest": "~/bench/session.json"
+   }
+  },
+  {
+   "id": "D114",
+   "prompt": "In one call, read 2 bytes at 0100:0000 and have the call stop as diverged unless they read as hex 4f6b.",
+   "tool": "perform",
+   "args": {
+    "steps": [
+     {
+      "op": "read_memory",
+      "ref": "0100:0000",
+      "length": 2,
+      "recorded": {
+       "hex": {
+        "any_of": [
+         "4f6b",
+         "4F6B"
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "allow": [
+    "settle_seconds",
+    "summaries"
+   ],
+   "grammar": [
+    "read_memory"
+   ]
+  },
+  {
+   "id": "D115",
+   "prompt": "Export only the last ten calls of this session as a replay document.",
+   "expect": "CANNOT",
+   "about": "perform_export"
+  },
+  {
+   "id": "D116",
+   "prompt": "The guest is stopped in mode 13h. Save what is on the screen to /tmp/quiet.png, but do not attach the picture to your reply: I only need the file.",
+   "tool": "screen_view",
+   "args": {
+    "dest": "/tmp/quiet.png",
+    "attach": false
+   }
+  },
+  {
+   "id": "D117",
+   "prompt": "Check the PNGs in the directory /tmp/shots against the goldens listed in /tmp/shots.sha256, listing at most 5 names in each list.",
+   "tool": "image_compare",
+   "args": {
+    "method": "golden",
+    "dir": "/tmp/shots",
+    "checksums": "/tmp/shots.sha256",
+    "limit": 5
+   },
+   "grammar": [
+    "golden"
+   ]
+  },
+  {
+   "id": "D118",
+   "prompt": "Load the screen map /tmp/maps/bricks.screen-map.json.",
+   "tool": "screen_map_write",
+   "args": {
+    "method": "load",
+    "path": "/tmp/maps/bricks.screen-map.json"
+   },
+   "grammar": [
+    "load"
+   ]
+  },
+  {
+   "id": "D119",
+   "prompt": "The guest is stopped on its title screen, a text mode. Map it as title, known by the row at column 0, row 0, 40 cells wide and 1 high, with a control named play at column 10, row 12, 20 cells wide and 1 high.",
+   "tool": "screen_map_write",
+   "args": {
+    "method": "add",
+    "screen": "title",
+    "match": [
+     [
+      0,
+      0,
+      40,
+      1
+     ]
+    ],
+    "controls": [
+     {
+      "name": "play",
+      "rect": [
+       10,
+       12,
+       20,
+       1
+      ]
+     }
+    ]
+   },
+   "grammar": [
+    "add"
+   ]
+  },
+  {
+   "id": "D120",
+   "prompt": "The guest is stopped. Which of the mapped screens is it showing right now?",
+   "tool": "screen_map_find",
+   "args": {}
+  },
+  {
+   "id": "D121",
+   "prompt": "Write this session's screen maps to /tmp/maps/bricks.screen-map.json, replacing the file that is there.",
+   "tool": "screen_map_write",
+   "args": {
+    "method": "save",
+    "dest": "/tmp/maps/bricks.screen-map.json",
+    "overwrite": true
+   },
+   "grammar": [
+    "save"
+   ]
+  },
+  {
+   "id": "D122",
+   "prompt": "The guest is running. Left-click the control named serve on the screen the last identification matched.",
+   "tool": "send_mouse",
+   "args": {
+    "target": "serve",
+    "button": "left",
+    "action": {
+     "any_of": [
+      "",
+      "click"
+     ]
+    }
+   },
+   "grammar": [
+    "left"
+   ]
+  },
+  {
+   "id": "D125",
+   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, with nobody watching. Do not mark its window with the edge that shows a session is holding it.",
+   "tool": "start",
+   "args": {
+    "conf": "/opt/dosfury/fury.conf",
+    "cwd": "/opt/dosfury",
+    "session_seconds": 900,
+    "presence": false
+   }
+  },
+  {
+   "id": "D126",
+   "prompt": "Is the edge that marks this session's window being drawn, or could it not be drawn, and why?",
+   "tool": "status"
+  },
+  {
+   "id": "D127",
+   "prompt": "A state was just loaded and its reply gave the mark 30715 for the guest channel. Show the newest 25 lines of the guest's E9 instrumentation matching TICK [0-9]+ that were written after that mark.",
+   "tool": "log",
+   "args": {
+    "pattern": "TICK [0-9]+",
+    "channel": "guest",
+    "limit": 25,
+    "since_mark": 30715
+   },
+   "grammar": [
+    "guest"
+   ]
+  },
+  {
+   "id": "D128",
+   "prompt": "After a state load whose reply gave the mark 8820 for the guest channel, wait up to 40 seconds for a guest line matching LEVEL 3, counting only what the guest wrote after that mark.",
+   "tool": "log_wait",
+   "args": {
+    "pattern": "LEVEL 3",
+    "channel": "guest",
+    "seconds": 40,
+    "since_mark": 8820
+   },
+   "grammar": [
+    "guest"
+   ]
+  },
+  {
+   "id": "D129",
+   "prompt": "The last stop's E9 block was cut: it counted 57 lines from mark 9120 and showed only the newest. Read all 57 of them.",
+   "tool": "log",
+   "args": {
+    "channel": "guest",
+    "since_mark": 9120,
+    "limit": {
+     "any_of": [
+      57,
+      400
+     ]
+    }
+   },
+   "allow": [
+    "pattern",
+    "labels"
+   ],
+   "grammar": [
+    "guest"
+   ]
+  },
+  {
+   "id": "D130",
+   "prompt": "The guest is stopped. I only need the cpu's control registers: cr0, cr3 and the descriptor table registers.",
+   "tool": "machine_map",
+   "args": {
+    "sections": {
+     "any_of": [
+      [
+       "control"
+      ]
+     ]
+    }
+   },
+   "grammar": [
+    "control"
+   ]
+  },
+  {
+   "id": "D131",
+   "prompt": "End the DOSBox-X session, and even if it quits cleanly I want the last words of the console and of the log in the answer.",
+   "tool": "close",
+   "args": {
+    "detail": true
+   }
+  },
+  {
+   "id": "D132",
+   "prompt": "Stop the machine whenever AH becomes 4Ch, wherever in the program that happens, whoever puts it there.",
+   "tool": "regpoint_add",
+   "args": {
+    "condition": {
+     "any_of": [
+      "AH==4C",
+      "AH==0x4C",
+      "AH==4c",
+      "ah==4c",
+      "ah==0x4c",
+      "AH == 4C",
+      "AH == 0x4C",
+      "ah == 0x4c",
+      "ah == 4c"
+     ]
+    }
+   }
+  },
+  {
+   "id": "D133",
+   "prompt": "The guest is stopped. Record the next 35 display frames of the screen to a video file at /tmp/mcp-probe-frames.avi.",
+   "tool": "record",
+   "args": {
+    "frames": 35,
+    "dest": "/tmp/mcp-probe-frames.avi"
+   },
+   "allow": [
+    "seconds"
+   ]
+  },
+  {
+   "id": "D134",
+   "prompt": "The guest is stopped. Record what it sounds like over the next 20 frames to a WAV file.",
+   "tool": "audio_record",
+   "args": {
+    "frames": 20
+   },
+   "allow": [
+    "dest",
+    "seconds"
+   ],
+   "grammar": [
+    "wav"
+   ]
+  },
+  {
+   "id": "D135",
+   "prompt": "The guest is stopped. Keep the raw AdLib (OPL) register writes it makes over the next 70 frames in a file.",
+   "tool": "audio_record",
+   "args": {
+    "frames": 70,
+    "kind": "dro"
+   },
+   "allow": [
+    "dest",
+    "seconds"
+   ],
+   "grammar": [
+    "dro"
+   ]
+  },
+  {
+   "id": "D136",
+   "prompt": "The guest is stopped. Save the MIDI bytes the program sends during the next 10 frames to a file.",
+   "tool": "audio_record",
+   "args": {
+    "frames": 10,
+    "kind": "mid"
+   },
+   "allow": [
+    "dest",
+    "seconds"
+   ],
+   "grammar": [
+    "mid"
+   ]
+  },
+  {
+   "id": "D137",
+   "prompt": "Without ever stopping the machine for it, count every value written into the 2-byte variable _score, and which instructions wrote them.",
+   "tool": "watch_add",
+   "args": {
+    "ref": "_score",
+    "mode": "count"
+   },
+   "allow": [
+    "length",
+    "fmt",
+    "by"
+   ],
+   "grammar": [
+    "count"
+   ]
+  },
+  {
+   "id": "D138",
+   "prompt": "Each time the byte _frame_flag is written, keep a copy of the 24 bytes at _sprite_table as they stood at that moment, without stopping the machine.",
+   "tool": "watch_add",
+   "args": {
+    "ref": "_sprite_table",
+    "mode": "capture",
+    "trigger": "_frame_flag",
+    "length": 24
+   },
+   "allow": [
+    "fmt",
+    "by",
+    "trigger_type"
+   ],
+   "grammar": [
+    "capture"
+   ]
+  },
+  {
+   "id": "D139",
+   "prompt": "Keep a row for every read the program makes of the byte at 1A2B:0040, with the beam line and the time of each, without stopping the machine.",
+   "tool": "watch_add",
+   "args": {
+    "ref": {
+     "any_of": [
+      "1A2B:0040",
+      "1a2b:0040",
+      "1A2B:40",
+      "1a2b:40"
+     ]
+    },
+    "mode": "capture",
+    "trigger_type": "r"
+   },
+   "allow": [
+    "by"
+   ],
+   "grammar": [
+    "capture",
+    "r"
+   ]
+  },
+  {
+   "id": "D140",
+   "prompt": "Record the next 20 frames of sound as a multi-track AVI, one audio track per mixer channel.",
+   "expect": "CANNOT",
+   "about": "audio_record"
+  },
+  {
+   "id": "D141",
+   "prompt": "Open a DOSBox-X session from /opt/build/tasm.conf in /opt/build, bounded to 600 seconds, headless, writing its log to /opt/build/run.log. Record every DOS INT 21h call the guest makes, and fingerprint /opt/build/OUT.TXT before it boots so I can tell later whether the guest wrote it.",
+   "tool": "start",
+   "args": {
+    "conf": "/opt/build/tasm.conf",
+    "cwd": "/opt/build",
+    "session_seconds": 600,
+    "logfile": "/opt/build/run.log",
+    "dos_calls": true,
+    "guest_files": [
+     "/opt/build/OUT.TXT"
+    ]
+   },
+   "allow": [
+    "shared"
+   ]
+  },
+  {
+   "id": "D142",
+   "prompt": "Open a DOSBox-X session from /opt/game/game.conf in /opt/game for 900 seconds with its log in /opt/game/emu.log, and have the emulator log its file operations at debug level and its PIT at warn level into that log.",
+   "tool": "start",
+   "args": {
+    "conf": "/opt/game/game.conf",
+    "cwd": "/opt/game",
+    "session_seconds": 900,
+    "logfile": "/opt/game/emu.log",
+    "log_categories": {
+     "files": "debug",
+     "pit": "warn"
+    }
+   },
+   "allow": [
+    "shared"
+   ],
+   "grammar": [
+    "files",
+    "pit",
+    "debug",
+    "warn"
+   ]
+  },
+  {
+   "id": "D143",
+   "prompt": "Read the VGA input status register, port 3DA, once, as a byte.",
+   "tool": "port",
+   "args": {
+    "method": "read",
+    "port": {
+     "any_of": [
+      986,
+      "0x3DA",
+      "0x3da"
+     ]
+    }
+   },
+   "allow": [
+    "bits"
+   ],
+   "grammar": [
+    "read"
+   ]
+  },
+  {
+   "id": "D144",
+   "prompt": "Write the value 5 to I/O port 3C8 (the DAC write index), one byte.",
+   "tool": "port",
+   "args": {
+    "method": "write",
+    "port": {
+     "any_of": [
+      968,
+      "0x3C8",
+      "0x3c8"
+     ]
+    },
+    "value": {
+     "any_of": [
+      5,
+      "0x5",
+      "0x05"
+     ]
+    }
+   },
+   "allow": [
+    "bits"
+   ],
+   "grammar": [
+    "write"
+   ]
+  },
+  {
+   "id": "D145",
+   "prompt": "Read the 16-bit word at I/O port 220h.",
+   "tool": "port",
+   "args": {
+    "method": "read",
+    "port": {
+     "any_of": [
+      544,
+      "0x220"
+     ]
+    },
+    "bits": 16
+   },
+   "grammar": [
+    "read",
+    16
+   ]
+  },
+  {
+   "id": "D146",
+   "prompt": "Mask the timer interrupt, IRQ 0, at the interrupt controller.",
+   "tool": "pic",
+   "args": {
+    "method": "mask",
+    "irq": 0
+   },
+   "grammar": [
+    "mask"
+   ]
+  },
+  {
+   "id": "D147",
+   "prompt": "Fire the timer interrupt once by hand, so its handler runs at the next instruction.",
+   "tool": "pic",
+   "args": {
+    "method": "raise",
+    "irq": 0
+   },
+   "grammar": [
+    "raise"
+   ]
+  },
+  {
+   "id": "D148",
+   "prompt": "Show me the state of both interrupt controllers: which lines are masked, requested or in service.",
+   "tool": "pic",
+   "args": {
+    "method": "read"
+   },
+   "grammar": [
+    "read"
+   ]
+  },
+  {
+   "id": "D149",
+   "prompt": "Turn the A20 gate off.",
+   "tool": "a20",
+   "args": {
+    "method": "off"
+   },
+   "grammar": [
+    "off"
+   ]
+  },
+  {
+   "id": "D150",
+   "prompt": "Did the guest write /opt/build/OUT.TXT during this run, leave it empty, or leave the old one untouched?",
+   "tool": "guest_file",
+   "args": {
+    "path": "/opt/build/OUT.TXT"
+   }
+  },
+  {
+   "id": "D151",
+   "prompt": "Keep the byte at the symbol _lives at its current value while the game runs, whatever the game writes to it.",
+   "tool": "watch_add",
+   "args": {
+    "ref": "_lives",
+    "mode": "freeze"
+   },
+   "allow": [
+    "length",
+    "fmt",
+    "by"
+   ],
+   "grammar": [
+    "freeze"
+   ]
+  },
+  {
+   "id": "D152",
+   "prompt": "Which file did the program fail to open? List the DOS open calls it made that came back with an error.",
+   "tool": "log",
+   "args": {
+    "channel": "dos",
+    "pattern": {
+     "regex": {
+      "lines": [
+       "#17 08BC:011F psp 0x08BC 0x3D open IN.TXT -> AX=0x0005",
+       "#18 08BC:012D psp 0x08BC 0x3F read -> AX=0x0004",
+       "#19 08BC:0131 psp 0x08BC 0x3E close -> AX=0x3E01",
+       "#20 08BC:0139 psp 0x08BC 0x3D open MISSING.TXT -> error 2 file not found",
+       "#21 08BC:0157 psp 0x08BC 0x3C create OUT.TXT -> AX=0x0005",
+       "#22 08BC:016D psp 0x08BC 0x40 write -> AX=0x0004",
+       "#23 08BC:0171 psp 0x08BC 0x3E close -> AX=0x3E01"
+      ],
+      "hits": [
+       3
+      ],
+      "example": "open .* -> error",
+      "also": [
+       0
+      ]
+     }
+    }
+   },
+   "allow": [
+    "limit",
+    "labels"
+   ],
+   "grammar": [
+    "dos"
+   ]
+  },
+  {
+   "id": "D153",
+   "prompt": "For every INT 10h video BIOS call the program has made, give me the AX it returned.",
+   "expect": "CANNOT",
+   "about": "log"
+  },
+  {
+   "id": "D154",
+   "prompt": "The DOS machine is stopped in display frame 400, counted since it powered on. In one call, advance one frame at a time until a stop reads frame 470, keeping every stop a watch or breakpoint makes on the way and letting the server count the steps; I cannot know in advance how many steps that takes.",
+   "tool": "perform",
+   "args": {
+    "steps": [
+     {
+      "op": "run_for",
+      "frames": 1
+     }
+    ],
+    "summaries": true,
+    "until_frame": 470
+   },
+   "allow": [
+    "settle_seconds"
+   ],
+   "grammar": [
+    "run_for"
+   ]
+  },
+  {
+   "id": "D155",
+   "prompt": "Measure the Sound Blaster recording /tmp/rec/fanfare.wav between 0.5 and 2 seconds, only its left channel: did it sound, how loud, and when did it start?",
+   "tool": "audio_compare",
+   "args": {
+    "method": "measure",
+    "path": "/tmp/rec/fanfare.wav",
+    "window": [
+     0.5,
+     2
+    ],
+    "channel": 0
+   },
+   "grammar": [
+    "measure"
+   ]
+  },
+  {
+   "id": "D156",
+   "prompt": "Measure the whole recording /tmp/rec/menu.wav, every channel.",
+   "tool": "audio_compare",
+   "args": {
+    "method": "measure",
+    "path": "/tmp/rec/menu.wav"
+   },
+   "grammar": [
+    "measure"
+   ]
+  },
+  {
+   "id": "D157",
+   "prompt": "Compare the recording /tmp/rec/new.wav with the reference /tmp/rec/ref.wav over their first 3 seconds, without lining up their onsets first.",
+   "tool": "audio_compare",
+   "args": {
+    "method": "diff",
+    "a": "/tmp/rec/new.wav",
+    "b": "/tmp/rec/ref.wav",
+    "window": [
+     0,
+     3
+    ],
+    "align": false
+   },
+   "grammar": [
+    "diff"
+   ]
+  },
+  {
+   "id": "D158",
+   "prompt": "The machine is stopped on the play screen of a game whose arcade original draws the same pixels through a palette of other colours. Map this screen as play, known by the strip at x 0, y 0, 320 wide and 8 high, signed so that one map knows it on both machines.",
+   "tool": "screen_map_write",
+   "args": {
+    "method": "add",
+    "screen": "play",
+    "match": [
+     [
+      0,
+      0,
+      320,
+      8
+     ]
+    ],
+    "cells": "index"
+   },
+   "grammar": [
+    "add",
+    "index"
+   ]
+  },
+  {
+   "id": "D159",
+   "prompt": "The guest is stopped in mode 13h. Show where the pixels drawn with palette entries 40 and 41 are on the screen, and how many there are.",
+   "tool": "screen_view",
+   "args": {
+    "mode": "isolate",
+    "pens": [
+     40,
+     41
+    ]
+   },
+   "allow": [
+    "crop",
+    "scale",
+    "dest",
+    "attach"
+   ],
+   "grammar": [
+    "isolate"
+   ]
+  },
+  {
+   "id": "D160",
+   "prompt": "The guest is stopped in mode 13h. Which palette entries does the screen use, and which does it leave unused? I do not need a picture.",
+   "tool": "screen_view",
+   "args": {
+    "mode": "histogram"
+   },
+   "allow": [
+    "crop"
+   ],
+   "grammar": [
+    "histogram"
+   ]
+  },
+  {
+   "id": "D161",
+   "prompt": "The guest is stopped in mode 13h. Which palette entry is the pixel at x 120, y 75, and what colour is it?",
+   "tool": "screen_view",
+   "args": {
+    "mode": "pixel",
+    "point": [
+     120,
+     75
+    ]
+   },
+   "allow": [
+    "scale",
+    "dest",
+    "attach"
+   ],
+   "grammar": [
+    "pixel"
+   ]
+  },
+  {
+   "id": "D162",
+   "prompt": "The screen map is loaded, and its title screen names an anchor. Run to the title screen, with the control at main_loop counting on the way.",
+   "tool": "run_to",
+   "args": {
+    "screen": "title",
+    "control": "main_loop"
+   }
+  },
+  {
+   "id": "D163",
+   "prompt": "Load the screen map /tmp/maps/speedf.screen-map.json for a machine that shows the game's picture twice as large, with 40 rows of border above and below it.",
+   "tool": "screen_map_write",
+   "args": {
+    "method": "load",
+    "path": "/tmp/maps/speedf.screen-map.json",
+    "scale": 2,
+    "margin": [
+     0,
+     40
+    ]
+   },
+   "grammar": [
+    "load"
+   ]
+  },
+  {
+   "id": "D164",
+   "prompt": "Start DOSBox-X on the conf /opt/lineup/lineup.conf with /opt/lineup as the working directory, for at most 900 seconds. Load the linker map /opt/lineup/EXES/LINEUP.MAP with the session, so its names are there as soon as DOS has loaded the game, wherever it puts it.",
+   "tool": "start",
+   "args": {
+    "conf": "/opt/lineup/lineup.conf",
+    "cwd": "/opt/lineup",
+    "session_seconds": 900,
+    "symbols": "/opt/lineup/EXES/LINEUP.MAP"
+   },
+   "allow": [
+    "base_from"
+   ]
+  },
+  {
+   "id": "D165",
+   "prompt": "Drag with the left mouse button held: press it at screen pixel 100, 50 and release it at screen pixel 220, 90, in one call.",
+   "tool": "send_mouse",
+   "args": {
+    "x": 100,
+    "y": 50,
+    "button": "left",
+    "action": "drag",
+    "to_x": 220,
+    "to_y": 90
+   },
+   "grammar": [
+    "left",
+    "drag"
+   ]
+  },
+  {
+   "id": "D166",
+   "prompt": "The screen map is loaded, and its screen named palette has no anchor. Run until the machine shows the palette screen, giving up after 20 seconds.",
+   "tool": "run_to",
+   "args": {
+    "screen": "palette",
+    "seconds": 20
+   }
+  },
+  {
+   "id": "D167",
+   "prompt": "The screen map loaded is consolidated, and the guest is stopped on its title screen, which is whole once DrawTitle has run. Map it as title, known by the row at column 0, row 0, 40 cells wide and 1 high, entered by that routine.",
+   "tool": "screen_map_write",
+   "args": {
+    "method": "add",
+    "screen": "title",
+    "match": [
+     [
+      0,
+      0,
+      40,
+      1
+     ]
+    ],
+    "anchor": "DrawTitle"
+   },
+   "grammar": [
+    "add"
+   ]
+  },
+  {
+   "id": "D168",
+   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching on their second display (display 1).",
+   "tool": "start",
+   "args": {
+    "conf": "/opt/dosfury/fury.conf",
+    "cwd": "/opt/dosfury",
+    "session_seconds": 900,
+    "shared": true,
+    "display": 1
+   }
+  },
+  {
+   "id": "D169",
+   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching it over Moonlight, which streams only the main display, with the window filling that display.",
+   "tool": "start",
+   "args": {
+    "conf": "/opt/dosfury/fury.conf",
+    "cwd": "/opt/dosfury",
+    "session_seconds": 900,
+    "shared": true,
+    "fullscreen": true
+   },
+   "allow": [
+    "display"
+   ]
+  },
+  {
+   "id": "D173",
+   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching it in a window of exactly 1280 by 960.",
+   "tool": "start",
+   "args": {
+    "conf": "/opt/dosfury/fury.conf",
+    "cwd": "/opt/dosfury",
+    "session_seconds": 900,
+    "shared": true,
+    "size": "1280x960"
+   }
+  },
+  {
+   "id": "D170",
+   "prompt": "Where is the DOSBox-X window right now: on which display, and is it on screen and in front?",
+   "tool": "window"
+  },
+  {
+   "id": "D171",
+   "prompt": "The DOSBox-X window is hidden behind another application. Bring it to the front.",
+   "tool": "window",
+   "args": {
+    "front": true
+   }
+  },
+  {
+   "id": "D172",
+   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for the owner to watch. The owner is on Moonlight.",
+   "tool": "start",
+   "args": {
+    "conf": "/opt/dosfury/fury.conf",
+    "cwd": "/opt/dosfury",
+    "session_seconds": 900,
+    "shared": true,
+    "fullscreen": true
+   },
+   "allow": [
+    "display"
+   ]
+  },
+  {
+   "id": "D174",
+   "prompt": "Hold the right arrow key down on the running guest and leave it held.",
+   "tool": "send_keys",
+   "args": {
+    "keys": [
+     "right"
+    ],
+    "action": "down"
+   },
+   "grammar": [
+    "right",
+    "down"
+   ]
+  },
+  {
+   "id": "D175",
+   "prompt": "The game keeps its own mouse pointer in memory, x at 2000:94CA and y at 2000:94CC, two bytes each. Tell the screen map where the pointer is.",
+   "tool": "screen_map_write",
+   "args": {
+    "method": "pointer",
+    "pointer": {
+     "x": "2000:94CA",
+     "y": "2000:94CC",
+     "bytes": 2
+    }
+   },
+   "grammar": [
+    "pointer"
+   ]
+  },
+  {
+   "id": "D176",
+   "prompt": "The guest is stopped and its screen map is loaded. Let it run until the mapped screen called menu is the one on screen, judging every 5 retraces, and stop it there.",
+   "tool": "screen_wait",
+   "args": {
+    "screen": "menu",
+    "every": 5
+   },
+   "allow": [
+    "text",
+    "palette",
+    "seconds"
+   ]
+  },
+  {
+   "id": "D177",
+   "prompt": "The guest is stopped and its display is fading out. Let it run until every colour in the VGA DAC is black, then stop it.",
+   "tool": "screen_wait",
+   "args": {
+    "palette": "black"
+   },
+   "allow": [
+    "text",
+    "screen",
+    "every",
+    "seconds"
+   ],
+   "grammar": [
+    "black"
+   ]
+  }
+ ]
+}

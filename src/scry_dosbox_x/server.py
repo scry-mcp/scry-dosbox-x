@@ -836,27 +836,38 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
                          paths.absolute("dest", dest) if dest else None, seconds, bridge(ctx))
 
 
-@tool("Run until text is on screen", summary=one_line.screen_wait, on_cancel="stop",
-      replay=recording.Counted("run_for", "frames", "polls"))
-def screen_wait(text: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
+@tool("Wait for a screen, its text or its palette", summary=one_line.screen_wait,
+      on_cancel="stop", replay=recording.Counted("run_for", "frames", "polls"))
+def screen_wait(text: str = "", screen: str = "", palette: str = "",
+                every: Annotated[int, vocab.bounds(0, checks.SAMPLED_EVERY_MAX)] = 0,
+                seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
                 ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Run the machine retrace by retrace until `text` is on the TEXT screen, and stop there.
-    `text` (1 to {SCREEN_TEXT_MAX} code page 437 characters) is matched literally,
-    case-sensitive, inside one row as `screen_view` reads it. Needs a stopped machine and
-    `RUNSTATE`. Already on screen: answered at once. Each retrace costs a stop and a reading of the
-    screen, so `run_for` first for a distant string.
+    """Run the machine retrace by retrace until ONE predicate holds, and stop there.
 
-    Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`) or
-    `TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of `run_to`
-    with its `frame` (unless the text was already there). Refused: `bad_argument`, `wait_stopped`
-    (a declared breakpoint stopped it), `no_channel` (a screen it cannot read, or a build with no
-    `RUNSTATE`).
+    Exactly one of: `text` (1 to {SCREEN_TEXT_MAX} code page 437 characters, matched literally and
+    case-sensitive inside one row as `screen_view` reads it), `screen` (a name of the loaded
+    screen map, `screen_map_write`; the frame it names), `palette` ({PALETTES}: every DAC entry
+    black, which is how a fade ends). None or several is `bad_argument`.
+
+    `every`: 0 judges every retrace; N judges every Nth, for a predicate whose read is a full
+    frame, and a screen that lasts fewer than N retraces is passed over. Needs a stopped machine
+    and `RUNSTATE`. Already true: answered at once, the machine not moved. Each poll costs a stop
+    and a read, so `run_for` first for a distant screen.
+
+    Reply: `verdict` `TARGET` (`predicate`, `already`, `waited_s`, `polls`, `sampled_every`;
+    text adds `point` `[column, row]` and `line`, screen adds `screen`, palette adds `entries`) or
+    `TIMEOUT` (the same, with `retrace_pending`), `note`, the stop reply of `run_to` with its
+    `frame` (unless the predicate was already true). Refused: `bad_argument`, `unknown_ref` (no
+    such mapped screen), `wait_stopped` (a declared breakpoint stopped it), `no_channel` (a
+    screen it cannot read, or a build with no `RUNSTATE`).
 
     Reference: REFERENCE.md, Input and the screen.
     """
     session = live()
     session.require_stopped("screen_wait")
-    return retrace.screen_wait(session, text, seconds, bridge(ctx))
+    if palette:
+        vocab.one_of("palette", palette, checks.PALETTES)
+    return retrace.screen_wait(session, text, screen, palette, every, seconds, bridge(ctx))
 
 
 

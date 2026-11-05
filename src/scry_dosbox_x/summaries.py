@@ -519,14 +519,22 @@ def series_capture(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def screen_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    predicate = str(reply.get("predicate") or "text")
+    asked = args.get(predicate) or ""
+    said = (repr(asked) if predicate == "text"
+            else f"screen {asked!r}" if predicate == "screen" else f"a {asked} palette")
     point = reply.get("point")
     at = f"{point[0]},{point[1]}" if isinstance(point, list) else "?"
     if reply.get("verdict") == contract.TIMEOUT:
-        return (f"screen_wait {args.get('text')!r}: TIMEOUT after "
+        return (f"screen_wait {said}: TIMEOUT after "
                 f"{prose.counted(int(reply.get('polls') or 0), 'retrace')}")
     if reply.get("already"):
-        return f"screen_wait {args.get('text')!r}: already on screen at {at}"
-    return (f"screen_wait {args.get('text')!r}: found at {at} after "
+        where = f" at {at}" if isinstance(point, list) else ""
+        return f"screen_wait {said}: already on screen{where}"
+    if predicate != "text":
+        return (f"screen_wait {said}: found after "
+                f"{prose.counted(int(reply.get('polls') or 0), 'retrace')}")
+    return (f"screen_wait {said}: found at {at} after "
             f"{prose.counted(int(reply.get('polls') or 0), 'retrace')}")
 
 

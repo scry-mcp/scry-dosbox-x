@@ -24,7 +24,7 @@ from typing import Any, cast
 import pytest
 from channel_double import REAL_STOP, Machine, Stop, session_over
 from dosbox_x_server_support import NO_SUCH_HOME, clean_session, documented, install  # noqa: F401
-from scry_core import png
+from scry_core import png, screen_map
 from scry_core.host_program import MODE_BITS
 from test_dosbox_x_machine import Bench, listing
 from test_dosbox_x_run_for import FRAME_MS
@@ -2112,3 +2112,69 @@ def test_a_wait_refused_at_a_retrace_carries_the_stop_it_ended_at_with_its_cause
     r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", seconds=10))
     assert r["status"] == "INVALID" and r["code"] == "no_channel", r
     assert "stop_seq" in r and isinstance(r.get("cause"), str), r
+
+
+def test_a_wait_names_exactly_one_predicate(tmp_path: Path) -> None:
+    """`text`, `screen` and `palette` are one wait's three predicates: none or several is
+    refused before the machine moves, so the caller learns what it asked for."""
+    machine = waiting(["probe-booted"], 0, tmp_path)
+    for kw in ({}, {"text": "X", "screen": "prompt"}, {"text": "X", "palette": "black"},
+               {"screen": "prompt", "palette": "black"}):
+        r = cast(dict[str, Any], server.screen_wait(**kw))
+        assert r["status"] == "INVALID" and r["code"] == "bad_argument", (kw, r)
+        assert "exactly one of" in r["message"], r["message"]
+    assert vrts(machine) == []
+
+
+def test_a_wait_on_a_mapped_screen_answers_at_once_when_it_is_the_one_in_front(
+        tmp_path: Path) -> None:
+    machine = waiting(["probe-booted"], 0, tmp_path)
+    dstate.STATE.maps = screen_map.Maps()
+    added = cast(dict[str, Any], server.screen_map_write("add", screen="prompt",
+                                                         match=[[0, 3, 4, 1]]))
+    assert added["status"] == "ok", added
+    got = cast(dict[str, Any], server.screen_wait(screen="prompt", seconds=5))
+    assert got["status"] == "ok" and got["verdict"] == "TARGET" and got["already"] is True, got
+    assert got["predicate"] == "screen" and got["screen"]["name"] == "prompt", got
+    assert vrts(machine) == [], "already there: the machine is not moved"
+
+
+def test_a_wait_on_a_mapped_screen_runs_the_frames_until_the_map_names_it(
+        tmp_path: Path) -> None:
+    waiting(["probe-booted"], 0, tmp_path)
+    dstate.STATE.maps = screen_map.Maps()
+    added = cast(dict[str, Any], server.screen_map_write("add", screen="prompt",
+                                                         match=[[0, 3, 4, 1]]))
+    assert added["status"] == "ok", added
+    machine = waiting(["probe-park", "probe-booted"], 1, tmp_path)
+    got = cast(dict[str, Any], server.screen_wait(screen="prompt", seconds=10))
+    assert got["status"] == "ok" and got["verdict"] == "TARGET", got
+    assert got["already"] is False and got["polls"] == 1 and got["screen"]["name"] == "prompt", got
+    assert len(vrts(machine)) == 1
+
+
+def test_a_wait_on_a_palette_reads_the_dac_at_every_poll_and_times_out_saying_so(
+        tmp_path: Path) -> None:
+    machine = waiting(["probe-booted"], 2, tmp_path)
+    r = cast(dict[str, Any], server.screen_wait(palette="black", seconds=0.5))
+    assert r["status"] == "ok" and r["verdict"] == "TIMEOUT", r
+    assert r["predicate"] == "palette" and r["sampled_every"] == 0, r
+    assert machine.asked.count("VGA DACPAL") == 3, "the opening judge and one per retrace"
+
+
+def test_a_palette_that_is_black_is_the_hit_and_the_machine_is_not_moved(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    machine = waiting(["probe-booted"], 0, tmp_path)
+    monkeypatch.setattr(vgadac, "read_dac",
+                        lambda session: ({"pel_mask": "ff"}, ["000000"] * vgadac.DAC_ENTRIES))
+    r = cast(dict[str, Any], server.screen_wait(palette="black", seconds=5))
+    assert r["status"] == "ok" and r["verdict"] == "TARGET" and r["already"] is True, r
+    assert vrts(machine) == []
+
+
+def test_a_sampled_wait_judges_every_nth_retrace_and_says_the_step(tmp_path: Path) -> None:
+    machine = waiting(["probe-booted"], 3, tmp_path)
+    r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", every=3, seconds=0.5))
+    assert r["status"] == "ok" and r["verdict"] == "TIMEOUT", r
+    assert r["sampled_every"] == 3 and r["polls"] == 3, r
+    assert len(machine.dumps) == 2, "the opening judge and one after the three retraces"

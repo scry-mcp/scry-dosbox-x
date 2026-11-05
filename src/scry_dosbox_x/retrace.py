@@ -14,6 +14,7 @@ from scry_core import reply_contract as contract
 from scry_core.prose import counted
 
 from scry_dosbox_x import arming, machine, running, screen, vga
+from scry_dosbox_x import dac as vgadac
 from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import session as ds
@@ -231,68 +232,203 @@ def _counts(before: int | None, after: Any, cycles: Any) -> dict[str, Any]:
             "cycles": cycles}
 
 
-def screen_wait(session: ds.Session, text: str, seconds: float,
-                progress: ds.Progress) -> dict[str, Any]:
-    """Retrace by retrace until `text` is inside one row of the text screen.
+#: The least a retrace is given when a bound is all but spent.
+MIN_STEP_S = 0.001
 
-    `seconds` counts from once the opening read has looked at the screen. Already there: answered
-    at once, the machine not moved. A non-text frame is no match. A declared code breakpoint that
-    cuts a frame ends the wait `wait_stopped`; the bound, a `TIMEOUT` (`_expired`).
+
+class Watched:
+    """One of `screen_wait`'s predicates: what a poll reads, and what a hit answers.
+
+    Cheap predicates only: the cost of a poll is the read, and `every` is the caller's lever.
+    """
+
+    name: str
+    said: str
+    examined: int = 1
+
+    def hit(self) -> dict[str, Any] | None:
+        raise NotImplementedError
+
+    def state(self) -> dict[str, Any]:
+        """What the reply carries of the last frame examined, on a timeout as on a hit."""
+        return {}
+
+    def why(self) -> str:
+        """What a timeout adds about what it examined, after the count of retraces."""
+        return ""
+
+
+class TextWatched(Watched):
+    name = "text"
+
+    def __init__(self, session: ds.Session, text: str) -> None:
+        self.watch = TextWatch(session)
+        self.text = text
+        self.said = f"`{text}`"
+        self.examined = 1
+        self.not_text = 0
+        self.last: list[str] | None = None
+
+    def hit(self) -> dict[str, Any] | None:
+        rows = self.watch.rows()
+        if rows is None:
+            self.not_text += 1
+            return None
+        self.last = rows
+        found = find_text(rows, self.text)
+        return None if found is None else {"point": found[0], "line": found[1]}
+
+    def state(self) -> dict[str, Any]:
+        return {} if self.last is None else {"text": self.last}
+
+    def why(self) -> str:
+        return ("" if not self.not_text else
+                f"; {self.not_text} of {self.examined} frames examined were not in a text mode")
+
+
+class ScreenWatched(Watched):
+    name = "screen"
+
+    def __init__(self, session: ds.Session, screen: str) -> None:
+        self.session = session
+        self.screen = screen
+        self.said = f"screen {screen!r}"
+        STATE.maps.check_known(screen)      # an unmapped name is refused before a frame runs
+
+    def hit(self) -> dict[str, Any] | None:
+        # Imported here: `folds` reaches `checks`, and `checks` reaches this module through
+        # `inputs`, so the top of this file cannot hold it.
+        from scry_dosbox_x import folds as dosbox_folds
+
+        try:
+            shown = STATE.maps.find(dosbox_folds.map_read(self.session), None)
+        except ds.Invalid as e:
+            # A frame with no video mode yet is no match, like a non-text frame to a text wait.
+            if e.code != "no_channel":
+                raise
+            return None
+        if shown.get("matched") and shown["screen"] == self.screen:
+            return {"screen": {"name": shown["screen"], "layer": shown["layer"]}}
+        return None
+
+    def state(self) -> dict[str, Any]:
+        return {}
+
+    def why(self) -> str:
+        found = STATE.maps.found
+        return "" if found is not None else "; no mapped screen matched the frames examined"
+
+
+class PaletteWatched(Watched):
+    name = "palette"
+
+    def __init__(self, session: ds.Session, palette: str) -> None:
+        self.session = session
+        self.palette = palette
+        self.said = f"a {palette} palette"
+
+    def hit(self) -> dict[str, Any] | None:
+        _, entries = vgadac.read_dac(self.session)
+        if all(entry == "000000" for entry in entries):
+            return {"palette": self.palette, "entries": len(entries)}
+        return None
+
+
+def _watched(session: ds.Session, text: str, screen: str, palette: str) -> Watched:
+    """The one predicate the caller named; none or several is refused before a frame runs."""
+    named = [(name, value) for name, value in
+             (("text", text), ("screen", screen), ("palette", palette)) if value]
+    if len(named) != 1:
+        raise ds.Invalid("bad_argument",
+                         "screen_wait runs on exactly one of `text`, `screen` or `palette`; got "
+                         f"{len(named)} of them. Each is a different read of the screen, and a "
+                         "frame has the budget of one")
+    name, value = named[0]
+    if name == "text":
+        return TextWatched(session, value)
+    if name == "screen":
+        return ScreenWatched(session, value)
+    return PaletteWatched(session, value)
+
+
+def screen_wait(session: ds.Session, text: str, screen: str, palette: str, every: int,
+                seconds: float, progress: ds.Progress) -> dict[str, Any]:
+    """Retrace by retrace until the one predicate holds.
+
+    `text`: inside one row of the text screen. `screen`: the loaded screen map names the frame.
+    `palette`: every DAC entry is black. `every`: 0 judges every retrace, N judges every Nth,
+    which can pass over a screen that lasts fewer than N and is what the reply's `sampled_every`
+    says. `seconds` counts from once the opening read has looked. Already there: answered at
+    once, the machine not moved. A declared code breakpoint that cuts a frame ends the wait
+    `wait_stopped`; the bound, a `TIMEOUT` (`_expired`).
     """
     session.require_run_state("screen_wait")
-    watch = TextWatch(session)
-    rows = watch.rows()
-    examined, not_text = 1, int(rows is None)
-    hit = None if rows is None else find_text(rows, text)
+    watched = _watched(session, text, screen, palette)
+    step = every or 1
+    hit = watched.hit()
     if hit is not None:
-        return st.reply(verdict=contract.TARGET, already=True, waited_s=0.0, polls=0,
-                        point=hit[0], line=hit[1])
-    last = rows
+        return st.reply(verdict=contract.TARGET, predicate=watched.name, already=True,
+                        waited_s=0.0, polls=0, sampled_every=every, **watched.state(), **hit)
     began = time.monotonic()
     deadline = began + seconds
     clock = mprogress.Ticker(seconds, progress)
     cuttable = arming.declares_code_breakpoint()
     polls = 0
     while hit is None:
-        seen = {} if last is None else {"text": last}
         clock.expired()
         if time.monotonic() >= deadline:
-            return _expired(session, text, seconds, polls, f"{not_text} of {examined}", seen,
-                            out=False, began=began)
-        if _advance(session, began, deadline, ds.no_progress):
-            return _expired(session, text, seconds, polls, f"{not_text} of {examined}", seen,
-                            out=True, began=began, cuttable=cuttable)
-        polls += 1
-        cut = _cut(session) if cuttable else None
-        if cut is not None:
+            return _expired(session, watched, every, seconds, polls, out=False, began=began)
+        early = _advance_by(session, step, began, deadline, clock)
+        if early is None:
+            polls += step
+        elif early.get("status") != "ok":
+            return early
+        else:
+            return _expired(session, watched, every, seconds, polls, out=True, began=began,
+                            cuttable=cuttable)
+        if cuttable and (cut := _cut(session)) is not None:
             raise ds.Invalid("wait_stopped",
                 f"a declared breakpoint stopped the machine before retrace {polls}, so the "
-                f"wait for `{text}` cannot go on; {PENDING_NOTE}",
-                polls=polls, **{**_ended_at(session), "cause": st.cause(cut)}, retrace_pending=True,
-                **seen)
+                f"wait for {watched.said} cannot go on; {PENDING_NOTE}",
+                polls=polls, predicate=watched.name,
+                **{**_ended_at(session), "cause": st.cause(cut)}, retrace_pending=True,
+                **watched.state())
         try:
-            rows = watch.rows()
+            hit = watched.hit()
         except ds.Invalid as e:
             # Any other refusal is about the debugger itself, which is not asked more.
             if e.code != "no_channel":
                 raise
             raise ds.Invalid(e.code, f"{e}; the wait had stopped the machine at retrace {polls}",
-                             **{**e.fields, "polls": polls, **_ended_at(session)}) from None
-        examined += 1
-        clock.tick("screen_wait {text!r}: retrace {polls}, {mode}, {elapsed:.0f}s of {bound:g}s",
-                   text=text, polls=polls, mode="a text mode" if rows is not None else
-                   "not a text mode", bound=seconds)
-        if rows is None:
-            not_text += 1
-            continue
-        last = rows
-        hit = find_text(rows, text)
-    found: dict[str, Any] = {"verdict": contract.TARGET, "already": False,
-                             "waited_s": round(time.monotonic() - began, 1),
-                             "polls": polls, "point": hit[0], "line": hit[1]}
+                             **{**e.fields, "polls": polls, "predicate": watched.name,
+                                **_ended_at(session)}) from None
+        watched.examined += 1
+        clock.tick("screen_wait {said}: retrace {polls}, {elapsed:.0f}s of {bound:g}s",
+                   said=watched.said, polls=polls, bound=seconds)
+    found: dict[str, Any] = {"verdict": contract.TARGET, "predicate": watched.name,
+                             "already": False,
+                             "waited_s": round(time.monotonic() - began, 1), "polls": polls,
+                             "sampled_every": every, **watched.state(), **hit}
     if arming.declares_untold_stopper():
         found["note"] = UNTOLD_NOTE
     return _stop_reply(session, found)
+
+
+def _advance_by(session: ds.Session, frames: int, began: float, deadline: float,
+                tick: mprogress.Ticker) -> dict[str, Any] | None:
+    """`frames` retraces; None when they all came, else the run's end (a `TIMEOUT` or a stop)."""
+    if frames == 1:
+        return {"verdict": contract.TIMEOUT, "status": "ok"} \
+            if _advance(session, began, deadline, ds.no_progress) else None
+    left = max(deadline - time.monotonic(), MIN_STEP_S)
+
+    def said(progress: float, total: float | None, message: str) -> None:
+        tick.tick("screen_wait {message}", message=message)
+
+    out = run_for(session, frames, 0, left, said, who="a sampled screen wait")
+    if out.get("status") == "ok" and out.get("verdict") == contract.ELAPSED:
+        return None
+    return out
 
 
 def _stop_reply(session: ds.Session, base: dict[str, Any]) -> dict[str, Any]:
@@ -321,27 +457,29 @@ def _ended_at(session: ds.Session) -> dict[str, Any]:
     return {key: stop[key] for key in ENDED_KEYS if key in stop}
 
 
-def _expired(session: ds.Session, text: str, seconds: float, polls: int, not_text: str,
-             seen: dict[str, Any], *, out: bool, began: float,
-             cuttable: bool = False) -> dict[str, Any]:
+def _expired(session: ds.Session, watched: Watched, every: int, seconds: float, polls: int,
+             *, out: bool, began: float, cuttable: bool = False) -> dict[str, Any]:
     """`screen_wait`'s bound, a `TIMEOUT` at a stop; stopped before any retrace, no stop."""
     pending = out and ds.Session.stop_at_bound(session)
     if out and not pending and cuttable and (cut := _cut(session)) is not None:
         raise ds.Invalid("wait_stopped",
             f"a declared breakpoint stopped the machine as the {seconds:g} s bound ran out, so "
-            f"the wait for `{text}` ends there; {PENDING_NOTE}",
-            polls=polls, **{**_ended_at(session), "cause": st.cause(cut)}, retrace_pending=True,
-            **seen)
+            f"the wait for {watched.said} ends there; {PENDING_NOTE}",
+            polls=polls, predicate=watched.name,
+            **{**_ended_at(session), "cause": st.cause(cut)}, retrace_pending=True,
+            **watched.state())
     if out:
         STATE.retrace_pending = pending
-    skipped = "" if not_text.startswith("0 ") else (
-        f"; {not_text} frames examined were not in a text mode")
+    sampled = ("" if not every else
+               f", judged every {every} retraces, so a screen shorter than that is passed over")
     base: dict[str, Any] = {
-        "verdict": contract.TIMEOUT, "polls": polls, **seen,
+        "verdict": contract.TIMEOUT, "predicate": watched.name, "polls": polls,
+        "sampled_every": every, **watched.state(),
         "retrace_pending": STATE.retrace_pending,
         "waited_s": round(time.monotonic() - began, 1),
-        "note": f"`{text}` was not on the text screen in {counted(polls, 'retrace')} within "
-                f"{seconds:g} s{skipped}" + (f"; {PENDING_NOTE}" if pending else "")}
+        "note": f"{watched.said} was not found in {counted(polls, 'retrace')} within "
+                f"{seconds:g} s{sampled}{watched.why()}"
+                + (f"; {PENDING_NOTE}" if pending else "")}
     if not (polls or out):
         return st.reply(**base)
     return _stop_reply(session, base)

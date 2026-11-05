@@ -410,14 +410,19 @@ class ScreenWaitReply(DosboxEnvelope, total=False):
     cpu_mode: str
     e9: dict[str, Any]
     enrichment: dict[str, Any]
-    frame: Annotated[int | dict[str, Any], When("unless the text was already there")]
+    entries: int
+    frame: Annotated[int | dict[str, Any], When("unless the predicate was already true")]
     instruction: DosboxInstruction
     line: str
+    palette: str
     pc: str
     point: list[Any]
     polls: int
+    predicate: str
     regs: dict[str, Any]
     retrace_pending: bool
+    sampled_every: int
+    screen: dict[str, Any]
     stop_seq: int
     text: list[Any]
     verdict: Required[str]

@@ -84,6 +84,7 @@ RANGES: list[tuple[str, str, int, int]] = [
     ("start", "input_port", 0, dlaunch.INPUT_PORT_MAX),
     ("palette", "first", 0, vgadac.DAC_ENTRIES - 1), ("palette", "count", 0, vgadac.DAC_ENTRIES),
     ("pic", "irq", 0, hardware.IRQ_MAX),
+    ("screen_wait", "every", 0, checks.SAMPLED_EVERY_MAX),
 ]
 WAITS = ("seconds", "settle_seconds")
 #: The waits whose 0 means no wait at all, so their floor is closed.
