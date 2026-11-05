@@ -504,13 +504,13 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
     fake = SimpleNamespace(
         proc=SimpleNamespace(pid=4242),
         alive=lambda: False, altered=True, driver_range=None, conf_digest=dlaunch.digest(conf),
-        started_at=time.monotonic() - 3.0, dropped=4096, _at_debugger=True,
+        started_at=time.monotonic() - 3.0, dropped=4096, _at_debugger=True, image=None,
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60,
                               window=core_window.WindowRequest(1, False, (1920, 0))))
     got = ds.Session.state(fake)  # type: ignore[arg-type]
     assert set(got) == {"pid", "alive", "running", "altered", "range_widened", "program", "conf",
                         "conf_digest",
-                        "conf_changed_on_disk", "watched", "bound_s",
+                        "conf_changed_on_disk", "image_changed_on_disk", "watched", "bound_s",
                         "elapsed_s", "output_bytes_dropped", "captures", "state_dir"}
     assert got["program"] is None, "nothing has stopped, so nothing is known of the program"
     assert got["captures"] == "off"
@@ -537,13 +537,36 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
                                               "why": "the conf could not be read: denied"}
 
 
+def test_an_executable_written_since_its_table_was_checked_is_an_alarm(
+        tmp_path: Path) -> None:
+    """A relink under a live session leaves the guest running the image on screen while the
+    table on disk describes another one."""
+    exe = tmp_path / "prod.exe"
+    exe.write_bytes(b"MZ")
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    fake = SimpleNamespace(
+        proc=SimpleNamespace(pid=4242),
+        alive=lambda: True, altered=False, driver_range=None, conf_digest="x",
+        started_at=time.monotonic(), dropped=0, _at_debugger=True,
+        image={"path": str(exe), "size": exe.stat().st_size,
+               "mtime_ns": exe.stat().st_mtime_ns},
+        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60))
+    assert ds.Session.state(fake).get("image_changed_on_disk") is False  # type: ignore[arg-type]
+    exe.write_bytes(b"MZ" + b"\0" * 64)
+    assert ds.Session.state(fake).get("image_changed_on_disk") is True  # type: ignore[arg-type]
+    exe.unlink()
+    gone = cast(dict[str, Any], ds.Session.state(fake))["image_changed_on_disk"]  # type: ignore[arg-type]
+    assert gone["available"] is False and str(exe) in gone["why"], gone
+
+
 def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -> None:
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     fake = SimpleNamespace(
         proc=SimpleNamespace(pid=4242),
         alive=lambda: True, altered=False, driver_range=None, conf_digest="x",
-        started_at=time.monotonic(), dropped=0, _at_debugger=False,
+        started_at=time.monotonic(), dropped=0, _at_debugger=False, image=None,
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60))
     real = ds.Session.state(fake)  # type: ignore[arg-type]
     assert set(FakeSession().state()) == set(real)

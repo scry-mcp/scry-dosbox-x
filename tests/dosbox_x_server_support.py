@@ -211,6 +211,7 @@ class FakeSession(SessionGates):
                 "running": self._alive and bool(getattr(self, "running", False)),
                 "altered": self.altered, "range_widened": None, "program": None,
                 "conf": "/x/g.conf", "conf_digest": "abc123", "conf_changed_on_disk": False,
+                "image_changed_on_disk": False,
                 "watched": False, "bound_s": 60, "elapsed_s": 1.0,
                 "output_bytes_dropped": 0, "captures": "off",
                 "state_dir": "the emulator's own save/ under its working directory"}
@@ -626,6 +627,8 @@ class NamesFake(SessionGates):
         self.mode, self.cs, self.ds = mode, cs, ds_
         self._peek_carry = ""
         self.vars_held = 0
+        # what a load checked its table against, as the real session keeps it
+        self.image: dict[str, Any] | None = None
         self.arm_fails = arm_fails
         # the guest runs: every console method refuses as the real ones do, `at_debugger()` says so
         self._running = False

@@ -291,8 +291,9 @@ def status() -> dict[str, Any]:
     Reply: `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`) and `pending` (`arm`
     refs, a `disarm` count, `symbols_load`, `base_remeasure`), both unavailable or empty once a
     session has ended; with a session also `presence`, `pid`,
-    `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`, `elapsed_s`,
-    `output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and `cpu_mode`;
+    `conf`, `conf_digest`, `conf_changed_on_disk`, `image_changed_on_disk`, `watched`, `bound_s`,
+    `elapsed_s`, `output_bytes_dropped`, `captures`, `state_dir`, `declarations`, `pc` and
+    `cpu_mode`;
     `symbols_held` (`path`, `base_from`, `waiting_for`) while a `start` table waits for its
     program, which costs a memory-chain read at every stop. `session` carries `alive`,
     `running`, `altered` and each alarm while it holds.

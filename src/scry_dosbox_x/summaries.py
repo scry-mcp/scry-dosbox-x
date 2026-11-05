@@ -98,7 +98,9 @@ def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if why == running.PC_GONE_WHY:
         return "status: DOSBox-X has exited, `close` it"
     released = why in (running.PC_RUNNING_WHY, running.PC_UNKNOWN_WHY)
-    return f"status: alive, {'running' if released else 'stopped'}"
+    moved = (", the executable moved since its table was checked"
+             if reply.get("image_changed_on_disk") is True else "")
+    return f"status: alive, {'running' if released else 'stopped'}{moved}"
 
 
 def close(args: dict[str, Any], reply: dict[str, Any]) -> str:

@@ -6,6 +6,7 @@ name the argument at fault, and a read of a name the table holds twice."""
 
 from __future__ import annotations
 
+import shutil
 import struct
 from pathlib import Path
 from typing import Any, cast
@@ -33,6 +34,25 @@ def _ok(got: Any) -> dict[str, Any]:
 
 def _selectors() -> dict[str, int]:
     return {k: v for k, v in dstate.STATE.base.items() if k.startswith("selector_")}
+
+
+GUEST = Path(__file__).resolve().parent / "guest"
+
+
+def test_a_load_stamps_the_executable_it_checked_the_table_against(tmp_path: Path) -> None:
+    """A relink under a live session is not refused by the load: what catches it is the session
+    remembering which file its table was compared with."""
+    shutil.copy(GUEST / "dpmi.exe", tmp_path / "dpmi.exe")
+    shutil.copy(GUEST / "dpmi.sym", tmp_path / "dpmi.sym")
+    fake = _names(tmp_path)
+    got = _ok(server.symbols_load(path=str(tmp_path / "dpmi.sym"), base="400000"))
+    assert str(got["checked"].get("against", "")).endswith("dpmi.exe"), got["checked"]
+    exe = tmp_path / "dpmi.exe"
+    assert fake.image == {"path": str(exe), "size": exe.stat().st_size,
+                          "mtime_ns": exe.stat().st_mtime_ns}, getattr(fake, "image", None)
+    # a load its own build cannot be checked against clears it: nothing waits on that file
+    _ok(server.symbols_load(path=_map(tmp_path, "plain.nm", "00001000 T _main\n"), base="400000"))
+    assert fake.image is None, fake.image
 
 
 def _asking(fake: NamesFake) -> list[str]:

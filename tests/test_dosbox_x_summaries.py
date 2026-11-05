@@ -64,6 +64,12 @@ def test_a_cut_scan_filter_says_how_much_of_the_list_it_holds() -> None:
     assert some.endswith("the first 2 listed") and "none listed" in none, (some, none)
 
 
+def test_a_status_of_a_session_whose_executable_moved_says_so() -> None:
+    line = one_line.status({}, {"declarations": 0, "pc": "0040:0010", "cpu_mode": "real",
+                                "image_changed_on_disk": True})
+    assert line.endswith(", the executable moved since its table was checked"), line
+
+
 def test_a_table_nothing_could_check_says_so_on_its_own_line() -> None:
     """The line is what a caller reads of a load; a table with no build beside it would
     otherwise read exactly like a proved one."""

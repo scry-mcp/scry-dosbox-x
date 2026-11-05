@@ -401,6 +401,10 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
         raise ds.Invalid("bad_argument", f"{source}: {e}") from None
     # A stale table resolves every name a few bytes off and nothing in it says so.
     checked = coff.check(src, syms)
+    # THE FILE THE CHECK USED, as the disk held it: a relink under this session moves it, and
+    # a reply says so instead of the table quietly describing another build.
+    against = checked.get("against")
+    session.image = coff.stamp(Path(against)) if isinstance(against, str) else None
     # No file prefix: a pattern that will not compile is not the file's fault.
     try:
         plan = sym.plan(syms, pattern=pattern, keep_noise=keep_noise,

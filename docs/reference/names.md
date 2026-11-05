@@ -127,7 +127,7 @@ Example, from a live run:
 
 **`loaded` is read back with `SV`** because a `SV`/`LV` filename is silently cut to twelve characters and reported `ok`; both files live in the emulator's working directory, an existing one is refused, and both are removed on exit.
 
-**A table is checked against its build**, because a stale table resolves every name a few bytes off and nothing in it can say so. Which of table and executable is stale it cannot know.
+**A table is checked against its build**, because a stale table resolves every name a few bytes off and nothing in it can say so. Which of table and executable is stale it cannot know. The session keeps the executable it checked, as the disk held it, and every reply then carries `image_changed_on_disk` once that file is written again: a relink under a live session leaves the guest running the image on screen.
 
 **A file most of which was discarded is refused**, for the anchored readers only (Borland, Watcom): a GNU `ld` map is mostly not symbols by construction, so one ratio over both would refuse every one.
 
