@@ -40,14 +40,14 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "state_list: 1 state in $TMPDIR/jobs-scratch/A/n1010-save",
+  "summary": "state_list: 1 state in /var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1010-save",
   "status": "ok",
-  "state_dir": "$TMPDIR/jobs-scratch/A/n1010-save",
+  "state_dir": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1010-save",
   "states": [
     {
       "name": "matrix_a_stopped",
-      "path": "$TMPDIR/jobs-scratch/A/n1010-save/matrix_a_stopped.sav",
-      "bytes": 81762,
+      "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1010-save/matrix_a_stopped.sav",
+      "bytes": 81424,
       "version": "<volatile>",
       "program": "PROBE",
       "machine": "MCH_VGA",
@@ -122,11 +122,11 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "state_write save: matrix_a_stopped, 81762 bytes, PROBE <time>",
+  "summary": "state_write save: matrix_a_stopped, 81424 bytes, PROBE <time>",
   "status": "ok",
   "name": "matrix_a_stopped",
-  "path": "$TMPDIR/jobs-scratch/A/n1010-save/matrix_a_stopped.sav",
-  "bytes": 81762,
+  "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1010-save/matrix_a_stopped.sav",
+  "bytes": 81424,
   "version": "<volatile>",
   "program": "PROBE",
   "machine": "MCH_VGA",

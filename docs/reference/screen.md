@@ -66,7 +66,7 @@ Example, from a live run:
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
-    "path": "/var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/dosbox-x-session-<run>/gfx/palette-1.png",
+    "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-session-<run>/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,

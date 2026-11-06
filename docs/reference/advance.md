@@ -71,7 +71,7 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 80",
+  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 29",
   "status": "ok",
   "verdict": "TIMEOUT",
   "target": "0000:0003",
@@ -79,16 +79,16 @@ Example, from a live run:
   "pc": "0814:00000130",
   "cpu_mode": "real",
   "target_disarmed": true,
-  "control_hits": 80,
+  "control_hits": 29,
   "controls": [
-    {"ref": "0814:0130", "at": "0814:0130", "hits_in_run": 80, "removed": true}
+    {"ref": "0814:0130", "at": "0814:0130", "hits_in_run": 29, "removed": true}
   ],
-  "note": "it came to rest ON the control 0814:0130 (its hit number 80) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
+  "note": "it came to rest ON the control 0814:0130 (its hit number 29) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
   "frame": 138,
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000ffb1",
+    "ECX": "0x0000ffe4",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -108,7 +108,7 @@ Example, from a live run:
     "lines_total": 1,
     "truncated": false,
     "lines": ["Bochs port E9h: [+ 00000.000] PROBE . tick"],
-    "mark": 32951
+    "mark": 32508
   },
   "stop_seq": 6,
   "instruction": {
@@ -207,7 +207,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1c7",
+    "ECX": "0x0000c162",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -223,7 +223,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 87877},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 52295},
   "stop_seq": 7,
   "instruction": {
     "address": "0814:00000130",
@@ -235,11 +235,11 @@ Example, from a live run:
     "symbol": {"available": false, "why": "no symbol table is loaded"},
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
-  "emulated_before_s": 1.9731142,
+  "emulated_before_s": 1.9730988999999999,
   "emulated_after_s": 1.9747000000000001,
   "frame_before": 138,
   "frame_after": 139,
-  "cycles": 15850
+  "cycles": 16002
 }
 ```
 <!-- scry-reference:end run_for -->
@@ -308,14 +308,14 @@ Example, from a live run:
 {
   "instructions": 16,
   "shape": "cs_ip",
-  "dest": "$TMPDIR/jobs-scratch/A/n1408.trace",
+  "dest": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1408.trace",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/jobs-scratch/A/n1408.trace",
+  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to /var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1408.trace",
   "status": "ok",
   "pc": "0814:00000130",
   "cpu_mode": "real",
@@ -323,7 +323,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1b7",
+    "ECX": "0x0000c152",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -339,7 +339,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 88443},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 52861},
   "stop_seq": 8,
   "instruction": {
     "address": "0814:00000130",
@@ -353,13 +353,13 @@ Example, from a live run:
   },
   "verdict": "ELAPSED",
   "trace": {
-    "path": "$TMPDIR/jobs-scratch/A/n1408.trace",
+    "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1408.trace",
     "bytes": 238,
     "shape": "cs_ip",
     "instructions": 16,
     "addresses": 1,
     "unplaced": 1,
-    "set_path": "$TMPDIR/jobs-scratch/A/n1408.trace.set.jsonl",
+    "set_path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1408.trace.set.jsonl",
     "symbols": [],
     "symbols_total": 0,
     "truncated": false,
@@ -464,9 +464,12 @@ Example, from a live run:
   "summary": "screen_wait 'C:\\\\>PROBE.COM': already on screen at 0,3",
   "status": "ok",
   "verdict": "TARGET",
+  "predicate": "text",
   "already": true,
   "waited_s": 0.0,
   "polls": 0,
+  "sampled_every": 0,
+  "text": ["Z:\\>mount c \".\"", "Drive C is mounted as local directory ./", "Z:\\>c:", "C:\\>PROBE.COM", "", "", "... 19 more"],
   "point": [0, 3],
   "line": "C:\\>PROBE.COM"
 }
@@ -538,6 +541,7 @@ Example, from a live run:
   "before": "F000:0000FEA5",
   "after": "F000:0000FEA6",
   "instructions_completed": 1,
+  "note": "the stop landed in F000:0000FEA6 (linear 0xFFEA6), inside a ROM handler the program called into rather than in the program: `run_for` or `resume` leaves it, and `step` moves one instruction inside the handler",
   "pc": "F000:0000FEA6",
   "cpu_mode": "real",
   "frame": 4,
@@ -560,7 +564,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "no declared code breakpoint at F000:0000FEA6: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 7011},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 6568},
   "stop_seq": 5,
   "instruction": {"available": false, "why": "the bytes at F000:0000FEA6 (FE...) start no instruction"}
 }
@@ -686,7 +690,7 @@ Example, from a live run:
     "stop_seq": 4,
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-    "since_s": 0.1,
+    "since_s": 0.5,
     "wall_at": "<volatile>"
   },
   "note": "the machine was already stopped"

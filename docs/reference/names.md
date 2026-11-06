@@ -71,14 +71,14 @@ Example, from a live run:
 
 ```json
 {
-  "path": "/path/to/scry-dosbox-x/tests/fixtures/borland-tlink16/MAPDEMO.MAP",
+  "path": "/Users/Shared/scry-examples-20261106/scry-dosbox-x/tests/fixtures/borland-tlink16/MAPDEMO.MAP",
   "base": "8000"
 }
 ```
 
 ```json
 {
-  "summary": "symbols_load: 5 loaded of 5 parsed, base 32768",
+  "summary": "symbols_load: 5 loaded of 5 parsed, base 32768, not checked against a build: no executable named MAPDEMO.exe beside the table, so it could not be checked against its build",
   "status": "ok",
   "base": 32768,
   "limit": -1,

@@ -116,8 +116,8 @@ Example, from a live run:
 ```json
 {
   "method": "image",
-  "a": "$TMPDIR/jobs-scratch/P/n22-away.png",
-  "b": "$TMPDIR/jobs-scratch/P/n21-away.png"
+  "a": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/P/n22-away.png",
+  "b": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/P/n21-away.png"
 }
 ```
 
@@ -134,11 +134,11 @@ Example, from a live run:
   "shift": [0, 0],
   "tolerance": 0,
   "a": {
-    "path": "$TMPDIR/jobs-scratch/P/n22-away.png",
+    "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/P/n22-away.png",
     "sha256": "53b883b4f3a951b66be1a08574b075740bb0c26493474fbd18fb4eb3af116be5"
   },
   "b": {
-    "path": "$TMPDIR/jobs-scratch/P/n21-away.png",
+    "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/P/n21-away.png",
     "sha256": "53b883b4f3a951b66be1a08574b075740bb0c26493474fbd18fb4eb3af116be5"
   }
 }
@@ -211,7 +211,7 @@ Example, from a live run:
 ```json
 {
   "method": "measure",
-  "path": "$TMPDIR/jobs-scratch/T/n4.wav"
+  "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
 }
 ```
 
@@ -252,7 +252,7 @@ Example, from a live run:
     }
   ],
   "pcm_sha256": "e60ff11bce0c03f6caa4a04e9e3654b9e40a70a8c156d9e6d2ec7c33a3703a62",
-  "path": "$TMPDIR/jobs-scratch/T/n4.wav"
+  "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
 }
 ```
 <!-- scry-reference:end audio_compare -->
@@ -296,15 +296,15 @@ Example, from a live run:
 
 ```json
 {
-  "path": "$TMPDIR/jobs-scratch/Y/n1-dosio/OUT.TXT"
+  "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT"
 }
 ```
 
 ```json
 {
-  "summary": "guest_file $TMPDIR/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
+  "summary": "guest_file /var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
   "status": "ok",
-  "path": "$TMPDIR/jobs-scratch/Y/n1-dosio/OUT.TXT",
+  "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT",
   "state": "written",
   "before": {"exists": false},
   "bytes": 4,

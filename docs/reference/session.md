@@ -43,9 +43,9 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+  "summary": "build_check: /Users/Shared/scry-examples-20261106/dx-build/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
   "status": "ok",
-  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
+  "binary": "/Users/Shared/scry-examples-20261106/dx-build/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "<volatile>",
   "debugger": true,
@@ -209,32 +209,32 @@ Example, from a live run:
 
 ```json
 {
-  "conf": "/private/var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
-  "cwd": "/private/var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/dosbox-x-live-job-<run>/A/tests/guest",
+  "conf": "/private/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
+  "cwd": "/private/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-job-<run>/A/tests/guest",
   "session_seconds": 1200,
-  "logfile": "$TMPDIR/jobs-scratch/A/n1009.log",
-  "state_dir": "$TMPDIR/jobs-scratch/A/n1010-save"
+  "logfile": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1009.log",
+  "state_dir": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1010-save"
 }
 ```
 
 ```json
 {
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.131s",
+  "summary": "start probe.conf: headless on /Users/Shared/scry-examples-20261106/dx-build/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.06s",
   "status": "ok",
   "pid": "<volatile>",
-  "conf": "/private/var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
+  "conf": "/private/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
   "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.4,
+  "elapsed_s": 0.3,
   "captures": "off",
-  "state_dir": "$TMPDIR/jobs-scratch/A/n1010-save",
-  "ready_after_s": 0.131,
-  "argv": ["~/.local/state/dosbox-x-builds/scry/dosbox-x", "-conf", "/private/var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
-  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
+  "state_dir": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1010-save",
+  "ready_after_s": 0.06,
+  "argv": ["/Users/Shared/scry-examples-20261106/dx-build/dosbox-x", "-conf", "/private/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
+  "binary": "/Users/Shared/scry-examples-20261106/dx-build/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "<volatile>",
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "... 8 more"],
-  "stub": "/path/to/scry-dosbox-x/src/scry_dosbox_x/guest/SCRY.COM",
+  "stub": "/Users/Shared/scry-examples-20261106/scry-dosbox-x/src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": true,
   "presence": {"available": false, "why": "a session started without `shared` has no window to draw on"},
@@ -393,13 +393,13 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "window: display 0, on screen, covered",
+  "summary": "window: display 0, on screen, in front",
   "status": "ok",
   "window": {
     "display": 0,
     "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
     "onscreen": true,
-    "front": false,
+    "front": true,
     "fullscreen": false
   }
 }

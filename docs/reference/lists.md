@@ -79,17 +79,17 @@ Example, from a live run:
         "summary": "status: alive, stopped",
         "status": "ok",
         "pid": "<volatile>",
-        "conf": "/private/var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
+        "conf": "/private/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
         "conf_digest": "78bdc38f360b9b4a",
         "bound_s": 1200,
-        "elapsed_s": 4.1,
+        "elapsed_s": 5.0,
         "captures": "off",
-        "state_dir": "$TMPDIR/jobs-scratch/A/n1010-save",
+        "state_dir": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1010-save",
         "last_stop": {
           "stop_seq": 11,
           "pc": "0814:00000130",
           "cause": "the retrace run_for ran to, at 0814:00000130",
-          "since_s": 0.1,
+          "since_s": 0.2,
           "wall_at": "<volatile>"
         },
         "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
@@ -156,15 +156,15 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/jobs-scratch/A/n1869.json"
+  "dest": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1869.json"
 }
 ```
 
 ```json
 {
-  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/jobs-scratch/A/n1869.json",
+  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to /var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1869.json",
   "status": "ok",
-  "path": "$TMPDIR/jobs-scratch/A/n1869.json",
+  "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1869.json",
   "steps": 1,
   "checks": 0,
   "dropped": [],
@@ -174,7 +174,7 @@ Example, from a live run:
     "op": "resume",
     "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches; it stopped inside frame 0, the one it began in"
   },
-  "replay": "uv run python -m scry_core.replay $TMPDIR/jobs-scratch/A/n1869.json"
+  "replay": "uv run python -m scry_core.replay /var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1869.json"
 }
 ```
 <!-- scry-reference:end perform_export -->
@@ -245,17 +245,17 @@ Example, from a live run:
           "summary": "status: alive, stopped",
           "status": "ok",
           "pid": "<volatile>",
-          "conf": "/private/var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
+          "conf": "/private/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
           "conf_digest": "78bdc38f360b9b4a",
           "bound_s": 1200,
-          "elapsed_s": 4.1,
+          "elapsed_s": 5.0,
           "captures": "off",
-          "state_dir": "$TMPDIR/jobs-scratch/A/n1010-save",
+          "state_dir": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1010-save",
           "last_stop": {
             "stop_seq": 11,
             "pc": "0814:00000130",
             "cause": "the retrace run_for ran to, at 0814:00000130",
-            "since_s": 0.1,
+            "since_s": 0.2,
             "wall_at": "<volatile>"
           },
           "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
@@ -278,7 +278,7 @@ Example, from a live run:
   "looked": {
     "guest": {
       "available": true,
-      "since_mark": 96192,
+      "since_mark": 60541,
       "lines_written": 0,
       "lines_total": 0,
       "truncated": false,

@@ -57,7 +57,7 @@ Example, from a live run:
   "truncated": false,
   "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/jobs-scratch/A/dosbox-x-live-matrix-A-<run>/dosbox-x-debug/declarations.json"
+    "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/dosbox-x-live-matrix-A-<run>/dosbox-x-debug/declarations.json"
   }
 }
 ```
@@ -158,7 +158,7 @@ Example, from a live run:
   "replaced_comments": [],
   "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/jobs-scratch/A/dosbox-x-live-matrix-A-<run>/dosbox-x-debug/declarations.json"
+    "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/dosbox-x-live-matrix-A-<run>/dosbox-x-debug/declarations.json"
   }
 }
 ```
