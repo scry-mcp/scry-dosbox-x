@@ -2481,6 +2481,14 @@
    "args": {
     "profile": "field-bench"
    }
+  },
+  {
+   "id": "D179",
+   "prompt": "Replay the session kept in /tmp/mcp-probe-session.json on this guest, in one call, and do not send the steps yourself.",
+   "tool": "perform",
+   "args": {
+    "path": "/tmp/mcp-probe-session.json"
+   }
   }
  ]
 }

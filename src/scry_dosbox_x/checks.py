@@ -20,6 +20,7 @@ from scry_core import (
     media_tools,
     narrowing,
     picture,
+    recording,
     screen_map,
 )
 from scry_core import (
@@ -470,11 +471,13 @@ def steps_whole(name: str, steps: object) -> None:
             **executor.vocabulary_named(refused, ops))
 
 
-def _perform(steps: list[dict[str, Any]], settle_seconds: float = 30.0,
-             summaries: bool = False, **_: Any) -> None:
+def _perform(steps: list[dict[str, Any]] | None = None, path: str = "",
+             settle_seconds: float = 30.0, summaries: bool = False, **_: Any) -> None:
+    recording.check_perform_arguments(steps, path)
     sequence.validate_wait(settle_seconds)
     account.check_summaries(summaries)
-    steps_whole("steps", steps)
+    if steps is not None:
+        steps_whole("steps", steps)
 
 
 def _start(plan: list[dict[str, Any]] | None = None, settle_seconds: float | None = None,

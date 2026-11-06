@@ -38,7 +38,7 @@ INVENTORY = frozenset({
     ("comment_write", "dest"), ("comment_write", "path"), ("start", "binary"),
     ("build_check", "binary"), ("machine_map", "dest"), ("series_capture", "dest"),
     ("series_capture", "capture_path"), ("screen_map_write", "path"), ("screen_map_write", "dest"),
-    ("perform_export", "dest"), ("audio_compare", "path"),
+    ("perform_export", "dest"), ("audio_compare", "path"), ("perform", "path"),
 })
 
 
@@ -190,6 +190,7 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
         "screen_map_write path": {"method": "load", "path": str(tmp_path / "m.screen-map.json")},
         "screen_map_write dest": {"method": "save", "dest": str(tmp_path / "m.screen-map.json")},
         "perform_export": {"dest": str(tmp_path / "p.json")},
+        "perform": {},
         "guest_file": {"path": str(tmp_path / "OUT.TXT")},
         "audio_compare": {"method": "measure", "path": str(tmp_path / "s.wav")},
         "series_capture": {"at_frames": [0], "dest": str(tmp_path / "series"),

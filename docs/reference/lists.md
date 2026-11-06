@@ -6,14 +6,17 @@
 *Run a sequence of steps*
 
 ```text
-perform(steps, settle_seconds=30.0, summaries=false, until_frame=0)
+perform(steps=null, path="", settle_seconds=30.0, summaries=false, until_frame=0)
 ```
 
 Run this server's operations in order on the open session, stopping at the first
 failure.
 
 `steps`: `{"op": <tool>, ...arguments}`, any tool but `build_check`, `start`, `close`,
-`perform`, `drive`, `perform_export`. A `send_keys` or `send_mouse` whose `expect`
+`perform`, `drive`, `perform_export`. `path`: a `perform` document (absolute or `~`-led:
+`.scry/perform/<name>.json`, or a file `perform_export` wrote) whose steps are replayed; give
+`steps` or `path`, never both.
+A `send_keys` or `send_mouse` whose `expect`
 misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
 The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
 nothing run. `settle_seconds` bounds each wait for a stop before a step that needs one (0:
@@ -28,7 +31,8 @@ Reference: REFERENCE.md, Sequences in one call.
 
 | argument | type | default |
 |---|---|---|
-| `steps` | array of object | required |
+| `steps` | array of object or null | `null` |
+| `path` | string | `""` |
 | `settle_seconds` | number (>= 0, <= 600.0) | `30.0` |
 | `summaries` | boolean | `false` |
 | `until_frame` | integer | `0` |

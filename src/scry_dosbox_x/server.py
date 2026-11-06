@@ -1664,7 +1664,7 @@ SUMMARIES_ARGUMENT = account.summaries_argument(st.ROWS_SHOWN)
 
 
 @tool("Run a sequence of steps", summary=one_line.perform, on_cancel="stop")
-def perform(steps: list[dict[str, Any]],
+def perform(steps: list[dict[str, Any]] | None = None, path: str = "",
             settle_seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 30.0,
             summaries: Annotated[bool, Field(description=SUMMARIES_ARGUMENT)] = False,
             until_frame: int = 0,
@@ -1673,7 +1673,10 @@ def perform(steps: list[dict[str, Any]],
     failure.
 
     `steps`: `{"op": <tool>, ...arguments}`, any tool but `build_check`, `start`, `close`,
-    `perform`, `drive`, `perform_export`. A `send_keys` or `send_mouse` whose `expect`
+    `perform`, `drive`, `perform_export`. `path`: a `perform` document (absolute or `~`-led:
+    `.scry/perform/<name>.json`, or a file `perform_export` wrote) whose steps are replayed; give
+    `steps` or `path`, never both.
+    A `send_keys` or `send_mouse` whose `expect`
     misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
     The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
     nothing run. `settle_seconds` bounds each wait for a stop before a step that needs one (0:
@@ -1686,6 +1689,10 @@ def perform(steps: list[dict[str, Any]],
 
     Reference: REFERENCE.md, Sequences in one call.
     """
+    from_document = bool(path)
+    steps = recording.steps_to_replay(steps, path)
+    if from_document:      # the pre-gate judges a caller's own list; a document's is read here
+        checks.steps_whole("steps", steps)
     return sequence.run_steps(live(), steps, settle_seconds, _step_ops(), bridge(ctx), summaries,
                               until_frame=until_frame)
 
