@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
+import os
 import sys
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from scry_core import log_marks, narrowing, session_block, window_size
+from scry_core import log_marks, narrowing, project_store, session_block, window_size
 from scry_core import reply_contract as contract
 from scry_core import window as core_window
 
@@ -76,7 +77,31 @@ def _refuse_unreaped(session: ds.Session, cause: ds.Invalid) -> None:
                          f"`dosbox-x` before starting again") from None
 
 
-def start(conf: str, cwd: str, session_seconds: int, shared: bool,
+#: `start`'s arguments that hold paths, which a profile resolves against its store's base.
+START_PATHS = ("conf", "cwd", "captures_dir", "logfile", "state_dir", "binary", "symbols",
+               "guest_files")
+
+
+def required(conf: str, cwd: str, session_seconds: int | None) -> None:
+    """`start`'s arguments a profile may fill, refused by name when neither side gave one."""
+    project_store.demanded({"conf": conf, "cwd": cwd, "session_seconds": session_seconds},
+                           ("conf", "cwd", "session_seconds"), tool="start")
+
+
+def with_profile(profile: str, *, keys: Collection[str], arguments: dict[str, Any],
+                 given: Collection[str]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """`arguments`, every one `start` takes, with the profile `profile` filling only the names
+    `given` does not carry; and the reply's `profile` block. The store is looked for from this
+    process's directory, then from `cwd`, which names the guest and not its repository."""
+    starting = [os.getcwd()]
+    if cwd := str(arguments.get("cwd") or ""):
+        starting.append(cwd)
+    found = project_store.applied(profile, starting=starting, keys=keys,
+                                  path_keys=START_PATHS, given=given, arguments=arguments)
+    return found.arguments, found.shown()
+
+
+def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
           flags: list[str] | None, break_on_int3: bool,
           program: str, logfile: str, capture_video: bool, captures_dir: str,
           plan: list[dict[str, Any]] | None, settle_seconds: float | None, input_port: int,
@@ -86,6 +111,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
           base_from: str = start_symbols.PROGRAM, display: int | None = None,
           fullscreen: bool | None = None, size: str | None = None) -> dict[str, Any]:
     """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`."""
+    required(conf, cwd, session_seconds)
+    assert session_seconds is not None
     # Paths first: refused before anything acts (an expired session closed, symbols forgotten).
     cwd_given = paths.absolute("cwd", cwd)
     conf_path = paths.absolute("conf", conf)

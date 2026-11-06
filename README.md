@@ -16,6 +16,9 @@ driven by look, act, verify, and so is this.
 - **Hold a live machine open.** `start` boots your conf headless (or in a window, for a run
   somebody watches) and parks the guest at the debugger. Registers, memory, the guest's
   own log, a still frame: each is one call.
+- **Start from your repository's recipe.** `start(profile=...)` takes the arguments a
+  `.scry/start/` file declares, fills only what the call does not give, and names the file and
+  what it filled in the reply.
 - **Read the program's own account.** A guest that writes to the Bochs `0xE9` port has a log,
   filtered in the server: the last lines matching a pattern, when a line happened (or a wait
   for it), what was written since the last stop.

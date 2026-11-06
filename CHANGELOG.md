@@ -97,6 +97,11 @@ It needs the scry-core that serves `scry_core.window`, not an older one: the tag
   against is written again, which is a relink under a live session; `status` says it on its line.
 - A `stop` that lands inside the ROM says so in its `note`, with the address, and says that
   `run_for` or `resume` leaves it while `step` stays in the handler.
+- `start` takes `profile`: the name of a `.scry/start/<name>.json` a repository declares, or a
+  path to one. Its keys are `start`'s own arguments and fill only what the call does not give,
+  every path resolved against the directory holding `.scry/`; the reply's `profile` block names
+  the file and what it filled. `conf`, `cwd` and `session_seconds` are optional now, so a
+  profile can carry them, and one neither the call nor a profile gives is refused by name.
 
 ## 0.1.0
 

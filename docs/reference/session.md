@@ -2,6 +2,8 @@
 
 A session is one DOSBox-X process, parked at the debugger by `start` and ended by `close`. The path rule, the binary ladder and the presence indicator are in [REFERENCE.md, The session](../../REFERENCE.md#the-session).
 
+A repository may declare, in its own `.scry/`, the mechanical facts of how its program starts: the run recipe under `.scry/start/`, its screen maps under `.scry/maps/` and its `perform` scripts under `.scry/perform/`. What the program's trace means (which stop serves, a key's case, "up" against "sounding") stays in that repository's own rule, because only the repository holds the gate that keeps it true.
+
 <!-- scry-reference:begin build_check -->
 ## `build_check`
 
@@ -66,7 +68,7 @@ A build without the debugger starts fine and then hangs `start` until its timeou
 *Start a DOSBox-X session*
 
 ```text
-start(conf, cwd, session_seconds, shared=false, display=null, fullscreen=null, size=null, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program")
+start(conf="", cwd="", session_seconds=null, shared=false, display=null, fullscreen=null, size=null, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program", profile="")
 ```
 
 Open one live DOSBox-X session from your conf, parked at the debugger. Somebody watching
@@ -77,7 +79,12 @@ Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve. `
 an executable or a `.app` carrying one, which `open` launches (macOS alone): that route
 keeps `cwd` through DOSBox-X's own `sdl working directory` setting, names the bundle in
 `bundle`, and leaves the exit status to launchd, so `close` answers `unavailable` for it.
-`session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
+`session_seconds`: the lifetime.
+`shared`: watched, in a window; false, headless.
+`profile`: a repository's run recipe (`.scry/start/<name>.json`) or a path to one. Its keys
+are this tool's arguments and fill only what the call does not give; the reply's `profile`
+block names it and what it filled. The store is looked for from the server's directory, then
+`cwd`.
 `display`: the OS's display index for the window, 0 (the main display) when omitted;
 `fullscreen`: the window fills it; `size`: `WIDTHxHEIGHT` of the window in the host's unit,
 else the largest 4:3 window the display's usable area holds. All three need `shared=true` and
@@ -103,7 +110,7 @@ measures one, at a protected-mode stop. That stop's reply says `symbols_placed` 
 Refused: a live session, a window that never appears on the asked display
 (`window_not_visible`, the session left live to `window` or `close`), `flags` setting what
 `display`, `fullscreen` or `size` own, `fullscreen` on `sdl output=surface` (it switches the
-display's video mode and leaves the window off screen), `fullscreen` on a display other than 0
+video mode and leaves the window off screen), `fullscreen` on a display other than 0
 on macOS (a halted start never reaches full screen there), a bad path or `symbols` table,
 `session_seconds` out of range, `capture_video` without `program`, an `input_port` other than
 0 outside 1024-65535, `log_categories` without `logfile`, `dos_calls`
@@ -113,7 +120,8 @@ on a build with no `DOSTRACE`, `guest_files` naming a directory, one file twice 
 Reply: `pid`, `stub`, `window` (`display`, `bounds`, `onscreen`, `front`, `fullscreen`, with
 `shared`), `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
 `guest_files` (each when asked for: the trace's path, the categories set, each file as it was
-before the boot), `symbols` (`held`, `base_from`, `checked`); with `plan`, these facts sit
+before the boot), `symbols` (`held`, `base_from`, `checked`), and with a profile `profile`
+(`name`, `file`, `supplied`); with `plan`, these facts sit
 under `start` beside the plan's account. `note` when the conf or `flags` select a dynamic
 cpu core, which
 can pass over code breakpoints: start on `flags=["-set", "cpu core=normal"]`.
@@ -122,9 +130,9 @@ Reference: REFERENCE.md, The session.
 
 | argument | type | default |
 |---|---|---|
-| `conf` | string | required |
-| `cwd` | string | required |
-| `session_seconds` | integer (>= 1, <= 14400) | required |
+| `conf` | string | `""` |
+| `cwd` | string | `""` |
+| `session_seconds` | integer (>= 1, <= 14400) or null | `null` |
 | `shared` | boolean | `false` |
 | `display` | integer or null | `null` |
 | `fullscreen` | boolean or null | `null` |
@@ -147,6 +155,7 @@ Reference: REFERENCE.md, The session.
 | `guest_files` | array of string or null | `null` |
 | `symbols` | string | `""` |
 | `base_from` | string (matching `^([pP][rR][oO][gG][rR][aA][mM]\|[cC][sS]\|[dD][sS]\|[eE][sS]\|[sS][sS]\|[fF][sS]\|[gG][sS])$`) | `"program"` |
+| `profile` | string | `""` |
 
 - `presence`: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
 
@@ -199,6 +208,7 @@ Reference: REFERENCE.md, The session.
 | `start` | object |
 | `state_dir` | string |
 | `stub` | string |
+| `profile` | object |
 | `output_bytes_dropped` | integer |
 | `symbols` | object |
 | `version` | string or object |

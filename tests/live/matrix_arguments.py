@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import shutil
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -24,10 +25,12 @@ from matrix_common import (
     GUEST,
     NO_SUCH_HOME_WHY,
     PROBE_CONF,
+    SESSION_S,
     M,
     advanced,
     boot,
     cells,
+    close_whatever,
     dump_to_file,
     hexint,
     must,
@@ -50,6 +53,8 @@ PROBE_SEG = 0x0814
 #: The segment whose offset 0 is the probe segment's offset 0xFFF0: what lies past 0814:FFFF.
 PAST_PROBE_SEG = PROBE_SEG + 0x0FFF
 CONSOLE_CELL = "L the console still answers a dump after every refusal"
+PROFILE_CELL = ("L start from a .scry/start profile boots the guest, the call's own "
+                "cwd kept and the reply naming the file and what it filled")
 PERFORM_CELL = "L perform runs find, debug and state_list as steps"
 LISTED_CELL = ("L a refusal on a running guest lists breakpoint_at, stop and close as "
                "answering")
@@ -107,6 +112,7 @@ L_CELLS = cells(
     (LISTED_CELL, "REFERENCE.md, Sequences in one call: the one table"),
     (PENDING_CELL, "perform docstring: after a `resume` the steps `answers_while_running` lists "
                    "run at once; breakpoint_at docstring: `pending` while the guest is running"),
+    (PROFILE_CELL, "start docstring: `profile`, and the reply's `profile` block"),
 )
 #: Each wrong with no machine at all: a state name, a scan, a register, a bound, a list.
 NO_MACHINE_NEEDED: tuple[tuple[str, dict[str, Any]], ...] = (
@@ -174,6 +180,29 @@ def section_l() -> None:
     _running_table()
     r, data = dump_to_file(f"{PROBE_SEG:04X}:0000", 0x10)
     M.judge(CONSOLE_CELL, ok(r) and data is not None and len(data) == 0x10, said(r))
+    _profile()
+
+
+def _profile() -> None:
+    """A store of this run's own, holding the guest as a path relative to it, found by `cwd`;
+    the section's own session is closed first, since one guest at a time is the server's rule."""
+    close_whatever()
+    root = Path(M.fresh("-store"))
+    shutil.copytree(GUEST, root / "guest")
+    store = root / ".scry" / "start"
+    store.mkdir(parents=True)
+    entry = store / "probe-profile.json"
+    entry.write_text(json.dumps({"format": "scry-start/1", "conf": "guest/probe.conf",
+                                 "cwd": "guest", "session_seconds": SESSION_S,
+                                 "presence": False}), encoding="utf-8")
+    r = start_through_the_schema(profile="probe-profile", cwd=str(root / "guest"))
+    raw = r.get("profile")
+    shown: dict[str, Any] = raw if isinstance(raw, dict) else {}
+    shown_file = Path(str(shown.get("file", "")))
+    M.judge(PROFILE_CELL, ok(r) and shown_file.resolve() == entry.resolve()
+            and shown.get("supplied") == ["conf", "presence", "session_seconds"]
+            and isinstance(r.get("pid"), int), said(r))
+    close_whatever()
 
 
 def start_through_the_schema(**arguments: object) -> dict[str, object]:

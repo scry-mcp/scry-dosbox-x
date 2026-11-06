@@ -61,6 +61,7 @@ server serves every DOS project.
 
 from __future__ import annotations
 
+import inspect
 import json
 from collections.abc import Callable
 from pathlib import Path
@@ -70,6 +71,7 @@ from mcp.server.mcpserver import Context
 from pydantic import Field
 from scry_core import (  # noqa: E402
     fresh,
+    given,
     judges,
     log_marks,
     media_tools,
@@ -186,8 +188,8 @@ def build_check(binary: str = "") -> dict[str, Any]:
 # ---------------------------------------------------------- session: start, status, close
 
 @tool("Start a DOSBox-X session", summary=one_line.start, on_cancel="kill")
-def start(conf: str, cwd: str,
-          session_seconds: Annotated[int, vocab.bounds(1, dlaunch.MAX_SECONDS)],
+def start(conf: str = "", cwd: str = "",
+          session_seconds: Annotated[int, vocab.bounds(1, dlaunch.MAX_SECONDS)] | None = None,
           shared: bool = False, display: int | None = None, fullscreen: bool | None = None,
           size: str | None = None,
           flags: list[str] | None = None, break_on_int3: bool = False, program: str = "",
@@ -203,6 +205,7 @@ def start(conf: str, cwd: str,
                                Annotated[str, vocab.enum(dlaunch.LOG_LEVELS)]] | None = None,
           guest_files: list[str] | None = None, symbols: str = "",
           base_from: Annotated[str, vocab.folded(start_symbols.BASE_FROM)] = start_symbols.PROGRAM,
+          profile: str = "",
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Open one live DOSBox-X session from your conf, parked at the debugger. Somebody watching
     through a stream (Moonlight) needs `shared=true` and `fullscreen=true`: a pointer does not
@@ -212,7 +215,12 @@ def start(conf: str, cwd: str,
     an executable or a `.app` carrying one, which `open` launches (macOS alone): that route
     keeps `cwd` through DOSBox-X's own `sdl working directory` setting, names the bundle in
     `bundle`, and leaves the exit status to launchd, so `close` answers `unavailable` for it.
-    `session_seconds`: the lifetime, no default. `shared`: watched, in a window; false, headless.
+    `session_seconds`: the lifetime.
+    `shared`: watched, in a window; false, headless.
+    `profile`: a repository's run recipe (`.scry/start/<name>.json`) or a path to one. Its keys
+    are this tool's arguments and fill only what the call does not give; the reply's `profile`
+    block names it and what it filled. The store is looked for from the server's directory, then
+    `cwd`.
     `display`: the OS's display index for the window, 0 (the main display) when omitted;
     `fullscreen`: the window fills it; `size`: `WIDTHxHEIGHT` of the window in the host's unit,
     else the largest 4:3 window the display's usable area holds. All three need `shared=true` and
@@ -238,7 +246,7 @@ def start(conf: str, cwd: str,
     Refused: a live session, a window that never appears on the asked display
     (`window_not_visible`, the session left live to `window` or `close`), `flags` setting what
     `display`, `fullscreen` or `size` own, `fullscreen` on `sdl output=surface` (it switches the
-    display's video mode and leaves the window off screen), `fullscreen` on a display other than 0
+    video mode and leaves the window off screen), `fullscreen` on a display other than 0
     on macOS (a halted start never reaches full screen there), a bad path or `symbols` table,
     `session_seconds` out of range, `capture_video` without `program`, an `input_port` other than
     0 outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX}, `log_categories` without `logfile`, `dos_calls`
@@ -248,19 +256,31 @@ def start(conf: str, cwd: str,
     Reply: `pid`, `stub`, `window` (`display`, `bounds`, `onscreen`, `front`, `fullscreen`, with
     `shared`), `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
     `guest_files` (each when asked for: the trace's path, the categories set, each file as it was
-    before the boot), `symbols` (`held`, `base_from`, `checked`); with `plan`, these facts sit
+    before the boot), `symbols` (`held`, `base_from`, `checked`), and with a profile `profile`
+    (`name`, `file`, `supplied`); with `plan`, these facts sit
     under `start` beside the plan's account. `note` when the conf or `flags` select a dynamic
     cpu core, which
     can pass over code breakpoints: start on `flags=["-set", "cpu core=normal"]`.
 
     Reference: REFERENCE.md, The session.
     """
-    return lifecycle.start(conf, cwd, session_seconds, shared, flags,
-                           break_on_int3, program, logfile, capture_video, captures_dir, plan,
-                           settle_seconds, input_port, state_dir, binary, background,
-                           presence, dos_calls, log_categories, guest_files, bridge(ctx),
-                           _step_ops, symbols=symbols, base_from=base_from, display=display,
-                           fullscreen=fullscreen, size=size)
+    params = dict(locals())
+    params.pop("ctx")
+    block: dict[str, Any] | None = None
+    if profile:
+        params, block = lifecycle.with_profile(profile, keys=_PROFILE_KEYS, arguments=params,
+                                               given=given.names() or ())
+    params.pop("profile")
+    reply = lifecycle.start(**params, progress=bridge(ctx), ops=_step_ops)
+    if block is not None:
+        reply["profile"] = block
+    return reply
+
+
+#: What a profile may set: `start`'s own arguments, read off its signature so the two cannot
+#: drift apart. `profile` is not one of them, and `ctx` is the protocol's.
+_PROFILE_KEYS = tuple(name for name in inspect.signature(start).parameters
+                      if name not in ("ctx", "profile"))
 
 
 @tool("The session's window", summary=core_window.summary)

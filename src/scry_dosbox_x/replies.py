@@ -544,6 +544,7 @@ class StartReply(WindowRefused, account.SequenceFields, total=False):
     start: Annotated[dict[str, Any], When("with `plan`")]
     state_dir: str
     stub: Annotated[str, When("under `start`")]
+    profile: dict[str, Any]
     output_bytes_dropped: Annotated[int, OmitEmpty]
     symbols: dict[str, Any]
     version: str | dict[str, Any]
