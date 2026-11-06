@@ -271,7 +271,8 @@ STOPPED with the log in a file, joined to symbols.
 
 `shape`: `normal` (`LOG`), `short` (`LOGS`), `long` (`LOGL`) or `cs_ip` (`LOGC`). `dest`:
 absolute, its directory there, the file not; empty is the next `trace-<n>.trace` in
-captures. Needs a stopped machine, a writable working directory and `build_check`'s
+captures. `seconds` bounds the wait for the log. Needs a stopped machine, a writable working
+directory and `build_check`'s
 `heavy_debug`; a dynamic core needs `start(flags=["-set", "cpu core=normal"])`.
 
 Reply: `verdict`, the stop reply of `run_to`, `trace` (`path`, `instructions`, `addresses`,
@@ -402,9 +403,10 @@ screen map, `screen_map_write`; the frame it names), `palette` (`black`: every D
 black, which is how a fade ends). None or several is `bad_argument`.
 
 `every`: 0 judges every retrace; N judges every Nth, for a predicate whose read is a full
-frame, and a screen that lasts fewer than N retraces is passed over. Needs a stopped machine
-and `RUNSTATE`. Already true: answered at once, the machine not moved. Each poll costs a stop
-and a read, so `run_for` first for a distant screen.
+frame, and a screen that lasts fewer than N retraces is passed over. `seconds` bounds the
+polls, counted from the opening read; the stop at the bound comes after it. Needs a stopped
+machine and `RUNSTATE`. Already true: answered at once, the machine not moved. Each poll
+costs a stop and a read, so `run_for` first for a distant screen.
 
 Reply: `verdict` `TARGET` (`predicate`, `already`, `waited_s`, `polls`, `sampled_every`;
 text adds `point` `[column, row]` and `line`, screen adds `screen`, palette adds `entries`) or

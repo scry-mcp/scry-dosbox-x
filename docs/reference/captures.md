@@ -287,7 +287,8 @@ Record exactly `frames` retraces of the screen to an AVI, then stop. Needs the m
 STOPPED and a build whose debugger has `CAPTURE`; headless or windowed.
 
 `dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
-The AVI is checked before its path is given; zero frames is INVALID.
+`seconds` bounds the wait for the recording. The AVI is checked before its path is given;
+zero frames is INVALID.
 
 One frame is written per retrace, but none for the first from the stop `start` leaves. A run
 cut short (`verdict` `TIMEOUT`, `OTHER_STOP`) is checked for what it holds. A capture that
@@ -416,7 +417,8 @@ Record exactly `frames` retraces of sound, then stop: the mixer to a WAV (`kind`
 (`mid`). Needs the machine STOPPED and a build whose debugger has `CAPTURE`.
 
 `dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
-The file is checked before its path is given (a rolled-over OPL run: the last); a WAV whose
+`seconds` bounds the wait for the recording. The file is checked before its path is given
+(a rolled-over OPL run: the last); a WAV whose
 samples miss the run's emulated span by more than 2 mixer ticks is INVALID.
 Silence is reported, never refused; a run with no OPL note or MIDI byte has no file (`path`
 unavailable). A run cut short is checked for what it holds; a capture that could not be turned

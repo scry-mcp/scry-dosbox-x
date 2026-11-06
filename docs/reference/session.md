@@ -157,6 +157,9 @@ Reference: REFERENCE.md, The session.
 | `base_from` | string (matching `^([pP][rR][oO][gG][rR][aA][mM]\|[cC][sS]\|[dD][sS]\|[eE][sS]\|[sS][sS]\|[fF][sS]\|[gG][sS])$`) | `"program"` |
 | `profile` | string | `""` |
 
+- `break_on_int3`: Also stop at the guest's own `int 3`, where a program marks a break; the debugger's first prompt still comes first.
+- `captures_dir`: Where the emulator writes a capture it takes itself; empty, `capture` under the working directory.
+- `background`: Launch behind, keeping the caller's focus, or in front; omitted it is behind unless `shared`.
 - `presence`: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
 
 | reply field | type |

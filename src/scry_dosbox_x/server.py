@@ -192,13 +192,23 @@ def start(conf: str = "", cwd: str = "",
           session_seconds: Annotated[int, vocab.bounds(1, dlaunch.MAX_SECONDS)] | None = None,
           shared: bool = False, display: int | None = None, fullscreen: bool | None = None,
           size: str | None = None,
-          flags: list[str] | None = None, break_on_int3: bool = False, program: str = "",
-          logfile: str = "", capture_video: bool = False, captures_dir: str = "",
+          flags: list[str] | None = None,
+          break_on_int3: Annotated[bool, Field(description=(
+              "Also stop at the guest's own `int 3`, where a program marks a break; the "
+              "debugger's first prompt still comes first."))] = False,
+          program: str = "",
+          logfile: str = "", capture_video: bool = False,
+          captures_dir: Annotated[str, Field(description=(
+              "Where the emulator writes a capture it takes itself; empty, `capture` under "
+              "the working directory."))] = "",
           plan: list[dict[str, Any]] | None = None,
           settle_seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] | None = None,
           input_port: Annotated[int, vocab.bounds(0, dlaunch.INPUT_PORT_MAX)] = 0,
           state_dir: str = "",
-          binary: str = "", background: bool | None = None,
+          binary: str = "",
+          background: Annotated[bool | None, Field(description=(
+              "Launch behind, keeping the caller's focus, or in front; omitted it is behind "
+              "unless `shared`."))] = None,
           presence: Annotated[bool, Field(description=scry_presence.ARGUMENT)] = True,
           dos_calls: bool = False,
           log_categories: dict[Annotated[str, vocab.enum(dlaunch.LOG_CATEGORIES)],
@@ -705,7 +715,8 @@ def a20(method: Annotated[str, vocab.enum(tuple(folds.A20))]) -> dict[str, Any]:
     """The A20 gate, which decides whether memory past 1 MB wraps to 0. Needs the machine
     stopped.
 
-    `read`, `on`, `off`; the last two mark the session `altered` and read the gate back.
+    `method`: one of `read`, `on`, `off`. The last two mark the session `altered` and read the
+    gate back.
     Reply: `enabled`.
 
     Refused: a build with no `A20` command (`no_channel`); a gate that does not read back as set
@@ -844,7 +855,8 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
 
     `shape`: `normal` (`LOG`), `short` (`LOGS`), `long` (`LOGL`) or `cs_ip` (`LOGC`). `dest`:
     absolute, its directory there, the file not; empty is the next `trace-<n>.trace` in
-    captures. Needs a stopped machine, a writable working directory and `build_check`'s
+    captures. `seconds` bounds the wait for the log. Needs a stopped machine, a writable working
+    directory and `build_check`'s
     `heavy_debug`; a dynamic core needs `start(flags=["-set", "cpu core=normal"])`.
 
     Reply: `verdict`, the stop reply of `run_to`, `trace` (`path`, `instructions`, `addresses`,
@@ -872,9 +884,10 @@ def screen_wait(text: str = "", screen: str = "", palette: str = "",
     black, which is how a fade ends). None or several is `bad_argument`.
 
     `every`: 0 judges every retrace; N judges every Nth, for a predicate whose read is a full
-    frame, and a screen that lasts fewer than N retraces is passed over. Needs a stopped machine
-    and `RUNSTATE`. Already true: answered at once, the machine not moved. Each poll costs a stop
-    and a read, so `run_for` first for a distant screen.
+    frame, and a screen that lasts fewer than N retraces is passed over. `seconds` bounds the
+    polls, counted from the opening read; the stop at the bound comes after it. Needs a stopped
+    machine and `RUNSTATE`. Already true: answered at once, the machine not moved. Each poll
+    costs a stop and a read, so `run_for` first for a distant screen.
 
     Reply: `verdict` `TARGET` (`predicate`, `already`, `waited_s`, `polls`, `sampled_every`;
     text adds `point` `[column, row]` and `line`, screen adds `screen`, palette adds `entries`) or
@@ -927,7 +940,8 @@ def record(frames: int, dest: str = "", seconds: Annotated[float, vocab.WAIT_BOU
     STOPPED and a build whose debugger has `CAPTURE`; headless or windowed.
 
     `dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
-    The AVI is checked before its path is given; zero frames is INVALID.
+    `seconds` bounds the wait for the recording. The AVI is checked before its path is given;
+    zero frames is INVALID.
 
     One frame is written per retrace, but none for the first from the stop `start` leaves. A run
     cut short (`verdict` `TIMEOUT`, `OTHER_STOP`) is checked for what it holds. A capture that
@@ -957,7 +971,8 @@ def audio_record(frames: int, dest: str = "",
     (`mid`). Needs the machine STOPPED and a build whose debugger has `CAPTURE`.
 
     `dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
-    The file is checked before its path is given (a rolled-over OPL run: the last); a WAV whose
+    `seconds` bounds the wait for the recording. The file is checked before its path is given
+    (a rolled-over OPL run: the last); a WAV whose
     samples miss the run's emulated span by more than {SPAN_TICKS} mixer ticks is INVALID.
     Silence is reported, never refused; a run with no OPL note or MIDI byte has no file (`path`
     unavailable). A run cut short is checked for what it holds; a capture that could not be turned
@@ -998,9 +1013,9 @@ def state_write(method: Annotated[str, vocab.enum(tuple(folds.STATE_METHODS))], 
                 seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.STATE_WAIT_S
                 ) -> dict[str, Any]:
     """Save or load the machine as `<state_dir>/<name>.sav` through the debugger's `SAVESTATE` and
-    `LOADSTATE`; no window or focus needed. A running guest is stopped for it and released
-    again. `name`: letters, digits, `_`, `-`, never `-` first, at most {STATE_NAME_MAX},
-    not digits only. `seconds` bounds the command's reply.
+    `LOADSTATE`; no window or focus needed. `method`: `save` or `load`. A running guest is
+    stopped for it and released again. `name`: letters, digits, `_`, `-`, never `-` first, at
+    most {STATE_NAME_MAX}, not digits only. `seconds` bounds the command's reply.
 
     `save`: never overwrites. Reply: `name`, `path`, `bytes`, `version`, `program`, `machine`,
     `memory_mb`, `saved_at`, `paused`.
@@ -1386,7 +1401,8 @@ audio_compare = _MEDIA["audio_compare"]
 def breakpoint_at(ref: str, by: Annotated[str, vocab.enum(checks.BREAKPOINT_BY)] = "auto",
                   ) -> dict[str, Any]:
     """Declare a code breakpoint at a symbol or `SEG:OFF`, and arm it if it can be. Stored, and
-    re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build.
+    re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build. `by`: `auto`
+    (this server's choice), `symbol` or `address`, which is how the ref is read.
 
     Refused: a name matching several symbols; an address another declaration holds, naming it. On
     a dynamic cpu core, or `auto` (protected-mode code runs dynamic), which can pass over it
@@ -1525,7 +1541,7 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
                to_y: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = None,
                ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Move the guest's mouse pointer, press buttons, and read the pointer back; `expect`
-    proves the program reacted, as in `send_keys`.
+    proves the program reacted, as in `send_keys`, and is waited up to `seconds`.
 
     `x`, `y`: both or neither, in `units`. `action` names what the button does; with an `action`
     and no `button` the left one is used, and with neither only the pointer moves. `target`: a

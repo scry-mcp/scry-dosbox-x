@@ -10,7 +10,8 @@ breakpoint_at(ref, by="auto")
 ```
 
 Declare a code breakpoint at a symbol or `SEG:OFF`, and arm it if it can be. Stored, and
-re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build.
+re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build. `by`: `auto`
+(this server's choice), `symbol` or `address`, which is how the ref is read.
 
 Refused: a name matching several symbols; an address another declaration holds, naming it. On
 a dynamic cpu core, or `auto` (protected-mode code runs dynamic), which can pass over it

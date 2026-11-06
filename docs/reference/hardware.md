@@ -193,7 +193,8 @@ a20(method)
 The A20 gate, which decides whether memory past 1 MB wraps to 0. Needs the machine
 stopped.
 
-`read`, `on`, `off`; the last two mark the session `altered` and read the gate back.
+`method`: one of `read`, `on`, `off`. The last two mark the session `altered` and read the
+gate back.
 Reply: `enabled`.
 
 Refused: a build with no `A20` command (`no_channel`); a gate that does not read back as set

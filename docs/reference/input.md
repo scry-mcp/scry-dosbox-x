@@ -127,7 +127,7 @@ send_mouse(x=null, y=null, button="", action="", units="screen", expect="", seco
 ```
 
 Move the guest's mouse pointer, press buttons, and read the pointer back; `expect`
-proves the program reacted, as in `send_keys`.
+proves the program reacted, as in `send_keys`, and is waited up to `seconds`.
 
 `x`, `y`: both or neither, in `units`. `action` names what the button does; with an `action`
 and no `button` the left one is used, and with neither only the pointer moves. `target`: a
