@@ -1751,6 +1751,9 @@ def test_an_expired_wait_says_what_it_examined(tmp_path: Path) -> None:
     machine = waiting(["probe-park", "probe-park", "probe-booted"], 3, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=1.0))
     assert r["status"] == "ok" and r["verdict"] == "TIMEOUT", r
+    # THE SAME FIELDS AS A FOUND WAIT, which is what the page promises: the predicate was not
+    # the one in front when the wait began, so nothing was answered before a frame ran.
+    assert r["already"] is False, r
     # A `VRT` still out at the bound is sent and unanswered: interrupted, one past polls.
     out = "BREAK" in machine.sent
     assert len(vrts(machine)) == r["polls"] + int(out) and r["polls"] >= 2
