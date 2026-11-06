@@ -1,0 +1,8 @@
+{
+  "format": "scry-start/1",
+  "conf": "${env:DOSBOX_X_LIVE_BRICKS_DIR}/bricks.conf",
+  "cwd": "${env:DOSBOX_X_LIVE_BRICKS_DIR}",
+  "session_seconds": 900,
+  "shared": true,
+  "break_on_int3": true
+}

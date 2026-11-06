@@ -19,7 +19,6 @@ from matrix_common import (
     ENV,
     GUEST,
     MOUSE_CONF,
-    MOUSE_PROGRAM,
     STOPPED,
     M,
     advanced,
@@ -289,7 +288,7 @@ def _pointer_difference(mode_key: str | None, x: int, y: int
                       ) -> tuple[dict[str, Any], str, window_capture.Difference | str]:
     """Captures after a mouse move and again with the pointer off: what differs is the pointer, or
     the reason it cannot be judged. `mode_key` first switches the mouse guest's BIOS mode."""
-    boot(conf=MOUSE_CONF, program=MOUSE_PROGRAM, shared=True, background=True, presence=True)
+    boot(profile="mouse", conf=MOUSE_CONF, shared=True, background=True, presence=True)
     must(M.call(server.resume), "releasing the mouse guest")
     time.sleep(QUIET_S)
     if mode_key is not None:

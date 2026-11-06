@@ -1,0 +1,8 @@
+{
+  "format": "scry-start/1",
+  "conf": "${env:DOSBOX_X_LIVE_GUEST_DIR}/mouse.conf",
+  "cwd": "${env:DOSBOX_X_LIVE_GUEST_DIR}",
+  "program": "MOUSE.COM",
+  "session_seconds": 1200,
+  "presence": false
+}

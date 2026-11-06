@@ -1,0 +1,7 @@
+{
+  "format": "scry-start/1",
+  "conf": "${env:DOSBOX_X_LIVE_GUEST_DIR}/probe.conf",
+  "cwd": "${env:DOSBOX_X_LIVE_GUEST_DIR}",
+  "session_seconds": 1200,
+  "presence": false
+}

@@ -112,7 +112,7 @@ def _cs_of(reply: dict[str, Any]) -> str:
 
 
 def dpmi_boot(**kw: Any) -> None:
-    boot(conf=guest.CONF, cwd=guest.GUEST, program=guest.PROGRAM, input_port=free_port(), **kw)
+    boot(profile="dpmi", input_port=free_port(), **kw)
 
 
 def dpmi_client(wait: float = 30, exempt: str = "",

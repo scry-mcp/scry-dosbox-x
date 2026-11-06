@@ -16,7 +16,7 @@ from typing import Any, cast
 PKG = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PKG))
 
-from live_private import guest_dir  # noqa: E402
+from live_private import bricks_dir, guest_dir  # noqa: E402
 from matrix_ledger import SCRATCH_PREFIX, SUMMARY_VAR, Cell, Ledger  # noqa: E402
 from scry_core import app_launch, guardian  # noqa: E402
 from scry_core import reply_contract as contract  # noqa: E402
@@ -32,11 +32,16 @@ from scry_dosbox_x import state as dstate  # noqa: E402
 __all__ = ["ds", "server"]
 
 M = Ledger(SCRATCH_PREFIX, SUMMARY_VAR)
-ENV = dict(os.environ)
 
 GUEST = guest_dir()
 PROBE_CONF = GUEST / "probe.conf"
 MOUSE_CONF = GUEST / "mouse.conf"
+#: The recipes name their material through these, the way a private copy names its own. Written
+#: rather than `setdefault`: an exported empty value would leave a recipe resolving off `/`.
+os.environ["DOSBOX_X_LIVE_GUEST_DIR"] = str(GUEST)
+os.environ["DOSBOX_X_LIVE_BRICKS_DIR"] = str(bricks_dir())
+#: What a section declares as `needs`, taken after the two above are in it.
+ENV = dict(os.environ)
 MOUSE_PROGRAM = "MOUSE.COM"
 
 SESSION_S = 1200
@@ -226,20 +231,24 @@ M.on_end = close_whatever
 atexit.register(close_whatever)
 
 
-def boot(conf: Path = PROBE_CONF, cwd: Path = GUEST, **kw: Any) -> dict[str, Any]:
-    """`start` with a log and save dir of this run's own; raises when not up."""
+def boot(profile: str = "probe", **kw: Any) -> dict[str, Any]:
+    """`start` from `profile`, with a log and save dir of this run's own; raises when not up."""
     kw.setdefault("logfile", M.fresh(".log"))
     kw.setdefault("state_dir", M.fresh("-save"))
-    # The presence edge is for a person watching; only section R asks for it.
-    kw.setdefault("presence", False)
-    r = M.call(server.start, conf=str(conf), cwd=str(cwd), session_seconds=SESSION_S, **kw)
+    for name in ("conf", "cwd", "captures_dir", "logfile", "state_dir", "symbols"):
+        if isinstance(kw.get(name), Path):
+            kw[name] = str(kw[name])
+    r = M.call(server.start, profile=profile, **kw)
     note_spawn()
     return must(r, "start did not come up")
 
 
-def start_call(**kw: Any) -> dict[str, Any]:
+def start_call(profile: str = "probe", **kw: Any) -> dict[str, Any]:
     kw.setdefault("presence", False)
-    r = M.call(server.start, **kw)
+    for name in ("conf", "cwd", "captures_dir", "logfile", "state_dir", "symbols"):
+        if isinstance(kw.get(name), Path):
+            kw[name] = str(kw[name])
+    r = M.call(server.start, profile=profile, **kw)
     note_spawn()
     return r
 

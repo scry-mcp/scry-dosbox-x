@@ -55,13 +55,16 @@ def copies_of_jobs() -> Iterator[Copies]:
 
 def take_private_copies() -> None:
     """In a pooled job, copy the guests, bricks and bench and point at the copies."""
-    if not os.environ.get(PRIVATE_VAR) or (os.environ.get(GUEST_VAR)
-                                            and os.environ.get(BRICKS_VAR)):
+    if not os.environ.get(PRIVATE_VAR):
         return
     root = Path(os.environ[PRIVATE_VAR])
     if not root.is_absolute():
         raise SystemExit(f"{PRIVATE_VAR}={root} is not the absolute directory a pooled run "
                          "makes for its job")
+    # A pair already under this job's own root is done; the repository's is not.
+    held = (os.environ.get(GUEST_VAR, ""), os.environ.get(BRICKS_VAR, ""))
+    if all(here and Path(here).is_relative_to(root) for here in held):
+        return
     root.mkdir(parents=True, exist_ok=True)
     shutil.copytree(REPO / "tests" / "guest", root / "tests" / "guest")
     shutil.copytree(REPO / "src" / "scry_dosbox_x" / "guest",

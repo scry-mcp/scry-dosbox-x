@@ -62,6 +62,20 @@ def test_two_pooled_jobs_start_their_emulators_in_directories_of_their_own(
     assert _leftovers(tmp_path) == [], "a job's copies outlived its pool"
 
 
+def test_a_job_whose_environment_already_names_the_repository_still_takes_its_copies(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A job inheriting the recipes' variables pointing at the repository still copies."""
+    monkeypatch.syspath_prepend(str(LIVE))
+    import live_private
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    with live_private.copies_of_jobs() as copies:
+        inherited = {"DOSBOX_X_LIVE_GUEST_DIR": str(REPO / "tests" / "guest"),
+                     "DOSBOX_X_LIVE_BRICKS_DIR": str(REPO / "demos" / "bricks")}
+        job = _job(tmp_path, {**copies.env("I"), **inherited})
+        assert not Path(job[0]).is_relative_to(REPO), job
+        assert job[2:] == ["True", "True"], f"the copy is not a runnable demo: {job}"
+
+
 @pytest.mark.skipif(sys.platform == "win32", reason="SIGKILL is POSIX's")
 def test_a_job_killed_leaves_nothing_once_its_pool_ends(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

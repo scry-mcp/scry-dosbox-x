@@ -18,7 +18,6 @@ from scry_dosbox_x import inputs, launch  # isort: skip
 from matrix_common import (
     GUEST,
     MOUSE_CONF,
-    MOUSE_PROGRAM,
     M,
     boot,
     cells,
@@ -148,7 +147,7 @@ PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
 
 def _mouse_boot(conf: Any = MOUSE_CONF, **kw: Any) -> None:
-    boot(conf=conf, program=MOUSE_PROGRAM, **kw)
+    boot(profile="mouse", conf=conf, **kw)
     release_running()
 
 

@@ -10,7 +10,6 @@ from typing import Any
 from matrix_common import (
     ENV,
     MOUSE_CONF,
-    MOUSE_PROGRAM,
     M,
     boot,
     cells,
@@ -102,7 +101,7 @@ def section_s() -> None:
             and "`RUNSTATE`" in str(after.get("message")) and ok(stopped) and ok(again),
             "; ".join(said(r, 40) for r in (released, after, stopped, again)))
     close_whatever()
-    boot(binary=stock, conf=MOUSE_CONF, program=MOUSE_PROGRAM)
+    boot(profile="mouse", binary=stock, conf=MOUSE_CONF)
     must(M.call(server.resume), "releasing the mouse guest")
     must(M.call(server.log_wait, pattern=r"STUB  \. scry", channel="guest", seconds=WAIT_S),
          "the input stub announcing itself")

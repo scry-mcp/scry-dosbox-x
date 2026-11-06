@@ -1,0 +1,8 @@
+{
+  "format": "scry-start/1",
+  "conf": "${env:DOSBOX_X_LIVE_GUEST_DIR}/dpmi.conf",
+  "cwd": "${env:DOSBOX_X_LIVE_GUEST_DIR}",
+  "program": "DPMI.EXE D:\\DPMI.C",
+  "session_seconds": 1200,
+  "presence": false
+}
