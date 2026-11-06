@@ -1,28 +1,29 @@
-# LineUp: one script, two machines
+# LineUp: the game's own script, replayed on the PC port
 
 ![LineUp in play on the PC port](screen.png)
 
 *LineUp* (Eco-Games / GAMART, 1994) was an arcade game on an NEC V30 board, and its team later
-ported the same source to MS-DOS: VGA mode 13h and a Sound Blaster 16. This demo plays the PC port
-with the very script the MAME server plays the arcade board with, `scry_core.games.lineup`: the
-same steps, the same symbols, the same screen map, the same checks. Only a short binding differs
-per machine: how it starts, which key is the coin, the screen's refresh, and the recording its
-sound is held to. A script that needs anything more is a place where the two servers disagree.
+ported the same source to MS-DOS: VGA mode 13h and a Sound Blaster 16. This demo boots the PC port
+from the run recipe its repository declares, `.scry/start/dos.json`, and replays the script that
+repository declares too, `.scry/perform/dos.json`, in one call: the game's own symbols, its screens
+and its inputs, written once by the game and replayed here. The MAME server plays the arcade board
+from `scry_core.games.lineup`, whose symbols and screens this script shares.
 
-It runs to the routine that draws the high scores by name, drops a coin and reads the credits the
-game counted, starts a game, runs to the routine that writes its level, and plays: one column right,
-the next colour, a shot, each read back off the player's own variables. Each screen it arrives at
-is recognised off a map signed in palette indices, because the VGA's 6-bit DAC and the arcade's
-5-bit palette show the same pixels in slightly different colours. Then it records two seconds of
-the stage's music off the Sound Blaster and holds it, sample for sample, to
+The script runs to the routine that draws the high scores by name, drops a coin and reads the
+credits the game counted, starts a game, runs to the routine that writes its level, and plays: one
+column right, the next colour, a shot, each read back off the player's own variables. Each screen it
+arrives at is recognised off the game's map, signed in palette indices, because the VGA's 6-bit DAC
+and the arcade's 5-bit palette show the same pixels in slightly different colours. Then the demo
+records two seconds of the stage's music off the Sound Blaster and holds it, sample for sample, to
 [`music.wav`](music.wav) beside this file.
 
 ## The game
 
 LineUp is not distributed with this repository. The demo runs a copy of the PC port: a directory
-holding `EXES/LINEUP.EXE` with the linker's symbol map beside it, `EXES/LINEUP.MAP`, and the
-game's own `AUDIO/` and `GFX/`. The game's own repository builds the executable and its map from
-source; that repository is not public yet, so there is no link to it here.
+holding `EXES/LINEUP.EXE` with the linker's symbol map beside it, `EXES/LINEUP.MAP`, the game's own
+`AUDIO/` and `GFX/`, its `.scry/` store, and the `SCRIPTS/dosbox-x-mcp-conf.sh` that derives a live
+session's conf. The game's own repository builds the executable and its map from source; that
+repository is not public yet, so there is no link to it here.
 
 ## Run it
 
@@ -30,10 +31,11 @@ source; that repository is not public yet, so there is no link to it here.
 uv run python demos/lineup/demo.py --cwd /path/to/game
 ```
 
-The demo opens a window, the 320 x 200 screen drawn four times over by its conf, so the game can
-be watched; nothing in it needs the window.
+The demo opens a window sized by the conf its game derives, so the game can be watched;
+nothing in it needs the window.
 
-- `--cwd PATH` (absolute or `~`-led) is the copy of the game DOSBox-X runs from.
+- `--cwd PATH` (absolute or `~`-led) is the copy of the game DOSBox-X runs from, with its `.scry/`
+  and its `SCRIPTS/`.
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`,
   else the `dosbox-x` on your `PATH`.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
@@ -47,27 +49,20 @@ usage error, 3 nothing was demonstrated (no copy of the game, a server that did 
 
 Give this to an MCP client with this server connected:
 
-> Start a session from `demos/lineup/lineup.conf` (its `@GUEST@` replaced by this repository's
-> `guest` directory) running from the game's directory, with `EXES/LINEUP.MAP` as its symbols,
-> and run it two seconds, which places the map where DOS loaded the game. Load the screen map
-> `scry_core/games/lineup.screen-map.json` from scry-core. Run to
-> `Draw_High_Scores_Screen` counting `Check_Money25`, run a second and a half and tell me which
-> screen it is and what `Credits` holds. Press Tab, run a second, name the screen and read
-> `Credits` again. Press 1, run to `Level_Write`, run 200 ms, name the screen and read `Credits`
-> and `Stage_Act`. Run three seconds, name the screen and read the first six words of `Player1`.
-> Press the right arrow, the space bar and the up arrow, letting the game run 200, 200 and 100 ms
-> after each before reading `Player1`. Record two
-> seconds of sound, measure it and compare it with `music.wav`, take a picture of the screen and
-> close the session.
+> Derive the live session's conf with the game's own `SCRIPTS/dosbox-x-mcp-conf.sh`, its
+> `DOSBOX_GUEST` set to this server's guest directory. Start the session from the profile `dos`,
+> the game's own `.scry/start/dos.json`, with this run's captures directory. Load the game's map
+> from its `.scry/maps/`. Replay the script its `.scry/perform/dos.json` declares with `perform`.
+> Record two seconds of sound, measure it and compare it with `music.wav`, take a picture of the
+> screen and close the session.
 
 ## What it walks
 
 | Family | Calls |
 |---|---|
-| Session | `start` (windowed, parked at the debugger before DOS boots), `close` |
-| Advance | `run_for` by emulated milliseconds, `run_to` a routine of the game by its name |
-| Read | `screen_map_write(method="load")`, `screen_map_find` on every screen, `read_memory` by symbol |
-| Input | `send_keys` (the coin, start, right, fire and up of the game's own actions) |
+| Session | `start` from the game's profile (windowed, parked at the debugger before DOS boots), `close` |
+| Script | `perform`, replaying the game's own `.scry/perform/dos.json` |
+| Read | `screen_map_write(method="load")` of the game's map, `screen_map_find` and `read_memory` by symbol, inside the document |
 | Captures | `audio_record` of the Sound Blaster's output |
 | Files | `audio_compare` (`measure`, then `diff` against `music.wav`) |
 | Screen | `screen_view` |
@@ -76,110 +71,265 @@ Give this to an MCP client with this server connected:
 
 Generated by `demo.py --update-readme` from a run where every step passed. What differs between two
 honest runs (process ids, ports, wall-clock times, temporary paths, the host's own DOSBox-X and its
-own arguments) is `<volatile>`; the files a call names, such as `./tmp/demos/lineup/music.wav` or
-`./demos/lineup/music.wav`, are shown relative to the repository root, and the tools themselves take
-absolute paths.
+own arguments, the reader's copy of the game) is `<volatile>` or `<host>`; the files a call names,
+such as `./tmp/demos/lineup/music.wav` or `./demos/lineup/music.wav`, are shown relative to the
+repository root, and the tools themselves take absolute paths.
 
 <!-- demo-transcript:begin -->
-The run is 34 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 9 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
-**4. `run_to`**: OK to the high scores: stopped at Draw_High_Scores_Screen
+**4. `perform`**: OK script: 26 steps of the game's own document, 21 holding to it
 
-`run_to` takes the game's own routine name from the build's symbol map and runs the machine until that routine begins. `control` is a place known to run, and the reply counts its hits meanwhile, so a run that missed its target says whether the machine was running at all.
+`perform` replays the script the game's own `.scry/perform/` declares, in one call: the same symbols, screens and inputs, each step held to what the document records.
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "ref": "Draw_High_Scores_Screen",
-  "control": "Check_Money25",
-  "seconds": 120
+  "path": "<host>",
+  "summaries": true
 }
 ```
 
 ```json
 {
-  "summary": "run_to Draw_High_Scores_Screen: TARGET at 08ED:00001DF6, control counted 150",
+  "summary": "perform: 26 of 26 steps",
   "status": "ok",
-  "verdict": "TARGET",
-  "target": "08ED:1DF6",
-  "ref": "Draw_High_Scores_Screen",
-  "pc": "08ED:00001DF6",
-  "cpu_mode": "real",
-  "target_disarmed": true,
-  "control_hits": 150,
-  "controls": [
-    {"ref": "Check_Money25", "at": "08ED:19DC", "hits_in_run": 150, "removed": true}
+  "ran": [
+    {
+      "step": 0,
+      "op": "run_to",
+      "reply": {
+        "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 0",
+        "status": "ok",
+        "stop_seq": 3,
+        "cause": "run_to's target Draw_High_Scores_Screen at 08EB:00001DF6"
+      }
+    },
+    {
+      "step": 1,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 1500 ms: ELAPSED, 106 polls, at 08EB:00001CA9",
+        "status": "ok",
+        "stop_seq": 4,
+        "cause": "the retrace run_for ran to, at 08EB:00001CA9"
+      }
+    },
+    {
+      "step": 2,
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: hiscores (file), 2 controls", "status": "ok"}
+    },
+    {
+      "step": 3,
+      "op": "read_memory",
+      "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0000", "status": "ok"}
+    },
+    {
+      "step": 4,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 462",
+        "status": "ok",
+        "stop_seq": 10,
+        "cause": "the retrace the input's post ran to, at F000:0000CA40"
+      }
+    },
+    {
+      "step": 5,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 1000 ms: ELAPSED, 71 polls, at 08EB:00001CA9",
+        "status": "ok",
+        "stop_seq": 11,
+        "cause": "the retrace run_for ran to, at 08EB:00001CA9"
+      }
+    },
+    {
+      "step": 6,
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: insert (file), 2 controls", "status": "ok"}
+    },
+    {
+      "step": 7,
+      "op": "read_memory",
+      "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0300", "status": "ok"}
+    },
+    {
+      "step": 8,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 539",
+        "status": "ok",
+        "stop_seq": 17,
+        "cause": "the retrace the input's post ran to, at 08EB:00009243"
+      }
+    },
+    {
+      "step": 9,
+      "op": "run_to",
+      "reply": {
+        "summary": "run_to Level_Write: TARGET at 08EB:000058FE, control counted 0",
+        "status": "ok",
+        "stop_seq": 18,
+        "cause": "run_to's target Level_Write at 08EB:000058FE"
+      }
+    },
+    {
+      "step": 10,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:000004AC",
+        "status": "ok",
+        "stop_seq": 19,
+        "cause": "the retrace run_for ran to, at 08EB:000004AC"
+      }
+    },
+    {
+      "step": 11,
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: level (file), 3 controls", "status": "ok"}
+    },
+    {
+      "step": 12,
+      "op": "read_memory",
+      "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0200", "status": "ok"}
+    },
+    {
+      "step": 13,
+      "op": "read_memory",
+      "reply": {"summary": "read_memory Stage_Act: 2 bytes at 08EB:0000B0D8: 0000", "status": "ok"}
+    },
+    {
+      "step": 14,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 3000 ms: ELAPSED, 211 polls, at 08EB:00008716",
+        "status": "ok",
+        "stop_seq": 20,
+        "cause": "the retrace run_for ran to, at 08EB:00008716"
+      }
+    },
+    {
+      "step": 15,
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: play (file), 3 controls", "status": "ok"}
+    },
+    {
+      "step": 16,
+      "op": "read_memory",
+      "reply": {
+        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010003000100000003000000",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 17,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 789",
+        "status": "ok",
+        "stop_seq": 36,
+        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
+      }
+    },
+    {
+      "step": 18,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:000004AC",
+        "status": "ok",
+        "stop_seq": 37,
+        "cause": "the retrace run_for ran to, at 08EB:000004AC"
+      }
+    },
+    {
+      "step": 19,
+      "op": "read_memory",
+      "reply": {
+        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000100000003000000",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 20,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 810",
+        "status": "ok",
+        "stop_seq": 43,
+        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
+      }
+    },
+    {
+      "step": 21,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:0000864A",
+        "status": "ok",
+        "stop_seq": 44,
+        "cause": "the retrace run_for ran to, at 08EB:0000864A"
+      }
+    },
+    {
+      "step": 22,
+      "op": "read_memory",
+      "reply": {
+        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000200000003000000",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 23,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 841",
+        "status": "ok",
+        "stop_seq": 60,
+        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
+      }
+    },
+    {
+      "step": 25,
+      "op": "read_memory",
+      "reply": {
+        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000200040003000200",
+        "status": "ok",
+        "ref": "Player1",
+        "seg_off": "08EB:0000AE32",
+        "length": 12,
+        "hex": "010004000200040003000200",
+        "session": {"alive": true, "running": false, "altered": false}
+      }
+    }
   ],
-  "frame": 351,
-  "regs": {
-    "EAX": "0x00000a56",
-    "EBX": "0x00000002",
-    "ECX": "0x005b4208",
-    "EDX": "0x00000000",
-    "ESI": "0x00000024",
-    "EDI": "0x0000fb28",
-    "EBP": "0x00004288",
-    "ESP": "0x00004284",
-    "EIP": "0x00001df6",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
+  "steps_total": 26,
+  "truncated": true,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": {
+    "stop_seq_first": 3,
+    "stop_seq_last": 61,
+    "surveyed": 14,
+    "by_cause": {
+      "run_to's target Draw_High_Scores_Screen": 1,
+      "the retrace run_for ran to,": 7,
+      "the retrace the input's post ran to,": 5,
+      "run_to's target Level_Write": 1
+    },
+    "unaccounted": 45
   },
-  "watches": [],
-  "cause": "run_to's target Draw_High_Scores_Screen at 08ED:00001DF6",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "stop_seq": 3,
-  "instruction": {
-    "address": "08ED:00001DF6",
-    "bytes": "1E",
-    "text": "push ds",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "Draw_High_Scores_Screen",
-    "delta": 0
-  },
+  "steps_completed": 26,
+  "failed_at": {"available": false, "why": "no step failed"},
+  "held": 21,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**11. `read_memory`**: OK credits: Credits holds 3
-
-The script names the game's own variables, and each server resolves them through its build's map: `Credits` is read by name, the same call on the arcade board and on the PC port. The coin the demo dropped is counted as three credits.
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "ref": "Credits",
-  "length": 2
-}
-```
-
-```json
-{
-  "summary": "read_memory Credits: 2 bytes at 08ED:0000BC04: 0300",
-  "status": "ok",
-  "ref": "Credits",
-  "seg_off": "08ED:0000BC04",
-  "length": 2,
-  "hex": "0300",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**32. `audio_compare`**: OK exact: the recording is music.wav, sample for sample
+**7. `audio_compare`**: OK exact: the recording is music.wav, sample for sample
 
 The recording is compared with the platform's reference with alignment off: `exact` is true only when every sample is equal, so a changed sound, a different mixer or a drifted start fails the run.
 

@@ -4,12 +4,9 @@
 
 ```json
 {
-  "conf": "./tmp/demos/lineup/lineup.conf",
-  "session_seconds": 900,
+  "profile": "<host>",
   "shared": true,
-  "symbols": "./tmp/demos/lineup/LINEUP.MAP",
-  "state_dir": "./tmp/demos/lineup/lineup-states",
-  "captures_dir": "./tmp/demos/lineup/lineup-captures",
+  "captures_dir": "<host>",
   "cwd": "<host>"
 }
 ```
@@ -19,35 +16,49 @@
   "summary": "<volatile>",
   "status": "ok",
   "pid": "<volatile>",
-  "conf": "./tmp/demos/lineup/lineup.conf",
-  "conf_digest": "7babdb45621110eb",
+  "conf": "<volatile>",
+  "conf_digest": "365901dcd0ac5cec",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
   "captures": "off",
-  "state_dir": "./tmp/demos/lineup/lineup-states",
+  "state_dir": "<volatile>",
   "shared": true,
   "ready_after_s": "<volatile>",
   "argv": "<volatile>",
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
+  "window": "<volatile>",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
-  "symbols": {"held": "./tmp/demos/lineup/LINEUP.MAP", "base_from": "program"},
+  "symbols": {
+    "held": "<volatile>",
+    "base_from": "program",
+    "checked": {
+      "available": false,
+      "why": "the table carries no symbol kinds (a link map lists none), so its code symbols cannot be told from the rest"
+    }
+  },
+  "note": "this session runs the dynamic core, which checks breakpoints only between compiled blocks, so a code breakpoint inside one can be passed over and a run that never reaches it proves nothing. Start on the normal core: `start(flags=[\"-set\", \"cpu core=normal\"])`",
+  "profile": {
+    "name": "<volatile>",
+    "file": "<volatile>",
+    "supplied": ["conf", "logfile", "program", "session_seconds", "symbols"]
+  },
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**2. `run_for`**: OK boot: booted: DOS running the game, its map placed at segment 08ED, 385 symbols
+**2. `run_for`**: OK boot: booted: DOS running the game, its map placed at segment 08EB, 385 symbols
 
 <details><summary>call and reply</summary>
 
@@ -60,13 +71,13 @@
 
 ```json
 {
-  "summary": "run_for 2000 ms: ELAPSED, 141 polls, at 08ED:00001CA9",
+  "summary": "run_for 2000 ms: ELAPSED, 140 polls, at 08EB:00001CA9",
   "status": "ok",
   "verdict": "ELAPSED",
-  "polls": 141,
-  "pc": "08ED:00001CA9",
+  "polls": 140,
+  "pc": "08EB:00001CA9",
   "cpu_mode": "real",
-  "frame": 141,
+  "frame": 140,
   "regs": {
     "EAX": "0x00000020",
     "EBX": "0x0000000a",
@@ -77,22 +88,24 @@
     "EBP": "0x00004288",
     "ESP": "0x00004282",
     "EIP": "0x00001ca9",
-    "CS": "0x08ed",
-    "DS": "0x138e",
+    "CS": "0x08eb",
+    "DS": "0x138c",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x138e"
+    "SS": "0x138c"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:00001CA9",
+  "cause": "the retrace run_for ran to, at 08EB:00001CA9",
   "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
+    "lines_total": 1,
+    "truncated": false,
+    "lines": ["Bochs port E9h: STUB  . scry device=present proto=7 motion=1"],
+    "mark": "<volatile>"
   },
   "stop_seq": 2,
   "instruction": {
-    "address": "08ED:00001CA9",
+    "address": "08EB:00001CA9",
     "bytes": "833ECC0601",
     "text": "cmp word ptr [0x6cc], 1",
     "flow": "sequential",
@@ -101,18 +114,15 @@
     "symbol": "Pal_Off",
     "delta": 122
   },
-  "symbols_placed": {
-    "placed": true,
-    "path": "./tmp/demos/lineup/LINEUP.MAP",
-    "load_segment": "08ED",
-    "base": 36560,
-    "loaded": 385
-  },
+  "symbols_placed": {"placed": true, "path": "<volatile>", "load_segment": "08EB", "base": 36528, "loaded": 385},
   "emulated_before_s": 0.00094,
-  "emulated_after_s": 2.00347702,
+  "emulated_after_s": 2.00290892,
   "frame_before": 0,
-  "frame_after": 141,
-  "cycles": 96580065,
+  "frame_after": 140,
+  "cycles": {
+    "available": false,
+    "why": "the cycle count counts only what the normal core runs, and this session started on the dynamic core: start on `flags=[\"-set\", \"cpu core=normal\"]` for a count"
+  },
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -126,7 +136,7 @@
 ```json
 {
   "method": "load",
-  "path": "./tmp/demos/lineup/lineup.screen-map.json"
+  "path": "<host>"
 }
 ```
 
@@ -134,7 +144,7 @@
 {
   "summary": "screen_map_write load: 4 screens, 10 controls of lineup",
   "status": "ok",
-  "path": "./tmp/demos/lineup/lineup.screen-map.json",
+  "path": "<volatile>",
   "application": "lineup",
   "mode": "verified",
   "screens": 4,
@@ -145,1246 +155,256 @@
 
 </details>
 
-**4. `run_to`**: OK to the high scores: stopped at Draw_High_Scores_Screen
+**4. `perform`**: OK script: 26 steps of the game's own document, 21 holding to it
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "ref": "Draw_High_Scores_Screen",
-  "control": "Check_Money25",
-  "seconds": 120
+  "path": "<host>",
+  "summaries": true
 }
 ```
 
 ```json
 {
-  "summary": "run_to Draw_High_Scores_Screen: TARGET at 08ED:00001DF6, control counted 150",
+  "summary": "perform: 26 of 26 steps",
   "status": "ok",
-  "verdict": "TARGET",
-  "target": "08ED:1DF6",
-  "ref": "Draw_High_Scores_Screen",
-  "pc": "08ED:00001DF6",
-  "cpu_mode": "real",
-  "target_disarmed": true,
-  "control_hits": 150,
-  "controls": [
-    {"ref": "Check_Money25", "at": "08ED:19DC", "hits_in_run": 150, "removed": true}
+  "ran": [
+    {
+      "step": 0,
+      "op": "run_to",
+      "reply": {
+        "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 0",
+        "status": "ok",
+        "stop_seq": 3,
+        "cause": "run_to's target Draw_High_Scores_Screen at 08EB:00001DF6"
+      }
+    },
+    {
+      "step": 1,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 1500 ms: ELAPSED, 106 polls, at 08EB:00001CA9",
+        "status": "ok",
+        "stop_seq": 4,
+        "cause": "the retrace run_for ran to, at 08EB:00001CA9"
+      }
+    },
+    {
+      "step": 2,
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: hiscores (file), 2 controls", "status": "ok"}
+    },
+    {
+      "step": 3,
+      "op": "read_memory",
+      "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0000", "status": "ok"}
+    },
+    {
+      "step": 4,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 462",
+        "status": "ok",
+        "stop_seq": 10,
+        "cause": "the retrace the input's post ran to, at F000:0000CA40"
+      }
+    },
+    {
+      "step": 5,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 1000 ms: ELAPSED, 71 polls, at 08EB:00001CA9",
+        "status": "ok",
+        "stop_seq": 11,
+        "cause": "the retrace run_for ran to, at 08EB:00001CA9"
+      }
+    },
+    {
+      "step": 6,
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: insert (file), 2 controls", "status": "ok"}
+    },
+    {
+      "step": 7,
+      "op": "read_memory",
+      "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0300", "status": "ok"}
+    },
+    {
+      "step": 8,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 539",
+        "status": "ok",
+        "stop_seq": 17,
+        "cause": "the retrace the input's post ran to, at 08EB:00009243"
+      }
+    },
+    {
+      "step": 9,
+      "op": "run_to",
+      "reply": {
+        "summary": "run_to Level_Write: TARGET at 08EB:000058FE, control counted 0",
+        "status": "ok",
+        "stop_seq": 18,
+        "cause": "run_to's target Level_Write at 08EB:000058FE"
+      }
+    },
+    {
+      "step": 10,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:000004AC",
+        "status": "ok",
+        "stop_seq": 19,
+        "cause": "the retrace run_for ran to, at 08EB:000004AC"
+      }
+    },
+    {
+      "step": 11,
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: level (file), 3 controls", "status": "ok"}
+    },
+    {
+      "step": 12,
+      "op": "read_memory",
+      "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0200", "status": "ok"}
+    },
+    {
+      "step": 13,
+      "op": "read_memory",
+      "reply": {"summary": "read_memory Stage_Act: 2 bytes at 08EB:0000B0D8: 0000", "status": "ok"}
+    },
+    {
+      "step": 14,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 3000 ms: ELAPSED, 211 polls, at 08EB:00008716",
+        "status": "ok",
+        "stop_seq": 20,
+        "cause": "the retrace run_for ran to, at 08EB:00008716"
+      }
+    },
+    {
+      "step": 15,
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: play (file), 3 controls", "status": "ok"}
+    },
+    {
+      "step": 16,
+      "op": "read_memory",
+      "reply": {
+        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010003000100000003000000",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 17,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 789",
+        "status": "ok",
+        "stop_seq": 36,
+        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
+      }
+    },
+    {
+      "step": 18,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:000004AC",
+        "status": "ok",
+        "stop_seq": 37,
+        "cause": "the retrace run_for ran to, at 08EB:000004AC"
+      }
+    },
+    {
+      "step": 19,
+      "op": "read_memory",
+      "reply": {
+        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000100000003000000",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 20,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 810",
+        "status": "ok",
+        "stop_seq": 43,
+        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
+      }
+    },
+    {
+      "step": 21,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:0000864A",
+        "status": "ok",
+        "stop_seq": 44,
+        "cause": "the retrace run_for ran to, at 08EB:0000864A"
+      }
+    },
+    {
+      "step": 22,
+      "op": "read_memory",
+      "reply": {
+        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000200000003000000",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 23,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 841",
+        "status": "ok",
+        "stop_seq": 60,
+        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
+      }
+    },
+    {
+      "step": 25,
+      "op": "read_memory",
+      "reply": {
+        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000200040003000200",
+        "status": "ok",
+        "ref": "Player1",
+        "seg_off": "08EB:0000AE32",
+        "length": 12,
+        "hex": "010004000200040003000200",
+        "session": {"alive": true, "running": false, "altered": false}
+      }
+    }
   ],
-  "frame": 351,
-  "regs": {
-    "EAX": "0x00000a56",
-    "EBX": "0x00000002",
-    "ECX": "0x005b4208",
-    "EDX": "0x00000000",
-    "ESI": "0x00000024",
-    "EDI": "0x0000fb28",
-    "EBP": "0x00004288",
-    "ESP": "0x00004284",
-    "EIP": "0x00001df6",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
+  "steps_total": 26,
+  "truncated": true,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": {
+    "stop_seq_first": 3,
+    "stop_seq_last": 61,
+    "surveyed": 14,
+    "by_cause": {
+      "run_to's target Draw_High_Scores_Screen": 1,
+      "the retrace run_for ran to,": 7,
+      "the retrace the input's post ran to,": 5,
+      "run_to's target Level_Write": 1
+    },
+    "unaccounted": 45
   },
-  "watches": [],
-  "cause": "run_to's target Draw_High_Scores_Screen at 08ED:00001DF6",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "stop_seq": 3,
-  "instruction": {
-    "address": "08ED:00001DF6",
-    "bytes": "1E",
-    "text": "push ds",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "Draw_High_Scores_Screen",
-    "delta": 0
-  },
+  "steps_completed": 26,
+  "failed_at": {"available": false, "why": "no step failed"},
+  "held": 21,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**5. `run_for`**: OK drawn: the table drawn
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "milliseconds": 1500,
-  "seconds": 120
-}
-```
-
-```json
-{
-  "summary": "run_for 1500 ms: ELAPSED, 106 polls, at 08ED:00001CAE",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 106,
-  "pc": "08ED:00001CAE",
-  "cpu_mode": "real",
-  "frame": 457,
-  "regs": {
-    "EAX": "0x00000030",
-    "EBX": "0x0000000a",
-    "ECX": "0x005b0000",
-    "EDX": "0x00000000",
-    "ESI": "0x00001260",
-    "EDI": "0x00000dfd",
-    "EBP": "0x00004288",
-    "ESP": "0x00004282",
-    "EIP": "0x00001cae",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:00001CAE",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "stop_seq": 4,
-  "instruction": {
-    "address": "08ED:00001CAE",
-    "bytes": "74F9",
-    "text": "je 0x1ca9",
-    "flow": "branch",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "Pal_Off",
-    "delta": 127
-  },
-  "emulated_before_s": 5.00021262,
-  "emulated_after_s": 6.5121853000000005,
-  "frame_before": 351,
-  "frame_after": 457,
-  "cycles": 73158825,
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**6. `screen_map_find`**: OK is hiscores: the hiscores screen, its controls table, credits
-
-<details><summary>call and reply</summary>
-
-```json
-{}
-```
-
-```json
-{
-  "summary": "screen_map_find: hiscores (file), 2 controls",
-  "status": "ok",
-  "matched": true,
-  "screen": "hiscores",
-  "layer": "file",
-  "kind": "pixel",
-  "size": [320, 200],
-  "controls": [
-    {"name": "table", "rect": [64, 30, 192, 145], "centre": [160, 102]},
-    {"name": "credits", "rect": [230, 186, 76, 12], "centre": [268, 192]}
-  ],
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**7. `read_memory`**: OK no credits: Credits holds 0
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "ref": "Credits",
-  "length": 2
-}
-```
-
-```json
-{
-  "summary": "read_memory Credits: 2 bytes at 08ED:0000BC04: 0000",
-  "status": "ok",
-  "ref": "Credits",
-  "seg_off": "08ED:0000BC04",
-  "length": 2,
-  "hex": "0000",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**8. `send_keys`**: OK press coin: COIN pressed
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "keys": ["tab"]
-}
-```
-
-```json
-{
-  "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 463",
-  "status": "ok",
-  "keys": ["tab"],
-  "modifiers": [],
-  "route": "guest",
-  "posted": 1,
-  "bytes": 2,
-  "frames": 2,
-  "polls": 6,
-  "pc": "F000:0000CA40",
-  "cpu_mode": "real",
-  "stop_seq": 10,
-  "frame": 463,
-  "instruction": {
-    "address": "F000:0000CA40",
-    "bytes": "90",
-    "text": "nop",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {"available": false, "why": "outside the loaded table's span"},
-    "delta": {"available": false, "why": "outside the loaded table's span"}
-  },
-  "regs": {
-    "EAX": "0x00003f8e",
-    "EBX": "0x00000007",
-    "ECX": "0x005b7f7e",
-    "EDX": "0x00000000",
-    "ESI": "0x000082db",
-    "EDI": "0x00000007",
-    "EBP": "0x00004214",
-    "ESP": "0x00004206",
-    "EIP": "0x0000ca40",
-    "CS": "0xf000",
-    "DS": "0x88ee",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace the input's post ran to, at F000:0000CA40",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-  },
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**9. `run_for`**: OK counted: the coin counted
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "milliseconds": 1000,
-  "seconds": 120
-}
-```
-
-```json
-{
-  "summary": "run_for 1000 ms: ELAPSED, 71 polls, at 08ED:00001CA9",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 71,
-  "pc": "08ED:00001CA9",
-  "cpu_mode": "real",
-  "frame": 534,
-  "regs": {
-    "EAX": "0x00000020",
-    "EBX": "0x0000000a",
-    "ECX": "0x005b0000",
-    "EDX": "0x00000000",
-    "ESI": "0x00001260",
-    "EDI": "0x00000dfd",
-    "EBP": "0x00004288",
-    "ESP": "0x00004282",
-    "EIP": "0x00001ca9",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:00001CA9",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "stop_seq": 11,
-  "instruction": {
-    "address": "08ED:00001CA9",
-    "bytes": "833ECC0601",
-    "text": "cmp word ptr [0x6cc], 1",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "Pal_Off",
-    "delta": 122
-  },
-  "emulated_before_s": 6.59778582,
-  "emulated_after_s": 7.61082626,
-  "frame_before": 463,
-  "frame_after": 534,
-  "cycles": 48952845,
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**10. `screen_map_find`**: OK is insert: the insert screen, its controls banner, credits
-
-<details><summary>call and reply</summary>
-
-```json
-{}
-```
-
-```json
-{
-  "summary": "screen_map_find: insert (file), 2 controls",
-  "status": "ok",
-  "matched": true,
-  "screen": "insert",
-  "layer": "file",
-  "kind": "pixel",
-  "size": [320, 200],
-  "controls": [
-    {"name": "banner", "rect": [0, 6, 320, 22], "centre": [160, 17]},
-    {"name": "credits", "rect": [230, 186, 76, 12], "centre": [268, 192]}
-  ],
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**11. `read_memory`**: OK credits: Credits holds 3
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "ref": "Credits",
-  "length": 2
-}
-```
-
-```json
-{
-  "summary": "read_memory Credits: 2 bytes at 08ED:0000BC04: 0300",
-  "status": "ok",
-  "ref": "Credits",
-  "seg_off": "08ED:0000BC04",
-  "length": 2,
-  "hex": "0300",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**12. `send_keys`**: OK press start: START pressed
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "keys": ["1"]
-}
-```
-
-```json
-{
-  "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 540",
-  "status": "ok",
-  "keys": ["1"],
-  "modifiers": [],
-  "route": "guest",
-  "posted": 1,
-  "bytes": 2,
-  "frames": 2,
-  "polls": 6,
-  "pc": "08ED:00009233",
-  "cpu_mode": "real",
-  "stop_seq": 17,
-  "frame": 540,
-  "instruction": {
-    "address": "08ED:00009233",
-    "bytes": "268807",
-    "text": "mov byte ptr es:[bx], al",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "_gfx_load_bg",
-    "delta": 192
-  },
-  "regs": {
-    "EAX": "0x00000183",
-    "EBX": "0x0000df76",
-    "ECX": "0x005b423a",
-    "EDX": "0x000067e8",
-    "ESI": "0x00000200",
-    "EDI": "0x000001da",
-    "EBP": "0x00004266",
-    "ESP": "0x00004254",
-    "EIP": "0x00009233",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace the input's post ran to, at 08ED:00009233",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-  },
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**13. `run_to`**: OK to the level: stopped at Level_Write
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "ref": "Level_Write",
-  "control": "Check_Money25",
-  "seconds": 120
-}
-```
-
-```json
-{
-  "summary": "run_to Level_Write: TARGET at 08ED:000058FE, control counted 6",
-  "status": "ok",
-  "verdict": "TARGET",
-  "target": "08ED:58FE",
-  "ref": "Level_Write",
-  "pc": "08ED:000058FE",
-  "cpu_mode": "real",
-  "target_disarmed": true,
-  "control_hits": 6,
-  "controls": [
-    {"ref": "Check_Money25", "at": "08ED:19DC", "hits_in_run": 6, "removed": true}
-  ],
-  "frame": 548,
-  "regs": {
-    "EAX": "0x0000a000",
-    "EBX": "0x000058fe",
-    "ECX": "0x005b4208",
-    "EDX": "0x00000000",
-    "ESI": "0x00000422",
-    "EDI": "0x0000faa0",
-    "EBP": "0x00004288",
-    "ESP": "0x00004282",
-    "EIP": "0x000058fe",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "run_to's target Level_Write at 08ED:000058FE",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "stop_seq": 18,
-  "instruction": {
-    "address": "08ED:000058FE",
-    "bytes": "BB8834",
-    "text": "mov bx, 0x3488",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "Level_Write",
-    "delta": 0
-  },
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**14. `run_for`**: OK level shown: LEVEL 1 written
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "milliseconds": 200,
-  "seconds": 120
-}
-```
-
-```json
-{
-  "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08ED:000004B3",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 15,
-  "pc": "08ED:000004B3",
-  "cpu_mode": "real",
-  "frame": 563,
-  "regs": {
-    "EAX": "0x0000ffff",
-    "EBX": "0x000058fe",
-    "ECX": "0x005b0000",
-    "EDX": "0x00000002",
-    "ESI": "0x0000046a",
-    "EDI": "0x0000faa0",
-    "EBP": "0x00004288",
-    "ESP": "0x00004286",
-    "EIP": "0x000004b3",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:000004B3",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "stop_seq": 19,
-  "instruction": {
-    "address": "08ED:000004B3",
-    "bytes": "78F7",
-    "text": "js 0x4ac",
-    "flow": "branch",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "_lineup_run",
-    "delta": 95
-  },
-  "emulated_before_s": 7.82040968,
-  "emulated_after_s": 8.02460012,
-  "frame_before": 548,
-  "frame_after": 563,
-  "cycles": 10101734,
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**15. `screen_map_find`**: OK is level: the level screen, its controls p1_well, p2_well, credits
-
-<details><summary>call and reply</summary>
-
-```json
-{}
-```
-
-```json
-{
-  "summary": "screen_map_find: level (file), 3 controls",
-  "status": "ok",
-  "matched": true,
-  "screen": "level",
-  "layer": "file",
-  "kind": "pixel",
-  "size": [320, 200],
-  "controls": [
-    {"name": "p1_well", "rect": [15, 0, 98, 194], "centre": [64, 97]},
-    {"name": "p2_well", "rect": [207, 0, 98, 194], "centre": [256, 97]},
-    {"name": "credits", "rect": [152, 190, 16, 10], "centre": [160, 195]}
-  ],
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**16. `read_memory`**: OK one spent: Credits holds 2
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "ref": "Credits",
-  "length": 2
-}
-```
-
-```json
-{
-  "summary": "read_memory Credits: 2 bytes at 08ED:0000BC04: 0200",
-  "status": "ok",
-  "ref": "Credits",
-  "seg_off": "08ED:0000BC04",
-  "length": 2,
-  "hex": "0200",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**17. `read_memory`**: OK first stage: Stage_Act holds 0
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "ref": "Stage_Act",
-  "length": 2
-}
-```
-
-```json
-{
-  "summary": "read_memory Stage_Act: 2 bytes at 08ED:0000B0D8: 0000",
-  "status": "ok",
-  "ref": "Stage_Act",
-  "seg_off": "08ED:0000B0D8",
-  "length": 2,
-  "hex": "0000",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**18. `run_for`**: OK play: the board filled
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "milliseconds": 3000,
-  "seconds": 120
-}
-```
-
-```json
-{
-  "summary": "run_for 3000 ms: ELAPSED, 211 polls, at 08ED:00009380",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 211,
-  "pc": "08ED:00009380",
-  "cpu_mode": "real",
-  "frame": 774,
-  "regs": {
-    "EAX": "0x00000007",
-    "EBX": "0x0000864a",
-    "ECX": "0x005b4203",
-    "EDX": "0x00000000",
-    "ESI": "0x00004ec8",
-    "EDI": "0x00004ec6",
-    "EBP": "0x0000425e",
-    "ESP": "0x0000424a",
-    "EIP": "0x00009380",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:00009380",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "stop_seq": 20,
-  "instruction": {
-    "address": "08ED:00009380",
-    "bytes": "80F910",
-    "text": "cmp cl, 0x10",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "F_LXRSH@",
-    "delta": 0
-  },
-  "emulated_before_s": 8.02460012,
-  "emulated_after_s": 11.03516166,
-  "frame_before": 563,
-  "frame_after": 774,
-  "cycles": 148855844,
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**19. `screen_map_find`**: OK is play: the play screen, its controls p1_well, p2_well, credits
-
-<details><summary>call and reply</summary>
-
-```json
-{}
-```
-
-```json
-{
-  "summary": "screen_map_find: play (file), 3 controls",
-  "status": "ok",
-  "matched": true,
-  "screen": "play",
-  "layer": "file",
-  "kind": "pixel",
-  "size": [320, 200],
-  "controls": [
-    {"name": "p1_well", "rect": [15, 0, 98, 194], "centre": [64, 97]},
-    {"name": "p2_well", "rect": [207, 0, 98, 194], "centre": [256, 97]},
-    {"name": "credits", "rect": [152, 190, 16, 10], "centre": [160, 195]}
-  ],
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**20. `read_memory`**: OK player in play: in play
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "ref": "Player1",
-  "length": 12
-}
-```
-
-```json
-{
-  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32: 010003000100000003000000",
-  "status": "ok",
-  "ref": "Player1",
-  "seg_off": "08ED:0000AE32",
-  "length": 12,
-  "hex": "010003000100000003000000",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**21. `send_keys`**: OK press right: RIGHT pressed
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "keys": ["right"]
-}
-```
-
-```json
-{
-  "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 790",
-  "status": "ok",
-  "keys": ["right"],
-  "modifiers": [],
-  "route": "guest",
-  "posted": 1,
-  "bytes": 4,
-  "frames": 4,
-  "polls": 16,
-  "pc": "08ED:000004AF",
-  "cpu_mode": "real",
-  "stop_seq": 36,
-  "frame": 790,
-  "instruction": {
-    "address": "08ED:000004AF",
-    "bytes": "2B066C12",
-    "text": "sub ax, word ptr [0x126c]",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "_lineup_run",
-    "delta": 91
-  },
-  "regs": {
-    "EAX": "0x00000233",
-    "EBX": "0x00005e0a",
-    "ECX": "0x005b0000",
-    "EDX": "0x00000002",
-    "ESI": "0x0000046a",
-    "EDI": "0x0000faa0",
-    "EBP": "0x00004288",
-    "ESP": "0x00004286",
-    "EIP": "0x000004af",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace the input's post ran to, at 08ED:000004AF",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-  },
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**22. `run_for`**: OK moved: the move taken
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "milliseconds": 200,
-  "seconds": 120
-}
-```
-
-```json
-{
-  "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08ED:00006103",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 15,
-  "pc": "08ED:00006103",
-  "cpu_mode": "real",
-  "frame": 805,
-  "regs": {
-    "EAX": "0x00004b83",
-    "EBX": "0x00001680",
-    "ECX": "0x005b003f",
-    "EDX": "0x0000000e",
-    "ESI": "0x00001684",
-    "EDI": "0x00008571",
-    "EBP": "0x00004288",
-    "ESP": "0x0000427a",
-    "EIP": "0x00006103",
-    "CS": "0x08ed",
-    "DS": "0x4bef",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:00006103",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "stop_seq": 37,
-  "instruction": {
-    "address": "08ED:00006103",
-    "bytes": "B083",
-    "text": "mov al, 0x83",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "Del_Brush_Game",
-    "delta": 20
-  },
-  "emulated_before_s": 11.26345068,
-  "emulated_after_s": 11.47747164,
-  "frame_before": 790,
-  "frame_after": 805,
-  "cycles": 10580975,
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**23. `read_memory`**: OK player one column right: one column right
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "ref": "Player1",
-  "length": 12
-}
-```
-
-```json
-{
-  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32: 010004000100000003000000",
-  "status": "ok",
-  "ref": "Player1",
-  "seg_off": "08ED:0000AE32",
-  "length": 12,
-  "hex": "010004000100000003000000",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**24. `send_keys`**: OK press fire1: FIRE1 pressed
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "keys": ["space"]
-}
-```
-
-```json
-{
-  "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 811",
-  "status": "ok",
-  "keys": ["space"],
-  "modifiers": [],
-  "route": "guest",
-  "posted": 1,
-  "bytes": 2,
-  "frames": 2,
-  "polls": 6,
-  "pc": "08ED:000004B3",
-  "cpu_mode": "real",
-  "stop_seq": 43,
-  "frame": 811,
-  "instruction": {
-    "address": "08ED:000004B3",
-    "bytes": "78F7",
-    "text": "js 0x4ac",
-    "flow": "branch",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "_lineup_run",
-    "delta": 95
-  },
-  "regs": {
-    "EAX": "0x0000ffff",
-    "EBX": "0x00005e0a",
-    "ECX": "0x005b0000",
-    "EDX": "0x00000002",
-    "ESI": "0x0000046a",
-    "EDI": "0x0000faa0",
-    "EBP": "0x00004288",
-    "ESP": "0x00004286",
-    "EIP": "0x000004b3",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace the input's post ran to, at 08ED:000004B3",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-  },
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**25. `run_for`**: OK raised: the colour taken
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "milliseconds": 200,
-  "seconds": 120
-}
-```
-
-```json
-{
-  "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08ED:0000870C",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 15,
-  "pc": "08ED:0000870C",
-  "cpu_mode": "real",
-  "frame": 826,
-  "regs": {
-    "EAX": "0x0000ffff",
-    "EBX": "0x00000000",
-    "ECX": "0x005b420d",
-    "EDX": "0x0000ffff",
-    "ESI": "0x00004ec0",
-    "EDI": "0x00004ebe",
-    "EBP": "0x0000425e",
-    "ESP": "0x0000424e",
-    "EIP": "0x0000870c",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0x88ee",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:0000870C",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "stop_seq": 44,
-  "instruction": {
-    "address": "08ED:0000870C",
-    "bytes": "7E04",
-    "text": "jle 0x8712",
-    "flow": "branch",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "_MENU_TEST",
-    "delta": 1728
-  },
-  "emulated_before_s": 11.563080040000001,
-  "emulated_after_s": 11.777101,
-  "frame_before": 811,
-  "frame_after": 826,
-  "cycles": 10592464,
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**26. `read_memory`**: OK player the next colour: the next colour
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "ref": "Player1",
-  "length": 12
-}
-```
-
-```json
-{
-  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32: 010004000200000003000000",
-  "status": "ok",
-  "ref": "Player1",
-  "seg_off": "08ED:0000AE32",
-  "length": 12,
-  "hex": "010004000200000003000000",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**27. `send_keys`**: OK press up: UP pressed
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "keys": ["up"]
-}
-```
-
-```json
-{
-  "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 842",
-  "status": "ok",
-  "keys": ["up"],
-  "modifiers": [],
-  "route": "guest",
-  "posted": 1,
-  "bytes": 4,
-  "frames": 4,
-  "polls": 16,
-  "pc": "08ED:000004AC",
-  "cpu_mode": "real",
-  "stop_seq": 60,
-  "frame": 842,
-  "instruction": {
-    "address": "08ED:000004AC",
-    "bytes": "A16A12",
-    "text": "mov ax, word ptr [0x126a]",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "_lineup_run",
-    "delta": 88
-  },
-  "regs": {
-    "EAX": "0x0000ffff",
-    "EBX": "0x00005e0a",
-    "ECX": "0x005b0000",
-    "EDX": "0x00000002",
-    "ESI": "0x0000046a",
-    "EDI": "0x0000faa0",
-    "EBP": "0x00004288",
-    "ESP": "0x00004286",
-    "EIP": "0x000004ac",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace the input's post ran to, at 08ED:000004AC",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-  },
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**28. `run_for`**: OK shot: the shot launched
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "milliseconds": 100,
-  "seconds": 120
-}
-```
-
-```json
-{
-  "summary": "run_for 100 ms: ELAPSED, 8 polls, at 08ED:000004AC",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 8,
-  "pc": "08ED:000004AC",
-  "cpu_mode": "real",
-  "frame": 850,
-  "regs": {
-    "EAX": "0x0000ffff",
-    "EBX": "0x00005e0a",
-    "ECX": "0x005b0000",
-    "EDX": "0x00000002",
-    "ESI": "0x0000046a",
-    "EDI": "0x0000faa0",
-    "EBP": "0x00004288",
-    "ESP": "0x00004286",
-    "EIP": "0x000004ac",
-    "CS": "0x08ed",
-    "DS": "0x138e",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138e"
-  },
-  "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:000004AC",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
-  "stop_seq": 61,
-  "instruction": {
-    "address": "08ED:000004AC",
-    "bytes": "A16A12",
-    "text": "mov ax, word ptr [0x126a]",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "_lineup_run",
-    "delta": 88
-  },
-  "emulated_before_s": 12.00539002,
-  "emulated_after_s": 12.11953454,
-  "frame_before": 842,
-  "frame_after": 850,
-  "cycles": 5629904,
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**29. `read_memory`**: OK player a shot of it: a shot of it
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "ref": "Player1",
-  "length": 12
-}
-```
-
-```json
-{
-  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32: 010004000200040003000200",
-  "status": "ok",
-  "ref": "Player1",
-  "seg_off": "08ED:0000AE32",
-  "length": 12,
-  "hex": "010004000200040003000200",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**30. `audio_record`**: OK record: 141 frames recorded, the first whole frames past 2000 ms
+**5. `audio_record`**: OK record: 141 frames recorded, the first whole frames past 2000 ms
 
 <details><summary>call and reply</summary>
 
@@ -1401,11 +421,11 @@
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 141,
-  "pc": "08ED:000004AF",
+  "pc": "08EB:000004AC",
   "cpu_mode": "real",
-  "frame": 991,
+  "frame": 990,
   "regs": {
-    "EAX": "0x000002c2",
+    "EAX": "0x0000ffff",
     "EBX": "0x00005e0a",
     "ECX": "0x005b0000",
     "EDX": "0x00000002",
@@ -1413,36 +433,36 @@
     "EDI": "0x0000faa0",
     "EBP": "0x00004288",
     "ESP": "0x00004286",
-    "EIP": "0x000004af",
-    "CS": "0x08ed",
-    "DS": "0x138e",
+    "EIP": "0x000004ac",
+    "CS": "0x08eb",
+    "DS": "0x138c",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x138e"
+    "SS": "0x138c"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 08ED:000004AF",
-  "e9": {
-    "available": false,
-    "why": "this session was started without a logfile, so there is no instrumentation channel to summarise"
-  },
+  "cause": "the retrace run_for ran to, at 08EB:000004AC",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 62,
   "instruction": {
-    "address": "08ED:000004AF",
-    "bytes": "2B066C12",
-    "text": "sub ax, word ptr [0x126c]",
+    "address": "08EB:000004AC",
+    "bytes": "A16A12",
+    "text": "mov ax, word ptr [0x126a]",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": "_lineup_run",
-    "delta": 91
+    "delta": 88
   },
-  "emulated_before_s": 12.11953454,
-  "emulated_after_s": 14.13133158,
-  "frame_before": 850,
-  "frame_after": 991,
-  "cycles": 99381474,
+  "emulated_before_s": 12.119534439999999,
+  "emulated_after_s": 14.1313315,
+  "frame_before": 849,
+  "frame_after": 990,
+  "cycles": {
+    "available": false,
+    "why": "the cycle count counts only what the normal core runs, and this session started on the dynamic core: start on `flags=[\"-set\", \"cpu core=normal\"]` for a count"
+  },
   "kind": "wav",
   "frames": 141,
   "began": true,
@@ -1452,39 +472,39 @@
   "channels": 2,
   "sample_rate_hz": 48000,
   "samples": 96576,
-  "emulated_s": 2.011797,
-  "sample_min": -8560,
-  "sample_max": 3019,
+  "emulated_s": 2.0117971,
+  "sample_min": -8568,
+  "sample_max": 3017,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**31. `audio_compare`**: OK heard: a sound, peaking at -11.66 dBFS
+**6. `audio_compare`**: OK heard: a sound, peaking at -11.65 dBFS
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "method": "measure",
-  "path": "./tmp/demos/lineup/music.wav"
+  "path": "<host>"
 }
 ```
 
 ```json
 {
-  "summary": "audio_compare measure: ch0 peak -11.66 dBFS, onset 0.0 s, ch1 peak -11.66 dBFS, onset 0.0 s",
+  "summary": "audio_compare measure: ch0 peak -11.65 dBFS, onset 0.0 s, ch1 peak -11.65 dBFS, onset 0.0 s",
   "status": "ok",
   "sample_rate_hz": 48000,
   "channels": 2,
   "bits": 16,
-  "window": [0.0, 2.012],
+  "window": "<volatile>",
   "measures": [
     {
       "channel": 0,
-      "peak_dbfs": -11.66,
-      "rms_dbfs": -28.32,
+      "peak_dbfs": -11.65,
+      "rms_dbfs": -28.33,
       "silent": false,
       "silence_spans": {
         "count": 0,
@@ -1496,8 +516,8 @@
     },
     {
       "channel": 1,
-      "peak_dbfs": -11.66,
-      "rms_dbfs": -28.32,
+      "peak_dbfs": -11.65,
+      "rms_dbfs": -28.33,
       "silent": false,
       "silence_spans": {
         "count": 0,
@@ -1508,7 +528,7 @@
       "clipped": false
     }
   ],
-  "pcm_sha256": "6a99b5e74159926a562c68887cddceabda7a79bfdcb28a3d66d632ed63c5fd81",
+  "pcm_sha256": "56e09fbf4f27acceae4944debf2d03d2bb9d1fb63287118ef6980bb83d23cb19",
   "path": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -1516,7 +536,7 @@
 
 </details>
 
-**32. `audio_compare`**: OK exact: the recording is music.wav, sample for sample
+**7. `audio_compare`**: OK exact: the recording is music.wav, sample for sample
 
 <details><summary>call and reply</summary>
 
@@ -1551,7 +571,7 @@
 
 </details>
 
-**33. `screen_view`**: OK screen: the board, 320x200
+**8. `screen_view`**: OK screen: the board, 320x200
 
 <details><summary>call and reply</summary>
 
@@ -1575,7 +595,7 @@
   "screen_indexed": true,
   "entries": 256,
   "image": {
-    "path": "./tmp/demos/lineup/screen.png",
+    "path": "<volatile>",
     "bytes": 16447,
     "sha256": "d8086f4e5c34cdbda5c8d049be105859abd90036ed2508834e05d9318e18b3af",
     "width": 1280,
@@ -1592,7 +612,7 @@
 
 </details>
 
-**34. `close`**: OK close: closed: quit
+**9. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
@@ -1606,13 +626,13 @@
   "status": "ok",
   "closed": true,
   "pid": "<volatile>",
-  "conf": "./tmp/demos/lineup/lineup.conf",
-  "conf_digest": "7babdb45621110eb",
+  "conf": "<volatile>",
+  "conf_digest": "365901dcd0ac5cec",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
   "captures": "off",
-  "state_dir": "./tmp/demos/lineup/lineup-states",
+  "state_dir": "<volatile>",
   "ended_by": "quit",
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],

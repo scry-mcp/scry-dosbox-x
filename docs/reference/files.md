@@ -6,7 +6,7 @@ The file tools (`image_compare(method="image")`, `image_compare(method="series")
 
 ## Screen maps
 
-A screen map is a file, `<application>.screen-map.json`, kept in the application's own repository (a game both servers run keeps one map, beside its script in scry-core), in the format `scry-screen-map/1`.
+A screen map is a file, `<application>.screen-map.json`, kept in the application's own store, `.scry/maps/<application>.screen-map.json` (a game both servers run keeps one copy in each port's repository), in the format `scry-screen-map/1`.
 
 ```json
 {"format": "scry-screen-map/1", "application": "bricks", "mode": "verified",
