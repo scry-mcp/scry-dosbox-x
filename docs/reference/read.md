@@ -418,7 +418,7 @@ screen_map_write(method, screen="", match=null, controls=null, cells="", anchor=
 
 The screen map: an application's screens, each known by the signatures of its stable regions, and their controls, in a session layer and a file layer.
 
-`add`: the screen shown now as `screen` in the session layer, one read signing each `match` crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own units; needs the machine stopped. Reply: `screen`, `kind`, `size`, `cells`, `match`, `controls`, `replaced`, `shadows_file`, `anchor` (when given).
+`add`: the screen shown now as `screen` in the session layer, one read signing each `match` crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own units; needs the machine stopped. Reply: `screen`, `kind`, `size`, `cells`, `match`, `controls`, `replaced`, `shadows_file`, `anchor` (when given), `kept` (a complete map is kept for `promote`).
 
 `pointer`: the program's own pointer as an object, `{"x": ref, "y": ref, "bytes": 2}` (a symbol or
 `SEG:OFF` for each axis; `bytes` 1, 2 or 4), as a map file declares it; kept by `save`, replaced by a `load`; a misshapen object is `bad_argument`. Reply: `pointer`.
@@ -467,6 +467,7 @@ Reference: REFERENCE.md, Screen maps.
 | `cells` | string |
 | `controls` | integer |
 | `kind` | string |
+| `kept` | string |
 | `match` | array |
 | `mode` | string |
 | `path` | string |

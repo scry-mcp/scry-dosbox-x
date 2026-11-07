@@ -147,11 +147,16 @@ _WITHOUT_SESSION: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
                     "build_check docstring: about the build, answers with no session"),
     "status": (lambda r: ok(r) and no_session(r),
                "status docstring: `alive: false` when there is none, under status ok"),
+    "promote": (lambda r: refused(r, "bad_argument") and no_session(r),
+                "promote docstring: a recipe path outside the store is refused"),
     "close": (lambda r: ok(r) and r.get("closed") is False and r.get("ended_by") == "none",
               "close docstring: `ended_by` none, nothing to close"),
     "start": (lambda r: ok(r) and alive(r), "start docstring: opens one session, parked"),
 }
 
+#: `promote` takes no machine and reviews the draft: before a `start` there is nothing in it,
+#: and after one its recipe names the guest's directory outside the repository, which a tracked
+#: entry may not carry.
 _WINDOWED = ("snapshot", "window")
 _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
                "scan start",
@@ -243,6 +248,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         **MEDIA_ABSENT,
         "perform": {"steps": [{"op": "status"}]},
         "perform_export": {"dest": M.fresh(".json")},
+        "promote": {"dry_run": True},
         "drive": {"act": [{"op": "status"}]},
         "comment_write add": {"ref": COMMENT_REF, "text": "matrix A"},
         "comment_list": {},
@@ -398,6 +404,8 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                          "audio_record docstring: the mixer's WAV over two retraces, checked"),
         "state_list": (lambda r: ok(r) and isinstance(r.get("states"), list),
                        "state_list docstring: needs no window"),
+        "promote": (lambda r: refused(r, "bad_argument"),
+                    "promote docstring: a recipe path outside the store is refused"),
         "breakpoint_interrupt": (lambda r: ok(r) and r.get("ref") == "BPINT 21 AH=4C",
                                  "breakpoint_interrupt docstring: the row spelling"),
         "symbols_load": (lambda r: ok(r) and int(r.get("kept") or 0) > 0,
@@ -557,6 +565,8 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                       "send_keys docstring: no stub announced, so nothing would receive it"),
         "send_mouse": (lambda r: refused(r, "no_channel"),
                        "send_mouse docstring: no stub announced, so nothing would receive it"),
+        "promote": (lambda r: refused(r, "bad_argument"),
+                    "promote docstring: a recipe path outside the store is refused"),
         **_SEQUENCES,
         "close": (lambda r: ok(r) and r.get("closed") is True and r.get("ended_by") == CLOSED_BY,
                   "close docstring: `quit`, a session launched here leaves on the signal; "
@@ -590,6 +600,9 @@ def _expect(tool: str, state: str) -> tuple[Callable[[dict[str, Any]], bool], st
                     "screen_map_write save docstring: nothing mapped yet is `needs_call`")
         return ((lambda r: ok(r) and Path(str(r.get("path"))).is_file()),
                 "screen_map_write save docstring: any state; the maps the server holds, written")
+    if tool == "promote" and state == "none":
+        return (lambda r: refused(r, "needs_call") and no_session(r),
+                "promote docstring: nothing is kept before a `start`")
     if tool == "perform_export" and state in ("none", "closed"):
         # Before any `start` there is nothing recorded; a closed session's recording is still
         # the last one, and it exports with no machine.

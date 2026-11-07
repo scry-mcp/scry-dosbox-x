@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Annotated, Any, Required
 
 from scry_core import media_replies, tool_replies
+from scry_core import promote as core_promote
 from scry_core import sequence_account as account
 from scry_core.instruction import StopInstruction
 from scry_core.reply_contract import OmitEmpty, When
@@ -105,6 +106,7 @@ class CapturesReply(DosboxEnvelope, media_replies.CapturesFields, total=False):
 
 
 class CloseReply(DosboxEnvelope, total=False):
+    draft: Annotated[list[str], OmitEmpty]
     bound_s: float
     bundle: str
     captures: str
@@ -512,6 +514,7 @@ class SnapshotReply(DosboxEnvelope, total=False):
 
 
 class StartReply(WindowRefused, account.SequenceFields, total=False):
+    kept: Annotated[str, OmitEmpty]
     failed_at: int | dict[str, Any]
     held: int
     ran: list[Any]
@@ -798,7 +801,12 @@ class StateWriteReply(DosboxEnvelope, total=False):
 
 
 #: Each tool's reply model, by the tool's name.
+class PromoteReply(DosboxEnvelope, core_promote.PromoteFields, total=False):
+    """`promote`: the store, a review's candidates, an approval's writes, what is still kept."""
+
+
 MODELS: dict[str, type] = {
+    "promote": PromoteReply,
     "comment_write": CommentWriteReply,
     "port": PortReply,
     "pic": PicReply,

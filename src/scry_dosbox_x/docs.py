@@ -16,6 +16,9 @@ from scry_core import (
     state_files,
 )
 from scry_core import (
+    promote as core_promote,
+)
+from scry_core import (
     scan_vocabulary as words,
 )
 from scry_core import vocabulary as vocab
@@ -76,7 +79,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "DETAIL_TEXT_KEEP": str(st.DETAIL_TEXT_KEEP),
               "SCREEN_TEXT_MAX": str(checks.SCREEN_TEXT_MAX),
               "PALETTES": ", ".join(f"`{p}`" for p in checks.PALETTES),
-              "SYMBOLS_SHOWN": str(trace.SYMBOLS_SHOWN)}
+              "SYMBOLS_SHOWN": str(trace.SYMBOLS_SHOWN), **core_promote.DOC_VALUES}
 
 
 def filled(name: str, doc: str) -> str:

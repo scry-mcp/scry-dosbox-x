@@ -56,6 +56,7 @@ ROSTER = roster.Roster(families=(
                   "audio_record")),
     ("Files", ("image_compare", "audio_compare", "guest_file")),
     ("Lists", ("perform", "perform_export", "drive")),
+    ("Store", ("promote",)),
 ), answering=tuple(_ANSWERS_WHILE_RUNNING))
 
 

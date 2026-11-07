@@ -180,6 +180,7 @@ Reference: REFERENCE.md, The session.
 | `stops` | object |
 | `truncated` | boolean |
 | `verdict` | string |
+| `kept` | string |
 | `failed_at` | integer or object |
 | `held` | integer |
 | `ran` | array |
@@ -435,7 +436,7 @@ Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` and
 `stdout_tail` and `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`;
 `note` when the output was not read to its end. `guest_files`: each file `start` named, with
 `guest_file`'s `state`. `session` is the block as it is after the close (`alive` and
-`running` false).
+`running` false), and `draft` names the candidates the session left waiting for `promote`.
 
 | argument | type | default |
 |---|---|---|
@@ -443,6 +444,7 @@ Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` and
 
 | reply field | type |
 |---|---|
+| `draft` | array of string |
 | `bound_s` | number |
 | `bundle` | string |
 | `captures` | string |

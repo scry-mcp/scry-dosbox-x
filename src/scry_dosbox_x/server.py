@@ -134,6 +134,7 @@ from scry_dosbox_x import launch as dlaunch  # noqa: E402
 from scry_dosbox_x import logs as dlogs  # noqa: E402
 from scry_dosbox_x import presence as dpresence  # noqa: E402
 from scry_dosbox_x import process as dprocess
+from scry_dosbox_x import promote as mpromote  # noqa: E402
 from scry_dosbox_x import replies as dosbox_replies  # noqa: E402
 from scry_dosbox_x import screen_pens as by_pens  # noqa: E402
 from scry_dosbox_x import session as ds  # noqa: E402
@@ -281,7 +282,16 @@ def start(conf: str = "", cwd: str = "",
         params, block = lifecycle.with_profile(profile, keys=_PROFILE_KEYS, arguments=params,
                                                given=given.names() or ())
     params.pop("profile")
+    # Before the launch: a `plan` runs inside it, and one of its `add` steps names a map by the
+    # guest this call starts.
+    mpromote.note_start(params)
     reply = lifecycle.start(**params, progress=bridge(ctx), ops=_step_ops)
+    if block is not None:
+        STATE.drafts.loaded_entry("start", Path(str(block["file"])).stem)
+    else:
+        STATE.drafts.forget("start")
+    if mpromote.keep_start(params, defaults=_START_DEFAULTS):
+        reply["kept"] = mpromote.kept_line(STATE.drafts)
     if block is not None:
         reply["profile"] = block
     return reply
@@ -291,6 +301,10 @@ def start(conf: str = "", cwd: str = "",
 #: drift apart. `profile` is not one of them, and `ctx` is the protocol's.
 _PROFILE_KEYS = tuple(name for name in inspect.signature(start).parameters
                       if name not in ("ctx", "profile"))
+#: The same, with each argument's default: a recipe keeps what the call decided, not what the
+#: tool would have answered on its own.
+_START_DEFAULTS = {name: parameter.default
+                   for name, parameter in inspect.signature(start).parameters.items()}
 
 
 @tool("The session's window", summary=core_window.summary)
@@ -351,9 +365,9 @@ def close(detail: bool = False, ctx: Context[Any, Any] | None = None) -> dict[st
     `stdout_tail` and `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`;
     `note` when the output was not read to its end. `guest_files`: each file `start` named, with
     `guest_file`'s `state`. `session` is the block as it is after the close (`alive` and
-    `running` false).
+    `running` false), and `draft` names the candidates the session left waiting for `promote`.
     """
-    return lifecycle.close(bridge(ctx), detail)
+    return mpromote.after_close(STATE.drafts, lifecycle.close(bridge(ctx), detail))
 
 
 # ------------------------------------------------------------------ the guest's own log
@@ -1362,7 +1376,8 @@ def screen_map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], scree
 
     Reference: REFERENCE.md, Screen maps.
     """
-    return methods.dispatch(folds.MAP, locals())
+    reply = methods.dispatch(folds.MAP, locals())
+    return mpromote.after_map(method, reply)
 
 
 
@@ -1652,15 +1667,27 @@ def perform_export(dest: str, overwrite: bool = False) -> dict[str, Any]:
     the rest.
 
     `dest` (`.json`) is refused if present unless `overwrite`. Reply: `path`, `steps`,
-    `checks`, `dropped`, `dropped_total`, `cut`, `replay`; `no_recording` if empty.
+    `checks`, `dropped`, `dropped_total`, `cut`, `replay`, and `kept` when the document is kept
+    for `promote`; `no_recording` if empty.
 
     Reference: REFERENCE.md, From an investigation to a bench.
     """
-    return st.reply(**recording.export(RECORDER, dest, overwrite))
+    return mpromote.after_export(STATE.drafts, st.reply(**recording.export(
+        RECORDER, dest, overwrite)), mpromote.PROMOTE_PATHS)
 
 
 #: `summaries`' own description, `perform`'s and `drive`'s, as scry-core words it.
 SUMMARIES_ARGUMENT = account.summaries_argument(st.ROWS_SHOWN)
+
+
+@tool("Promote what the session learned", summary=one_line.promote, replay="drop")
+def promote(dry_run: bool = False, entries: list[str] | None = None,
+            names: dict[str, str] | None = None, root: str = "") -> dict[str, Any]:
+    """{PROMOTE}
+
+    Reference: REFERENCE.md, The store.
+    """
+    return st.reply(**mpromote.promote(dry_run, entries, names, root))
 
 
 @tool("Run a sequence of steps", summary=one_line.perform, on_cancel="stop")
@@ -1693,6 +1720,7 @@ def perform(steps: list[dict[str, Any]] | None = None, path: str = "",
     steps = recording.steps_to_replay(steps, path)
     if from_document:      # the pre-gate judges a caller's own list; a document's is read here
         checks.steps_whole("steps", steps)
+        STATE.drafts.loaded_entry("perform", Path(path).expanduser().stem)
     return sequence.run_steps(live(), steps, settle_seconds, _step_ops(), bridge(ctx), summaries,
                               until_frame=until_frame)
 

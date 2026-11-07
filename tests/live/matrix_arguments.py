@@ -58,6 +58,8 @@ PROFILE_CELL = ("L start from a .scry/start profile boots the guest, the call's 
                 "cwd kept and the reply naming the file and what it filled")
 REPO_PROFILE_CELL = ("L start from this repository's own .scry/start/probe.json boots the "
                      "guest, the reply naming that file and what it filled")
+PROMOTE_CELL = ("L the recipe this boot ran and the map it learned are written into a store of "
+                "the run's own only when the call approves them, and the map reads back")
 PERFORM_CELL = "L perform runs find, debug and state_list as steps"
 LISTED_CELL = ("L a refusal on a running guest lists breakpoint_at, stop and close as "
                "answering")
@@ -117,6 +119,7 @@ L_CELLS = cells(
                    "run at once; breakpoint_at docstring: `pending` while the guest is running"),
     (PROFILE_CELL, "start docstring: `profile`, and the reply's `profile` block"),
     (REPO_PROFILE_CELL, ".scry/start/probe.json: the recipe this repository ships"),
+    (PROMOTE_CELL, "promote docstring: a review, an approval, and a store created by it"),
 )
 #: Each wrong with no machine at all: a state name, a scan, a register, a bound, a list.
 NO_MACHINE_NEEDED: tuple[tuple[str, dict[str, Any]], ...] = (
@@ -186,6 +189,7 @@ def section_l() -> None:
     M.judge(CONSOLE_CELL, ok(r) and data is not None and len(data) == 0x10, said(r))
     _profile()
     _repo_profile()
+    _promote()
 
 
 def _profile() -> None:
@@ -224,6 +228,38 @@ def _repo_profile() -> None:
             and shown.get("supplied") == ["conf", "cwd", "presence", "session_seconds"]
             and booted.resolve() == (GUEST / "probe.conf").resolve()
             and isinstance(r.get("pid"), int), said(r))
+    close_whatever()
+
+
+def _promote() -> None:
+    """A store of this run's own: the guest's recipe and a screen learned off it are reviewed,
+    the two chosen are written, and the map is read back from the file the promotion wrote."""
+    close_whatever()
+    game = Path(M.fresh("-promote"))
+    shutil.copytree(GUEST, game / "guest")
+    r = start_through_the_schema(conf=str(game / "guest" / "probe.conf"),
+                                 cwd=str(game / "guest"), session_seconds=SESSION_S)
+    # Parked at the debugger's first prompt there is no screen to read yet: run to the probe's
+    # own segment, as the cells above do, and the map is added at that stop.
+    advanced(M.call(server.run_for, frames=2), "into the settle loop")
+    added = M.call(server.screen_map_write, method="add", screen="learned",
+                   match=[[0, 0, 40, 8]])
+    reviewed = M.call(server.promote, dry_run=True, root=str(game))
+    found = {c.get("entry"): c.get("change") for c in reviewed.get("candidates", [])}
+    created = (game / ".scry").exists()
+    written = M.call(server.promote, entries=["maps/probe", "start/probe"], root=str(game))
+    read = M.call(server.screen_map_write, method="load",
+                  path=str(game / ".scry" / "maps" / "probe.screen-map.json"))
+    closed = M.call(server.close)
+    M.judge(PROMOTE_CELL, ok(r) and ok(added) and ok(reviewed)
+            and found.get("maps/probe") == "new" and found.get("start/probe") == "new"
+            and not created and (game / ".scry").is_dir()
+            and ok(written) and sorted(w.get("entry") for w in written.get("written", []))
+            == ["maps/probe", "start/probe"]
+            and not {"maps/probe", "start/probe"} & set(written.get("draft", []))
+            and ok(read) and read.get("application") == "probe"
+            and not {"maps/probe", "start/probe"} & set(closed.get("draft", [])),
+            f"{said(reviewed, 80)} / written {written.get('written')} / read {said(read, 60)}")
     close_whatever()
 
 

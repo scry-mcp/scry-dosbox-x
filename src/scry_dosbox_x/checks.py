@@ -678,7 +678,8 @@ BY_OP: dict[str, Check] = {
 
 SEQUENCES = frozenset({"perform", "drive"})
 #: The tools that are no step of a sequence, named once; other sets are read off it.
-NOT_STEPS = SEQUENCES | {"build_check", "start", "close", "perform_export", "window"}
+NOT_STEPS = SEQUENCES | {"build_check", "start", "close", "perform_export", "window",
+                         "promote"}
 
 #: Tools deliberately without an entry, so an absent entry and a forgotten one differ: no
 #: arguments, only valid values (`registers`), or no step (`build_check`, `perform_export`,

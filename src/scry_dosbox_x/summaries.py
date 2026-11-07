@@ -21,6 +21,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from scry_core import promote as core_promote
 from scry_core import prose, screen_map, session_block
 from scry_core import reply_contract as contract
 
@@ -520,8 +521,9 @@ def screen_signature(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return f"screen_signature {reply.get('vga_mode')} {_region(reply)}: {reply.get('signature')}"
 
 
-# The screen maps' lines are scry-core's, alike on both servers.
+# The screen maps' and the promotion's lines are scry-core's, alike on both servers.
 screen_map_find = screen_map.find_line
+promote = core_promote.promote_line
 
 
 def series_capture(args: dict[str, Any], reply: dict[str, Any]) -> str:

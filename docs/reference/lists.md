@@ -137,7 +137,8 @@ Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`,
 the rest.
 
 `dest` (`.json`) is refused if present unless `overwrite`. Reply: `path`, `steps`,
-`checks`, `dropped`, `dropped_total`, `cut`, `replay`; `no_recording` if empty.
+`checks`, `dropped`, `dropped_total`, `cut`, `replay`, and `kept` when the document is kept
+for `promote`; `no_recording` if empty.
 
 Reference: REFERENCE.md, From an investigation to a bench.
 
@@ -155,6 +156,7 @@ Reference: REFERENCE.md, From an investigation to a bench.
 | `path` | string |
 | `replay` | string |
 | `steps` | integer |
+| `kept` | string |
 
 Example, from a live run:
 

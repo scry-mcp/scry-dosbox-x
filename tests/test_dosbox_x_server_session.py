@@ -309,7 +309,7 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
         "drive", "comment_list", "comment_write", "series_capture", "image_compare",
         "audio_compare", "screen_map_find", "screen_map_write", "record", "audio_record", "port",
         "pic", "a20",
-        "guest_file", "window"}
+        "guest_file", "window", "promote"}
     got = dosbox_mcp.registered_tools()
     assert set(got) == expected
     # The registry is a dict keyed by name, so a length check cannot fail.
@@ -1417,6 +1417,7 @@ def test_status_pc_is_where_the_machine_is_now_after_a_command_moved_it(tmp_path
 
 
 def test_every_tool_is_summarised_by_its_own_line() -> None:
+    from scry_core import promote as core_promote
     from scry_core import screen_map
     from scry_core import window as core_window
     lines = dosbox_mcp.BOUNDARY.summaries
@@ -1437,6 +1438,8 @@ def test_every_tool_is_summarised_by_its_own_line() -> None:
             assert lines[name] is screen_map.find_line, name
         elif name == "perform_export":
             assert lines[name] is recording.export_summary, name
+        elif name == "promote":
+            assert lines[name] is core_promote.promote_line, name
         elif name == "window":
             assert lines[name] is core_window.summary, name
         else:

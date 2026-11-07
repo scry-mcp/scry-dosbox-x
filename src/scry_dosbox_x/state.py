@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 from scry_core import cancel, judges, narrowing, regpoint, screen_map
+from scry_core import promote as core_promote
 from scry_core import reply_contract as contract
 
 from scry_dosbox_x import declarations as dec
@@ -81,6 +82,9 @@ class State:
         self.start_seq = 0
         # The file layer outlasts sessions; the session layer does not.
         self.maps = screen_map.Maps()
+        # What `promote` would write, and the guest a map learned without a file is named by.
+        self.drafts = core_promote.Drafts()
+        self.guest: str = ""
         # `start(symbols=)`'s table until its program is in memory (`start_symbols`).
         self.start_symbols: start_symbols.Held | None = None
 

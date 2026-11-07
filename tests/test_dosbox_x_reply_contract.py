@@ -88,7 +88,7 @@ def test_every_tool_answers_the_contract_with_no_machine(
         assert reply["status"] == "ok" and "code" not in reply and "message" not in reply, reply
         return
     # media tools refuse their missing file; a map save refuses the empty map
-    expected = {"start": "bad_argument", "build_check": "host_failed",
+    expected = {"promote": "bad_argument", "start": "bad_argument", "build_check": "host_failed",
                 "perform_export": "bad_argument", "screen_map_write": "needs_call",
                 # reads a host file, no machine: one `start` did not fingerprint is refused
                 "guest_file": "bad_argument",
