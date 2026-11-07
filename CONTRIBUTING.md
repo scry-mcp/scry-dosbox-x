@@ -155,6 +155,9 @@ one that records sound takes a clock the host holds with room to spare (an inter
 without it they skip. The LineUp demo's case needs `LINEUP_MSDOS_DIR`, a copy of the game's PC port
 with its symbol map, and skips the same way. The Monkey Island demo's case needs `MONKEY_ISLAND_CD`,
 the directory holding the 1992 Enhanced CD's `monkey.cue` and its BINs, and skips the same way.
+The Speed Fight demo's case needs `SPEEDF_MSDOS_DIR`, a copy of the game's PC port with its blessed
+`EXES/SPEEDF.EXE` and `EXES/SPEEDF.MAP`, and the ReChip! demo's case `RECHIP_DIR`, a checkout of it
+after `make mcp-conf`; each skips the same way.
 
 **The matrix.** Around those cases sits `tests/live/dosbox_x_live_matrix.py`, run as a script
 rather than collected: every tool in every machine state, at every argument edge, across the

@@ -14,8 +14,7 @@ keys, the confirm's answer read off the log, before closing the session.
 
 ## The program
 
-ReChip! is not distributed with this repository, and its repository is private. The demo needs a
-checkout of it after `make mcp-conf`, which builds `RECHIPD.EXE` and derives the conf; that
+ReChip! is not distributed with this repository. The demo needs a checkout of it after `make mcp-conf`, which builds `RECHIPD.EXE` and derives the conf; that
 checkout is what `--cwd` names.
 
 ## Run it

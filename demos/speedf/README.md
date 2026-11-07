@@ -14,8 +14,7 @@ the screen.
 
 ## The game
 
-Speed Fight is not distributed with this repository, and its repository is private. The demo
-needs a copy of it with its blessed `EXES/SPEEDF.EXE` and `EXES/SPEEDF.MAP`, its `.scry/` and
+Speed Fight is not distributed with this repository. The demo needs a copy of it with its blessed `EXES/SPEEDF.EXE` and `EXES/SPEEDF.MAP`, its `.scry/` and
 its `SCRIPTS/`; a checkout of it is what `--cwd` names.
 
 ## Run it

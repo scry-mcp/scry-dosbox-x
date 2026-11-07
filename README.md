@@ -225,8 +225,8 @@ every screen recognised off a screen map before a click, the mines read out of t
 by symbol and the board cleared without a miss, then an explosion recorded off the Sound Blaster
 and held, sample for sample, against the recording beside it.
 
-[`demos/lineup/`](demos/lineup/) plays the PC port of *LineUp* with the same script the MAME server
-plays the arcade board with: the routines and variables named off each build's own symbol map,
+[`demos/lineup/`](demos/lineup/) plays the PC port of *LineUp* from the same script its arcade build runs
+with: the routines and variables named off each build's own symbol map,
 every screen recognised off one map signed by palette index, and the stage's music held, sample
 for sample, to the Sound Blaster's own recording. It needs a copy of the game, which is not
 distributed here.
@@ -238,9 +238,11 @@ at the logo's bar, the recording held to the reader's own disc. It needs the dis
 distributed here.
 
 [`demos/speedf/`](demos/speedf/) boots the PC *Speed Fight* from the run recipe its own repository
-declares in `.scry/start/dos.json`, lets its title and attract run and reads the credits by name. [`demos/rechip/`](demos/rechip/) boots *ReChip!*'s DEV build from its own recipe and
-reads the program's log for what each key did, leaving it by its own keys. Each needs a checkout
-of its program, which is not distributed here.
+declares in `.scry/start/dos.json`, lets its title and attract run and reads the credits by name.
+
+[`demos/rechip/`](demos/rechip/) boots *ReChip!*'s DEV build from its own recipe and
+reads the program's log for what each key did, leaving it by its own keys. Each of the two needs a
+checkout of its program, which is not distributed here.
 
 ## The tools
 
