@@ -1696,8 +1696,8 @@ def perform(steps: list[dict[str, Any]] | None = None, path: str = "",
             summaries: Annotated[bool, Field(description=SUMMARIES_ARGUMENT)] = False,
             until_frame: int = 0,
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Run this server's operations in order on the open session, stopping at the first
-    failure.
+    """A sequence of this server's operations in one call, in order on the open session,
+    stopping at the first failure; `drive` is this plus a wait for a line of the E9 log.
 
     `steps`: `{"op": <tool>, ...arguments}`, any tool but `build_check`, `start`, `close`,
     `perform`, `drive`, `perform_export`. `path`: a `perform` document (absolute or `~`-led:
@@ -1732,7 +1732,8 @@ def drive(act: list[dict[str, Any]], expect: str = "",
           settle_seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 30.0,
           summaries: Annotated[bool, Field(description=SUMMARIES_ARGUMENT)] = False,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Look, act and verify in one call. Marks the E9 log, runs `act` (steps in `perform`'s
+    """A sequence that also waits for a line of the E9 log; with no line to wait for, `perform`
+    is the call. Marks the E9 log, runs `act` (steps in `perform`'s
     vocabulary), then with `expect` waits up to `seconds` (default {EXPECT_WAIT_S}, at most
     {WAIT_MAX_S}) for a new matching line. Needs a `logfile`.
 

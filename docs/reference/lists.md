@@ -9,8 +9,8 @@
 perform(steps=null, path="", settle_seconds=30.0, summaries=false, until_frame=0)
 ```
 
-Run this server's operations in order on the open session, stopping at the first
-failure.
+A sequence of this server's operations in one call, in order on the open session,
+stopping at the first failure; `drive` is this plus a wait for a line of the E9 log.
 
 `steps`: `{"op": <tool>, ...arguments}`, any tool but `build_check`, `start`, `close`,
 `perform`, `drive`, `perform_export`. `path`: a `perform` document (absolute or `~`-led:
@@ -196,7 +196,8 @@ A release, a `stop` that ran the guest and came back stopped, or a wall-clock bo
 drive(act, expect="", seconds=null, pattern=".", limit=40, settle_seconds=30.0, summaries=false)
 ```
 
-Look, act and verify in one call. Marks the E9 log, runs `act` (steps in `perform`'s
+A sequence that also waits for a line of the E9 log; with no line to wait for, `perform`
+is the call. Marks the E9 log, runs `act` (steps in `perform`'s
 vocabulary), then with `expect` waits up to `seconds` (default 5, at most
 600) for a new matching line. Needs a `logfile`.
 
