@@ -5,24 +5,24 @@ declares is replayed on that session. `--help` says how to run it. The game is t
 
 from __future__ import annotations
 
-import os
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
 from scry_core import recording
-from scry_core.demo import Demo, Reply, Run, Step, StepFailed, expect, main
-from scry_core.game_demo import Binding, Press, elapsed, map_load
+from scry_core.demo import Demo, Reply, Run, Step, expect, main
+from scry_core.game_demo import Binding, Press, map_load
 from scry_core.games import lineup
-
-from scry_dosbox_x import launch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
     VOLATILE,
+    checkout,
+    conf_derived,
     isolated_store,
+    map_placed,
+    missing_under,
     precheck,
     started,
 )
@@ -55,47 +55,25 @@ VOLATILE_GAME = {**VOLATILE,
 
 
 def game(run: Run) -> Path:
-    return Path(run.options["cwd"]).expanduser()
+    return checkout(run)
 
 
 def checked(run: Run) -> str:
-    if why := precheck(run):
-        return why
-    cwd = run.options.get("cwd")
-    if not cwd:
-        return ("pass --cwd, the reader's copy of the game (its EXES/, its .scry/ and its "
-                "SCRIPTS/)")
-    missing = [p.as_posix() for p in (EXE, MAP, PROFILE, SCREEN_MAP, SCRIPT, CONF_SCRIPT)
-               if not (game(run) / p).is_file()]
-    return f"no {' or '.join(missing)} under --cwd {cwd}" if missing else ""
+    return precheck(run) or missing_under(
+        run, (EXE, MAP, PROFILE, SCREEN_MAP, SCRIPT, CONF_SCRIPT),
+        "the reader's copy of the game (its EXES/, its .scry/ and its SCRIPTS/)")
 
 
 def boot(run: Run) -> dict[str, Any]:
     """The game's own conf, derived by its own script, then the profile that names it."""
-    game_dir = game(run)
-    derived = subprocess.run(["sh", str(game_dir / CONF_SCRIPT)], cwd=game_dir,
-                             capture_output=True, text=True,
-                             env={**os.environ, "DOSBOX_GUEST": launch.GUEST_DIR.as_posix()})
-    if derived.returncode != 0:
-        raise StepFailed(f"{CONF_SCRIPT} exited {derived.returncode}: "
-                         f"{(derived.stderr or derived.stdout).strip()}")
-    return {"profile": str(game_dir / PROFILE), "shared": True,
+    conf_derived(run, CONF_SCRIPT)
+    return {"profile": str(game(run) / PROFILE), "shared": True,
             "captures_dir": str(run.dir / "lineup-captures")}
 
 
 def at(run: Run) -> Path:
     """The game's screen map, in the same checkout the profile boots from."""
     return game(run) / SCREEN_MAP
-
-
-def in_game(reply: Reply, run: Run) -> str:
-    """The boot's stop placed the map `start` held, at the segment DOS loaded the game at."""
-    booted = elapsed("booted")(reply, run)
-    placed = reply.get("symbols_placed") or {}
-    if placed.get("placed") is not True:
-        raise StepFailed(f"the boot's stop placed no map: {placed or 'no symbols_placed'}")
-    return (f"{booted}: DOS running the game, its map placed at segment "
-            f"{placed['load_segment']}, {placed['loaded']} symbols")
 
 
 def played(reply: Reply, run: Run) -> str:
@@ -130,7 +108,7 @@ BINDING = Binding(
                          "conf": "where the reader's copy of the game keeps its derived conf",
                          "name": "where the reader's copy of the game keeps its profile",
                          "held": "where the reader's copy of the game keeps its symbol table"}),
-          Step("boot", "run_for", {"milliseconds": BOOT_MS, "seconds": 120}, in_game)],
+          Step("boot", "run_for", {"milliseconds": BOOT_MS, "seconds": 120}, map_placed)],
     inputs=INPUTS, rate_hz=RATE_HZ, sound=HERE / "music.wav", map=at, volatile=INPUT_TIMING)
 
 DEMO = Demo(

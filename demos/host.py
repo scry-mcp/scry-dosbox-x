@@ -7,16 +7,19 @@ from __future__ import annotations
 import atexit
 import os
 import shutil
+import subprocess
 import tempfile
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
 from scry_core import live_host
-from scry_core.demo import Reply, Run
+from scry_core.demo import Reply, Run, StepFailed
 from scry_core.demo import expect as expect
+from scry_core.game_demo import elapsed
 
 from scry_dosbox_x import binary as dosbox_binary
+from scry_dosbox_x import launch
 
 
 def precheck(run: Run) -> str:
@@ -82,6 +85,51 @@ def loaded(reply: Reply, run: Run) -> str:
 def started(reply: Reply, run: Run) -> str:
     watched = "shared" if reply.get("shared", False) else "headless"
     return f"{watched} DOSBox-X, parked at the debugger before DOS boots"
+
+
+def checkout(run: Run) -> Path:
+    """The reader's copy of a game, `--cwd` (absolute or `~`-led)."""
+    return Path(str(run.options["cwd"])).expanduser()
+
+
+def missing_under(run: Run, parts: Iterable[Path], what: str) -> str:
+    """Why a game's copy cannot serve, or "": no `--cwd`, one that is neither absolute nor
+    `~`-led (the server takes no other), or a file of `parts` absent from it."""
+    cwd = run.options.get("cwd")
+    if not cwd:
+        return f"pass --cwd, {what}"
+    if not (Path(str(cwd)).is_absolute() or str(cwd).startswith("~")):
+        return f"the server takes absolute or ~-led paths only: --cwd {cwd}"
+    missing = [p.as_posix() for p in parts if not (checkout(run) / p).is_file()]
+    return f"no {' or '.join(missing)} under --cwd {cwd}" if missing else ""
+
+
+def conf_derived(run: Run, script: Path) -> None:
+    """Run the game's own deriver of a live-session conf, with the server's guest directory; a
+    deriver that refuses ends the step with its own words."""
+    game_dir = checkout(run)
+    derived = subprocess.run(["sh", str(game_dir / script)], cwd=game_dir,
+                             capture_output=True, text=True,
+                             env={**os.environ, "DOSBOX_GUEST": launch.GUEST_DIR.as_posix()})
+    if derived.returncode != 0:
+        raise StepFailed(f"{script} exited {derived.returncode}: "
+                         f"{(derived.stderr or derived.stdout).strip()}")
+
+
+def quit_cleanly(reply: Reply, run: Run) -> str:
+    """The session closed over a guest that had already left, never one ended by the close."""
+    expect(reply["ended_by"] == "quit", f"ended by {reply['ended_by']}: the guest had not left")
+    return "closed: DOSBox-X quit on its own"
+
+
+def map_placed(reply: Reply, run: Run) -> str:
+    """The boot's stop placed the map `start` held, at the segment DOS loaded the game at."""
+    booted = elapsed("booted")(reply, run)
+    placed = reply.get("symbols_placed") or {}
+    if placed.get("placed") is not True:
+        raise StepFailed(f"the boot's stop placed no map: {placed or 'no symbols_placed'}")
+    return (f"{booted}: DOS running the game, its map placed at segment "
+            f"{placed['load_segment']}, {placed['loaded']} symbols")
 
 
 def symbols_at(table: Path) -> Any:

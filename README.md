@@ -237,6 +237,11 @@ whole conversation, and the CD driver's play request stopped and moved so the op
 at the logo's bar, the recording held to the reader's own disc. It needs the disc, which is not
 distributed here.
 
+[`demos/speedf/`](demos/speedf/) boots the PC *Speed Fight* from the run recipe its own repository
+declares in `.scry/start/dos.json`, lets its title and attract run and reads the credits by name. [`demos/rechip/`](demos/rechip/) boots *ReChip!*'s DEV build from its own recipe and
+reads the program's log for what each key did, leaving it by its own keys. Each needs a checkout
+of its program, which is not distributed here.
+
 ## The tools
 
 The tools by family, each with its arguments, its reply and a real example, are in the index

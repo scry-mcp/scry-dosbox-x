@@ -18,6 +18,8 @@ TIMEOUT_S = 1800
 DPAINT = os.environ.get("DELUXE_PAINT_DIR", "")
 LINEUP = os.environ.get("LINEUP_MSDOS_DIR", "")
 MONKEY = os.environ.get("MONKEY_ISLAND_CD", "")
+SPEEDF = os.environ.get("SPEEDF_MSDOS_DIR", "")
+RECHIP = os.environ.get("RECHIP_DIR", "")
 
 
 DEMOS = [
@@ -32,7 +34,13 @@ DEMOS = [
                            "carries none of the game")),
     pytest.param("monkey", ["--cwd", MONKEY], marks=pytest.mark.skipif(
         not MONKEY, reason="set MONKEY_ISLAND_CD to the directory holding the 1992 Enhanced CD's "
-                           "monkey.cue and BINs: the repository carries none of the game"))]
+                           "monkey.cue and BINs: the repository carries none of the game")),
+    pytest.param("speedf", ["--cwd", SPEEDF], marks=pytest.mark.skipif(
+        not SPEEDF, reason="set SPEEDF_MSDOS_DIR to a copy of Speed Fight's PC game: the "
+                           "repository carries none of the game")),
+    pytest.param("rechip", ["--cwd", RECHIP], marks=pytest.mark.skipif(
+        not RECHIP, reason="set RECHIP_DIR to a built checkout of ReChip! (after `make "
+                           "mcp-conf`): the repository carries none of the program"))]
 
 #: The demos already run in this session: both tests below share one run per demo.
 _RUNS: dict[str, subprocess.CompletedProcess[str]] = {}

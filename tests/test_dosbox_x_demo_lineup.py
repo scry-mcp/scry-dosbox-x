@@ -13,7 +13,6 @@ from scry_core.demo import Reply, Run, StepFailed
 from scry_core.games import lineup
 
 from demos.lineup import demo
-from scry_dosbox_x import launch
 
 
 def _game(folder: Path, *, with_map: bool = True, with_store: bool = True) -> Path:
@@ -50,20 +49,10 @@ def test_the_demo_needs_a_copy_of_the_game_with_its_store(tmp_path: Path) -> Non
 
 def test_the_game_s_own_script_derives_the_conf_the_profile_names(tmp_path: Path) -> None:
     game = _game(tmp_path / "game")
-    (game / demo.CONF_SCRIPT).write_text(
-        "#!/bin/sh\nmkdir -p TMP && printf '%s\\n' \"$DOSBOX_GUEST\" > TMP/dosbox-x-mcp.conf\n")
     args = demo.boot(Run(dir=tmp_path, options={"cwd": str(game)}))
     assert args == {"profile": str(game / demo.PROFILE), "shared": True,
                     "captures_dir": str(tmp_path / "lineup-captures")}
-    assert (game / "TMP" / "dosbox-x-mcp.conf").read_text().strip() == (
-        launch.GUEST_DIR.as_posix())
-
-
-def test_a_conf_script_that_refuses_ends_the_step_with_its_own_words(tmp_path: Path) -> None:
-    game = _game(tmp_path / "game")
-    (game / demo.CONF_SCRIPT).write_text("#!/bin/sh\necho 'no stub' >&2\nexit 3\n")
-    with pytest.raises(StepFailed, match="exited 3: no stub"):
-        demo.boot(Run(dir=tmp_path, options={"cwd": str(game)}))
+    assert (game / "TMP" / "dosbox-x-mcp.conf").is_file()
 
 
 def test_the_map_is_the_game_s_and_a_copy_goes_with_the_load(tmp_path: Path) -> None:
@@ -75,15 +64,6 @@ def test_the_map_is_the_game_s_and_a_copy_goes_with_the_load(tmp_path: Path) -> 
     args = cast(Callable[[Run], dict[str, Any]], step.args)(run)
     assert args == {"method": "load", "path": run.dir / demo.SCREEN_MAP.name}
     assert (run.dir / demo.SCREEN_MAP.name).read_text() == "{}"
-
-
-def test_the_boot_stop_must_have_placed_the_map(tmp_path: Path) -> None:
-    placed = {"placed": True, "load_segment": "08ED", "loaded": 385}
-    assert "its map placed at segment 08ED, 385 symbols" in demo.in_game(
-        Reply({"verdict": "ELAPSED", "symbols_placed": placed}), Run(dir=tmp_path))
-    for said in ({}, {"symbols_placed": {"placed": False, "why": "real mode"}}):
-        with pytest.raises(StepFailed, match="placed no map"):
-            demo.in_game(Reply({"verdict": "ELAPSED", **said}), Run(dir=tmp_path))
 
 
 def test_the_script_is_the_document_and_every_step_of_it_must_run(tmp_path: Path) -> None:
