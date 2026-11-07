@@ -54,7 +54,13 @@ and `tests/test_dosbox_x_reply_models.py` refuses a promised field whose conditi
 A change to a tool's arguments, reply model or description changes its reference page, and
 `tests/test_dosbox_x_reference_pages.py` goes red naming the tool, the page and the line. Regenerate the pages from the
 code, and the examples only from a live run's transcript (each `--mark` spells a directory of
-the run's host, as the committed examples do):
+the run's host, as the committed examples do). A green live run removes its scratch, the
+transcript with it, so hard-link `transcript.jsonl` out of the run directory while the run goes,
+and only one newer than the run's start, since the scratches of earlier failed runs keep their old
+transcripts under the same temp root. Mark the temp root as well as the run directory: a server's
+own scratch lives directly under `$TMPDIR`, so a `--mark` of the run directory alone leaves host
+paths in `examples.json`; add `--mark '<TMPDIR without its trailing slash>=$TMPDIR'` and grep
+`docs/reference` for `/Users/`, `/var/folders` and `/private/var` before the commit:
 
 ```sh
 uv run python -m scry_core.reference scry_dosbox_x.server:REFERENCE --write
@@ -68,14 +74,31 @@ The commit itself runs scry-core's pre-commit (`python -m scry_core.hook --help`
 git config core.hooksPath .githooks
 ```
 
+Its prose check is a share of each file's bytes, so a change that only deletes code raises the
+share and can go red with no comment touched: run the hook after a sweep that deletes lines, and
+cut a clause in the file it names, never raise the ceiling.
+
 These are contract tests and none of them launches an emulator: they hold the part that has to
 be true before one is involved. `tools/bench.py`'s own guards are among them, because an instrument
 that can lie needs validation and validation nothing executes is a comment.
 
 Every pytest run judges the coverage floor: `--cov` is in `addopts` and the floor is
 `fail_under` in `pyproject.toml`. A partial run goes red on that floor by construction, because
-the floor is the whole repository's, so for a single file add `--no-cov` and read it as a run
-that judged no floor. The live tier is deselected by default (`-m 'not live and not window'`).
+the floor is the whole repository's. `addopts` ends in a bare `--cov`, which takes the next
+argument as its source, so `uv run pytest tests/test_x.py` runs the whole suite while looking like
+a one-file run, and a `--no-cov` after the path does not help: the path was already taken. Narrow
+a run with `-o addopts=""` naming the test files, or with `-k <module name> --no-cov`, and read it as a run
+that judged no floor. `-o addopts=` also drops the `not live` and `not window` deselections, so it names
+test files and never a directory: `tests` would start a real emulator. Pass `-m 'not live and not window'`
+beside it when the directory is what a run needs. The live tier is deselected by default (`-m 'not live and not window'`).
+
+`uv run` syncs the environment before its command, so an editable install of a core checkout
+(`uv pip install -e ../scry-core`) is replaced by the pinned scry-core on the next plain `uv run`,
+and a battery, probe or live tier then judges the pinned core while looking like a run on the
+checkout. Print `scry_core.__file__` from the project's Python before and after a run, use
+`uv run --no-sync` (or `UV_NO_SYNC=1`) while the editable core is wanted, reinstall it after a
+full battery, and export `PYTHONPATH=<core checkout>/src` for a run that must keep the source
+winning while another command syncs the environment mid-run.
 
 The ruff and mypy configuration in `pyproject.toml` is scry-core's bar; mypy runs strict with no
 path list, so a new directory is covered without being added anywhere.
@@ -192,6 +215,18 @@ memory or mouse driver the load leaves wrong (Monkey Island's screen comes back 
 pointer stops following the driver) cannot be judged from one. Memory reads, scans and anything
 the program computes from its own memory can.
 
+**The presence overlay is measured off the host screen.** The edge and the arrow are drawn after
+the frame goes to capture, so `snapshot`, `screen_view` and the emulator's own recordings never
+show them. Their size is read off `screencapture -x -o -l <window>` (the window number from
+`scry_core.window_capture.window_of(pid)`; the title bar adds its own height on top), their timing
+off `ffmpeg -f avfoundation -capture_cursor 0 -pixel_format uyvy422 -framerate 60 -i "<screen>:none"`
+with `-c:v libx264 -crf 0`, cropped to the window's `kCGWindowBounds`. The arrow's fill is found
+by colour (R>200, 100<G<175, B<90) with the edge band masked, and a click's effect by a region the
+arrow never crosses. A look sent through `debug` is overwritten by the server's next delivery, so
+a variant runs the server with `presence.LOOK` replaced before import. Validate the instrument
+with a control that must come out red before reading a green: look variants that differ can
+otherwise come out identical without anything saying so.
+
 ## Fixtures and the sweep off the commit path
 
 One artefact per toolchain is BUILT HERE and committed under `tests/fixtures/`: a Borland TLINK
@@ -239,4 +274,25 @@ uv run python -m scry_core.probe dosbox-x --servers mcp_probe/servers.py --tasks
 uv run python -m scry_core.probe dosbox-x --servers mcp_probe/servers.py --tasks mcp_probe/tasks --runs 3
 ```
 
-`python -m scry_core.probe --help` says how a failure is told from the model's noise.
+`python -m scry_core.probe --help` says how a failure is told from the model's noise. A task the
+probe's model keeps getting wrong, where the server refuses the wrong call naming why, is accepted
+residual and reported with its numbers: a client retries on a refusal, and more description text
+for that task spends the cap the others need. Only a wrong call the server accepts with
+`status: ok` is a defect.
+
+The reference generator rewrites only the blocks between its markers, and the hand-written
+paragraphs after a block belong to that tool by position. A tool moved to another family page
+leaves them on the old page: take the text between its end marker and the next begin marker at
+HEAD, remove it from the old page (it occurs once) and put it after the same tool's end marker on
+the new page, then rerun the drift test. The `REFERENCE.md` prose that names the family and the
+demos' family tables need the same sweep; the family of each shared tool is
+`roster.SHARED_FAMILIES` in scry-core.
+
+Windows stamps a file's mtime from a clock that ticks coarser than `time.time()`, so a file
+created right after a clock read can carry an mtime a few milliseconds before it, and a plain
+`mtime >= began` drops the first file of a run on Windows while never failing on macOS.
+`MTIME_TICK_S` in `src/scry_dosbox_x/recordings.py` is the slack, bounded from the other side by
+the gap between two calls, which is always longer. Prove a change there with a test that adds a
+few milliseconds to the clock, never with a sleep, and give any step that compares file times
+against the process's clock a Windows pass: its first sign is a test that passes and fails with
+no change of code.

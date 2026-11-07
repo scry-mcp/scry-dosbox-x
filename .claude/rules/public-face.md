@@ -76,3 +76,12 @@ finding about it is a finding about the tool's code.
 - Nothing else is exempt: a dated measurement, a paragraph about deleted machinery, a note on the
   project's own history, a home-directory path or an assistant's name in a tracked file outside
   `.claude/` is a finding.
+- A contract here is explained by its own reason, never by the sibling server: no README,
+  reference page, tool description or new comment says "as MAME does" or names `mame`, because a
+  stranger reading this server has no reason to know the other, and "the sibling does it" is a
+  motive, not a reason. Before a commit, `git diff <base> -- . ':!.claude' | grep '^+' | grep -ic mame` is 0 (this rule file is outside the count); the
+  shared in-development notice, which presents the family both servers form, is the one exception.
+- No new mention of the DOSBox-X fork or its repository in a message a tool prints, a description,
+  the `instructions`, the reference or a comment: the fork is how the server is developed, not what
+  a stranger installing it has. A message that needs "a build that carries X" names the capability
+  (the command, the build option), never the fork.

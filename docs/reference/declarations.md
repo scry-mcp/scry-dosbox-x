@@ -388,7 +388,11 @@ one is armed again at `start` and after `symbols_load` where its ref resolves. S
 replaces the page's handler afterwards (a video mode set remaps video memory) displaces the tap:
 it lists `displaced` and sees nothing more. A dynamic core, which runs code pages through handlers
 of its own, is refused when the tap goes in (a conf whose core is `auto` can switch to it later,
-in protected mode, and a tap then may miss accesses); the HMA is refused because its alias follows the A20 gate, and a range that
+in protected mode, and a tap then may miss accesses). Under `core=auto` a protected-mode guest is
+already on the dynamic core by the time it is stopped, so a new tap there is refused (`TAP needs a core that reads memory through the page handlers, not the dynamic core`), and a tap
+placed from real mode cannot cover extended memory (real mode addresses end at the HMA), so a
+DPMI or DJGPP program's variables are tapped from a session started on the normal core:
+`flags=["-set","cpu core=normal"]`; the HMA is refused because its alias follows the A20 gate, and a range that
 paging splits across non-adjacent pages is refused. Every stop with a tap declared costs one
 `TAPLIST`, which flushes the rows and rewrites the tables; `since_last_stop` counts what came since
 the previous stop (for a `send_keys` or `send_mouse` posted to a stopped machine, since the stop the

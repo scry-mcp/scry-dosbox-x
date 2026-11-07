@@ -573,3 +573,9 @@ file of the run, `path` the last, and the checks and the counts (`opl_pairs`, `o
 last file's alone.
 Silence is a fact about the guest: a constant level is reported as `sample_min` equal to
 `sample_max`, never refused.
+
+**A `readback_refused` that comes and goes is the conf's clock first.** When the host cannot run
+the guest's fixed cycles in real time, the mixer loses whole blocks of its output, the WAV falls
+short of the run's span and the check above refuses it, on some runs and not others. The refusal
+is right: the conf asked more than the host gives. A live cell or a demo that records sound takes
+a clock the host holds with room to spare, and the server is suspected second.
