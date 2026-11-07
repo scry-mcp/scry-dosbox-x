@@ -89,8 +89,7 @@ argument as its source, so `uv run pytest tests/test_x.py` runs the whole suite 
 a one-file run, and a `--no-cov` after the path does not help: the path was already taken. Narrow
 a run with `-o addopts=""` naming the test files, or with `-k <module name> --no-cov`, and read it as a run
 that judged no floor. `-o addopts=` also drops the `not live` and `not window` deselections, so it names
-test files and never a directory: `tests` would start a real emulator. Pass `-m 'not live and not window'`
-beside it when the directory is what a run needs. The live tier is deselected by default (`-m 'not live and not window'`).
+test files and never a directory: `tests` would start a real emulator. The live tier is deselected by default (`-m 'not live and not window'`).
 
 `uv run` syncs the environment before its command, so an editable install of a core checkout
 (`uv pip install -e ../scry-core`) is replaced by the pinned scry-core on the next plain `uv run`,
@@ -108,7 +107,7 @@ path list, so a new directory is covered without being added anywhere.
 A second tier under `tests/live/` drives a real emulator.
 
 ```sh
-uv run pytest tests/live -m live
+uv run pytest -o addopts="" -m live tests/live
 ```
 
 It runs against a guest this package OWNS, `tests/guest/probe.com`, a few bytes of assembler
@@ -127,7 +126,7 @@ DOSBOX_X_LIVE_CWD=/path/to/its/dir \
 DOSBOX_X_LIVE_PROGRAM=YOURAPP.EXE \
 DOSBOX_X_LIVE_MARK=BOOT \
 DOSBOX_X_LIVE_LATE=READY \
-    uv run pytest tests/live -m live
+    uv run pytest -o addopts="" -m live tests/live
 ```
 
 Your config needs `bochs debug port e9 = true`; without it the port is inert and the
@@ -147,7 +146,11 @@ The cases that open a watched window open it as `start` does, on the display the
 (`display`, on [`start`'s page](docs/reference/session.md#start)). The cases that move the
 owner's Space carry the `window` marker and are out of every default run: `SCRY_FOCUS_CONTROL=1
 uv run pytest -o addopts="" -m 'live and window' tests/live` runs them (scry-core's README,
-*On-demand tiers*). The Deluxe Paint demos' cases also need `DELUXE_PAINT_DIR`, the directory holding version 1.0's
+*On-demand tiers*). A demo or a live cell that needs the stop where an input lands takes the
+input's own post as the stop, never a breakpoint the click itself will hit inside a step that
+must answer ok (the read-back follows the button by a BIOS tick, `send_keys`' page says why);
+one that records sound takes a clock the host holds with room to spare (an intermittent
+`readback_refused` is the conf's clock first, `audio_record`'s page says why). The Deluxe Paint demos' cases also need `DELUXE_PAINT_DIR`, the directory holding version 1.0's
 `DP.EXE` (the demos refuse any other build); this repository carries none of the program, and
 without it they skip. The LineUp demo's case needs `LINEUP_MSDOS_DIR`, a copy of the game's PC port
 with its symbol map, and skips the same way. The Monkey Island demo's case needs `MONKEY_ISLAND_CD`,
