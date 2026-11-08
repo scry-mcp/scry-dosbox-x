@@ -252,14 +252,10 @@ class PaletteReply(DosboxEnvelope, total=False):
     rgb: Required[list[Any]]
 
 
-class PerformReply(DosboxEnvelope, account.SequenceFields, account.SequenceRun, total=False):
-    """The sequence's fields (`scry_core.sequence_account.SequenceFields`), and `operations` on
-    a refusal for a step naming no operation."""
-    failed: Annotated[dict[str, Any], When("`step_failed`")]
-    verdict: Annotated[str, When("once the list waited")]
-    frame_reached: Annotated[int | dict[str, Any], When("with `until_frame`")]
-    operations: list[Any]
-    until_frame: int
+class PerformReply(DosboxEnvelope, account.SequenceFields, account.SequenceRun,
+                   account.PerformFields, total=False):
+    """The sequence's fields (`scry_core.sequence_account`), and `operations` on a refusal for a
+    step naming no operation."""
 
 
 class PerformExportReply(DosboxEnvelope, media_replies.PerformExportFields, total=False):

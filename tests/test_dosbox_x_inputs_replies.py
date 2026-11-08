@@ -5,6 +5,7 @@ and the progress a mouse wait is given, and the stub's refusal before anything i
 from __future__ import annotations
 
 import asyncio
+import re
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -197,3 +198,33 @@ def test_a_mouse_summary_says_when_no_button_was_pressed(args: dict[str, Any], s
              "verify": {"checked": True, "verdict": "TIMEOUT"}}
     line = summaries.send_mouse(args, reply)
     assert ("no button pressed" in line) is said, line
+
+
+def test_a_reaction_written_during_the_calls_own_steering_is_seen() -> None:
+    class Log:
+        def __init__(self) -> None:
+            self.lines = ["boot"]
+
+        def e9_mark(self) -> int:
+            return len(self.lines)
+
+        def e9_wait(self, pattern: str, seconds: float, *, mark: int,
+                    progress: Any) -> dict[str, object]:
+            arrived = self.lines[mark:]
+            hit = [line for line in arrived if re.search(pattern, line)]
+            return {"verdict": "TARGET" if hit else "TIMEOUT", "line": hit[0] if hit else "",
+                    "already": bool(hit), "lines_before": 0, "lines_total": len(arrived),
+                    "waited_s": 0.0,
+                    "arrived_during": len(arrived), "lines_examined": len(arrived),
+                    "note": ""}
+
+    log = Log()
+
+    def steers() -> dict[str, Any]:
+        log.lines.append("mouse btn=1 x=10 y=20")
+        return {"posted": True}
+
+    got = inputs._verify(cast(ds.Session, log), "mouse", steers, "mouse btn=1", 1.0,
+                         ds.no_progress, {})
+    assert got["verify"]["seen"] is True, got["verify"]
+    assert got["verify"]["seen_before_waiting"] is True, got["verify"]

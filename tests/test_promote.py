@@ -245,3 +245,17 @@ def test_the_recipe_s_directory_is_searched_before_this_process_s() -> None:
                                          "session_seconds": 900})
     starts = mpromote.starting()
     assert starts[0] == "/somewhere/guest" and starts[-1] == os.getcwd()
+
+
+def test_a_map_learned_from_a_loaded_recipe_is_looked_for_in_that_recipe_s_store(
+        tmp_path: Path) -> None:
+    source = f"{tmp_path}/game/.scry/start/dos.json"
+    STATE.drafts.loaded_entry("start", "dos", source=source)
+    STATE.drafts.keep("maps", "dos", {"format": "scry-screen-map/1", "screens": [screen()]})
+    assert mpromote.starting()[0] == source
+
+
+def test_a_perform_document_s_start_block_says_where_the_store_is() -> None:
+    STATE.drafts.keep("perform", "x", {"start": {"cwd": "/game/guest"},
+                                       "steps": [{"op": "a", "recorded": {"v": 1}}]})
+    assert mpromote.starting()[0] == "/game/guest"

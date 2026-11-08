@@ -339,8 +339,8 @@ def test_a_bundle_launches_through_open_into_the_session_s_own_cwd(
         assert cmd[:4] == ["/usr/bin/open", "-n", "-a", str(bundle)], cmd
         assert "-i" not in cmd and "-o" not in cmd, "the app route carries no channel of ours"
         argv = cmd[cmd.index("--args") + 1:]
-        assert "sdl working directory option=force" in argv, argv
-        assert f"sdl working directory default={tmp_path}" in argv, argv
+        assert "dosbox working directory option=force" in argv, argv
+        assert f"dosbox working directory default={tmp_path}" in argv, argv
         assert ses._drainer is None and ses.captures_output is False
         assert children == [ses.proc], "the guardian watches the app's pid"
         assert ses.state()["bundle"] == str(bundle)

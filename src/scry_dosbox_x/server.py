@@ -224,7 +224,7 @@ def start(conf: str = "", cwd: str = "",
 
     Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve. `binary`:
     an executable or a `.app` carrying one, which `open` launches (macOS alone): that route
-    keeps `cwd` through DOSBox-X's own `sdl working directory` setting, names the bundle in
+    keeps `cwd` through DOSBox-X's own `working directory` setting, names the bundle in
     `bundle`, and leaves the exit status to launchd, so `close` answers `unavailable` for it.
     `session_seconds`: the lifetime.
     `shared`: watched, in a window; false, headless.
@@ -287,7 +287,8 @@ def start(conf: str = "", cwd: str = "",
     mpromote.note_start(params)
     reply = lifecycle.start(**params, progress=bridge(ctx), ops=_step_ops)
     if block is not None:
-        STATE.drafts.loaded_entry("start", Path(str(block["file"])).stem)
+        STATE.drafts.loaded_entry("start", Path(str(block["file"])).stem,
+                                  source=str(block["file"]))
     else:
         STATE.drafts.forget("start")
     if mpromote.keep_start(params, defaults=_START_DEFAULTS):
@@ -1666,9 +1667,7 @@ def perform_export(dest: str, overwrite: bool = False) -> dict[str, Any]:
     `recorded` reply. Other calls drop; the first no replay can place, or past {RECORD_MAX}, cuts
     the rest.
 
-    `dest` (`.json`) is refused if present unless `overwrite`. Reply: `path`, `steps`,
-    `checks`, `dropped`, `dropped_total`, `cut`, `replay`, and `kept` when the document is kept
-    for `promote`; `no_recording` if empty.
+    {EXPORT_KEPT}
 
     Reference: REFERENCE.md, From an investigation to a bench.
     """
@@ -1700,9 +1699,7 @@ def perform(steps: list[dict[str, Any]] | None = None, path: str = "",
     stopping at the first failure; `drive` is this plus a wait for a line of the E9 log.
 
     `steps`: `{"op": <tool>, ...arguments}`, any tool but `build_check`, `start`, `close`,
-    `perform`, `drive`, `perform_export`. `path`: a `perform` document (absolute or `~`-led:
-    `.scry/perform/<name>.json`, or a file `perform_export` wrote) whose steps are replayed; give
-    `steps` or `path`, never both.
+    `perform`, `drive`, `perform_export`. {PERFORM_SOURCE}
     A `send_keys` or `send_mouse` whose `expect`
     misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
     The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
@@ -1710,9 +1707,7 @@ def perform(steps: list[dict[str, Any]] | None = None, path: str = "",
     never wait). {UNTIL_FRAME} Frames count since power-on. A `screen_view` step inlines its
     text; its picture is written to its `path` and answers `not_inlined: nested`.
 
-    Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
-    `verdict` (once the list waited; `TARGET` adds `stopped`, `TIMEOUT` `note`), else
-    `still_running`; `frame_reached` (with `until_frame`).
+    {PERFORM_REPLY}
 
     Reference: REFERENCE.md, Sequences in one call.
     """
@@ -1720,7 +1715,8 @@ def perform(steps: list[dict[str, Any]] | None = None, path: str = "",
     steps = recording.steps_to_replay(steps, path)
     if from_document:      # the pre-gate judges a caller's own list; a document's is read here
         checks.steps_whole("steps", steps)
-        STATE.drafts.loaded_entry("perform", Path(path).expanduser().stem)
+        STATE.drafts.loaded_entry("perform", Path(path).expanduser().stem,
+                                  source=str(Path(path).expanduser()))
     return sequence.run_steps(live(), steps, settle_seconds, _step_ops(), bridge(ctx), summaries,
                               until_frame=until_frame)
 

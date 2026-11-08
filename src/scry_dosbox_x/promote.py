@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -45,7 +44,7 @@ def keep_start(params: Mapping[str, Any], *, defaults: Mapping[str, Any]) -> boo
     name = STATE.drafts.loaded_name("start") or STATE.guest
     if not name:
         return False
-    if STATE.drafts.loaded_name("start") and _only_the_run(given.names()):
+    if STATE.drafts.loaded_name("start") and core.only_the_run(given.names(), RUN_OWN):
         return False
     document: dict[str, Any] = {"format": project_store.FORMAT}
     document.update({name: value for name, value in params.items()
@@ -53,11 +52,6 @@ def keep_start(params: Mapping[str, Any], *, defaults: Mapping[str, Any]) -> boo
                      and value != defaults[name]})
     return STATE.drafts.keep("start", name, document, needs=NEEDS, path_keys=PROMOTE_PATHS,
                              own=sorted(RUN_OWN))
-
-
-def _only_the_run(names: frozenset[str] | None) -> bool:
-    """Whether the caller gave `start` nothing but the run's own (names unknown: never)."""
-    return names is not None and names <= RUN_OWN
 
 
 def after_map(method: str, reply: dict[str, Any]) -> dict[str, Any]:
@@ -74,14 +68,17 @@ def promote(dry_run: bool = False, entries: list[str] | None = None,
             names: dict[str, str] | None = None, root: str = "") -> dict[str, Any]:
     """The `promote` tool's body, on this server's draft."""
     return core.promote(STATE.drafts, dry_run=dry_run, entries=entries, names=names, root=root,
-                        starting=starting(), state=scratch())
+                        starting=core.starting(STATE.drafts, recipe_paths), state=scratch())
 
 
 def starting() -> list[str]:
-    """Where the store is looked for: the draft's own paths, then this process's directory."""
-    starts = [str(candidate.document.get("cwd")) for candidate in STATE.drafts.kept.values()
-              if candidate.kind == "start" and candidate.document.get("cwd")]
-    return [*starts, os.getcwd()]
+    """Where the store is looked for, as core orders it from this server's recipe paths."""
+    return core.starting(STATE.drafts, recipe_paths)
+
+
+def recipe_paths(recipe: Mapping[str, Any]) -> list[str]:
+    """What in a recipe says which repository it belongs to: the guest's directory."""
+    return [str(recipe.get("cwd") or "")]
 
 
 def scratch() -> str:

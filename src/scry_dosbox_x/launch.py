@@ -135,8 +135,8 @@ def build_argv(launch: Launch) -> list[str]:
     if launch.bundle:
         # `open` gives the app `/` as its working directory, and the conf's mounts are relative
         # to `cwd`: DOSBox-X is told to change into it before its `[autoexec]`.
-        argv += ["-set", "sdl working directory option=force",
-                 "-set", f"sdl working directory default={launch.cwd}"]
+        argv += ["-set", "dosbox working directory option=force",
+                 "-set", f"dosbox working directory default={launch.cwd}"]
     if launch.state_dir is not None:
         argv += ["-savedir", str(launch.state_dir)]
     if launch.window is None:

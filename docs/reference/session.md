@@ -77,7 +77,7 @@ map inside a window.
 
 Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve. `binary`:
 an executable or a `.app` carrying one, which `open` launches (macOS alone): that route
-keeps `cwd` through DOSBox-X's own `sdl working directory` setting, names the bundle in
+keeps `cwd` through DOSBox-X's own `working directory` setting, names the bundle in
 `bundle`, and leaves the exit status to launchd, so `close` answers `unavailable` for it.
 `session_seconds`: the lifetime.
 `shared`: watched, in a window; false, headless.
