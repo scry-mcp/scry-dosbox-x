@@ -248,7 +248,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         **MEDIA_ABSENT,
         "perform": {"steps": [{"op": "status"}]},
         "perform_export": {"dest": M.fresh(".json")},
-        "promote": {"dry_run": True},
+        "promote": {},
         "drive": {"act": [{"op": "status"}]},
         "comment_write add": {"ref": COMMENT_REF, "text": "matrix A"},
         "comment_list": {},
@@ -600,9 +600,12 @@ def _expect(tool: str, state: str) -> tuple[Callable[[dict[str, Any]], bool], st
                     "screen_map_write save docstring: nothing mapped yet is `needs_call`")
         return ((lambda r: ok(r) and Path(str(r.get("path"))).is_file()),
                 "screen_map_write save docstring: any state; the maps the server holds, written")
-    if tool == "promote" and state == "none":
-        return (lambda r: refused(r, "needs_call") and no_session(r),
-                "promote docstring: nothing is kept before a `start`")
+    if tool == "promote":
+        # It reads the draft and the store, never the machine: asked for nothing it refuses the
+        # same way in every state, and the session block only says what the state is.
+        return ((lambda r: refused(r, "bad_argument") and "`entries`" in str(r.get("message"))
+                 and (no_session(r) if state in ("none", "closed") else alive(r))),
+                "promote docstring: no `dry_run` and no `entries` is `bad_argument`, in any state")
     if tool == "perform_export" and state in ("none", "closed"):
         # Before any `start` there is nothing recorded; a closed session's recording is still
         # the last one, and it exports with no machine.
@@ -684,7 +687,7 @@ _STOPPED_ORDER = [
     "declaration_clear regpoint", "watch_add", "declaration_list watch",
                   "declaration_clear watch", "send_keys", "send_mouse",
     "captures", "capture_frame", "series_capture", *MEDIA_ABSENT, "perform", "drive",
-    "perform_export", "port read", "port write", "pic read", "pic unmask", "pic mask",
+    "perform_export", "promote", "port read", "port write", "pic read", "pic unmask", "pic mask",
     "pic raise", "pic lower", "pic acknowledge", "a20 read", "a20 off", "a20 on", "guest_file"]
 
 
