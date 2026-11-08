@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
 from pathlib import Path
 from typing import Any
 
 import pytest
-from scry_core import media_replies, screen_map, tool_replies
+from scry_core import given, media_replies, screen_map, tool_replies
 from scry_core import promote as core_promote
 
 from scry_dosbox_x import checks, replies, server
@@ -219,3 +220,28 @@ def test_the_store_is_looked_for_from_the_recipe_s_own_working_directory() -> No
                                          "cwd": "/somewhere/guest",
                                          "session_seconds": 900})
     assert "/somewhere/guest" in mpromote.starting()
+
+
+def test_a_start_that_only_loads_its_profile_learned_nothing() -> None:
+    STATE.drafts.loaded_entry("start", "dos")
+    with given.remembered({"profile", "state_dir"}):
+        assert mpromote.keep_start({**START, "program": "LINEUP.EXE"},
+                                   defaults=server._START_DEFAULTS) is False
+    assert STATE.drafts.entries() == []
+    with given.remembered({"profile", "session_seconds"}):
+        assert mpromote.keep_start({**START, "program": "LINEUP.EXE"},
+                                   defaults=server._START_DEFAULTS) is True
+
+
+def test_a_kept_start_leaves_the_run_s_own_keys_to_the_store() -> None:
+    mpromote.note_start(START)
+    mpromote.keep_start(START, defaults=server._START_DEFAULTS)
+    assert set(STATE.drafts.kept["start", "probe"].own) == set(mpromote.RUN_OWN)
+
+
+def test_the_recipe_s_directory_is_searched_before_this_process_s() -> None:
+    STATE.drafts.keep("start", "probe", {"format": "scry-start/1", "conf": "probe.conf",
+                                         "cwd": "/somewhere/guest",
+                                         "session_seconds": 900})
+    starts = mpromote.starting()
+    assert starts[0] == "/somewhere/guest" and starts[-1] == os.getcwd()
