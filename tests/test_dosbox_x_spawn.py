@@ -309,6 +309,7 @@ def _app_bundle(tmp_path: Path) -> Path:
     return tmp_path / "Probe.app"
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="an app bundle is macOS's")
 def test_a_bundle_launches_through_open_into_the_session_s_own_cwd(
         conf: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """`open` starts the app, two `-set`s put it in `cwd`, and the pid is the app's own."""

@@ -44,6 +44,7 @@ def test_the_close_must_find_the_guest_gone(tmp_path: Path) -> None:
 
 def test_a_tilde_led_copy_is_expanded(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
     assert host.checkout(Run(dir=tmp_path, options={"cwd": "~/g"})) == tmp_path / "g"
 
 

@@ -6,6 +6,7 @@ import inspect
 import json
 import os
 import subprocess
+import sys
 import time
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
@@ -795,6 +796,7 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session(tmp_path: Path) -> None:
     assert ran["ran"][0]["op"] == "registers"
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="`-version` is not run on Windows")
 def test_start_from_the_path_with_a_plan_says_which_build_under_start(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     on_path = host_program.write(tmp_path / "bin" / "dosbox-x", "import sys\n"

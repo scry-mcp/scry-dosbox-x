@@ -43,8 +43,8 @@ def test_a_profile_fills_what_the_caller_did_not_give(tmp_path: Path,
     stored(tmp_path, RECIPE)
     monkeypatch.chdir(tmp_path)
     arguments, block = lifecycle.with_profile("guest", keys=KEYS, arguments=call(), given=())
-    assert arguments["conf"] == str(tmp_path / "cfg" / "probe.conf")
-    assert arguments["cwd"] == str(tmp_path / "guest")
+    assert Path(arguments["conf"]) == tmp_path / "cfg" / "probe.conf"
+    assert Path(arguments["cwd"]) == tmp_path / "guest"
     assert arguments["session_seconds"] == 120
     assert block["supplied"] == ["conf", "cwd", "session_seconds"]
 

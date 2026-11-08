@@ -62,12 +62,16 @@ def _flags() -> list[str]:
     return [*argv[at - 1:end], *(["-fullscreen"] if "-fullscreen" in argv else [])]
 
 
+#: Where a window's top goes: Windows places its frame above the client area.
+TOP = 51 if sys.platform == "win32" else 40
+
+
 @pytest.mark.parametrize(("asked", "flags"), [
-    ({}, ["-set", "sdl display=0", "-set", "sdl windowposition=40,40"]),
-    ({"display": 1}, ["-set", "sdl display=1", "-set", "sdl windowposition=1960,40"]),
+    ({}, ["-set", "sdl display=0", "-set", f"sdl windowposition=40,{TOP}"]),
+    ({"display": 1}, ["-set", "sdl display=1", "-set", f"sdl windowposition=1960,{TOP}"]),
     ({"display": 0, "fullscreen": True},
      ["-set", "sdl display=0", "-fullscreen"]),
-    ({"fullscreen": False}, ["-set", "sdl display=0", "-set", "sdl windowposition=40,40"]),
+    ({"fullscreen": False}, ["-set", "sdl display=0", "-set", f"sdl windowposition=40,{TOP}"]),
 ])
 def test_a_watched_start_asks_the_emulator_for_the_display(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, asked: dict[str, Any],

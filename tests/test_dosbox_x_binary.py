@@ -25,6 +25,7 @@ def on_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return found
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="`-version` is not run on Windows")
 def test_build_check_answers_the_three_fields_and_asks_the_build_it_resolved(
         tmp_path: Path, on_path: Path) -> None:
     mine = build(tmp_path / "arg")
@@ -102,6 +103,7 @@ def test_build_check_judges_the_build_by_its_bytes_and_never_waits_on_helpdebug(
     assert time.monotonic() - began < 10, "it waited on `-helpdebug`"
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="`-version` is not run on Windows")
 def test_the_version_probe_of_a_build_spawns_it_behind_as_a_session_does(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The probe runs behind, as a session does: an unknown option starts the emulator."""

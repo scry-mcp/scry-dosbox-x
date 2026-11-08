@@ -557,7 +557,7 @@ def test_an_executable_written_since_its_table_was_checked_is_an_alarm(
     assert ds.Session.state(fake).get("image_changed_on_disk") is True  # type: ignore[arg-type]
     exe.unlink()
     gone = cast(dict[str, Any], ds.Session.state(fake))["image_changed_on_disk"]  # type: ignore[arg-type]
-    assert gone["available"] is False and str(exe) in gone["why"], gone
+    assert gone["available"] is False and exe.name in gone["why"], gone
 
 
 def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -> None:
@@ -1046,6 +1046,7 @@ def test_every_reply_opens_with_a_summary_and_closes_with_the_session(tmp_path: 
     assert list(refused)[0] == "summary" and refused["summary"].startswith("registers: INVALID")
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="`-version` is not run on Windows")
 def test_start_launches_the_binary_it_resolved_and_says_which(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     conf = tmp_path / "g.conf"
