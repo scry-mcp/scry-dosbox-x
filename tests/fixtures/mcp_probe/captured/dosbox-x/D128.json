@@ -16,19 +16,7 @@
  "runs": [
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"since_mark\": 8820, \"seconds\": 40}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D128: {\"tool\":\"log_wait\",\"args\":{\"pattern\":\"LEVEL 3\",\"channel\":\"guest\",\"seconds\":40,\"since_mark\":8820}}"
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
@@ -40,7 +28,7 @@
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
@@ -88,7 +76,13 @@
   },
   {
    "lines": [
-    "D128: {\"tool\":\"log_wait\",\"args\":{\"pattern\":\"LEVEL 3\",\"channel\":\"guest\",\"seconds\":40,\"since_mark\":8820}}"
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
@@ -100,7 +94,13 @@
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"since_mark\": 8820, \"seconds\": 40}}"
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   }

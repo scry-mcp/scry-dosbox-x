@@ -37,37 +37,7 @@
  "runs": [
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"0x3D open .*-> error\", \"channel\": \"dos\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \" open .* -> error\", \"channel\": \"dos\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .*-> error\", \"channel\": \"dos\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .* error\", \"channel\": \"dos\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .* -> error\", \"channel\": \"dos\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .*-> error\", \"channel\": \"dos\"}}"
+    "D152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"open.*-> error\"}}"
    ],
    "right": true
   },
@@ -79,49 +49,79 @@
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"0x3D open .* -> error\", \"channel\": \"dos\"}}"
+    "D152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"3D open .* -> error\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\":\"log\",\"args\":{\"pattern\":\"open.*error\",\"channel\":\"dos\"}}"
+    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .*-> error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open.*error\", \"channel\": \"dos\"}}"
+    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .* -> error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open.*error\", \"channel\": \"dos\"}}"
+    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .*error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .*-> error\", \"channel\": \"dos\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .* -> error\", \"channel\": \"dos\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .* error\", \"channel\": \"dos\"}}"
+    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .* -> error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
     "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .* -> error\", \"channel\": \"dos\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open.*-> error\", \"channel\": \"dos\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .*-> error\", \"channel\": \"dos\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"3D open .* -> error\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"0x3D open .* -> error\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"0x3D open.*-> error\", \"channel\": \"dos\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"0x3D open.*-> error\", \"channel\": \"dos\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"open .* -> error\"}}"
    ],
    "right": true
   }

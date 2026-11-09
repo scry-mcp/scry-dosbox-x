@@ -28,7 +28,79 @@
   },
   {
    "lines": [
-    "D164: {\"tool\":\"start\",\"args\":{\"conf\":\"/opt/lineup/lineup.conf\",\"cwd\":\"/opt/lineup\",\"session_seconds\":900,\"symbols\":\"/opt/lineup/EXES/LINEUP.MAP\"}}"
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
    ],
    "right": true
   }

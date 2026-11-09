@@ -8,91 +8,91 @@
  "runs": [
   {
    "lines": [
-    "D63: CANNOT machine_map refuses a running guest, and nothing here reads the MCBs without stopping it."
+    "D63: CANNOT machine_map refuses a running guest (not_stopped), and no other tool lists the DOS memory control blocks while it runs."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map refuses a running guest (not_stopped), so the memory blocks cannot be listed without stopping the machine."
+    "D63: CANNOT machine_map refuses a running guest, and reading the memory control blocks needs the machine stopped."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map is refused on a running guest (`not_stopped`), so it cannot read the MCBs while the guest runs."
+    "D63: CANNOT machine_map reads the DOS machine only while the guest is stopped, and a running guest is refused (`not_stopped`)."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map refuses a running guest (not_stopped), and the server has no other way to list the DOS memory control blocks while it runs."
+    "D63: CANNOT machine_map reads only a stopped machine (`not_stopped` otherwise), and no other tool lists the memory control blocks of a running guest."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map and the other map readers refuse a running guest, and no tool lists the memory control blocks without stopping it."
+    "D63: CANNOT The DOS memory control blocks can only be read while the machine is stopped (machine_map refuses a running guest with not_stopped)."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map refuses a running guest, and no other tool lists the memory control blocks while the guest runs."
+    "D63: CANNOT The machine map is only readable while the guest is stopped (`not_stopped` otherwise), so memory control blocks cannot be listed on a running guest."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map reads the listing only while the guest is stopped and refuses a running guest."
+    "D63: CANNOT machine_map reads only a stopped machine, and this guest must keep running."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map refuses a running guest, and the guest must keep running for this request."
+    "D63: CANNOT machine_map and the other map reads are refused on a running guest (`not_stopped`), and the guest must not be stopped for this."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map refuses a running guest, and no other tool lists the DOS memory control blocks without stopping it."
+    "D63: CANNOT machine_map refuses a running guest (`not_stopped`), and no other tool lists the memory control blocks without stopping it."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT The DOS machine map is read only while the guest is stopped, and a running guest is refused."
+    "D63: CANNOT machine_map reads the DOS tables only while the guest is stopped, and a running guest is refused (not_stopped)."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map refuses a running guest, and the guest must not be stopped for this request."
+    "D63: CANNOT The machine must be stopped to read the memory control blocks; machine_map refuses a running guest with not_stopped."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map refuses a running guest with `not_stopped`, and the guest must not be stopped here."
+    "D63: CANNOT machine_map reads the DOS machine only while the guest is stopped; a running guest is refused with not_stopped."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map reads the listing only from a stopped guest, and a running guest must not be stopped."
+    "D63: CANNOT machine_map refuses a running guest (not_stopped), and no other tool reads the memory control blocks while it runs."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map refuses a running guest, and the request says it must not be stopped."
+    "D63: CANNOT machine_map reads only a stopped guest and refuses a running one with not_stopped, so the memory blocks cannot be listed while it runs."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map refuses a running guest, so the memory control blocks cannot be read without stopping it."
+    "D63: CANNOT machine_map refuses a running guest (`not_stopped`), and no other tool here reads the memory control blocks without stopping it."
    ],
    "right": true
   }

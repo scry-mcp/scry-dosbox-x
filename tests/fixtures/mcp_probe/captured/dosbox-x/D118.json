@@ -26,12 +26,6 @@
   },
   {
    "lines": [
-    "D118: {\"tool\":\"screen_map_write\",\"args\":{\"method\":\"load\",\"path\":\"/tmp/maps/bricks.screen-map.json\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D118: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/maps/bricks.screen-map.json\"}}"
    ],
    "right": true
@@ -86,7 +80,13 @@
   },
   {
    "lines": [
-    "D118: {\"tool\":\"screen_map_write\",\"args\":{\"method\":\"load\",\"path\":\"/tmp/maps/bricks.screen-map.json\"}}"
+    "D118: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/maps/bricks.screen-map.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D118: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/maps/bricks.screen-map.json\"}}"
    ],
    "right": true
   },

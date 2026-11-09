@@ -26,12 +26,6 @@
   },
   {
    "lines": [
-    "D37: {\"tool\":\"declaration_clear\",\"args\":{\"kind\":\"breakpoint\",\"ref\":\"BPINT 10 AH=0E\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
@@ -86,7 +80,13 @@
   },
   {
    "lines": [
-    "D37: {\"tool\":\"declaration_clear\",\"args\":{\"kind\":\"breakpoint\",\"ref\":\"BPINT 10 AH=0E\"}}"
+    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },

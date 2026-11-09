@@ -24,42 +24,6 @@
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D95: {\"tool\":\"scan\",\"args\":{\"method\":\"filter\",\"value\":7,\"limit\":200}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
@@ -90,13 +54,49 @@
   },
   {
    "lines": [
-    "D95: {\"tool\":\"scan\",\"args\":{\"method\":\"filter\",\"value\":7,\"limit\":200}}"
+    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
     "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },

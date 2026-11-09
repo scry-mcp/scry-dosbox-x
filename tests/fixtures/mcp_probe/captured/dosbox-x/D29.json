@@ -34,30 +34,6 @@
   },
   {
    "lines": [
-    "D29: {\"tool\":\"symbols_load\",\"args\":{\"path\":\"/opt/dosfury/FURY.MAP\",\"base\":\"A000\",\"pattern\":\"sfx\",\"keep_noise\":true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"types\": \"Borland\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
     "D29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
@@ -70,7 +46,7 @@
   },
   {
    "lines": [
-    "D29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "D29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
@@ -94,7 +70,31 @@
   },
   {
    "lines": [
-    "D29: {\"tool\":\"symbols_load\",\"args\":{\"path\":\"/opt/dosfury/FURY.MAP\",\"base\":\"A000\",\"pattern\":\"sfx\",\"keep_noise\":true}}"
+    "D29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },

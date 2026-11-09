@@ -41,7 +41,13 @@
   },
   {
    "lines": [
-    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"display\": 0, \"fullscreen\": true}}"
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
@@ -59,12 +65,6 @@
   },
   {
    "lines": [
-    "D172: CANNOT The task gives no conf path or working directory, and start requires both along with session_seconds."
-   ],
-   "right": false
-  },
-  {
-   "lines": [
     "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
@@ -77,7 +77,7 @@
   },
   {
    "lines": [
-    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true, \"display\": 0}}"
+    "D172: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },

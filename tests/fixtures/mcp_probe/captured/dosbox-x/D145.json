@@ -27,7 +27,13 @@
   },
   {
    "lines": [
-    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 544, \"bits\": 16}}"
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
    ],
    "right": true
   },
@@ -52,12 +58,6 @@
   {
    "lines": [
     "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 544, \"bits\": 16}}"
    ],
    "right": true
   },

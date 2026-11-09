@@ -22,12 +22,6 @@
   },
   {
    "lines": [
-    "D98: {\"tool\":\"resume\",\"args\":{\"detail\":true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D98: {\"tool\": \"resume\", \"args\": {\"detail\": true}}"
    ],
    "right": true
@@ -82,7 +76,13 @@
   },
   {
    "lines": [
-    "D98: {\"tool\":\"resume\",\"args\":{\"detail\":true}}"
+    "D98: {\"tool\": \"resume\", \"args\": {\"detail\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D98: {\"tool\": \"resume\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },

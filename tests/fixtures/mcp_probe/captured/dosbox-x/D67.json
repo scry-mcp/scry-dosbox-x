@@ -34,12 +34,6 @@
   },
   {
    "lines": [
-    "D67: {\"tool\":\"palette\",\"args\":{\"dest\":\"/tmp/dac.png\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
@@ -94,7 +88,13 @@
   },
   {
    "lines": [
-    "D67: {\"tool\":\"palette\",\"args\":{\"dest\":\"/tmp/dac.png\"}}"
+    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },

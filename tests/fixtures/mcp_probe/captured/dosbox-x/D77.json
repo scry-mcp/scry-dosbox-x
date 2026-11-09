@@ -27,12 +27,6 @@
   },
   {
    "lines": [
-    "D77: {\"tool\":\"trace\",\"args\":{\"instructions\":2000,\"shape\":\"cs_ip\",\"dest\":\"/tmp/addrs.trace\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
    ],
    "right": true
@@ -87,7 +81,13 @@
   },
   {
    "lines": [
-    "D77: {\"tool\":\"trace\",\"args\":{\"instructions\":2000,\"shape\":\"cs_ip\",\"dest\":\"/tmp/addrs.trace\"}}"
+    "D77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
    ],
    "right": true
   },

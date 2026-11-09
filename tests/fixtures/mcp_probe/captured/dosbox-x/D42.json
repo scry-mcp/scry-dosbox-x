@@ -26,12 +26,6 @@
   },
   {
    "lines": [
-    "D42: {\"tool\":\"declaration_clear\",\"args\":{\"kind\":\"watch\",\"ref\":\"[_player_ptr]+0x1C\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
@@ -86,7 +80,13 @@
   },
   {
    "lines": [
-    "D42: {\"tool\":\"declaration_clear\",\"args\":{\"kind\":\"watch\",\"ref\":\"[_player_ptr]+0x1C\"}}"
+    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },

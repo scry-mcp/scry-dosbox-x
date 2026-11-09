@@ -146,6 +146,8 @@ class Process:
             streams = {"stdin": ends[1] if terminal else subprocess.DEVNULL,
                        "stdout": ends[1], "stderr": ends[1]}
         try:
+            if launch.bundle:
+                launch = replace(launch, working_conf=dlaunch.write_working_conf(launch))
             self.argv = dlaunch.build_argv(launch)
             try:
                 if launch.bundle:

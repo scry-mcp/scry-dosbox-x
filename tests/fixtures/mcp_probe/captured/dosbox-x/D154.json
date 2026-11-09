@@ -23,15 +23,9 @@
  "runs": [
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
-   ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
@@ -41,45 +35,9 @@
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D154: {\"tool\": \"run_for\", \"args\": {\"frames\": 70}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D154: {\"tool\": \"run_for\", \"args\": {\"frames\": 70}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
-   ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
@@ -89,15 +47,9 @@
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D154: {\"tool\":\"perform\",\"args\":{\"steps\":[{\"op\":\"run_for\",\"frames\":1}],\"until_frame\":470}}"
-   ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
@@ -107,9 +59,57 @@
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
-   "right": false
+   "right": true
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"summaries\": true, \"until_frame\": 470}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+   ],
+   "right": true
   }
  ]
 }

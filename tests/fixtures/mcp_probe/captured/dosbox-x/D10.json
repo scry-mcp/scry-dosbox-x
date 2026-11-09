@@ -24,12 +24,6 @@
   },
   {
    "lines": [
-    "D10: {\"tool\":\"memdump\",\"args\":{\"ref\":\"_vram_copy\",\"length\":4096,\"dest\":\"/tmp/mcp-probe-dos.bin\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
@@ -84,7 +78,13 @@
   },
   {
    "lines": [
-    "D10: {\"tool\":\"memdump\",\"args\":{\"ref\":\"_vram_copy\",\"length\":4096,\"dest\":\"/tmp/mcp-probe-dos.bin\"}}"
+    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },

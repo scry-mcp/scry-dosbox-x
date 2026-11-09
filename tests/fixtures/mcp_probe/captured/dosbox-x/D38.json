@@ -25,30 +25,6 @@
  "runs": [
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"by\": \"pointer\", \"length\": 1, \"fmt\": \"i8\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D38: {\"tool\":\"watch_add\",\"args\":{\"ref\":\"[_player_ptr]+0x1C\",\"mode\":\"change\",\"fmt\":\"i8\",\"length\":1}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\", \"by\": \"pointer\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
    ],
    "right": true
@@ -67,37 +43,7 @@
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1, \"by\": \"pointer\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1, \"by\": \"pointer\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1, \"by\": \"pointer\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D38: {\"tool\":\"watch_add\",\"args\":{\"ref\":\"[_player_ptr]+0x1C\",\"mode\":\"change\",\"fmt\":\"i8\",\"length\":1}}"
    ],
    "right": true
   },
@@ -109,7 +55,61 @@
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\", \"by\": \"pointer\"}}"
+    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
    ],
    "right": true
   }

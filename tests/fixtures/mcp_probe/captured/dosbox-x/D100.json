@@ -51,7 +51,31 @@
   },
   {
    "lines": [
-    "D100: {\"tool\":\"palette\",\"args\":{\"scale\":1}}"
+    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D100: {\"tool\": \"palette\", \"args\": {\"first\": 0, \"count\": 256, \"scale\": 1}}"
    ],
    "right": true
   },
@@ -88,30 +112,6 @@
   {
    "lines": [
     "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D100: {\"tool\":\"palette\",\"args\":{\"scale\":1}}"
    ],
    "right": true
   },

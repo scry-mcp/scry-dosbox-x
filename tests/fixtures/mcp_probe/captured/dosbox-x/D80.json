@@ -8,79 +8,67 @@
  "runs": [
   {
    "lines": [
-    "D80: CANNOT trace runs forward from the stop and cannot show instructions executed before it."
+    "D80: CANNOT trace runs forward from the stop, and no tool reports instructions executed before a stop."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT trace runs forward from the stop and records what runs next; no tool replays the instructions executed before a stop."
+    "D80: CANNOT trace runs forward from a stop only; no tool lists the instructions executed before a stop."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT The debugger runs forward only and keeps no record of past instructions to show from this stop."
+    "D80: CANNOT trace records instructions forward from the stop, and no tool reports the instructions executed before a stop."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT No tool replays or lists instructions already executed before a stop; trace only records instructions run forward from the stop."
+    "D80: CANNOT The debugger's trace records instructions forward from the stop; no tool replays the instructions executed before it."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT trace runs forward from the stop and cannot show instructions already executed before it."
+    "D80: CANNOT Trace runs only forward from the stop; no tool returns the instructions executed before a stop."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT trace records only instructions run after the call, and no tool reads back the instructions executed before this stop."
+    "D80: CANNOT The trace tool runs the machine forward and records what it executes from then on; nothing records the instructions run before the current stop."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT trace runs forward from the stop and records what it executes next; no tool reports instructions executed before a stop."
+    "D80: CANNOT trace runs forward from the stop and nothing keeps a history of executed instructions before it."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT trace runs forward from the stop and cannot show instructions executed before it."
+    "D80: CANNOT trace runs forward from a stop and records what it executes next; no tool gives the instructions executed before a stop."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT trace runs forward from the stop and no tool reports instructions executed before it."
+    "D80: CANNOT Tracing runs the guest forward only; no tool returns the instructions executed before the current stop."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT trace records instructions forward from the stop and cannot replay the ones already executed before it."
+    "D80: CANNOT trace runs forward from the stop; no tool reports instructions already executed before it."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT trace runs forward from the stop and no tool reports instructions executed before a stop."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D80: CANNOT trace and step run forward only; no tool replays the instructions executed before the current stop."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D80: CANNOT Trace runs forward from the stop and keeps no history of instructions executed before it."
+    "D80: CANNOT trace runs the guest forward and no tool reads back the instructions executed before a stop."
    ],
    "right": true
   },
@@ -92,7 +80,19 @@
   },
   {
    "lines": [
-    "D80: CANNOT trace runs forward from the stop and records nothing about instructions already executed, so the earlier history is not available."
+    "D80: CANNOT trace runs forward from the stop and no tool returns the instructions executed before a stop."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D80: CANNOT trace runs instructions forward from the stop, and no tool reads back the instructions executed before it."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D80: CANNOT A trace only records instructions run after it starts; no tool here reads back the instructions executed before a stop."
    ],
    "right": true
   }

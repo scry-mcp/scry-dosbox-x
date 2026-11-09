@@ -20,12 +20,6 @@
   },
   {
    "lines": [
-    "D69: {\"tool\":\"screen_view\",\"args\":{}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D69: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
@@ -80,7 +74,13 @@
   },
   {
    "lines": [
-    "D69: {\"tool\":\"screen_view\",\"args\":{}}"
+    "D69: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D69: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },

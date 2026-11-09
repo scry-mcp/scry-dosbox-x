@@ -23,7 +23,19 @@
   },
   {
    "lines": [
-    "D116: {\"tool\":\"screen_view\",\"args\":{\"dest\":\"/tmp/quiet.png\",\"attach\":false}}"
+    "D116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D116: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
@@ -71,7 +83,7 @@
   },
   {
    "lines": [
-    "D116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "D116: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
@@ -83,19 +95,7 @@
   },
   {
    "lines": [
-    "D116: {\"tool\":\"screen_view\",\"args\":{\"dest\":\"/tmp/quiet.png\",\"attach\":false}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "D116: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   }

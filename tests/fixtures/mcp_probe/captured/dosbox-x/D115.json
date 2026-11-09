@@ -8,43 +8,49 @@
  "runs": [
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start and cannot select only the last ten."
+    "D115: CANNOT perform_export writes all calls since start, or the first 5000 of them; it cannot select the last ten."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes the whole session since start and offers no option to limit it to the last calls."
+    "D115: CANNOT perform_export writes every call since start; it has no option to limit the export to the last calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start and cannot select only the last ten calls."
+    "D115: CANNOT perform_export writes every call since start and offers no way to select only the last ten."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start and has no option to keep only the last ten calls."
+    "D115: CANNOT perform_export writes the whole session since start, with no option to keep only the last calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start and cannot select only the last ten calls."
+    "D115: CANNOT perform_export has no option to limit the export to recent calls; it writes every kept call since start."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export always writes every call since start, with no option to take only the last ten."
+    "D115: CANNOT perform_export writes every call since start, and it has no option to keep only the most recent calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start and offers no option to select only the last ten calls."
+    "D115: CANNOT perform_export writes every call since start and has no option to limit it to the last few calls."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D115: CANNOT perform_export writes every call since start, with no option to keep only the last ten."
    ],
    "right": true
   },
@@ -56,43 +62,37 @@
   },
   {
    "lines": [
-    "D115: CANNOT perform_export takes no option to limit the export to the last N calls; it always writes the whole session since start."
+    "D115: CANNOT perform_export writes every call since start, with no option to limit it to the last ten."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export always writes every call since start, and it cannot select only the last ten calls."
+    "D115: CANNOT perform_export writes the whole session since start and has no argument to keep only the last calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start and cannot select only the last ten calls."
+    "D115: CANNOT perform_export writes every call since start; it cannot export only the last ten calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export takes only a destination and exports every call since start; it cannot select the last ten calls."
+    "D115: CANNOT perform_export writes every call since start; it has no option to limit the export to the last ten calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes the whole session since start and has no option to keep only the last calls."
+    "D115: CANNOT perform_export writes every call since start and has no option to keep only the last few calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start, with no option to export only the last ten."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D115: CANNOT perform_export takes the whole session since start and has no option to export only the last calls."
+    "D115: CANNOT perform_export has no option to keep only the last N calls; it writes the whole session since start."
    ],
    "right": true
   }

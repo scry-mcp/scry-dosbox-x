@@ -23,12 +23,6 @@
   },
   {
    "lines": [
-    "D59: {\"tool\":\"run_for\",\"args\":{\"frames\":12,\"seconds\":20}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
@@ -83,7 +77,13 @@
   },
   {
    "lines": [
-    "D59: {\"tool\":\"run_for\",\"args\":{\"frames\":12,\"seconds\":20}}"
+    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },

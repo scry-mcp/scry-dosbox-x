@@ -45,12 +45,6 @@
   },
   {
    "lines": [
-    "D119: {\"tool\":\"screen_map_write\",\"args\":{\"method\":\"add\",\"screen\":\"title\",\"match\":[[0,0,40,1]],\"controls\":[{\"name\":\"play\",\"rect\":[10,12,20,1]}]}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
@@ -105,7 +99,13 @@
   },
   {
    "lines": [
-    "D119: {\"tool\":\"screen_map_write\",\"args\":{\"method\":\"add\",\"screen\":\"title\",\"match\":[[0,0,40,1]],\"controls\":[{\"name\":\"play\",\"rect\":[10,12,20,1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },

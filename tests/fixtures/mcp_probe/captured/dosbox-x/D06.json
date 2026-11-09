@@ -16,7 +16,7 @@
  "runs": [
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "D06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
@@ -28,27 +28,9 @@
   },
   {
    "lines": [
-    "D06: {\"tool\":\"log\",\"args\":{\"pattern\":\"^SCORE\",\"channel\":\"guest\",\"limit\":30,\"labels\":true}}"
+    "D06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
-  },
-  {
-   "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30}}"
-   ],
-   "right": false
   },
   {
    "lines": [
@@ -88,15 +70,33 @@
   },
   {
    "lines": [
-    "D06: {\"tool\":\"log\",\"args\":{\"pattern\":\"^SCORE\",\"channel\":\"guest\",\"limit\":30,\"labels\":true}}"
+    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30}}"
+    "D06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
    ],
-   "right": false
+   "right": true
+  },
+  {
+   "lines": [
+    "D06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+   ],
+   "right": true
   },
   {
    "lines": [

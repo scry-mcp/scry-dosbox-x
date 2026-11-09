@@ -27,21 +27,9 @@
   },
   {
    "lines": [
-    "D85: {\"tool\":\"comment_write\",\"args\":{\"method\":\"add\",\"ref\":\"draw_sprite\",\"text\":\"clears the back buffer first\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D85: {\"tool\": \"comment_write\", \"args\": {\"method\": \"add\", \"ref\": \"draw_sprite\", \"text\": \"clears the back buffer first\"}}"
    ],
    "right": true
-  },
-  {
-   "lines": [
-    "D85: {\"tool\": \"comment_write\", \"args\": {\"method\": \"add\", \"ref\": \"draw_sprite\", \"text\": \"Clears the back buffer first.\"}}"
-   ],
-   "right": false
   },
   {
    "lines": [
@@ -87,7 +75,19 @@
   },
   {
    "lines": [
-    "D85: {\"tool\":\"comment_write\",\"args\":{\"method\":\"add\",\"ref\":\"draw_sprite\",\"text\":\"clears the back buffer first\"}}"
+    "D85: {\"tool\": \"comment_write\", \"args\": {\"method\": \"add\", \"ref\": \"draw_sprite\", \"text\": \"clears the back buffer first\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D85: {\"tool\": \"comment_write\", \"args\": {\"method\": \"add\", \"ref\": \"draw_sprite\", \"text\": \"clears the back buffer first\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D85: {\"tool\": \"comment_write\", \"args\": {\"method\": \"add\", \"ref\": \"draw_sprite\", \"text\": \"clears the back buffer first\"}}"
    ],
    "right": true
   },

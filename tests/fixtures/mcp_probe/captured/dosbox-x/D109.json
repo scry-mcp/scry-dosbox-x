@@ -27,12 +27,6 @@
   },
   {
    "lines": [
-    "D109: {\"tool\":\"image_compare\",\"args\":{\"method\":\"golden\",\"manifest\":\"/tmp/run1/manifest.json\",\"checksums\":\"/tmp/goldens.sha256\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D109: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"manifest\": \"/tmp/run1/manifest.json\", \"checksums\": \"/tmp/goldens.sha256\"}}"
    ],
    "right": true
@@ -87,7 +81,13 @@
   },
   {
    "lines": [
-    "D109: {\"tool\":\"image_compare\",\"args\":{\"method\":\"golden\",\"manifest\":\"/tmp/run1/manifest.json\",\"checksums\":\"/tmp/goldens.sha256\"}}"
+    "D109: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"manifest\": \"/tmp/run1/manifest.json\", \"checksums\": \"/tmp/goldens.sha256\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D109: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"manifest\": \"/tmp/run1/manifest.json\", \"checksums\": \"/tmp/goldens.sha256\"}}"
    ],
    "right": true
   },

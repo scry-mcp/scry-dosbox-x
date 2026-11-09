@@ -15,7 +15,7 @@
  "runs": [
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
    ],
    "right": true
   },
@@ -27,19 +27,7 @@
   },
   {
    "lines": [
-    "D07: {\"tool\":\"log_wait\",\"args\":{\"pattern\":\"LEVEL [0-9]+ START\",\"channel\":\"emulator\",\"seconds\":45}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
    ],
    "right": true
   },
@@ -87,7 +75,19 @@
   },
   {
    "lines": [
-    "D07: {\"tool\":\"log_wait\",\"args\":{\"pattern\":\"LEVEL [0-9]+ START\",\"channel\":\"emulator\",\"seconds\":45}}"
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
    ],
    "right": true
   },

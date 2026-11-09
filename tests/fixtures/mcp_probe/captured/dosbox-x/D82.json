@@ -23,12 +23,6 @@
   },
   {
    "lines": [
-    "D82: {\"tool\":\"disassemble\",\"args\":{\"ref\":\"draw_sprite\",\"length\":48}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D82: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 48}}"
    ],
    "right": true
@@ -83,7 +77,13 @@
   },
   {
    "lines": [
-    "D82: {\"tool\":\"disassemble\",\"args\":{\"ref\":\"draw_sprite\",\"length\":48}}"
+    "D82: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 48}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D82: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 48}}"
    ],
    "right": true
   },

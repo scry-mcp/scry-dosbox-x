@@ -31,42 +31,6 @@
   },
   {
    "lines": [
-    "D130: {\"tool\":\"machine_map\",\"args\":{\"sections\":[\"control\"]}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\", \"gdt\", \"ldt\"]}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
     "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
@@ -91,7 +55,43 @@
   },
   {
    "lines": [
-    "D130: {\"tool\":\"machine_map\",\"args\":{\"sections\":[\"control\"]}}"
+    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },

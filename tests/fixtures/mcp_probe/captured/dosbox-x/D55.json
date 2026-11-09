@@ -35,12 +35,6 @@
   },
   {
    "lines": [
-    "D55: {\"tool\":\"start\",\"args\":{\"conf\":\"/opt/dosfury/fury.conf\",\"cwd\":\"/opt/dosfury\",\"session_seconds\":600,\"flags\":[\"-set\",\"cpu cycles=fixed 2500\"],\"break_on_int3\":true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D55: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 600, \"flags\": [\"-set\", \"cpu cycles=fixed 2500\"], \"break_on_int3\": true}}"
    ],
    "right": true
@@ -95,7 +89,13 @@
   },
   {
    "lines": [
-    "D55: {\"tool\":\"start\",\"args\":{\"conf\":\"/opt/dosfury/fury.conf\",\"cwd\":\"/opt/dosfury\",\"session_seconds\":600,\"flags\":[\"-set\",\"cpu cycles=fixed 2500\"],\"break_on_int3\":true}}"
+    "D55: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 600, \"flags\": [\"-set\", \"cpu cycles=fixed 2500\"], \"break_on_int3\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D55: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 600, \"flags\": [\"-set\", \"cpu cycles=fixed 2500\"], \"break_on_int3\": true}}"
    ],
    "right": true
   },

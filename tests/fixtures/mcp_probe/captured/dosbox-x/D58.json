@@ -27,12 +27,6 @@
   },
   {
    "lines": [
-    "D58: {\"tool\":\"scan\",\"args\":{\"method\":\"filter\",\"operator\":\"!\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D58: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"!\"}}"
    ],
    "right": true
@@ -87,7 +81,13 @@
   },
   {
    "lines": [
-    "D58: {\"tool\":\"scan\",\"args\":{\"method\":\"filter\",\"operator\":\"!\"}}"
+    "D58: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"!\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D58: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"!\"}}"
    ],
    "right": true
   },

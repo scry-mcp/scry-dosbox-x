@@ -42,6 +42,9 @@ RATE_HZ = 25_175_000 / (800 * 449)
 INPUTS = {action: Press("send_keys", {"keys": [key]})
           for action, key in (("COIN", "tab"), ("START", "1"), ("RIGHT", "right"),
                               ("FIRE1", "space"), ("UP", "up"))}
+#: The reference the recording must equal: the same build mixes other samples on Windows, the
+#: same ones run after run.
+SOUND = "music.win32.wav" if sys.platform == "win32" else "music.wav"
 #: Long enough for DOS to boot and EXEC the game, which is then in its attract.
 BOOT_MS = 2000
 #: The reader's copy of the game is where this host keeps things; the replies that name it are
@@ -109,7 +112,7 @@ BINDING = Binding(
                          "name": "where the reader's copy of the game keeps its profile",
                          "held": "where the reader's copy of the game keeps its symbol table"}),
           Step("boot", "run_for", {"milliseconds": BOOT_MS, "seconds": 120}, map_placed)],
-    inputs=INPUTS, rate_hz=RATE_HZ, sound=HERE / "music.wav", map=at, volatile=INPUT_TIMING)
+    inputs=INPUTS, rate_hz=RATE_HZ, sound=HERE / SOUND, map=at, volatile=INPUT_TIMING)
 
 DEMO = Demo(
     name="lineup", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],

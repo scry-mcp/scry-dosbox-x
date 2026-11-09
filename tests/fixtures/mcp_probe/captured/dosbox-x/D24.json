@@ -27,12 +27,6 @@
   },
   {
    "lines": [
-    "D24: {\"tool\":\"state_write\",\"args\":{\"method\":\"save\",\"name\":\"level3\",\"seconds\":90}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
@@ -87,7 +81,13 @@
   },
   {
    "lines": [
-    "D24: {\"tool\":\"state_write\",\"args\":{\"method\":\"save\",\"name\":\"level3\",\"seconds\":90}}"
+    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },

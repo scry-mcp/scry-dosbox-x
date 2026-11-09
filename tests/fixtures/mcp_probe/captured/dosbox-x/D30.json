@@ -27,33 +27,9 @@
   },
   {
    "lines": [
-    "D30: {\"tool\":\"symbols_load\",\"args\":{\"path\":\"/opt/game/game.sym\",\"base_from\":\"DS\",\"types\":\"/opt/game/game.types\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
-  },
-  {
-   "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D30: CANNOT symbols_load has no argument that takes a types file; `types` filters rows by type name, so the typing with /opt/game/game.types cannot be done."
-   ],
-   "right": false
   },
   {
    "lines": [
@@ -87,7 +63,31 @@
   },
   {
    "lines": [
-    "D30: {\"tool\":\"symbols_load\",\"args\":{\"path\":\"/opt/game/game.sym\",\"base_from\":\"DS\",\"types\":\"/opt/game/game.types\"}}"
+    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },

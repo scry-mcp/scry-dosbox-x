@@ -45,7 +45,11 @@ WAIT_S = 20
 #: The guest's line for a pointer at (x, y) in the driver's coordinates.
 POS = r"MOUSE \. pos x={x} y={y} "
 
+#: The line the guest writes while `send_mouse` is still steering the pointer to it.
+STEERING_CELL = "P send_mouse's expect sees a line the guest writes during the call's own steering"
+
 P_CELLS = cells(
+    (STEERING_CELL, "docs/reference/input.md: `expect`; known: mouse.asm logs each position"),
     ("P start loads the stub before the program, which announces our protocol",
      "docs/reference/input.md: `program` needs no conf line"),
     ("P a second copy the conf also runs stays out, and keys still arrive whole",
@@ -306,6 +310,10 @@ def _pointer_cells() -> None:
     r = M.call(server.send_mouse, x=319, y=199)
     judged("P mode 13h: the far corner 319,199 arrives", reply=r,
            holds=_arrived(r, (319, 199), (638, 199)))
+    r = M.call(server.send_mouse, x=50, y=70, expect=POS.format(x=100, y=70), seconds=WAIT_S)
+    verify = r.get("verify") or {}
+    judged(STEERING_CELL, reply=r,
+           holds=ok(r) and verify.get("seen") is True and verify.get("seen_before_waiting") is True)
     _mode("v", 0x12)
     r = M.call(server.send_mouse, x=639, y=479)
     judged("P mode 12h: pixel 639,479 arrives one to one", reply=r,

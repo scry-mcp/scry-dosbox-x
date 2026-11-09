@@ -8,91 +8,91 @@
  "runs": [
   {
    "lines": [
-    "D68: CANNOT palette takes entries only up to 255, so entry 300 is refused."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D68: CANNOT The palette tool accepts entries only from 0 to 255, so entry 300 is refused as out of range."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D68: CANNOT palette takes entries 0 to 255 only, so entry 300 is outside the VGA DAC."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D68: CANNOT palette takes entries 0 to 255 only, and entry 300 is past the DAC's 256 entries."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D68: CANNOT The palette reads VGA DAC entries 0 to 255 only, so entry 300 is out of range."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D68: CANNOT palette refuses entries past 255, and the DAC has only 256 entries."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D68: CANNOT The VGA DAC has only 256 entries (0 to 255), and palette refuses an entry past 255."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D68: CANNOT The VGA DAC has only 256 entries (0 to 255), so entry 300 does not exist."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D68: CANNOT The palette tool covers DAC entries 0 to 255 only, so entry 300 is refused."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D68: CANNOT The VGA DAC has 256 entries (0 to 255), so entry 300 is refused as out of range."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D68: CANNOT The VGA DAC has only 256 entries (0 to 255), so entry 300 does not exist."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D68: CANNOT palette takes entries 0 to 255 only, so entry 300 is refused."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D68: CANNOT The VGA DAC has only entries 0 to 255, and palette refuses an entry past 255."
    ],
    "right": true
   },
   {
    "lines": [
-    "D68: CANNOT Palette entries stop at 255, so entry 300 is refused."
+    "D68: {\"tool\": \"palette\", \"args\": {\"first\": 300, \"count\": 1}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D68: CANNOT The VGA DAC has 256 entries (0 to 255), so entry 300 does not exist."
    ],
    "right": true
   },
   {
    "lines": [
-    "D68: CANNOT palette entries stop at 255, so entry 300 does not exist in the VGA DAC."
+    "D68: CANNOT The VGA DAC has only entries 0 to 255, and the palette tool refuses an entry past 255."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT The VGA DAC has only 256 entries (0 to 255), so entry 300 does not exist."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT The VGA DAC has only 256 entries (0 to 255), so entry 300 does not exist."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT The VGA DAC has only entries 0 to 255, so entry 300 is out of range and refused."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT The VGA DAC has entries 0 to 255 only, so entry 300 does not exist."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT The palette tool takes entries only up to 255, so DAC entry 300 does not exist."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT The VGA DAC holds only 256 entries (0 to 255), so entry 300 does not exist."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT The VGA DAC has entries 0 to 255 only, so entry 300 is refused as bad_argument."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT The VGA DAC has 256 entries (0 to 255); palette refuses entry 300."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT The VGA DAC has 256 entries (0 to 255), so entry 300 does not exist."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT The VGA DAC has 256 entries, 0 to 255, and palette refuses entry 300."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT The VGA DAC has only 256 entries (0 to 255), so entry 300 does not exist."
    ],
    "right": true
   }

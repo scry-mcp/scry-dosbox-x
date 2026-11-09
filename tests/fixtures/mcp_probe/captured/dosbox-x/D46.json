@@ -19,6 +19,78 @@
  "runs": [
   {
    "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"action\": \"double\", \"button\": \"right\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"action\": \"double\", \"button\": \"right\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"action\": \"double\", \"button\": \"right\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"action\": \"double\", \"button\": \"right\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"action\": \"double\", \"button\": \"right\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"action\": \"double\", \"button\": \"right\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
    ],
    "right": true

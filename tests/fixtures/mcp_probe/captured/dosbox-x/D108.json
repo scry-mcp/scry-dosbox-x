@@ -28,13 +28,25 @@
   },
   {
    "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"measure\": \"changed_pixels\", \"crop\": [0, 180, 320, 20]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D108: {\"tool\":\"image_compare\",\"args\":{\"method\":\"region\",\"manifest\":\"/tmp/run1/manifest.json\",\"crop\":[0,180,320,20],\"measure\":\"changed_pixels\"}}"
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"measure\": \"changed_pixels\", \"crop\": [0, 180, 320, 20]}}"
    ],
    "right": true
   },
@@ -83,18 +95,6 @@
   {
    "lines": [
     "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D108: {\"tool\":\"image_compare\",\"args\":{\"method\":\"region\",\"manifest\":\"/tmp/run1/manifest.json\",\"crop\":[0,180,320,20],\"measure\":\"changed_pixels\"}}"
    ],
    "right": true
   },

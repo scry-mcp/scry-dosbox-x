@@ -8,19 +8,91 @@
  "runs": [
   {
    "lines": [
-    "D140: CANNOT audio_record captures one file of WAV, DRO or MIDI per run, and no tool writes a multi-track AVI with one audio track per mixer channel."
+    "D140: CANNOT audio_record writes one file per run (WAV, DRO or MIDI); it cannot record a multi-track AVI with one audio track per mixer channel."
    ],
    "right": true
   },
   {
    "lines": [
-    "D140: CANNOT audio_record writes one file per kind (WAV, DRO or MIDI) and has no multi-track AVI with one audio track per mixer channel."
+    "D140: CANNOT audio_record writes one file per kind (WAV, DRO or MIDI); it has no multi-track AVI output."
    ],
    "right": true
   },
   {
    "lines": [
-    "D140: CANNOT audio_record writes one file per kind (WAV, DRO or MIDI) and has no multi-track AVI with one audio track per mixer channel."
+    "D140: CANNOT audio_record writes one file per kind (WAV, DRO or MIDI) and has no multi-track AVI option."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record writes one file per run (WAV, DRO or MIDI); it has no multi-track AVI output."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record writes one file per run as wav, dro or mid; it cannot produce a multi-track AVI with one audio track per mixer channel."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT The audio recorder writes one file per kind (WAV, DRO or MIDI) with no multi-track AVI option, so per-channel audio tracks cannot be recorded."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record writes one WAV, DRO or MIDI file per run and has no multi-track AVI output."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record captures one kind per run (WAV, DRO or MIDI), with no multi-track AVI output."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record writes one WAV, DRO or MIDI file per run; it has no multi-track AVI output."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record writes WAV, DRO or MIDI only; no tool records a multi-track AVI with one audio track per mixer channel."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record writes one file per run as WAV, DRO or MIDI; it cannot record a multi-track AVI with one audio track per mixer channel."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT No tool writes a multi-track AVI with one audio track per mixer channel; audio_record makes a WAV, DRO or MIDI file."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record writes one file per run (WAV, DRO or MIDI); it cannot record a multi-track AVI with one audio track per mixer channel."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record writes one WAV, DRO or MIDI file per run, and no tool records a multi-track AVI."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record writes a single WAV, DRO or MIDI file per run; no tool here produces a multi-track AVI with one audio track per mixer channel."
    ],
    "right": true
   }

@@ -23,12 +23,6 @@
   },
   {
    "lines": [
-    "D99: {\"tool\":\"breakpoint_interrupt\",\"args\":{\"number\":47,\"detail\":true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
    ],
    "right": true
@@ -83,7 +77,13 @@
   },
   {
    "lines": [
-    "D99: {\"tool\":\"breakpoint_interrupt\",\"args\":{\"number\":47,\"detail\":true}}"
+    "D99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
    ],
    "right": true
   },

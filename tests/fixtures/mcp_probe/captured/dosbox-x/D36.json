@@ -30,7 +30,7 @@
   },
   {
    "lines": [
-    "D36: {\"tool\":\"declaration_list\",\"args\":{\"kind\":\"breakpoint\"}}"
+    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
@@ -90,7 +90,7 @@
   },
   {
    "lines": [
-    "D36: {\"tool\":\"declaration_list\",\"args\":{}}"
+    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },

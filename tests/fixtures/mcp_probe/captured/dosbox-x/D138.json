@@ -27,7 +27,79 @@
   },
   {
    "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\"}}"
    ],
    "right": true
   },

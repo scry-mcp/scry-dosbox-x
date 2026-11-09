@@ -25,12 +25,6 @@
   },
   {
    "lines": [
-    "D40: {\"tool\":\"declaration_list\",\"args\":{\"kind\":\"watch\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
@@ -85,7 +79,13 @@
   },
   {
    "lines": [
-    "D40: {\"tool\":\"declaration_list\",\"args\":{\"kind\":\"watch\"}}"
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },

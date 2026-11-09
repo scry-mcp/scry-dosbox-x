@@ -14,31 +14,13 @@
   },
   {
    "lines": [
-    "D65: CANNOT The interrupt-vector tools report only the current handlers and keep no record of their state at session start, so changes since then cannot be shown."
+    "D65: CANNOT No tool compares interrupt vectors against their values at session start; interrupt_vectors reports only the current table."
    ],
    "right": true
   },
   {
    "lines": [
-    "D65: CANNOT interrupt_vectors shows only the current handlers, and no tool keeps or compares a snapshot from session start."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D65: CANNOT No tool compares the interrupt vectors against their state at session start; interrupt_vectors reports only the current table."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D65: CANNOT No tool compares interrupt vectors against their state at session start."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D65: CANNOT interrupt_vectors reads only the current table, and no tool keeps or compares a snapshot from session start."
+    "D65: CANNOT interrupt_vectors shows only the current vectors, and no tool keeps or compares a snapshot from session start."
    ],
    "right": true
   },
@@ -50,13 +32,43 @@
   },
   {
    "lines": [
-    "D65: CANNOT interrupt_vectors shows the current table only, with no record of when the session started."
+    "D65: CANNOT No tool of this server keeps or diffs interrupt vectors against the moment the session started; interrupt_vectors shows only the current table."
    ],
    "right": true
   },
   {
    "lines": [
-    "D65: CANNOT interrupt_vectors shows the current handlers only, with no comparison against the state at session start."
+    "D65: CANNOT The server reports current interrupt vectors only; it keeps no record of their state at session start to compare against."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D65: CANNOT The vector tools report only the current table, with no comparison against the table at session start."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D65: CANNOT interrupt_vectors reports only the current handlers, with no record of what they held when the session started."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D65: CANNOT No tool keeps a baseline of the interrupt vectors from session start to compare against."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D65: CANNOT interrupt_vectors shows only the current table, and no tool keeps a snapshot from session start to diff against."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D65: CANNOT No tool compares the interrupt vectors with their state at session start; interrupt_vectors reads only the current table."
    ],
    "right": true
   },
@@ -68,31 +80,19 @@
   },
   {
    "lines": [
-    "D65: CANNOT No tool reports interrupt-vector changes since session start; interrupt_vectors shows only the current table."
+    "D65: CANNOT interrupt_vectors reports only the current vectors, with no record of what they held when the session started."
    ],
    "right": true
   },
   {
    "lines": [
-    "D65: CANNOT interrupt_vectors reports only the current vector table, and no tool keeps or compares a snapshot taken at session start."
+    "D65: CANNOT No tool compares the interrupt vectors with their state at session start; interrupt_vectors shows only the current table."
    ],
    "right": true
   },
   {
    "lines": [
-    "D65: CANNOT interrupt_vectors reads the current table only, with no record of the table at session start."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D65: CANNOT No tool compares interrupt vectors against their state at session start."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D65: CANNOT interrupt_vectors shows only the current handlers, with no record or comparison against the state at session start."
+    "D65: CANNOT No tool here keeps or compares a snapshot of the interrupt vectors from session start."
    ],
    "right": true
   }

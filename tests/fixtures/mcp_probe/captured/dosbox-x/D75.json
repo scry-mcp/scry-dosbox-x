@@ -8,91 +8,91 @@
  "runs": [
   {
    "lines": [
-    "D75: CANNOT screen_wait matches text on the text screen only, not pixels in a graphics picture."
+    "D75: CANNOT screen_wait matches only literal text in text-mode rows, so it cannot find a word in a 320x200 graphics picture."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches text on the text screen only, and no tool searches the 320x200 graphics picture for pixels."
+    "D75: CANNOT screen_wait matches text cells or a mapped screen, not a word anywhere in a graphics picture's pixels."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches text on the text screen only and cannot search the 320x200 graphics picture as pixels."
+    "D75: CANNOT screen_wait reads text only from a text-mode screen, and no tool recognises words in a graphics picture."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches only text on the text screen, not pixels in the 320x200 graphics picture."
+    "D75: CANNOT screen_wait's text predicate matches only text-mode rows, not pixels in a graphics picture."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches only text on the text screen, not words in a 320x200 graphics picture."
+    "D75: CANNOT screen_wait's text predicate matches only text-mode rows, so it cannot look for a word in a graphics picture."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches only literal text on the text screen, and no tool searches a graphics picture for pixels."
+    "D75: CANNOT screen_wait's text predicate matches only text-mode rows, and a graphics picture is not read as text, so a word cannot be searched for in mode 13h pixels."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches only text on the text screen, not pixels in the 320x200 graphics picture."
+    "D75: CANNOT screen_wait's text predicate matches only text-mode rows, and it cannot search a graphics picture as pixels."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches only text on the text screen, not words in a graphics picture."
+    "D75: CANNOT screen_wait's text predicate matches only text cells, and no screen map names the READY picture."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches only text on the text screen, not words in a graphics picture."
+    "D75: CANNOT screen_wait matches text or a mapped screen or palette, not a pixel pattern in the graphics picture."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches only literal text on the text screen, and no tool searches graphics pixels for a word."
+    "D75: CANNOT screen_wait matches text only on text screens, not a word in graphics pixels."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches only literal text on the text screen, not pixels in the graphics picture."
+    "D75: CANNOT screen_wait's text predicate matches character rows of a text screen, so it cannot find a word in a graphics picture as pixels."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches literal text only, and no tool searches the graphics picture for a word in pixels."
+    "D75: CANNOT screen_wait matches text only in a text mode; no tool finds a word drawn as pixels in a graphics picture."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches text on the text screen only, and it cannot find words in a graphics picture."
+    "D75: CANNOT screen_wait's text predicate matches characters in text mode only, and no tool matches a word within a graphics picture's pixels."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches only text on the text screen, not words in a 320x200 graphics picture."
+    "D75: CANNOT screen_wait's text predicate matches only text-mode rows, and a graphics picture is matched only through a mapped screen, not by words."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches only text on the text screen and cannot find a word in a graphics picture."
+    "D75: CANNOT screen_wait's `text` predicate matches only characters on a text screen, not pixels in a graphics picture."
    ],
    "right": true
   }

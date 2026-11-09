@@ -35,6 +35,78 @@
     "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D157: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"diff\", \"a\": \"/tmp/rec/new.wav\", \"b\": \"/tmp/rec/ref.wav\", \"window\": [0, 3], \"align\": false}}"
+   ],
+   "right": true
   }
  ]
 }

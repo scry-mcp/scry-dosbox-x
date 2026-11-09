@@ -22,7 +22,79 @@
   },
   {
    "lines": [
-    "D181: {\"tool\": \"promote\", \"args\": {\"root\": \"/tmp/probe-repo\", \"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}}}"
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"root\": \"/tmp/probe-repo\", \"names\": {\"maps/probe\": \"bench-map\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D181: {\"tool\": \"promote\", \"args\": {\"entries\": [\"maps/probe\"], \"names\": {\"maps/probe\": \"bench-map\"}, \"root\": \"/tmp/probe-repo\"}}"
    ],
    "right": true
   },

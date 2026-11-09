@@ -22,12 +22,6 @@
   },
   {
    "lines": [
-    "D113: {\"tool\":\"perform_export\",\"args\":{\"dest\":\"~/bench/session.json\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D113: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"~/bench/session.json\"}}"
    ],
    "right": true
@@ -82,7 +76,13 @@
   },
   {
    "lines": [
-    "D113: {\"tool\":\"perform_export\",\"args\":{\"dest\":\"~/bench/session.json\"}}"
+    "D113: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"~/bench/session.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D113: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"~/bench/session.json\"}}"
    ],
    "right": true
   },

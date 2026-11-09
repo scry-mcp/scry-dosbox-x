@@ -23,8 +23,11 @@ RUN_FOR_ONLY = frozenset({"polls", "emulated_before_s", "emulated_after_s", "fra
 
 #: What `stop` may go on to, how many short runs that may take, and how long each runs.
 STOP_UNTIL = ("", "protected")
-PROTECTED_RUNS_MAX = 64
-PROTECTED_RUN_S = 0.02
+PROTECTED_RUNS_MAX = 256
+PROTECTED_RUN_S = 0.007
+#: Each run is this many times `PROTECTED_RUN_S` longer than the last, in a cycle: equal runs land
+#: at one point of a program's own cycle.
+PROTECTED_RUN_STEPS = 11
 
 
 def to_protected(session: ds.Session) -> tuple[int, bool]:
@@ -37,7 +40,7 @@ def to_protected(session: ds.Session) -> tuple[int, bool]:
         if taken == PROTECTED_RUNS_MAX:
             return taken, False
         session.release("RUN")
-        time.sleep(PROTECTED_RUN_S)
+        time.sleep(PROTECTED_RUN_S * (1 + taken % PROTECTED_RUN_STEPS))
         taken += 1
         if session.at_debugger():
             return taken, False

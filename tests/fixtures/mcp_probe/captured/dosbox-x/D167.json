@@ -95,7 +95,7 @@
   },
   {
    "lines": [
-    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"anchor\": \"DrawTitle\", \"match\": [[0, 0, 40, 1]]}}"
+    "D167: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"anchor\": \"DrawTitle\"}}"
    ],
    "right": true
   },

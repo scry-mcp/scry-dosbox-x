@@ -19,9 +19,21 @@
  "runs": [
   {
    "lines": [
-    "D165: {\"tool\": \"send_mouse\", \"args\": {\"x\": 100, \"y\": 50, \"action\": \"drag\", \"button\": \"left\", \"to_x\": 220, \"to_y\": 90}}"
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"drag\", \"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90}}"
    ],
-   "right": true
+   "right": false
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"x\": 100, \"y\": 50, \"action\": \"drag\", \"to_x\": 220, \"to_y\": 90}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"x\": 100, \"y\": 50, \"action\": \"drag\", \"to_x\": 220, \"to_y\": 90}}"
+   ],
+   "right": false
   },
   {
    "lines": [
@@ -31,9 +43,69 @@
   },
   {
    "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"drag\", \"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
     "D165: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"drag\", \"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90, \"button\": \"left\"}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"drag\", \"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"drag\", \"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90, \"action\": \"drag\", \"button\": \"left\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"x\": 100, \"y\": 50, \"action\": \"drag\", \"to_x\": 220, \"to_y\": 90}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"drag\", \"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"drag\", \"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"drag\", \"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90, \"button\": \"left\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"drag\", \"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90, \"action\": \"drag\"}}"
+   ],
+   "right": false
   }
  ]
 }

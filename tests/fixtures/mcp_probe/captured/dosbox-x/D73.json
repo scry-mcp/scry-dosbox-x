@@ -27,12 +27,6 @@
   },
   {
    "lines": [
-    "D73: {\"tool\":\"screen_signature\",\"args\":{\"crop\":[0,0,160,100]}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
@@ -87,7 +81,13 @@
   },
   {
    "lines": [
-    "D73: {\"tool\":\"screen_signature\",\"args\":{\"crop\":[0,0,160,100]}}"
+    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },

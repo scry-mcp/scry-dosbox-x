@@ -22,12 +22,6 @@
   },
   {
    "lines": [
-    "D131: {\"tool\":\"close\",\"args\":{\"detail\":true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
@@ -82,7 +76,13 @@
   },
   {
    "lines": [
-    "D131: {\"tool\":\"close\",\"args\":{\"detail\":true}}"
+    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },

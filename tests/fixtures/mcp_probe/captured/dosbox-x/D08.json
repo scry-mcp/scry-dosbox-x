@@ -22,12 +22,6 @@
   },
   {
    "lines": [
-    "D08: {\"tool\":\"registers\",\"args\":{\"from_last_stop\":true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D08: {\"tool\": \"registers\", \"args\": {\"from_last_stop\": true}}"
    ],
    "right": true
@@ -82,7 +76,13 @@
   },
   {
    "lines": [
-    "D08: {\"tool\":\"registers\",\"args\":{\"from_last_stop\":true}}"
+    "D08: {\"tool\": \"registers\", \"args\": {\"from_last_stop\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D08: {\"tool\": \"registers\", \"args\": {\"from_last_stop\": true}}"
    ],
    "right": true
   },

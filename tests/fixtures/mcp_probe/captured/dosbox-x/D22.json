@@ -14,7 +14,7 @@
  "runs": [
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
@@ -26,19 +26,7 @@
   },
   {
    "lines": [
-    "D22: {\"tool\":\"step\",\"args\":{\"count\":4}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
@@ -62,7 +50,7 @@
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
@@ -80,15 +68,27 @@
   },
   {
    "lines": [
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\":\"drive\",\"args\":{\"act\":[{\"op\":\"step\",\"count\":4}]}}"
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [

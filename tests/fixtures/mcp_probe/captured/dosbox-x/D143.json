@@ -23,31 +23,19 @@
  "runs": [
   {
    "lines": [
-    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\", \"bits\": 8}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 986}}"
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\", \"bits\": 8}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 986}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\", \"bits\": 8}}"
    ],
    "right": true
   },
@@ -65,13 +53,13 @@
   },
   {
    "lines": [
-    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\", \"bits\": 8}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\", \"bits\": 8}}"
    ],
    "right": true
   },
@@ -107,7 +95,19 @@
   },
   {
    "lines": [
-    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 986}}"
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\", \"bits\": 8}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 986, \"bits\": 8}}"
    ],
    "right": true
   }

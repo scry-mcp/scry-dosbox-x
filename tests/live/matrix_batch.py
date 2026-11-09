@@ -53,6 +53,8 @@ TAP_CELL = "AA TAP refuses an offset past 32 bits and installs nothing"
 DYNAMIC_CELL = "AA the dynrec core runs 3000 STI, 3000 CLI and 1500 STI;NOP and exits 0"
 TAPDEL_CELL = "AA TAP then TAPDEL under core=auto leave the emulator alive and silent"
 TRACE_CELL = "AA a DOSTRACE restarted with a call open gives the new file no row for that call"
+#: How many recordings the level may take when the host drops blocks of one.
+CDVOL_TRIES = 3
 CDVOL_CELL = "AA full MSCDEX channel volume plays the track at its own level, not amplified"
 EDGE_CELL = "AA a BPIF row stops the machine once per false-to-true change, not while it holds"
 AA_CELLS = cells(
@@ -319,14 +321,21 @@ def _cd_peak(where: Path, volume: int) -> tuple[int, str]:
                     "core=normal\ncputype=pentium\ncycles=fixed 10000\n[autoexec]\n"
                     f'mount c "{where}"\nimgmount d "{where / "tone.cue"}" -t iso\nc:\nCDVOL.COM\n',
                     encoding="ascii")
-    boot(conf=conf, cwd=where, captures_dir=M.fresh("-cap"))
-    M.call(server.resume, seconds=CDVOL_RUN_S)
-    M.call(server.stop)
-    wav = M.call(server.audio_record, frames=CDVOL_FRAMES, seconds=20,
-                     dest=M.fresh(".wav"))
+    wav: dict[str, Any] = {}
+    tries = 0
+    # A busy host's mixer can drop blocks; the server refuses that recording, and the level is
+    # still judged only on one it accepted.
+    while tries < CDVOL_TRIES:
+        tries += 1
+        boot(conf=conf, cwd=where, captures_dir=M.fresh("-cap"))
+        M.call(server.resume, seconds=CDVOL_RUN_S)
+        M.call(server.stop)
+        wav = M.call(server.audio_record, frames=CDVOL_FRAMES, seconds=20, dest=M.fresh(".wav"))
+        close_whatever()
+        if wav.get("code") != "readback_refused":
+            break
     peak = _wav_peak(Path(str(wav.get("path")))) if ok(wav) and wav.get("path") else 0
-    close_whatever()
-    return peak, said(wav, 70)
+    return peak, f"{said(wav, 70)} (try {tries} of {CDVOL_TRIES})"
 
 
 def _cd_volume() -> None:

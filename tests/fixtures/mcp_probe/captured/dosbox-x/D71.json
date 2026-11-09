@@ -20,7 +20,7 @@
   },
   {
    "lines": [
-    "D71: {\"tool\":\"screen_view\",\"args\":{}}"
+    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
@@ -29,6 +29,78 @@
     "D71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"snapshot\", \"args\": {}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/planar.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: {\"tool\": \"snapshot\", \"args\": {}}"
+   ],
+   "right": false
   }
  ]
 }

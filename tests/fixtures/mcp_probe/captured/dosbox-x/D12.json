@@ -33,12 +33,6 @@
   },
   {
    "lines": [
-    "D12: {\"tool\":\"scan\",\"args\":{\"method\":\"start\",\"ref\":\"2000:0000\",\"length\":8192,\"cell_bytes\":2}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
@@ -93,7 +87,13 @@
   },
   {
    "lines": [
-    "D12: {\"tool\":\"scan\",\"args\":{\"method\":\"start\",\"ref\":\"2000:0000\",\"length\":8192,\"cell_bytes\":2}}"
+    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },

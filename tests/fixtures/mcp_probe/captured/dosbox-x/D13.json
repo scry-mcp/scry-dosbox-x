@@ -17,49 +17,7 @@
  "runs": [
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D13: {\"tool\":\"scan\",\"args\":{\"method\":\"filter\",\"value\":305}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
    ],
    "right": true
   },
@@ -77,7 +35,7 @@
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
+    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
    ],
    "right": true
   },
@@ -89,7 +47,49 @@
   },
   {
    "lines": [
-    "D13: {\"tool\":\"scan\",\"args\":{\"method\":\"filter\",\"value\":305}}"
+    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
    ],
    "right": true
   },

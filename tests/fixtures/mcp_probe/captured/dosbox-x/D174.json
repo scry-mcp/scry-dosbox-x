@@ -23,7 +23,79 @@
   },
   {
    "lines": [
-    "D174: {\"tool\":\"send_keys\",\"args\":{\"keys\":[\"right\"],\"action\":\"down\"}}"
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D174: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"right\"], \"action\": \"down\"}}"
    ],
    "right": true
   },

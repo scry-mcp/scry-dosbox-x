@@ -232,6 +232,15 @@ def test_stop_until_protected_that_never_arrives_says_so(
     assert got["runs_to_protected"] == 64 and "did not reach" in got["note"], got
 
 
+def test_the_runs_differ_in_length_so_they_do_not_land_at_one_point_of_a_cycle(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    slept: list[float] = []
+    monkeypatch.setattr(time, "sleep", slept.append)
+    monkeypatch.setattr(advance, "PROTECTED_RUNS_MAX", 8)
+    advance.to_protected(cast(ds.Session, _Walk("Real")))
+    assert len(slept) == 8 and len(set(slept)) > 3, slept
+
+
 def test_a_run_a_declared_stop_ended_is_that_stop_and_ends_the_walk() -> None:
     walk = _Walk("Real", "Real", stops_itself=True)
     assert advance.to_protected(cast(ds.Session, walk)) == (1, False)

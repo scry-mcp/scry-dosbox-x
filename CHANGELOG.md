@@ -12,6 +12,10 @@ What a client of the server notices.
   slices until one lands in protected mode, also from a stop already held; `runs_to_protected`
   says how many it took and `cpu_mode` where it ended. A real-mode refusal and a stop in the
   ROM name it.
+- `promote`: a map or a script learned from a loaded recipe looks for the store from that
+  recipe.
+- `start` through an app bundle runs in the right working directory: a relative mount in the
+  conf named the wrong one.
 
 It needs the scry-core that serves `scry_core.window`, `recording.read_document` and
 `recording.steps_to_replay`, not an older one: the tag pinned in `pyproject.toml` is the

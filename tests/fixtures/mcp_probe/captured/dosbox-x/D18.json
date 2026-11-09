@@ -35,12 +35,6 @@
   },
   {
    "lines": [
-    "D18: {\"tool\":\"write\",\"args\":{\"ref\":\"1A2B:0100\",\"data_hex\":\"9090\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
@@ -95,7 +89,13 @@
   },
   {
    "lines": [
-    "D18: {\"tool\":\"write\",\"args\":{\"ref\":\"1A2B:0100\",\"data_hex\":\"9090\"}}"
+    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },

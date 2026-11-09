@@ -43,33 +43,15 @@
   },
   {
    "lines": [
-    "D114: {\"tool\":\"perform\",\"args\":{\"steps\":[{\"op\":\"read_memory\",\"ref\":\"0100:0000\",\"length\":2,\"recorded\":{\"hex\":\"4f6b\"}}]}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": \"4f6b\"}]}}"
    ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
-   ],
-   "right": true
+   "right": false
   },
   {
    "lines": [
@@ -103,7 +85,25 @@
   },
   {
    "lines": [
-    "D114: {\"tool\":\"perform\",\"args\":{\"steps\":[{\"op\":\"read_memory\",\"ref\":\"0100:0000\",\"length\":2,\"recorded\":{\"hex\":\"4f6b\"}}]}}"
+    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },

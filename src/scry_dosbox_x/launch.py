@@ -80,6 +80,8 @@ class Launch:
     background: bool = True
     # The `-savedir` slot directory; `start` names it (the session's scratch if none is given).
     state_dir: Path | None = None
+    # The conf that gives an app bundle its working directory (`write_working_conf`).
+    working_conf: Path | None = None
     control_port: int | None = None
     # Whether the build's debugger runs with no screen (`binaries.debugger_headless`), and which
     # optional debugger commands it has (`binaries.debugger_commands`), read once at `start`.
@@ -132,11 +134,8 @@ def build_argv(launch: Launch) -> list[str]:
         argv += ["-set", "dosbox debugger headless=true"]
     # With `saveremark` on, `Save state` opens a dialog that hangs the window.
     argv += ["-set", "dosbox saveremark=false"]
-    if launch.bundle:
-        # `open` gives the app `/` as its working directory, and the conf's mounts are relative
-        # to `cwd`: DOSBox-X is told to change into it before its `[autoexec]`.
-        argv += ["-set", "dosbox working directory option=force",
-                 "-set", f"dosbox working directory default={launch.cwd}"]
+    if launch.working_conf is not None:
+        argv += ["-conf", str(launch.working_conf)]
     if launch.state_dir is not None:
         argv += ["-savedir", str(launch.state_dir)]
     if launch.window is None:
@@ -489,6 +488,8 @@ STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
               "saved_at": "Time_Stamp"}
 
 
+#: Where an app bundle's working directory is declared, beside its slots.
+WORKING_CONF = ".working-directory.conf"
 #: The folder states go in, under the session's scratch when `start` is given no `state_dir`.
 DEFAULT_STATE_SUBDIR = "save"
 
@@ -496,6 +497,16 @@ DEFAULT_STATE_SUBDIR = "save"
 def default_state_dir(cwd: Path) -> Path:
     """Where states go for a Launch with no `state_dir` (one `start` did not make)."""
     return cwd / DEFAULT_STATE_SUBDIR
+
+
+def write_working_conf(launch: Launch) -> Path:
+    """The conf that puts an app bundle in `cwd`. `open` gives the app `/`, and DOSBox-X reads
+    this setting from its conf files only, before any `-set` applies."""
+    conf = state_dir_of(launch) / WORKING_CONF
+    conf.parent.mkdir(parents=True, exist_ok=True)
+    conf.write_text("[dosbox]\nworking directory option=force\n"
+                    f"working directory default={launch.cwd}\n", encoding="utf-8")
+    return conf
 
 
 def state_dir_of(launch: Launch) -> Path:

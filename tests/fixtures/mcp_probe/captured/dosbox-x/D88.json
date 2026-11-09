@@ -26,12 +26,6 @@
   },
   {
    "lines": [
-    "D88: {\"tool\":\"comment_write\",\"args\":{\"method\":\"save\",\"dest\":\"/tmp/game.comments.tsv\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
    ],
    "right": true
@@ -86,7 +80,13 @@
   },
   {
    "lines": [
-    "D88: {\"tool\":\"comment_write\",\"args\":{\"method\":\"save\",\"dest\":\"/tmp/game.comments.tsv\"}}"
+    "D88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
    ],
    "right": true
   },

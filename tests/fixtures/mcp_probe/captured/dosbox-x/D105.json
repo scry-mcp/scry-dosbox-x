@@ -33,12 +33,6 @@
   },
   {
    "lines": [
-    "D105: {\"tool\":\"image_compare\",\"args\":{\"method\":\"image\",\"a\":\"/tmp/a/before.png\",\"b\":\"/tmp/b/after.png\",\"crop\":[0,0,200,150]}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D105: {\"tool\": \"image_compare\", \"args\": {\"method\": \"image\", \"a\": \"/tmp/a/before.png\", \"b\": \"/tmp/b/after.png\", \"crop\": [0, 0, 200, 150]}}"
    ],
    "right": true
@@ -93,7 +87,13 @@
   },
   {
    "lines": [
-    "D105: {\"tool\":\"image_compare\",\"args\":{\"method\":\"image\",\"a\":\"/tmp/a/before.png\",\"b\":\"/tmp/b/after.png\",\"crop\":[0,0,200,150]}}"
+    "D105: {\"tool\": \"image_compare\", \"args\": {\"method\": \"image\", \"a\": \"/tmp/a/before.png\", \"b\": \"/tmp/b/after.png\", \"crop\": [0, 0, 200, 150]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D105: {\"tool\": \"image_compare\", \"args\": {\"method\": \"image\", \"a\": \"/tmp/a/before.png\", \"b\": \"/tmp/b/after.png\", \"crop\": [0, 0, 200, 150]}}"
    ],
    "right": true
   },

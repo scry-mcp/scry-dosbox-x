@@ -23,12 +23,6 @@
   },
   {
    "lines": [
-    "D66: {\"tool\":\"palette\",\"args\":{\"first\":4,\"count\":3}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D66: {\"tool\": \"palette\", \"args\": {\"first\": 4, \"count\": 3}}"
    ],
    "right": true
@@ -83,7 +77,13 @@
   },
   {
    "lines": [
-    "D66: {\"tool\":\"palette\",\"args\":{\"first\":4,\"count\":3}}"
+    "D66: {\"tool\": \"palette\", \"args\": {\"first\": 4, \"count\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D66: {\"tool\": \"palette\", \"args\": {\"first\": 4, \"count\": 3}}"
    ],
    "right": true
   },

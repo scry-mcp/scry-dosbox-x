@@ -20,7 +20,13 @@
  "runs": [
   {
    "lines": [
-    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"button\": \"left\"}}"
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\", \"button\": \"left\"}}"
    ],
    "right": true
   },
@@ -32,9 +38,75 @@
   },
   {
    "lines": [
-    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"button\": \"left\"}}"
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\", \"button\": \"left\"}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\", \"button\": \"left\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\", \"button\": \"left\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\", \"button\": \"left\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\", \"target\": \"serve\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"action\": \"click\"}}"
+   ],
+   "right": false
   }
  ]
 }

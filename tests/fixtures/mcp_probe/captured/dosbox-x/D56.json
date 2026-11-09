@@ -44,19 +44,7 @@
  "runs": [
   {
    "lines": [
-    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D56: {\"tool\":\"perform\",\"args\":{\"steps\":[{\"op\":\"run_to\",\"ref\":\"_game_tick\",\"control\":\"_vbl_handler\",\"seconds\":40},{\"op\":\"read_memory\",\"ref\":\"_score\",\"length\":16}],\"settle_seconds\":40,\"summaries\":true}}"
+    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\"}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
    ],
    "right": true
   },
@@ -74,13 +62,7 @@
   },
   {
    "lines": [
-    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16, \"summaries\": true}], \"settle_seconds\": 40, \"summaries\": true}}"
+    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40, \"summaries\": true}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
    ],
    "right": false
   },
@@ -92,15 +74,21 @@
   },
   {
    "lines": [
-    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"summaries\": true, \"settle_seconds\": 40}}"
+    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16, \"seconds\": 40}], \"settle_seconds\": 40, \"summaries\": true}}"
+    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
    ],
-   "right": false
+   "right": true
+  },
+  {
+   "lines": [
+    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\"}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
+   ],
+   "right": true
   },
   {
    "lines": [
@@ -116,7 +104,13 @@
   },
   {
    "lines": [
-    "D56: {\"tool\":\"perform\",\"args\":{\"steps\":[{\"op\":\"run_to\",\"ref\":\"_game_tick\",\"control\":\"_vbl_handler\",\"seconds\":40},{\"op\":\"read_memory\",\"ref\":\"_score\",\"length\":16}],\"settle_seconds\":40,\"summaries\":true}}"
+    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\"}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
    ],
    "right": true
   },
@@ -129,6 +123,12 @@
   {
    "lines": [
     "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\"}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"settle_seconds\": 40, \"summaries\": true}}"
    ],
    "right": true
   }

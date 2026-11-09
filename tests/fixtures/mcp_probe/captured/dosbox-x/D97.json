@@ -22,12 +22,6 @@
   },
   {
    "lines": [
-    "D97: {\"tool\":\"machine_map\",\"args\":{\"dest\":\"/tmp/mcp-probe-map.json\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D97: {\"tool\": \"machine_map\", \"args\": {\"dest\": \"/tmp/mcp-probe-map.json\"}}"
    ],
    "right": true
@@ -82,7 +76,13 @@
   },
   {
    "lines": [
-    "D97: {\"tool\":\"machine_map\",\"args\":{\"dest\":\"/tmp/mcp-probe-map.json\"}}"
+    "D97: {\"tool\": \"machine_map\", \"args\": {\"dest\": \"/tmp/mcp-probe-map.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D97: {\"tool\": \"machine_map\", \"args\": {\"dest\": \"/tmp/mcp-probe-map.json\"}}"
    ],
    "right": true
   },

@@ -22,9 +22,21 @@
   },
   {
    "lines": [
-    "D70: {\"tool\":\"screen_view\",\"args\":{\"dest\":\"/tmp/frame.png\"}}"
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": false
   },
   {
    "lines": [
@@ -71,18 +83,6 @@
   {
    "lines": [
     "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D70: {\"tool\":\"screen_view\",\"args\":{\"dest\":\"/tmp/frame.png\"}}"
    ],
    "right": true
   },

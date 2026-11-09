@@ -30,7 +30,25 @@
  "runs": [
   {
    "lines": [
-    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5}}"
+    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5, \"bits\": 8}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5, \"bits\": 8}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5, \"bits\": 8}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5, \"bits\": 8}}"
    ],
    "right": true
   },
@@ -42,43 +60,13 @@
   },
   {
    "lines": [
-    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5}}"
+    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5, \"bits\": 8}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": 968, \"value\": 5}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": 968, \"value\": 5}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5}}"
+    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5, \"bits\": 8}}"
    ],
    "right": true
   },
@@ -108,13 +96,25 @@
   },
   {
    "lines": [
+    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5, \"bits\": 8}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5, \"bits\": 8}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": \"0x3C8\", \"value\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": 968, \"value\": 5}}"
+    "D144: {\"tool\": \"port\", \"args\": {\"method\": \"write\", \"port\": 968, \"value\": 5, \"bits\": 8}}"
    ],
    "right": true
   }

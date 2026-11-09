@@ -28,12 +28,6 @@
   },
   {
    "lines": [
-    "D17: {\"tool\":\"set_register\",\"args\":{\"name\":\"bx\",\"value\":1234}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
@@ -88,7 +82,13 @@
   },
   {
    "lines": [
-    "D17: {\"tool\":\"set_register\",\"args\":{\"name\":\"bx\",\"value\":1234}}"
+    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },

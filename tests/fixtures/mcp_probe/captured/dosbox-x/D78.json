@@ -27,12 +27,6 @@
   },
   {
    "lines": [
-    "D78: {\"tool\":\"trace\",\"args\":{\"instructions\":800,\"shape\":\"long\",\"dest\":\"/tmp/full.trace\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
     "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
@@ -87,7 +81,13 @@
   },
   {
    "lines": [
-    "D78: {\"tool\":\"trace\",\"args\":{\"instructions\":800,\"shape\":\"long\",\"dest\":\"/tmp/full.trace\"}}"
+    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },

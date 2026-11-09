@@ -28,7 +28,79 @@
   },
   {
    "lines": [
-    "D132: {\"tool\":\"regpoint_add\",\"args\":{\"condition\":\"AH==4C\"}}"
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },

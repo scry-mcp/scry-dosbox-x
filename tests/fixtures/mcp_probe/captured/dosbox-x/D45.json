@@ -13,21 +13,93 @@
  "runs": [
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\"}}"
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
    ],
-   "right": true
+   "right": false
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\"}}"
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\", \"button\": \"left\"}}"
    ],
-   "right": true
+   "right": false
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\"}}"
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"click\"}}"
    ],
-   "right": true
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\", \"button\": \"left\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\", \"button\": \"left\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+   ],
+   "right": false
   }
  ]
 }
