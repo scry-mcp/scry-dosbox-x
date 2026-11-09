@@ -475,7 +475,7 @@ def _dynamic_core() -> None:
 
 
 @M.section("AA", "the debugger commands added to DOSBox-X and the dynamic core guard, on the "
-           "package's guests", AA_CELLS)
+           "package's guests", AA_CELLS, alone=True)
 def section_aa() -> None:
     _scrub()
     _dynamic_core()
