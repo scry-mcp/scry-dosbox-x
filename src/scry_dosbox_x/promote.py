@@ -21,7 +21,6 @@ PROMOTE_PATHS = lifecycle.START_PATHS
 #: What a recipe cannot do without: `start`'s own pre-gate demands them.
 NEEDS = ("conf", "cwd", "session_seconds")
 after_export = core.after_export
-after_close = core.after_close
 kept_line = core.kept_line
 
 
@@ -76,9 +75,14 @@ def starting() -> list[str]:
     return core.starting(STATE.drafts, recipe_paths)
 
 
+def after_close(reply: dict[str, Any], state: str) -> dict[str, Any]:
+    """`close`'s reply, naming what it left waiting."""
+    return core.after_close(STATE.drafts, reply, starting=starting, state=state)
+
+
 def recipe_paths(recipe: Mapping[str, Any]) -> list[str]:
-    """What in a recipe says which repository it belongs to: the guest's directory."""
-    return [str(recipe.get("cwd") or "")]
+    """What in a recipe says which repository it belongs to: the guest's directory, its conf."""
+    return [str(recipe.get("cwd") or ""), str(recipe.get("conf") or "")]
 
 
 def scratch() -> str:

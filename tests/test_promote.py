@@ -171,6 +171,24 @@ def test_close_reports_what_was_left_unkept() -> None:
     assert reply["closed"] is False
 
 
+def test_a_recipe_s_conf_also_says_where_the_store_is() -> None:
+    STATE.drafts.keep("perform", "x", {"start": {"cwd": "/game/guest", "conf": "/game/run.conf"},
+                                       "steps": [{"op": "a", "recorded": {"v": 1}}]})
+    assert mpromote.starting()[:2] == ["/game/guest", "/game/run.conf"]
+
+
+def test_close_leaves_out_what_the_store_already_holds(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    recipe = {**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)}
+    mpromote.note_start(recipe)
+    mpromote.keep_start(recipe, defaults=server._START_DEFAULTS)
+    server.promote(entries=["start/probe"], root=str(tmp_path))
+    mpromote.keep_start(recipe, defaults=server._START_DEFAULTS)
+    assert STATE.drafts.entries() == ["start/probe"]
+    assert "draft" not in server.close()
+
+
 def test_a_promotion_empties_the_draft_and_close_then_says_nothing(tmp_path: Path) -> None:
     mpromote.note_start({**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)})
     mpromote.keep_start({**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)},

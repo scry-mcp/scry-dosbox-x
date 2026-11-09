@@ -29,12 +29,7 @@ itself is not in this repository. A recipe that cannot boot alone is not a recip
 
 Every recipe resolves against one base, the directory holding `.scry/`, so a relative path is
 relative to this repository. What a tracked file must not carry, a host path, is written as a
-placeholder:
-
-- `${root}`: this repository.
-- `${home}`: the user's home.
-- `${state}`: the session's scratch directory.
-- `${env:NAME}`: an environment variable, refused by name when it is unset.
+[placeholder](https://github.com/scry-mcp/scry-core/blob/main/docs/store-paths.md).
 
 The guests and the bricks demo are named through `DOSBOX_X_LIVE_GUEST_DIR` and
 `DOSBOX_X_LIVE_BRICKS_DIR` because a live run copies them to a writable directory and points

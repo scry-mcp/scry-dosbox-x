@@ -1,0 +1,105 @@
+{
+ "task": {
+  "id": "D183",
+  "prompt": "The DJGPP guest is stopped inside a BIOS handler, in real mode, and a symbol of the program cannot be read there. Reach a protected-mode stop of the program in one call.",
+  "tool": "stop",
+  "args": {
+   "until": "protected"
+  },
+  "grammar": [
+   "protected"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D183: {\"tool\": \"stop\", \"args\": {\"until\": \"protected\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

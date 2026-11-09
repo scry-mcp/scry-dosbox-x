@@ -220,8 +220,8 @@ def position(where: dict[str, str] | None, paging: bool | None) -> dict[str, Any
 #: A stop inside the ROM is a handler the guest called into, not the program: `step` walks
 #: inside it, so the reply names the call that leaves it instead of leaving a caller to loop.
 ROM_STOP_WHY = ("the stop landed in {pc} (linear 0x{linear:X}), inside a ROM handler the program "
-                "called into rather than in the program: `run_for` or `resume` leaves it, and "
-                "`step` moves one instruction inside the handler")
+                "called into rather than in the program: `run_for` or `resume` leaves it, and a "
+                "DPMI guest reaches a protected-mode stop with `stop(until=\"protected\")`")
 
 
 def landed_in_rom(where: dict[str, str] | None) -> str:

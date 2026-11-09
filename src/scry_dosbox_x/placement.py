@@ -137,7 +137,8 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
     if base // 16 > 0xFFFF:
         raise ds.Invalid("bad_argument",
             f"the table's base 0x{base:X} is past the first megabyte, which no "
-            f"real-mode SEG:OFF reaches: read or arm the symbol at a protected-mode stop")
+            f"real-mode SEG:OFF reaches: `stop(until=\"protected\")` reaches a "
+            "protected-mode stop, where the symbol can be read or armed")
     if base % 16 == 0 and offset <= 0xFFFF:
         return base // 16, offset
     linear = base + offset      # a high offset (a data segment), or a base off a paragraph

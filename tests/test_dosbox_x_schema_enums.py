@@ -17,6 +17,7 @@ from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
 from scry_dosbox_x import (
+    advance,
     capture_files,
     checks,
     code,
@@ -42,6 +43,7 @@ from scry_dosbox_x import trace as tracing
 CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("log", "channel", dlogs.LOG_CHANNELS), ("log_wait", "channel", dlogs.LOG_CHANNELS),
     ("scan", "cell_bytes", finder.CELL_BYTES), ("scan", "operator", finder.OPERATORS),
+    ("stop", "until", advance.STOP_UNTIL),
     ("step", "mode", stepping.STEP_MODES), ("trace", "shape", tracing.SHAPE_WORDS),
     ("breakpoint_at", "by", checks.BREAKPOINT_BY), ("watch_add", "by", checks.WATCH_BY),
     ("watch_add", "mode", dec.WATCH_MODES),

@@ -30,13 +30,14 @@ from scry_core import (
 from scry_core import vocabulary as vocab
 from window_double import window_if
 
-from scry_dosbox_x import arming, checks, folds, grammar, sequence, server
+from scry_dosbox_x import advance, arming, checks, folds, grammar, running, sequence, server
 from scry_dosbox_x import declarations as dec
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import mcp as dosbox_mcp
 from scry_dosbox_x import process as dprocess
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
+from scry_dosbox_x import summaries as one_line
 from scry_dosbox_x import symbols as dsym
 
 
@@ -168,6 +169,105 @@ def test_stop_on_a_parked_machine_never_names_a_previous_stop(
     got = cast(dict[str, Any], server.stop())
     assert got["interrupted"] is False and got["last_stop"]["available"] is False, got
     assert "not readable yet" in got["note"]
+
+
+class _Walk:
+    """A stopped machine whose short runs land in `modes`, one after another."""
+
+    def __init__(self, *modes: str, stops_itself: bool = False) -> None:
+        self.modes, self.at, self.running = modes, 0, False
+        self.stops_itself = stops_itself
+
+    def release(self, command: str) -> None:
+        assert command == "RUN" and not self.running
+        self.running = not self.stops_itself
+
+    def at_debugger(self) -> bool:
+        return not self.running
+
+    def break_in(self) -> float:
+        assert self.running
+        self.running = False
+        self.at = min(self.at + 1, len(self.modes) - 1)
+        return 0.0
+
+    def where(self) -> dict[str, str]:
+        assert not self.running
+        return {"mode": self.modes[self.at]}
+
+
+def test_a_real_mode_stop_runs_on_until_a_stop_lands_in_protected_mode() -> None:
+    walk = _Walk("Real", "Real", "Real", "Pr32")
+    assert advance.to_protected(cast(ds.Session, walk)) == (3, True)
+    assert walk.at == 3
+
+
+def test_a_protected_stop_is_already_there_and_nothing_runs() -> None:
+    walk = _Walk("Pr32", "Real")
+    assert advance.to_protected(cast(ds.Session, walk)) == (0, True)
+    assert walk.at == 0
+
+
+def test_the_runs_to_protected_mode_are_bounded_and_say_they_did_not_arrive(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(advance, "PROTECTED_RUNS_MAX", 3)
+    monkeypatch.setattr(advance, "PROTECTED_RUN_S", 0.0)
+    assert advance.to_protected(cast(ds.Session, _Walk("Real"))) == (3, False)
+
+
+def test_stop_until_protected_from_a_parked_stop_answers_the_stop_it_reached(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _names(tmp_path, mode="Real")
+    monkeypatch.setattr(advance, "to_protected", lambda _s: (7, True))
+    got = cast(dict[str, Any], server.stop(until="protected"))
+    assert got["interrupted"] is False and got["runs_to_protected"] == 7, got
+    assert "pc" in got and "cpu_mode" in got, got
+
+
+def test_stop_until_protected_that_never_arrives_says_so(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _names(tmp_path, mode="Real")
+    monkeypatch.setattr(advance, "to_protected", lambda _s: (64, False))
+    got = cast(dict[str, Any], server.stop(until="protected"))
+    assert got["runs_to_protected"] == 64 and "did not reach" in got["note"], got
+
+
+def test_a_run_a_declared_stop_ended_is_that_stop_and_ends_the_walk() -> None:
+    walk = _Walk("Real", "Real", stops_itself=True)
+    assert advance.to_protected(cast(ds.Session, walk)) == (1, False)
+
+
+def test_stop_until_protected_at_a_held_protected_stop_does_not_number_it_again(
+        tmp_path: Path) -> None:
+    _names(tmp_path)
+    held = server.status()["last_stop"]["stop_seq"]
+    got = cast(dict[str, Any], server.stop(until="protected"))
+    assert got["runs_to_protected"] == 0 and got["interrupted"] is False, got
+    assert "cpu_mode" in got and got["pc"] == got["last_stop"]["pc"], got
+    assert server.status()["last_stop"]["stop_seq"] == held
+
+
+def test_stop_until_protected_on_a_running_guest_breaks_in_first(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _names(tmp_path)
+    fake.halted = True
+    server.resume()
+    fake.running = True
+    monkeypatch.setattr(advance, "to_protected", lambda _s: (2, True))
+    got = cast(dict[str, Any], server.stop(until="protected"))
+    assert got["interrupted"] is True and got["via"] == "break", got
+    assert got["runs_to_protected"] == 2, got
+
+
+def test_the_line_of_a_stop_that_ran_on_says_so() -> None:
+    line = one_line.stop({}, {"interrupted": False, "runs_to_protected": 3, "pc": "00A7:00000010"})
+    assert line.startswith("stop: 3 short runs"), line
+
+
+def test_stop_refuses_an_until_it_does_not_know(tmp_path: Path) -> None:
+    _names(tmp_path)
+    got = cast(dict[str, Any], server.stop(until="real"))
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
 
 
 # --------------------------------------- the pending queue, applied at the stop (T2)
@@ -755,7 +855,6 @@ def test_a_stop_already_parked_is_heard_by_a_wait_of_no_seconds(
 
 def test_a_stop_tool_s_drain_is_not_repeated_by_the_next_contact(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from scry_dosbox_x import running
     fake = _names(tmp_path)
     running.stop_reply(cast(Any, fake))
     dstate.STATE.pending["arm"] = ["9999:9999"]       # still waiting for a stop that places it

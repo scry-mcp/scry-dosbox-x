@@ -4,6 +4,15 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A `promote` review lists apart, in `unwritable` with its reason, each entry it cannot write,
+  and shows the rest.
+- `close` no longer names an entry the store already holds as it is.
+- `promote` also looks for the store from a recipe's `conf`.
+- `stop(until="protected")`: a stop that lands in a BIOS handler, in real mode, runs on in short
+  slices until one lands in protected mode, also from a stop already held; `runs_to_protected`
+  says how many it took and `cpu_mode` where it ended. A real-mode refusal and a stop in the
+  ROM name it.
+
 It needs the scry-core that serves `scry_core.window`, `recording.read_document` and
 `recording.steps_to_replay`, not an older one: the tag pinned in `pyproject.toml` is the
 floor.

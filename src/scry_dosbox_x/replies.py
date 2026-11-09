@@ -616,6 +616,7 @@ class StopReply(DosboxEnvelope, total=False):
     interrupted: Required[bool]
     pc: str
     regs: dict[str, Any]
+    runs_to_protected: Annotated[int, When("with `until`")]
     stop_seq: int
     via: str
     watches: list[Any]

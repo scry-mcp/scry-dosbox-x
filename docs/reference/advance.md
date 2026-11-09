@@ -649,18 +649,24 @@ It asks `RUNSTATE` as `run_to` does and reports progress. A running guest is ref
 *Stop a running machine*
 
 ```text
-stop()
+stop(until="")
 ```
 
 Bring a running guest back to the debugger and survey the stop, headless or windowed.
 
+`until="protected"` lets a real-mode stop (a DPMI client's interrupt, in the BIOS) run in
+short slices until a stop lands in protected mode, from a stop already held too; `cpu_mode`
+says where it ended.
+
 Reply: `interrupted` (`true` with the stop reply and `via: "break"`; `false` when already
-stopped, with a `note`). INVALID `not_settled`: after the `BREAK`, `RUNSTATE` did not say
-stopped; ask again.
+stopped, with a `note`), `runs_to_protected` (with `until`), a `note` if it did not arrive.
+INVALID `not_settled`: after the `BREAK`, `RUNSTATE` did not say stopped; ask again.
 
 Reference: REFERENCE.md, Advancing the machine.
 
-Takes no argument.
+| argument | type | default |
+|---|---|---|
+| `until` | one of `""`, `"protected"` | `""` |
 
 | reply field | type |
 |---|---|
@@ -673,6 +679,7 @@ Takes no argument.
 | `interrupted` | boolean |
 | `pc` | string |
 | `regs` | object |
+| `runs_to_protected` | integer |
 | `stop_seq` | integer |
 | `via` | string |
 | `watches` | array |

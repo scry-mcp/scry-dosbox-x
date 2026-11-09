@@ -21,6 +21,30 @@ RUN_FOR_ONLY = frozenset({"polls", "emulated_before_s", "emulated_after_s", "fra
                           "frame_after", "cycles", "retrace_pending"})
 
 
+#: What `stop` may go on to, how many short runs that may take, and how long each runs.
+STOP_UNTIL = ("", "protected")
+PROTECTED_RUNS_MAX = 64
+PROTECTED_RUN_S = 0.02
+
+
+def to_protected(session: ds.Session) -> tuple[int, bool]:
+    """Run a stopped machine in short slices until a stop lands in protected mode: the runs it
+    took and whether one did. A slice a declared stop ended is that stop, and ends the walk: a
+    `BREAK` there would run past it. A `STEPIN` stays inside a BIOS handler, so only running
+    leaves one."""
+    taken = 0
+    while not session.where()["mode"].startswith("Pr"):
+        if taken == PROTECTED_RUNS_MAX:
+            return taken, False
+        session.release("RUN")
+        time.sleep(PROTECTED_RUN_S)
+        taken += 1
+        if session.at_debugger():
+            return taken, False
+        session.break_in()
+    return taken, True
+
+
 def run_to_screen(screen: str, control: str, seconds: float,
                   progress: ds.Progress) -> dict[str, Any]:
     """`run_to(screen=)`: a run to the screen's anchor, or a retrace at a time until the map
@@ -120,3 +144,27 @@ def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dic
     arrived = verdict == contract.TARGET
     return running.stop_or_base(session, True, fields, retrace_may_stop=not arrived,
                                 made_by={"ref": ref, "by": "run_to"} if arrived else None)
+
+
+def stop_in_protected_mode(session: ds.Session) -> dict[str, Any]:
+    """`stop(until="protected")`: the stop this walk ended at, and what it took."""
+    interrupted = not session.at_debugger()
+    if interrupted:
+        session.break_in()
+    else:
+        running.observe_stop(session)
+        where = session.where()
+        if where["mode"].startswith("Pr"):
+            last = STATE.current_or_why(session)
+            return st.reply(interrupted=False, runs_to_protected=0, last_stop=last,
+                            cpu_mode=running.cpu_mode_of(where["mode"], session.paging),
+                            pc=f"{where['cs']}:{where['eip']}",
+                            note="the machine was already stopped in protected mode")
+    runs, arrived = to_protected(session)
+    extra: dict[str, Any] = {} if arrived else {"note": (
+        f"did not reach protected mode in {runs} short runs: `cause` says where it stopped, "
+        "ask again")}
+    if interrupted:
+        extra["via"] = "break"
+    return running.stop_reply(session, asked_by="stop", interrupted=interrupted,
+                              runs_to_protected=runs, **extra)

@@ -42,7 +42,7 @@ def test_a_stop_inside_the_rom_says_it_is_in_a_handler_and_what_leaves_it(
     fake.cs, fake.eip = "F000", "0000D224"
     got = running.stop_reply(fake)  # type: ignore[arg-type]
     note = got.get("note", "")
-    assert "ROM" in note and "0xFD224" in note and "run_for" in note, got
+    assert "ROM" in note and "0xFD224" in note and "until=" in note, got
     fake.cs, fake.eip = "0814", "00000130"
     assert "note" not in running.stop_reply(fake), "an ordinary stop needs no note"  # type: ignore[arg-type]
 

@@ -216,6 +216,8 @@ def resume(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def stop(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    if runs := reply.get("runs_to_protected"):
+        return f"stop: {runs} short runs, at {_at(reply.get('pc'))}"
     if not reply.get("interrupted"):
         return "stop: already stopped"
     return f"stop: {reply.get('via')}, at {_at(reply.get('pc'))}"

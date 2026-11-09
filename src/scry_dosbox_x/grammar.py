@@ -65,7 +65,8 @@ def check_offset(off: int, mode: str) -> int:
     if not 0 <= off <= top:
         raise Invalid("bad_argument",
             f"an offset is 0x0 to 0x{top:X} in {mode} mode; got 0x{off:X}: in real mode an "
-            "offset past 0xFFFF addresses nothing")
+            "offset past 0xFFFF addresses nothing; a DPMI guest reaches a protected-mode "
+            "stop with `stop(until=\"protected\")`")
     return top
 
 

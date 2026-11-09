@@ -38,6 +38,9 @@ from matrix_screen import judge_program, program_cells
 RETRACES_PLACED = 10
 #: The segment of the BIOS handlers a DJGPP guest spends part of every frame in.
 BIOS_SEGMENT = "F000"
+#: How many retraces are tried for a stop in those handlers.
+BIOS_TRIES = 40
+WALK_CELL = "F stop until=protected runs a BIOS stop on to a protected-mode stop"
 
 DPMI_DOS_CELL = ("F log dos tells CWSDPMI's own calls from the client's, which reach DOS from "
                  "the host's code with the client's PSP")
@@ -51,6 +54,7 @@ KEY_CELLS = ("F send_keys a is answered by key_cue_a",
              "F close after the guest left")
 
 F_CELLS = cells(
+    (WALK_CELL, "stop's description; a DPMI client's interrupts reflect to real mode"),
     ("F the program carries its E9 channel", "known: dpmi.c writes `BOOT  . start` first"),
     ("F INT 31h AH=02h stops inside the DPMI client",
      "breakpoint_interrupt's description: 0x31 with ah=2 for DJGPP"),
@@ -219,6 +223,23 @@ def _placed_retraces(program_cs: str) -> None:
                 for s in stops),
             f"program {program}, BIOS {bios}, other {len(at) - program - bios}: "
             + " ".join(str(s.get("pc")) for s in stops))
+    _walk_to_protected()
+
+
+def _walk_to_protected() -> None:
+    """A BIOS stop, which a DJGPP guest gives often, run on to a stop that reads its symbols."""
+    bios = next((s for s in (M.call(server.run_for, frames=1) for _ in range(BIOS_TRIES))
+                 if _cs_of(s) == BIOS_SEGMENT), None)
+    if bios is None:
+        M.block(WALK_CELL, f"no BIOS stop in {BIOS_TRIES} retraces")
+        return
+    walked = M.call(server.stop, until="protected")
+    read = M.call(server.read_memory, ref="_g_ticks", length=4)
+    M.judge(WALK_CELL, ok(walked) and bios.get("cpu_mode") == "real"
+            and walked.get("cpu_mode") in ("protected", "paged")
+            and int(walked.get("runs_to_protected") or 0) > 0 and ok(read),
+            f"{bios.get('pc')} -> {walked.get('pc')} in {walked.get('runs_to_protected')} runs; "
+            f"read {read.get('status')}")
 
 
 @M.section("F", "the DPMI guest: DJGPP, protected mode, paged, nm symbols", F_CELLS)

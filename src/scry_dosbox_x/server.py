@@ -368,7 +368,8 @@ def close(detail: bool = False, ctx: Context[Any, Any] | None = None) -> dict[st
     `guest_file`'s `state`. `session` is the block as it is after the close (`alive` and
     `running` false), and `draft` names the candidates the session left waiting for `promote`.
     """
-    return mpromote.after_close(STATE.drafts, lifecycle.close(bridge(ctx), detail))
+    state = mpromote.scratch()
+    return mpromote.after_close(lifecycle.close(bridge(ctx), detail), state)
 
 
 # ------------------------------------------------------------------ the guest's own log
@@ -760,16 +761,24 @@ def resume(seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail:
 
 
 @tool("Stop a running machine", summary=one_line.stop, on_cancel="stop", replay="wall")
-def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
+def stop(until: Annotated[str, vocab.enum(advance.STOP_UNTIL)] = "",
+         ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Bring a running guest back to the debugger and survey the stop, headless or windowed.
 
+    `until="protected"` lets a real-mode stop (a DPMI client's interrupt, in the BIOS) run in
+    short slices until a stop lands in protected mode, from a stop already held too; `cpu_mode`
+    says where it ended.
+
     Reply: `interrupted` (`true` with the stop reply and `via: "break"`; `false` when already
-    stopped, with a `note`). INVALID `not_settled`: after the `BREAK`, `RUNSTATE` did not say
-    stopped; ask again.
+    stopped, with a `note`), `runs_to_protected` (with `until`), a `note` if it did not arrive.
+    INVALID `not_settled`: after the `BREAK`, `RUNSTATE` did not say stopped; ask again.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
+    vocab.one_of("until", until, advance.STOP_UNTIL)
     session = live()
+    if until:
+        return advance.stop_in_protected_mode(session)
     if session.at_debugger():
         running.observe_stop(session)
         # THE STOP IT IS IN, or none: after a survey that could not be read the record is the
