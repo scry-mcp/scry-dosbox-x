@@ -449,7 +449,7 @@ def _tapdel_auto() -> None:
 def _dynamic_core() -> None:
     binary = ENV.get("DOSBOX_X_BINARY", "")
     if not binary or not Path(binary).is_file():
-        M.block_rest("DOSBOX_X_BINARY does not name the emulator this cell runs directly")
+        M.block(DYNAMIC_CELL, "DOSBOX_X_BINARY does not name the emulator this cell runs directly")
         return
     where = M.tmp("-dynamic-")
     exits: dict[str, int | str] = {}
