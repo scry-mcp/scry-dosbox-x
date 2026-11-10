@@ -428,10 +428,16 @@ def _judge_files(launch: Launch) -> None:
             raise Invalid("bad_argument",
                 f"logfile: {logfile} is the conf {launch.conf}: the emulator opens its log "
                 f"afresh, so it would write the log over the conf this session boots from")
-    if launch.logfile is not None and launch.logfile in (launch.captures_dir, launch.state_dir):
-        raise Invalid("bad_argument",
-            f"logfile: {launch.logfile} is also the directory `start` creates for "
-            f"{'captures_dir' if launch.logfile == launch.captures_dir else 'state_dir'}")
+    for name, folder in (("captures_dir", launch.captures_dir), ("state_dir", launch.state_dir)):
+        if logfile is not None and folder is not None and _same_file(logfile, folder):
+            raise Invalid("bad_argument", f"logfile: {logfile} is also the directory `start` "
+                          f"creates for {name}")
+
+
+def _same_file(logfile: Path, folder: Path) -> bool:
+    """Whether `folder` is where `logfile` is written. Compared without regard to case: the
+    log's name is lowercased and the directory's kept, and a volume may fold the two."""
+    return str(folder).casefold() == str(logfile).casefold()
 
 
 def validate(launch: Launch) -> None:

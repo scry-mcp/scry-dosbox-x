@@ -15,6 +15,8 @@ What a client of the server notices.
   file is `<trace name>-<extension>-set.jsonl`, a screen map
   `<application>-screen-map.json`, and a comment file is advised as `<stem>-comments.tsv`.
 
+- A `logfile` that is the `captures_dir` or the `state_dir` in another case (`Out.D`, where the
+  log is written as `out.d`) is refused, as one spelled the same is.
 - A `promote` review lists apart, in `unwritable` with its reason, each entry it cannot write,
   and shows the rest.
 - `close` no longer names an entry the store already holds as it is.

@@ -247,6 +247,20 @@ def test_a_logfile_whose_directory_is_missing_or_that_is_a_directory_is_refused(
              "logfile", "no extension")
 
 
+@pytest.mark.parametrize("folder", ["captures_dir", "state_dir"])
+@pytest.mark.parametrize("spelled", ["out.d", "Out.D"])
+def test_a_logfile_that_is_a_directory_start_creates_is_refused_under_any_spelling(
+        tmp_path: Path, folder: str, spelled: str) -> None:
+    kw = _base("start", tmp_path)
+    got = _start_stubbed(**{**kw, "logfile": str(tmp_path / spelled),
+                            folder: str(tmp_path / spelled)})
+    _refused(got, "bad_argument", "logfile", f"creates for {folder}")
+    assert not (tmp_path / spelled).exists() and not (tmp_path / "out.d").exists()
+    apart = _start_stubbed(**{**kw, "session_seconds": 0, "logfile": str(tmp_path / "out.d"),
+                              folder: str(tmp_path / "out_.d")})
+    assert "creates for" not in str(apart.get("message")), "two names, two places"
+
+
 def test_a_logfile_that_is_the_conf_is_refused_and_the_conf_kept(tmp_path: Path) -> None:
     """The emulator opens its log afresh, so a logfile naming the conf (by its own path, a link
     or a second name of the same file) would write the log over the conf the session boots."""

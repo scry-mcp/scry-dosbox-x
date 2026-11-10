@@ -7,7 +7,7 @@ from pathlib import Path
 
 import dosbox_x_server_support as support
 import pytest
-from scry_core import file_names
+from scry_core import names_written
 from scry_core import window as core_window
 from stub_builds import build
 from window_double import obeying
@@ -16,9 +16,8 @@ from scry_dosbox_x import state as dstate
 
 LIVE = Path(__file__).resolve().parent / "live"
 #: The debugger's own names.
-FIXED_NAMES = frozenset({"MCPDUMP.BIN", "MCPIVT.TXT", "SYMS.BIN", "SYMSBK.BIN", "LOGCPU.TXT"})
-_JUDGED: set[Path] = set()
-_RAN: list[str] = []
+NAMES = names_written.Names(fixed={"MCPDUMP.BIN", "MCPIVT.TXT", "SYMS.BIN", "SYMSBK.BIN",
+                                   "LOGCPU.TXT"})
 
 
 @pytest.hookimpl(wrapper=True)
@@ -28,27 +27,16 @@ def pytest_runtest_call(item: pytest.Item) -> Iterator[None]:
     yield
     if item.path.is_relative_to(LIVE):
         return
-    _RAN.append(item.nodeid)
-    folders = {str(f) for f in (dstate.STATE.session_dir, dstate.STATE.scratch,
-                                support._STORE_TMP) if f is not None}
-    outside: list[Path] = []
-    for folder in map(Path, folders):
-        new = {Path(root, f) for root, _, files in os.walk(folder) for f in files} - _JUDGED
-        if new:
-            _JUDGED.update(new)
-            outside += [f for f in file_names.outside(folder)
-                        if f in new and f.name not in FIXED_NAMES]
+    outside = NAMES.outside([dstate.STATE.session_dir, dstate.STATE.scratch, support._STORE_TMP])
     if outside:
         pytest.fail("the server wrote files named outside the rule of a file name: "
-                    + ", ".join(sorted(str(f) for f in outside)), pytrace=False)
+                    + ", ".join(map(str, outside)), pytrace=False)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def names_were_judged(request: pytest.FixtureRequest) -> Iterator[None]:
     yield
-    config = request.config
-    narrowed = config.option.keyword or config.args != config.getini("testpaths")
-    if _RAN and not _JUDGED and not narrowed:
+    if NAMES.judged_nothing(request.config):
         pytest.fail("INVALID: no file the server wrote was judged by its name", pytrace=False)
 
 
