@@ -77,7 +77,7 @@ Give this to an MCP client with this server connected:
 
 > Start DOSBox-X windowed on `demos/monkey/monkey.conf` (with the disc image and a directory for
 > C: written in), running `D:\MONKEY.COM` from `/path/to/your/monkey-cd`, with the log and the
-> saved states in files of the run's own. Run 11 seconds, load `monkey.screen-map.json` and tell
+> saved states in files of the run's own. Run 11 seconds, load `monkey-screen-map.json` and tell
 > me which screen this is; double-click English. Skip the credits and the opening scene with
 > Escape, as a player would, and sweep the pointer to both corners while the title card is up.
 > On the dock, walk to the governor's poster, Look at it, and name both lines Guybrush reads;

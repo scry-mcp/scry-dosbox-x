@@ -489,7 +489,7 @@ STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
 
 
 #: Where an app bundle's working directory is declared, beside its slots.
-WORKING_CONF = ".working-directory.conf"
+WORKING_CONF = "working-directory.conf"
 #: The folder states go in, under the session's scratch when `start` is given no `state_dir`.
 DEFAULT_STATE_SUBDIR = "save"
 
@@ -532,12 +532,14 @@ def state_fields(meta: dict[str, object]) -> dict[str, object]:
     return out
 
 
-def check_state_name(name: object) -> None:
+def check_state_name(name: object) -> str:
+    """The name a state is saved and loaded under."""
     name = state_files.check_state_name(name, "a file name under the state directory")
     if name.isdigit():          # `1` is the emulator's own slot file
         raise Invalid("bad_argument",
             f"a state name of digits only, {name!r}, is the emulator's own slot file name "
             f"(`{name}.sav`): add a letter")
+    return name
 
 
 def state_meta(path: Path) -> dict[str, object]:

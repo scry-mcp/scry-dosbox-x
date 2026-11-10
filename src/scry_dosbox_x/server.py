@@ -536,7 +536,7 @@ def memdump(ref: str, length: int, dest: str) -> dict[str, Any]:
     session = live()
     session.require_stopped("a dump")
     seg, off = placement.read_target(ref, "DS", session)
-    dumped = dumping.dump_range(session, seg, off, length, paths.absolute("dest", dest))
+    dumped = dumping.dump_range(session, seg, off, length, paths.dest_file("dest", dest))
     return st.reply(ref=ref, seg_off=st.seg_off(seg, off), length=length, path=str(dumped.path),
                     bytes=dumped.path.stat().st_size)
 
@@ -891,7 +891,7 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
     """
     session = live()
     return tracing.trace(session, instructions, shape,
-                         paths.absolute("dest", dest) if dest else None, seconds, bridge(ctx))
+                         paths.dest_file("dest", dest) if dest else None, seconds, bridge(ctx))
 
 
 @tool("Wait for a screen, its text or its palette", summary=one_line.screen_wait,
@@ -945,7 +945,7 @@ def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.S
     session = live()
     if session.at_debugger():
         vocab.check_wait(seconds)
-        return st.answer(screen.still(session, paths.absolute("dest", dest) if dest else None))
+        return st.answer(screen.still(session, paths.dest_file("dest", dest) if dest else None))
     if session.launch.logfile is None:
         # `S` IS ALSO THE DELETE KEY'S SCAN CODE: an older stub would press it, and with no log
         # there is no announce to tell the two apart.
@@ -953,7 +953,7 @@ def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.S
             "snapshot needs the guest's E9 log to see which stub is resident (its command is "
             "a scan code to an older one): start the session with logfile=")
     inputs.require_stub(session)
-    return st.answer(session.snapshot(paths.absolute("dest", dest) if dest else None, seconds,
+    return st.answer(session.snapshot(paths.dest_file("dest", dest) if dest else None, seconds,
                                       bridge(ctx)))
 
 
@@ -981,7 +981,7 @@ def record(frames: int, dest: str = "", seconds: Annotated[float, vocab.WAIT_BOU
     """
     session = live()
     return recordings.recording(session, "record", recordings.VIDEO, frames,
-                                paths.absolute("dest", dest) if dest else None, seconds,
+                                paths.dest_file("dest", dest) if dest else None, seconds,
                                 bridge(ctx))
 
 
@@ -1015,7 +1015,7 @@ def audio_record(frames: int, dest: str = "",
     """
     session = live()
     return recordings.recording(session, "audio_record", capture_files.AUDIO_KINDS[kind],
-                                frames, paths.absolute("dest", dest) if dest else None, seconds,
+                                frames, paths.dest_file("dest", dest) if dest else None, seconds,
                                 bridge(ctx))
 
 
@@ -1038,8 +1038,9 @@ def state_write(method: Annotated[str, vocab.enum(tuple(folds.STATE_METHODS))], 
                 ) -> dict[str, Any]:
     """Save or load the machine as `<state_dir>/<name>.sav` through the debugger's `SAVESTATE` and
     `LOADSTATE`; no window or focus needed. `method`: `save` or `load`. A running guest is
-    stopped for it and released again. `name`: letters, digits, `_`, `-`, never `-` first, at
-    most {STATE_NAME_MAX}, not digits only. `seconds` bounds the command's reply.
+    stopped for it and released again. `name`: kept as a file name is (`Boss_1` is `boss-1`),
+    at most {STATE_NAME_MAX} characters, with a letter or digit, not digits only. `seconds`
+    bounds the command's reply.
 
     `save`: never overwrites. Reply: `name`, `path`, `bytes`, `version`, `program`, `machine`,
     `memory_mb`, `saved_at`, `paused`.
@@ -1283,7 +1284,7 @@ def palette(first: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES - 1)] | str
     session = live()
     session.require_stopped("a listing")
     return st.reply(**vgadac.palette(session, checks.number("first", first), count, scale,
-                                     paths.absolute("dest", dest) if dest else None,
+                                     paths.dest_file("dest", dest) if dest else None,
                                      STATE.session_scratch()))
 
 
@@ -1318,7 +1319,7 @@ def screen_view(mode: Annotated[str, vocab.enum(by_pens.MODES)] = "render",
     session = live()
     session.require_stopped("a listing")
     return st.reply(**screen.screen_view(session, crop, scale,
-                                         paths.absolute("dest", dest) if dest else None,
+                                         paths.dest_file("dest", dest) if dest else None,
                                          STATE.session_scratch(), attach, mode, pens, point))
 
 
@@ -1650,7 +1651,7 @@ def capture_frame(frame: int, dest: str, capture_path: str = "") -> dict[str, An
     Reply: `path`, `bytes`, `sha256`, `capture_path`, `frame`.
     """
     session = live()
-    return caps.capture_frame(session, frame, paths.absolute("dest", dest),
+    return caps.capture_frame(session, frame, paths.dest_file("dest", dest),
                               judges.existing_file("capture_path", capture_path, "capture")
                               if capture_path else None)
 

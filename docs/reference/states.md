@@ -60,7 +60,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end state_list -->
 
-A file in the folder that is not a state carries a `note`, and so does a `.sav` that is no regular file (a link to nothing, a directory, a FIFO), each reading unavailable. The emulator's own numbered slot file is not a named state, hence reported apart as `working_slot`. It works on a running guest and needs no window.
+A file in the folder that is not a state carries a `note`, and so does a `.sav` that is no regular file (a link to nothing, a directory, a FIFO), each reading unavailable. A `.sav` kept under a name no `load` reads (`Boss_1.sav`, where a state is `boss-1`) carries a `note` saying to rename it. The emulator's own numbered slot file is not a named state, hence reported apart as `working_slot`. It works on a running guest and needs no window.
 
 <!-- scry-reference:begin state_write -->
 ## `state_write`
@@ -73,8 +73,9 @@ state_write(method, name, seconds=30.0)
 
 Save or load the machine as `<state_dir>/<name>.sav` through the debugger's `SAVESTATE` and
 `LOADSTATE`; no window or focus needed. `method`: `save` or `load`. A running guest is
-stopped for it and released again. `name`: letters, digits, `_`, `-`, never `-` first, at
-most 64, not digits only. `seconds` bounds the command's reply.
+stopped for it and released again. `name`: kept as a file name is (`Boss_1` is `boss-1`),
+at most 64 characters, with a letter or digit, not digits only. `seconds`
+bounds the command's reply.
 
 `save`: never overwrites. Reply: `name`, `path`, `bytes`, `version`, `program`, `machine`,
 `memory_mb`, `saved_at`, `paused`.

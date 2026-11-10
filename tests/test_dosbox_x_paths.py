@@ -187,8 +187,8 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
         "comment_write path": {"method": "load", "path": str(tmp_path / "c.tsv")},
         "build_check": {},
         "machine_map": {"dest": str(tmp_path / "m.json")},
-        "screen_map_write path": {"method": "load", "path": str(tmp_path / "m.screen-map.json")},
-        "screen_map_write dest": {"method": "save", "dest": str(tmp_path / "m.screen-map.json")},
+        "screen_map_write path": {"method": "load", "path": str(tmp_path / "m-screen-map.json")},
+        "screen_map_write dest": {"method": "save", "dest": str(tmp_path / "m-screen-map.json")},
         "perform_export": {"dest": str(tmp_path / "p.json")},
         "perform": {},
         "guest_file": {"path": str(tmp_path / "OUT.TXT")},
@@ -240,7 +240,11 @@ def test_a_logfile_whose_directory_is_missing_or_that_is_a_directory_is_refused(
     kw = _base("start", tmp_path)
     _refused(_start_stubbed(**{**kw, "logfile": str(tmp_path / "nowhere" / "e9.log")}),
              "bad_argument", "logfile", str(tmp_path / "nowhere"))
-    _refused(_start_stubbed(**{**kw, "logfile": str(tmp_path)}), "bad_argument", "logfile")
+    (tmp_path / "log.d").mkdir()
+    _refused(_start_stubbed(**{**kw, "logfile": str(tmp_path / "log.d")}), "bad_argument",
+             "logfile", "directory")
+    _refused(_start_stubbed(**{**kw, "logfile": str(tmp_path / "e9")}), "bad_argument",
+             "logfile", "no extension")
 
 
 def test_a_logfile_that_is_the_conf_is_refused_and_the_conf_kept(tmp_path: Path) -> None:
@@ -384,7 +388,7 @@ def test_start_judges_the_binary_s_shape_before_a_live_or_expired_session(
 
 def test_a_start_refused_for_another_reason_creates_no_directory(tmp_path: Path) -> None:
     kw = _base("start", tmp_path)
-    made = tmp_path / "caps"
+    made = tmp_path / "caps.d"
     _refused(_start_stubbed(**{**kw, "session_seconds": 0, "captures_dir": str(made)}),
              "bad_argument")
     _refused(_start_stubbed(**{**kw, "logfile": str(made), "captures_dir": str(made)}),

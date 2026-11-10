@@ -83,7 +83,7 @@ def arm(session: ds.Session, decl: dec.Declaration) -> Tap:
     trigger: tuple[int, int] | None = None
     # Numbered by the files the session's taps already left, which outlive a removed tap.
     scratch = STATE.session_scratch()
-    path = scratch / f"tap-{len(list(scratch.glob('tap-*'))) + 1}-{seg:04X}{off:08X}"
+    path = scratch / f"tap-{len(list(scratch.glob('tap-*'))) + 1}-{seg:04x}{off:08x}"
     if decl.watch_mode == "count":
         command = f"{TAP} C {seg:04X}:{off:X} {decl.width:X} {path}.tab"
     elif decl.trigger_type == "r":

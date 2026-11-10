@@ -32,7 +32,7 @@ ROOT = HERE.parents[1]
 #: What the game's checkout holds: the program and its symbols, then what its store declares.
 EXE, MAP = Path("EXES/LINEUP.EXE"), Path("EXES/LINEUP.MAP")
 PROFILE = Path(".scry/start/dos.json")
-SCREEN_MAP = Path(".scry/maps/lineup.screen-map.json")
+SCREEN_MAP = Path(".scry/maps/lineup-screen-map.json")
 SCRIPT = Path(".scry/perform/dos.json")
 #: The game's own deriver of a live-session conf; it writes `TMP/dosbox-x-mcp.conf`.
 CONF_SCRIPT = Path("SCRIPTS/dosbox-x-mcp-conf.sh")
@@ -44,7 +44,7 @@ INPUTS = {action: Press("send_keys", {"keys": [key]})
                               ("FIRE1", "space"), ("UP", "up"))}
 #: The reference the recording must equal: the same build mixes other samples on Windows, the
 #: same ones run after run.
-SOUND = "music.win32.wav" if sys.platform == "win32" else "music.wav"
+SOUND = "music-win32.wav" if sys.platform == "win32" else "music.wav"
 #: Long enough for DOS to boot and EXEC the game, which is then in its attract.
 BOOT_MS = 2000
 #: The reader's copy of the game is where this host keeps things; the replies that name it are

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scry_core import judges
+from scry_core import file_names, judges
 from scry_core.reply_contract import Invalid
 
 #: Path-carrying argument names; the inventory test holds tools to this list.
@@ -21,8 +21,17 @@ def taken(path: Path) -> bool:
     return path.exists() or path.is_symlink()
 
 
+def dest_file(name: str, value: object) -> Path:
+    """A file a tool will write, under the name it is written as; the place is not looked at."""
+    return file_names.caller_file(judges.absolute(name, value), name)
+
+
 def fresh_dest(name: str, value: str | Path) -> Path:
     return judges.fresh_file(name, str(value))
+
+
+def fresh_folder(name: str, value: str | Path) -> Path:
+    return judges.fresh_folder(name, str(value))
 
 
 def resolved(name: str, path: Path) -> Path:

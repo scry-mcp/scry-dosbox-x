@@ -7,6 +7,6 @@ in `test_dosbox_x_dump.py` place these bytes in their memory image.
 probe-0814-0000.bin          `memdump(ref="0814:0000", length=32)`: PROBE's PSP, linear 0x8140
 probe-1813-0000.bin          `memdump(ref="1813:0000", length=32)`: linear 0x18130, the bytes
                              that really follow 0814:FFFF
-probe-0814-FFF0-wrapped.bin  `memdump(ref="0814:FFF0", length=32)` as the debugger answered it in
+probe-0814-fff0-wrapped.bin  `memdump(ref="0814:FFF0", length=32)` as the debugger answered it in
                              one command: its first 16 bytes are 1813:0000's, its last 16 are
                              0814:0000's, the segment's start read again past offset 0xFFFF

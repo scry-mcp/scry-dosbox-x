@@ -10,7 +10,7 @@ from scry_dosbox_x import symbols as sym
 FIXTURES = Path(__file__).parent / "fixtures"
 TLINK16 = FIXTURES / "borland-tlink16" / "MAPDEMO.MAP"
 DJGPP_NM = FIXTURES / "djgpp" / "mapdemo.sym"
-DJGPP_LD = FIXTURES / "djgpp" / "mapdemo.ld.map"
+DJGPP_LD = FIXTURES / "djgpp" / "mapdemo-ld.map"
 WATCOM = FIXTURES / "watcom" / "MAPDEMO.MAP"
 ALL_FIXTURES = (TLINK16, DJGPP_NM, DJGPP_LD, WATCOM)
 

@@ -23,22 +23,22 @@ that preserves every field width; nothing else was edited.
                            _engine_pos, 00A7:0005E9C0, Pr32 paged, DJGPP32.SYM based off CS, each
                            from its own _engine_pos stop: normal stopped at 00A7:0003D451, short at
                            00A7:00060D71, long at 00A7:001604C0, cs_ip at 00A7:00028DCF
-dos-real16-compose-cs_ip-500.trace   500 instructions from COMPOSE_FRAME, `LOGC 1F5`
+dos-real16-compose-cs-ip-500.trace   500 instructions from COMPOSE_FRAME, `LOGC 1F5`
 probe-start-long-200.trace       200 instructions from `start` (0814:010B), `LOGL C9`
 
 The doubles' scenarios, each a survey before, the command's delta, the trace, a survey after:
-  probe-settle-cs_ip-16    `LOGC 11` at the settle loop; `cc=` 192333 -> 192349
+  probe-settle-cs-ip-16    `LOGC 11` at the settle loop; `cc=` 192333 -> 192349
   probe-settle-normal-16   `LOG 11` right after it; `cc=` 192349 -> 192365
-  probe-dynamic-cs_ip-16   `LOGC 11` on the dynamic core at the settle loop; `cc=` 238 -> 238
+  probe-dynamic-cs-ip-16   `LOGC 11` on the dynamic core at the settle loop; `cc=` 238 -> 238
   probe-cut-*              a breakpoint at 0814:0108, then `LOGC 186A1` from ECX 1582: the stop at
                            0108 with the log open (`probe-cut-open.trace`, copied while open; no
                            `created` in its delta), then `LOGC 0`, which closed it executing
                            nothing and left the same bytes; `cc=` 192365 -> 197871 -> 197871
   probe-start-normal-200   `LOG C9` from `start`; `cc=` 19663481 -> 19663681
-  dos-djgpp32-engine-cs_ip-200  `LOGC C9` from _engine_pos; `cc=` 1963039200 -> 1963039400; the
+  dos-djgpp32-engine-cs-ip-200  `LOGC C9` from _engine_pos; `cc=` 1963039200 -> 1963039400; the
                            `GDT` and `LDT` listings read off the session's logfile at that stop
                            (`dos-djgpp32-gdt-listing.txt`, `dos-djgpp32-ldt-listing.txt`). The join's double
-                           answers `CPU` from `../machine/dos-djgpp32-CPU.log.txt`, the same program in
+                           answers `CPU` from `../machine/dos-djgpp32-cpu-log.txt`, the same program in
                            the same mode at another stop: only the mode it states is read
 dos-djgpp32-engine.sym          the rows of that build's `build/DJGPP32.SYM` that place the window: for
                            each address, the nearest symbol at or below it and its two neighbours,
@@ -59,7 +59,7 @@ guest with `BPINT 21` armed:
 
 Three more, from live sessions of the same build on the same day that drove this server's own
 `trace` on the probe guest:
-  probe-on-bp-cs_ip.trace  `trace(100000, cs_ip)` started on an armed code breakpoint at 0814:0108:
+  probe-on-bp-cs-ip.trace  `trace(100000, cs_ip)` started on an armed code breakpoint at 0814:0108:
                            one line, that address, nothing executed, `OTHER_STOP` attributed to it
   probe-post-logfile.txt   the session's logfile lines `trace(16, cs_ip, seconds=5)` from the reset
                            park produced: the log started, then closed by the power-on self test

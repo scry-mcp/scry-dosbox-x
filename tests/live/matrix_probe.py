@@ -224,10 +224,10 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "run_to": {"ref": NEVER_RUNS_TARGET, "seconds": 3, "control": control},
         "run_for": {"frames": 1},
         "trace": {"instructions": 16, "shape": "cs_ip", "dest": M.fresh(".trace"), "seconds": 30},
-        "state_write save": {"name": f"matrix_a_{state}", "seconds": 10},
+        "state_write save": {"name": f"matrix-a-{state}", "seconds": 10},
         # the stopped cells save before they load; the running ones meet the load first, and
         # load the state the stopped cells saved
-        "state_write load": {"name": "matrix_a_stopped", "seconds": 10},
+        "state_write load": {"name": "matrix-a-stopped", "seconds": 10},
         "snapshot": {"dest": M.fresh(".png"), "seconds": 10}, "window": {},
         "record": {"frames": 2, "dest": M.fresh(".avi"), "seconds": 30},
         "audio_record": {"frames": 2, "dest": M.fresh(".wav"), "seconds": 30},
@@ -253,12 +253,12 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "comment_write add": {"ref": COMMENT_REF, "text": "matrix A"},
         "comment_list": {},
         "comment_write delete": {"ref": COMMENT_REF},
-        "comment_write save": {"dest": M.fresh(".comments.tsv")},
+        "comment_write save": {"dest": M.fresh("-comments.tsv")},
         "comment_write load": {"path": _header_only()},
-        "screen_map_write load": {"path": str(_ABSENT / "probe.screen-map.json")},
+        "screen_map_write load": {"path": str(_ABSENT / "probe-screen-map.json")},
         "screen_map_write add": {"screen": f"probe_{state}", "match": [[0, 0, 8, 1]]},
         "screen_map_find": {},
-        "screen_map_write save": {"dest": M.fresh(f"-{state}.screen-map.json"), "overwrite": True},
+        "screen_map_write save": {"dest": M.fresh(f"-{state}-screen-map.json"), "overwrite": True},
         "screen_map_write pointer": {"pointer": {"x": "2000:94CA", "y": "2000:94CC"}},
         # IRQ 3 (COM2) is masked on this machine and nothing raises it: unmasked and masked back,
         # then raised, lowered and acknowledged while masked, so the guest never takes it.
@@ -277,7 +277,7 @@ COMMENT_REF = f"{SCRATCH_SEG:04X}:0100"
 
 def _header_only() -> str:
     """A comment file holding no comment: what loads with nothing to add, whatever the store."""
-    path = Path(M.fresh(".comments.tsv"))
+    path = Path(M.fresh("-comments.tsv"))
     path.write_text("# comments v1: ref\tcpu\tcreated_at\ttext\n", encoding="utf-8")
     return str(path)
 
@@ -660,7 +660,7 @@ SAVES_LABEL = f"A state_write save on a running guest leaves it running, {SAVES}
 
 def _saves_leave_it_running() -> None:
     for i in range(SAVES):
-        r = M.call(server.state_write, method="save", name=f"matrix_a_loop_{i}", seconds=10)
+        r = M.call(server.state_write, method="save", name=f"matrix-a-loop-{i}", seconds=10)
         if not (ok(r) and (r.get("session") or {}).get("running") is True):
             M.judge(SAVES_LABEL, False, f"save {i + 1} of {SAVES}: {said(r)}")
             return

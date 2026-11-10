@@ -44,7 +44,7 @@ Give this to an MCP client with this server connected:
 > Start DOSBox-X windowed on `demos/mines/mines.conf`,
 > stopping at the program's own `int 3`, with the log in a file and the captures in my run's
 > directory. Load `mines.sym` at the segment it stopped in, and the screen map
-> `mines.screen-map.json` beside the conf. Run ten retraces and tell me which screen this is, click
+> `mines-screen-map.json` beside the conf. Run ten retraces and tell me which screen this is, click
 > its start, and tell me again. Open the Game menu by name, check it is the menu, and pick
 > Beginner. Read the board's size, where its mines are and the pixel of its top-left corner, all
 > by symbol. Flag two of the mines with the right button, then open every safe cell with as few

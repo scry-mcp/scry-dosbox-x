@@ -804,7 +804,7 @@ def test_comments_follow_the_symbol_one_per_place_and_round_trip_through_a_file(
     assert aliased["comment"]["ref"] == "start", aliased
     assert [r["text"] for r in aliased["replaced_comments"]] == ["entry"], aliased
     assert cast(dict[str, Any], server.status())["declarations"] == counted
-    first, second = tmp_path / "a.comments.tsv", tmp_path / "b.comments.tsv"
+    first, second = tmp_path / "a-comments.tsv", tmp_path / "b-comments.tsv"
     try:
         saved = cast(dict[str, Any], server.comment_write("save", dest=str(first)))
         assert saved["status"] == "ok", saved

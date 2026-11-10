@@ -1,7 +1,7 @@
 """Section R of the live matrix: the presence edge is drawn into the window, never into the
 evidence, on the screen guest (`tests/guest/screen.asm`). Why: REFERENCE.md, The presence
 indicator. The red for the capture cells is a scratch build (`DOSBOX_X_LEAK_BINARY`): the
-binary under test built with `presence_leak.patch` applied, which paints the first row of the
+binary under test built with `presence-leak.patch` applied, which paints the first row of the
 source the capture reads while the overlay is on. `DOSBOX_X_STOCK_BINARY` names a release build,
 whose debugger has no PRESENCE command (section S reads the same variable). The screen readers
 have no red, since they read guest memory.

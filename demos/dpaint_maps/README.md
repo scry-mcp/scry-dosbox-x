@@ -54,7 +54,7 @@ DOSBox-X without relative motion, a server that did not start).
 
 ## The map
 
-`dpaint.screen-map.json` names eleven screens of Deluxe Paint at 640 x 480, each known by regions
+`dpaint-screen-map.json` names eleven screens of Deluxe Paint at 640 x 480, each known by regions
 that stay still on it:
 
 | Screen | Known by | Its names |
@@ -75,8 +75,8 @@ map signs.
 
 Give this to an MCP client with this server connected:
 
-> Start DOSBox-X windowed on `demos/dpaint_maps/dpaint_maps.conf`, running from
-> `/path/to/your/dpaint2`, with `DP.EXE k` as the program and the log in a file. Run 400 retraces and load the screen map `dpaint.screen-map.json` beside the conf. Pick
+> Start DOSBox-X windowed on `demos/dpaint_maps/dpaint-maps.conf`, running from
+> `/path/to/your/dpaint2`, with `DP.EXE k` as the program and the log in a file. Run 400 retraces and load the screen map `dpaint-screen-map.json` beside the conf. Pick
 > menus, dialog buttons, tools and colours by the names it gives, drag the shapes at pixels, and
 > after every move to another screen tell me which screen the map says it is. Hold the button on
 > Color, choose Palette, pick the brown slot and hold the red arrow down until red tops out, read

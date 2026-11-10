@@ -180,7 +180,7 @@ def test_an_instruction_starting_at_the_end_is_not_listed() -> None:
 # --------------------------------------------------------------------------- the pane
 
 def test_the_pane_is_read_off_the_last_repaint_its_first_line_glued_to_its_header() -> None:
-    lines = control.pane_lines(text(FIX / "code-C-00-00000100.txt"))
+    lines = control.pane_lines(text(FIX / "code-c-00-00000100.txt"))
     assert len(lines) == 11
     assert lines[0] == control.PaneLine("0814", 0x100, bytes.fromhex("31ED"), "xor  bp,bp")
     assert lines[-1].offset == 0x122 and lines[-1].data == bytes.fromhex("67668B0C9D79010000")
@@ -188,13 +188,13 @@ def test_the_pane_is_read_off_the_last_repaint_its_first_line_glued_to_its_heade
 
 def test_two_repaints_in_one_delta_read_as_the_later() -> None:
     """Two captured deltas joined, as one command's delta carries every repaint it caused."""
-    screen = text(FIX / "code-C-00-00000100.txt") + text(FIX / "code-C-02-00000149.txt")
+    screen = text(FIX / "code-c-00-00000100.txt") + text(FIX / "code-c-02-00000149.txt")
     assert control.pane_lines(screen)[0].offset == 0x149
 
 
 def test_a_pane_line_whose_bytes_were_cut_has_none() -> None:
     """The capture's line at 0122 with its last byte replaced by the pane's `..` mark."""
-    screen = text(FIX / "code-C-00-00000100.txt").replace("67668B0C9D79010000",
+    screen = text(FIX / "code-c-00-00000100.txt").replace("67668B0C9D79010000",
                                                           "67668B0C9D790100..")
     line = [p for p in control.pane_lines(screen) if p.offset == 0x122][0]
     assert line.data is None and line.text.startswith("mov")
@@ -205,7 +205,7 @@ def test_a_pane_line_whose_bytes_were_cut_has_none() -> None:
 def test_the_code_pane_agrees_with_capstone_over_the_whole_code_guest() -> None:
     insns = disasm.decode(code_guest(), COM_START, 16)
     compared, excepted, wrong = 0, [], []
-    for path in sorted(FIX.glob("code-C-0*.txt")):
+    for path in sorted(FIX.glob("code-c-0*.txt")):
         v = control.compare(control.pane_lines(text(path)), "0814", insns)
         compared += v.compared
         excepted += v.excepted
@@ -218,7 +218,7 @@ def test_the_code_pane_agrees_with_capstone_over_the_whole_code_guest() -> None:
 def test_the_code_pane_agrees_with_capstone_on_the_probe() -> None:
     probe = probe_guest()
     insns = disasm.decode(probe[0x0B:], 0x10B, 16)
-    for name in ("probe-C-start.txt", "probe-C-emit.txt"):
+    for name in ("probe-c-start.txt", "probe-c-emit.txt"):
         v = control.compare(control.pane_lines(text(FIX / name)), "0814", insns)
         assert v.compared == 11 and v.disagreements == [], (name, v)
 
@@ -283,7 +283,7 @@ def test_a_32_bit_popa_agrees_though_the_pane_says_popad_and_capstone_popal() ->
 
 def test_in_real_mode_the_pane_decodes_segment_0000_as_32_bit_code() -> None:
     """The second way the pane is wrong about x86."""
-    pane = [p for p in control.pane_lines(text(FIX / "code-C-elsewhere.txt")) if p.offset == 0]
+    pane = [p for p in control.pane_lines(text(FIX / "code-c-elsewhere.txt")) if p.offset == 0]
     assert pane and pane[0].text.startswith("pushad"), pane
     v = control.compare(pane, "0000", disasm.decode(cast(bytes, pane[0].data), 0, 16))
     assert v.disagreements, v
@@ -293,7 +293,7 @@ def test_the_control_sees_a_byte_that_differs() -> None:
     """One byte of the dump changed (the immediate of `mov ax, 1234` at 0104)."""
     blob = bytearray(code_guest())
     blob[0x105 - COM_START] ^= 0xFF
-    v = control.compare(control.pane_lines(text(FIX / "code-C-00-00000100.txt")), "0814",
+    v = control.compare(control.pane_lines(text(FIX / "code-c-00-00000100.txt")), "0814",
                         disasm.decode(bytes(blob), COM_START, 16))
     assert [d.split(":")[0] + ":" + d.split(":")[1][:8] for d in v.disagreements] \
         == ["0814:00000104"]
@@ -610,7 +610,7 @@ def test_in_protected_mode_an_operand_is_placed_through_its_selectors_base() -> 
 
 
 def test_a_screen_with_no_pane_has_no_lines() -> None:
-    assert control.pane_lines(text(FIX / "probe-C-start.txt").split("Code Overview")[0]) == []
+    assert control.pane_lines(text(FIX / "probe-c-start.txt").split("Code Overview")[0]) == []
 
 
 def test_disassemble_is_a_step_of_perform_and_its_length_is_judged_with_the_list() -> None:

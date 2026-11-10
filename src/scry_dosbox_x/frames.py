@@ -70,7 +70,7 @@ def frame(ses: ds.Session, at: int, dest: Path, source: Path) -> Path:
                       "there is none on PATH. The video itself does not need it; "
                       "only this does")
     ds.check_frame_args(at, dest)
-    paths.fresh_dest("dest", dest)
+    dest = paths.fresh_dest("dest", dest)
     # A `%` anywhere in `dest` is refused: `-f image2` treats the whole path as a printf
     # template, so the PNG can land at a path the caller never named. Broader than the hazard
     # on purpose: a false refusal is loud, the other failure is silent.

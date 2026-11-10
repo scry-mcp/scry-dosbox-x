@@ -41,9 +41,9 @@ VGA_BENCH = {"probe-reset": "probe-park", "dos-djgpp32": "dos-djgpp32-startup"}
 
 def listing(bench: str, command: str) -> str:
     if command.startswith("VGA "):
-        name = f"{VGA_BENCH.get(bench, bench)}-{command.replace(' ', '_')}.log.txt"
+        name = f"{VGA_BENCH.get(bench, bench)}-{command.lower().replace(' ', '-')}-log.txt"
         return (MACHINE.parent / "vga" / name).read_bytes().decode("latin-1")
-    return cap(f"{bench}-{command.replace(' ', '_')}.log.txt")
+    return cap(f"{bench}-{command.lower().replace(' ', '-')}-log.txt")
 
 
 # ------------------------------------------------------------------ the parsers
@@ -472,27 +472,27 @@ def test_perform_runs_machine_map_as_a_step(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize(("parse", "name", "old", "new"), [
-    (machine.parse_devs, "probe-booted-DOS_DEVS", "Header    Attr", "Header   Attr"),
-    (machine.parse_kern, "probe-booted-DOS_KERN", "0070           16", "0070  sixteen"),
-    (machine.parse_xms, "dos-djgpp32-DOS_XMS", "     1 ALLOC  0x", "     1 ALLOC  "),
-    (machine.parse_ems, "dos-djgpp32-DOS_EMS", "(type Mixed) handles:", "handles:"),
-    (machine.parse_ems, "dos-djgpp32-DOS_EMS", "--        0/", "--        x/"),
-    (machine.parse_callbacks, "probe-booted-CALLBACKS", "--------------\n", ""),
-    (machine.parse_emu_machine, "probe-booted-EMU_MACHINE", "Machine: ", "Machine "),
-    (machine.parse_cpu, "dos-djgpp32-CPU", "*1\n", "*1\nan eighth line\n"),
-    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-GDT", "GDT Base:", "GDT base:"),
-    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-GDT", "0008: b:", "0008: B:"),
-    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-GDT", "dpl : 0  10000",
+    (machine.parse_devs, "probe-booted-dos-devs", "Header    Attr", "Header   Attr"),
+    (machine.parse_kern, "probe-booted-dos-kern", "0070           16", "0070  sixteen"),
+    (machine.parse_xms, "dos-djgpp32-dos-xms", "     1 ALLOC  0x", "     1 ALLOC  "),
+    (machine.parse_ems, "dos-djgpp32-dos-ems", "(type Mixed) handles:", "handles:"),
+    (machine.parse_ems, "dos-djgpp32-dos-ems", "--        0/", "--        x/"),
+    (machine.parse_callbacks, "probe-booted-callbacks", "--------------\n", ""),
+    (machine.parse_emu_machine, "probe-booted-emu-machine", "Machine: ", "Machine "),
+    (machine.parse_cpu, "dos-djgpp32-cpu", "*1\n", "*1\nan eighth line\n"),
+    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-gdt", "GDT Base:", "GDT base:"),
+    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-gdt", "0008: b:", "0008: B:"),
+    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-gdt", "dpl : 0  10000",
      "dpl : 0  1000x"),
-    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-GDT",
+    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-gdt",
      "\n      l:000011FC dpl : 3  10000\n", "\n"),
-    (machine.parse_paging, "dos-djgpp32-PAGING", "page 00000xxx", "page 00000yyy"),
+    (machine.parse_paging, "dos-djgpp32-paging", "page 00000xxx", "page 00000yyy"),
 ])
 def test_every_parser_refuses_a_listing_whose_shape_moved(
         parse: Any, name: str, old: str, new: str) -> None:
     """One edit to a capture, the kind a different debugger build would print: the parser
     names the line it cannot read rather than handing back what it could."""
-    text = cap(f"{name}.log.txt")
+    text = cap(f"{name}-log.txt")
     assert old in text
     with pytest.raises(machine.Unreadable):
         parse(text.replace(old, new, 1))
@@ -519,7 +519,7 @@ def test_a_listing_that_printed_nothing_is_absent_and_says_so(tmp_path: Path) ->
 
 
 def vectors_file(bench: str) -> str:
-    return cap(f"{bench}-INTVEC.txt")
+    return cap(f"{bench}-intvec.txt")
 
 
 @pytest.mark.parametrize("bench", ["probe-reset", "probe-booted", "dos-real16", "dos-djgpp32"])
@@ -559,7 +559,7 @@ class IntvecBench(Bench):
         self.typed.append(text)
         if text == f"INTVEC {ds.INTVEC_FILE}" and self.writes:
             (self.launch.cwd / ds.INTVEC_FILE).write_bytes(
-                (MACHINE / f"{self.bench}-INTVEC.txt").read_bytes())
+                (MACHINE / f"{self.bench}-intvec.txt").read_bytes())
             return INTVEC_SAID if self.says else ""
         return ""
 

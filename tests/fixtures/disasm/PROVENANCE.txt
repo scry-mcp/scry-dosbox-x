@@ -8,10 +8,10 @@ changes one field of one of them and says which.
 
 code-*      the code guest (`code.conf`, `break_on_int3=True`), loaded at segment 0814:
   code-0814-0100.bin          the program's bytes from 0814:0100
-  code-C-NN-OOOOOOOO.txt      `C 0814:OOOO`, the pane walked from 0100 to past the strings, each
+  code-c-nn-oooooooo.txt      `C 0814:OOOO`, the pane walked from 0100 to past the strings, each
                               `C` at the last line the previous pane showed
-  code-C-elsewhere.txt        `C 0000:0000` at the second stop
-  code-survey-after-C-elsewhere.txt   the next survey: the pane still at 0000:0000
+  code-c-elsewhere.txt        `C 0000:0000` at the second stop
+  code-survey-after-c-elsewhere.txt   the next survey: the pane still at 0000:0000
   code-stop1-*                the first `int 3` (no frame): its survey, registers, and the stack
                               from SS:SP
   code-stop2-*                the `int 3` in `inner`: survey, registers, the stack from SS:SP and
@@ -21,5 +21,5 @@ middle-*    a second session of the code guest, `code.sym` loaded at 8140 and a 
             `int 3` in `inner` after it
 probe-*     the probe guest (`probe.conf`) after `run_for(frames=1)`, `probe.sym` loaded at 8140:
   probe-0814-0100.bin          its bytes from 0814:0100
-  probe-C-start.txt, -emit.txt `C 0814:010B` and `C 0814:0137`
-  probe-survey-after-run_for.txt   the survey of that stop, at 0814:0106
+  probe-c-start.txt, -emit.txt `C 0814:010B` and `C 0814:0137`
+  probe-survey-after-run-for.txt   the survey of that stop, at 0814:0106

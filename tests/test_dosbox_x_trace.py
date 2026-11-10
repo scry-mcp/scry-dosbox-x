@@ -208,7 +208,7 @@ def test_a_working_directory_the_emulator_cannot_write_is_refused_before_anythin
 def djgpp_tracer(tmp_path: Path, *, refuse: bool = False) -> TraceMachine:
     """The dos-djgpp32 window over the double, answering the descriptor listings from their
     captures, or refusing them when `refuse` is set."""
-    machine = tracer(tmp_path, [("dos-djgpp32-engine-cs_ip-200", "ran")], protected_mode=True,
+    machine = tracer(tmp_path, [("dos-djgpp32-engine-cs-ip-200", "ran")], protected_mode=True,
                      at=(0xA7, 0x11734), logfile=tmp_path / "guest.log")
     listings = Listings(None, refuse=refuse)
 
@@ -222,7 +222,7 @@ def djgpp_tracer(tmp_path: Path, *, refuse: bool = False) -> TraceMachine:
 def test_an_interrupt_that_found_no_stop_names_the_log_left_open(tmp_path: Path) -> None:
     """The bound's `BREAK` that never brought a stop is `not_settled`, and the debugger's log is
     still open: the refusal names its path and what the next trace does about it."""
-    machine = tracer(tmp_path, [("probe-int-mid-cs_ip", None)])
+    machine = tracer(tmp_path, [("probe-int-mid-cs-ip", None)])
 
     def unsettled(seconds: float | None = None) -> float:
         raise ds.Invalid("not_settled", "`RUNSTATE` did not say stopped")
@@ -241,7 +241,7 @@ def cwd_of(tmp_path: Path) -> Path:
 
 def settle(tmp_path: Path, **kw: Any) -> TraceMachine:
     """`LOGC 11` at the probe's settle loop: sixteen instructions, the cycle count sixteen on."""
-    return tracer(tmp_path, [("probe-settle-cs_ip-16", "ran")], **kw)
+    return tracer(tmp_path, [("probe-settle-cs-ip-16", "ran")], **kw)
 
 
 def no_log_left(cwd: Path) -> bool:
@@ -271,10 +271,10 @@ def _real_bp(ref: str) -> None:
 @pytest.mark.parametrize(("bench", "shape"), SHAPE_FILES)
 def test_every_captured_shape_parses_whole_with_the_stop_as_its_last_line(
         bench: str, shape: str) -> None:
-    got = tracing.parse(TRACE / f"{bench}-{shape}-64.trace", shape)
+    got = tracing.parse(TRACE / f"{bench}-{shape.replace('_', '-')}-64.trace", shape)
     assert got.line_count == 65 and sum(got.executed.values()) == 64, got
     assert got.last is not None and got.last[:2] == STOPPED_AT[bench][shape], got.last
-    assert tracing.count_lines(TRACE / f"{bench}-{shape}-64.trace") == 65
+    assert tracing.count_lines(TRACE / f"{bench}-{shape.replace('_', '-')}-64.trace") == 65
 
 
 def test_a_long_line_says_its_own_mode_and_the_others_do_not() -> None:
@@ -293,7 +293,7 @@ def test_a_line_another_shape_wrote_is_refused_naming_its_number(
     does not match, and the refusal quotes it rather than reading a column."""
     other = {"normal": "short", "short": "long", "long": "normal", "cs_ip": "normal"}[shape]
     path = tmp_path / "x.trace"
-    shutil.copyfile(TRACE / f"dos-djgpp32-{other}-64.trace", path)
+    shutil.copyfile(TRACE / f"dos-djgpp32-{other.replace('_', '-')}-64.trace", path)
     with pytest.raises(ds.Invalid, match=r"line 1 of .* is not a `" + shape):
         tracing.parse(path, shape)
 
@@ -335,11 +335,25 @@ def test_sixteen_instructions_ask_seventeen_lines_in_hex_and_come_back_elapsed(
                                          "addresses")} == {
         "path": str(dest), "bytes": dest.stat().st_size, "shape": "cs_ip",
         "instructions": 16, "addresses": 1}, got["trace"]
-    assert dest.read_bytes() == (TRACE / "probe-settle-cs_ip-16.trace").read_bytes()
+    assert dest.read_bytes() == (TRACE / "probe-settle-cs-ip-16.trace").read_bytes()
     assert no_log_left(cast(Path, machine.cwd)), "the log stayed in the working directory"
     assert got["regs"] and "cause" in got and "stop_seq" in got and "e9" in got
     assert got["session"]["altered"] is False, "advancing is not writing"
     assert got["summary"].startswith("trace 16 cs_ip: ELAPSED, 16 executed at 1 address")
+
+
+def test_a_mixed_case_dest_is_written_normalised_with_a_set_file_named_from_its_whole_name(
+        tmp_path: Path) -> None:
+    settle(tmp_path)
+    out = tmp_path / "out"
+    out.mkdir()
+    got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
+                                            dest=str(out / "Run_1.LOG")))
+    assert got["status"] == "ok", got
+    assert (got["trace"]["path"], got["trace"]["set_path"]) == (
+        str(out / "run-1.log"), str(out / "run-1-log-set.jsonl")), got["trace"]
+    assert sorted(p.name for p in out.iterdir()) == ["run-1-log-set.jsonl", "run-1.log"]
+    assert tracing.set_path(out / "run-1.trace") != tracing.set_path(out / "run-1.log")
 
 
 def test_the_default_shape_is_the_familys_bare_command(tmp_path: Path) -> None:
@@ -351,7 +365,7 @@ def test_the_default_shape_is_the_familys_bare_command(tmp_path: Path) -> None:
 
 def test_a_dynamic_core_is_refused_by_its_counter_and_the_file_is_kept(tmp_path: Path) -> None:
     """The negative of the per-call proof: seventeen lines while the cycle count did not move."""
-    tracer(tmp_path, [("probe-dynamic-cs_ip-16", "dynamic")])
+    tracer(tmp_path, [("probe-dynamic-cs-ip-16", "dynamic")])
     dest = tmp_path / "d.trace"
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "INVALID" and got["code"] == "no_channel", got
@@ -366,7 +380,7 @@ def test_a_placement_said_at_the_trace_stop_survives_the_counter_refusing_the_tr
     said = {"placed": True, "path": "/x/APP.MAP", "load_segment": "025C", "base": 0x25C0,
             "loaded": 3}
     monkeypatch.setattr(start_symbols, "place_if_due", lambda session: said)
-    tracer(tmp_path, [("probe-dynamic-cs_ip-16", "dynamic")])
+    tracer(tmp_path, [("probe-dynamic-cs-ip-16", "dynamic")])
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "d.trace")))
     assert got["code"] == "no_channel" and got["symbols_placed"] == said, got
@@ -444,7 +458,7 @@ def test_a_bound_that_runs_out_interrupts_the_trace_and_collects_what_ran(
     machine is brought back with `BREAK` where it stands, and what the log holds up to there is
     collected as a stop that cut it would be (moved, closed, counted against the cycles): a
     TIMEOUT, the log closed and nothing left in the working directory."""
-    machine = tracer(tmp_path, [("probe-int-mid-cs_ip", None), (None, "close")])
+    machine = tracer(tmp_path, [("probe-int-mid-cs-ip", None), (None, "close")])
     machine.hooks["BREAK"] = None  # type: ignore[assignment]
     original = machine.request
 
@@ -505,7 +519,7 @@ def test_close_forgets_a_log_left_open() -> None:
 def cut_by(tmp_path: Path, scenario: str) -> TraceMachine:
     """A capture of the probe's DOS boot with `BPINT 21` armed: the log moved out, then
     `LOGC 0`, then the stop after the close."""
-    return tracer(tmp_path, [(f"probe-{scenario}-cs_ip", "int"),
+    return tracer(tmp_path, [(f"probe-{scenario}-cs-ip", "int"),
                              (None if scenario != "post" else "probe-post-close", "close")])
 
 
@@ -536,7 +550,7 @@ def test_a_trace_started_on_an_interrupt_breakpoint_stops_there_again_and_says_s
 def test_a_count_that_ran_out_is_held_exact(tmp_path: Path) -> None:
     """The INT allowance is for a cut run only: the same seven lines asked as six instructions
     ran out at their count, and a counter one past them is refused."""
-    tracer(tmp_path, [("probe-int-mid-cs_ip", "int")])
+    tracer(tmp_path, [("probe-int-mid-cs-ip", "int")])
     got = cast(dict[str, Any], server.trace(instructions=6, shape="cs_ip",
                                             dest=str(tmp_path / "e.trace")))
     assert got["status"] == "INVALID" and got["code"] == "no_channel", got
@@ -551,7 +565,7 @@ def test_a_log_the_bios_closed_before_the_stop_is_refused_and_kept(tmp_path: Pat
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "INVALID" and got["code"] == "readback_refused", got
     assert "closed the debugger's log" in got["message"], got["message"]
-    assert dest.read_bytes() == (TRACE / "probe-post-cs_ip.trace").read_bytes()
+    assert dest.read_bytes() == (TRACE / "probe-post-cs-ip.trace").read_bytes()
     assert no_log_left(cast(Path, machine.cwd)) and got["stop_seq"], got
 
 
@@ -570,11 +584,11 @@ def test_a_pending_retrace_is_left_by_a_count_and_taken_by_an_unexplained_stop(
 
 
 def test_addresses_count_the_distinct_executed_places(tmp_path: Path) -> None:
-    tracer(tmp_path, [("dos-djgpp32-engine-cs_ip-200", "ran")], protected_mode=True,
+    tracer(tmp_path, [("dos-djgpp32-engine-cs-ip-200", "ran")], protected_mode=True,
            at=(0xA7, 0x11734))
     got = cast(dict[str, Any], server.trace(instructions=200, shape="cs_ip",
                                             dest=str(tmp_path / "x.trace")))
-    lines = (TRACE / "dos-djgpp32-engine-cs_ip-200.trace").read_bytes().splitlines()
+    lines = (TRACE / "dos-djgpp32-engine-cs-ip-200.trace").read_bytes().splitlines()
     assert got["status"] == "ok" and got["trace"]["instructions"] == 200, got
     assert got["trace"]["addresses"] == len(set(lines[:-1])) > 1, got["trace"]
 
@@ -588,7 +602,7 @@ def test_every_shape_types_its_own_word(shape: str, tmp_path: Path) -> None:
 
 
 def test_more_lines_than_asked_is_not_this_log(tmp_path: Path) -> None:
-    tracer(tmp_path, [("probe-settle-cs_ip-64", "ran")])
+    tracer(tmp_path, [("probe-settle-cs-ip-64", "ran")])
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "m.trace")))
     assert got["status"] == "INVALID" and got["code"] == "unexpected_answer", got
@@ -731,12 +745,12 @@ def test_a_dest_from_the_home_directory_is_written_there(
 
 def test_a_set_file_already_there_is_refused_and_the_counter_skips_one(tmp_path: Path) -> None:
     machine = settle(tmp_path)
-    (tmp_path / "s.trace.set.jsonl").write_text("the caller's")
+    (tmp_path / "s-trace-set.jsonl").write_text("the caller's")
     got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "s.trace")))
     refused_quietly(machine, got, "bad_argument", "already exists")
     caps = tmp_path / "caps"
     caps.mkdir()
-    (caps / "trace-1.trace.set.jsonl").write_text("an earlier set")
+    (caps / "trace-1-trace-set.jsonl").write_text("an earlier set")
     settle(tmp_path / "again", captures_dir=caps)
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip"))
     assert got["trace"]["path"] == str(caps / "trace-2.trace"), got
@@ -840,7 +854,7 @@ class Listings:
     the dos-djgpp32 window's stop, and the `CPU` listing of the same program in the same mode from
     the machine fixtures; with no logfile it has none to read."""
 
-    def __init__(self, logfile: Path | None, cpu: str = "dos-djgpp32-CPU",
+    def __init__(self, logfile: Path | None, cpu: str = "dos-djgpp32-cpu",
                  refuse: bool = False) -> None:
         self.launch = SimpleNamespace(logfile=logfile)
         self.asked: list[str] = []
@@ -851,7 +865,7 @@ class Listings:
         self.asked.append(command)
         if self.refuse:
             raise ds.Invalid("unexpected_answer", f"`{command}` brought no prompt back")
-        return {"CPU": (MACHINE / f"{self.cpu}.log.txt").read_text(encoding="latin-1"),
+        return {"CPU": (MACHINE / f"{self.cpu}-log.txt").read_text(encoding="latin-1"),
                 "GDT": cap("dos-djgpp32-gdt-listing"),
                 "LDT": cap("dos-djgpp32-ldt-listing")}[command]
 
@@ -878,7 +892,8 @@ def test_the_probe_start_window_joins_to_its_three_routines(tmp_path: Path) -> N
     assert found["unplaced"] == 0 and found["symbols_total"] == 3, found
     assert found["truncated"] is False and "note" not in found, found
     rows = [json.loads(x) for x in Path(found["set_path"]).read_text().splitlines()]
-    assert found["set_path"] == str(dest) + ".set.jsonl" and len(rows) == found["addresses"]
+    assert found["set_path"] == str(tmp_path / "start-trace-set.jsonl")
+    assert len(rows) == found["addresses"]
     assert sum(r["count"] for r in rows) == 200
     assert [r["addr"] for r in rows] == sorted(r["addr"] for r in rows)
     assert all(re.fullmatch(r"0x[0-9a-f]{8}", r["addr"]) for r in rows), rows[:2]
@@ -922,7 +937,7 @@ def test_the_dos_djgpp32_window_is_placed_through_the_ldt_base_not_the_raw_offse
     load(str(TRACE / "dos-djgpp32-engine.sym"), DOS_DJGPP32_BASE)
     stopped_in("Pr32")
     notes: list[str] = []
-    parsed = tracing.parse(TRACE / "dos-djgpp32-engine-cs_ip-200.trace", "cs_ip")
+    parsed = tracing.parse(TRACE / "dos-djgpp32-engine-cs-ip-200.trace", "cs_ip")
     got = tracing.join(cast(ds.Session, Listings(Path("guest.log"))), parsed, False, notes)
     engine = next(r for r in got.symbols if r["symbol"] == "_engine_pos")
     assert engine["first"] == engine["addr"] == f"{DOS_DJGPP32_BASE + 0x5E9C0:#010x}", engine
@@ -955,7 +970,7 @@ def test_the_reply_shows_sixty_four_routines_and_counts_the_rest(tmp_path: Path)
     """A table with a symbol at every address the dos-djgpp32 window executed: one routine each,
     the first sixty-four in the reply and every address in the set file."""
     djgpp_tracer(tmp_path)
-    lines = (TRACE / "dos-djgpp32-engine-cs_ip-200.trace").read_text().splitlines()
+    lines = (TRACE / "dos-djgpp32-engine-cs-ip-200.trace").read_text().splitlines()
     offsets = sorted({int(x.split(":")[1], 16) for x in lines[:-1]})
     dstate.STATE.section_bases.clear()
     dstate.STATE.install_table([sym.Symbol(f"_at_{o:x}", o) for o in offsets])
@@ -977,7 +992,7 @@ def test_the_bisection_answers_what_the_table_walk_answers(tmp_path: Path) -> No
     for linear in range(PROBE_BASE + 0xF0, PROBE_BASE + 0x160):
         assert placement.nearest_symbol(linear) == table_walk(linear), hex(linear)
     load(str(TRACE / "dos-djgpp32-engine.sym"), DOS_DJGPP32_BASE)
-    for line in (TRACE / "dos-djgpp32-engine-cs_ip-200.trace").read_text().splitlines():
+    for line in (TRACE / "dos-djgpp32-engine-cs-ip-200.trace").read_text().splitlines():
         linear = DOS_DJGPP32_BASE + int(line.split(":")[1], 16)
         assert placement.nearest_symbol(linear) == table_walk(linear), line
     tie = tmp_path / "tie.sym"
@@ -1055,7 +1070,7 @@ def test_a_window_armed_protected_and_stopped_real_reads_no_selector() -> None:
     load(str(GUEST / "probe.sym"), PROBE_BASE)
     stopped_in("Real")
     notes: list[str] = []
-    session = Listings(Path("guest.log"), cpu="probe-booted-CPU")
+    session = Listings(Path("guest.log"), cpu="probe-booted-cpu")
     got = tracing.join(cast(ds.Session, session),
                        tracing.parse(TRACE / "probe-start-normal-200.trace", "normal"), False,
                        notes)
@@ -1087,7 +1102,7 @@ def test_a_set_file_the_host_refuses_part_way_is_removed_and_said(
     dest = tmp_path / "f.trace"
     got = cast(dict[str, Any], server.trace(instructions=200, dest=str(dest)))
     assert got["status"] == "ok" and got["trace"]["set_path"]["available"] is False, got["trace"]
-    assert not Path(str(dest) + ".set.jsonl").exists() and dest.exists()
+    assert not (tmp_path / "f-trace-set.jsonl").exists() and dest.exists()
     assert "could not be written" in got["trace"]["note"], got["trace"]["note"]
 
 
@@ -1171,7 +1186,7 @@ def test_a_wait_that_breaks_off_remembers_the_log_it_released(
     """The log opens with the release: a wait that leaves by an exception (a client that went
     away, a read that failed) leaves it open, and the next trace has to know."""
     monkeypatch.setattr(run_state, "PROGRESS_EVERY_S", 0.0)
-    machine = tracer(tmp_path, [("probe-settle-cs_ip-16", None)])
+    machine = tracer(tmp_path, [("probe-settle-cs-ip-16", None)])
 
     def gone(*_args: object) -> None:
         raise RuntimeError("the client went away")
@@ -1211,7 +1226,7 @@ def test_a_log_the_machine_closed_before_the_bound_is_not_what_ran(tmp_path: Pat
     """From the reset park the BIOS closes the debugger's log before its count: the bound
     interrupts the run, and the collect finds the log already closed, so its lines are not what
     ran and the trace is refused, with the stop it ended at."""
-    machine = tracer(tmp_path, [("probe-post-cs_ip", None), ("probe-post-close", "close")])
+    machine = tracer(tmp_path, [("probe-post-cs-ip", None), ("probe-post-close", "close")])
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "p.trace"), seconds=0.3))
     assert got["code"] == "readback_refused" and "BREAK" in machine.sent, got
@@ -1238,7 +1253,7 @@ class ReadSizes(type(Path())):  # type: ignore[misc]
 
 def test_a_set_file_that_appeared_during_the_wait_is_left_alone(tmp_path: Path) -> None:
     """Judged absent before the run, then made by somebody else while it ran."""
-    path = tmp_path / "a.trace.set.jsonl"
+    path = tmp_path / "a-trace-set.jsonl"
     path.write_text("theirs\n")
     notes: list[str] = []
     assert tracing._write_set(path, [{"addr": "0814:00000106", "count": 1}], notes) is None
@@ -1249,7 +1264,7 @@ def test_the_e9_block_names_the_tool_that_reads_the_lines_not_an_argument_trace_
         tmp_path: Path) -> None:
     logfile = tmp_path / "guest.log"
     logfile.write_text("")
-    machine = tracer(tmp_path, [("probe-settle-cs_ip-16", "ran")], logfile=logfile)
+    machine = tracer(tmp_path, [("probe-settle-cs-ip-16", "ran")], logfile=logfile)
     machine.appends = "probe-count-logfile"
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "e.trace")))
@@ -1269,7 +1284,7 @@ def test_with_the_captures_directory_the_working_directory_the_default_lands_the
 def test_a_trace_started_on_a_code_breakpoint_stops_there_again_and_says_so(
         tmp_path: Path) -> None:
     """The log is the live run's (PROVENANCE), at 0814:0108 with a breakpoint there."""
-    machine = tracer(tmp_path, [("probe-on-bp-cs_ip", "ran"), (None, "close")], at=(0x814, 0x108))
+    machine = tracer(tmp_path, [("probe-on-bp-cs-ip", "ran"), (None, "close")], at=(0x814, 0x108))
     _real_bp("0814:0108")
     machine.breakpoints.insert(0, "BP 0814:0108")
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",

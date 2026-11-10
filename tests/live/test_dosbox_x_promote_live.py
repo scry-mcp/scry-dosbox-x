@@ -42,10 +42,10 @@ def test_a_map_learned_in_a_session_is_promoted_and_read_back(tmp_path: Path) ->
         assert not (game / ".scry").exists(), "a review wrote the store"
         written = _ok(server.promote(entries=entries, root=str(game)))
         assert sorted(w["file"] for w in written["written"]) == [
-            ".scry/maps/bricks.screen-map.json", ".scry/start/bricks.json"], written
+            ".scry/maps/bricks-screen-map.json", ".scry/start/bricks.json"], written
         assert written["draft"] == [], written
         read = _ok(server.screen_map_write(
-            "load", path=str(game / ".scry" / "maps" / "bricks.screen-map.json")))
+            "load", path=str(game / ".scry" / "maps" / "bricks-screen-map.json")))
         assert (read["application"], read["screens"]) == ("bricks", 1), read
         recipe = json.loads((game / ".scry" / "start" / "bricks.json").read_text())
         assert recipe["conf"].startswith("${root}/") and recipe["cwd"].startswith("${root}"), (

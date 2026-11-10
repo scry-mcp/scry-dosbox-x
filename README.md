@@ -248,7 +248,9 @@ checkout of its program, which is not distributed here.
 
 The tools by family, each with its arguments, its reply and a real example, are in the index
 at the top of [REFERENCE.md](REFERENCE.md). A tool's own description, delivered to your client
-at connection, is its contract.
+at connection, is its contract. A file a tool writes, at a path you name or at one it picks, is
+named by [one rule](https://github.com/scry-mcp/scry-core/blob/main/docs/file-names.md), and a
+reply that carries its path names the file as written.
 
 ## Going further
 

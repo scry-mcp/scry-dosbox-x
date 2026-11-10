@@ -7,13 +7,13 @@ from __future__ import annotations
 from scry_core import comment_file as core_comments
 from scry_core import (
     docs,
+    file_names,
     frame_window,
     log_marks,
     picture,
     recording,
     screen_map,
     series,
-    state_files,
 )
 from scry_core import (
     promote as core_promote,
@@ -73,7 +73,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "KEYS_MAX": str(inputs.MAX_KEYS_PER_CALL),
               "INPUT_PORT_MIN": str(launch.INPUT_PORT_MIN),
               "INPUT_PORT_MAX": str(launch.INPUT_PORT_MAX),
-              "STATE_NAME_MAX": str(state_files.STATE_NAME_MAX),
+              "STATE_NAME_MAX": str(file_names.WORD_MAX),
               "HITS_MAX": str(words.HITS_MAX), "HITS_DEFAULT": str(words.HITS_DEFAULT),
               "DEBUG_TEXT_KEEP": str(st.DEBUG_TEXT_KEEP),
               "DETAIL_TEXT_KEEP": str(st.DETAIL_TEXT_KEEP),

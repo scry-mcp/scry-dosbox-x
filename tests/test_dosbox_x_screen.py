@@ -48,7 +48,8 @@ EVERY = list(machine.SECTION_NAMES)
 
 
 def vga(bench: str, command: str) -> str:
-    return (VGA / f"{bench}-{command.replace(' ', '_')}.log.txt").read_bytes().decode("latin-1")
+    name = f"{bench}-{command.lower().replace(' ', '-')}-log.txt"
+    return (VGA / name).read_bytes().decode("latin-1")
 
 
 def parsed(bench: str, command: str) -> dict[str, Any]:
@@ -195,8 +196,8 @@ def test_the_13h_window_is_the_guests_diagonal_ramp() -> None:
     captured window is exactly that, and the one captured with the display start moved holds
     the same memory from its next row on."""
     want = bytes((x + y) & 0xFF for y in range(200) for x in range(320))
-    assert window("screen-13h-a000.bin.gz") == want
-    moved = window("screen-13h-start80-a000.bin.gz")
+    assert window("screen-13h-a000-bin.gz") == want
+    moved = window("screen-13h-start80-a000-bin.gz")
     assert moved[:64000 - 320] == want[320:] and set(moved[64000 - 320:]) == {0}
 
 
@@ -269,7 +270,7 @@ def decode_png(data: bytes) -> tuple[int, int, bytes, list[tuple[int, int, int]]
 def test_the_png_holds_the_indices_and_the_palette_it_was_given() -> None:
     """scry-core's codec, read back by this file's own reader: the indices the guest wrote and
     the DAC as the PLTE."""
-    pixels = window("screen-13h-a000.bin.gz")
+    pixels = window("screen-13h-a000-bin.gz")
     pal = [vgadac.rgb8(e) for e in vgadac.parse_dacpal(vga("screen-13h", "VGA DACPAL"))]
     w, h, got, plte, trns = decode_png(png.encode(png.Raster(320, 200, pixels, tuple(pal))))
     assert (w, h, got, plte, trns) == (320, 200, pixels, pal, b"")
@@ -817,8 +818,8 @@ PAGES = {"probe-booted": "probe-booted-page.bin", "probe-mono": "probe-mono-page
          "screen-text": "screen-text-page.bin",
          "screen-start80": "screen-start80-page.bin",
          "dos-djgpp32-startup": "dos-djgpp32-startup-page.bin",
-         "screen-13h": "screen-13h-a000.bin.gz",
-         "screen-13h-start80": "screen-13h-start80-a000.bin.gz"}
+         "screen-13h": "screen-13h-a000-bin.gz",
+         "screen-13h-start80": "screen-13h-start80-a000-bin.gz"}
 
 
 def page(bench_name: str) -> bytes:
@@ -872,7 +873,7 @@ class ScreenBench(Bench):
 
     def vgamemdump(self, offset: int, length: int, dest: Path) -> Path:
         self.vga_dumps.append((offset, length))
-        data = window(f"{self.bench}-vgamem.bin.gz")[offset:offset + length]
+        data = window(f"{self.bench}-vgamem-bin.gz")[offset:offset + length]
         assert len(data) == length, (len(data), length)
         dest.write_bytes(data)
         return dest
@@ -972,6 +973,26 @@ def test_a_snapshot_at_a_stop_writes_the_graphics_screen_from_video_memory(
     again = cast(dict[str, Any], server.snapshot())
     assert Path(again["path"]) == tmp_path / "caps" / "snapshot-1.png", again
     assert again["sha256"] == r["sha256"]
+
+
+@pytest.mark.parametrize("tool", ["screen_view", "snapshot", "palette"])
+def test_a_mixed_case_dest_is_written_under_its_normalised_name_and_the_reply_says_so(
+        tmp_path: Path, tool: str) -> None:
+    screen_bench("screen-13h", tmp_path)
+    out = tmp_path / "out"
+    out.mkdir()
+
+    def write(name: str) -> dict[str, Any]:
+        return cast(dict[str, Any], getattr(server, tool)(dest=str(out / name)))
+    r = write("Shot_1.PNG")
+    assert r["status"] == "ok", r
+    assert (r["path"] if tool == "snapshot" else r["image"]["path"]) == str(out / "shot-1.png")
+    assert [p.name for p in out.iterdir()] == ["shot-1.png"]
+    taken = write("SHOT 1.png")
+    assert taken["code"] == "bad_argument" and "already exists" in taken["message"], taken
+    bare = write("shot")
+    assert bare["code"] == "bad_argument" and "no extension" in bare["message"], bare
+    assert [p.name for p in out.iterdir()] == ["shot-1.png"]
 
 
 def test_a_snapshot_at_a_stop_in_a_text_mode_is_refused_naming_screen_view(

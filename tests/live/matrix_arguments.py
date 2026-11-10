@@ -249,7 +249,7 @@ def _promote() -> None:
     created = (game / ".scry").exists()
     written = M.call(server.promote, entries=["maps/probe", "start/probe"], root=str(game))
     read = M.call(server.screen_map_write, method="load",
-                  path=str(game / ".scry" / "maps" / "probe.screen-map.json"))
+                  path=str(game / ".scry" / "maps" / "probe-screen-map.json"))
     closed = M.call(server.close)
     M.judge(PROMOTE_CELL, ok(r) and ok(added) and ok(reviewed)
             and found.get("maps/probe") == "new" and found.get("start/probe") == "new"

@@ -1,7 +1,8 @@
 """Section AA of the live matrix: what the debugger commands added to DOSBox-X do once
 the machine exists, which the emulator's own unit tests cannot reach.
 
-`MEMDUMPLIN`'s file name and its two refusals, `VGAMEMDUMP`'s file name, `PORTINFO` as typed
+`MEMDUMPLIN`'s file name and its two refusals, `VGAMEMDUMP`'s file name, the name the server
+itself writes a dump under, `PORTINFO` as typed
 and the dynamic core's guard against a long run of one-byte instructions. The file-name cells
 read the spelling back from the directory listing, which a volume that folds case still
 preserves, once `_scrub` has taken away any earlier file of that name in either spelling.
@@ -42,6 +43,7 @@ FILE_CELLS = (
     "AA MEMDUMPLIN before any page tables are loaded is refused and leaves no data",
     "AA VGAMEMDUMP keeps the file name's case",
 )
+SERVER_NAME_CELL = "AA memdump writes a mixed-case dest in lowercase and its reply names that file"
 PORT_CELL = ("AA PORTINFO answers port 60 with R1=1 and an unclaimed port with zeros, and "
              "refuses 10000")
 RUNSTATE_CELL = ("AA RUNSTATE names the BPIF row that stopped the machine, and no longer after "
@@ -63,6 +65,8 @@ AA_CELLS = cells(
     (FILE_CELLS[2], "MEMDUMPLIN usage text: nothing until a DPMI host loaded the page tables; "
      "the file is opened before the walk, as MEMDUMPBIN's is"),
     (FILE_CELLS[3], "VGAMEMDUMP usage text: the file name as typed"),
+    (SERVER_NAME_CELL, "README: a file a tool writes is named by one rule, and a reply that "
+     "carries its path names the file as written"),
     (PORT_CELL, "PORTINFO usage text: R1/R2/R4/W1/W2/W4 per port, hex within the I/O space"),
     (RUNSTATE_CELL, "RUNSTATE: `bpif=` rides the stop a BPIF row made and goes with the next run"),
     (FRAMES_CELL, "README.debugger RUNSTATE: frames counts the frames the guest started"),
@@ -127,11 +131,17 @@ def _dpmi_files() -> None:
     took, wrapped = _says("MEMDUMPLIN FFFFFF00 200 Wrap.Bin")
     M.judge(FILE_CELLS[1], took and "past the end" in wrapped and "Wrap.Bin" not in _names()
             and "WRAP.BIN" not in _names() and "success" not in wrapped.lower(), wrapped[:120])
+    folder = M.tmp("names-")
+    named = M.call(server.memdump, ref=f"0038:{linear:08X}", length=0x20,
+                   dest=str(folder / MIXED_NAME))
+    written = sorted(p.name for p in folder.iterdir())
+    M.judge(SERVER_NAME_CELL, ok(named) and named.get("path") == str(folder / MIXED_NAME.lower())
+            and written == [MIXED_NAME.lower()], f"{said(named)[:80]}; names {written}")
     close_whatever()
 
 
 def _block_dpmi_cells(why: str) -> None:
-    for label in FILE_CELLS[:2]:
+    for label in (*FILE_CELLS[:2], SERVER_NAME_CELL):
         M.block(label, why)
     close_whatever()
 

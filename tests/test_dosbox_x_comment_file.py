@@ -10,7 +10,7 @@ from scry_core import prose
 from scry_dosbox_x import comment_file as cf
 from scry_dosbox_x import server as dosbox_x_server  # noqa: F401 -- imports the envelope and the boundary the shape guard wraps
 
-KNOWN = Path(__file__).parent / "fixtures" / "comments" / "known.comments.tsv"
+KNOWN = Path(__file__).parent / "fixtures" / "comments" / "known-comments.tsv"
 STAMP = "2026-10-03T06:00:00+00:00"
 
 

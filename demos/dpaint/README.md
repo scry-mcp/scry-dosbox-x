@@ -58,7 +58,7 @@ Give this to an MCP client with this server connected:
 > running from `/path/to/your/dpaint2`, with `DP.EXE f` as the
 > program and the log in a file. Run
 > 400 retraces and tell me where its data segment is. Load the screen map
-> `dpaint.screen-map.json` beside the conf and tell me which screen this is. Pick blue off the
+> `dpaint-screen-map.json` beside the conf and tell me which screen this is. Pick blue off the
 > palette, start a value scan of the data segment, keep what holds 9; pick orange, keep what
 > holds 55, and tell me which survivors are static data and which are in the stack's frames.
 > Close the scan and watch the first static one, then paint a sunset, one call a shape: a peach

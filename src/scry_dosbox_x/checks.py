@@ -122,7 +122,7 @@ def number(name: str, value: object) -> int:
 
 
 def check_save_comments(dest: object, **_: Any) -> None:
-    paths.absolute("dest", dest)
+    paths.dest_file("dest", dest)
 
 
 def check_load_comments(path: object, **_: Any) -> None:
@@ -255,16 +255,16 @@ def _count(name: str, value: object) -> int:
 RUN_FOR_MS_MAX = 2 ** 53
 
 
-def optional_path(name: str, value: object) -> None:
-    """A path argument whose empty string means none."""
-    if value != "":
-        paths.absolute(name, value)
+def optional_dest(dest: object) -> None:
+    """A file `dest` whose empty string means the scratch's."""
+    if dest != "":
+        paths.dest_file("dest", dest)
 
 
 def _trace(instructions: int, shape: str = "normal", dest: str = "", seconds: float = 60.0,
            **_: Any) -> None:
     tracing.check_arguments(instructions, shape)
-    optional_path("dest", dest)
+    optional_dest(dest)
     vocab.check_wait(seconds)
 
 
@@ -285,7 +285,7 @@ def _record(frames: int, dest: str = "", seconds: float = 60.0, **_: Any) -> Non
     if _count("frames", frames) < 1:
         raise ds.Invalid("bad_argument", f"frames={frames!r} is not a whole number of one or "
                          "more: the retraces the capture is on for")
-    optional_path("dest", dest)
+    optional_dest(dest)
     vocab.check_wait(seconds)
 
 
@@ -385,7 +385,7 @@ def _disassemble(ref: str, length: int = 16, **_: Any) -> None:
 def _memdump(ref: str, length: int, dest: str, **_: Any) -> None:
     address_shape(ref)
     ds.check_dump_length(length)
-    paths.absolute("dest", dest)
+    paths.dest_file("dest", dest)
 
 
 def _write(ref: str, data_hex: str, **_: Any) -> None:
@@ -516,13 +516,13 @@ def _drive_arguments(act: list[dict[str, Any]], expect: str, seconds: float | No
 
 
 def _capture_frame(frame: int, dest: str, capture_path: str = "", **_: Any) -> None:
-    ds.check_frame_args(frame, paths.absolute("dest", dest))
+    ds.check_frame_args(frame, paths.dest_file("dest", dest))
     if capture_path:
         paths.absolute("capture_path", capture_path)
 
 
 def _snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S, **_: Any) -> None:
-    optional_path("dest", dest)
+    optional_dest(dest)
     vocab.check_wait(seconds)
 
 
@@ -539,7 +539,7 @@ def _palette(first: object = 0, count: int = 0, scale: int = 0, dest: str = "",
             f"first={first} and count={count} reach entry {first + count - 1}: the DAC holds "
             f"entries 0 to {entries - 1}")
     picture.check_scale(scale)
-    optional_path("dest", dest)
+    optional_dest(dest)
 
 
 def _screen_view(crop: list[int] | None = None, scale: int = 0, dest: str = "",
@@ -548,7 +548,7 @@ def _screen_view(crop: list[int] | None = None, scale: int = 0, dest: str = "",
     if crop is not None:
         judges.rect("crop", crop)
     picture.check_scale(scale)
-    optional_path("dest", dest)
+    optional_dest(dest)
     by_pens.check_view(mode, pens, point, crop, scale, dest, attach)
 
 

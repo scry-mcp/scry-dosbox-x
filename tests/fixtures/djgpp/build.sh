@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Re-make the DJGPP fixtures: `mapdemo.sym` (an `nm` listing) and `mapdemo.ld.map` (a
+# Re-make the DJGPP fixtures: `mapdemo.sym` (an `nm` listing) and `mapdemo-ld.map` (a
 # GNU `ld` link map), from `mapdemo.c` in this directory.
 #
 # WHY THE RECIPE SHIPS WITH THE FIXTURE. A captured artefact whose generator is lost
@@ -21,7 +21,7 @@ bin="${DJGPP_BIN:?set DJGPP_BIN to the bin directory of the DJGPP cross toolchai
 # COMPILED THEN LINKED, so the map names `mapdemo.o` and not the compiler's temporary object
 # under the host's per-user temporary directory.
 "$bin/i586-pc-msdosdjgpp-gcc" -O0 -c -o mapdemo.o mapdemo.c
-"$bin/i586-pc-msdosdjgpp-gcc" -O0 -Wl,-Map,mapdemo.ld.map -o mapdemo.exe mapdemo.o
+"$bin/i586-pc-msdosdjgpp-gcc" -O0 -Wl,-Map,mapdemo-ld.map -o mapdemo.exe mapdemo.o
 "$bin/i586-pc-msdosdjgpp-nm" mapdemo.exe > mapdemo.sym
 # The executable is NOT kept: this package reads TEXT and never a binary, so a 148 KB
 # .exe in the fixtures would be 148 KB nothing reads.
@@ -32,4 +32,4 @@ rm -f mapdemo.exe mapdemo.o
 n=$(grep -cE '^[0-9a-f]+ [A-Za-z] ' mapdemo.sym || true)
 [ "${n:-0}" -gt 0 ] || { echo "INVALID: mapdemo.sym carries no addressed symbol line" >&2; exit 3; }
 echo "mapdemo.sym: $n addressed symbols"
-echo "mapdemo.ld.map: $(wc -l < mapdemo.ld.map) lines"
+echo "mapdemo-ld.map: $(wc -l < mapdemo-ld.map) lines"

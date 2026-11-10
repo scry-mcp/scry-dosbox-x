@@ -14,7 +14,7 @@ from scry_dosbox_x import server
 pytestmark = pytest.mark.live
 
 BRICKS = live_private.bricks_dir()
-MAP = BRICKS / "bricks.screen-map.json"
+MAP = BRICKS / "bricks-screen-map.json"
 COURT_CENTRE = [240, 100]
 
 
@@ -45,7 +45,7 @@ def test_bricks_map_finds_the_play_screen_and_a_control_is_clicked_by_name(
         assert found["controls"][0]["centre"] == COURT_CENTRE
         added = _ok(server.screen_map_write("add", screen="header", match=[[0, 0, 52, 8]]))
         assert added["shadows_file"] is False
-        saved = _ok(server.screen_map_write("save", dest=str(tmp_path / "bricks.screen-map.json")))
+        saved = _ok(server.screen_map_write("save", dest=str(tmp_path / "bricks-screen-map.json")))
         assert saved["screens"] == 2 and saved["promoted"] == ["header"]
         _ok(server.resume())
         _ok(server.send_keys(keys=["m"], expect="MOUSE ON$", seconds=10))
@@ -76,7 +76,7 @@ def _anchored(tmp_path: Path, mode: str) -> str:
     doc["screens"][0]["anchor"] = "main_loop"
     folder = tmp_path / mode
     folder.mkdir()
-    path = folder / "bricks.screen-map.json"
+    path = folder / "bricks-screen-map.json"
     path.write_text(json.dumps(doc))
     return str(path)
 

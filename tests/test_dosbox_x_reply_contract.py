@@ -24,7 +24,7 @@ SOURCES = sorted(PACKAGE.glob("*.py"))
 
 _ARGS: dict[str, dict[str, Any]] = {
     "series_capture": {"at_frames": [0]},
-    "screen_map_write": {"method": "save", "dest": _abs("nonexistent", "x.screen-map.json")},
+    "screen_map_write": {"method": "save", "dest": _abs("nonexistent", "x-screen-map.json")},
     "image_compare": {"method": "image", "a": _abs("nonexistent", "a.png"),
                       "b": _abs("nonexistent", "b.png")},
     "audio_compare": {"method": "diff", "a": _abs("nonexistent", "a.wav"),

@@ -101,7 +101,7 @@ def test_the_double_reads_one_command_across_offset_ffff_as_the_debugger_did(
     s = Debugger(tmp_path)
     s.command("MEMDUMPBIN 0814:FFF0 20")
     written = (tmp_path / ds.MEMDUMP_NAME.upper()).read_bytes()
-    assert written == (MEMDUMP / "probe-0814-FFF0-wrapped.bin").read_bytes()
+    assert written == (MEMDUMP / "probe-0814-fff0-wrapped.bin").read_bytes()
 
 
 @POSIX_NAMES
@@ -218,7 +218,7 @@ def test_a_dump_across_offset_ffff_holds_the_next_segments_bytes(tmp_path: Path)
     assert got["status"] == "ok", got
     data = (tmp_path / "x.bin").read_bytes()
     assert data == (MEMDUMP / "probe-1813-0000.bin").read_bytes()
-    assert data != (MEMDUMP / "probe-0814-FFF0-wrapped.bin").read_bytes()
+    assert data != (MEMDUMP / "probe-0814-fff0-wrapped.bin").read_bytes()
 
 
 def test_a_dump_inside_one_segment_is_one_command_and_reads_no_mode(tmp_path: Path) -> None:
@@ -323,6 +323,38 @@ def test_a_windowed_dump_judges_dest_before_anything_is_typed(tmp_path: Path) ->
         assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
         assert words in got["message"] and s.typed == []
     assert there.read_bytes() == b"mine"
+
+
+@pytest.mark.parametrize("length", [0x20, 0x20000], ids=["one command", "windowed"])
+def test_a_dest_whose_written_name_is_the_debuggers_own_file_is_refused(
+        tmp_path: Path, length: int) -> None:
+    s = debugger(tmp_path)
+    caps = tmp_path / "caps"
+    caps.mkdir()
+    s.launch.captures_dir = caps
+    own = [c for c in s._memdump_candidates() if c.parent == caps]
+    assert own, "the control: the debugger writes a dump file in the captures directory"
+    spelled = caps / own[0].name.replace(".", "_.").upper()
+    got = dumped("0000:0000", length, spelled)
+    assert got["status"] == "INVALID" and "where the debugger writes" in got["message"], got
+    assert s.typed == [] and list(caps.iterdir()) == []
+
+
+@pytest.mark.parametrize("length", [0x20, 0x20000], ids=["one command", "windowed"])
+def test_a_mixed_case_dest_is_written_under_its_normalised_name_and_the_reply_says_so(
+        tmp_path: Path, length: int) -> None:
+    s = debugger(tmp_path)
+    out = tmp_path / "out"
+    out.mkdir()
+    got = dumped("0000:0000", length, out / "Dump_1.BIN")
+    assert got["status"] == "ok" and got["path"] == str(out / "dump-1.bin"), got
+    assert [p.name for p in out.iterdir()] == ["dump-1.bin"]
+    typed = len(s.typed)
+    taken = dumped("0000:0000", length, out / "DUMP 1.bin")
+    assert taken["code"] == "bad_argument" and "already exists" in taken["message"], taken
+    bare = dumped("0000:0000", length, out / "dump")
+    assert bare["code"] == "bad_argument" and "no extension" in bare["message"], bare
+    assert len(s.typed) == typed and [p.name for p in out.iterdir()] == ["dump-1.bin"]
 
 
 def test_a_range_past_ffff_ffff_is_refused_before_anything_is_typed(tmp_path: Path) -> None:

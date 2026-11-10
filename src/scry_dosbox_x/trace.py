@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TypeVar
 
+from scry_core import file_names
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 
@@ -47,7 +48,6 @@ TAIL_BYTES = 64
 #: `RUNSTATE` prints the core's `cycle_count`, a `Bitu`: 64 bits on a 64-bit build.
 CYCLES_WRAP = 1 << 64
 SYMBOLS_SHOWN = 64
-SET_SUFFIX = ".set.jsonl"
 #: Descriptor types with the S and executable bits set.
 CODE_TYPES = range(0x18, 0x20)
 LINEAR_MASK = 0xFFFFFFFF
@@ -76,8 +76,9 @@ def check_arguments(instructions: object, shape: object) -> None:
 
 
 def set_path(path: Path) -> Path:
-    """Where a trace's set file goes: beside it."""
-    return path.with_name(path.name + SET_SUFFIX)
+    """Where a trace's set file goes: beside it, named from the whole trace file name, so two
+    traces that differ only by extension keep two set files."""
+    return path.with_name(file_names.name(path.stem, path.suffix[1:], "set", extension="jsonl"))
 
 
 def log_places(cwd: Path) -> list[Path]:

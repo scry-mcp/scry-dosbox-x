@@ -98,7 +98,7 @@ def channel_marks(ses: ds.Session) -> dict[str, object]:
 def save_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:
     """Save the machine as `<state_dir>/<name>.sav`. Never overwrites; a failed save leaves no
     file, since the emulator writes in place and would otherwise hold the name broken."""
-    dlaunch.check_state_name(name)
+    name = dlaunch.check_state_name(name)
     vocab.check_wait(seconds)
     state_dir = ses.state_dir()
     dest = state_dir / f"{name}.sav"
@@ -133,7 +133,7 @@ def load_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     of its own. The session is altered from here on, also after a refusal other than a missing
     channel, since a load refused part-way may have replaced some of the machine."""
     ses.machine_replaced = False
-    dlaunch.check_state_name(name)
+    name = dlaunch.check_state_name(name)
     vocab.check_wait(seconds)
     state_dir = ses.state_dir()
     source = state_dir / f"{name}.sav"
@@ -169,9 +169,13 @@ def _stub_replaced(ses: ds.Session) -> None:
 def _listed(path: Path) -> dict[str, object] | None:
     """`state_meta` of a listed `.sav`, or None for one removed while the directory was read."""
     try:
-        return dlaunch.state_meta(path)
+        row = dlaunch.state_meta(path)
     except FileNotFoundError:
         return None
+    if "note" not in row and (why := state_files.kept_under_another_name(
+            path, dlaunch.check_state_name)):
+        row["note"] = why
+    return row
 
 
 def state_list(ses: ds.Session) -> dict[str, object]:

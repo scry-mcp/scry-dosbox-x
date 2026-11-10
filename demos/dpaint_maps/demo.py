@@ -54,7 +54,7 @@ PARKED = {"op": "send_mouse", "x": PARK[0], "y": PARK[1]}
 def boot(run: Run) -> dict[str, Any]:
     """A fresh log, and the saved states kept out of the program's directory."""
     (run.dir / "dpaint-maps-e9.log").unlink(missing_ok=True)
-    return {"conf": HERE / "dpaint_maps.conf", "session_seconds": 900, "shared": True,
+    return {"conf": HERE / "dpaint-maps.conf", "session_seconds": 900, "shared": True,
             "program": "DP.EXE k",
             "logfile": run.dir / "dpaint-maps-e9.log",
             "state_dir": run.dir / "dpaint-maps-states"}
@@ -168,7 +168,7 @@ ROWS = {
 
 STEPS = [
     *opening(boot),
-    Step("map", "screen_map_write", {"method": "load", "path": HERE / "dpaint.screen-map.json"},
+    Step("map", "screen_map_write", {"method": "load", "path": HERE / "dpaint-screen-map.json"},
          lambda reply, run: f"{reply['screens']} screens and {reply['controls']} controls "
                             "loaded"),
     Step("is paint", "screen_map_find", {}, found("paint: freehand")),

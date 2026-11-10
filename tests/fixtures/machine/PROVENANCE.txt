@@ -1,6 +1,6 @@
 What the debugger's listings wrote into a session's logfile (`start(logfile=)`), captured from
 live DOSBox-X sessions (the Homebrew build, `dosbox-x --version` 2026.08.31) by a script driving
-this server in process: each `<bench>-<COMMAND>.log.txt` is the logfile's bytes from the offset
+this server in process: each `<bench>-<command>-log.txt` is the logfile's bytes from the offset
 it had before the command to its end once the prompt was back, the pager (where the listing
 paged) answered with `Q`. Nothing here is authored: the parsers in `src/scry_dosbox_x/machine.py` are
 written against these files and the doubles in `test_dosbox_x_machine.py` replay them.
@@ -19,7 +19,7 @@ dos-real16-*           dos-real16 (`TMP/dosbox-mcp.conf`, `program="..\exes\real
 dos-djgpp32-*           dos-djgpp32 (`build/mcp.conf`, `program="DJGPP32.EXE D:\MIDI\TUNE00.MID -a"`),
                    stopped at `BPINT 31 AH=02`, 00A7:0015A694, Pr32 with paging on: the GDT, LDT
                    and PAGING listings, CWSDPMI's XMS handle.
-<bench>-INTVEC.txt the file `INTVEC MCPIVT.TXT` wrote into the emulator's working directory at the
+<bench>-intvec.txt the file `INTVEC MCPIVT.TXT` wrote into the emulator's working directory at the
                    same stop, moved out at once. On dos-djgpp32 it equals the `IDT` listing row for
                    row; on the booted probe its first 32 vectors equal the bytes at 0000:0000.
 

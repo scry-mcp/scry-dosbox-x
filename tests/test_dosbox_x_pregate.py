@@ -40,14 +40,14 @@ def _call(name: str, args: dict[str, Any]) -> dict[str, Any]:
 
 
 @pytest.mark.parametrize(("name", "words"), [
-    ("abc\n", "letters, digits"), ("a" * 65, "64"), ("1", "slot"), ("42", "slot"),
-    ("a b", "letters, digits"), ("", "letters, digits"), ("-a", "letters, digits")])
+    ("a" * 65, "64"), ("1", "slot"), ("42", "slot"), ("1_", "slot"), ("", "letter or digit"),
+    ("_ -", "letter or digit")])
 @pytest.mark.parametrize("tool", ["state_write save", "state_write load"])
 def test_a_state_name_is_judged_with_no_session(tool: str, name: str, words: str) -> None:
     _refused(fold_calls.of(server, tool)(name=name), "bad_argument", words)
 
 
-@pytest.mark.parametrize("name", ["a" * 64, "boot", "a1", "1a", "A_b-c"])
+@pytest.mark.parametrize("name", ["a" * 64, "boot", "a1", "1a", "A_b-c", "abc\n", "a b", "-a"])
 def test_a_state_name_of_the_rule_reaches_the_gate(name: str) -> None:
     _refused(server.state_write("save", name=name), "no_session")
 
@@ -65,7 +65,7 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
     ("scan", {"method": "filter", "operator": "?"}, "operator"),
     ("scan", {"method": "filter", "operator": "=", "value": -1}, "value"),
     ("snapshot", {"dest": "rel.png"}, "relative"),
-    ("state_write", {"method": "save", "name": "a b"}, "letters"),
+    ("state_write", {"method": "save", "name": "_"}, "letter or digit"),
     ("resume", {"seconds": -1}, "seconds"),
     ("perform", {"steps": [{"op": "nope"}]}, "nope"),
     ("perform", {"steps": [{"op": "read_memory", "ref": "00A7:zz"}]}, "00A7:zz"),
@@ -92,6 +92,11 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
     ("resume", {"seconds": "5"}, "is not a bound"),
     ("resume", {"seconds": math.nan}, "is not a bound"),
     ("resume", {"seconds": math.inf}, "is not a bound"),
+    ("snapshot", {"dest": "/tmp/shot"}, "no extension"),
+    ("screen_view", {"dest": "/tmp/shot"}, "no extension"),
+    ("memdump", {"ref": "1000:0000", "length": 16, "dest": "/tmp/dump"}, "no extension"),
+    ("trace", {"instructions": 1, "dest": "/tmp/run"}, "no extension"),
+    ("comment_write save", {"dest": "/tmp/notes"}, "no extension"),
 ])
 def test_a_value_wrong_with_no_machine_is_bad_argument_not_no_session(
         tool: str, kw: dict[str, Any], words: str) -> None:

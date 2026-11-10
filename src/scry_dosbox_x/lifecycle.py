@@ -117,7 +117,7 @@ def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
     cwd_given = paths.absolute("cwd", cwd)
     conf_path = paths.absolute("conf", conf)
     captures_path = paths.absolute("captures_dir", captures_dir) if captures_dir else None
-    logfile_path = paths.absolute("logfile", logfile) if logfile else None
+    logfile_path = paths.dest_file("logfile", logfile) if logfile else None
     state_path = paths.absolute("state_dir", state_dir) if state_dir else None
     if binary:
         paths.absolute("binary", binary)

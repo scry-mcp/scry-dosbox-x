@@ -228,7 +228,7 @@ STEPS = [
          volatile={"summary": "it carries how long the debugger took to answer"}),
     Step("ready", "resume", {"seconds": WAIT_S}, at_ready),
     Step("symbols", "symbols_load", symbols_at(HERE / "mines.sym"), loaded),
-    Step("map", "screen_map_write", {"method": "load", "path": HERE / "mines.screen-map.json"},
+    Step("map", "screen_map_write", {"method": "load", "path": HERE / "mines-screen-map.json"},
          lambda reply, run: f"{reply['screens']} screens and {reply['controls']} controls "
                             "loaded"),
     Step("title", "run_for", {"frames": 10, "seconds": WAIT_S},

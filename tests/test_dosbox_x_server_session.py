@@ -198,6 +198,26 @@ def test_an_ffmpeg_that_says_why_in_bytes_that_are_not_utf8_is_still_a_refusal(
     assert e.value.code == "host_failed" and "cannot open" in str(e.value), e.value
 
 
+def test_a_still_is_written_under_its_normalised_name_and_that_is_the_path_returned(
+        tmp_path: Path) -> None:
+    src = tmp_path / "cap.avi"
+    src.write_bytes(b"RIFF")
+    fake = SimpleNamespace(captures=lambda: [{"path": str(src)}])
+    out = tmp_path / "out"
+    out.mkdir()
+
+    def writes(*a: object, **_k: object) -> object:
+        Path(cast("list[str]", a[0])[-1]).write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 8)
+        return SimpleNamespace(stdout="", stderr="", returncode=0)
+
+    with (mock.patch("scry_dosbox_x.frames.subprocess.run", writes),
+          mock.patch("scry_dosbox_x.frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg"))):
+        got = ds.Session.frame(fake, 0, out / "Frame_1.PNG", _src(fake))  # type: ignore[arg-type]
+        assert got == out / "frame-1.png" and [p.name for p in out.iterdir()] == ["frame-1.png"]
+        with pytest.raises(ds.Invalid, match="already exists"):
+            ds.Session.frame(fake, 0, out / "FRAME 1.png", _src(fake))  # type: ignore[arg-type]
+
+
 def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     def hangs(*_a: object, **_k: object) -> None:
         raise subprocess.TimeoutExpired(cmd="ffmpeg", timeout=ds.FFMPEG_SECS)
@@ -353,7 +373,7 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
                                                                 match=[[0, 0, 1, 1]]),
         "screen_map_find": server.screen_map_find,
         "read_memory": lambda: server.read_memory(ref="0000:00000000"),
-        "memdump": lambda: server.memdump(ref="0000:00000000", length=8, dest=_tmp("x")),
+        "memdump": lambda: server.memdump(ref="0000:00000000", length=8, dest=_tmp("x.bin")),
         "find": lambda: server.find(ref="0000:00000000", length=8, data_hex="00"),
         "scan start": lambda: server.scan("start", ref="0000:00000000", length=8),
         "scan filter": lambda: server.scan("filter", operator="=", value=0),
@@ -395,7 +415,7 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "comment_list": server.comment_list,
         "comment_write delete": lambda: server.comment_write("delete", ref="_main"),
         "comment_write save": lambda: server.comment_write(
-            "save", dest=_tmp("x.comments.tsv")),
+            "save", dest=_tmp("x-comments.tsv")),
         "comment_write load": lambda: server.comment_write("load", path=str(nm)),
     }
     callers = live_callers()

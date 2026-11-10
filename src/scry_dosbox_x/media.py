@@ -59,7 +59,7 @@ def series_capture(session: ds.Session, scratch: Path, at_frames: list[int] | No
            else Path(str(session.captures()[-1]["path"])))
     width, height = avi.size("capture_path", src)
     area = raster.inside(crop, width, height, f"the capture's {width}x{height} frames")
-    folder = fresh.directory(paths.fresh_dest("dest", dest) if dest else None,
+    folder = fresh.directory(paths.fresh_folder("dest", dest) if dest else None,
                              scratch / "series", lambda n: f"series-{n}", "the series")
     with fresh.taken_back(folder):
         _extract(src, folder, wanted, area if crop is not None else None)

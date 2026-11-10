@@ -75,7 +75,7 @@ def test_a_mode_13h_screen_signed_by_index_is_found_again(tmp_path: Path) -> Non
 def test_saved_screens_become_the_file_layer_and_load_back(tmp_path: Path) -> None:
     screen_bench("probe-booted", tmp_path)
     _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT], controls=[CONTROL]))
-    path = tmp_path / "probe.screen-map.json"
+    path = tmp_path / "probe-screen-map.json"
     saved = _ok(server.screen_map_write("save", dest=str(path)))
     assert saved["promoted"] == ["prompt"] and json.loads(path.read_text())["application"] == (
         "probe")
@@ -92,7 +92,7 @@ def test_the_programs_pointer_is_declared_through_the_tool_and_saved(tmp_path: P
     got = _ok(server.screen_map_write("pointer", pointer={"x": "2000:94CA", "y": "2000:94CC"}))
     assert got["pointer"] == {"x": "2000:94CA", "y": "2000:94CC", "bytes": 2}, got
     _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT]))
-    path = tmp_path / "probe.screen-map.json"
+    path = tmp_path / "probe-screen-map.json"
     _ok(server.screen_map_write("save", dest=str(path)))
     assert json.loads(path.read_text())["pointer"] == got["pointer"]
     refused = cast(dict[str, Any], server.screen_map_write("pointer", pointer={"x": "a"}))
@@ -108,7 +108,7 @@ def test_a_start_empties_the_session_layer_and_keeps_the_file(tmp_path: Path,
 
     screen_bench("probe-booted", tmp_path)
     _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT]))
-    path = tmp_path / "probe.screen-map.json"
+    path = tmp_path / "probe-screen-map.json"
     _ok(server.screen_map_write("save", dest=str(path)))
     _ok(server.screen_map_write("add", screen="again", match=[PROMPT]))
     server.close()
@@ -120,16 +120,16 @@ def test_a_start_empties_the_session_layer_and_keeps_the_file(tmp_path: Path,
 
 @pytest.mark.parametrize(("call", "code"), [
     (lambda p: server.screen_map_find(), "needs_call"),
-    (lambda p: server.screen_map_write("save", dest=str(p / "x.screen-map.json")), "needs_call"),
-    (lambda p: server.screen_map_write("load", path=str(p / "no.screen-map.json")), "bad_argument"),
-    (lambda p: server.screen_map_write("load", path="relative.screen-map.json"), "bad_argument"),
+    (lambda p: server.screen_map_write("save", dest=str(p / "x-screen-map.json")), "needs_call"),
+    (lambda p: server.screen_map_write("load", path=str(p / "no-screen-map.json")), "bad_argument"),
+    (lambda p: server.screen_map_write("load", path="relative-screen-map.json"), "bad_argument"),
     (lambda p: server.screen_map_write("load", path=str(p / "x.json")), "bad_argument"),
     (lambda p: server.screen_map_write("add", screen="", match=[PROMPT]), "bad_argument"),
     (lambda p: server.screen_map_write("add", screen="s", match=[]), "bad_argument"),
     (lambda p: server.screen_map_write("add", screen="s", match=[[0, 0, 0, 1]]), "bad_argument"),
     (lambda p: server.screen_map_write("add", screen="s", match=[PROMPT], controls=[{"name": "a"}]),
      "bad_argument"),
-    (lambda p: server.screen_map_write("save", dest=str(p / "x.screen-map.json"), overwrite="yes"),
+    (lambda p: server.screen_map_write("save", dest=str(p / "x-screen-map.json"), overwrite="yes"),
      "bad_argument"),
 ], ids=["find with nothing mapped", "save with nothing mapped", "a file that is not there",
         "a relative path", "a name without the map suffix", "an empty screen name",
@@ -148,7 +148,7 @@ def test_perform_refuses_a_misshapen_map_step_before_any_step_runs(tmp_path: Pat
     r = cast(dict[str, Any], server.perform(steps=[
         {"op": "palette"}, {"op": "screen_map_write", "method": "add", "screen": "s",
                             "match": "row 3"},
-        {"op": "screen_map_write", "method": "save", "dest": str(tmp_path / "x.screen-map.json"),
+        {"op": "screen_map_write", "method": "save", "dest": str(tmp_path / "x-screen-map.json"),
          "overwrite": "yes"}]))
     assert r["status"] == "INVALID" and [e["step"] for e in r["errors"]] == [1, 2], r
     assert "overwrite" in r["errors"][1]["message"], r["errors"][1]
@@ -252,13 +252,13 @@ def test_an_export_keeps_the_map_an_identification_was_made_against_and_replays_
     from scry_dosbox_x import mcp as dosbox_mcp
     screen_bench("probe-booted", tmp_path)
     _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT], controls=[CONTROL]))
-    path = tmp_path / "probe.screen-map.json"
+    path = tmp_path / "probe-screen-map.json"
     _ok(server.screen_map_write("save", dest=str(path)))
     monkeypatch.setattr(dosbox_mcp.RECORDER, "recording", recording.Recording({"conf": "/x"}))
     _ok(server.screen_map_write("load", path=str(path)))
     _ok(server.screen_map_write("add", screen="row", match=[[0, 0, 80, 1]]))
     _ok(server.screen_map_find())
-    _ok(server.screen_map_write("save", dest=str(tmp_path / "again.screen-map.json")))
+    _ok(server.screen_map_write("save", dest=str(tmp_path / "again-screen-map.json")))
     out = _ok(server.perform_export(dest=str(tmp_path / "s.json")))
     steps = json.loads((tmp_path / "s.json").read_text())["steps"]
     assert [(s["op"], s.get("method")) for s in steps] == [
@@ -322,7 +322,7 @@ def _consolidated_prompt(tmp_path: Path) -> None:
     """The prompt screen mapped, saved as a consolidated map that enters it by `DrawPrompt`, and
     loaded back."""
     _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT]))
-    path = tmp_path / "probe.screen-map.json"
+    path = tmp_path / "probe-screen-map.json"
     _ok(server.screen_map_write("save", dest=str(path)))
     doc = json.loads(path.read_text())
     doc["mode"], doc["screens"][0]["anchor"] = "consolidated", "DrawPrompt"
@@ -363,7 +363,7 @@ def test_a_screen_added_to_a_consolidated_map_names_its_anchor_through_the_tool(
     assert added["anchor"] == "DrawAgain", added
     out = tmp_path / "out"
     out.mkdir()
-    saved = _ok(server.screen_map_write("save", dest=str(out / "probe.screen-map.json")))
+    saved = _ok(server.screen_map_write("save", dest=str(out / "probe-screen-map.json")))
     assert saved["mode"] == "consolidated" and saved["promoted"] == ["again"], saved
     refused = cast(dict[str, Any], server.screen_map_write(
         "add", screen="x", match=[PROMPT], anchor=" leading"))
@@ -376,7 +376,7 @@ def test_a_map_that_declares_the_programs_pointer_loads_and_says_so(tmp_path: Pa
            "pointer": {"x": "0100:0010", "y": "0100:0012"},
            "screens": [{"name": "prompt", "kind": "text", "size": [80, 25],
                         "match": [{"crop": PROMPT, "signature": "0" * 16}], "controls": []}]}
-    path = tmp_path / "demo.screen-map.json"
+    path = tmp_path / "demo-screen-map.json"
     path.write_text(json.dumps(doc), encoding="utf-8")
     got = _ok(server.screen_map_write("load", path=str(path)))
     assert got["pointer"] == {"x": "0100:0010", "y": "0100:0012", "bytes": 2}, got

@@ -372,7 +372,7 @@ def delete_comment(session: ds.Session, ref: str) -> dict[str, Any]:
 def _judged_dest(dest: str, store: dec.DeclarationStore) -> tuple[Path, list[cf.Row] | None]:
     """`dest` as a file this call may write, and the comment rows already there (None if none);
     a link, a non-regular file, a non-comment file and the store's own file are refused."""
-    path = paths.absolute("dest", dest)
+    path = paths.dest_file("dest", dest)
     try:
         if path.is_symlink():
             raise ds.Invalid("bad_argument",
@@ -386,7 +386,7 @@ def _judged_dest(dest: str, store: dec.DeclarationStore) -> tuple[Path, list[cf.
             raise ds.Invalid("bad_argument",
                 f"dest: {path} is the declaration store's own file (compared without regard "
                 "to case); a comment file goes "
-                "beside the symbol file, as <symbol file stem>.comments.tsv")
+                "beside the symbol file, as <symbol file stem>-comments.tsv")
         if not paths.taken(path):
             return path, None
         if not stat.S_ISREG(path.stat().st_mode):

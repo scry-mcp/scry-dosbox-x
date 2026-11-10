@@ -97,13 +97,13 @@ def _probe() -> None:
     must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing 0000:0009")
     must(M.call(server.resume), "releasing the probe")
     M.setup()
-    r = M.call(server.state_write, method="save", name="matrix_g", seconds=30)
+    r = M.call(server.state_write, method="save", name="matrix-g", seconds=30)
     judged("G state_write save while running", reply=r,
            holds=ok(r) and Path(str(r.get("path"))).is_file() and int(r.get("bytes") or 0) > 0)
     r = M.call(server.state_list)
     judged("G state_list lists it", reply=r, holds=ok(r) and any(
-        "matrix_g" in str(s.get("name", s)) for s in r.get("states") or []))
-    r = M.call(server.state_write, method="load", name="matrix_g", seconds=30)
+        "matrix-g" in str(s.get("name", s)) for s in r.get("states") or []))
+    r = M.call(server.state_write, method="load", name="matrix-g", seconds=30)
     judged("G state_write load while running", reply=r, holds=ok(r))
     r = M.call(server.stop)
     judged("G stop after the load", reply=r, holds=ok(r) and r.get("interrupted") is True)

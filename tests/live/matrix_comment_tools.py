@@ -118,7 +118,7 @@ def _delete_mine(mine: set[str]) -> None:
 
 def _round_trip(refs: set[str]) -> tuple[bool, str]:
     """Save, delete `refs`, load the file, save again: the two files equal byte for byte."""
-    first, second = Path(M.fresh(".comments.tsv")), Path(M.fresh(".comments.tsv"))
+    first, second = Path(M.fresh("-comments.tsv")), Path(M.fresh("-comments.tsv"))
     saved = M.call(server.comment_write, method="save", dest=str(first))
     for ref in sorted(refs):
         M.call(server.comment_write, method="delete", ref=ref)
@@ -202,7 +202,7 @@ def _known_answers(counted: object) -> None:
     s = M.call(server.status)
     judged("N status declarations do not count a comment", reply=s,
            holds=ok(s) and s.get("declarations") == counted)
-    first = Path(M.fresh(".comments.tsv"))
+    first = Path(M.fresh("-comments.tsv"))
     saved = M.call(server.comment_write, method="save", dest=str(first))
     others = [r for r in _listed() if r["ref"] not in ("start", "0814:0106")]
     want = _expected(rows + others)
@@ -212,7 +212,7 @@ def _known_answers(counted: object) -> None:
     for ref in ("start", "0814:0106"):
         must(M.call(server.comment_write, method="delete", ref=ref), f"deleting {ref}")
     loaded = M.call(server.comment_write, method="load", path=str(first))
-    second = Path(M.fresh(".comments.tsv"))
+    second = Path(M.fresh("-comments.tsv"))
     again = M.call(server.comment_write, method="save", dest=str(second))
     M.judge("N deleted, loaded back and saved again, the file is byte for byte the same",
             ok(loaded) and loaded.get("added") == 2 and ok(again)
@@ -290,7 +290,7 @@ def _running() -> None:
     M.setup()
     timed: list[tuple[dict[str, Any], float, int]] = []
     for fn, kw in ((server.comment_list, {}),
-                   (server.comment_write, {"method": "save", "dest": M.fresh(".comments.tsv")})):
+                   (server.comment_write, {"method": "save", "dest": M.fresh("-comments.tsv")})):
         t0 = time.monotonic()
         with _typed() as writes:
             r = M.call(fn, **kw)

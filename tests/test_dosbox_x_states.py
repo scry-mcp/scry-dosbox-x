@@ -184,8 +184,8 @@ def test_state_save_sends_savestate_of_the_named_file_and_reads_it_back(tmp_path
     assert fake.altered is False, "saving alters nothing"
     with pytest.raises(ds.Invalid, match="already exists"):
         ds.Session.save_state(as_session(fake), "boot", 5.0)
-    with pytest.raises(ds.Invalid, match="letters, digits"):
-        ds.Session.save_state(as_session(fake), "a b", 5.0)
+    with pytest.raises(ds.Invalid, match="letter or digit"):
+        ds.Session.save_state(as_session(fake), "_", 5.0)
     assert len(fake.control.sent) == 1, "a refused save sends nothing"
 
 
@@ -270,6 +270,22 @@ def test_state_load_needs_a_named_state_and_marks_altered(tmp_path: Path) -> Non
     assert exc.value.code == "unknown_ref" and len(fake.control.sent) == 1
 
 
+def test_a_state_saved_as_boss_1_is_the_file_boss_1_and_loads_and_lists_by_that_name(
+        tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
+    saved = ds.Session.save_state(as_session(fake), "Boss_1", 5.0)
+    dest = tmp_path / "save" / "boss-1.sav"
+    assert (saved["name"], saved["path"]) == ("boss-1", str(dest))
+    assert [p.name for p in dest.parent.iterdir()] == ["boss-1.sav"]
+    for spelling in ("boss-1", "Boss_1", "BOSS 1"):
+        loaded = ds.Session.load_state(as_session(fake), spelling, 5.0)
+        assert (loaded["name"], loaded["path"]) == ("boss-1", str(dest)), spelling
+    with pytest.raises(ds.Invalid, match="already exists"):
+        ds.Session.save_state(as_session(fake), "boss 1", 5.0)
+    listed = cast(list[dict[str, Any]], ds.Session.state_list(as_session(fake))["states"])
+    assert [(s["name"], "note" in s) for s in listed] == [("boss-1", False)]
+
+
 def test_the_default_state_directory_is_one_spelling_for_start_and_the_session(
         tmp_path: Path) -> None:
     bare = dlaunch.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60)
@@ -293,6 +309,20 @@ def test_state_list_reads_every_state_with_its_metadata_and_needs_no_window(
     assert cast(dict[str, Any], out["working_slot"])["program"] == "OTHER"
     assert "not a save state" in str(by["junk"]["note"])
     assert cast(dict[str, Any], by["junk"]["program"])["available"] is False, by["junk"]
+
+
+def test_a_state_file_named_outside_a_states_name_is_listed_saying_how_load_spells_it(
+        tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
+    write_state(tmp_path / "save" / "Boss_1.sav")
+    write_state(tmp_path / "save" / "_.sav")
+    write_state(tmp_path / "save" / "1_.sav")
+    by = {s["name"]: s for s in cast(list[dict[str, Any]],
+                                     ds.Session.state_list(as_session(fake))["states"])}
+    assert "reads boss-1.sav" in str(by["Boss_1"]["note"]), by
+    assert by["Boss_1"]["program"] == "PROBE"
+    assert by["_"]["note"] == by["1_"]["note"] == (
+        "the file is named as no state is: rename it to load it"), by
 
 
 def test_a_name_that_holds_no_state_is_listed_saying_what_is_there_never_raised(

@@ -410,7 +410,7 @@ def test_save_writes_the_comment_file_sorted_whole(tmp_path: Path) -> None:
     probe_table()
     ok(server.comment_write("add", ref="start", text="entry"))
     ok(server.comment_write("add", ref="0814:0106", text="the loop"))
-    dest = tmp_path / "probe.comments.tsv"
+    dest = tmp_path / "probe-comments.tsv"
     got = ok(server.comment_write("save", dest=str(dest)))
     assert (got["path"], got["comments_total"], got["dropped_comments"], got["dropped_total"],
             got["truncated"]) == (str(dest), 2, [], 0, False)
@@ -419,6 +419,17 @@ def test_save_writes_the_comment_file_sorted_whole(tmp_path: Path) -> None:
     assert [ln.split("\t")[0] for ln in lines[1:-1]] == ["0814:0106", "start"]
     assert [ln.split("\t")[3] for ln in lines[1:-1]] == ["the loop", "entry"]
     assert stat.S_IMODE(dest.stat().st_mode) == 0o644
+
+
+def test_save_writes_a_mixed_case_dest_under_its_normalised_name_and_says_so(
+        tmp_path: Path) -> None:
+    install()
+    ok(server.comment_write("add", ref="0814:010B", text="x"))
+    got = ok(server.comment_write("save", dest=str(tmp_path / "Probe.Comments.TSV")))
+    assert got["path"] == str(tmp_path / "probe-comments.tsv")
+    assert [p.name for p in tmp_path.iterdir()] == ["probe-comments.tsv"]
+    assert "no extension" in refused(server.comment_write("save", dest=str(tmp_path / "notes")),
+                                     "bad_argument")
 
 
 def test_an_empty_store_saves_the_header_alone(tmp_path: Path) -> None:
@@ -454,8 +465,10 @@ def test_save_refuses_and_leaves_alone_what_is_not_a_comment_file_to_replace(
     link.symlink_to(notes)
     fifo = tmp_path / "fifo.tsv"
     host_program.fifo(fifo)
+    folder = tmp_path / "folder.tsv"
+    folder.mkdir()
     for dest, said in ((notes, "not a comment file"), (latin, "not UTF-8"), (link, "is a link"),
-                       (tmp_path, "not a regular file"), (fifo, "not a regular file"),
+                       (folder, "not a regular file"), (fifo, "not a regular file"),
                        (tmp_path / "no" / "c.tsv", "not a directory")):
         assert said in refused(server.comment_write("save", dest=str(dest)), "bad_argument"), dest
     assert notes.read_bytes() == b"my notes\n"
@@ -469,7 +482,8 @@ def test_save_refuses_the_declaration_stores_own_file() -> None:
     before = path.read_bytes()
     # The second spelling names this file only where the file system folds case (macOS).
     folded = str(path).upper()
-    for spelled in (str(path), *([folded] if Path(folded).parent.is_dir() else [])):
+    renamed = str(path.with_name(path.stem.upper() + "_." + path.suffix[1:].upper()))
+    for spelled in (str(path), renamed, *([folded] if Path(folded).parent.is_dir() else [])):
         assert "store's own file" in refused(server.comment_write("save", dest=spelled),
                                              "bad_argument")
     assert path.read_bytes() == before

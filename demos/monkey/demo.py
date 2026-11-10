@@ -328,7 +328,7 @@ STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
          volatile={"summary": "it carries how long the debugger took to answer"}),
     Step("menu", "run_for", {"milliseconds": 11000, "seconds": 120}, ran),
-    Step("map", "screen_map_write", {"method": "load", "path": HERE / "monkey.screen-map.json"},
+    Step("map", "screen_map_write", {"method": "load", "path": HERE / "monkey-screen-map.json"},
          lambda reply, run: f"{reply['screens']} screens, {reply['controls']} controls"),
     find("languages", "language"),
     act("english", [click("english", "double"), {"op": "run_for", "milliseconds": 24000}],
