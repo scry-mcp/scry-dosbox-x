@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import dataclasses
 import inspect
+import itertools
 import re
 import shutil
 import subprocess
@@ -13,6 +15,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 from unittest import mock
 
+import anyio
 import fold_calls
 import pytest
 from dosbox_x_server_support import (  # noqa: E402
@@ -25,8 +28,10 @@ from dosbox_x_server_support import (  # noqa: E402
     stub_build,
 )
 from scry_core import (
+    cancel,
     log_marks,
 )
+from scry_core import progress as mprogress
 from scry_core import vocabulary as vocab
 from window_double import window_if
 
@@ -177,10 +182,12 @@ class _Walk:
     def __init__(self, *modes: str, stops_itself: bool = False) -> None:
         self.modes, self.at, self.running = modes, 0, False
         self.stops_itself = stops_itself
+        self.released = 0
 
     def release(self, command: str) -> None:
         assert command == "RUN" and not self.running
         self.running = not self.stops_itself
+        self.released += 1
 
     def at_debugger(self) -> bool:
         return not self.running
@@ -215,10 +222,61 @@ def test_the_runs_to_protected_mode_are_bounded_and_say_they_did_not_arrive(
     assert advance.to_protected(cast(ds.Session, _Walk("Real"))) == (3, False)
 
 
+def test_the_walk_to_protected_mode_says_which_run_it_is_on(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(advance, "PROTECTED_RUN_S", 0.0)
+    seconds = itertools.count(step=mprogress.PROGRESS_EVERY_S)   # a line falls due at each read
+    monkeypatch.setattr(time, "monotonic", lambda: float(next(seconds)))
+    said: list[tuple[float | None, str]] = []
+    walk = _Walk("Real", "Real", "Real", "Pr32")
+    assert advance.to_protected(cast(ds.Session, walk),
+                                lambda _done, total, line: said.append((total, line))) == (3, True)
+    assert [total for total, _ in said] == [None, None, None], said
+    for run, (_, line) in enumerate(said, start=1):
+        assert f"run {run} of at most {advance.PROTECTED_RUNS_MAX}" in line, line
+
+
+def test_a_cancel_ends_the_walk_between_two_runs_and_leaves_the_machine_stopped(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(advance, "PROTECTED_RUN_S", 0.0)
+    polls = [0]
+
+    def check() -> None:
+        polls[0] += 1
+        if polls[0] == 3:
+            raise asyncio.CancelledError
+    monkeypatch.setattr(cancel, "check", check)
+    walk = _Walk("Real")
+    with pytest.raises(asyncio.CancelledError):
+        advance.to_protected(cast(ds.Session, walk))
+    assert walk.released == 2 and not walk.running, (walk.released, walk.running)
+
+
+def test_stop_until_protected_reports_the_walk_to_its_caller(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _names(tmp_path, mode="Real")
+
+    def walked(_session: ds.Session, progress: mprogress.Progress) -> tuple[int, bool]:
+        progress(0.0, None, "on its way")
+        return 1, True
+    monkeypatch.setattr(advance, "to_protected", walked)
+    said: list[str] = []
+
+    class _Request:
+        async def report_progress(self, progress: float, total: float | None = None,
+                                  message: str | None = None) -> None:
+            said.append(str(message))
+
+    async def call() -> None:
+        await anyio.to_thread.run_sync(lambda: server.stop(until="protected", ctx=_Request()))
+    anyio.run(call)
+    assert said == ["on its way"], said
+
+
 def test_stop_until_protected_from_a_parked_stop_answers_the_stop_it_reached(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _names(tmp_path, mode="Real")
-    monkeypatch.setattr(advance, "to_protected", lambda _s: (7, True))
+    monkeypatch.setattr(advance, "to_protected", lambda _s, _p: (7, True))
     got = cast(dict[str, Any], server.stop(until="protected"))
     assert got["interrupted"] is False and got["runs_to_protected"] == 7, got
     assert "pc" in got and "cpu_mode" in got, got
@@ -227,7 +285,7 @@ def test_stop_until_protected_from_a_parked_stop_answers_the_stop_it_reached(
 def test_stop_until_protected_that_never_arrives_says_so(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _names(tmp_path, mode="Real")
-    monkeypatch.setattr(advance, "to_protected", lambda _s: (64, False))
+    monkeypatch.setattr(advance, "to_protected", lambda _s, _p: (64, False))
     got = cast(dict[str, Any], server.stop(until="protected"))
     assert got["runs_to_protected"] == 64 and "did not reach" in got["note"], got
 
@@ -262,7 +320,7 @@ def test_stop_until_protected_on_a_running_guest_breaks_in_first(
     fake.halted = True
     server.resume()
     fake.running = True
-    monkeypatch.setattr(advance, "to_protected", lambda _s: (2, True))
+    monkeypatch.setattr(advance, "to_protected", lambda _s, _p: (2, True))
     got = cast(dict[str, Any], server.stop(until="protected"))
     assert got["interrupted"] is True and got["via"] == "break", got
     assert got["runs_to_protected"] == 2, got

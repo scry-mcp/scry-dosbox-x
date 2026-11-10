@@ -10,8 +10,10 @@ machine_map(sections=null, dest="")
 ```
 
 What the DOS machine is at this stop: one section per debugger listing. `sections` left
-out reads the DOS machine and `control`; `bios_mem`, `callbacks`, `vga`, `paging` only when
-named. `dest` (absolute, new) writes all sections whole as JSON. Writes nothing to the guest.
+out reads the DOS machine, `control` (the control registers, the flags and the
+descriptor-table and task registers) and, in protected mode, `gdt` and `ldt` (the tables'
+rows); `bios_mem`, `callbacks`, `vga`, `paging` only when named. `dest` (absolute, new)
+writes all sections whole as JSON. Writes nothing to the guest.
 
 Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
 400 rows), `sources`, `coverage_note` (why a section is absent), `path` (with

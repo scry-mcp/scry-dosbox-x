@@ -15,6 +15,11 @@ What a client of the server notices.
   file is `<trace name>-<extension>-set.jsonl`, a screen map
   `<application>-screen-map.json`, and a comment file is advised as `<stem>-comments.tsv`.
 
+- The descriptions say that only a watcher on a stream needs `fullscreen` (`start`), that
+  `detail` adds the debugger's own text while the E9 lines come in the stop reply's `e9`
+  (`resume`), what `control` holds and that `gdt` and `ldt` are read by default in protected
+  mode (`machine_map`), and that a step's `recorded` is `{field: value}` of its reply
+  (`perform`).
 - A `logfile` that is the `captures_dir` or the `state_dir` in another case (`Out.D`, where the
   log is written as `out.d`) is refused, as one spelled the same is.
 - A `promote` review lists apart, in `unwritable` with its reason, each entry it cannot write,
@@ -24,7 +29,8 @@ What a client of the server notices.
 - `stop(until="protected")`: a stop that lands in a BIOS handler, in real mode, runs on in short
   slices until one lands in protected mode, also from a stop already held; `runs_to_protected`
   says how many it took and `cpu_mode` where it ended. A real-mode refusal and a stop in the
-  ROM name it.
+  ROM name it. While it walks it reports which run it is on, and a cancel ends it between two
+  runs with the machine stopped.
 - `promote`: a map or a script learned from a loaded recipe looks for the store from that
   recipe.
 - `start` through an app bundle runs in the right working directory: a relative mount in the

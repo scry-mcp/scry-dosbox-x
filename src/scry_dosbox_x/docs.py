@@ -24,6 +24,7 @@ from scry_core import (
 from scry_core import vocabulary as vocab
 
 from scry_dosbox_x import (
+    advance,
     binary,
     capture_files,
     checks,
@@ -77,6 +78,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "HITS_MAX": str(words.HITS_MAX), "HITS_DEFAULT": str(words.HITS_DEFAULT),
               "DEBUG_TEXT_KEEP": str(st.DEBUG_TEXT_KEEP),
               "DETAIL_TEXT_KEEP": str(st.DETAIL_TEXT_KEEP),
+              "PROTECTED_RUNS_MAX": str(advance.PROTECTED_RUNS_MAX),
               "SCREEN_TEXT_MAX": str(checks.SCREEN_TEXT_MAX),
               "PALETTES": ", ".join(f"`{p}`" for p in checks.PALETTES),
               "SYMBOLS_SHOWN": str(trace.SYMBOLS_SHOWN), **core_promote.DOC_VALUES}

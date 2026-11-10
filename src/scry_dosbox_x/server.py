@@ -218,16 +218,16 @@ def start(conf: str = "", cwd: str = "",
           base_from: Annotated[str, vocab.folded(start_symbols.BASE_FROM)] = start_symbols.PROGRAM,
           profile: str = "",
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Open one live DOSBox-X session from your conf, parked at the debugger. Somebody watching
-    through a stream (Moonlight) needs `shared=true` and `fullscreen=true`: a pointer does not
-    map inside a window.
+    """Open one live DOSBox-X session from your conf, parked at the debugger.
 
     Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve. `binary`:
     an executable or a `.app` carrying one, which `open` launches (macOS alone): that route
     keeps `cwd` through DOSBox-X's own `working directory` setting, names the bundle in
     `bundle`, and leaves the exit status to launchd, so `close` answers `unavailable` for it.
     `session_seconds`: the lifetime.
-    `shared`: watched, in a window; false, headless.
+    `shared`: watched, in a window; false, headless. Only somebody watching through a
+    stream (Moonlight) needs `fullscreen=true` as well: a pointer does not map inside a window
+    there.
     `profile`: a repository's run recipe (`.scry/start/<name>.json`) or a path to one. Its keys
     are this tool's arguments and fill only what the call does not give; the reply's `profile`
     block names it and what it filled. The store is looked for from the server's directory, then
@@ -749,11 +749,11 @@ def resume(seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail:
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Let the machine run. `seconds` 0 (the default) returns at once with no deadline; a bound
     up to {WAIT_MAX_S} waits for a stop and, if none comes, leaves it running. Needs a stopped
-    machine.
+    machine. The guest's E9 lines come with the stop it waited for, with or without `detail`.
 
     Reply: with a bound, `waited_s` and `verdict` (`OTHER_STOP` with the stop reply of `run_to`;
     `TIMEOUT`, left running, with a `note`). `output` (with `detail=True`: the last
-    {DETAIL_TEXT_KEEP} characters the debugger printed for `RUN`; else `omitted`).
+    {DETAIL_TEXT_KEEP} characters the debugger itself printed for `RUN`; else `omitted`).
 
     Reference: REFERENCE.md, Advancing the machine.
     """
@@ -765,8 +765,11 @@ def stop(until: Annotated[str, vocab.enum(advance.STOP_UNTIL)] = "",
          ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Bring a running guest back to the debugger and survey the stop, headless or windowed.
 
-    `until="protected"` lets a real-mode stop (a DPMI client's interrupt, in the BIOS) run in
-    short slices until a stop lands in protected mode, from a stop already held too; `cpu_mode`
+    `until="protected"` is for a stop that landed in real mode (a DPMI client's interrupt, in
+    the BIOS), this call's own or one already held: the guest is let run again in short runs, a
+    `BREAK` ending each, until one stops in protected mode, {PROTECTED_RUNS_MAX} runs at most.
+    The machine has then moved on, so what the earlier stop read (screen, memory, registers) no
+    longer describes it; a stop already in protected mode is answered as it stands. `cpu_mode`
     says where it ended.
 
     Reply: `interrupted` (`true` with the stop reply and `via: "break"`; `false` when already
@@ -778,7 +781,7 @@ def stop(until: Annotated[str, vocab.enum(advance.STOP_UNTIL)] = "",
     vocab.one_of("until", until, advance.STOP_UNTIL)
     session = live()
     if until:
-        return advance.stop_in_protected_mode(session)
+        return advance.stop_in_protected_mode(session, bridge(ctx))
     if session.at_debugger():
         running.observe_stop(session)
         # THE STOP IT IS IN, or none: after a survey that could not be read the record is the
@@ -1207,8 +1210,10 @@ def comment_write(method: Annotated[str, vocab.enum(tuple(folds.COMMENT))], ref:
 def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]] | None = None,
                 dest: str = "") -> dict[str, Any]:
     """What the DOS machine is at this stop: one section per debugger listing. `sections` left
-    out reads the DOS machine and `control`; `bios_mem`, `callbacks`, `vga`, `paging` only when
-    named. `dest` (absolute, new) writes all sections whole as JSON. Writes nothing to the guest.
+    out reads the DOS machine, `control` (the control registers, the flags and the
+    descriptor-table and task registers) and, in protected mode, `gdt` and `ldt` (the tables'
+    rows); `bios_mem`, `callbacks`, `vga`, `paging` only when named. `dest` (absolute, new)
+    writes all sections whole as JSON. Writes nothing to the guest.
 
     Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
     {LOG_LIMIT_MAX} rows), `sources`, `coverage_note` (why a section is absent), `path` (with
@@ -1711,7 +1716,8 @@ def perform(steps: list[dict[str, Any]] | None = None, path: str = "",
     `steps`: `{"op": <tool>, ...arguments}`, any tool but `build_check`, `start`, `close`,
     `perform`, `drive`, `perform_export`. {PERFORM_SOURCE}
     A `send_keys` or `send_mouse` whose `expect`
-    misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
+    misses ends the list `TIMEOUT`. A step's `recorded`, `{field: value}` of its
+    own reply, must hold, else INVALID `diverged`.
     The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
     nothing run. `settle_seconds` bounds each wait for a stop before a step that needs one (0:
     never wait). {UNTIL_FRAME} Frames count since power-on. A `screen_view` step inlines its

@@ -71,16 +71,16 @@ A build without the debugger starts fine and then hangs `start` until its timeou
 start(conf="", cwd="", session_seconds=null, shared=false, display=null, fullscreen=null, size=null, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program", profile="")
 ```
 
-Open one live DOSBox-X session from your conf, parked at the debugger. Somebody watching
-through a stream (Moonlight) needs `shared=true` and `fullscreen=true`: a pointer does not
-map inside a window.
+Open one live DOSBox-X session from your conf, parked at the debugger.
 
 Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve. `binary`:
 an executable or a `.app` carrying one, which `open` launches (macOS alone): that route
 keeps `cwd` through DOSBox-X's own `working directory` setting, names the bundle in
 `bundle`, and leaves the exit status to launchd, so `close` answers `unavailable` for it.
 `session_seconds`: the lifetime.
-`shared`: watched, in a window; false, headless.
+`shared`: watched, in a window; false, headless. Only somebody watching through a
+stream (Moonlight) needs `fullscreen=true` as well: a pointer does not map inside a window
+there.
 `profile`: a repository's run recipe (`.scry/start/<name>.json`) or a path to one. Its keys
 are this tool's arguments and fill only what the call does not give; the reply's `profile`
 block names it and what it filled. The store is looked for from the server's directory, then

@@ -17,7 +17,8 @@ stopping at the first failure; `drive` is this plus a wait for a line of the E9 
 `.scry/perform/<name>.json`, or a file `perform_export` wrote) whose steps are replayed; give
 `steps` or `path`, never both.
 A `send_keys` or `send_mouse` whose `expect`
-misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
+misses ends the list `TIMEOUT`. A step's `recorded`, `{field: value}` of its
+own reply, must hold, else INVALID `diverged`.
 The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
 nothing run. `settle_seconds` bounds each wait for a stop before a step that needs one (0:
 never wait). `until_frame=F` needs `summaries=True` (a window is hundreds of steps) and a `run_for` step, and repeats the list until a stop reads frame F, within 5000 steps and 600 s; `no_channel` if there is no frame counter. Frames count since power-on. A `screen_view` step inlines its

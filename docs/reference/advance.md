@@ -593,11 +593,11 @@ resume(seconds=0.0, detail=false)
 
 Let the machine run. `seconds` 0 (the default) returns at once with no deadline; a bound
 up to 600 waits for a stop and, if none comes, leaves it running. Needs a stopped
-machine.
+machine. The guest's E9 lines come with the stop it waited for, with or without `detail`.
 
 Reply: with a bound, `waited_s` and `verdict` (`OTHER_STOP` with the stop reply of `run_to`;
 `TIMEOUT`, left running, with a `note`). `output` (with `detail=True`: the last
-2000 characters the debugger printed for `RUN`; else `omitted`).
+2000 characters the debugger itself printed for `RUN`; else `omitted`).
 
 Reference: REFERENCE.md, Advancing the machine.
 
@@ -654,8 +654,11 @@ stop(until="")
 
 Bring a running guest back to the debugger and survey the stop, headless or windowed.
 
-`until="protected"` lets a real-mode stop (a DPMI client's interrupt, in the BIOS) run in
-short slices until a stop lands in protected mode, from a stop already held too; `cpu_mode`
+`until="protected"` is for a stop that landed in real mode (a DPMI client's interrupt, in
+the BIOS), this call's own or one already held: the guest is let run again in short runs, a
+`BREAK` ending each, until one stops in protected mode, 256 runs at most.
+The machine has then moved on, so what the earlier stop read (screen, memory, registers) no
+longer describes it; a stop already in protected mode is answered as it stands. `cpu_mode`
 says where it ended.
 
 Reply: `interrupted` (`true` with the stop reply and `via: "break"`; `false` when already

@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 from typing import Any, cast
 
+from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
 from scry_core import screen_map
 
@@ -30,15 +31,21 @@ PROTECTED_RUN_S = 0.007
 PROTECTED_RUN_STEPS = 11
 
 
-def to_protected(session: ds.Session) -> tuple[int, bool]:
+def to_protected(session: ds.Session,
+                 progress: ds.Progress = ds.no_progress) -> tuple[int, bool]:
     """Run a stopped machine in short slices until a stop lands in protected mode: the runs it
     took and whether one did. A slice a declared stop ended is that stop, and ends the walk: a
     `BREAK` there would run past it. A `STEPIN` stays inside a BIOS handler, so only running
-    leaves one."""
+    leaves one. Its own cancel point is between two runs."""
+    # The bound is in runs: `expired` is only the cancel point and the clock read `tick` needs.
+    clock = mprogress.Ticker(0.0, progress)
     taken = 0
     while not session.where()["mode"].startswith("Pr"):
         if taken == PROTECTED_RUNS_MAX:
             return taken, False
+        clock.expired()
+        clock.tick("stop until protected: run {run} of at most {runs}, not in protected mode "
+                   "yet, {elapsed:.0f}s", run=taken + 1, runs=PROTECTED_RUNS_MAX)
         session.release("RUN")
         time.sleep(PROTECTED_RUN_S * (1 + taken % PROTECTED_RUN_STEPS))
         taken += 1
@@ -149,7 +156,7 @@ def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dic
                                 made_by={"ref": ref, "by": "run_to"} if arrived else None)
 
 
-def stop_in_protected_mode(session: ds.Session) -> dict[str, Any]:
+def stop_in_protected_mode(session: ds.Session, progress: ds.Progress) -> dict[str, Any]:
     """`stop(until="protected")`: the stop this walk ended at, and what it took."""
     interrupted = not session.at_debugger()
     if interrupted:
@@ -163,7 +170,7 @@ def stop_in_protected_mode(session: ds.Session) -> dict[str, Any]:
                             cpu_mode=running.cpu_mode_of(where["mode"], session.paging),
                             pc=f"{where['cs']}:{where['eip']}",
                             note="the machine was already stopped in protected mode")
-    runs, arrived = to_protected(session)
+    runs, arrived = to_protected(session, progress)
     extra: dict[str, Any] = {} if arrived else {"note": (
         f"did not reach protected mode in {runs} short runs: `cause` says where it stopped, "
         "ask again")}
