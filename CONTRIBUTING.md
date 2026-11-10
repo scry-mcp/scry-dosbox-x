@@ -177,6 +177,14 @@ merged from the summaries they declare through `scry_core.live_pool`.
 uv run python tests/live/run_live_pytest.py
 ```
 
+**What a run behind guarantees.** Every start of the matrix but the focus gate's own start in
+front is behind, and a start behind does not come to the front, so the keyboard stays where it
+was. That is all it promises: its window is still there to be seen, and the host carries the
+load of every emulator the run starts, several at once. So a start behind is never the reason a
+run is safe beside somebody working: the matrix runs in an account or on a machine nobody is
+working at, or at an hour agreed with whoever is, and what says whether a run took the front is
+section O's verdict, read as scry-core's README says (*Focus watch*).
+
 What opens a window (section G, the focus gate's O, the `windowed` tests) runs alone. The focus
 gate's start in front and its Space move take the desk of whoever is working, so they run only
 with `SCRY_FOCUS_CONTROL=1` on an idle machine; unset, those cells are BLOCKED naming the variable
