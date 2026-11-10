@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import json
 import math
+import os
 from pathlib import Path
 from typing import Any, cast
 from unittest import mock
@@ -37,6 +38,11 @@ def _call(name: str, args: dict[str, Any]) -> dict[str, Any]:
 
 
 # ------------------------------------------------------------------ state names
+
+
+def absolute(name: str) -> str:
+    """A path every host reads as absolute: `/tmp/x` is relative to a drive on Windows."""
+    return os.path.abspath(f"/tmp/{name}")
 
 
 @pytest.mark.parametrize(("name", "words"), [
@@ -92,11 +98,11 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
     ("resume", {"seconds": "5"}, "is not a bound"),
     ("resume", {"seconds": math.nan}, "is not a bound"),
     ("resume", {"seconds": math.inf}, "is not a bound"),
-    ("snapshot", {"dest": "/tmp/shot"}, "no extension"),
-    ("screen_view", {"dest": "/tmp/shot"}, "no extension"),
-    ("memdump", {"ref": "1000:0000", "length": 16, "dest": "/tmp/dump"}, "no extension"),
-    ("trace", {"instructions": 1, "dest": "/tmp/run"}, "no extension"),
-    ("comment_write save", {"dest": "/tmp/notes"}, "no extension"),
+    ("snapshot", {"dest": absolute("shot")}, "no extension"),
+    ("screen_view", {"dest": absolute("shot")}, "no extension"),
+    ("memdump", {"ref": "1000:0000", "length": 16, "dest": absolute("dump")}, "no extension"),
+    ("trace", {"instructions": 1, "dest": absolute("run")}, "no extension"),
+    ("comment_write save", {"dest": absolute("notes")}, "no extension"),
 ])
 def test_a_value_wrong_with_no_machine_is_bad_argument_not_no_session(
         tool: str, kw: dict[str, Any], words: str) -> None:
