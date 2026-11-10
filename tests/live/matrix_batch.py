@@ -3,8 +3,8 @@ the machine exists, which the emulator's own unit tests cannot reach.
 
 `MEMDUMPLIN`'s file name and its two refusals, `VGAMEMDUMP`'s file name, `PORTINFO` as typed
 and the dynamic core's guard against a long run of one-byte instructions. The file-name cells
-need a case-sensitive volume: run with `DOSBOX_X_LIVE_PRIVATE` naming a directory on one, so the
-guests are copied there; a volume that folds case is detected and the cells are BLOCKED.
+read the spelling back from the directory listing, which a volume that folds case still
+preserves, once `_scrub` has taken away any earlier file of that name in either spelling.
 """
 from __future__ import annotations
 
@@ -101,17 +101,6 @@ def _says(command: str) -> tuple[bool, str]:
     return (True, str(r.get("output", ""))) if ok(r) else (False, said(r))
 
 
-def _case_sensitive(where: Path) -> bool:
-    """Whether `where` holds two names that differ only in case, tried with files of this run."""
-    a, b = where / "case-probe.tmp", where / "CASE-PROBE.TMP"
-    for p in (a, b):
-        p.write_bytes(p.name.encode())
-    names = {p.name for p in where.iterdir()}
-    for p in (a, b):
-        p.unlink(missing_ok=True)
-    return {a.name, b.name} <= names
-
-
 def _names() -> set[str]:
     return {p.name for p in GUEST.iterdir()}
 
@@ -147,17 +136,16 @@ def _block_dpmi_cells(why: str) -> None:
     close_whatever()
 
 
-def _before_page_tables(folds: bool) -> None:
+def _before_page_tables() -> None:
     boot()
     took, early = _says("MEMDUMPLIN 0 10 Early.Bin")
     left = [GUEST / n for n in ("Early.Bin", "EARLY.BIN") if (GUEST / n).is_file()]
     M.judge(FILE_CELLS[2], took and "not mapped" in early and "success" not in early.lower()
             and all(p.stat().st_size == 0 for p in left), early[:120])
-    if not folds:
-        took, vga = _says("VGAMEMDUMP 0 10 VgaCase.Bin")
-        names = _names()
-        M.judge(FILE_CELLS[3], took and "success" in vga and "VgaCase.Bin" in names
-                and "VGACASE.BIN" not in names, vga[:120])
+    took, vga = _says("VGAMEMDUMP 0 10 VgaCase.Bin")
+    names = _names()
+    M.judge(FILE_CELLS[3], took and "success" in vga and "VgaCase.Bin" in names
+            and "VGACASE.BIN" not in names, vga[:120])
     (read_ok, port_read), (none_ok, port_none), (over_ok, port_over) = (
         _says("PORTINFO 60"), _says("PORTINFO 2E8"), _says("PORTINFO 10000"))
     M.judge(PORT_CELL, read_ok and none_ok and over_ok and "PORTINFO 0060 R1=1" in port_read
@@ -484,13 +472,7 @@ def section_aa() -> None:
     _tapdel_auto()
     _dostrace_restart()
     _cd_volume()
-    folds = not _case_sensitive(GUEST)
-    if folds:
-        for label in (FILE_CELLS[0], FILE_CELLS[1], FILE_CELLS[3]):
-            M.block(label, f"{GUEST} folds case: run with DOSBOX_X_LIVE_PRIVATE on a "
-                    "case-sensitive volume")
-    else:
-        _dpmi_files()
-    _before_page_tables(folds)
+    _dpmi_files()
+    _before_page_tables()
     _scrub()
 
