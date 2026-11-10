@@ -4,6 +4,7 @@ process; the suite's own declaration store with the test run."""
 
 from __future__ import annotations
 
+import ast
 import os
 import subprocess
 import sys
@@ -56,3 +57,16 @@ def test_the_suites_declaration_store_goes_with_the_test_run(tmp_path: Path) -> 
                             "print(__import__('pathlib').Path(t._STORE_TMP).parent)\n")
     assert made.split() == [str(tmp_path)], "the store was not made where it is looked for"
     assert _left(tmp_path, "dosbox-x-") == []
+
+
+def test_no_program_here_writes_to_a_fixed_path_in_the_shared_temporary_folder() -> None:
+    """A fixed name there is one two runs collide on, and one nobody removes."""
+    root = Path(__file__).resolve().parents[1]
+    fixed: list[str] = []
+    files = [*(root / "src").rglob("*.py"), *(root / "tools").rglob("*.py")]
+    for source in files:
+        for node in ast.walk(ast.parse(source.read_text(encoding="utf-8"))):
+            if (isinstance(node, ast.Constant) and isinstance(node.value, str)
+                    and node.value.startswith(("/tmp/", "/var/tmp/", "/private/tmp/"))):
+                fixed.append(f"{source.relative_to(root)}:{node.lineno}: {node.value}")
+    assert files and not fixed, fixed

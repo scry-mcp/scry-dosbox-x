@@ -7,6 +7,7 @@ import json
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -166,15 +167,45 @@ def test_the_published_medians_are_the_runs_medians(tmp_path: Path,
                                                  "load_average": "0"})
     totals, prompts, ups = iter([4.0, 6.0, 5.0]), iter([1.0, 4.0, 3.0]), iter([7.0, 9.0, 8.0])
     monkeypatch.setattr(bench, "batch_cost", lambda cwd, song: {"total_s": next(totals)})
-    monkeypatch.setattr(bench, "reach_the_state", lambda conf, cwd: {
+    monkeypatch.setattr(bench, "reach_the_state", lambda conf, cwd, scratch: {
         "debugger_prompt_s": next(prompts), "application_up_s": next(ups)})
-    monkeypatch.setattr(bench, "per_question", lambda conf, cwd: {})
-    monkeypatch.setattr(bench, "advance_rate", lambda conf, cwd: {})
+    monkeypatch.setattr(bench, "per_question", lambda conf, cwd, scratch: {})
+    monkeypatch.setattr(bench, "advance_rate", lambda conf, cwd, scratch: {})
     assert bench.main() == 0
     got = json.loads(out.read_text())
     assert got["batch"]["total_s_median"] == 5.0, got["batch"]
     assert (got["reach"]["debugger_prompt_s_median"],
             got["reach"]["application_up_s_median"]) == (3.0, 8.0), got["reach"]
+
+
+def test_the_logs_go_with_a_measurement_and_stay_with_a_refusal(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _runnable(tmp_path, monkeypatch)
+    monkeypatch.setattr(bench, "validate_timer", lambda: {
+        "known_ms": 250.0, "read_ms": 250.0, "error_pct": 0.0, "negative_ms": 0.0, "ok": True})
+    monkeypatch.setattr(bench, "stamp", lambda: {"machine": "m", "emulator": "e",
+                                                 "load_average": "0"})
+    made: list[Path] = []
+
+    def reached(conf: Path, cwd: Path, scratch: Path) -> dict[str, float]:
+        made.append(scratch)
+        (scratch / "reach.log").write_text("a session's log", encoding="utf-8")
+        return {"debugger_prompt_s": 1.0, "application_up_s": 2.0}
+    monkeypatch.setattr(bench, "reach_the_state", reached)
+    monkeypatch.setattr(bench, "per_question", lambda conf, cwd, scratch: {})
+    monkeypatch.setattr(bench, "advance_rate", lambda conf, cwd, scratch: {})
+    assert bench.main() == 0 and not made[0].exists()
+
+    def refused(conf: Path, cwd: Path, scratch: Path) -> dict[str, object]:
+        bench.no_measurement("the marker did not appear")
+    monkeypatch.setattr(bench, "per_question", refused)
+    capsys.readouterr()
+    with pytest.raises(SystemExit):
+        bench.main()
+    kept = made[-1]
+    assert (kept / "reach.log").is_file() and f"kept: {kept}" in capsys.readouterr().out
+    shutil.rmtree(kept)
 
 
 def test_the_rate_is_the_median_of_the_windows_after_the_settling_sample() -> None:
@@ -290,10 +321,10 @@ def test_with_no_song_the_batch_is_not_run_and_the_result_says_why(
         raise AssertionError("the batch ran with no song named")
 
     monkeypatch.setattr(bench, "batch_cost", no_batch)
-    monkeypatch.setattr(bench, "reach_the_state", lambda conf, cwd: {
+    monkeypatch.setattr(bench, "reach_the_state", lambda conf, cwd, scratch: {
         "debugger_prompt_s": 1.0, "application_up_s": 2.0})
-    monkeypatch.setattr(bench, "per_question", lambda conf, cwd: {})
-    monkeypatch.setattr(bench, "advance_rate", lambda conf, cwd: {})
+    monkeypatch.setattr(bench, "per_question", lambda conf, cwd, scratch: {})
+    monkeypatch.setattr(bench, "advance_rate", lambda conf, cwd, scratch: {})
     assert bench.main() == 0
     got = json.loads(out.read_text())
     assert got["batch"] == {"available": False, "why": "no --song named, so no batch was run"}

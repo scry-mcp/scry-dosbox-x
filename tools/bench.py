@@ -16,9 +16,11 @@ import json
 import os
 import platform
 import re
+import shutil
 import statistics
 import subprocess
 import sys
+import tempfile
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -162,11 +164,10 @@ def launch(conf: Path, cwd: Path, seconds: int, logfile: Path) -> dlaunch.Launch
                           conf=conf, cwd=cwd, seconds=seconds, logfile=logfile)
 
 
-def reach_the_state(conf: Path, cwd: Path) -> dict[str, float]:
+def reach_the_state(conf: Path, cwd: Path, scratch: Path) -> dict[str, float]:
     """The debugger answering (the session can be asked) and application up (the marker)."""
-    log = Path("/tmp/dosbox-bench-reach.log")
-    if log.exists():
-        log.unlink()
+    log = scratch / "reach.log"
+    log.unlink(missing_ok=True)
     t0 = time.perf_counter()
     s = ds.Session(launch(conf, cwd, seconds=180, logfile=log))
     try:
@@ -186,11 +187,10 @@ def reach_the_state(conf: Path, cwd: Path) -> dict[str, float]:
     return {"debugger_prompt_s": round(prompt, 2), "application_up_s": round(up, 2)}
 
 
-def per_question(conf: Path, cwd: Path) -> dict[str, object]:
+def per_question(conf: Path, cwd: Path, scratch: Path) -> dict[str, object]:
     """What each tool costs against a session already stopped where you want it."""
-    log = Path("/tmp/dosbox-bench-q.log")
-    if log.exists():
-        log.unlink()
+    log = scratch / "q.log"
+    log.unlink(missing_ok=True)
     s = ds.Session(launch(conf, cwd, seconds=300, logfile=log))
     out: dict[str, object] = {}
     try:
@@ -224,7 +224,7 @@ def per_question(conf: Path, cwd: Path) -> dict[str, object]:
     return out
 
 
-def advance_rate(conf: Path, cwd: Path) -> dict[str, object]:
+def advance_rate(conf: Path, cwd: Path, scratch: Path) -> dict[str, object]:
     """How fast the guest runs while nobody is asking it anything.
 
     Published is the median of the per-window rates with the first window discarded: the
@@ -232,9 +232,8 @@ def advance_rate(conf: Path, cwd: Path) -> dict[str, object]:
     while the log pipeline is backed up after the boot burst. Monotonicity is not evidence,
     since `newest()` is a maximum over a growing file; the spread is.
     """
-    log = Path("/tmp/dosbox-bench-rate.log")
-    if log.exists():
-        log.unlink()
+    log = scratch / "rate.log"
+    log.unlink(missing_ok=True)
     s = ds.Session(launch(conf, cwd, seconds=240, logfile=log))
     try:
         s.wait_ready()
@@ -355,21 +354,32 @@ def main() -> int:
                             statistics.median(r["total_s"] for r in runs), 2)}
     else:
         out["batch"] = {"available": False, "why": "no --song named, so no batch was run"}
-    reach = [reach_the_state(conf, cwd) for _ in range(args.reps)]
-    out["reach"] = {
-        "runs": reach,
-        "debugger_prompt_s_median": round(
-            statistics.median(r["debugger_prompt_s"] for r in reach), 2),
-        "application_up_s_median": round(
-            statistics.median(r["application_up_s"] for r in reach), 2)}
-    out["live"] = per_question(conf, cwd)
-    out["advance"] = advance_rate(conf, cwd)
+    scratch = Path(tempfile.mkdtemp(prefix="dosbox-bench-"))
+    try:
+        measure(out, conf, cwd, scratch, args.reps)
+    except BaseException:
+        print(f"kept: {scratch} (each session's log)")
+        raise
+    shutil.rmtree(scratch)
 
     print(json.dumps({k: v for k, v in out.items() if k != "timer"}, indent=2))
     if args.json:
         args.json.write_text(json.dumps(out, indent=2))
         print(f"written to {args.json}")
     return 0
+
+
+def measure(out: dict[str, Any], conf: Path, cwd: Path, scratch: Path, reps: int) -> None:
+    """The live figures into `out`, each session's log in `scratch`."""
+    reach = [reach_the_state(conf, cwd, scratch) for _ in range(reps)]
+    out["reach"] = {
+        "runs": reach,
+        "debugger_prompt_s_median": round(
+            statistics.median(r["debugger_prompt_s"] for r in reach), 2),
+        "application_up_s_median": round(
+            statistics.median(r["application_up_s"] for r in reach), 2)}
+    out["live"] = per_question(conf, cwd, scratch)
+    out["advance"] = advance_rate(conf, cwd, scratch)
 
 
 if __name__ == "__main__":
