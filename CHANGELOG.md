@@ -4,6 +4,12 @@ What a client of the server notices.
 
 ## Unreleased
 
+- `screen_wait` takes `on_breakpoint` or `on_watch`: the screen is judged only at the frame's
+  end after a firing of that declared breakpoint or change watch, never by sampling, and a
+  `condition` filters the firings first. The reply counts `firings` and `frames_examined` in
+  place of `polls`; a row that never fires is `never_fired`, and such a wait is cut, not
+  replayed, by `perform_export`. `changed` waits for a mapped screen other than the one shown
+  at the start.
 - The files the server writes are named in lowercase words joined by hyphens, with one
   extension ([the rule](https://github.com/scry-mcp/scry-core/blob/main/docs/file-names.md)):
   a file `dest`, a `logfile` or a state's `name` given as `Shot_1.PNG` or `Boss_1` is written

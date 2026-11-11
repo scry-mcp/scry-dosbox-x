@@ -8,12 +8,12 @@ from __future__ import annotations
 import time
 from typing import Any
 
-from scry_core import cancel
+from scry_core import cancel, stop_wait
 from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
 from scry_core.prose import counted
 
-from scry_dosbox_x import arming, machine, running, screen, vga
+from scry_dosbox_x import arming, at_stop, machine, running, screen, vga
 from scry_dosbox_x import dac as vgadac
 from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import run_state as rs
@@ -319,6 +319,38 @@ class ScreenWatched(Watched):
         return "" if found is not None else "; no mapped screen matched the frames examined"
 
 
+class ChangedWatched(Watched):
+    """A screen the map names other than the one it named at the call's start
+    (`scry_core.stop_wait.Changed`)."""
+
+    name = "changed"
+    said = "a changed screen"
+
+    def __init__(self, session: ds.Session) -> None:
+        self.session = session
+        self.judge = stop_wait.Changed(self._found())
+
+    def _found(self) -> dict[str, Any]:
+        # Imported here for the reason `ScreenWatched.hit` gives.
+        from scry_dosbox_x import folds as dosbox_folds
+
+        try:
+            return STATE.maps.find(dosbox_folds.map_read(self.session), None)
+        except ds.Invalid as e:
+            # A frame with no video mode yet names no screen: a transition, as for `screen`.
+            if e.code != "no_channel":
+                raise
+            return {"matched": False, "screens_tried": 0, "screens_unjudged": 0}
+
+    def hit(self) -> dict[str, Any] | None:
+        found = self._found()
+        if not self.judge.judge(found):
+            return None
+        return {"screen": {"name": found["screen"], "layer": found["layer"]},
+                "started_on": self.judge.started_on or contract.unavailable(
+                    "the map named no screen when the wait began")}
+
+
 class PaletteWatched(Watched):
     name = "palette"
 
@@ -334,16 +366,21 @@ class PaletteWatched(Watched):
         return None
 
 
-def _watched(session: ds.Session, text: str, screen: str, palette: str) -> Watched:
+def _watched(session: ds.Session, text: str, screen: str, palette: str,
+             changed: bool = False) -> Watched:
     """The one predicate the caller named; none or several is refused before a frame runs."""
     named = [(name, value) for name, value in
-             (("text", text), ("screen", screen), ("palette", palette)) if value]
+             (("text", text), ("screen", screen), ("palette", palette), ("changed", changed))
+             if value]
     if len(named) != 1:
         raise ds.Invalid("bad_argument",
-                         "screen_wait runs on exactly one of `text`, `screen` or `palette`; got "
-                         f"{len(named)} of them. Each is a different read of the screen, and a "
-                         "frame has the budget of one")
+                         "screen_wait runs on exactly one of `text`, `screen`, `palette` or "
+                         f"`changed`; got {len(named)} of them. Each is a different read of the "
+                         "screen, and a frame has the budget of one")
     name, value = named[0]
+    if name == "changed":
+        return ChangedWatched(session)
+    value = str(value)
     if name == "text":
         return TextWatched(session, value)
     if name == "screen":
@@ -352,7 +389,9 @@ def _watched(session: ds.Session, text: str, screen: str, palette: str) -> Watch
 
 
 def screen_wait(session: ds.Session, text: str, screen: str, palette: str, every: int,
-                seconds: float, progress: ds.Progress) -> dict[str, Any]:
+                seconds: float, progress: ds.Progress, on_breakpoint: str = "",
+                on_watch: str = "", condition: str = "",
+                changed: bool = False) -> dict[str, Any]:
     """Retrace by retrace until the one predicate holds.
 
     `text`: inside one row of the text screen. `screen`: the loaded screen map names the frame.
@@ -363,7 +402,14 @@ def screen_wait(session: ds.Session, text: str, screen: str, palette: str, every
     `wait_stopped`; the bound, a `TIMEOUT` (`_expired`).
     """
     session.require_run_state("screen_wait")
-    watched = _watched(session, text, screen, palette)
+    spec = stop_wait.check(on_breakpoint, on_watch, every, condition)
+    if spec is not None:
+        at_stop.declared_row(spec)          # refused before the screen is read
+    watched = _watched(session, text, screen, palette, changed)
+    if spec is not None:
+        return at_stop.screen_wait_at(
+            session, spec, watched, seconds, progress, _advance, _cut, _stop_reply, _bound,
+            _ended_at, "" if session.launch.core == COUNTED_CORE else UNCUT_NOTE)
     step = every or 1
     hit = watched.hit()
     if hit is not None:
@@ -412,6 +458,14 @@ def screen_wait(session: ds.Session, text: str, screen: str, palette: str, every
     if arming.declares_untold_stopper():
         found["note"] = UNTOLD_NOTE
     return _stop_reply(session, found)
+
+
+def _bound(session: ds.Session, out: bool) -> bool:
+    """Stop a run whose bound ran out with a `VRT` still `out`, as `_expired` does; whether a
+    `VRT` is still armed after it."""
+    if out:
+        STATE.retrace_pending = ds.Session.stop_at_bound(session)
+    return STATE.retrace_pending
 
 
 def _advance_by(session: ds.Session, frames: int, began: float, deadline: float,

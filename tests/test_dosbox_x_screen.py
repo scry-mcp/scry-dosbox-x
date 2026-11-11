@@ -1801,6 +1801,108 @@ def test_a_breakpoint_that_cuts_a_frame_ends_the_wait_naming_it(tmp_path: Path) 
     assert r["stop_seq"] == dstate.STATE.last_stop["seq"]
 
 
+def at_breakpoint(tmp_path: Path, stops: list[str], releases: list[Stop | None],
+                  refs: tuple[str, ...] = ("0814:0108",)) -> Frames:
+    """`stops` per `VRT` sent, `releases` in order; each of `refs` a declared breakpoint."""
+    machine = waiting(stops, len(releases), tmp_path)
+    machine.releases = releases
+    for ref in refs:
+        _real_bp(ref)
+        machine.breakpoints.insert(0, f"BP {ref}")
+    return machine
+
+
+BP_STOP = {"EIP": 0x108}
+#: The double keeps the registers a stop set, so a retrace stop names its own place.
+FRAME_STOP = {"EIP": 0x10C}
+
+
+def test_a_wait_on_a_breakpoint_judges_the_retrace_after_its_firing(tmp_path: Path) -> None:
+    machine = at_breakpoint(tmp_path, ["probe-park", "probe-park", "probe-booted"],
+                            [Stop(BP_STOP, ms=3.0), Stop(FRAME_STOP, ms=FRAME_MS)])
+    r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", on_breakpoint="0814:0108",
+                                                seconds=5))
+    assert r["status"] == "ok" and r["verdict"] == "TARGET", r
+    assert r["waited_on"] == {"kind": "breakpoint", "ref": "0814:0108"}
+    assert r["firings"] == 1 and r["frames_examined"] == 1 and r["fired_line"]["available"] is False
+    assert "polls" not in r and "sampled_every" not in r and r["already"] is False
+    assert len(vrts(machine)) == 2 and r["stop_seq"] == dstate.STATE.last_stop["seq"]
+    assert r["summary"] == ("screen_wait 'PROBE.COM': found at 4,3 after 1 firing of "
+                            "breakpoint '0814:0108'")
+
+
+def test_a_retrace_before_any_firing_is_not_judged_even_with_the_screen_there(
+        tmp_path: Path) -> None:
+    machine = at_breakpoint(tmp_path, ["probe-booted"] * 4,
+                            [Stop(FRAME_STOP, ms=FRAME_MS), Stop(BP_STOP, ms=3.0),
+                             Stop(FRAME_STOP, ms=FRAME_MS)])
+    r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", on_breakpoint="0814:0108",
+                                                seconds=5))
+    assert r["status"] == "ok" and r["firings"] == 1 and r["frames_examined"] == 1, r
+    assert len(vrts(machine)) == 3
+
+
+def test_a_firing_whose_condition_fails_arms_no_judgement(tmp_path: Path) -> None:
+    at_breakpoint(tmp_path, ["probe-booted"] * 5,
+                  [Stop(BP_STOP, ms=3.0), Stop(FRAME_STOP, ms=FRAME_MS)] * 2)
+    r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", on_breakpoint="0814:0108",
+                                                condition="AX==FFFF", seconds=0.5))
+    assert r["status"] == "ok" and r["verdict"] == "TIMEOUT", r
+    assert r["firings"] == 2 and r["frames_examined"] == 0
+    assert r["waited_on"]["condition"] == "AX==FFFF"
+    assert "met the condition, so no screen was judged" in r["note"], r["note"]
+
+
+def test_a_breakpoint_that_never_fires_is_refused_not_a_timeout(tmp_path: Path) -> None:
+    at_breakpoint(tmp_path, ["probe-booted"] * 3, [Stop(FRAME_STOP, ms=FRAME_MS)] * 2)
+    r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", on_breakpoint="0814:0108",
+                                                seconds=0.5))
+    assert r["status"] == "INVALID" and r["code"] == "never_fired", r
+    assert r["firings"] == 0 and "0814:0108" in r["message"]
+
+
+def test_another_declared_breakpoint_ends_the_wait_naming_it(tmp_path: Path) -> None:
+    at_breakpoint(tmp_path, ["probe-booted"] * 2, [Stop(BP_STOP, ms=3.0)],
+                  refs=("0814:0108", "0814:0200"))
+    r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", on_breakpoint="0814:0200",
+                                                seconds=5))
+    assert r["status"] == "INVALID" and r["code"] == "wait_stopped", r
+    assert "0814:0108" in r["cause"] and r["firings"] == 0
+    assert r["stop_seq"] == dstate.STATE.last_stop["seq"]
+
+
+def test_a_declared_breakpoint_ends_a_wait_on_a_watch_and_is_not_taken_for_a_retrace(
+        tmp_path: Path) -> None:
+    machine = at_breakpoint(tmp_path, ["probe-booted"] * 2, [Stop(BP_STOP, ms=3.0)])
+    assert dstate.STATE.store is not None
+    dstate.STATE.store.add(arming.declare("watch", "address", "0040:006C", cpu=grammar.REAL_MODE,
+                                          watch_mode="change", width=1, fmt="u8"))
+    r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", on_watch="0040:006C",
+                                                seconds=5))
+    assert r["status"] == "INVALID" and r["code"] == "wait_stopped", r
+    assert "0814:0108" in r["cause"] and len(vrts(machine)) == 1
+
+
+@pytest.mark.parametrize(("kw", "code"), [
+    ({"text": "C:", "on_breakpoint": "0814:0999"}, "unknown_ref"),
+    ({"text": "C:", "on_watch": "0814:0108"}, "unknown_ref"),
+    ({"text": "C:", "on_breakpoint": "0814:0108", "every": 7}, "bad_argument"),
+    ({"text": "C:", "on_breakpoint": "0814:0108", "on_watch": "x"}, "bad_argument"),
+    ({"text": "C:", "condition": "AX==1"}, "bad_argument"),
+    ({"text": "C:", "on_breakpoint": "0814:0108", "condition": "AX=1"}, "bad_argument"),
+    ({"text": "C:", "changed": True}, "bad_argument"),
+    ({"text": "C:", "on_breakpoint": "0814:0108", "condition": "FLAGS==2"}, "bad_argument"),
+    ({"text": "C:", "on_breakpoint": "0814:0108", "condition": "D0==1"}, "bad_argument"),
+    ({"text": "C:", "on_breakpoint": "0814:0108", "condition": "AL==100"}, "bad_argument"),
+])
+def test_a_wait_at_a_stop_refuses_what_cannot_be_waited_on_before_a_retrace(
+        tmp_path: Path, kw: dict[str, Any], code: str) -> None:
+    machine = at_breakpoint(tmp_path, ["probe-booted"], [Stop(ms=FRAME_MS)])
+    r = cast(dict[str, Any], server.screen_wait(seconds=5, **kw))
+    assert r["status"] == "INVALID" and r["code"] == code, r
+    assert vrts(machine) == []
+
+
 @pytest.mark.parametrize("kw", [
     {"text": ""}, {"text": "x" * 133}, {"text": "a\nb"}, {"text": 3}, {"text": "Name: "},
     {"text": "   "}, {"text": "€uro"},

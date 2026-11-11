@@ -2563,6 +2563,43 @@
    "grammar": [
     "protected"
    ]
+  },
+  {
+   "id": "d184",
+   "prompt": "The machine is stopped, its screen map is loaded and a breakpoint is declared at the routine draw_done. Let it run until the mapped screen called menu is on screen, judging the screen only after draw_done has run rather than every frame, and stop there.",
+   "tool": "screen_wait",
+   "args": {
+    "screen": "menu",
+    "on_breakpoint": "draw_done"
+   },
+   "allow": [
+    "seconds"
+   ]
+  },
+  {
+   "id": "d185",
+   "prompt": "The machine is stopped, its screen map is loaded and a change watch is declared on the variable level. Let it run until the screen is a different mapped screen from the one shown now, judging only after level has been written, and stop there.",
+   "tool": "screen_wait",
+   "args": {
+    "changed": true,
+    "on_watch": "level"
+   },
+   "allow": [
+    "seconds"
+   ]
+  },
+  {
+   "id": "d186",
+   "prompt": "The machine is stopped, its screen map is loaded and a breakpoint is declared at draw_done. Let it run until the mapped screen called title is on screen, but only consider the firings of draw_done where register AX equals 3, and stop there.",
+   "tool": "screen_wait",
+   "args": {
+    "screen": "title",
+    "on_breakpoint": "draw_done",
+    "condition": {"any_of": ["AX==3", "AX == 3", "AX==0x3", "AX==03", "AX==0003"]}
+   },
+   "allow": [
+    "seconds"
+   ]
   }
  ]
 }

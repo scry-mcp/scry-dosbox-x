@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import promote as core_promote
-from scry_core import prose, screen_map, session_block
+from scry_core import prose, screen_map, session_block, stop_wait
 from scry_core import reply_contract as contract
 
 from scry_dosbox_x import running
@@ -537,21 +537,21 @@ def series_capture(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def screen_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
     predicate = str(reply.get("predicate") or "text")
     asked = args.get(predicate) or ""
-    said = (repr(asked) if predicate == "text"
-            else f"screen {asked!r}" if predicate == "screen" else f"a {asked} palette")
+    said = (repr(asked) if predicate == "text" else "a changed screen"
+            if predicate == "changed" else f"screen {asked!r}" if predicate == "screen"
+            else f"a {asked} palette")
     point = reply.get("point")
     at = f"{point[0]},{point[1]}" if isinstance(point, list) else "?"
+    after = stop_wait.summary_after(reply) or \
+        f"after {prose.counted(int(reply.get('polls') or 0), 'retrace')}"
     if reply.get("verdict") == contract.TIMEOUT:
-        return (f"screen_wait {said}: TIMEOUT after "
-                f"{prose.counted(int(reply.get('polls') or 0), 'retrace')}")
+        return f"screen_wait {said}: TIMEOUT {after}"
     if reply.get("already"):
         where = f" at {at}" if isinstance(point, list) else ""
         return f"screen_wait {said}: already on screen{where}"
     if predicate != "text":
-        return (f"screen_wait {said}: found after "
-                f"{prose.counted(int(reply.get('polls') or 0), 'retrace')}")
-    return (f"screen_wait {said}: found at {at} after "
-            f"{prose.counted(int(reply.get('polls') or 0), 'retrace')}")
+        return f"screen_wait {said}: found {after}"
+    return f"screen_wait {said}: found at {at} {after}"
 
 
 def capture_frame(args: dict[str, Any], reply: dict[str, Any]) -> str:

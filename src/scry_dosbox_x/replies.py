@@ -403,6 +403,9 @@ class ScreenViewReply(DosboxEnvelope, total=False):
     y: int
 
 
+UNDER_ON = When("under `on_*`")
+
+
 class ScreenWaitReply(DosboxEnvelope, total=False):
     already: bool
     cause: str
@@ -417,17 +420,22 @@ class ScreenWaitReply(DosboxEnvelope, total=False):
     palette: str
     pc: str
     point: list[Any]
-    polls: int
+    polls: Annotated[int, When("in place of")]
     predicate: str
     regs: dict[str, Any]
     retrace_pending: bool
-    sampled_every: int
+    sampled_every: Annotated[int, When("in place of")]
     screen: dict[str, Any]
+    started_on: Annotated[str | dict[str, Any], When("`changed` adds")]
     stop_seq: int
     text: list[Any]
     verdict: Required[str]
     waited_s: float
     watches: list[Any]
+    waited_on: Annotated[dict[str, Any], UNDER_ON]
+    firings: Annotated[int, UNDER_ON]
+    frames_examined: Annotated[int, UNDER_ON]
+    fired_line: Annotated[int | dict[str, Any], UNDER_ON]
 
 
 FROM_A_STOPPED_MACHINE = When("from a stopped machine")

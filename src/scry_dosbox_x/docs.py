@@ -14,6 +14,7 @@ from scry_core import (
     recording,
     screen_map,
     series,
+    stop_wait,
 )
 from scry_core import (
     promote as core_promote,
@@ -80,6 +81,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "DETAIL_TEXT_KEEP": str(st.DETAIL_TEXT_KEEP),
               "PROTECTED_RUNS_MAX": str(advance.PROTECTED_RUNS_MAX),
               "SCREEN_TEXT_MAX": str(checks.SCREEN_TEXT_MAX),
+              "CONDITION_GRAMMAR": stop_wait.GRAMMAR,
               "PALETTES": ", ".join(f"`{p}`" for p in checks.PALETTES),
               "SYMBOLS_SHOWN": str(trace.SYMBOLS_SHOWN), **core_promote.DOC_VALUES}
 

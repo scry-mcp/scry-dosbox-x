@@ -42,6 +42,16 @@ INT3 = bytes.fromhex("CD03")
 VGA_COMMANDS = ["VGA MODE", "VGA CRTC", "VGA SEQ", "VGA GC", "VGA AC", "VGA DAC", "VGA DRAW"]
 
 J_CELLS = cells(
+    ("J screen_wait on_breakpoint judges the retrace after a timer firing and finds the page",
+     "screen_wait docstring: on_breakpoint; the BIOS timer handler fires 18.2 times a second"),
+    ("J screen_wait on_breakpoint for a string never printed times out with its firings",
+     "screen_wait docstring: TIMEOUT with firings, frames_examined"),
+    ("J screen_wait on a breakpoint that never fires is refused never_fired",
+     "screen_wait docstring: never_fired"),
+    ("J screen_wait on_watch on the BIOS tick counter judges after its change",
+     "screen_wait docstring: on_watch, a change watch; known: 0040:006C counts timer ticks"),
+    ("J screen_wait with a condition that never holds examines no frame",
+     "screen_wait docstring: condition filters the firings first; CS is F000 in the handler"),
     ("J palette at the park: 256 entries, every one zero",
      "measured: no video mode is set at the park, the DAC is unwritten"),
     ("J palette once booted: entry 1 is the BIOS's 00 00 2A, #0000aa",
@@ -145,6 +155,43 @@ def section_j() -> None:
     _screen_guest()
 
 
+def _stop_waits() -> None:
+    """`screen_wait` judged at a declared stop, on the booted probe: the timer handler (INT 8's
+    vector) as the breakpoint, the BIOS tick counter as the watch."""
+    vector = must(M.call(server.read_memory, ref="0000:0020", length=4), "INT 8's vector")
+    raw = bytes.fromhex(str(vector.get("hex")))
+    timer = f"{int.from_bytes(raw[2:4], 'little'):04X}:{int.from_bytes(raw[0:2], 'little'):04X}"
+    must(M.call(server.breakpoint_at, ref=timer), f"a breakpoint at the timer handler {timer}")
+    r = M.call(server.screen_wait, text="PROBE.COM", on_breakpoint=timer, seconds=30)
+    judged("J screen_wait on_breakpoint judges the retrace after a timer firing and finds the page",
+           reply=r, holds=ok(r) and r.get("verdict") == "TARGET"
+           and int(r.get("firings") or 0) >= 1 and int(r.get("frames_examined") or 0) >= 1
+           and (r.get("waited_on") or {}).get("ref") == timer and "polls" not in r
+           and r.get("line") == "C:\\>PROBE.COM")
+    r = M.call(server.screen_wait, text="NO GUEST PRINTS THIS", on_breakpoint=timer, seconds=3)
+    judged("J screen_wait on_breakpoint for a string never printed times out with its firings",
+           reply=r, holds=ok(r) and r.get("verdict") == "TIMEOUT"
+           and int(r.get("firings") or 0) >= 1 and int(r.get("frames_examined") or 0) >= 1)
+    r = M.call(server.screen_wait, text="PROBE.COM", on_breakpoint=timer, condition="CS==0",
+               seconds=3)
+    judged("J screen_wait with a condition that never holds examines no frame", reply=r,
+           holds=ok(r) and r.get("verdict") == "TIMEOUT" and int(r.get("firings") or 0) >= 1
+           and r.get("frames_examined") == 0)
+    must(M.call(server.declaration_clear, kind="breakpoint", ref=timer), "clearing the timer")
+    must(M.call(server.breakpoint_at, ref="0000:0600"), "a breakpoint nothing executes")
+    r = M.call(server.screen_wait, text="PROBE.COM", on_breakpoint="0000:0600", seconds=2)
+    judged("J screen_wait on a breakpoint that never fires is refused never_fired", reply=r,
+           holds=refused(r, "never_fired") and r.get("firings") == 0)
+    must(M.call(server.declaration_clear, kind="breakpoint", ref="0000:0600"), "clearing it")
+    must(M.call(server.watch_add, ref="0040:006C", mode="change", length=1),
+         "a change watch on the BIOS tick counter")
+    r = M.call(server.screen_wait, text="PROBE.COM", on_watch="0040:006C", seconds=30)
+    judged("J screen_wait on_watch on the BIOS tick counter judges after its change", reply=r,
+           holds=ok(r) and r.get("verdict") == "TARGET" and int(r.get("firings") or 0) >= 1
+           and (r.get("waited_on") or {}).get("kind") == "watch")
+    must(M.call(server.declaration_clear, kind="watch", ref="0040:006C"), "clearing the watch")
+
+
 def _probe() -> None:
     boot()
     M.setup()
@@ -180,6 +227,7 @@ def _probe() -> None:
     judged("J screen_wait for a string never printed expires with its polls and the last page",
            reply=r, holds=ok(r) and r.get("verdict") == "TIMEOUT"
            and int(r.get("polls") or 0) >= 1 and "C:\\>PROBE.COM" in (r.get("text") or []))
+    _stop_waits()
     r = M.call(server.palette, first=1, count=1)
     judged("J palette once booted: entry 1 is the BIOS's 00 00 2A, #0000aa", reply=r,
            holds=ok(r) and r.get("rgb") == ["00002a"] and r.get("colors") == ["#0000aa"])

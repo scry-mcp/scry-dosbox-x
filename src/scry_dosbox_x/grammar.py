@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
+from typing import Any
 
 from scry_core.reply_contract import Invalid
 
@@ -120,6 +122,21 @@ CONDITION_TERMS_MAX = 4
 CONDITION_ROW = "BPIF "
 
 
+def check_wait_condition(terms: Sequence[Any]) -> None:
+    """A `screen_wait` condition's registers, judged before anything runs: a name this machine
+    reads at a stop, and a value its width can hold. `FLAGS` is `BPIF`'s, not a stop's."""
+    for t in terms:
+        if t.size:
+            continue
+        if t.operand not in CONDITION_REGISTERS or t.operand == "FLAGS":
+            raise Invalid("bad_argument", f"the condition names {t.operand!r}, which is no "
+                          "register a stop reads here: "
+                          + ", ".join(r for r in CONDITION_REGISTERS if r != "FLAGS"))
+        if t.value >= 1 << condition_bits(t.operand):
+            raise Invalid("bad_argument", f"{t.operand} is {condition_bits(t.operand)} bits wide "
+                          f"and never holds {t.value:#x}")
+
+
 def condition_bits(register: str) -> int:
     """How wide `BPIF` reads a register: the flags are `reg_flags` whole."""
     if register == "FLAGS" or (len(register) == 3 and register[0] == "E"):
@@ -153,7 +170,7 @@ def condition_row(text: str) -> str:
     return " && ".join(shown)
 
 
-def _register(regs: dict[str, str], name: str) -> int | None:
+def register_value(regs: dict[str, str], name: str) -> int | None:
     """`name`'s value from a stop's 32-bit registers, its 16- or 8-bit part named; None when the
     stop carries no such register."""
     if name in regs:
@@ -177,7 +194,7 @@ def condition_holds(row: str, regs: dict[str, str]) -> bool | None:
         m = _TERM.fullmatch(term)
         if m is None:
             return None
-        value = _register(regs, m.group(1))
+        value = register_value(regs, m.group(1))
         if value is None:
             return None
         want, op = int(m.group(3), 16), m.group(2)

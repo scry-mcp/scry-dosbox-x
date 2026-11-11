@@ -899,8 +899,9 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
 
 @tool("Wait for a screen, its text or its palette", summary=one_line.screen_wait,
       on_cancel="stop", replay=recording.Counted("run_for", "frames", "polls"))
-def screen_wait(text: str = "", screen: str = "", palette: str = "",
+def screen_wait(text: str = "", screen: str = "", palette: str = "", changed: bool = False,
                 every: Annotated[int, vocab.bounds(0, checks.SAMPLED_EVERY_MAX)] = 0,
+                on_breakpoint: str = "", on_watch: str = "", condition: str = "",
                 seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
                 ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run the machine retrace by retrace until ONE predicate holds, and stop there.
@@ -908,7 +909,14 @@ def screen_wait(text: str = "", screen: str = "", palette: str = "",
     Exactly one of: `text` (1 to {SCREEN_TEXT_MAX} code page 437 characters, matched literally and
     case-sensitive inside one row as `screen_view` reads it), `screen` (a name of the loaded
     screen map, `screen_map_write`; the frame it names), `palette` ({PALETTES}: every DAC entry
-    black, which is how a fade ends). None or several is `bad_argument`.
+    black, which is how a fade ends), `changed` (the map names a screen other than the one it
+    named at the start; a frame it names nothing is a transition). None or several is
+    `bad_argument`.
+
+    `on_breakpoint` / `on_watch`: judge only at the retrace after a firing of that declared
+    breakpoint or `change` watch (its `ref` as `declaration_list` lists it), never sampling;
+    `condition` ({CONDITION_GRAMMAR}) filters the firings first. The first firing is awaited even
+    when the predicate already holds. Runs on the normal core.
 
     `every`: 0 judges every retrace; N judges every Nth, for a predicate whose read is a full
     frame, and a screen that lasts fewer than N retraces is passed over. `seconds` bounds the
@@ -919,9 +927,13 @@ def screen_wait(text: str = "", screen: str = "", palette: str = "",
     Reply: `verdict` `TARGET` (`predicate`, `already`, `waited_s`, `polls`, `sampled_every`;
     text adds `point` `[column, row]` and `line`, screen adds `screen`, palette adds `entries`) or
     `TIMEOUT` (the same, with `retrace_pending`), `note`, the stop reply of `run_to` with its
-    `frame` (unless the predicate was already true). Refused: `bad_argument`, `unknown_ref` (no
-    such mapped screen), `wait_stopped` (a declared breakpoint stopped it), `no_channel` (a
-    screen it cannot read, or a build with no `RUNSTATE`).
+    `frame` (unless the predicate was already true); under `on_*`, `waited_on`, `firings`,
+    `frames_examined` (the frames looked at after a firing) and `fired_line` in place of `polls`
+    and `sampled_every`, and `changed` adds `screen` and `started_on`. Refused: `bad_argument`,
+    `unknown_ref` (no such mapped screen or declared row), `needs_call` (`changed` with no map
+    loaded), `wait_stopped` (another declared breakpoint stopped it), `never_fired` (the row
+    never fired within `seconds`), `no_channel` (a screen it cannot read, or a build with no
+    `RUNSTATE`).
 
     Reference: REFERENCE.md, Input and the screen.
     """
@@ -929,7 +941,8 @@ def screen_wait(text: str = "", screen: str = "", palette: str = "",
     session.require_stopped("screen_wait")
     if palette:
         vocab.one_of("palette", palette, checks.PALETTES)
-    return retrace.screen_wait(session, text, screen, palette, every, seconds, bridge(ctx))
+    return retrace.screen_wait(session, text, screen, palette, every, seconds, bridge(ctx),
+                               on_breakpoint, on_watch, condition, changed)
 
 
 

@@ -392,7 +392,7 @@ breakpoint's address stops there again with nothing executed. The machine can cl
 *Wait for a screen, its text or its palette*
 
 ```text
-screen_wait(text="", screen="", palette="", every=0, seconds=30.0)
+screen_wait(text="", screen="", palette="", changed=false, every=0, on_breakpoint="", on_watch="", condition="", seconds=30.0)
 ```
 
 Run the machine retrace by retrace until ONE predicate holds, and stop there.
@@ -400,7 +400,14 @@ Run the machine retrace by retrace until ONE predicate holds, and stop there.
 Exactly one of: `text` (1 to 132 code page 437 characters, matched literally and
 case-sensitive inside one row as `screen_view` reads it), `screen` (a name of the loaded
 screen map, `screen_map_write`; the frame it names), `palette` (`black`: every DAC entry
-black, which is how a fade ends). None or several is `bad_argument`.
+black, which is how a fade ends), `changed` (the map names a screen other than the one it
+named at the start; a frame it names nothing is a transition). None or several is
+`bad_argument`.
+
+`on_breakpoint` / `on_watch`: judge only at the retrace after a firing of that declared
+breakpoint or `change` watch (its `ref` as `declaration_list` lists it), never sampling;
+`condition` (up to 4 terms joined by `&&`, each a register (`AX`, `d0`) or a memory read (`b@ref`, `w@ref`, `d@ref`), a comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`) and a hex value (`0x` allowed)) filters the firings first. The first firing is awaited even
+when the predicate already holds. Runs on the normal core.
 
 `every`: 0 judges every retrace; N judges every Nth, for a predicate whose read is a full
 frame, and a screen that lasts fewer than N retraces is passed over. `seconds` bounds the
@@ -411,9 +418,13 @@ costs a stop and a read, so `run_for` first for a distant screen.
 Reply: `verdict` `TARGET` (`predicate`, `already`, `waited_s`, `polls`, `sampled_every`;
 text adds `point` `[column, row]` and `line`, screen adds `screen`, palette adds `entries`) or
 `TIMEOUT` (the same, with `retrace_pending`), `note`, the stop reply of `run_to` with its
-`frame` (unless the predicate was already true). Refused: `bad_argument`, `unknown_ref` (no
-such mapped screen), `wait_stopped` (a declared breakpoint stopped it), `no_channel` (a
-screen it cannot read, or a build with no `RUNSTATE`).
+`frame` (unless the predicate was already true); under `on_*`, `waited_on`, `firings`,
+`frames_examined` (the frames looked at after a firing) and `fired_line` in place of `polls`
+and `sampled_every`, and `changed` adds `screen` and `started_on`. Refused: `bad_argument`,
+`unknown_ref` (no such mapped screen or declared row), `needs_call` (`changed` with no map
+loaded), `wait_stopped` (another declared breakpoint stopped it), `never_fired` (the row
+never fired within `seconds`), `no_channel` (a screen it cannot read, or a build with no
+`RUNSTATE`).
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -422,7 +433,11 @@ Reference: REFERENCE.md, Input and the screen.
 | `text` | string | `""` |
 | `screen` | string | `""` |
 | `palette` | string | `""` |
+| `changed` | boolean | `false` |
 | `every` | integer (>= 0, <= 600) | `0` |
+| `on_breakpoint` | string | `""` |
+| `on_watch` | string | `""` |
+| `condition` | string | `""` |
 | `seconds` | number (> 0, <= 600.0) | `30.0` |
 
 | reply field | type |
@@ -446,11 +461,16 @@ Reference: REFERENCE.md, Input and the screen.
 | `retrace_pending` | boolean |
 | `sampled_every` | integer |
 | `screen` | object |
+| `started_on` | string or object |
 | `stop_seq` | integer |
 | `text` | array |
 | `verdict` | string |
 | `waited_s` | number |
 | `watches` | array |
+| `waited_on` | object |
+| `firings` | integer |
+| `frames_examined` | integer |
+| `fired_line` | integer or object |
 
 Example, from a live run:
 
@@ -478,7 +498,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end screen_wait -->
 
-`seconds` is counted from after the first read so that a short one still reaches the first frame; a frame read under way when it passes is finished. A frame not in a text mode is no match. `note` on a TARGET appears when a declared watch or interrupt breakpoint could have made a stop it took for a retrace. On a TIMEOUT `text` holds the rows of the last text page read, absent when none was, and a `VRT` still out is interrupted where it stands. Refusals that ran a retrace carry `polls` and `stop_seq`; `wait_stopped` also carries `stop_seq`, `polls`, `retrace_pending` and `text`. Where `stop_seq` is due and the stop's survey came back cut, `enrichment` is unavailable instead.
+`seconds` is counted from after the first read so that a short one still reaches the first frame; a frame read under way when it passes is finished. A frame not in a text mode is no match. `note` on a TARGET appears when a declared watch or interrupt breakpoint could have made a stop it took for a retrace. On a TIMEOUT `text` holds the rows of the last text page read, absent when none was, and a `VRT` still out is interrupted where it stands. Refusals that ran a retrace carry `polls` and `stop_seq`; `wait_stopped` also carries `stop_seq`, `polls`, `retrace_pending` and `text`. Under `on_*` they carry `firings` and `frames_examined` in place of `polls`. Where `stop_seq` is due and the stop's survey came back cut, `enrichment` is unavailable instead.
 
 <!-- scry-reference:begin step -->
 ## `step`

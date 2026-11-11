@@ -22,6 +22,7 @@ from scry_core import (
     picture,
     recording,
     screen_map,
+    stop_wait,
 )
 from scry_core import (
     scan_vocabulary as words,
@@ -568,13 +569,21 @@ SAMPLED_EVERY_MAX = 600
 
 
 def _screen_wait(text: object = "", screen: object = "", palette: object = "", every: int = 0,
-                 seconds: float = 30.0, **_: Any) -> None:
-    named = [n for n, v in (("text", text), ("screen", screen), ("palette", palette)) if v]
+                 seconds: float = 30.0, changed: object = False, on_breakpoint: object = "",
+                 on_watch: object = "", condition: object = "", **_: Any) -> None:
+    named = [n for n, v in (("text", text), ("screen", screen), ("palette", palette),
+                            ("changed", changed)) if v]
     if len(named) != 1:
         raise ds.Invalid("bad_argument",
-                         "screen_wait runs on exactly one of `text`, `screen` or `palette`; got "
-                         f"{len(named)} of them. Each is a different read of the screen, and a "
-                         "frame has the budget of one")
+                         "screen_wait runs on exactly one of `text`, `screen`, `palette` or "
+                         f"`changed`; got {len(named)} of them. Each is a different read of the "
+                         "screen, and a frame has the budget of one")
+    if not all(isinstance(v, str) for v in (on_breakpoint, on_watch, condition)):
+        raise ds.Invalid("bad_argument", "`on_breakpoint`, `on_watch` and `condition` are text")
+    spec = stop_wait.check(str(on_breakpoint), str(on_watch),
+                           every if isinstance(every, int) else 0, str(condition))
+    if spec is not None:
+        grammar.check_wait_condition(spec.condition)
     if palette:
         vocab.one_of("palette", palette, PALETTES)
     if not isinstance(every, int) or isinstance(every, bool) or not 0 <= every <= SAMPLED_EVERY_MAX:
