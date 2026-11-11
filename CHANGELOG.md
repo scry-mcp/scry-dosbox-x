@@ -4,6 +4,8 @@ What a client of the server notices.
 
 ## Unreleased
 
+- On macOS the server reads the screens from a child process when it places a window, so it is
+  no longer held as an application and Activity Monitor cannot show it as not responding.
 - Every demo arrives by the program's own code or screen, never by a fixed time: MINES runs to
   its loop after each click; LineUp stops at its first DOS call, waits for each screen at the
   frame after its tick and reads each move once taken; Speed Fight stops at its first VESA
