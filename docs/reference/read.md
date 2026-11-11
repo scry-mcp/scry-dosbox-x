@@ -272,18 +272,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1131.bin"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1143.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to /var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1131.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1143.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1131.bin",
+  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1143.bin",
   "bytes": 16
 }
 ```

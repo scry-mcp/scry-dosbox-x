@@ -135,17 +135,17 @@ Deluxe Paint's menus and arrows act only while the button is held. `send_mouse` 
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 100,59; posted, unverified, 24 retraces to frame 461",
+        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; posted, unverified, 24 retraces to frame 461",
         "status": "ok",
         "stop_seq": 63,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 13F8:00000228"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 7,39; posted, unverified, 20 retraces to frame 481",
+        "summary": "send_mouse: pointer at 7,39, program's own pointer not read; posted, unverified, 20 retraces to frame 481",
         "status": "ok",
         "stop_seq": 83,
         "cause": "the retrace the input's post ran to, at F000:0000CBE5"
@@ -169,39 +169,39 @@ Deluxe Paint's menus and arrows act only while the button is held. `send_mouse` 
         },
         "arrived": true,
         "polls": 15,
-        "pc": "F000:0000CFC5",
+        "pc": "13F8:0000021D",
         "cpu_mode": "real",
         "stop_seq": 98,
         "frame": 496,
         "instruction": {
-          "address": "F000:0000CFC5",
-          "bytes": "CF",
-          "text": "iret",
-          "flow": "return",
+          "address": "13F8:0000021D",
+          "bytes": "55",
+          "text": "push bp",
+          "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": {"available": false, "why": "no symbol table is loaded"},
           "delta": {"available": false, "why": "no symbol table is loaded"}
         },
         "regs": {
-          "EAX": "0x000001b8",
+          "EAX": "0x00009fb8",
           "EBX": "0x00000178",
           "ECX": "0x005b0003",
           "EDX": "0x00000000",
-          "ESI": "0x0000ffff",
+          "ESI": "0x00009fd8",
           "EDI": "0x00000000",
-          "EBP": "0x00009fa8",
-          "ESP": "0x00009f94",
-          "EIP": "0x0000cfc5",
-          "CS": "0xf000",
-          "DS": "0x31b0",
+          "EBP": "0x00009fbc",
+          "ESP": "0x00009faa",
+          "EIP": "0x0000021d",
+          "CS": "0x13f8",
+          "DS": "0x31b2",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x31b0"
+          "SS": "0x31b2"
         },
         "watches": [],
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5",
+        "cause": "the retrace the input's post ran to, at 13F8:0000021D",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "verify": {
           "checked": false,
@@ -322,20 +322,20 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,185; posted, unverified, 25 retraces to frame 1472",
+        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; posted, unverified, 25 retraces to frame 1472",
         "status": "ok",
         "stop_seq": 1055,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 13F8:00000220"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1487",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1487",
         "status": "ok",
         "stop_seq": 1070,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 100B:0000032D"
       }
     },
     {
@@ -347,30 +347,30 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 184,399; posted, unverified, 30 retraces to frame 1517",
+        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; posted, unverified, 30 retraces to frame 1517",
         "status": "ok",
         "stop_seq": 1100,
-        "cause": "the retrace the input's post ran to, at 0DA5:0000034E"
+        "cause": "the retrace the input's post ran to, at 100B:0000023A"
       }
     },
     {
       "step": 4,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at F000:0000CFC0",
+        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 100B:00000240",
         "status": "ok",
         "stop_seq": 1101,
-        "cause": "the retrace run_for ran to, at F000:0000CFC0"
+        "cause": "the retrace run_for ran to, at 100B:00000240"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1538",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1538",
         "status": "ok",
         "stop_seq": 1112,
-        "cause": "the retrace the input's post ran to, at 13F6:000002D3"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -382,10 +382,10 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 203,5; posted, unverified, 20 retraces to frame 1558",
+        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1558",
         "status": "ok",
         "stop_seq": 1132,
-        "cause": "the retrace the input's post ran to, at 0955:00000335"
+        "cause": "the retrace the input's post ran to, at 0957:0000035D"
       }
     },
     {
@@ -397,27 +397,27 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 269,18; posted, unverified, 20 retraces to frame 1578",
+        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; posted, unverified, 20 retraces to frame 1578",
         "status": "ok",
         "stop_seq": 1152,
-        "cause": "the retrace the input's post ran to, at 0DA5:000002DE"
+        "cause": "the retrace the input's post ran to, at 0DA7:00000337"
       }
     },
     {
       "step": 10,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 19A5:000001DD",
+        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 19A7:0000019E",
         "status": "ok",
         "stop_seq": 1153,
-        "cause": "the retrace run_for ran to, at 19A5:000001DD"
+        "cause": "the retrace run_for ran to, at 19A7:0000019E"
       }
     },
     {
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1609",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1609",
         "status": "ok",
         "stop_seq": 1164,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -432,7 +432,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "step": 13,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 440,357; posted, unverified, 25 retraces to frame 1634",
+        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; posted, unverified, 25 retraces to frame 1634",
         "status": "ok",
         "stop_seq": 1189,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -452,10 +452,10 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1655",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1655",
         "status": "ok",
         "stop_seq": 1201,
-        "cause": "the retrace the input's post ran to, at 1009:00000273"
+        "cause": "the retrace the input's post ran to, at 100B:00000324"
       }
     },
     {

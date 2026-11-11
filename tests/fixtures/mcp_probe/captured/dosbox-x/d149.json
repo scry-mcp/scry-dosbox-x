@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D149",
+  "id": "d149",
   "prompt": "Turn the A20 gate off.",
   "tool": "a20",
   "args": {
@@ -13,91 +13,91 @@
  "runs": [
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
+    "d149: {\"tool\": \"a20\", \"args\": {\"method\": \"off\"}}"
    ],
    "right": true
   }

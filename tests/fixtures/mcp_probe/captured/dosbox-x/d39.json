@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D39",
+  "id": "d39",
   "prompt": "At every stop, read the 10 bytes at 1A2B:0300 as a 10-character string, forcing 1A2B:0300 to be taken as an address.",
   "tool": "watch_add",
   "args": {
@@ -27,91 +27,91 @@
  "runs": [
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"by\": \"address\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"by\": \"address\", \"fmt\": \"char[10]\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"by\": \"address\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"by\": \"address\", \"length\": 10, \"fmt\": \"char[10]\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"by\": \"address\", \"mode\": \"show\", \"fmt\": \"char[10]\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"by\": \"address\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10}}"
+    "d39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\", \"length\": 10}}"
    ],
    "right": true
   }

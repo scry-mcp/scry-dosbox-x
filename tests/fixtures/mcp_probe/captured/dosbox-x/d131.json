@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D131",
+  "id": "d131",
   "prompt": "End the DOSBox-X session, and even if it quits cleanly I want the last words of the console and of the log in the answer.",
   "tool": "close",
   "args": {
@@ -10,91 +10,91 @@
  "runs": [
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+    "d131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
    ],
    "right": true
   }

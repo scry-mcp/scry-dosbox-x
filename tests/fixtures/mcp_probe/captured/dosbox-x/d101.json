@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D101",
+  "id": "d101",
   "prompt": "The guest is stopped in mode 13h. Show me only the rectangle at x 40, y 30, 64 by 48 of the screen, enlarged 3 times.",
   "tool": "screen_view",
   "args": {
@@ -19,91 +19,91 @@
  "runs": [
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D101: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+    "d101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true
   }

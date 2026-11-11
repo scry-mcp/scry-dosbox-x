@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D150",
+  "id": "d150",
   "prompt": "Did the guest write /opt/build/OUT.TXT during this run, leave it empty, or leave the old one untouched?",
   "tool": "guest_file",
   "args": {
@@ -10,91 +10,91 @@
  "runs": [
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
+    "d150: {\"tool\": \"guest_file\", \"args\": {\"path\": \"/opt/build/OUT.TXT\"}}"
    ],
    "right": true
   }

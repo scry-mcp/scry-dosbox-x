@@ -60,21 +60,21 @@ Example, from a live run:
 ```json
 {
   "dry_run": true,
-  "root": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/n31-promote"
+  "root": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote"
 }
 ```
 
 ```json
 {
-  "summary": "promote: 3 candidates in /var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/n31-promote/.scry",
+  "summary": "promote: 3 candidates in $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/.scry",
   "status": "ok",
-  "store": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/n31-promote/.scry",
+  "store": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/.scry",
   "candidates": [
     {
       "entry": "maps/probe",
       "kind": "maps",
       "name": "probe",
-      "file": ".scry/maps/probe.screen-map.json",
+      "file": ".scry/maps/probe-screen-map.json",
       "bytes": 328,
       "change": "new"
     },
@@ -91,12 +91,13 @@ Example, from a live run:
       "kind": "start",
       "name": "probe-profile",
       "file": ".scry/start/probe-profile.json",
-      "bytes": 243,
+      "bytes": 197,
       "change": "new"
     }
   ],
-  "total_bytes": 693,
-  "store_bytes": 693
+  "unchanged": [],
+  "total_bytes": 647,
+  "store_bytes": 647
 }
 ```
 <!-- scry-reference:end promote -->

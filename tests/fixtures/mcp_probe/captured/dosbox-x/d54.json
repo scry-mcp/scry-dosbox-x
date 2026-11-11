@@ -1,97 +1,97 @@
 {
  "task": {
-  "id": "D54",
+  "id": "d54",
   "prompt": "The guest runs in a HEADLESS session with nothing declared that could stop it: bring it back to the debugger right now.",
   "tool": "stop"
  },
  "runs": [
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D54: {\"tool\": \"stop\", \"args\": {}}"
+    "d54: {\"tool\": \"stop\", \"args\": {}}"
    ],
    "right": true
   }

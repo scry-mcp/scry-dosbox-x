@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D07",
+  "id": "d07",
   "prompt": "When did DOSBox-X's own log (not the guest's) print a line matching LEVEL [0-9]+ START? Wait up to 45 seconds for it.",
   "tool": "log_wait",
   "args": {
@@ -15,91 +15,91 @@
  "runs": [
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+    "d07: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"emulator\", \"pattern\": \"LEVEL [0-9]+ START\", \"seconds\": 45}}"
    ],
    "right": true
   }

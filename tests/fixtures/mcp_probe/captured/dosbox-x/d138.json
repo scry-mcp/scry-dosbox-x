@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D138",
+  "id": "d138",
   "prompt": "Each time the byte _frame_flag is written, keep a copy of the 24 bytes at _sprite_table as they stood at that moment, without stopping the machine.",
   "tool": "watch_add",
   "args": {
@@ -21,91 +21,91 @@
  "runs": [
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\", \"length\": 24}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
+    "d138: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_sprite_table\", \"mode\": \"capture\", \"length\": 24, \"trigger\": \"_frame_flag\", \"trigger_type\": \"w\"}}"
    ],
    "right": true
   }

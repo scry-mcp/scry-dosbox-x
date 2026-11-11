@@ -93,10 +93,10 @@ The board is read out of the game's memory by name: `mines` is a symbol of the b
 
 ```json
 {
-  "summary": "read_memory mines: 81 bytes at 08DD:00001030: 00000001000000000000000100010000000001000000000000000000000000000000000000000000000000000000000000010000000000000000000100000100... (17 more bytes in `hex`)",
+  "summary": "read_memory mines: 81 bytes at 08DF:00001030: 00000001000000000000000100010000000001000000000000000000000000000000000000000000000000000000000000010000000000000000000100000100... (17 more bytes in `hex`)",
   "status": "ok",
   "ref": "mines",
-  "seg_off": "08DD:00001030",
+  "seg_off": "08DF:00001030",
   "length": 81,
   "hex": "000000010000000000000001000100000000010000000000000000000000000000000000000000000000000000000000000100000000000000000001000001000001000000000000010000010000000000",
   "session": {"alive": true, "running": false, "altered": false}
@@ -147,187 +147,187 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 304,204; effect seen, 25 retraces to frame 156",
+        "summary": "send_mouse: pointer at 304,204, program's own pointer not read; effect seen, 25 retraces to frame 156",
         "status": "ok",
         "stop_seq": 149,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 352,204; effect seen, 25 retraces to frame 181",
+        "summary": "send_mouse: pointer at 352,204, program's own pointer not read; effect seen, 25 retraces to frame 181",
         "status": "ok",
         "stop_seq": 174,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E07: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,204; effect seen, 25 retraces to frame 206",
+        "summary": "send_mouse: pointer at 400,204, program's own pointer not read; effect seen, 25 retraces to frame 206",
         "status": "ok",
         "stop_seq": 199,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 424,204; effect seen, 25 retraces to frame 231",
+        "summary": "send_mouse: pointer at 424,204, program's own pointer not read; effect seen, 25 retraces to frame 231",
         "status": "ok",
         "stop_seq": 224,
-        "cause": "no declared code breakpoint at 08DD:00000E07: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 448,204; effect seen, 25 retraces to frame 256",
+        "summary": "send_mouse: pointer at 448,204, program's own pointer not read; effect seen, 25 retraces to frame 256",
         "status": "ok",
         "stop_seq": 249,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 376,228; effect seen, 25 retraces to frame 281",
+        "summary": "send_mouse: pointer at 376,228, program's own pointer not read; effect seen, 25 retraces to frame 281",
         "status": "ok",
         "stop_seq": 274,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,348; effect seen, 25 retraces to frame 306",
+        "summary": "send_mouse: pointer at 400,348, program's own pointer not read; effect seen, 25 retraces to frame 306",
         "status": "ok",
         "stop_seq": 299,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 448,348; effect seen, 25 retraces to frame 331",
+        "summary": "send_mouse: pointer at 448,348, program's own pointer not read; effect seen, 25 retraces to frame 331",
         "status": "ok",
         "stop_seq": 324,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 472,348; effect seen, 25 retraces to frame 356",
+        "summary": "send_mouse: pointer at 472,348, program's own pointer not read; effect seen, 25 retraces to frame 356",
         "status": "ok",
         "stop_seq": 349,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 376,372; effect seen, 25 retraces to frame 381",
+        "summary": "send_mouse: pointer at 376,372, program's own pointer not read; effect seen, 25 retraces to frame 381",
         "status": "ok",
         "stop_seq": 374,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,372; effect seen, 25 retraces to frame 406",
+        "summary": "send_mouse: pointer at 400,372, program's own pointer not read; effect seen, 25 retraces to frame 406",
         "status": "ok",
         "stop_seq": 399,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 424,372; effect seen, 25 retraces to frame 431",
+        "summary": "send_mouse: pointer at 424,372, program's own pointer not read; effect seen, 25 retraces to frame 431",
         "status": "ok",
         "stop_seq": 424,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 12,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 448,372; effect seen, 25 retraces to frame 456",
+        "summary": "send_mouse: pointer at 448,372, program's own pointer not read; effect seen, 25 retraces to frame 456",
         "status": "ok",
         "stop_seq": 449,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 13,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 472,372; effect seen, 25 retraces to frame 481",
+        "summary": "send_mouse: pointer at 472,372, program's own pointer not read; effect seen, 25 retraces to frame 481",
         "status": "ok",
         "stop_seq": 474,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 14,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 496,372; effect seen, 25 retraces to frame 506",
+        "summary": "send_mouse: pointer at 496,372, program's own pointer not read; effect seen, 25 retraces to frame 506",
         "status": "ok",
         "stop_seq": 499,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 328,396; effect seen, 25 retraces to frame 531",
+        "summary": "send_mouse: pointer at 328,396, program's own pointer not read; effect seen, 25 retraces to frame 531",
         "status": "ok",
         "stop_seq": 524,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 16,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 352,396; effect seen, 25 retraces to frame 556",
+        "summary": "send_mouse: pointer at 352,396, program's own pointer not read; effect seen, 25 retraces to frame 556",
         "status": "ok",
         "stop_seq": 549,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 17,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,396; effect seen, 25 retraces to frame 581",
+        "summary": "send_mouse: pointer at 400,396, program's own pointer not read; effect seen, 25 retraces to frame 581",
         "status": "ok",
         "stop_seq": 574,
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 18,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 424,396; effect seen, 25 retraces to frame 606",
+        "summary": "send_mouse: pointer at 424,396, program's own pointer not read; effect seen, 25 retraces to frame 606",
         "status": "ok",
         "x": 424,
         "y": 396,
@@ -342,14 +342,14 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
           "bios_mode": "0x6b",
           "vbe_mode": "0x103"
         },
-        "arrived": true,
+        "driver_arrived": true,
         "polls": 25,
-        "pc": "08DD:00000E08",
+        "pc": "08DF:00000E08",
         "cpu_mode": "real",
         "stop_seq": 599,
         "frame": 606,
         "instruction": {
-          "address": "08DD:00000E08",
+          "address": "08DF:00000E08",
           "bytes": "A808",
           "text": "test al, 8",
           "flow": "sequential",
@@ -368,15 +368,15 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
           "EBP": "0x0000091c",
           "ESP": "0x0000fffc",
           "EIP": "0x00000e08",
-          "CS": "0x08dd",
-          "DS": "0x08dd",
-          "ES": "0x08dd",
+          "CS": "0x08df",
+          "DS": "0x08df",
+          "ES": "0x08df",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x08dd"
+          "SS": "0x08df"
         },
         "watches": [],
-        "cause": "no declared code breakpoint at 08DD:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
         "e9": {
           "lines_total": 2,
           "truncated": false,

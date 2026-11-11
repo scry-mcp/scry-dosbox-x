@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D73",
+  "id": "d73",
   "prompt": "The guest is stopped in mode 13h, 320 by 200. Give me a signature of the top-left quarter of the screen only, ignoring the rest.",
   "tool": "screen_signature",
   "args": {
@@ -15,91 +15,91 @@
  "runs": [
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
+    "d73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   }

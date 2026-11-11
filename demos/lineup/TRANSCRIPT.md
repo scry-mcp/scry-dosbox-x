@@ -17,7 +17,7 @@
   "status": "ok",
   "pid": "<volatile>",
   "conf": "<volatile>",
-  "conf_digest": "365901dcd0ac5cec",
+  "conf_digest": "6018944893db6f81",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -47,6 +47,7 @@
     }
   },
   "note": "this session runs the dynamic core, which checks breakpoints only between compiled blocks, so a code breakpoint inside one can be passed over and a run that never reaches it proves nothing. Start on the normal core: `start(flags=[\"-set\", \"cpu core=normal\"])`",
+  "kept": "kept 1 (promote to review)",
   "profile": {
     "name": "<volatile>",
     "file": "<volatile>",
@@ -116,7 +117,7 @@
   },
   "symbols_placed": {"placed": true, "path": "<volatile>", "load_segment": "08EB", "base": 36528, "loaded": 385},
   "emulated_before_s": 0.00094,
-  "emulated_after_s": 2.00290892,
+  "emulated_after_s": 2.0029089,
   "frame_before": 0,
   "frame_after": 140,
   "cycles": {
@@ -175,7 +176,7 @@
       "step": 0,
       "op": "run_to",
       "reply": {
-        "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 0",
+        "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 1",
         "status": "ok",
         "stop_seq": 3,
         "cause": "run_to's target Draw_High_Scores_Screen at 08EB:00001DF6"
@@ -280,10 +281,10 @@
       "step": 14,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 3000 ms: ELAPSED, 211 polls, at 08EB:00008716",
+        "summary": "run_for 3000 ms: ELAPSED, 211 polls, at 08EB:000086A8",
         "status": "ok",
         "stop_seq": 20,
-        "cause": "the retrace run_for ran to, at 08EB:00008716"
+        "cause": "the retrace run_for ran to, at 08EB:000086A8"
       }
     },
     {
@@ -341,10 +342,10 @@
       "step": 21,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:0000864A",
+        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:00008621",
         "status": "ok",
         "stop_seq": 44,
-        "cause": "the retrace run_for ran to, at 08EB:0000864A"
+        "cause": "the retrace run_for ran to, at 08EB:00008621"
       }
     },
     {
@@ -456,7 +457,7 @@
     "delta": 88
   },
   "emulated_before_s": 12.119534439999999,
-  "emulated_after_s": 14.1313315,
+  "emulated_after_s": 14.13133152,
   "frame_before": 849,
   "frame_after": 990,
   "cycles": {
@@ -627,7 +628,7 @@
   "closed": true,
   "pid": "<volatile>",
   "conf": "<volatile>",
-  "conf_digest": "365901dcd0ac5cec",
+  "conf_digest": "6018944893db6f81",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -637,6 +638,7 @@
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
+  "draft": ["start/dos"],
   "session": {"alive": false, "running": false, "altered": false}
 }
 ```

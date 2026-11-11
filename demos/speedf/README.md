@@ -69,7 +69,7 @@ The run is 6 calls; these are the ones that show how it is done, and every call 
   "status": "ok",
   "pid": "<volatile>",
   "conf": "<volatile>",
-  "conf_digest": "c79ee334a86719e0",
+  "conf_digest": "fa6947f920eb337d",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",

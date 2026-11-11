@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D115",
+  "id": "d115",
   "prompt": "Export only the last ten calls of this session as a replay document.",
   "expect": "CANNOT",
   "about": "perform_export"
@@ -8,91 +8,91 @@
  "runs": [
   {
    "lines": [
-    "D115: CANNOT perform_export writes all calls since start, or the first 5000 of them; it cannot select the last ten."
+    "d115: CANNOT perform_export writes every call since start, and it cannot select only the last ten calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start; it has no option to limit the export to the last calls."
+    "d115: CANNOT perform_export writes every call since start and has no option to select only the last ten calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start and offers no way to select only the last ten."
+    "d115: CANNOT perform_export writes every call since start, with no option to keep only the last N calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes the whole session since start, with no option to keep only the last calls."
+    "d115: CANNOT perform_export writes every call since start, and it has no option to keep only the last few calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export has no option to limit the export to recent calls; it writes every kept call since start."
+    "d115: CANNOT perform_export writes every call since `start` and has no option to take only the last calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start, and it has no option to keep only the most recent calls."
+    "d115: CANNOT perform_export writes every kept call since start, with no option to take only the last few."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start and has no option to limit it to the last few calls."
+    "d115: CANNOT perform_export writes every call since start, and it has no option to keep only the last few calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start, with no option to keep only the last ten."
+    "d115: CANNOT perform_export writes every call since start and has no option to limit it to the last ten calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start; it cannot select only the last ten."
+    "d115: CANNOT perform_export writes every call since start, with no option to limit the export to the last calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start, with no option to limit it to the last ten."
+    "d115: CANNOT perform_export writes every call since start, and it has no argument to select only the last ten calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes the whole session since start and has no argument to keep only the last calls."
+    "d115: CANNOT perform_export has no option to limit the export to the last calls; it writes every call since start."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start; it cannot export only the last ten calls."
+    "d115: CANNOT perform_export writes every call since start, with no option to keep only the last few calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start; it has no option to limit the export to the last ten calls."
+    "d115: CANNOT perform_export writes every call since start, with no option to keep only the most recent calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes every call since start and has no option to keep only the last few calls."
+    "d115: CANNOT perform_export exports the whole session since start and has no option to keep only the last calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export has no option to keep only the last N calls; it writes the whole session since start."
+    "d115: CANNOT perform_export writes every call since start; it has no option to keep only the last calls."
    ],
    "right": true
   }

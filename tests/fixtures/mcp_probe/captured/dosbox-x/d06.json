@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D06",
+  "id": "d06",
   "prompt": "Show the newest 30 lines of the guest's own E9 instrumentation that match ^SCORE, with a count of the matching lines per first word.",
   "tool": "log",
   "args": {
@@ -16,91 +16,91 @@
  "runs": [
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+    "d06: {\"tool\": \"log\", \"args\": {\"channel\": \"guest\", \"pattern\": \"^SCORE\", \"limit\": 30, \"labels\": true}}"
    ],
    "right": true
   }

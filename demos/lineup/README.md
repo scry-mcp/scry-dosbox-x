@@ -100,7 +100,7 @@ The run is 9 calls; these are the ones that show how it is done, and every call 
       "step": 0,
       "op": "run_to",
       "reply": {
-        "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 0",
+        "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 1",
         "status": "ok",
         "stop_seq": 3,
         "cause": "run_to's target Draw_High_Scores_Screen at 08EB:00001DF6"
@@ -205,10 +205,10 @@ The run is 9 calls; these are the ones that show how it is done, and every call 
       "step": 14,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 3000 ms: ELAPSED, 211 polls, at 08EB:00008716",
+        "summary": "run_for 3000 ms: ELAPSED, 211 polls, at 08EB:000086A8",
         "status": "ok",
         "stop_seq": 20,
-        "cause": "the retrace run_for ran to, at 08EB:00008716"
+        "cause": "the retrace run_for ran to, at 08EB:000086A8"
       }
     },
     {
@@ -266,10 +266,10 @@ The run is 9 calls; these are the ones that show how it is done, and every call 
       "step": 21,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:0000864A",
+        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:00008621",
         "status": "ok",
         "stop_seq": 44,
-        "cause": "the retrace run_for ran to, at 08EB:0000864A"
+        "cause": "the retrace run_for ran to, at 08EB:00008621"
       }
     },
     {

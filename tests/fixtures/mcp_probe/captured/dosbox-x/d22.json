@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D22",
+  "id": "d22",
   "prompt": "Step into the next 4 instructions, following calls, and show me the E9 lines the guest wrote since the previous stop.",
   "tool": "step",
   "args": {
@@ -14,91 +14,91 @@
  "runs": [
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+    "d22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
    ],
    "right": true
   }

@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D153",
+  "id": "d153",
   "prompt": "For every INT 10h video BIOS call the program has made, give me the AX it returned.",
   "expect": "CANNOT",
   "about": "log"
@@ -8,91 +8,91 @@
  "runs": [
   {
    "lines": [
-    "D153: CANNOT The DOS channel records only INT 21h calls, not INT 10h video BIOS calls."
+    "d153: CANNOT The dos channel records only INT 21h calls, so the video BIOS (INT 10h) calls and their AX results are not available."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The dos channel records only INT 21h calls, so INT 10h video BIOS results cannot be listed."
+    "d153: CANNOT The dos channel records only INT 21h calls, so INT 10h video BIOS returns cannot be listed."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The DOS channel records only INT 21h calls, and no other tool lists INT 10h return values."
+    "d153: CANNOT The dos channel records only INT 21h calls, and no tool lists the AX returned by INT 10h calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The DOS call log records INT 21h calls only, not INT 10h video BIOS calls."
+    "d153: CANNOT The dos log channel records only INT 21h calls, so the video BIOS INT 10h calls cannot be read from it."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The dos channel records only INT 21h calls, so no INT 10h video BIOS results are available."
+    "d153: CANNOT The `dos` channel holds only INT 21h calls, and no other tool lists INT 10h calls with their AX results."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The dos channel records only INT 21h calls, so the program's INT 10h video BIOS results cannot be read from the log."
+    "d153: CANNOT the dos channel records only INT 21h calls, so the video BIOS (INT 10h) calls cannot be read back."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The dos channel records only INT 21h calls, and no tool reports the AX returned by INT 10h calls."
+    "d153: CANNOT The DOS channel records only INT 21h calls, and no tool reports INT 10h calls or the AX they returned."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The dos channel records only INT 21h calls, so the INT 10h video BIOS calls cannot be listed."
+    "d153: CANNOT The dos channel records only INT 21h calls, so the INT 10h video BIOS calls cannot be listed."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The dos channel records only INT 21h calls, so the INT 10h video BIOS calls are not recorded."
+    "d153: CANNOT The dos channel records only INT 21h calls, so INT 10h video BIOS results are not recorded and cannot be listed."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The dos channel records only INT 21h calls, so INT 10h video BIOS results are not logged."
+    "d153: CANNOT The DOS channel records only INT 21h calls, and no tool records or filters the INT 10h video BIOS calls."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The DOS channel records only INT 21h calls, and no tool reads the AX returned by INT 10h video BIOS calls."
+    "d153: CANNOT The dos log channel records only INT 21h calls, not INT 10h video BIOS calls, so AX returns for INT 10h cannot be read."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The dos channel records only INT 21h calls; INT 10h calls are not recorded."
+    "d153: CANNOT The dos channel records only INT 21h calls, and no other tool logs the video BIOS (INT 10h) calls or their AX results."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The dos channel records only INT 21h calls, so INT 10h video BIOS results are not available."
+    "d153: CANNOT The dos channel records only INT 21h calls, and no tool records or reports INT 10h return values."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The dos channel records only INT 21h calls, so the INT 10h video BIOS calls and their AX results are not recorded."
+    "d153: CANNOT The DOS channel records only INT 21h calls, so INT 10h calls are not held."
    ],
    "right": true
   },
   {
    "lines": [
-    "D153: CANNOT The DOS channel records only INT 21h calls, so INT 10h video BIOS calls and their AX results are not captured."
+    "d153: CANNOT The dos channel records only INT 21h calls, and no tool here lists the AX returned by INT 10h video BIOS calls."
    ],
    "right": true
   }

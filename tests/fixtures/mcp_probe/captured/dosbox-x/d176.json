@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D176",
+  "id": "d176",
   "prompt": "The guest is stopped and its screen map is loaded. Let it run until the mapped screen called menu is the one on screen, judging every 5 retraces, and stop it there.",
   "tool": "screen_wait",
   "args": {
@@ -16,91 +16,91 @@
  "runs": [
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
+    "d176: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"every\": 5}}"
    ],
    "right": true
   }

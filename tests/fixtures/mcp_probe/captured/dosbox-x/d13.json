@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D13",
+  "id": "d13",
   "prompt": "Keep only the scanned cells that now hold the value 305.",
   "tool": "scan",
   "args": {
@@ -17,91 +17,91 @@
  "runs": [
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 305}}"
+    "d13: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 305}}"
    ],
    "right": true
   }

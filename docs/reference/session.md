@@ -45,15 +45,15 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "build_check: /Users/Shared/scry-examples-20261106/dx-build/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
   "status": "ok",
-  "binary": "/Users/Shared/scry-examples-20261106/dx-build/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "<volatile>",
   "debugger": true,
   "heavy_debug": true,
   "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "... 8 more"],
-  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 54 more"]
+  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 55 more"]
 }
 ```
 <!-- scry-reference:end build_check -->
@@ -223,38 +223,39 @@ Example, from a live run:
 
 ```json
 {
-  "conf": "/private/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
-  "cwd": "/private/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-job-<run>/A/tests/guest",
+  "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
+  "cwd": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest",
   "session_seconds": 1200,
-  "logfile": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1009.log",
-  "state_dir": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1010-save"
+  "logfile": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1021.log",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1022-save"
 }
 ```
 
 ```json
 {
-  "summary": "start probe.conf: headless on /Users/Shared/scry-examples-20261106/dx-build/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.06s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.17s",
   "status": "ok",
   "pid": "<volatile>",
-  "conf": "/private/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
+  "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
   "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.3,
+  "elapsed_s": 0.5,
   "captures": "off",
-  "state_dir": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1010-save",
-  "ready_after_s": 0.06,
-  "argv": ["/Users/Shared/scry-examples-20261106/dx-build/dosbox-x", "-conf", "/private/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-job-<run>/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
-  "binary": "/Users/Shared/scry-examples-20261106/dx-build/dosbox-x",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1022-save",
+  "ready_after_s": 0.17,
+  "argv": ["~/.local/state/dosbox-x-builds/scry/dosbox-x", "-conf", "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
+  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "<volatile>",
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "... 8 more"],
-  "stub": "/Users/Shared/scry-examples-20261106/scry-dosbox-x/src/scry_dosbox_x/guest/SCRY.COM",
+  "stub": "/path/to/scry-dosbox-x/src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": true,
   "presence": {"available": false, "why": "a session started without `shared` has no window to draw on"},
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
-  }
+  },
+  "kept": "kept 1 (promote to review)"
 }
 ```
 <!-- scry-reference:end start -->
@@ -407,13 +408,13 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "window: display 0, on screen, in front",
+  "summary": "window: display 0, on screen, covered",
   "status": "ok",
   "window": {
     "display": 0,
     "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
     "onscreen": true,
-    "front": true,
+    "front": false,
     "fullscreen": false
   }
 }

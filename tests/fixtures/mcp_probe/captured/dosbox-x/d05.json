@@ -1,97 +1,97 @@
 {
  "task": {
-  "id": "D05",
+  "id": "d05",
   "prompt": "End the DOSBox-X session now, rather than waiting for its bound.",
   "tool": "close"
  },
  "runs": [
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D05: {\"tool\": \"close\", \"args\": {}}"
+    "d05: {\"tool\": \"close\", \"args\": {}}"
    ],
    "right": true
   }

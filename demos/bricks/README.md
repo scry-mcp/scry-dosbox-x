@@ -80,7 +80,7 @@ and its own arguments) is `<volatile>`.
 <!-- demo-transcript:begin -->
 The run is 33 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
-**5. `breakpoint_at`**: OK break: breakpoint BP 08DD:02C8
+**5. `breakpoint_at`**: OK break: breakpoint BP 08DF:02C8
 
 A breakpoint asked for by name. `brick_hit` is a label in the symbol table the build generated, so the server turns it into the address the program actually loaded at and arms the debugger there; the reply says it was resolved `by: symbol`.
 
@@ -101,7 +101,7 @@ A breakpoint asked for by name. `brick_hit` is a label in the symbol table the b
   "stored": true,
   "armed": true,
   "state": "armed",
-  "entry": "BP 08DD:02C8",
+  "entry": "BP 08DF:02C8",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -122,13 +122,13 @@ A breakpoint asked for by name. `brick_hit` is a label in the symbol table the b
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DD:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DD:000002C8",
+  "pc": "08DF:000002C8",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -141,12 +141,12 @@ A breakpoint asked for by name. `brick_hit` is a label in the symbol table the b
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
     "EIP": "0x000002c8",
-    "CS": "0x08dd",
-    "DS": "0x08dd",
+    "CS": "0x08df",
+    "DS": "0x08df",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x08dd"
+    "SS": "0x08df"
   },
   "watches": [
     {
@@ -160,11 +160,11 @@ A breakpoint asked for by name. `brick_hit` is a label in the symbol table the b
       "bytes": "0000"
     }
   ],
-  "cause": "breakpoint brick_hit (by symbol) at 08DD:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 3,
   "instruction": {
-    "address": "08DD:000002C8",
+    "address": "08DF:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -194,10 +194,10 @@ A saved state is the whole machine, not the game's own save. After the save the 
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F: dc00",
+  "summary": "read_memory paddle_x: 2 bytes at 08DF:0000061F: dc00",
   "status": "ok",
   "ref": "paddle_x",
-  "seg_off": "08DD:0000061F",
+  "seg_off": "08DF:0000061F",
   "length": 2,
   "hex": "dc00",
   "session": {"alive": true, "running": false, "altered": true}

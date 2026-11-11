@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D18",
+  "id": "d18",
   "prompt": "Write the bytes 90 90 at 1A2B:0100.",
   "tool": "write",
   "args": {
@@ -23,91 +23,91 @@
  "runs": [
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+    "d18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
    ],
    "right": true
   }

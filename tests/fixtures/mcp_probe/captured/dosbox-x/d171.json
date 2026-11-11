@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D171",
+  "id": "d171",
   "prompt": "The DOSBox-X window is hidden behind another application. Bring it to the front.",
   "tool": "window",
   "args": {
@@ -10,91 +10,91 @@
  "runs": [
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
+    "d171: {\"tool\": \"window\", \"args\": {\"front\": true}}"
    ],
    "right": true
   }

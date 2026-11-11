@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D95",
+  "id": "d95",
   "prompt": "Keep only the scanned cells that now hold the value 7, and list up to 200 of the survivors with their values.",
   "tool": "scan",
   "args": {
@@ -18,91 +18,91 @@
  "runs": [
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"value\": 7, \"limit\": 200}}"
+    "d95: {\"tool\": \"scan\", \"args\": {\"method\": \"filter\", \"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   }

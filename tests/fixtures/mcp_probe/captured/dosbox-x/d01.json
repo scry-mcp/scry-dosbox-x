@@ -1,97 +1,97 @@
 {
  "task": {
-  "id": "D01",
+  "id": "d01",
   "prompt": "Do this server's preconditions hold: is the dosbox-x binary there, and does that build carry the debugger?",
   "tool": "build_check"
  },
  "runs": [
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
+    "d01: {\"tool\": \"build_check\", \"args\": {}}"
    ],
    "right": true
   }

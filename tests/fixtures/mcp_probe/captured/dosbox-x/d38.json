@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D38",
+  "id": "d38",
   "prompt": "Stop the machine when the byte reached through the pointer held in _player_ptr, 0x1C bytes past where it points, changes; read it as a signed byte.",
   "tool": "watch_add",
   "args": {
@@ -25,91 +25,91 @@
  "runs": [
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\"}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"length\": 1, \"fmt\": \"i8\"}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\"}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
+    "d38: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\", \"mode\": \"change\", \"fmt\": \"i8\", \"length\": 1}}"
    ],
    "right": true
   }

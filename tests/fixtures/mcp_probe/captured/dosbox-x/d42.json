@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D42",
+  "id": "d42",
   "prompt": "Clear the watch declared as [_player_ptr]+0x1C.",
   "tool": "declaration_clear",
   "args": {
@@ -14,91 +14,91 @@
  "runs": [
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
+    "d42: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"watch\", \"ref\": \"[_player_ptr]+0x1C\"}}"
    ],
    "right": true
   }

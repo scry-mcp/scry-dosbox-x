@@ -1,97 +1,97 @@
 {
  "task": {
-  "id": "D27",
+  "id": "d27",
   "prompt": "List every state in the session's save directory.",
   "tool": "state_list"
  },
  "runs": [
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D27: {\"tool\": \"state_list\", \"args\": {}}"
+    "d27: {\"tool\": \"state_list\", \"args\": {}}"
    ],
    "right": true
   }

@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D146",
+  "id": "d146",
   "prompt": "Mask the timer interrupt, IRQ 0, at the interrupt controller.",
   "tool": "pic",
   "args": {
@@ -14,91 +14,91 @@
  "runs": [
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+    "d146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
    ],
    "right": true
   }

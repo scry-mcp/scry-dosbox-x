@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D137",
+  "id": "d137",
   "prompt": "Without ever stopping the machine for it, count every value written into the 2-byte variable _score, and which instructions wrote them.",
   "tool": "watch_add",
   "args": {
@@ -19,91 +19,91 @@
  "runs": [
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2, \"fmt\": \"u16\"}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2, \"fmt\": \"u16\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\"}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\", \"length\": 2}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\", \"length\": 2}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2, \"fmt\": \"u16\"}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2, \"fmt\": \"u16\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\", \"length\": 2}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\", \"length\": 2}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\", \"length\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2, \"fmt\": \"u16\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\", \"length\": 2}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2, \"fmt\": \"u16\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2, \"fmt\": \"u16\"}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\", \"length\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2, \"fmt\": \"u16\"}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2, \"fmt\": \"u16\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2, \"fmt\": \"u16\"}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\"}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\"}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\", \"length\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\", \"length\": 2}}"
+    "d137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"fmt\": \"u16\", \"length\": 2}}"
    ],
    "right": true
   }

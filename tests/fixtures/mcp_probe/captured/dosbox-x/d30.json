@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D30",
+  "id": "d30",
   "prompt": "Load the nm output /opt/game/game.sym of a DJGPP program, measuring its base off the DS selector, and type its symbols with the file /opt/game/game.types.",
   "tool": "symbols_load",
   "args": {
@@ -15,93 +15,93 @@
  "runs": [
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: CANNOT symbols_load's `types` argument filters rows by type and takes no types file, and it has no DS-based load option for a DJGPP nm file beyond base_from, so typing from /opt/game/game.types cannot be done."
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+    "d30: CANNOT symbols_load has no argument for a types file; its `types` is a filter string over the rows it reads."
    ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D30: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
-   ],
-   "right": true
+   "right": false
   }
  ]
 }

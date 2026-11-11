@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D128",
+  "id": "d128",
   "prompt": "After a state load whose reply gave the mark 8820 for the guest channel, wait up to 40 seconds for a guest line matching LEVEL 3, counting only what the guest wrote after that mark.",
   "tool": "log_wait",
   "args": {
@@ -16,91 +16,91 @@
  "runs": [
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"since_mark\": 8820, \"seconds\": 40}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+    "d128: {\"tool\": \"log_wait\", \"args\": {\"channel\": \"guest\", \"pattern\": \"LEVEL 3\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
   }

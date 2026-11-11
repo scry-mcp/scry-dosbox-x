@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D177",
+  "id": "d177",
   "prompt": "The guest is stopped and its display is fading out. Let it run until every colour in the VGA DAC is black, then stop it.",
   "tool": "screen_wait",
   "args": {
@@ -19,91 +19,91 @@
  "runs": [
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
+    "d177: {\"tool\": \"screen_wait\", \"args\": {\"palette\": \"black\"}}"
    ],
    "right": true
   }

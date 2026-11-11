@@ -105,7 +105,7 @@ Tools and colours are picked by name: the screen map says where `blue` sits on t
 
 ```json
 {
-  "summary": "send_mouse: pointer at 300,179; posted, unverified, 21 retraces to frame 421",
+  "summary": "send_mouse: pointer at 300,179, program's own pointer not read; posted, unverified, 21 retraces to frame 421",
   "status": "ok",
   "x": 300,
   "y": 179,
@@ -119,41 +119,41 @@ Tools and colours are picked by name: the screen map says where `blue` sits on t
     "buttons": [],
     "bios_mode": "0x13"
   },
-  "arrived": true,
+  "driver_arrived": true,
   "polls": 21,
-  "pc": "F000:0000CFC5",
+  "pc": "100B:000002D1",
   "cpu_mode": "real",
   "stop_seq": 23,
   "frame": 421,
   "instruction": {
-    "address": "F000:0000CFC5",
-    "bytes": "CF",
-    "text": "iret",
-    "flow": "return",
+    "address": "100B:000002D1",
+    "bytes": "50",
+    "text": "push ax",
+    "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": {"available": false, "why": "no symbol table is loaded"},
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "regs": {
-    "EAX": "0x0000011c",
+    "EAX": "0x0000a030",
     "EBX": "0x00001094",
     "ECX": "0x005b0000",
     "EDX": "0x000000fe",
-    "ESI": "0x0000ffff",
+    "ESI": "0x00000008",
     "EDI": "0x0000a0ae",
-    "EBP": "0x0000a00c",
-    "ESP": "0x00009ff8",
-    "EIP": "0x0000cfc5",
-    "CS": "0xf000",
-    "DS": "0x31b0",
+    "EBP": "0x0000a03e",
+    "ESP": "0x0000a02a",
+    "EIP": "0x000002d1",
+    "CS": "0x100b",
+    "DS": "0x31b2",
     "ES": "0x0000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x31b0"
+    "SS": "0x31b2"
   },
   "watches": [],
-  "cause": "the retrace the input's post ran to, at F000:0000CFC5",
+  "cause": "the retrace the input's post ran to, at 100B:000002D1",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "motion": true,
   "verify": {
@@ -169,7 +169,7 @@ Tools and colours are picked by name: the screen map says where `blue` sits on t
 
 </details>
 
-**9. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above A00C, and 4 static ones from 31B0:017C
+**9. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above 9FF8, and 4 static ones from 31B2:017C
 
 A value scan, the cheat finder's trick done through a debugger. The first scan kept every byte of the data segment, the filter after picking blue kept those holding blue's index, and this one, after orange, keeps those that held each in turn. The survivors are of two kinds, told apart by where they live: copies in the stack's frames, and static bytes in the data segment.
 
@@ -191,13 +191,13 @@ A value scan, the cheat finder's trick done through a debugger. The first scan k
   "iterations": 2,
   "closed": false,
   "hits": [
-    {"seg_off": "31B0:0000017C", "addr": "0x00031c7c", "value": "0x37"},
-    {"seg_off": "31B0:000001AE", "addr": "0x00031cae", "value": "0x37"},
-    {"seg_off": "31B0:00000470", "addr": "0x00031f70", "value": "0x37"},
-    {"seg_off": "31B0:000010B0", "addr": "0x00032bb0", "value": "0x37"},
-    {"seg_off": "31B0:0000A57E", "addr": "0x0003c07e", "value": "0x37"},
-    {"seg_off": "31B0:0000A57F", "addr": "0x0003c07f", "value": "0x37"},
-    {"seg_off": "31B0:0000A580", "addr": "0x0003c080", "value": "0x37"}
+    {"seg_off": "31B2:0000017C", "addr": "0x00031c9c", "value": "0x37"},
+    {"seg_off": "31B2:000001AE", "addr": "0x00031cce", "value": "0x37"},
+    {"seg_off": "31B2:00000470", "addr": "0x00031f90", "value": "0x37"},
+    {"seg_off": "31B2:000010B0", "addr": "0x00032bd0", "value": "0x37"},
+    {"seg_off": "31B2:0000A57E", "addr": "0x0003c09e", "value": "0x37"},
+    {"seg_off": "31B2:0000A57F", "addr": "0x0003c09f", "value": "0x37"},
+    {"seg_off": "31B2:0000A580", "addr": "0x0003c0a0", "value": "0x37"}
   ],
   "hits_total": 7,
   "truncated": false,

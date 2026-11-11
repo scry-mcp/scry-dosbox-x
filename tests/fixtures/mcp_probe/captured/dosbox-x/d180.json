@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D180",
+  "id": "d180",
   "prompt": "Show me what this session has learned that could be written into the repository's store, without writing anything.",
   "tool": "promote",
   "args": {
@@ -10,91 +10,91 @@
  "runs": [
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
+    "d180: {\"tool\": \"promote\", \"args\": {\"dry_run\": true}}"
    ],
    "right": true
   }

@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D139",
+  "id": "d139",
   "prompt": "Keep a row for every read the program makes of the byte at 1A2B:0040, with the beam line and the time of each, without stopping the machine.",
   "tool": "watch_add",
   "args": {
@@ -26,91 +26,91 @@
  "runs": [
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+    "d139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
    ],
    "right": true
   }

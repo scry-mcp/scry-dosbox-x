@@ -1,10 +1,15 @@
 {
  "task": {
-  "id": "D93",
+  "id": "d93",
   "prompt": "Hold the left mouse button down on the guest so a drag can follow.",
   "tool": "send_mouse",
   "args": {
-   "button": "left",
+   "button": {
+    "any_of": [
+     "left",
+     ""
+    ]
+   },
    "action": "down"
   },
   "grammar": [
@@ -15,93 +20,93 @@
  "runs": [
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"down\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"down\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\"}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"down\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\"}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\"}}"
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
    ],
-   "right": false
+   "right": true
+  },
+  {
+   "lines": [
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d93: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"down\", \"button\": \"left\"}}"
+   ],
+   "right": true
   }
  ]
 }

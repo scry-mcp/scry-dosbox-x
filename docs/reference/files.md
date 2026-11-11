@@ -115,32 +115,30 @@ Example, from a live run:
 
 ```json
 {
-  "method": "image",
-  "a": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/P/n22-away.png",
-  "b": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/P/n21-away.png"
+  "method": "region",
+  "manifest": "$TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json",
+  "measure": "changed_pixels"
 }
 ```
 
 ```json
 {
-  "summary": "image_compare image: no pixel differs over 48x40 at [0, 0]",
+  "summary": "image_compare region: changed_pixels, 1 transition over 5 frames",
   "status": "ok",
-  "differing_pixels": 0,
-  "bbox": {"available": false, "why": "no pixel differs"},
-  "max_delta": [0, 0, 0],
-  "width": 48,
-  "height": 40,
-  "crop": [0, 0, 48, 40],
-  "shift": [0, 0],
-  "tolerance": 0,
-  "a": {
-    "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/P/n22-away.png",
-    "sha256": "53b883b4f3a951b66be1a08574b075740bb0c26493474fbd18fb4eb3af116be5"
+  "measure": "changed_pixels",
+  "crop": [0, 0, 320, 8],
+  "frames": 5,
+  "start": {
+    "available": false,
+    "why": "`changed_pixels` counts a change from the frame before, and the first frame has none"
   },
-  "b": {
-    "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/P/n21-away.png",
-    "sha256": "53b883b4f3a951b66be1a08574b075740bb0c26493474fbd18fb4eb3af116be5"
-  }
+  "transitions": [
+    [4, 2560]
+  ],
+  "gaps": [],
+  "transitions_total": 1,
+  "path": "$TMPDIR/dosbox-x-session-<run>/series/series-1/track-1.json",
+  "manifest": "$TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json"
 }
 ```
 <!-- scry-reference:end image_compare -->
@@ -211,7 +209,7 @@ Example, from a live run:
 ```json
 {
   "method": "measure",
-  "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
+  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
 }
 ```
 
@@ -252,7 +250,7 @@ Example, from a live run:
     }
   ],
   "pcm_sha256": "e60ff11bce0c03f6caa4a04e9e3654b9e40a70a8c156d9e6d2ec7c33a3703a62",
-  "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
+  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
 }
 ```
 <!-- scry-reference:end audio_compare -->
@@ -296,15 +294,15 @@ Example, from a live run:
 
 ```json
 {
-  "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT"
+  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT"
 }
 ```
 
 ```json
 {
-  "summary": "guest_file /var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
+  "summary": "guest_file $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
   "status": "ok",
-  "path": "/var/folders/_2/sx7y70hj2kb1nqr6fpfrxsd40000gq/T/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT",
+  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT",
   "state": "written",
   "before": {"exists": false},
   "bytes": 4,

@@ -1,7 +1,7 @@
 {
  "task": {
-  "id": "D123",
-  "prompt": "Clear every breakpoint this session has declared, whatever it is.",
+  "id": "d123",
+  "prompt": "Clear every breakpoint this session has declared, the ones at an address and the ones on an interrupt alike.",
   "tool": "declaration_clear",
   "args": {
    "kind": "breakpoint",
@@ -14,87 +14,91 @@
  "runs": [
   {
    "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D123: CANNOT declaration_clear takes one kind per call (breakpoint, regpoint or watch), so no single call clears all three."
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [],
-   "right": false
-  },
-  {
-   "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [],
-   "right": false
-  },
-  {
-   "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   }

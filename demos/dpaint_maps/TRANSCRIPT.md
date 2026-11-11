@@ -4,7 +4,7 @@
 
 ```json
 {
-  "conf": "./demos/dpaint_maps/dpaint_maps.conf",
+  "conf": "./demos/dpaint_maps/dpaint-maps.conf",
   "session_seconds": 900,
   "shared": true,
   "program": "DP.EXE k",
@@ -19,7 +19,7 @@
   "summary": "<volatile>",
   "status": "ok",
   "pid": "<volatile>",
-  "conf": "./demos/dpaint_maps/dpaint_maps.conf",
+  "conf": "./demos/dpaint_maps/dpaint-maps.conf",
   "conf_digest": "daae6ab9a0232442",
   "watched": true,
   "bound_s": 900,
@@ -32,21 +32,29 @@
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
+  "window": {
+    "display": 0,
+    "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
+    "onscreen": true,
+    "front": true,
+    "fullscreen": false
+  },
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
+  "kept": "kept 1 (promote to review)",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**2. `run_for`**: OK loaded: 400 retraces: Deluxe Paint is up, its data segment at 0x31b0
+**2. `run_for`**: OK loaded: 400 retraces: Deluxe Paint is up, its data segment at 0x31b2
 
 <details><summary>call and reply</summary>
 
@@ -59,43 +67,43 @@
 
 ```json
 {
-  "summary": "run_for 400 frames: ELAPSED, 400 polls, at 0E83:00000B22",
+  "summary": "run_for 400 frames: ELAPSED, 400 polls, at 0E85:00000A83",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 400,
-  "pc": "0E83:00000B22",
+  "pc": "0E85:00000A83",
   "cpu_mode": "real",
   "frame": 400,
   "regs": {
-    "EAX": "0x00000000",
+    "EAX": "0x00006e42",
     "EBX": "0x000003e4",
     "ECX": "0x005b0000",
     "EDX": "0x0000a57c",
     "ESI": "0x00000007",
     "EDI": "0x0000a0ae",
-    "EBP": "0x0000a010",
-    "ESP": "0x0000a010",
-    "EIP": "0x00000b22",
-    "CS": "0x0e83",
-    "DS": "0x31b0",
+    "EBP": "0x0000a006",
+    "ESP": "0x0000a004",
+    "EIP": "0x00000a83",
+    "CS": "0x0e85",
+    "DS": "0x31b2",
     "ES": "0x0000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x31b0"
+    "SS": "0x31b2"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 0E83:00000B22",
+  "cause": "the retrace run_for ran to, at 0E85:00000A83",
   "e9": {
     "lines_total": 1,
     "truncated": false,
-    "lines": ["Bochs port E9h: STUB  . scry device=present proto=6 motion=1"],
+    "lines": ["Bochs port E9h: STUB  . scry device=present proto=7 motion=1"],
     "mark": "<volatile>"
   },
   "stop_seq": 2,
   "instruction": {
-    "address": "0E83:00000B22",
-    "bytes": "8B4608",
-    "text": "mov ax, word ptr [bp + 8]",
+    "address": "0E85:00000A83",
+    "bytes": "50",
+    "text": "push ax",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
@@ -103,10 +111,10 @@
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "emulated_before_s": 0.0007,
-  "emulated_after_s": 6.646643699999999,
+  "emulated_after_s": 6.6466468999999995,
   "frame_before": 0,
   "frame_after": 400,
-  "cycles": 65734582,
+  "cycles": 65734604,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -120,7 +128,7 @@
 ```json
 {
   "method": "load",
-  "path": "./demos/dpaint_maps/dpaint.screen-map.json"
+  "path": "./demos/dpaint_maps/dpaint-screen-map.json"
 }
 ```
 
@@ -128,7 +136,7 @@
 {
   "summary": "screen_map_write load: 11 screens, 109 controls of dpaint",
   "status": "ok",
-  "path": "./demos/dpaint_maps/dpaint.screen-map.json",
+  "path": "./demos/dpaint_maps/dpaint-screen-map.json",
   "application": "dpaint",
   "mode": "verified",
   "screens": 11,
@@ -201,10 +209,10 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 251,5; posted, unverified, 16 retraces to frame 416",
+        "summary": "send_mouse: pointer at 251,5, program's own pointer not read; posted, unverified, 16 retraces to frame 416",
         "status": "ok",
         "stop_seq": 18,
-        "cause": "the retrace the input's post ran to, at 1697:00000300"
+        "cause": "the retrace the input's post ran to, at 0957:00000335"
       }
     },
     {
@@ -270,20 +278,20 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 317,18; posted, unverified, 20 retraces to frame 436",
+        "summary": "send_mouse: pointer at 317,18, program's own pointer not read; posted, unverified, 20 retraces to frame 436",
         "status": "ok",
         "stop_seq": 38,
-        "cause": "the retrace the input's post ran to, at 0DA5:000002C4"
+        "cause": "the retrace the input's post ran to, at 153C:0000039A"
       }
     },
     {
       "step": 1,
       "op": "run_to",
       "reply": {
-        "summary": "run_to screen palette (judged): TARGET at 0DA5:000000AD",
+        "summary": "run_to screen palette (judged): TARGET at 0DA7:000000C6",
         "status": "ok",
         "stop_seq": 39,
-        "cause": "the retrace a run to a screen ran to, at 0DA5:000000AD"
+        "cause": "the retrace a run to a screen ran to, at 0DA7:000000C6"
       }
     },
     {
@@ -353,17 +361,17 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 100,59; posted, unverified, 24 retraces to frame 461",
+        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; posted, unverified, 24 retraces to frame 461",
         "status": "ok",
         "stop_seq": 63,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 13F8:00000228"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 7,39; posted, unverified, 20 retraces to frame 481",
+        "summary": "send_mouse: pointer at 7,39, program's own pointer not read; posted, unverified, 20 retraces to frame 481",
         "status": "ok",
         "stop_seq": 83,
         "cause": "the retrace the input's post ran to, at F000:0000CBE5"
@@ -387,39 +395,39 @@
         },
         "arrived": true,
         "polls": 15,
-        "pc": "F000:0000CFC5",
+        "pc": "13F8:0000021D",
         "cpu_mode": "real",
         "stop_seq": 98,
         "frame": 496,
         "instruction": {
-          "address": "F000:0000CFC5",
-          "bytes": "CF",
-          "text": "iret",
-          "flow": "return",
+          "address": "13F8:0000021D",
+          "bytes": "55",
+          "text": "push bp",
+          "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": {"available": false, "why": "no symbol table is loaded"},
           "delta": {"available": false, "why": "no symbol table is loaded"}
         },
         "regs": {
-          "EAX": "0x000001b8",
+          "EAX": "0x00009fb8",
           "EBX": "0x00000178",
           "ECX": "0x005b0003",
           "EDX": "0x00000000",
-          "ESI": "0x0000ffff",
+          "ESI": "0x00009fd8",
           "EDI": "0x00000000",
-          "EBP": "0x00009fa8",
-          "ESP": "0x00009f94",
-          "EIP": "0x0000cfc5",
-          "CS": "0xf000",
-          "DS": "0x31b0",
+          "EBP": "0x00009fbc",
+          "ESP": "0x00009faa",
+          "EIP": "0x0000021d",
+          "CS": "0x13f8",
+          "DS": "0x31b2",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x31b0"
+          "SS": "0x31b2"
         },
         "watches": [],
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5",
+        "cause": "the retrace the input's post ran to, at 13F8:0000021D",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "verify": {
           "checked": false,
@@ -537,20 +545,20 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 37,149; posted, unverified, 25 retraces to frame 521",
+        "summary": "send_mouse: pointer at 37,149, program's own pointer not read; posted, unverified, 25 retraces to frame 521",
         "status": "ok",
         "stop_seq": 123,
-        "cause": "the retrace the input's post ran to, at 0DA5:000000D2"
+        "cause": "the retrace the input's post ran to, at 0DA7:000000CB"
       }
     },
     {
       "step": 1,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 20 frames: ELAPSED, 20 polls, at F000:0000CFC5",
+        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 100B:00000320",
         "status": "ok",
         "stop_seq": 124,
-        "cause": "the retrace run_for ran to, at F000:0000CFC5"
+        "cause": "the retrace run_for ran to, at 100B:00000320"
       }
     },
     {
@@ -562,40 +570,40 @@ Also attached: image/png.
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,142; posted, unverified, 21 retraces to frame 562",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 21 retraces to frame 562",
         "status": "ok",
         "stop_seq": 145,
-        "cause": "the retrace the input's post ran to, at 1009:00000380"
+        "cause": "the retrace the input's post ran to, at 100B:0000037B"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,448; posted, unverified, 25 retraces to frame 587",
+        "summary": "send_mouse: pointer at 604,448, program's own pointer not read; posted, unverified, 25 retraces to frame 587",
         "status": "ok",
         "stop_seq": 170,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 100B:00000338"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 587,259; posted, unverified, 30 retraces to frame 617",
+        "summary": "send_mouse: pointer at 587,259, program's own pointer not read; posted, unverified, 30 retraces to frame 617",
         "status": "ok",
         "stop_seq": 200,
-        "cause": "the retrace the input's post ran to, at 1009:0000033F"
+        "cause": "the retrace the input's post ran to, at 0B94:00000244"
       }
     },
     {
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 632",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 632",
         "status": "ok",
         "stop_seq": 215,
-        "cause": "the retrace the input's post ran to, at 1009:00000273"
+        "cause": "the retrace the input's post ran to, at 13F8:00000225"
       }
     },
     {
@@ -607,7 +615,7 @@ Also attached: image/png.
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 634,142; posted, unverified, 25 retraces to frame 657",
+        "summary": "send_mouse: pointer at 634,142, program's own pointer not read; posted, unverified, 25 retraces to frame 657",
         "status": "ok",
         "stop_seq": 240,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -617,30 +625,30 @@ Also attached: image/png.
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 682",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 682",
         "status": "ok",
         "stop_seq": 265,
-        "cause": "the retrace the input's post ran to, at 1009:0000025E"
+        "cause": "the retrace the input's post ran to, at 100B:0000037B"
       }
     },
     {
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 356,259; posted, unverified, 30 retraces to frame 712",
+        "summary": "send_mouse: pointer at 356,259, program's own pointer not read; posted, unverified, 30 retraces to frame 712",
         "status": "ok",
         "stop_seq": 295,
-        "cause": "the retrace the input's post ran to, at 0E83:00000B4B"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 727",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 727",
         "status": "ok",
         "stop_seq": 310,
-        "cause": "the retrace the input's post ran to, at 1009:000002A7"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -652,7 +660,7 @@ Also attached: image/png.
       "step": 13,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,142; posted, unverified, 25 retraces to frame 752",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 25 retraces to frame 752",
         "status": "ok",
         "stop_seq": 335,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -662,7 +670,7 @@ Also attached: image/png.
       "step": 14,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,344; posted, unverified, 25 retraces to frame 777",
+        "summary": "send_mouse: pointer at 604,344, program's own pointer not read; posted, unverified, 25 retraces to frame 777",
         "status": "ok",
         "stop_seq": 360,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -672,17 +680,17 @@ Also attached: image/png.
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 587,475; posted, unverified, 30 retraces to frame 807",
+        "summary": "send_mouse: pointer at 587,475, program's own pointer not read; posted, unverified, 30 retraces to frame 807",
         "status": "ok",
         "stop_seq": 390,
-        "cause": "the retrace the input's post ran to, at 1009:00000311"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 16,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 822",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 822",
         "status": "ok",
         "stop_seq": 405,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -804,7 +812,7 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,89; posted, unverified, 25 retraces to frame 847",
+        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; posted, unverified, 25 retraces to frame 847",
         "status": "ok",
         "stop_seq": 430,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -814,50 +822,50 @@ Also attached: image/png.
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 872",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 872",
         "status": "ok",
         "stop_seq": 455,
-        "cause": "the retrace the input's post ran to, at 13F6:000002DF"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 336,272; posted, unverified, 30 retraces to frame 902",
+        "summary": "send_mouse: pointer at 336,272, program's own pointer not read; posted, unverified, 30 retraces to frame 902",
         "status": "ok",
         "stop_seq": 485,
-        "cause": "the retrace the input's post ran to, at 0E83:00000B53"
+        "cause": "the retrace the input's post ran to, at 100B:000002D1"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 322,284; posted, unverified, 30 retraces to frame 932",
+        "summary": "send_mouse: pointer at 322,284, program's own pointer not read; posted, unverified, 30 retraces to frame 932",
         "status": "ok",
         "stop_seq": 515,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 100B:00000321"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 308,296; posted, unverified, 30 retraces to frame 962",
+        "summary": "send_mouse: pointer at 308,296, program's own pointer not read; posted, unverified, 30 retraces to frame 962",
         "status": "ok",
         "stop_seq": 545,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0E85:00000977"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 977",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 977",
         "status": "ok",
         "stop_seq": 560,
-        "cause": "the retrace the input's post ran to, at 0955:0000002A"
+        "cause": "the retrace the input's post ran to, at 0957:00000037"
       }
     },
     {
@@ -869,7 +877,7 @@ Also attached: image/png.
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,142; posted, unverified, 25 retraces to frame 1002",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 25 retraces to frame 1002",
         "status": "ok",
         "stop_seq": 585,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -879,30 +887,30 @@ Also attached: image/png.
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,323; posted, unverified, 25 retraces to frame 1027",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 1027",
         "status": "ok",
         "stop_seq": 610,
-        "cause": "the retrace the input's post ran to, at 13F6:0000021D"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 180,395; posted, unverified, 30 retraces to frame 1057",
+        "summary": "send_mouse: pointer at 180,395, program's own pointer not read; posted, unverified, 30 retraces to frame 1057",
         "status": "ok",
         "stop_seq": 640,
-        "cause": "the retrace the input's post ran to, at 0E83:00000377"
+        "cause": "the retrace the input's post ran to, at 100B:000001C6"
       }
     },
     {
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1072",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1072",
         "status": "ok",
         "stop_seq": 655,
-        "cause": "the retrace the input's post ran to, at 1009:00000264"
+        "cause": "the retrace the input's post ran to, at 0957:00000047"
       }
     },
     {
@@ -1011,40 +1019,40 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,89; posted, unverified, 25 retraces to frame 1097",
+        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; posted, unverified, 25 retraces to frame 1097",
         "status": "ok",
         "stop_seq": 680,
-        "cause": "the retrace the input's post ran to, at 1009:000002D2"
+        "cause": "the retrace the input's post ran to, at 13F8:000002CC"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,323; posted, unverified, 25 retraces to frame 1122",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 1122",
         "status": "ok",
         "stop_seq": 705,
-        "cause": "the retrace the input's post ran to, at 1009:00000367"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 140,320; posted, unverified, 30 retraces to frame 1152",
+        "summary": "send_mouse: pointer at 140,320, program's own pointer not read; posted, unverified, 30 retraces to frame 1152",
         "status": "ok",
         "stop_seq": 735,
-        "cause": "the retrace the input's post ran to, at 0E83:00000A90"
+        "cause": "the retrace the input's post ran to, at 13F8:00000225"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1167",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1167",
         "status": "ok",
         "stop_seq": 750,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0957:00000041"
       }
     },
     {
@@ -1056,40 +1064,40 @@ Also attached: image/png.
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 1192",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 1192",
         "status": "ok",
         "stop_seq": 775,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0957:00000058"
       }
     },
     {
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 176,374; posted, unverified, 30 retraces to frame 1222",
+        "summary": "send_mouse: pointer at 176,374, program's own pointer not read; posted, unverified, 30 retraces to frame 1222",
         "status": "ok",
         "stop_seq": 805,
-        "cause": "the retrace the input's post ran to, at 1009:0000036A"
+        "cause": "the retrace the input's post ran to, at 0B94:0000023B"
       }
     },
     {
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 142,374; posted, unverified, 30 retraces to frame 1252",
+        "summary": "send_mouse: pointer at 142,374, program's own pointer not read; posted, unverified, 30 retraces to frame 1252",
         "status": "ok",
         "stop_seq": 835,
-        "cause": "the retrace the input's post ran to, at 1009:000001B8"
+        "cause": "the retrace the input's post ran to, at 0B94:00000207"
       }
     },
     {
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1267",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1267",
         "status": "ok",
         "stop_seq": 850,
-        "cause": "the retrace the input's post ran to, at 1009:00000260"
+        "cause": "the retrace the input's post ran to, at 0957:0000004F"
       }
     },
     {
@@ -1173,17 +1181,17 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,323; posted, unverified, 25 retraces to frame 1292",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 1292",
         "status": "ok",
         "stop_seq": 875,
-        "cause": "the retrace the input's post ran to, at 0955:00000032"
+        "cause": "the retrace the input's post ran to, at 0957:00000058"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 629,185; posted, unverified, 25 retraces to frame 1317",
+        "summary": "send_mouse: pointer at 629,185, program's own pointer not read; posted, unverified, 25 retraces to frame 1317",
         "status": "ok",
         "stop_seq": 900,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -1193,10 +1201,10 @@ Also attached: image/png.
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1332",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1332",
         "status": "ok",
         "stop_seq": 915,
-        "cause": "the retrace the input's post ran to, at 1009:0000026B"
+        "cause": "the retrace the input's post ran to, at 100B:00000320"
       }
     },
     {
@@ -1208,10 +1216,10 @@ Also attached: image/png.
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 40,60; posted, unverified, 25 retraces to frame 1357",
+        "summary": "send_mouse: pointer at 40,60, program's own pointer not read; posted, unverified, 25 retraces to frame 1357",
         "status": "ok",
         "stop_seq": 940,
-        "cause": "the retrace the input's post ran to, at 0DA5:00000350"
+        "cause": "the retrace the input's post ran to, at 100B:000002CE"
       }
     },
     {
@@ -1221,14 +1229,14 @@ Also attached: image/png.
         "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 1407",
         "status": "ok",
         "stop_seq": 990,
-        "cause": "the retrace the input's post ran to, at 0955:00000058"
+        "cause": "the retrace the input's post ran to, at 0957:00000029"
       }
     },
     {
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 629,65; posted, unverified, 25 retraces to frame 1432",
+        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; posted, unverified, 25 retraces to frame 1432",
         "status": "ok",
         "stop_seq": 1015,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -1238,10 +1246,10 @@ Also attached: image/png.
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1447",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1447",
         "status": "ok",
         "stop_seq": 1030,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 100B:00000328"
       }
     },
     {
@@ -1341,20 +1349,20 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,185; posted, unverified, 25 retraces to frame 1472",
+        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; posted, unverified, 25 retraces to frame 1472",
         "status": "ok",
         "stop_seq": 1055,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 13F8:00000220"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1487",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1487",
         "status": "ok",
         "stop_seq": 1070,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 100B:0000032D"
       }
     },
     {
@@ -1366,30 +1374,30 @@ Also attached: image/png.
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 184,399; posted, unverified, 30 retraces to frame 1517",
+        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; posted, unverified, 30 retraces to frame 1517",
         "status": "ok",
         "stop_seq": 1100,
-        "cause": "the retrace the input's post ran to, at 0DA5:0000034E"
+        "cause": "the retrace the input's post ran to, at 100B:0000023A"
       }
     },
     {
       "step": 4,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at F000:0000CFC0",
+        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 100B:00000240",
         "status": "ok",
         "stop_seq": 1101,
-        "cause": "the retrace run_for ran to, at F000:0000CFC0"
+        "cause": "the retrace run_for ran to, at 100B:00000240"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1538",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1538",
         "status": "ok",
         "stop_seq": 1112,
-        "cause": "the retrace the input's post ran to, at 13F6:000002D3"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1401,10 +1409,10 @@ Also attached: image/png.
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 203,5; posted, unverified, 20 retraces to frame 1558",
+        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1558",
         "status": "ok",
         "stop_seq": 1132,
-        "cause": "the retrace the input's post ran to, at 0955:00000335"
+        "cause": "the retrace the input's post ran to, at 0957:0000035D"
       }
     },
     {
@@ -1416,27 +1424,27 @@ Also attached: image/png.
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 269,18; posted, unverified, 20 retraces to frame 1578",
+        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; posted, unverified, 20 retraces to frame 1578",
         "status": "ok",
         "stop_seq": 1152,
-        "cause": "the retrace the input's post ran to, at 0DA5:000002DE"
+        "cause": "the retrace the input's post ran to, at 0DA7:00000337"
       }
     },
     {
       "step": 10,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 19A5:000001DD",
+        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 19A7:0000019E",
         "status": "ok",
         "stop_seq": 1153,
-        "cause": "the retrace run_for ran to, at 19A5:000001DD"
+        "cause": "the retrace run_for ran to, at 19A7:0000019E"
       }
     },
     {
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1609",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1609",
         "status": "ok",
         "stop_seq": 1164,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -1451,7 +1459,7 @@ Also attached: image/png.
       "step": 13,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 440,357; posted, unverified, 25 retraces to frame 1634",
+        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; posted, unverified, 25 retraces to frame 1634",
         "status": "ok",
         "stop_seq": 1189,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -1471,10 +1479,10 @@ Also attached: image/png.
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1655",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1655",
         "status": "ok",
         "stop_seq": 1201,
-        "cause": "the retrace the input's post ran to, at 1009:00000273"
+        "cause": "the retrace the input's post ran to, at 100B:00000324"
       }
     },
     {
@@ -1559,10 +1567,10 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 119,5; posted, unverified, 20 retraces to frame 1675",
+        "summary": "send_mouse: pointer at 119,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1675",
         "status": "ok",
         "stop_seq": 1221,
-        "cause": "the retrace the input's post ran to, at 0955:0000035D"
+        "cause": "the retrace the input's post ran to, at 0957:00000337"
       }
     },
     {
@@ -1584,20 +1592,20 @@ Also attached: image/png.
       "step": 3,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 0955:0000003C",
+        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 100B:0000023C",
         "status": "ok",
         "stop_seq": 1237,
-        "cause": "the retrace run_for ran to, at 0955:0000003C"
+        "cause": "the retrace run_for ran to, at 100B:0000023C"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1711",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1711",
         "status": "ok",
         "stop_seq": 1248,
-        "cause": "the retrace the input's post ran to, at 1009:0000023F"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1609,7 +1617,7 @@ Also attached: image/png.
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 599,21; posted, unverified, 25 retraces to frame 1736",
+        "summary": "send_mouse: pointer at 599,21, program's own pointer not read; posted, unverified, 25 retraces to frame 1736",
         "status": "ok",
         "stop_seq": 1273,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -1619,20 +1627,20 @@ Also attached: image/png.
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 629,65; posted, unverified, 25 retraces to frame 1761",
+        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; posted, unverified, 25 retraces to frame 1761",
         "status": "ok",
         "stop_seq": 1298,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 13F8:00000225"
       }
     },
     {
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1776",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1776",
         "status": "ok",
         "stop_seq": 1313,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 13F8:0000021D"
       }
     },
     {
@@ -1956,7 +1964,7 @@ Also attached: image/png.
   "status": "ok",
   "closed": true,
   "pid": "<volatile>",
-  "conf": "./demos/dpaint_maps/dpaint_maps.conf",
+  "conf": "./demos/dpaint_maps/dpaint-maps.conf",
   "conf_digest": "daae6ab9a0232442",
   "watched": true,
   "bound_s": 900,
@@ -1967,6 +1975,7 @@ Also attached: image/png.
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
+  "draft": ["start/dp"],
   "session": {"alive": false, "running": false, "altered": false}
 }
 ```

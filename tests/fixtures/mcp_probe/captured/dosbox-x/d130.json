@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D130",
+  "id": "d130",
   "prompt": "The guest is stopped. I only need the cpu's control registers: cr0, cr3 and the descriptor table registers.",
   "tool": "machine_map",
   "args": {
@@ -19,91 +19,91 @@
  "runs": [
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\", \"gdt\", \"ldt\"]}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
   }

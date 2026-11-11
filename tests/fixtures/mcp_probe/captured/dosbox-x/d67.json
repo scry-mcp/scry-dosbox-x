@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D67",
+  "id": "d67",
   "prompt": "The guest is stopped. Write every colour of the VGA's DAC as a picture to /tmp/dac.png.",
   "tool": "palette",
   "args": {
@@ -22,91 +22,91 @@
  "runs": [
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
+    "d67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   }

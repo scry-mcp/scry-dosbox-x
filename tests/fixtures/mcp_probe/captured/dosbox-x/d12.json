@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D12",
+  "id": "d12",
   "prompt": "This program has no map. Open a value search over the 8192 bytes from 2000:0000, in 16-bit cells.",
   "tool": "scan",
   "args": {
@@ -21,91 +21,91 @@
  "runs": [
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
+    "d12: {\"tool\": \"scan\", \"args\": {\"method\": \"start\", \"ref\": \"2000:0000\", \"length\": 8192, \"cell_bytes\": 2}}"
    ],
    "right": true
   }

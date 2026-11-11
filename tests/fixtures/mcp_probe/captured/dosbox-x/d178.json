@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D178",
+  "id": "d178",
   "prompt": "Start the guest from the run recipe this repository declares for the field bench, a profile called field-bench, and give it no other argument.",
   "tool": "start",
   "args": {
@@ -10,91 +10,91 @@
  "runs": [
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
+    "d178: {\"tool\": \"start\", \"args\": {\"profile\": \"field-bench\"}}"
    ],
    "right": true
   }

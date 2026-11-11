@@ -115,10 +115,10 @@ point. The demo opens a window so the game can be watched.
 ```
 resume(seconds=60)
 -> {
-  "summary": "resume: OTHER_STOP, stopped at 08DD:00000119",
-  "cause": "most likely the held `BPINT 03`: the guest is at `int 03`, at 08DD:00000119",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:00000119",
+  "cause": "most likely the held `BPINT 03`: the guest is at `int 03`, at 08DF:00000119",
   "instruction": {
-    "address": "08DD:00000119",
+    "address": "08DF:00000119",
     "bytes": "CD03",
     "text": "int 3",
     "flow": "call",
@@ -131,10 +131,10 @@ resume(seconds=60)
 ```
 
 ```
-symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="8dd0")
+symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="8df0")
 -> {
-  "summary": "symbols_load: 65 loaded of 65 parsed, base 36304",
-  "base": 36304
+  "summary": "symbols_load: 65 loaded of 65 parsed, base 36336, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
+  "base": 36336
 }
 ```
 
@@ -142,15 +142,15 @@ symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="8dd0")
 breakpoint_at(ref="brick_hit")
 -> {
   "summary": "breakpoint_at brick_hit: armed",
-  "entry": "BP 08DD:02C8"
+  "entry": "BP 08DF:02C8"
 }
 ```
 
 ```
 resume(seconds=60)
 -> {
-  "summary": "resume: OTHER_STOP, stopped at 08DD:000002C8",
-  "cause": "breakpoint brick_hit (by symbol) at 08DD:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8",
   "watches": [
     {
       "ref": "score",
@@ -169,7 +169,7 @@ resume(seconds=60)
 ```
 read_memory(ref="score", length=2)
 -> {
-  "summary": "read_memory score: 2 bytes at 08DD:00000615: 0a00",
+  "summary": "read_memory score: 2 bytes at 08DF:00000615: 0a00",
   "hex": "0a00"
 }
 ```
@@ -208,7 +208,7 @@ state_write(method="load", name="bricks")
 ```
 read_memory(ref="paddle_x", length=2)
 -> {
-  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F: dc00",
+  "summary": "read_memory paddle_x: 2 bytes at 08DF:0000061F: dc00",
   "hex": "dc00"
 }
 ```

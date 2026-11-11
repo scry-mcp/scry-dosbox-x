@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D114",
+  "id": "d114",
   "prompt": "In one call, read 2 bytes at 0100:0000 and have the call stop as diverged unless they read as hex 4f6b.",
   "tool": "perform",
   "args": {
@@ -31,91 +31,91 @@
  "runs": [
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": \"4f6b\"}]}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": \"4f6b\"}]}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d114: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"read_memory\", \"ref\": \"0100:0000\", \"length\": 2, \"recorded\": {\"hex\": \"4f6b\"}}]}}"
    ],
    "right": true
   }

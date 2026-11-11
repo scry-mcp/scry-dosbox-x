@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D132",
+  "id": "d132",
   "prompt": "Stop the machine whenever AH becomes 4Ch, wherever in the program that happens, whoever puts it there.",
   "tool": "regpoint_add",
   "args": {
@@ -22,91 +22,91 @@
  "runs": [
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+    "d132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
    ],
    "right": true
   }

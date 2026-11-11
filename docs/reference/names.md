@@ -71,7 +71,7 @@ Example, from a live run:
 
 ```json
 {
-  "path": "/Users/Shared/scry-examples-20261106/scry-dosbox-x/tests/fixtures/borland-tlink16/MAPDEMO.MAP",
+  "path": "/path/to/scry-dosbox-x/tests/fixtures/borland-tlink16/MAPDEMO.MAP",
   "base": "8000"
 }
 ```

@@ -1,7 +1,7 @@
 {
  "task": {
-  "id": "D71",
-  "prompt": "The guest is stopped in a 16-colour planar mode (12h). Write the screen's pixels from video memory to a picture.",
+  "id": "d71",
+  "prompt": "The guest is stopped in a 16-colour planar mode (12h). Show me the screen's pixels, read from video memory, as a picture attached to the reply.",
   "tool": "screen_view",
   "args": {},
   "allow": [
@@ -14,93 +14,93 @@
  "runs": [
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"snapshot\", \"args\": {}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/planar.png\"}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\"}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: {\"tool\": \"snapshot\", \"args\": {}}"
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
-   "right": false
+   "right": true
+  },
+  {
+   "lines": [
+    "d71: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
   }
  ]
 }

@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D52",
+  "id": "d52",
   "prompt": "Step the guest BACKWARDS by 3 instructions, undoing what they did.",
   "expect": "CANNOT",
   "about": "step"
@@ -8,91 +8,91 @@
  "runs": [
   {
    "lines": [
-    "D52: CANNOT No tool steps the guest backwards; step only advances it forward."
+    "d52: CANNOT DOSBox-X's debugger offers no reverse execution, so the guest cannot be stepped backwards."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool steps the guest backwards; step only moves forward."
+    "d52: CANNOT Stepping backwards is not offered by any tool; step only moves forward, and no tool undoes executed instructions."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool steps the guest backwards; the trace, step and run tools only move it forward."
+    "d52: CANNOT The debugger has no backward step; the step tools only move the guest forward."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool steps the guest backwards; the server only advances it."
+    "d52: CANNOT Scry has no tool that steps the guest backwards or undoes executed instructions."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool of this server steps the guest backwards; step only runs forward."
+    "d52: CANNOT DOSBox-X's debugger offers no reverse execution, so nothing here can step the guest backwards."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool steps the machine backwards; the server only advances it (step, run_to, run_for, trace), so an undo is not available."
+    "d52: CANNOT step only runs forward, into or over; no tool here steps backwards."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool steps the guest backwards; step and trace only run forward."
+    "d52: CANNOT No tool on this server steps the guest backwards; every step and run moves it forward only."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool of this server steps the guest backwards; step and run_to only move forward."
+    "d52: CANNOT The step tool only runs the machine forward, so no tool undoes instructions."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool steps the guest backwards; the server only advances it."
+    "d52: CANNOT DOSBox-X's debugger tools only run the guest forward; no tool steps it backwards or undoes instructions."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool steps the guest backwards; step only moves forward through instructions."
+    "d52: CANNOT No tool of this server runs the guest backwards or undoes executed instructions."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool steps the guest backwards; step only runs forward, and the debugger offers no undo."
+    "d52: CANNOT No tool steps the guest backwards; the server only advances execution forward."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool steps the guest backwards; the debugger and this server only run forward."
+    "d52: CANNOT No tool runs the guest backwards; the server only steps forward (step, run_to, trace)."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT No tool steps the guest backwards; step only moves forward."
+    "d52: CANNOT No tool steps the guest backwards; the server only advances it forward, and no undo is offered."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT step only moves the guest forward; its modes are over and into, and no tool undoes executed instructions."
+    "d52: CANNOT No tool steps the guest backwards; every stepping tool only moves forward."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT DOSBox-X's debugger and these tools cannot run the guest backwards or undo executed instructions."
+    "d52: CANNOT DOSBox-X's debugger has no reverse step, and no tool here undoes executed instructions."
    ],
    "right": true
   }

@@ -1,97 +1,97 @@
 {
  "task": {
-  "id": "D19",
+  "id": "d19",
   "prompt": "This session is headless and nothing is declared that could stop the guest. Let it run and come back at once; it will be stopped later.",
   "tool": "resume"
  },
  "runs": [
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {}}"
+    "d19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   }

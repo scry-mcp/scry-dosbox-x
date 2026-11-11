@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D179",
+  "id": "d179",
   "prompt": "Replay the session kept in /tmp/mcp-probe-session.json on this guest, in one call, and do not send the steps yourself.",
   "tool": "perform",
   "args": {
@@ -10,91 +10,91 @@
  "runs": [
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
+    "d179: {\"tool\": \"perform\", \"args\": {\"path\": \"/tmp/mcp-probe-session.json\"}}"
    ],
    "right": true
   }

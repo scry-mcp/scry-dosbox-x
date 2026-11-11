@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D36",
+  "id": "d36",
   "prompt": "List every breakpoint declaration and its state.",
   "tool": "declaration_list",
   "args": {
@@ -18,91 +18,91 @@
  "runs": [
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
+    "d36: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"breakpoint\"}}"
    ],
    "right": true
   }

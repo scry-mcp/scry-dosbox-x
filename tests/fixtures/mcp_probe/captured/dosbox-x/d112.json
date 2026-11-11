@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D112",
+  "id": "d112",
   "prompt": "Export this session as a replay to /tmp/bench/bricks.json, replacing the document already there.",
   "tool": "perform_export",
   "args": {
@@ -11,91 +11,91 @@
  "runs": [
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+    "d112: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
    ],
    "right": true
   }

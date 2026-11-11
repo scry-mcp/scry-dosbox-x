@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D20",
+  "id": "d20",
   "prompt": "Let the guest run and wait up to 25 seconds for a stop; when it stops I also want the E9 lines the guest wrote since the previous stop.",
   "tool": "resume",
   "args": {
@@ -10,91 +10,91 @@
  "runs": [
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"detail\": true}}"
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"detail\": true}}"
    ],
    "right": false
   },
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"detail\": true}}"
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"detail\": true}}"
    ],
    "right": false
   },
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+    "d20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
    ],
    "right": true
   }

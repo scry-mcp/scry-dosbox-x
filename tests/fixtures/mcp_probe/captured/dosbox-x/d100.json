@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D100",
+  "id": "d100",
   "prompt": "The guest is stopped. Show me the swatch of all 256 DAC colours at their natural size, with no enlargement.",
   "tool": "palette",
   "args": {
@@ -39,91 +39,91 @@
  "runs": [
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"first\": 0, \"count\": 256, \"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"count\": 256, \"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"count\": 256, \"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+    "d100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
    ],
    "right": true
   }

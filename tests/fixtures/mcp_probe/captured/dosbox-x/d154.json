@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D154",
+  "id": "d154",
   "prompt": "The DOS machine is stopped in display frame 400, counted since it powered on. In one call, advance one frame at a time until a stop reads frame 470, keeping every stop a watch or breakpoint makes on the way and letting the server count the steps; I cannot know in advance how many steps that takes.",
   "tool": "perform",
   "args": {
@@ -23,91 +23,91 @@
  "runs": [
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"summaries\": true, \"until_frame\": 470}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+    "d154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
    ],
    "right": true
   }

@@ -1,97 +1,97 @@
 {
  "task": {
-  "id": "D04",
+  "id": "d04",
   "prompt": "What is the session right now?",
   "tool": "status"
  },
  "runs": [
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D04: {\"tool\": \"status\", \"args\": {}}"
+    "d04: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
   }

@@ -1,100 +1,103 @@
 {
  "task": {
-  "id": "D70",
-  "prompt": "The guest is stopped in mode 13h. Save what is on the screen as a picture to /tmp/frame.png.",
+  "id": "d70",
+  "prompt": "The guest is stopped in mode 13h. Show me what is on the screen, attached to the reply and enlarged as far as fits, and keep the picture at /tmp/frame.png.",
   "tool": "screen_view",
   "args": {
    "dest": "/tmp/frame.png"
-  }
+  },
+  "allow": [
+   "scale"
+  ]
  },
  "runs": [
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true
   }

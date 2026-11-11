@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D37",
+  "id": "d37",
   "prompt": "Clear the breakpoint declared as BPINT 10 AH=0E.",
   "tool": "declaration_clear",
   "args": {
@@ -14,91 +14,91 @@
  "runs": [
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
+    "d37: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"ref\": \"BPINT 10 AH=0E\"}}"
    ],
    "right": true
   }

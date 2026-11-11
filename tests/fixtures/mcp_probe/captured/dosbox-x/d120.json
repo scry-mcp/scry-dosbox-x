@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D120",
+  "id": "d120",
   "prompt": "The guest is stopped. Which of the mapped screens is it showing right now?",
   "tool": "screen_map_find",
   "args": {}
@@ -8,91 +8,91 @@
  "runs": [
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D120: {\"tool\": \"screen_map_find\", \"args\": {}}"
+    "d120: {\"tool\": \"screen_map_find\", \"args\": {}}"
    ],
    "right": true
   }

@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D17",
+  "id": "d17",
   "prompt": "Force register bx to the decimal value 1234.",
   "tool": "set_register",
   "args": {
@@ -16,91 +16,91 @@
  "runs": [
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
+    "d17: {\"tool\": \"set_register\", \"args\": {\"name\": \"bx\", \"value\": 1234}}"
    ],
    "right": true
   }

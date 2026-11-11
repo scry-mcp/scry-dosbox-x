@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D147",
+  "id": "d147",
   "prompt": "Fire the timer interrupt once by hand, so its handler runs at the next instruction.",
   "tool": "pic",
   "args": {
@@ -14,91 +14,91 @@
  "runs": [
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+    "d147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
    ],
    "right": true
   }

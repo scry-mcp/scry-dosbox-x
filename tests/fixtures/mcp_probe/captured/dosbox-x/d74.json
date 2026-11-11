@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D74",
+  "id": "d74",
   "prompt": "The guest is stopped. Let it run until the words GAME OVER appear on the text screen, waiting at most 90 seconds, and stop it there.",
   "tool": "screen_wait",
   "args": {
@@ -11,91 +11,91 @@
  "runs": [
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+    "d74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   }

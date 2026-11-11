@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D90",
+  "id": "d90",
   "prompt": "Show my notes inline on the disassembly of draw_sprite, each beside the instruction it is on.",
   "tool": "disassemble",
   "args": {
@@ -13,91 +13,91 @@
  "runs": [
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 256}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 256}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 1024}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 1024}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 1024}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 256}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 1024}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 256}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 256}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 256}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 1024}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 1024}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 256}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 256}}"
+    "d90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 1024}}"
    ],
    "right": true
   }

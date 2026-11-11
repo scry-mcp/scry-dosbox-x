@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D148",
+  "id": "d148",
   "prompt": "Show me the state of both interrupt controllers: which lines are masked, requested or in service.",
   "tool": "pic",
   "args": {
@@ -13,91 +13,91 @@
  "runs": [
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
+    "d148: {\"tool\": \"pic\", \"args\": {\"method\": \"read\"}}"
    ],
    "right": true
   }

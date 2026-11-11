@@ -1,97 +1,97 @@
 {
  "task": {
-  "id": "D48",
+  "id": "d48",
   "prompt": "Which video captures did this session record?",
   "tool": "captures"
  },
  "runs": [
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D48: {\"tool\": \"captures\", \"args\": {}}"
+    "d48: {\"tool\": \"captures\", \"args\": {}}"
    ],
    "right": true
   }

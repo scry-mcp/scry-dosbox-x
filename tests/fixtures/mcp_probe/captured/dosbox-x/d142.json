@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D142",
+  "id": "d142",
   "prompt": "Open a DOSBox-X session from /opt/game/game.conf in /opt/game for 900 seconds with its log in /opt/game/emu.log, and have the emulator log its file operations at debug level and its PIT at warn level into that log.",
   "tool": "start",
   "args": {
@@ -26,91 +26,91 @@
  "runs": [
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
+    "d142: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/game/game.conf\", \"cwd\": \"/opt/game\", \"session_seconds\": 900, \"logfile\": \"/opt/game/emu.log\", \"log_categories\": {\"files\": \"debug\", \"pit\": \"warn\"}}}"
    ],
    "right": true
   }

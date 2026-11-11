@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D10",
+  "id": "d10",
   "prompt": "Dump 4096 bytes of memory from the symbol _vram_copy to the file /tmp/mcp-probe-dos.bin.",
   "tool": "memdump",
   "args": {
@@ -12,91 +12,91 @@
  "runs": [
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
+    "d10: {\"tool\": \"memdump\", \"args\": {\"ref\": \"_vram_copy\", \"length\": 4096, \"dest\": \"/tmp/mcp-probe-dos.bin\"}}"
    ],
    "right": true
   }

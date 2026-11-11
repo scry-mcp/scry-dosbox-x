@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D50",
+  "id": "d50",
   "prompt": "In one round trip: step into 2 instructions, then read the registers. Wait at most 15 seconds for a stop between steps.",
   "tool": "perform",
   "args": {
@@ -38,91 +38,91 @@
  "runs": [
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
+    "d50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"settle_seconds\": 15}}"
    ],
    "right": true
   }

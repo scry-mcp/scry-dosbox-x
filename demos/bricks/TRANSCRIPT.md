@@ -32,21 +32,29 @@
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
+  "window": {
+    "display": 0,
+    "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
+    "onscreen": true,
+    "front": true,
+    "fullscreen": false
+  },
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
+  "kept": "kept 1 (promote to review)",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**2. `resume`**: OK ready: the program's own int 3 at 08DD:0119: loaded at 08DD
+**2. `resume`**: OK ready: the program's own int 3 at 08DF:0119: loaded at 08DF
 
 <details><summary>call and reply</summary>
 
@@ -58,13 +66,13 @@
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DD:00000119",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:00000119",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DD:00000119",
+  "pc": "08DF:00000119",
   "cpu_mode": "real",
   "frame": 1,
   "regs": {
@@ -77,24 +85,24 @@
     "EBP": "0x0000091c",
     "ESP": "0x0000fffe",
     "EIP": "0x00000119",
-    "CS": "0x08dd",
-    "DS": "0x08dd",
+    "CS": "0x08df",
+    "DS": "0x08df",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x08dd"
+    "SS": "0x08df"
   },
   "watches": [],
-  "cause": "most likely the held `BPINT 03`: the guest is at `int 03`, at 08DD:00000119",
+  "cause": "most likely the held `BPINT 03`: the guest is at `int 03`, at 08DF:00000119",
   "e9": {
     "lines_total": 2,
     "truncated": false,
-    "lines": ["Bochs port E9h: STUB  . scry device=present proto=6 motion=1", "Bochs port E9h: BRICKS ready"],
+    "lines": ["Bochs port E9h: STUB  . scry device=present proto=7 motion=1", "Bochs port E9h: BRICKS ready"],
     "mark": "<volatile>"
   },
   "stop_seq": 2,
   "instruction": {
-    "address": "08DD:00000119",
+    "address": "08DF:00000119",
     "bytes": "CD03",
     "text": "int 3",
     "flow": "call",
@@ -109,22 +117,22 @@
 
 </details>
 
-**3. `symbols_load`**: OK symbols: 65 symbols placed at base 0x8dd0
+**3. `symbols_load`**: OK symbols: 65 symbols placed at base 0x8df0
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "path": "./demos/bricks/bricks.sym",
-  "base": "8dd0"
+  "base": "8df0"
 }
 ```
 
 ```json
 {
-  "summary": "symbols_load: 65 loaded of 65 parsed, base 36304",
+  "summary": "symbols_load: 65 loaded of 65 parsed, base 36336, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
   "status": "ok",
-  "base": 36304,
+  "base": 36336,
   "limit": -1,
   "descriptor": -1,
   "declarations": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []},
@@ -170,14 +178,14 @@
 
 ```json
 {
-  "summary": "disassemble brick_hit: 14 lines at 08DD:000002C8, 16-bit",
+  "summary": "disassemble brick_hit: 14 lines at 08DF:000002C8, 16-bit",
   "status": "ok",
   "ref": "brick_hit",
-  "seg_off": "08DD:000002C8",
+  "seg_off": "08DF:000002C8",
   "length": 32,
   "code_bits": 16,
   "code_bits_from": "real mode",
-  "lines": ["08DD:000002C8 88DF                 mov bh, bl", "08DD:000002CA 88C3                 mov bl, al", "08DD:000002CC E81FFF               call 0x1ee", "08DD:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0", "08DD:000002D4 FE0E2B06             dec byte ptr [0x62b]", "08DD:000002D8 53                   push bx", "08DD:000002D9 30C0                 xor al, al", "08DD:000002DB E81BFF               call 0x1f9", "08DD:000002DE 5B                   pop bx", "08DD:000002DF B006                 mov al, 6", "08DD:000002E1 28D8                 sub al, bl", "08DD:000002E3 B40A                 mov ah, 0xa", "08DD:000002E5 F6E4                 mul ah", "08DD:000002E7 01061506             add word ptr [0x615], ax"],
+  "lines": ["08DF:000002C8 88DF                 mov bh, bl", "08DF:000002CA 88C3                 mov bl, al", "08DF:000002CC E81FFF               call 0x1ee", "08DF:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0", "08DF:000002D4 FE0E2B06             dec byte ptr [0x62b]", "08DF:000002D8 53                   push bx", "08DF:000002D9 30C0                 xor al, al", "08DF:000002DB E81BFF               call 0x1f9", "08DF:000002DE 5B                   pop bx", "08DF:000002DF B006                 mov al, 6", "08DF:000002E1 28D8                 sub al, bl", "08DF:000002E3 B40A                 mov ah, 0xa", "08DF:000002E5 F6E4                 mul ah", "08DF:000002E7 01061506             add word ptr [0x615], ax"],
   "flow": ["sequential", "sequential", "call", "sequential", "sequential", "sequential", "sequential", "call", "sequential", "sequential", "sequential", "sequential", "sequential", "sequential"],
   "flow_source": "capstone",
   "resolved": [
@@ -185,8 +193,8 @@
       "line": 2,
       "operand": "0x1ee",
       "kind": "target",
-      "seg_off": "08DD:000001EE",
-      "addr": "0x00008fbe",
+      "seg_off": "08DF:000001EE",
+      "addr": "0x00008fde",
       "symbol": "brick_index",
       "delta": 0
     },
@@ -195,8 +203,8 @@
       "operand": "byte ptr [0x62b]",
       "kind": "memory",
       "register": "DS",
-      "seg_off": "08DD:0000062B",
-      "addr": "0x000093fb",
+      "seg_off": "08DF:0000062B",
+      "addr": "0x0000941b",
       "symbol": "bricks_left",
       "delta": 0
     },
@@ -204,8 +212,8 @@
       "line": 7,
       "operand": "0x1f9",
       "kind": "target",
-      "seg_off": "08DD:000001F9",
-      "addr": "0x00008fc9",
+      "seg_off": "08DF:000001F9",
+      "addr": "0x00008fe9",
       "symbol": "brick_rect",
       "delta": 0
     },
@@ -214,8 +222,8 @@
       "operand": "word ptr [0x615]",
       "kind": "memory",
       "register": "DS",
-      "seg_off": "08DD:00000615",
-      "addr": "0x000093e5",
+      "seg_off": "08DF:00000615",
+      "addr": "0x00009405",
       "symbol": "score",
       "delta": 0
     }
@@ -226,7 +234,7 @@
 
 </details>
 
-**5. `breakpoint_at`**: OK break: breakpoint BP 08DD:02C8
+**5. `breakpoint_at`**: OK break: breakpoint BP 08DF:02C8
 
 <details><summary>call and reply</summary>
 
@@ -245,7 +253,7 @@
   "stored": true,
   "armed": true,
   "state": "armed",
-  "entry": "BP 08DD:02C8",
+  "entry": "BP 08DF:02C8",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -294,13 +302,13 @@
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DD:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DD:000002C8",
+  "pc": "08DF:000002C8",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -313,12 +321,12 @@
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
     "EIP": "0x000002c8",
-    "CS": "0x08dd",
-    "DS": "0x08dd",
+    "CS": "0x08df",
+    "DS": "0x08df",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x08dd"
+    "SS": "0x08df"
   },
   "watches": [
     {
@@ -332,11 +340,11 @@
       "bytes": "0000"
     }
   ],
-  "cause": "breakpoint brick_hit (by symbol) at 08DD:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 3,
   "instruction": {
-    "address": "08DD:000002C8",
+    "address": "08DF:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -363,13 +371,13 @@
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DD:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DD:000002C8",
+  "pc": "08DF:000002C8",
   "cpu_mode": "real",
   "frame": 140,
   "regs": {
@@ -382,12 +390,12 @@
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
     "EIP": "0x000002c8",
-    "CS": "0x08dd",
-    "DS": "0x08dd",
+    "CS": "0x08df",
+    "DS": "0x08df",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x08dd"
+    "SS": "0x08df"
   },
   "watches": [
     {
@@ -401,11 +409,11 @@
       "bytes": "0a00"
     }
   ],
-  "cause": "breakpoint brick_hit (by symbol) at 08DD:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8",
   "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: HIT 5 7"], "mark": "<volatile>"},
   "stop_seq": 4,
   "instruction": {
-    "address": "08DD:000002C8",
+    "address": "08DF:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -433,10 +441,10 @@
 
 ```json
 {
-  "summary": "read_memory score: 2 bytes at 08DD:00000615: 0a00",
+  "summary": "read_memory score: 2 bytes at 08DF:00000615: 0a00",
   "status": "ok",
   "ref": "score",
-  "seg_off": "08DD:00000615",
+  "seg_off": "08DF:00000615",
   "length": 2,
   "hex": "0a00",
   "session": {"alive": true, "running": false, "altered": false}
@@ -502,7 +510,7 @@ Also attached: image/png.
   "summary": "declaration_clear breakpoint all: 1 cleared",
   "status": "ok",
   "declarations_cleared": 1,
-  "disarmed": ["BP 08DD:02C8"],
+  "disarmed": ["BP 08DF:02C8"],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -570,10 +578,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory ball_x: 8 bytes at 08DD:00000621: bc005200feff0200",
+  "summary": "read_memory ball_x: 8 bytes at 08DF:00000621: bc005200feff0200",
   "status": "ok",
   "ref": "ball_x",
-  "seg_off": "08DD:00000621",
+  "seg_off": "08DF:00000621",
   "length": 8,
   "hex": "bc005200feff0200",
   "session": {"alive": true, "running": false, "altered": false}
@@ -768,10 +776,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F: a400",
+  "summary": "read_memory paddle_x: 2 bytes at 08DF:0000061F: a400",
   "status": "ok",
   "ref": "paddle_x",
-  "seg_off": "08DD:0000061F",
+  "seg_off": "08DF:0000061F",
   "length": 2,
   "hex": "a400",
   "session": {"alive": true, "running": false, "altered": false}
@@ -854,7 +862,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_mouse: pointer at 240,100; effect seen",
+  "summary": "send_mouse: pointer at 240,100, program's own pointer not read; no button pressed; effect seen",
   "status": "ok",
   "x": 240,
   "y": 100,
@@ -866,7 +874,7 @@ Also attached: image/png.
     "buttons": [],
     "bios_mode": "0x13"
   },
-  "arrived": true,
+  "driver_arrived": true,
   "motion": true,
   "verify": {
     "checked": true,
@@ -966,10 +974,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F: dc00",
+  "summary": "read_memory paddle_x: 2 bytes at 08DF:0000061F: dc00",
   "status": "ok",
   "ref": "paddle_x",
-  "seg_off": "08DD:0000061F",
+  "seg_off": "08DF:0000061F",
   "length": 2,
   "hex": "dc00",
   "session": {"alive": true, "running": false, "altered": false}
@@ -1139,10 +1147,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F: dc00",
+  "summary": "read_memory paddle_x: 2 bytes at 08DF:0000061F: dc00",
   "status": "ok",
   "ref": "paddle_x",
-  "seg_off": "08DD:0000061F",
+  "seg_off": "08DF:0000061F",
   "length": 2,
   "hex": "dc00",
   "session": {"alive": true, "running": false, "altered": true}
@@ -1258,6 +1266,7 @@ Also attached: image/png.
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
+  "draft": ["start/bricks"],
   "session": {"alive": false, "running": false, "altered": false}
 }
 ```

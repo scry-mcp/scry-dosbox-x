@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D152",
+  "id": "d152",
   "prompt": "Which file did the program fail to open? List the DOS open calls it made that came back with an error.",
   "tool": "log",
   "args": {
@@ -37,91 +37,91 @@
  "runs": [
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"open.*-> error\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"3D open .*-> error\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .* -> error\", \"channel\": \"dos\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .*-> error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"3D open .* -> error\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"pattern\": \"0x3D open .* -> error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .*-> error\", \"channel\": \"dos\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"3D open .* -> error\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .* -> error\", \"channel\": \"dos\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .*-> error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .*error\", \"channel\": \"dos\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"3D open.*-> error\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .* -> error\", \"channel\": \"dos\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open.*-> error\", \"channel\": \"dos\", \"limit\": 40}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .* -> error\", \"channel\": \"dos\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .* -> error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open.*-> error\", \"channel\": \"dos\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .* -> error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .*-> error\", \"channel\": \"dos\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"3D open .* -> error\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"3D open .* -> error\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .* -> error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"0x3D open .* -> error\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"pattern\": \"3D open .* -> error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"0x3D open.*-> error\", \"channel\": \"dos\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"pattern\": \"open .* -> error\", \"channel\": \"dos\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"pattern\": \"0x3D open.*-> error\", \"channel\": \"dos\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"3D open .*-> error\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"open .* -> error\"}}"
+    "d152: {\"tool\": \"log\", \"args\": {\"channel\": \"dos\", \"pattern\": \"open .* -> error\"}}"
    ],
    "right": true
   }

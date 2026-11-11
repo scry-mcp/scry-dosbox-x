@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D40",
+  "id": "d40",
   "prompt": "List every watch declaration and its state.",
   "tool": "declaration_list",
   "args": {
@@ -13,91 +13,91 @@
  "runs": [
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+    "d40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   }

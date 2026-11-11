@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D91",
+  "id": "d91",
   "prompt": "Before I start anything: does the DOSBox-X I built at /opt/dbx-dev/src/dosbox-x carry the debugger? Ask about that build, not the installed one.",
   "tool": "build_check",
   "args": {
@@ -10,91 +10,91 @@
  "runs": [
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   }

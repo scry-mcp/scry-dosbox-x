@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D78",
+  "id": "d78",
   "prompt": "The guest is stopped. Trace 800 instructions in the shape that also records each one's emulated time and CR0, into /tmp/full.trace.",
   "tool": "trace",
   "args": {
@@ -15,91 +15,91 @@
  "runs": [
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+    "d78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
    ],
    "right": true
   }

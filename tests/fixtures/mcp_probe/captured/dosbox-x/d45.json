@@ -1,10 +1,21 @@
 {
  "task": {
-  "id": "D45",
+  "id": "d45",
   "prompt": "Click the left mouse button where the guest's pointer is now.",
   "tool": "send_mouse",
   "args": {
-   "button": "left"
+   "any_of": [
+    {
+     "button": "left"
+    },
+    {
+     "action": "click"
+    },
+    {
+     "button": "left",
+     "action": "click"
+    }
+   ]
   },
   "grammar": [
    "left"
@@ -13,93 +24,93 @@
  "runs": [
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\", \"button\": \"left\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\", \"button\": \"left\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\", \"button\": \"left\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\", \"button\": \"left\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\", \"button\": \"left\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"click\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\", \"button\": \"left\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"click\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\"}}"
+    "d45: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"click\", \"button\": \"left\"}}"
    ],
-   "right": false
+   "right": true
   }
  ]
 }

@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D81",
+  "id": "d81",
   "prompt": "The guest is stopped and its symbol table is loaded. Run the next 4000 instructions and tell me which routines ran and how many instructions each executed, keeping the log in /tmp/cov.trace.",
   "tool": "trace",
   "args": {
@@ -14,91 +14,91 @@
  "runs": [
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/cov.trace\"}}"
+    "d81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true
   }

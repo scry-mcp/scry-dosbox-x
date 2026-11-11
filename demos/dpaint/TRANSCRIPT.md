@@ -32,21 +32,29 @@
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
+  "window": {
+    "display": 0,
+    "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
+    "onscreen": true,
+    "front": true,
+    "fullscreen": false
+  },
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
+  "kept": "kept 1 (promote to review)",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**2. `run_for`**: OK loaded: 400 retraces: Deluxe Paint is up, its data segment at 0x31b0
+**2. `run_for`**: OK loaded: 400 retraces: Deluxe Paint is up, its data segment at 0x31b2
 
 <details><summary>call and reply</summary>
 
@@ -59,43 +67,43 @@
 
 ```json
 {
-  "summary": "run_for 400 frames: ELAPSED, 400 polls, at 0B92:00000241",
+  "summary": "run_for 400 frames: ELAPSED, 400 polls, at 0E85:00000B12",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 400,
-  "pc": "0B92:00000241",
+  "pc": "0E85:00000B12",
   "cpu_mode": "real",
   "frame": 400,
   "regs": {
     "EAX": "0x00000000",
-    "EBX": "0x000003e4",
+    "EBX": "0x0000018e",
     "ECX": "0x005b0000",
     "EDX": "0x0000a5ea",
-    "ESI": "0x00006e42",
-    "EDI": "0x00006e52",
-    "EBP": "0x00009ffc",
-    "ESP": "0x00009ff8",
-    "EIP": "0x00000241",
-    "CS": "0x0b92",
-    "DS": "0x31b0",
+    "ESI": "0x00000008",
+    "EDI": "0x0000a0ae",
+    "EBP": "0x0000a010",
+    "ESP": "0x0000a010",
+    "EIP": "0x00000b12",
+    "CS": "0x0e85",
+    "DS": "0x31b2",
     "ES": "0x0000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x31b0"
+    "SS": "0x31b2"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 0B92:00000241",
+  "cause": "the retrace run_for ran to, at 0E85:00000B12",
   "e9": {
     "lines_total": 1,
     "truncated": false,
-    "lines": ["Bochs port E9h: STUB  . scry device=present proto=6 motion=1"],
+    "lines": ["Bochs port E9h: STUB  . scry device=present proto=7 motion=1"],
     "mark": "<volatile>"
   },
   "stop_seq": 2,
   "instruction": {
-    "address": "0B92:00000241",
-    "bytes": "8B4708",
-    "text": "mov ax, word ptr [bx + 8]",
+    "address": "0E85:00000B12",
+    "bytes": "A31205",
+    "text": "mov word ptr [0x512], ax",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
@@ -106,7 +114,7 @@
   "emulated_after_s": 5.6986656,
   "frame_before": 0,
   "frame_after": 400,
-  "cycles": 56500326,
+  "cycles": 56500352,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -120,7 +128,7 @@
 ```json
 {
   "method": "load",
-  "path": "./demos/dpaint/dpaint.screen-map.json"
+  "path": "./demos/dpaint/dpaint-screen-map.json"
 }
 ```
 
@@ -128,7 +136,7 @@
 {
   "summary": "screen_map_write load: 1 screen, 13 controls of dpaint",
   "status": "ok",
-  "path": "./demos/dpaint/dpaint.screen-map.json",
+  "path": "./demos/dpaint/dpaint-screen-map.json",
   "application": "dpaint",
   "mode": "verified",
   "screens": 1,
@@ -190,7 +198,7 @@
 
 ```json
 {
-  "summary": "send_mouse: pointer at 300,179; posted, unverified, 21 retraces to frame 421",
+  "summary": "send_mouse: pointer at 300,179, program's own pointer not read; posted, unverified, 21 retraces to frame 421",
   "status": "ok",
   "x": 300,
   "y": 179,
@@ -204,41 +212,41 @@
     "buttons": [],
     "bios_mode": "0x13"
   },
-  "arrived": true,
+  "driver_arrived": true,
   "polls": 21,
-  "pc": "F000:0000CFC5",
+  "pc": "100B:000002D1",
   "cpu_mode": "real",
   "stop_seq": 23,
   "frame": 421,
   "instruction": {
-    "address": "F000:0000CFC5",
-    "bytes": "CF",
-    "text": "iret",
-    "flow": "return",
+    "address": "100B:000002D1",
+    "bytes": "50",
+    "text": "push ax",
+    "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": {"available": false, "why": "no symbol table is loaded"},
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "regs": {
-    "EAX": "0x0000011c",
+    "EAX": "0x0000a030",
     "EBX": "0x00001094",
     "ECX": "0x005b0000",
     "EDX": "0x000000fe",
-    "ESI": "0x0000ffff",
+    "ESI": "0x00000008",
     "EDI": "0x0000a0ae",
-    "EBP": "0x0000a00c",
-    "ESP": "0x00009ff8",
-    "EIP": "0x0000cfc5",
-    "CS": "0xf000",
-    "DS": "0x31b0",
+    "EBP": "0x0000a03e",
+    "ESP": "0x0000a02a",
+    "EIP": "0x000002d1",
+    "CS": "0x100b",
+    "DS": "0x31b2",
     "ES": "0x0000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x31b0"
+    "SS": "0x31b2"
   },
   "watches": [],
-  "cause": "the retrace the input's post ran to, at F000:0000CFC5",
+  "cause": "the retrace the input's post ran to, at 100B:000002D1",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "motion": true,
   "verify": {
@@ -261,7 +269,7 @@
 ```json
 {
   "method": "start",
-  "ref": "31B0:0000",
+  "ref": "31B2:0000",
   "length": 65535,
   "cell_bytes": 1
 }
@@ -269,13 +277,13 @@
 
 ```json
 {
-  "summary": "scan start: 31B0:0000, 65535 cells of 1 byte",
+  "summary": "scan start: 31B2:0000, 65535 cells of 1 byte",
   "status": "ok",
-  "ref": "31B0:0000",
-  "seg_off": "31B0:00000000",
+  "ref": "31B2:0000",
+  "seg_off": "31B2:00000000",
   "length": 65535,
   "cell_bytes": 1,
-  "addr": "0x00031b00",
+  "addr": "0x00031b20",
   "hits_total": 65535,
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -283,7 +291,7 @@
 
 </details>
 
-**7. `scan`**: OK is blue: 75 bytes hold 0x09 now
+**7. `scan`**: OK is blue: 71 bytes hold 0x09 now
 
 <details><summary>call and reply</summary>
 
@@ -297,23 +305,23 @@
 
 ```json
 {
-  "summary": "scan filter: = 9, 75 survivors, the first 8 listed",
+  "summary": "scan filter: = 9, 71 survivors, the first 8 listed",
   "status": "ok",
   "operator": "=",
   "value": "0x09",
   "iterations": 1,
   "closed": false,
   "hits": [
-    {"seg_off": "31B0:0000017C", "addr": "0x00031c7c", "value": "0x09"},
-    {"seg_off": "31B0:000001AE", "addr": "0x00031cae", "value": "0x09"},
-    {"seg_off": "31B0:00000370", "addr": "0x00031e70", "value": "0x09"},
-    {"seg_off": "31B0:00000470", "addr": "0x00031f70", "value": "0x09"},
-    {"seg_off": "31B0:00000597", "addr": "0x00032097", "value": "0x09"},
-    {"seg_off": "31B0:000006B3", "addr": "0x000321b3", "value": "0x09"},
-    {"seg_off": "31B0:000008F9", "addr": "0x000323f9", "value": "0x09"},
-    {"seg_off": "31B0:00000919", "addr": "0x00032419", "value": "0x09"}
+    {"seg_off": "31B2:0000017C", "addr": "0x00031c9c", "value": "0x09"},
+    {"seg_off": "31B2:000001AE", "addr": "0x00031cce", "value": "0x09"},
+    {"seg_off": "31B2:00000370", "addr": "0x00031e90", "value": "0x09"},
+    {"seg_off": "31B2:00000470", "addr": "0x00031f90", "value": "0x09"},
+    {"seg_off": "31B2:00000597", "addr": "0x000320b7", "value": "0x09"},
+    {"seg_off": "31B2:000006B3", "addr": "0x000321d3", "value": "0x09"},
+    {"seg_off": "31B2:000008F9", "addr": "0x00032419", "value": "0x09"},
+    {"seg_off": "31B2:00000919", "addr": "0x00032439", "value": "0x09"}
   ],
-  "hits_total": 75,
+  "hits_total": 71,
   "truncated": true,
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -334,7 +342,7 @@
 
 ```json
 {
-  "summary": "send_mouse: pointer at 317,175; posted, unverified, 25 retraces to frame 446",
+  "summary": "send_mouse: pointer at 317,175, program's own pointer not read; posted, unverified, 25 retraces to frame 446",
   "status": "ok",
   "x": 317,
   "y": 175,
@@ -348,41 +356,41 @@
     "buttons": [],
     "bios_mode": "0x13"
   },
-  "arrived": true,
+  "driver_arrived": true,
   "polls": 25,
-  "pc": "13F6:00000220",
+  "pc": "F000:0000CFC5",
   "cpu_mode": "real",
   "stop_seq": 48,
   "frame": 446,
   "instruction": {
-    "address": "13F6:00000220",
-    "bytes": "83EC06",
-    "text": "sub sp, 6",
-    "flow": "sequential",
+    "address": "F000:0000CFC5",
+    "bytes": "CF",
+    "text": "iret",
+    "flow": "return",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": {"available": false, "why": "no symbol table is loaded"},
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
   "regs": {
-    "EAX": "0x0000a01c",
+    "EAX": "0x0000011c",
     "EBX": "0x00001094",
     "ECX": "0x005b0000",
     "EDX": "0x000000fe",
-    "ESI": "0x0000a030",
+    "ESI": "0x0000ffff",
     "EDI": "0x0000a0ae",
     "EBP": "0x0000a00c",
-    "ESP": "0x0000a00c",
-    "EIP": "0x00000220",
-    "CS": "0x13f6",
-    "DS": "0x31b0",
+    "ESP": "0x00009ff8",
+    "EIP": "0x0000cfc5",
+    "CS": "0xf000",
+    "DS": "0x31b2",
     "ES": "0x0000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x31b0"
+    "SS": "0x31b2"
   },
   "watches": [],
-  "cause": "the retrace the input's post ran to, at 13F6:00000220",
+  "cause": "the retrace the input's post ran to, at F000:0000CFC5",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "motion": true,
   "verify": {
@@ -398,7 +406,7 @@
 
 </details>
 
-**9. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above A00C, and 4 static ones from 31B0:017C
+**9. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above 9FF8, and 4 static ones from 31B2:017C
 
 <details><summary>call and reply</summary>
 
@@ -418,13 +426,13 @@
   "iterations": 2,
   "closed": false,
   "hits": [
-    {"seg_off": "31B0:0000017C", "addr": "0x00031c7c", "value": "0x37"},
-    {"seg_off": "31B0:000001AE", "addr": "0x00031cae", "value": "0x37"},
-    {"seg_off": "31B0:00000470", "addr": "0x00031f70", "value": "0x37"},
-    {"seg_off": "31B0:000010B0", "addr": "0x00032bb0", "value": "0x37"},
-    {"seg_off": "31B0:0000A57E", "addr": "0x0003c07e", "value": "0x37"},
-    {"seg_off": "31B0:0000A57F", "addr": "0x0003c07f", "value": "0x37"},
-    {"seg_off": "31B0:0000A580", "addr": "0x0003c080", "value": "0x37"}
+    {"seg_off": "31B2:0000017C", "addr": "0x00031c9c", "value": "0x37"},
+    {"seg_off": "31B2:000001AE", "addr": "0x00031cce", "value": "0x37"},
+    {"seg_off": "31B2:00000470", "addr": "0x00031f90", "value": "0x37"},
+    {"seg_off": "31B2:000010B0", "addr": "0x00032bd0", "value": "0x37"},
+    {"seg_off": "31B2:0000A57E", "addr": "0x0003c09e", "value": "0x37"},
+    {"seg_off": "31B2:0000A57F", "addr": "0x0003c09f", "value": "0x37"},
+    {"seg_off": "31B2:0000A580", "addr": "0x0003c0a0", "value": "0x37"}
   ],
   "hits_total": 7,
   "truncated": false,
@@ -461,7 +469,7 @@
 
 ```json
 {
-  "ref": "31B0:017C",
+  "ref": "31B2:017C",
   "mode": "show",
   "fmt": "u8"
 }
@@ -469,9 +477,9 @@
 
 ```json
 {
-  "summary": "watch_add 31B0:017C: evaluated",
+  "summary": "watch_add 31B2:017C: evaluated",
   "status": "ok",
-  "ref": "31B0:017C",
+  "ref": "31B2:017C",
   "by": "address",
   "mode": "show",
   "fmt": "u8",
@@ -509,27 +517,27 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 306,77; posted, unverified, 25 retraces to frame 471",
+        "summary": "send_mouse: pointer at 306,77, program's own pointer not read; posted, unverified, 25 retraces to frame 471",
         "status": "ok",
         "stop_seq": 73,
-        "cause": "the retrace the input's post ran to, at 1009:00000326"
+        "cause": "the retrace the input's post ran to, at 13F8:000002D7"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 317,169; posted, unverified, 25 retraces to frame 496",
+        "summary": "send_mouse: pointer at 317,169, program's own pointer not read; posted, unverified, 25 retraces to frame 496",
         "status": "ok",
         "stop_seq": 98,
-        "cause": "the retrace the input's post ran to, at 1009:00000240"
+        "cause": "the retrace the input's post ran to, at 0957:0000002C"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 294,112; posted, unverified, 30 retraces to frame 526",
+        "summary": "send_mouse: pointer at 294,112, program's own pointer not read; posted, unverified, 30 retraces to frame 526",
         "status": "ok",
         "x": 2,
         "y": 14,
@@ -543,7 +551,7 @@
           "buttons": [],
           "bios_mode": "0x13"
         },
-        "arrived": true,
+        "driver_arrived": true,
         "polls": 30,
         "pc": "F000:0000CFC5",
         "cpu_mode": "real",
@@ -563,22 +571,22 @@
           "EAX": "0x0000011c",
           "EBX": "0x00000000",
           "ECX": "0x005b0000",
-          "EDX": "0x00000cf3",
+          "EDX": "0x00000cf5",
           "ESI": "0x0000ffff",
           "EDI": "0x0000a0ae",
           "EBP": "0x0000a00c",
           "ESP": "0x00009ff8",
           "EIP": "0x0000cfc5",
           "CS": "0xf000",
-          "DS": "0x31b0",
+          "DS": "0x31b2",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x31b0"
+          "SS": "0x31b2"
         },
         "watches": [
           {
-            "ref": "31B0:017C",
+            "ref": "31B2:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -651,27 +659,27 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 317,77; posted, unverified, 25 retraces to frame 551",
+        "summary": "send_mouse: pointer at 317,77, program's own pointer not read; posted, unverified, 25 retraces to frame 551",
         "status": "ok",
         "stop_seq": 153,
-        "cause": "the retrace the input's post ran to, at 0955:0000002A"
+        "cause": "the retrace the input's post ran to, at 0957:00000029"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,189; posted, unverified, 25 retraces to frame 576",
+        "summary": "send_mouse: pointer at 300,189, program's own pointer not read; posted, unverified, 25 retraces to frame 576",
         "status": "ok",
         "stop_seq": 178,
-        "cause": "the retrace the input's post ran to, at 1009:0000023C"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 238,112; posted, unverified, 30 retraces to frame 606",
+        "summary": "send_mouse: pointer at 238,112, program's own pointer not read; posted, unverified, 30 retraces to frame 606",
         "status": "ok",
         "x": 210,
         "y": 112,
@@ -685,42 +693,42 @@
           "buttons": [],
           "bios_mode": "0x13"
         },
-        "arrived": true,
+        "driver_arrived": true,
         "polls": 30,
-        "pc": "0E83:00000B18",
+        "pc": "100B:0000036A",
         "cpu_mode": "real",
         "stop_seq": 208,
         "frame": 606,
         "instruction": {
-          "address": "0E83:00000B18",
-          "bytes": "FF760C",
-          "text": "push word ptr [bp + 0xc]",
-          "flow": "sequential",
+          "address": "100B:0000036A",
+          "bytes": "740F",
+          "text": "je 0x37b",
+          "flow": "branch",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": {"available": false, "why": "no symbol table is loaded"},
           "delta": {"available": false, "why": "no symbol table is loaded"}
         },
         "regs": {
-          "EAX": "0x00000000",
+          "EAX": "0x00000070",
           "EBX": "0x0000018e",
           "ECX": "0x005b0000",
-          "EDX": "0x00000cf3",
+          "EDX": "0x00000cf5",
           "ESI": "0x00000008",
           "EDI": "0x0000a0ae",
-          "EBP": "0x0000a010",
-          "ESP": "0x0000a00e",
-          "EIP": "0x00000b18",
-          "CS": "0x0e83",
-          "DS": "0x31b0",
+          "EBP": "0x0000a03e",
+          "ESP": "0x0000a02a",
+          "EIP": "0x0000036a",
+          "CS": "0x100b",
+          "DS": "0x31b2",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x31b0"
+          "SS": "0x31b2"
         },
         "watches": [
           {
-            "ref": "31B0:017C",
+            "ref": "31B2:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -730,7 +738,7 @@
             "bytes": "0e"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0E83:00000B18",
+        "cause": "the retrace the input's post ran to, at 100B:0000036A",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
@@ -785,27 +793,27 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 306,77; posted, unverified, 25 retraces to frame 631",
+        "summary": "send_mouse: pointer at 306,77, program's own pointer not read; posted, unverified, 25 retraces to frame 631",
         "status": "ok",
         "stop_seq": 233,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 13F8:000002CC"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,163; posted, unverified, 25 retraces to frame 656",
+        "summary": "send_mouse: pointer at 300,163, program's own pointer not read; posted, unverified, 25 retraces to frame 656",
         "status": "ok",
         "stop_seq": 258,
-        "cause": "the retrace the input's post ran to, at 1009:00000264"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 294,198; posted, unverified, 30 retraces to frame 686",
+        "summary": "send_mouse: pointer at 294,198, program's own pointer not read; posted, unverified, 30 retraces to frame 686",
         "status": "ok",
         "x": 2,
         "y": 113,
@@ -819,42 +827,42 @@
           "buttons": [],
           "bios_mode": "0x13"
         },
-        "arrived": true,
+        "driver_arrived": true,
         "polls": 30,
-        "pc": "0DA5:00000350",
+        "pc": "0957:00000041",
         "cpu_mode": "real",
         "stop_seq": 288,
         "frame": 686,
         "instruction": {
-          "address": "0DA5:00000350",
-          "bytes": "CD16",
-          "text": "int 0x16",
-          "flow": "call",
+          "address": "0957:00000041",
+          "bytes": "8B4402",
+          "text": "mov ax, word ptr [si + 2]",
+          "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": {"available": false, "why": "no symbol table is loaded"},
           "delta": {"available": false, "why": "no symbol table is loaded"}
         },
         "regs": {
-          "EAX": "0x0000011c",
+          "EAX": "0x00000128",
           "EBX": "0x00000000",
           "ECX": "0x005b0000",
-          "EDX": "0x00000cf3",
-          "ESI": "0x0000ffff",
+          "EDX": "0x00000cf5",
+          "ESI": "0x00000190",
           "EDI": "0x0000a0ae",
-          "EBP": "0x0000a00c",
-          "ESP": "0x00009ffe",
-          "EIP": "0x00000350",
-          "CS": "0x0da5",
-          "DS": "0x31b0",
+          "EBP": "0x0000a014",
+          "ESP": "0x0000a012",
+          "EIP": "0x00000041",
+          "CS": "0x0957",
+          "DS": "0x31b2",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x31b0"
+          "SS": "0x31b2"
         },
         "watches": [
           {
-            "ref": "31B0:017C",
+            "ref": "31B2:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -864,7 +872,7 @@
             "bytes": "01"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0DA5:00000350",
+        "cause": "the retrace the input's post ran to, at 0957:00000041",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
@@ -926,17 +934,17 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,173; posted, unverified, 25 retraces to frame 711",
+        "summary": "send_mouse: pointer at 300,173, program's own pointer not read; posted, unverified, 25 retraces to frame 711",
         "status": "ok",
         "stop_seq": 313,
-        "cause": "the retrace the input's post ran to, at 1009:000002AA"
+        "cause": "the retrace the input's post ran to, at 100B:0000032D"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 112,158; posted, unverified, 30 retraces to frame 741",
+        "summary": "send_mouse: pointer at 112,158, program's own pointer not read; posted, unverified, 30 retraces to frame 741",
         "status": "ok",
         "x": 60,
         "y": 150,
@@ -950,7 +958,7 @@
           "buttons": [],
           "bios_mode": "0x13"
         },
-        "arrived": true,
+        "driver_arrived": true,
         "polls": 30,
         "pc": "F000:0000CFC5",
         "cpu_mode": "real",
@@ -970,22 +978,22 @@
           "EAX": "0x0000011c",
           "EBX": "0x00000000",
           "ECX": "0x005b0000",
-          "EDX": "0x00000cf3",
+          "EDX": "0x00000cf5",
           "ESI": "0x0000ffff",
           "EDI": "0x0000a0ae",
           "EBP": "0x0000a00c",
           "ESP": "0x00009ff8",
           "EIP": "0x0000cfc5",
           "CS": "0xf000",
-          "DS": "0x31b0",
+          "DS": "0x31b2",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x31b0"
+          "SS": "0x31b2"
         },
         "watches": [
           {
-            "ref": "31B0:017C",
+            "ref": "31B2:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -1068,7 +1076,7 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 302,51; posted, unverified, 25 retraces to frame 766",
+        "summary": "send_mouse: pointer at 302,51, program's own pointer not read; posted, unverified, 25 retraces to frame 766",
         "status": "ok",
         "stop_seq": 368,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
@@ -1078,37 +1086,37 @@
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,191; posted, unverified, 25 retraces to frame 791",
+        "summary": "send_mouse: pointer at 300,191, program's own pointer not read; posted, unverified, 25 retraces to frame 791",
         "status": "ok",
         "stop_seq": 393,
-        "cause": "the retrace the input's post ran to, at 1009:000002D5"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 86,118; posted, unverified, 30 retraces to frame 821",
+        "summary": "send_mouse: pointer at 86,118, program's own pointer not read; posted, unverified, 30 retraces to frame 821",
         "status": "ok",
         "stop_seq": 423,
-        "cause": "the retrace the input's post ran to, at 0E83:00000A6A"
+        "cause": "the retrace the input's post ran to, at 0E85:000009A8"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 108,146; posted, unverified, 30 retraces to frame 851",
+        "summary": "send_mouse: pointer at 108,146, program's own pointer not read; posted, unverified, 30 retraces to frame 851",
         "status": "ok",
         "stop_seq": 453,
-        "cause": "the retrace the input's post ran to, at 13F6:000002DA"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 86,146; posted, unverified, 30 retraces to frame 881",
+        "summary": "send_mouse: pointer at 86,146, program's own pointer not read; posted, unverified, 30 retraces to frame 881",
         "status": "ok",
         "x": 108,
         "y": 146,
@@ -1122,16 +1130,16 @@
           "buttons": [],
           "bios_mode": "0x13"
         },
-        "arrived": true,
+        "driver_arrived": true,
         "polls": 30,
-        "pc": "0B92:00000241",
+        "pc": "0E85:00000A71",
         "cpu_mode": "real",
         "stop_seq": 483,
         "frame": 881,
         "instruction": {
-          "address": "0B92:00000241",
-          "bytes": "8B4708",
-          "text": "mov ax, word ptr [bx + 8]",
+          "address": "0E85:00000A71",
+          "bytes": "B8426E",
+          "text": "mov ax, 0x6e42",
           "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
@@ -1139,25 +1147,25 @@
           "delta": {"available": false, "why": "no symbol table is loaded"}
         },
         "regs": {
-          "EAX": "0x00000000",
+          "EAX": "0x00006e52",
           "EBX": "0x000003e4",
           "ECX": "0x005b0000",
           "EDX": "0x0000a5ea",
-          "ESI": "0x00006e42",
-          "EDI": "0x00006e52",
-          "EBP": "0x00009ffc",
-          "ESP": "0x00009ff8",
-          "EIP": "0x00000241",
-          "CS": "0x0b92",
-          "DS": "0x31b0",
+          "ESI": "0x00000008",
+          "EDI": "0x0000a0ae",
+          "EBP": "0x0000a006",
+          "ESP": "0x0000a004",
+          "EIP": "0x00000a71",
+          "CS": "0x0e85",
+          "DS": "0x31b2",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x31b0"
+          "SS": "0x31b2"
         },
         "watches": [
           {
-            "ref": "31B0:017C",
+            "ref": "31B2:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -1167,7 +1175,7 @@
             "bytes": "0f"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0B92:00000241",
+        "cause": "the retrace the input's post ran to, at 0E85:00000A71",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
@@ -1223,20 +1231,20 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 314,98; posted, unverified, 25 retraces to frame 906",
+        "summary": "send_mouse: pointer at 314,98, program's own pointer not read; posted, unverified, 25 retraces to frame 906",
         "status": "ok",
         "stop_seq": 508,
-        "cause": "the retrace the input's post ran to, at 1009:00000320"
+        "cause": "the retrace the input's post ran to, at 100B:00000239"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 20,180; posted, unverified, 25 retraces to frame 931",
+        "summary": "send_mouse: pointer at 20,180, program's own pointer not read; posted, unverified, 25 retraces to frame 931",
         "status": "ok",
         "stop_seq": 533,
-        "cause": "the retrace the input's post ran to, at 13F6:0000020E"
+        "cause": "the retrace the input's post ran to, at 13F8:00000212"
       }
     },
     {
@@ -1246,14 +1254,14 @@
         "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 981",
         "status": "ok",
         "stop_seq": 583,
-        "cause": "the retrace the input's post ran to, at 0E83:00000AFC"
+        "cause": "the retrace the input's post ran to, at 0E85:00000B1C"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 302,51; posted, unverified, 25 retraces to frame 1006",
+        "summary": "send_mouse: pointer at 302,51, program's own pointer not read; posted, unverified, 25 retraces to frame 1006",
         "status": "ok",
         "x": 302,
         "y": 51,
@@ -1267,16 +1275,16 @@
           "buttons": [],
           "bios_mode": "0x13"
         },
-        "arrived": true,
+        "driver_arrived": true,
         "polls": 25,
-        "pc": "0955:00000059",
+        "pc": "0957:00000058",
         "cpu_mode": "real",
         "stop_seq": 608,
         "frame": 1006,
         "instruction": {
-          "address": "0955:00000059",
-          "bytes": "5D",
-          "text": "pop bp",
+          "address": "0957:00000058",
+          "bytes": "5E",
+          "text": "pop si",
           "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
@@ -1287,22 +1295,22 @@
           "EAX": "0x00000001",
           "EBX": "0x0000105c",
           "ECX": "0x005b0000",
-          "EDX": "0x00000bc7",
-          "ESI": "0x00000008",
+          "EDX": "0x00000bc9",
+          "ESI": "0x0000105e",
           "EDI": "0x0000a0ae",
           "EBP": "0x0000a014",
-          "ESP": "0x0000a014",
-          "EIP": "0x00000059",
-          "CS": "0x0955",
-          "DS": "0x31b0",
+          "ESP": "0x0000a012",
+          "EIP": "0x00000058",
+          "CS": "0x0957",
+          "DS": "0x31b2",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x31b0"
+          "SS": "0x31b2"
         },
         "watches": [
           {
-            "ref": "31B0:017C",
+            "ref": "31B2:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -1312,7 +1320,7 @@
             "bytes": "0f"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0955:00000059",
+        "cause": "the retrace the input's post ran to, at 0957:00000058",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
@@ -1485,6 +1493,7 @@ Also attached: image/png.
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
+  "draft": ["start/dp"],
   "session": {"alive": false, "running": false, "altered": false}
 }
 ```

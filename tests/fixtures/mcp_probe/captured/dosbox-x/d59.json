@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D59",
+  "id": "d59",
   "prompt": "Advance the guest by 12 frames of the display and stop there, within 20 seconds, and show me the E9 lines it wrote since the previous stop.",
   "tool": "run_for",
   "args": {
@@ -11,91 +11,91 @@
  "runs": [
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
+    "d59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   }

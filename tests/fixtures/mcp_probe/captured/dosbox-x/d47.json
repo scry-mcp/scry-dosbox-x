@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D47",
+  "id": "d47",
   "prompt": "The guest runs in a VESA mode: put its mouse pointer at the DOS driver's own coordinates 812, 455.",
   "tool": "send_mouse",
   "args": {
@@ -15,91 +15,91 @@
  "runs": [
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+    "d47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true
   }

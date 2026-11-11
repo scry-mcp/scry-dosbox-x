@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D15",
+  "id": "d15",
   "prompt": "Cancel the debugger's open value scan.",
   "tool": "scan",
   "args": {
@@ -13,91 +13,91 @@
  "runs": [
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+    "d15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   }

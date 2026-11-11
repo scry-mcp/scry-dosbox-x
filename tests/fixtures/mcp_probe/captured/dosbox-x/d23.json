@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D23",
+  "id": "d23",
   "prompt": "Run until the symbol _draw_hud, with _vsync as the control that is known to fire often, within 50 seconds, and show me the guest's newest E9 lines when it stops.",
   "tool": "run_to",
   "args": {
@@ -12,91 +12,91 @@
  "runs": [
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+    "d23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   }

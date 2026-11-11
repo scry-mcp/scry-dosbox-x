@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D175",
+  "id": "d175",
   "prompt": "The game keeps its own mouse pointer in memory, x at 2000:94CA and y at 2000:94CC, two bytes each. Tell the screen map where the pointer is.",
   "tool": "screen_map_write",
   "args": {
@@ -18,91 +18,91 @@
  "runs": [
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
+    "d175: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"pointer\", \"pointer\": {\"x\": \"2000:94CA\", \"y\": \"2000:94CC\", \"bytes\": 2}}}"
    ],
    "right": true
   }

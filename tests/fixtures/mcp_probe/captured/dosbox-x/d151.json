@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D151",
+  "id": "d151",
   "prompt": "Keep the byte at the symbol _lives at its current value while the game runs, whatever the game writes to it.",
   "tool": "watch_add",
   "args": {
@@ -19,91 +19,91 @@
  "runs": [
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1, \"fmt\": \"u8\"}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1, \"fmt\": \"u8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\"}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"fmt\": \"u8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1, \"fmt\": \"u8\"}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1, \"fmt\": \"u8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"fmt\": \"u8\", \"length\": 1}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"fmt\": \"u8\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1, \"fmt\": \"u8\"}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1, \"fmt\": \"u8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1, \"fmt\": \"u8\"}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"fmt\": \"u8\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1, \"fmt\": \"u8\"}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1, \"fmt\": \"u8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"fmt\": \"u8\"}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"fmt\": \"u8\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"fmt\": \"u8\"}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"fmt\": \"u8\", \"length\": 1}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1, \"fmt\": \"u8\"}}"
+    "d151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1, \"fmt\": \"u8\"}}"
    ],
    "right": true
   }

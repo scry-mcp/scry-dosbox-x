@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D44",
+  "id": "d44",
   "prompt": "Put the guest's mouse pointer on the pixel at column 160, row 100 of the screen.",
   "tool": "send_mouse",
   "args": {
@@ -11,91 +11,91 @@
  "runs": [
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100, \"units\": \"screen\"}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
+    "d44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   }

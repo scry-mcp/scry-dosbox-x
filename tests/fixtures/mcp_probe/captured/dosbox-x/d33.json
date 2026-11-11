@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D33",
+  "id": "d33",
   "prompt": "Which symbol holds the toolchain offset 7340 of section 2?",
   "tool": "symbols_find",
   "args": {
@@ -11,91 +11,91 @@
  "runs": [
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+    "d33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   }

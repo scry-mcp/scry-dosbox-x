@@ -1,6 +1,6 @@
 {
  "task": {
-  "id": "D24",
+  "id": "d24",
   "prompt": "Save the running machine as the state level3, waiting up to 90 seconds.",
   "tool": "state_write",
   "args": {
@@ -15,91 +15,91 @@
  "runs": [
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
+    "d24: {\"tool\": \"state_write\", \"args\": {\"method\": \"save\", \"name\": \"level3\", \"seconds\": 90}}"
    ],
    "right": true
   }
