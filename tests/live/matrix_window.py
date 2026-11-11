@@ -62,8 +62,6 @@ G_CELLS = cells(
      "window docstring: no_channel without `shared`"),
     ("G in a window, cell 40,12 arrives at the driver's 320,96",
      "send_mouse docstring: inside the guest, so a window changes nothing"),
-    ("G in a full-screen window the same cell arrives at the same driver coordinates",
-     "REFERENCE.md, Input and the screen: the window's scale changes nothing the guest sees"),
     (DPMI_CELLS[0], "snapshot docstring; the image is kept for the QA"),
     (DPMI_CELLS[1], "send_mouse docstring; known: the program logs `mouse btn=`"),
     (DPMI_CELLS[2], "stop docstring"),
@@ -129,7 +127,7 @@ def _probe() -> None:
     judged("G capture_frame refuses a frame past the end", reply=r, holds=refused(r))
     r = M.call(server.send_mouse, x=40, y=12)
     judged("G in a window, cell 40,12 arrives at the driver's 320,96", reply=r,
-           holds=_landed(r))
+           holds=landed(r))
     close_whatever()
 
 
@@ -189,31 +187,11 @@ def _on_display_one(label: str, fullscreen: bool) -> None:
     close_whatever()
 
 
-def _landed(r: dict[str, object]) -> bool:
+def landed(r: dict[str, object]) -> bool:
     pointer = r.get("pointer")
     mouse = pointer.get("mouse") if isinstance(pointer, dict) else None
     return (ok(r) and r.get("arrived", r.get("driver_arrived")) is True and isinstance(mouse, dict)
             and (mouse.get("x"), mouse.get("y")) == (320, 96))
-
-
-def _scaled() -> None:
-    """The probe guest again, its window filling the display: the pointer is set inside the
-    guest, so the same cell lands on the same driver coordinates."""
-    conf = conf_without_launch(PROBE_CONF, "PROBE.COM")
-    r = start_call(conf=str(conf), cwd=str(GUEST), session_seconds=SESSION_S,
-                   logfile=M.fresh(".log"), state_dir=M.fresh("-save"), shared=True, display=0,
-                   fullscreen=True, background=True, program="PROBE.COM")
-    # A build that takes its window settings only at the guest's first video mode refuses a
-    # parked full-screen start and leaves the session live; the refusal names `resume`.
-    if not refused(r, "window_not_visible"):
-        must(r, "start did not come up")
-    must(M.call(server.resume), "releasing the probe")
-    must(M.call(server.log_wait, pattern="PROBE", channel="guest", seconds=30),
-         "the probe's first line")
-    r = M.call(server.send_mouse, x=40, y=12)
-    judged("G in a full-screen window the same cell arrives at the same driver coordinates",
-           reply=r, holds=_landed(r))
-    close_whatever()
 
 
 def _dpmi() -> None:
@@ -242,7 +220,6 @@ def section_g() -> None:
     try:
         _window()
         _probe()
-        _scaled()
         _dpmi()
     finally:
         close_whatever()

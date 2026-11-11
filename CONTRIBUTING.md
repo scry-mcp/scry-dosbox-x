@@ -188,7 +188,9 @@ section O's verdict, read as scry-core's README says (*Focus watch*).
 What opens a window (section G, the focus gate's O, the `windowed` tests) runs alone. The focus
 gate's start in front and its Space move take the desk of whoever is working, so they run only
 with `SCRY_FOCUS_CONTROL=1` on an idle machine; unset, those cells are BLOCKED naming the variable
-and the verdict says it is unproven. Each part
+and the verdict says it is unproven. The full-screen cell runs beside them, before the window the
+verdict judges: on macOS a window filling the display is a Space of its own, which the watch
+would report as a Space nobody moved. Each part
 works on copies of its own of the guests, because the debugger writes its files
 under fixed names into the emulator's working directory (`tests/live/live_private.py`).
 
