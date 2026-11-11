@@ -41,6 +41,7 @@ from matrix_common import (
     said,
     server,
 )
+from scry_core.host_program import absolute
 
 from scry_dosbox_x import paths
 from scry_dosbox_x import session as ds
@@ -123,7 +124,7 @@ L_CELLS = cells(
 )
 #: Each wrong with no machine at all: a state name, a scan, a register, a bound, a list.
 NO_MACHINE_NEEDED: tuple[tuple[str, dict[str, Any]], ...] = (
-    ("state_write", {"method": "save", "name": "abc\n", "seconds": 5}), ("state_write",
+    ("state_write", {"method": "save", "name": "\n", "seconds": 5}), ("state_write",
                                                                          {"method": "load",
                                                                           "name": "1",
                                                                           "seconds": 5}),
@@ -132,6 +133,7 @@ NO_MACHINE_NEEDED: tuple[tuple[str, dict[str, Any]], ...] = (
                                                                            "operator": "?"}),
     ("scan", {"method": "start", "ref": "0000:0400", "length": 3, "cell_bytes": 2}),
     ("set_register", {"name": "ax", "value": 0x10000}), ("resume", {"seconds": -1}),
+    ("capture_frame", {"frame": 0, "dest": absolute("x", "s%03d.png")}),
     ("run_to", {"ref": "0000:0100", "control": ""}),
     ("breakpoint_at", {"ref": "[g_p]", "by": "pointer"}),
     ("perform", {"steps": [{"op": "nope"}]}), ("drive", {"act": [], "limit": 0}))

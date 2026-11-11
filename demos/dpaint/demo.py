@@ -65,7 +65,8 @@ def found(reply: Reply, run: Run) -> str:
 
 def picked(what: str) -> Any:
     def check(reply: Reply, run: Run) -> str:
-        expect(reply["arrived"] is True, f"the pointer read back at {reply['pointer']['screen']}")
+        expect(reply["driver_arrived"] is True,
+               f"the pointer read back at {reply['pointer']['screen']}")
         return what
     return check
 

@@ -138,7 +138,7 @@ def moved(reply: Reply, run: Run) -> str:
 
 def pointed(reply: Reply, run: Run) -> str:
     screen = reply["pointer"]["screen"]
-    expect(reply["arrived"] is True and (screen["x"], screen["y"]) == MOUSE_AT,
+    expect(reply["driver_arrived"] is True and (screen["x"], screen["y"]) == MOUSE_AT,
            f"the pointer read back at {screen}, not {MOUSE_AT}")
     expect(reply["verify"]["seen"] is True, f"verify {reply['verify']}")
     return (f"the pointer read back at pixel {MOUSE_AT[0]},{MOUSE_AT[1]} and the game logged "

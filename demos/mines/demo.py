@@ -178,7 +178,8 @@ def won(reply: Reply, run: Run) -> str:
 
 
 def parked(reply: Reply, run: Run) -> str:
-    expect(reply["arrived"] is True, f"the pointer read back at {reply['pointer']['screen']}")
+    expect(reply["driver_arrived"] is True,
+           f"the pointer read back at {reply['pointer']['screen']}")
     return f"the pointer parked at {PARK[0]},{PARK[1]}, off every region the map signs"
 
 
@@ -193,7 +194,8 @@ def step_on(run: Run) -> dict[str, Any]:
 
 def stepped(reply: Reply, run: Run) -> str:
     r, c = first_mine(run)
-    expect(reply["arrived"] is True, f"the pointer read back at {reply['pointer']['screen']}")
+    expect(reply["driver_arrived"] is True,
+           f"the pointer read back at {reply['pointer']['screen']}")
     return (f"a left click on the mine at {r},{c}, the machine left stopped a few retraces "
             f"later, the explosion already sounding")
 

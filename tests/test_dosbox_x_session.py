@@ -384,7 +384,7 @@ def _src(fake: Any) -> Path:
 def test_a_still_whose_destination_already_exists_is_refused_before_ffmpeg_runs(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The caller's file is NEVER deleted."""
-    mine = tmp_path / "README.md"
+    mine = tmp_path / "readme.md"
     mine.write_bytes(b"the caller's own file, nothing to do with a frame")
     fake = SimpleNamespace(captures=lambda: [{"path": str(tmp_path / "cap.avi")}])
     ran: list[list[str]] = []
