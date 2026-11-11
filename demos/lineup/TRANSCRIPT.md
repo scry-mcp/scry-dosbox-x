@@ -6,6 +6,7 @@
 {
   "profile": "<host>",
   "shared": true,
+  "flags": ["-set", "cpu core=normal"],
   "captures_dir": "<host>",
   "cwd": "<host>"
 }
@@ -17,7 +18,7 @@
   "status": "ok",
   "pid": "<volatile>",
   "conf": "<volatile>",
-  "conf_digest": "6018944893db6f81",
+  "conf_digest": "<volatile>",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -46,7 +47,6 @@
       "why": "the table carries no symbol kinds (a link map lists none), so its code symbols cannot be told from the rest"
     }
   },
-  "note": "this session runs the dynamic core, which checks breakpoints only between compiled blocks, so a code breakpoint inside one can be passed over and a run that never reaches it proves nothing. Start on the normal core: `start(flags=[\"-set\", \"cpu core=normal\"])`",
   "kept": "kept 1 (promote to review)",
   "profile": {
     "name": "<volatile>",
@@ -59,45 +59,57 @@
 
 </details>
 
-**2. `run_for`**: OK boot: booted: DOS running the game, its map placed at segment 08EB, 385 symbols
+**2. `breakpoint_interrupt`**: OK loaded: a stop on BPINT 21 AH=62
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "milliseconds": 2000,
+  "number": 33,
+  "ah": 98
+}
+```
+
+```json
+{
+  "summary": "breakpoint_interrupt BPINT 21 AH=62: stored",
+  "status": "ok",
+  "ref": "BPINT 21 AH=62",
+  "stored": true,
+  "armed": true,
+  "entry": "BPINT 21 AH=62",
+  "omitted": ["output", "output_chars", "clipped"],
+  "how": "detail=True adds what the debugger printed for this command",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**3. `resume`**: OK boot: stopped inside the game: its map placed at segment 08EB, 385 symbols
+
+<details><summary>call and reply</summary>
+
+```json
+{
   "seconds": 120
 }
 ```
 
 ```json
 {
-  "summary": "run_for 2000 ms: ELAPSED, 140 polls, at 08EB:00001CA9",
+  "summary": "resume: OTHER_STOP, stopped at 08EB:00009B4E",
   "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 140,
-  "pc": "08EB:00001CA9",
+  "verdict": "OTHER_STOP",
+  "omitted": ["output", "output_chars", "clipped"],
+  "how": "detail=True adds what the debugger printed for this command",
+  "waited_s": "<volatile>",
+  "pc": "<volatile>",
   "cpu_mode": "real",
-  "frame": 140,
-  "regs": {
-    "EAX": "0x00000020",
-    "EBX": "0x0000000a",
-    "ECX": "0x005b0000",
-    "EDX": "0x00000000",
-    "ESI": "0x00001260",
-    "EDI": "0x00000dfd",
-    "EBP": "0x00004288",
-    "ESP": "0x00004282",
-    "EIP": "0x00001ca9",
-    "CS": "0x08eb",
-    "DS": "0x138c",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138c"
-  },
+  "frame": 1,
+  "regs": "<volatile>",
   "watches": [],
-  "cause": "the retrace run_for ran to, at 08EB:00001CA9",
+  "cause": "<volatile>",
   "e9": {
     "lines_total": 1,
     "truncated": false,
@@ -105,32 +117,38 @@
     "mark": "<volatile>"
   },
   "stop_seq": 2,
-  "instruction": {
-    "address": "08EB:00001CA9",
-    "bytes": "833ECC0601",
-    "text": "cmp word ptr [0x6cc], 1",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "Pal_Off",
-    "delta": 122
-  },
+  "instruction": "<volatile>",
   "symbols_placed": {"placed": true, "path": "<volatile>", "load_segment": "08EB", "base": 36528, "loaded": 385},
-  "emulated_before_s": 0.00094,
-  "emulated_after_s": 2.0029089,
-  "frame_before": 0,
-  "frame_after": 140,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and this session started on the dynamic core: start on `flags=[\"-set\", \"cpu core=normal\"]` for a count"
-  },
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**3. `screen_map_write`**: OK map: 4 screens and 10 controls loaded
+**4. `declaration_clear`**: OK unloaded: the boot's stop cleared
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "kind": "breakpoint",
+  "all": true
+}
+```
+
+```json
+{
+  "summary": "declaration_clear breakpoint all: 1 cleared",
+  "status": "ok",
+  "declarations_cleared": 1,
+  "disarmed": ["BPINT 21 AH=62"],
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**5. `screen_map_write`**: OK map: 4 screens and 10 controls loaded
 
 <details><summary>call and reply</summary>
 
@@ -156,7 +174,7 @@
 
 </details>
 
-**4. `perform`**: OK script: 26 steps of the game's own document, 21 holding to it
+**6. `perform`**: OK script: 34 steps of the game's own document, 21 holding to it
 
 <details><summary>call and reply</summary>
 
@@ -169,205 +187,171 @@
 
 ```json
 {
-  "summary": "perform: 26 of 26 steps",
+  "summary": "perform: 34 of 34 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "run_to",
       "reply": {
-        "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 1",
+        "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 250",
         "status": "ok",
         "stop_seq": 3,
-        "cause": "run_to's target Draw_High_Scores_Screen at 08EB:00001DF6"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 1500 ms: ELAPSED, 106 polls, at 08EB:00001CA9",
-        "status": "ok",
-        "stop_seq": 4,
-        "cause": "the retrace run_for ran to, at 08EB:00001CA9"
-      }
+      "op": "breakpoint_at",
+      "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 2,
+      "op": "screen_wait",
+      "reply": {
+        "summary": "screen_wait screen 'hiscores': found after 2 firings of breakpoint 'Check_Money100'",
+        "status": "ok",
+        "stop_seq": 4,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 3,
+      "op": "declaration_clear",
+      "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
+    },
+    {
+      "step": 4,
       "op": "screen_map_find",
       "reply": {"summary": "screen_map_find: hiscores (file), 2 controls", "status": "ok"}
     },
     {
-      "step": 3,
+      "step": 5,
       "op": "read_memory",
       "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0000", "status": "ok"}
     },
     {
-      "step": 4,
+      "step": 6,
       "op": "send_keys",
       "reply": {
-        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 462",
+        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 361",
         "status": "ok",
         "stop_seq": 10,
-        "cause": "the retrace the input's post ran to, at F000:0000CA40"
+        "cause": "<volatile>"
       }
-    },
-    {
-      "step": 5,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 1000 ms: ELAPSED, 71 polls, at 08EB:00001CA9",
-        "status": "ok",
-        "stop_seq": 11,
-        "cause": "the retrace run_for ran to, at 08EB:00001CA9"
-      }
-    },
-    {
-      "step": 6,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: insert (file), 2 controls", "status": "ok"}
     },
     {
       "step": 7,
-      "op": "read_memory",
-      "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0300", "status": "ok"}
+      "op": "breakpoint_at",
+      "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 8,
-      "op": "send_keys",
+      "op": "screen_wait",
       "reply": {
-        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 539",
+        "summary": "screen_wait screen 'insert': found after 1 firing of breakpoint 'Check_Money100'",
         "status": "ok",
-        "stop_seq": 17,
-        "cause": "the retrace the input's post ran to, at 08EB:00009243"
+        "stop_seq": 11,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 9,
-      "op": "run_to",
-      "reply": {
-        "summary": "run_to Level_Write: TARGET at 08EB:000058FE, control counted 0",
-        "status": "ok",
-        "stop_seq": 18,
-        "cause": "run_to's target Level_Write at 08EB:000058FE"
-      }
+      "op": "declaration_clear",
+      "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 10,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:000004AC",
-        "status": "ok",
-        "stop_seq": 19,
-        "cause": "the retrace run_for ran to, at 08EB:000004AC"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: insert (file), 2 controls", "status": "ok"}
     },
     {
       "step": 11,
+      "op": "read_memory",
+      "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0300", "status": "ok"}
+    },
+    {
+      "step": 12,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 9 retraces to frame 371",
+        "status": "ok",
+        "stop_seq": 20,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 13,
+      "op": "run_to",
+      "reply": {
+        "summary": "run_to Level_Write: TARGET at 08EB:000058FE, control counted 7",
+        "status": "ok",
+        "stop_seq": 21,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 14,
+      "op": "breakpoint_at",
+      "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
+    },
+    {
+      "step": 15,
+      "op": "screen_wait",
+      "reply": {
+        "summary": "screen_wait screen 'level': found after 1 firing of breakpoint 'Check_Money100'",
+        "status": "ok",
+        "stop_seq": 22,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 16,
+      "op": "declaration_clear",
+      "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
+    },
+    {
+      "step": 17,
       "op": "screen_map_find",
       "reply": {"summary": "screen_map_find: level (file), 3 controls", "status": "ok"}
     },
     {
-      "step": 12,
+      "step": 18,
       "op": "read_memory",
       "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0200", "status": "ok"}
     },
     {
-      "step": 13,
+      "step": 19,
       "op": "read_memory",
       "reply": {"summary": "read_memory Stage_Act: 2 bytes at 08EB:0000B0D8: 0000", "status": "ok"}
     },
     {
-      "step": 14,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 3000 ms: ELAPSED, 211 polls, at 08EB:000086A8",
-        "status": "ok",
-        "stop_seq": 20,
-        "cause": "the retrace run_for ran to, at 08EB:000086A8"
-      }
-    },
-    {
-      "step": 15,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: play (file), 3 controls", "status": "ok"}
-    },
-    {
-      "step": 16,
-      "op": "read_memory",
-      "reply": {
-        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010003000100000003000000",
-        "status": "ok"
-      }
-    },
-    {
-      "step": 17,
-      "op": "send_keys",
-      "reply": {
-        "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 789",
-        "status": "ok",
-        "stop_seq": 36,
-        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
-      }
-    },
-    {
-      "step": 18,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:000004AC",
-        "status": "ok",
-        "stop_seq": 37,
-        "cause": "the retrace run_for ran to, at 08EB:000004AC"
-      }
-    },
-    {
-      "step": 19,
-      "op": "read_memory",
-      "reply": {
-        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000100000003000000",
-        "status": "ok"
-      }
-    },
-    {
       "step": 20,
-      "op": "send_keys",
-      "reply": {
-        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 810",
-        "status": "ok",
-        "stop_seq": 43,
-        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
-      }
+      "op": "breakpoint_at",
+      "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 21,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {
-        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:00008621",
+        "summary": "screen_wait screen 'play': found after 150 firings of breakpoint 'Check_Money100'",
         "status": "ok",
-        "stop_seq": 44,
-        "cause": "the retrace run_for ran to, at 08EB:00008621"
+        "stop_seq": 23,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 22,
-      "op": "read_memory",
-      "reply": {
-        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000200000003000000",
-        "status": "ok"
-      }
+      "op": "declaration_clear",
+      "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 23,
-      "op": "send_keys",
-      "reply": {
-        "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 841",
-        "status": "ok",
-        "stop_seq": 60,
-        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: play (file), 3 controls", "status": "ok"}
     },
     {
-      "step": 25,
+      "step": 33,
       "op": "read_memory",
       "reply": {
         "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000200040003000200",
@@ -380,23 +364,24 @@
       }
     }
   ],
-  "steps_total": 26,
+  "steps_total": 34,
   "truncated": true,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
     "stop_seq_first": 3,
-    "stop_seq_last": 61,
+    "stop_seq_last": 72,
     "surveyed": 14,
     "by_cause": {
       "run_to's target Draw_High_Scores_Screen": 1,
-      "the retrace run_for ran to,": 7,
+      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 4,
       "the retrace the input's post ran to,": 5,
-      "run_to's target Level_Write": 1
+      "run_to's target Level_Write": 1,
+      "run_to's target Gest_Scores": 3
     },
-    "unaccounted": 45
+    "unaccounted": 56
   },
-  "steps_completed": 26,
+  "steps_completed": 34,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 21,
   "session": {"alive": true, "running": false, "altered": false}
@@ -405,7 +390,7 @@
 
 </details>
 
-**5. `audio_record`**: OK record: 141 frames recorded, the first whole frames past 2000 ms
+**7. `audio_record`**: OK record: 141 frames recorded, the first whole frames past 2000 ms
 
 <details><summary>call and reply</summary>
 
@@ -418,71 +403,43 @@
 
 ```json
 {
-  "summary": "audio_record wav 141 frames: ELAPSED, 96576 samples at 48000 Hz at ./tmp/demos/lineup/music.wav",
+  "summary": "audio_record wav 141 frames: ELAPSED, 96288 samples at 48000 Hz at ./tmp/demos/lineup/music.wav",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 141,
-  "pc": "08EB:000004AC",
+  "pc": "<volatile>",
   "cpu_mode": "real",
-  "frame": 990,
-  "regs": {
-    "EAX": "0x0000ffff",
-    "EBX": "0x00005e0a",
-    "ECX": "0x005b0000",
-    "EDX": "0x00000002",
-    "ESI": "0x0000046a",
-    "EDI": "0x0000faa0",
-    "EBP": "0x00004288",
-    "ESP": "0x00004286",
-    "EIP": "0x000004ac",
-    "CS": "0x08eb",
-    "DS": "0x138c",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x138c"
-  },
+  "frame": 780,
+  "regs": "<volatile>",
   "watches": [],
-  "cause": "the retrace run_for ran to, at 08EB:000004AC",
+  "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-  "stop_seq": 62,
-  "instruction": {
-    "address": "08EB:000004AC",
-    "bytes": "A16A12",
-    "text": "mov ax, word ptr [0x126a]",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": "_lineup_run",
-    "delta": 88
-  },
-  "emulated_before_s": 12.119534439999999,
-  "emulated_after_s": 14.13133152,
-  "frame_before": 849,
-  "frame_after": 990,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and this session started on the dynamic core: start on `flags=[\"-set\", \"cpu core=normal\"]` for a count"
-  },
+  "stop_seq": 73,
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": 11.12076996,
+  "frame_before": 639,
+  "frame_after": 780,
+  "cycles": "<volatile>",
   "kind": "wav",
   "frames": 141,
   "began": true,
   "ended": true,
   "path": "<volatile>",
-  "bytes": 386348,
+  "bytes": 385196,
   "channels": 2,
   "sample_rate_hz": 48000,
-  "samples": 96576,
-  "emulated_s": 2.0117971,
-  "sample_min": -8568,
-  "sample_max": 3017,
+  "samples": 96288,
+  "emulated_s": "<volatile>",
+  "sample_min": -19504,
+  "sample_max": 18746,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**6. `audio_compare`**: OK heard: a sound, peaking at -11.65 dBFS
+**8. `audio_compare`**: OK heard: a sound, peaking at -4.51 dBFS
 
 <details><summary>call and reply</summary>
 
@@ -495,7 +452,7 @@
 
 ```json
 {
-  "summary": "audio_compare measure: ch0 peak -11.65 dBFS, onset 0.0 s, ch1 peak -11.65 dBFS, onset 0.0 s",
+  "summary": "audio_compare measure: ch0 peak -4.51 dBFS, onset 0.0004 s, ch1 peak -4.51 dBFS, onset 0.0004 s",
   "status": "ok",
   "sample_rate_hz": 48000,
   "channels": 2,
@@ -504,32 +461,32 @@
   "measures": [
     {
       "channel": 0,
-      "peak_dbfs": -11.65,
-      "rms_dbfs": -28.33,
+      "peak_dbfs": -4.51,
+      "rms_dbfs": -19.77,
       "silent": false,
       "silence_spans": {
         "count": 0,
         "first": {"available": false, "why": "no silence in the window"}
       },
-      "onset_s": 0.0,
-      "clipping_run": 0,
+      "onset_s": 0.0004,
+      "clipping_run": 5,
       "clipped": false
     },
     {
       "channel": 1,
-      "peak_dbfs": -11.65,
-      "rms_dbfs": -28.33,
+      "peak_dbfs": -4.51,
+      "rms_dbfs": -19.77,
       "silent": false,
       "silence_spans": {
         "count": 0,
         "first": {"available": false, "why": "no silence in the window"}
       },
-      "onset_s": 0.0,
-      "clipping_run": 0,
+      "onset_s": 0.0004,
+      "clipping_run": 5,
       "clipped": false
     }
   ],
-  "pcm_sha256": "56e09fbf4f27acceae4944debf2d03d2bb9d1fb63287118ef6980bb83d23cb19",
+  "pcm_sha256": "c9d8e22394ed967ae4925d91dded07cc2b7d6984afd40f9b96d3fe85f3a451d7",
   "path": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -537,7 +494,7 @@
 
 </details>
 
-**7. `audio_compare`**: OK exact: the recording is music.wav, sample for sample
+**9. `audio_compare`**: OK exact: the recording is music.wav, sample for sample
 
 <details><summary>call and reply</summary>
 
@@ -572,7 +529,7 @@
 
 </details>
 
-**8. `screen_view`**: OK screen: the board, 320x200
+**10. `screen_view`**: OK screen: the board, 320x200
 
 <details><summary>call and reply</summary>
 
@@ -597,8 +554,8 @@
   "entries": 256,
   "image": {
     "path": "<volatile>",
-    "bytes": 16447,
-    "sha256": "d8086f4e5c34cdbda5c8d049be105859abd90036ed2508834e05d9318e18b3af",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 1280,
     "height": 800,
     "scale": 4,
@@ -613,7 +570,7 @@
 
 </details>
 
-**9. `close`**: OK close: closed: quit
+**11. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
@@ -628,7 +585,7 @@
   "closed": true,
   "pid": "<volatile>",
   "conf": "<volatile>",
-  "conf_digest": "6018944893db6f81",
+  "conf_digest": "<volatile>",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -638,7 +595,7 @@
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
-  "draft": ["start/dos"],
+  "draft": "<volatile>",
   "session": {"alive": false, "running": false, "altered": false}
 }
 ```

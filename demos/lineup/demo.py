@@ -17,6 +17,7 @@ from scry_core.games import lineup
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
+    RETRACE_STOP,
     VOLATILE,
     checkout,
     conf_derived,
@@ -45,8 +46,13 @@ INPUTS = {action: Press("send_keys", {"keys": [key]})
 #: The reference the recording must equal: the same build mixes other samples on Windows, the
 #: same ones run after run.
 SOUND = "music-win32.wav" if sys.platform == "win32" else "music.wav"
-#: Long enough for DOS to boot and EXEC the game, which is then in its attract.
-BOOT_MS = 2000
+#: The game's first DOS call of its own: `INT 21h AH=62h`, its PSP, asked at the top of
+#: `_lineup_run` (MAIN.ASM). Neither DOS's boot nor the input stub asks it, so the first stop there
+#: is inside the loaded game, and that stop places its map.
+GAME_LOADED = {"number": 0x21, "ah": 0x62}
+#: The normal core: the dynamic one the game's conf keeps can pass a code breakpoint over, and
+#: the script's waits judge the screen at the game's own tick.
+NORMAL_CORE = ["-set", "cpu core=normal"]
 #: The reader's copy of the game is where this host keeps things; the replies that name it are
 #: hidden in the transcript.
 VOLATILE_GAME = {**VOLATILE,
@@ -54,7 +60,12 @@ VOLATILE_GAME = {**VOLATILE,
                  "state_dir": "a directory in the session's own temporary directory",
                  "window": "the host's display and the window it fits",
                  "file": "where the reader's copy of the game keeps its store",
-                 "path": "a file inside the reader's copy of the game"}
+                 "path": "a file inside the reader's copy of the game",
+                 "conf_digest": "the derived conf names the host's guest directory",
+                 "cycles": "the cycles a recording spans drift by a few between hosts",
+                 "emulated_before_s": "it follows the host's cycles by a few",
+                 "emulated_s": "it follows the host's cycles by a few",
+                 **RETRACE_STOP}
 
 
 def game(run: Run) -> Path:
@@ -70,7 +81,7 @@ def checked(run: Run) -> str:
 def boot(run: Run) -> dict[str, Any]:
     """The game's own conf, derived by its own script, then the profile that names it."""
     conf_derived(run, CONF_SCRIPT)
-    return {"profile": str(game(run) / PROFILE), "shared": True,
+    return {"profile": str(game(run) / PROFILE), "shared": True, "flags": NORMAL_CORE,
             "captures_dir": str(run.dir / "lineup-captures")}
 
 
@@ -111,7 +122,12 @@ BINDING = Binding(
                          "conf": "where the reader's copy of the game keeps its derived conf",
                          "name": "where the reader's copy of the game keeps its profile",
                          "held": "where the reader's copy of the game keeps its symbol table"}),
-          Step("boot", "run_for", {"milliseconds": BOOT_MS, "seconds": 120}, map_placed)],
+          Step("loaded", "breakpoint_interrupt", GAME_LOADED,
+               lambda reply, run: f"a stop on {reply['ref']}"),
+          Step("boot", "resume", {"seconds": 120}, map_placed,
+               volatile={"waited_s": "wall-clock time the boot took"}),
+          Step("unloaded", "declaration_clear", {"kind": "breakpoint", "all": True},
+               lambda reply, run: "the boot's stop cleared")],
     inputs=INPUTS, rate_hz=RATE_HZ, sound=HERE / SOUND, map=at, volatile=INPUT_TIMING)
 
 DEMO = Demo(

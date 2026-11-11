@@ -51,6 +51,7 @@ def test_the_game_s_own_script_derives_the_conf_the_profile_names(tmp_path: Path
     game = _game(tmp_path / "game")
     args = demo.boot(Run(dir=tmp_path, options={"cwd": str(game)}))
     assert args == {"profile": str(game / demo.PROFILE), "shared": True,
+                    "flags": demo.NORMAL_CORE,
                     "captures_dir": str(tmp_path / "lineup-captures")}
     assert (game / "TMP" / "dosbox-x-mcp.conf").is_file()
 

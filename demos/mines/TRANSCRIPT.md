@@ -38,13 +38,7 @@
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
-  "window": {
-    "display": 0,
-    "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
-    "onscreen": true,
-    "front": true,
-    "fullscreen": false
-  },
+  "window": "<volatile>",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
@@ -192,36 +186,43 @@
 
 </details>
 
-**5. `run_for`**: OK title: ten retraces: the title drawn
+**5. `run_to`**: OK title: the game's loop reached: the title drawn and the pointer up
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "frames": 10,
+  "ref": "main_loop",
+  "control": "retrace",
   "seconds": 60
 }
 ```
 
 ```json
 {
-  "summary": "run_for 10 frames: ELAPSED, 10 polls, at 08DF:00000E08",
+  "summary": "run_to main_loop: TARGET at 08DF:00000131, control counted 0",
   "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 10,
-  "pc": "08DF:00000E08",
+  "verdict": "TARGET",
+  "target": "08DF:0131",
+  "ref": "main_loop",
+  "pc": "08DF:00000131",
   "cpu_mode": "real",
-  "frame": 10,
+  "target_disarmed": true,
+  "control_hits": 0,
+  "controls": [
+    {"ref": "retrace", "at": "08DF:0DFF", "hits_in_run": 0, "removed": true}
+  ],
+  "frame": 2,
   "regs": {
-    "EAX": "0x00000004",
-    "EBX": "0x00020000",
-    "ECX": "0x00000000",
-    "EDX": "0x000003da",
+    "EAX": "0x00000000",
+    "EBX": "0x0002010f",
+    "ECX": "0x00000148",
+    "EDX": "0x00000180",
     "ESI": "0x000017d5",
     "EDI": "0x00001835",
     "EBP": "0x0000091c",
-    "ESP": "0x0000fffc",
-    "EIP": "0x00000e08",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000131",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0x08df",
@@ -230,24 +231,19 @@
     "SS": "0x08df"
   },
   "watches": [],
-  "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+  "cause": "run_to's target main_loop at 08DF:00000131",
   "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: TITLE"], "mark": "<volatile>"},
   "stop_seq": 3,
   "instruction": {
-    "address": "08DF:00000E08",
-    "bytes": "A808",
-    "text": "test al, 8",
-    "flow": "sequential",
+    "address": "08DF:00000131",
+    "bytes": "E8CB0C",
+    "text": "call 0xdff",
+    "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": "retrace",
-    "delta": 9
+    "symbol": "main_loop",
+    "delta": 0
   },
-  "emulated_before_s": 0.005608500000000001,
-  "emulated_after_s": 0.1341957,
-  "frame_before": 0,
-  "frame_after": 10,
-  "cycles": 825562,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -295,7 +291,7 @@
 
 ```json
 {
-  "summary": "send_mouse: pointer at 400,316, program's own pointer not read; effect seen, 21 retraces to frame 31",
+  "summary": "send_mouse: pointer at 400,316, program's own pointer not read; effect seen, 22 retraces to frame 24",
   "status": "ok",
   "x": 400,
   "y": 316,
@@ -311,11 +307,11 @@
     "vbe_mode": "0x103"
   },
   "driver_arrived": true,
-  "polls": 21,
+  "polls": 22,
   "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "stop_seq": 24,
-  "frame": 31,
+  "stop_seq": 25,
+  "frame": 24,
   "instruction": {
     "address": "08DF:00000E08",
     "bytes": "A808",
@@ -372,7 +368,71 @@
 
 </details>
 
-**8. `screen_map_find`**: OK is board: the board screen, its controls game
+**8. `run_to`**: OK board drawn: the board drawn
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "main_loop",
+  "control": "retrace",
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "run_to main_loop: TARGET at 08DF:00000131, control counted 0",
+  "status": "ok",
+  "verdict": "TARGET",
+  "target": "08DF:0131",
+  "ref": "main_loop",
+  "pc": "08DF:00000131",
+  "cpu_mode": "real",
+  "target_disarmed": true,
+  "control_hits": 0,
+  "controls": [
+    {"ref": "retrace", "at": "08DF:0DFF", "hits_in_run": 0, "removed": true}
+  ],
+  "frame": 24,
+  "regs": {
+    "EAX": "0x00000000",
+    "EBX": "0x00000000",
+    "ECX": "0x00000000",
+    "EDX": "0x00000000",
+    "ESI": "0x000017d5",
+    "EDI": "0x000017d1",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000131",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0x08df",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08df"
+  },
+  "watches": [],
+  "cause": "run_to's target main_loop at 08DF:00000131",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 26,
+  "instruction": {
+    "address": "08DF:00000131",
+    "bytes": "E8CB0C",
+    "text": "call 0xdff",
+    "flow": "call",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "main_loop",
+    "delta": 0
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**9. `screen_map_find`**: OK is board: the board screen, its controls game
 
 <details><summary>call and reply</summary>
 
@@ -398,7 +458,7 @@
 
 </details>
 
-**9. `send_mouse`**: OK menu: Game opened the menu
+**10. `send_mouse`**: OK menu: Game opened the menu
 
 <details><summary>call and reply</summary>
 
@@ -413,7 +473,7 @@
 
 ```json
 {
-  "summary": "send_mouse: pointer at 28,12, program's own pointer not read; effect seen, 25 retraces to frame 56",
+  "summary": "send_mouse: pointer at 28,12, program's own pointer not read; effect seen, 25 retraces to frame 49",
   "status": "ok",
   "x": 28,
   "y": 12,
@@ -432,8 +492,8 @@
   "polls": 25,
   "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "stop_seq": 49,
-  "frame": 56,
+  "stop_seq": 51,
+  "frame": 49,
   "instruction": {
     "address": "08DF:00000E08",
     "bytes": "A808",
@@ -483,14 +543,78 @@
   },
   "target": "game",
   "screen": "board",
-  "identified_at_stop": 24,
+  "identified_at_stop": 26,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**10. `screen_map_find`**: OK is menu: the menu screen, its controls new game, beginner, intermediate, expert
+**11. `run_to`**: OK menu drawn: the menu drawn
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "main_loop",
+  "control": "retrace",
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "run_to main_loop: TARGET at 08DF:00000131, control counted 0",
+  "status": "ok",
+  "verdict": "TARGET",
+  "target": "08DF:0131",
+  "ref": "main_loop",
+  "pc": "08DF:00000131",
+  "cpu_mode": "real",
+  "target_disarmed": true,
+  "control_hits": 0,
+  "controls": [
+    {"ref": "retrace", "at": "08DF:0DFF", "hits_in_run": 0, "removed": true}
+  ],
+  "frame": 49,
+  "regs": {
+    "EAX": "0x00000000",
+    "EBX": "0x00000000",
+    "ECX": "0x00000000",
+    "EDX": "0x00000000",
+    "ESI": "0x000017d5",
+    "EDI": "0x000017d1",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000131",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0x08df",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08df"
+  },
+  "watches": [],
+  "cause": "run_to's target main_loop at 08DF:00000131",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 52,
+  "instruction": {
+    "address": "08DF:00000131",
+    "bytes": "E8CB0C",
+    "text": "call 0xdff",
+    "flow": "call",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "main_loop",
+    "delta": 0
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**12. `screen_map_find`**: OK is menu: the menu screen, its controls new game, beginner, intermediate, expert
 
 <details><summary>call and reply</summary>
 
@@ -519,7 +643,7 @@
 
 </details>
 
-**11. `send_mouse`**: OK level: Beginner started a new beginner's game
+**13. `send_mouse`**: OK level: Beginner started a new beginner's game
 
 <details><summary>call and reply</summary>
 
@@ -534,7 +658,7 @@
 
 ```json
 {
-  "summary": "send_mouse: pointer at 84,62, program's own pointer not read; effect seen, 25 retraces to frame 81",
+  "summary": "send_mouse: pointer at 84,62, program's own pointer not read; effect seen, 25 retraces to frame 74",
   "status": "ok",
   "x": 84,
   "y": 62,
@@ -553,8 +677,8 @@
   "polls": 25,
   "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "stop_seq": 74,
-  "frame": 81,
+  "stop_seq": 77,
+  "frame": 74,
   "instruction": {
     "address": "08DF:00000E08",
     "bytes": "A808",
@@ -604,14 +728,78 @@
   },
   "target": "beginner",
   "screen": "menu",
-  "identified_at_stop": 49,
+  "identified_at_stop": 52,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**12. `screen_map_find`**: OK is board again: the board screen, its controls game
+**14. `run_to`**: OK board drawn again: the new board drawn
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "main_loop",
+  "control": "retrace",
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "run_to main_loop: TARGET at 08DF:00000131, control counted 0",
+  "status": "ok",
+  "verdict": "TARGET",
+  "target": "08DF:0131",
+  "ref": "main_loop",
+  "pc": "08DF:00000131",
+  "cpu_mode": "real",
+  "target_disarmed": true,
+  "control_hits": 0,
+  "controls": [
+    {"ref": "retrace", "at": "08DF:0DFF", "hits_in_run": 0, "removed": true}
+  ],
+  "frame": 74,
+  "regs": {
+    "EAX": "0x00000000",
+    "EBX": "0x00000000",
+    "ECX": "0x00000000",
+    "EDX": "0x00000000",
+    "ESI": "0x000017d5",
+    "EDI": "0x000017d1",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000131",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0x08df",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08df"
+  },
+  "watches": [],
+  "cause": "run_to's target main_loop at 08DF:00000131",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 78,
+  "instruction": {
+    "address": "08DF:00000131",
+    "bytes": "E8CB0C",
+    "text": "call 0xdff",
+    "flow": "call",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "main_loop",
+    "delta": 0
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**15. `screen_map_find`**: OK is board again: the board screen, its controls game
 
 <details><summary>call and reply</summary>
 
@@ -637,7 +825,7 @@
 
 </details>
 
-**13. `read_memory`**: OK size: rows 9, cols 9
+**16. `read_memory`**: OK size: rows 9, cols 9
 
 <details><summary>call and reply</summary>
 
@@ -662,7 +850,7 @@
 
 </details>
 
-**14. `read_memory`**: OK mines: mines at 0,3, 1,2, 1,4, 2,0, 5,4, 6,5, 6,8, 7,2, 8,0, 8,3
+**17. `read_memory`**: OK mines: mines at 0,3, 1,2, 1,4, 2,0, 5,4, 6,5, 6,8, 7,2, 8,0, 8,3
 
 <details><summary>call and reply</summary>
 
@@ -687,7 +875,7 @@
 
 </details>
 
-**15. `read_memory`**: OK origin: the board's top-left corner at pixel 292,192
+**18. `read_memory`**: OK origin: the board's top-left corner at pixel 292,192
 
 <details><summary>call and reply</summary>
 
@@ -712,7 +900,7 @@
 
 </details>
 
-**16. `perform`**: OK flags: 2 mines flagged with the right button
+**19. `perform`**: OK flags: 2 mines flagged with the right button
 
 <details><summary>call and reply</summary>
 
@@ -735,9 +923,9 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 376,204, program's own pointer not read; effect seen, 25 retraces to frame 106",
+        "summary": "send_mouse: pointer at 376,204, program's own pointer not read; effect seen, 25 retraces to frame 99",
         "status": "ok",
-        "stop_seq": 99,
+        "stop_seq": 103,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -745,7 +933,7 @@
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 352,228, program's own pointer not read; effect seen, 25 retraces to frame 131",
+        "summary": "send_mouse: pointer at 352,228, program's own pointer not read; effect seen, 25 retraces to frame 124",
         "status": "ok",
         "x": 352,
         "y": 228,
@@ -764,8 +952,8 @@
         "polls": 25,
         "pc": "08DF:00000E08",
         "cpu_mode": "real",
-        "stop_seq": 124,
-        "frame": 131,
+        "stop_seq": 128,
+        "frame": 124,
         "instruction": {
           "address": "08DF:00000E08",
           "bytes": "A808",
@@ -817,8 +1005,8 @@
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 75,
-    "stop_seq_last": 124,
+    "stop_seq_first": 79,
+    "stop_seq_last": 128,
     "surveyed": 2,
     "by_cause": {
       "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 2
@@ -834,7 +1022,7 @@
 
 </details>
 
-**17. `perform`**: OK clear: 19 clicks opened every safe cell, none on a mine
+**20. `perform`**: OK clear: 19 clicks opened every safe cell, none on a mine
 
 <details><summary>call and reply</summary>
 
@@ -874,9 +1062,9 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 304,204, program's own pointer not read; effect seen, 25 retraces to frame 156",
+        "summary": "send_mouse: pointer at 304,204, program's own pointer not read; effect seen, 25 retraces to frame 149",
         "status": "ok",
-        "stop_seq": 149,
+        "stop_seq": 153,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -884,19 +1072,19 @@
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 352,204, program's own pointer not read; effect seen, 25 retraces to frame 181",
+        "summary": "send_mouse: pointer at 352,204, program's own pointer not read; effect seen, 25 retraces to frame 174",
         "status": "ok",
-        "stop_seq": 174,
-        "cause": "no declared code breakpoint at 08DF:00000E07: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "stop_seq": 178,
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,204, program's own pointer not read; effect seen, 25 retraces to frame 206",
+        "summary": "send_mouse: pointer at 400,204, program's own pointer not read; effect seen, 25 retraces to frame 199",
         "status": "ok",
-        "stop_seq": 199,
+        "stop_seq": 203,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -904,9 +1092,9 @@
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 424,204, program's own pointer not read; effect seen, 25 retraces to frame 231",
+        "summary": "send_mouse: pointer at 424,204, program's own pointer not read; effect seen, 25 retraces to frame 224",
         "status": "ok",
-        "stop_seq": 224,
+        "stop_seq": 228,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -914,9 +1102,9 @@
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 448,204, program's own pointer not read; effect seen, 25 retraces to frame 256",
+        "summary": "send_mouse: pointer at 448,204, program's own pointer not read; effect seen, 25 retraces to frame 249",
         "status": "ok",
-        "stop_seq": 249,
+        "stop_seq": 253,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -924,9 +1112,9 @@
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 376,228, program's own pointer not read; effect seen, 25 retraces to frame 281",
+        "summary": "send_mouse: pointer at 376,228, program's own pointer not read; effect seen, 25 retraces to frame 274",
         "status": "ok",
-        "stop_seq": 274,
+        "stop_seq": 278,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -934,9 +1122,9 @@
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,348, program's own pointer not read; effect seen, 25 retraces to frame 306",
+        "summary": "send_mouse: pointer at 400,348, program's own pointer not read; effect seen, 25 retraces to frame 299",
         "status": "ok",
-        "stop_seq": 299,
+        "stop_seq": 303,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -944,9 +1132,9 @@
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 448,348, program's own pointer not read; effect seen, 25 retraces to frame 331",
+        "summary": "send_mouse: pointer at 448,348, program's own pointer not read; effect seen, 25 retraces to frame 324",
         "status": "ok",
-        "stop_seq": 324,
+        "stop_seq": 328,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -954,9 +1142,9 @@
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 472,348, program's own pointer not read; effect seen, 25 retraces to frame 356",
+        "summary": "send_mouse: pointer at 472,348, program's own pointer not read; effect seen, 25 retraces to frame 349",
         "status": "ok",
-        "stop_seq": 349,
+        "stop_seq": 353,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -964,9 +1152,9 @@
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 376,372, program's own pointer not read; effect seen, 25 retraces to frame 381",
+        "summary": "send_mouse: pointer at 376,372, program's own pointer not read; effect seen, 25 retraces to frame 374",
         "status": "ok",
-        "stop_seq": 374,
+        "stop_seq": 378,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -974,9 +1162,9 @@
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,372, program's own pointer not read; effect seen, 25 retraces to frame 406",
+        "summary": "send_mouse: pointer at 400,372, program's own pointer not read; effect seen, 25 retraces to frame 399",
         "status": "ok",
-        "stop_seq": 399,
+        "stop_seq": 403,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -984,9 +1172,9 @@
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 424,372, program's own pointer not read; effect seen, 25 retraces to frame 431",
+        "summary": "send_mouse: pointer at 424,372, program's own pointer not read; effect seen, 25 retraces to frame 424",
         "status": "ok",
-        "stop_seq": 424,
+        "stop_seq": 428,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -994,9 +1182,9 @@
       "step": 12,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 448,372, program's own pointer not read; effect seen, 25 retraces to frame 456",
+        "summary": "send_mouse: pointer at 448,372, program's own pointer not read; effect seen, 25 retraces to frame 449",
         "status": "ok",
-        "stop_seq": 449,
+        "stop_seq": 453,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -1004,9 +1192,9 @@
       "step": 13,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 472,372, program's own pointer not read; effect seen, 25 retraces to frame 481",
+        "summary": "send_mouse: pointer at 472,372, program's own pointer not read; effect seen, 25 retraces to frame 474",
         "status": "ok",
-        "stop_seq": 474,
+        "stop_seq": 478,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -1014,9 +1202,9 @@
       "step": 14,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 496,372, program's own pointer not read; effect seen, 25 retraces to frame 506",
+        "summary": "send_mouse: pointer at 496,372, program's own pointer not read; effect seen, 25 retraces to frame 499",
         "status": "ok",
-        "stop_seq": 499,
+        "stop_seq": 503,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -1024,9 +1212,9 @@
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 328,396, program's own pointer not read; effect seen, 25 retraces to frame 531",
+        "summary": "send_mouse: pointer at 328,396, program's own pointer not read; effect seen, 25 retraces to frame 524",
         "status": "ok",
-        "stop_seq": 524,
+        "stop_seq": 528,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -1034,9 +1222,9 @@
       "step": 16,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 352,396, program's own pointer not read; effect seen, 25 retraces to frame 556",
+        "summary": "send_mouse: pointer at 352,396, program's own pointer not read; effect seen, 25 retraces to frame 549",
         "status": "ok",
-        "stop_seq": 549,
+        "stop_seq": 553,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -1044,9 +1232,9 @@
       "step": 17,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,396, program's own pointer not read; effect seen, 25 retraces to frame 581",
+        "summary": "send_mouse: pointer at 400,396, program's own pointer not read; effect seen, 25 retraces to frame 574",
         "status": "ok",
-        "stop_seq": 574,
+        "stop_seq": 578,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -1054,7 +1242,7 @@
       "step": 18,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 424,396, program's own pointer not read; effect seen, 25 retraces to frame 606",
+        "summary": "send_mouse: pointer at 424,396, program's own pointer not read; effect seen, 25 retraces to frame 599",
         "status": "ok",
         "x": 424,
         "y": 396,
@@ -1071,19 +1259,19 @@
         },
         "driver_arrived": true,
         "polls": 25,
-        "pc": "08DF:00000E08",
+        "pc": "08DF:00000E0A",
         "cpu_mode": "real",
-        "stop_seq": 599,
-        "frame": 606,
+        "stop_seq": 603,
+        "frame": 599,
         "instruction": {
-          "address": "08DF:00000E08",
-          "bytes": "A808",
-          "text": "test al, 8",
-          "flow": "sequential",
+          "address": "08DF:00000E0A",
+          "bytes": "74FB",
+          "text": "je 0xe07",
+          "flow": "branch",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": "retrace",
-          "delta": 9
+          "delta": 11
         },
         "regs": {
           "EAX": "0x00000004",
@@ -1094,7 +1282,7 @@
           "EDI": "0x00000fc4",
           "EBP": "0x0000091c",
           "ESP": "0x0000fffc",
-          "EIP": "0x00000e08",
+          "EIP": "0x00000e0a",
           "CS": "0x08df",
           "DS": "0x08df",
           "ES": "0x08df",
@@ -1103,7 +1291,7 @@
           "SS": "0x08df"
         },
         "watches": [],
-        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+        "cause": "no declared code breakpoint at 08DF:00000E0A: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
         "e9": {
           "lines_total": 2,
           "truncated": false,
@@ -1131,8 +1319,8 @@
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 125,
-    "stop_seq_last": 599,
+    "stop_seq_first": 129,
+    "stop_seq_last": 603,
     "surveyed": 19,
     "by_cause": {
       "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 19
@@ -1148,7 +1336,71 @@
 
 </details>
 
-**18. `log`**: OK won: the game logged WIN
+**21. `run_to`**: OK cleared drawn: the last reveal and the win dialog drawn
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "main_loop",
+  "control": "retrace",
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "run_to main_loop: TARGET at 08DF:00000131, control counted 0",
+  "status": "ok",
+  "verdict": "TARGET",
+  "target": "08DF:0131",
+  "ref": "main_loop",
+  "pc": "08DF:00000131",
+  "cpu_mode": "real",
+  "target_disarmed": true,
+  "control_hits": 0,
+  "controls": [
+    {"ref": "retrace", "at": "08DF:0DFF", "hits_in_run": 0, "removed": true}
+  ],
+  "frame": 599,
+  "regs": {
+    "EAX": "0x00000000",
+    "EBX": "0x00000000",
+    "ECX": "0x00000160",
+    "EDX": "0x000000e4",
+    "ESI": "0x000017d5",
+    "EDI": "0x00000fc4",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000131",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0x08df",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08df"
+  },
+  "watches": [],
+  "cause": "run_to's target main_loop at 08DF:00000131",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 604,
+  "instruction": {
+    "address": "08DF:00000131",
+    "bytes": "E8CB0C",
+    "text": "call 0xdff",
+    "flow": "call",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "main_loop",
+    "delta": 0
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**22. `log`**: OK won: the game logged WIN
 
 <details><summary>call and reply</summary>
 
@@ -1174,7 +1426,7 @@
 
 </details>
 
-**19. `send_mouse`**: OK park: the pointer parked at 790,590, off every region the map signs
+**23. `send_mouse`**: OK park: the pointer parked at 790,590, off every region the map signs
 
 <details><summary>call and reply</summary>
 
@@ -1187,7 +1439,7 @@
 
 ```json
 {
-  "summary": "send_mouse: pointer at 790,590, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 621",
+  "summary": "send_mouse: pointer at 790,590, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 614",
   "status": "ok",
   "x": 790,
   "y": 590,
@@ -1204,8 +1456,8 @@
   "polls": 15,
   "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "stop_seq": 614,
-  "frame": 621,
+  "stop_seq": 619,
+  "frame": 614,
   "instruction": {
     "address": "08DF:00000E08",
     "bytes": "A808",
@@ -1247,7 +1499,7 @@
 
 </details>
 
-**20. `screen_map_find`**: OK is win: the win screen, its controls ok
+**24. `screen_map_find`**: OK is win: the win screen, its controls ok
 
 <details><summary>call and reply</summary>
 
@@ -1273,7 +1525,7 @@
 
 </details>
 
-**21. `screen_view`**: OK screen: mode M_LIN8, 800x600 by palette index
+**25. `screen_view`**: OK screen: mode M_LIN8, 800x600 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -1297,8 +1549,8 @@
   "entries": 256,
   "image": {
     "path": "./tmp/demos/mines/screen.png",
-    "bytes": 4610,
-    "sha256": "c15a0f4c4d6c143d6d1aa9c8a7bce5064c5b8413deabde012689e030b70ee687",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 800,
     "height": 600,
     "scale": 1,
@@ -1314,7 +1566,7 @@ Also attached: image/png.
 
 </details>
 
-**22. `send_mouse`**: OK again: OK started the next game
+**26. `send_mouse`**: OK again: OK started the next game
 
 <details><summary>call and reply</summary>
 
@@ -1329,7 +1581,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_mouse: pointer at 400,330, program's own pointer not read; effect seen, 25 retraces to frame 646",
+  "summary": "send_mouse: pointer at 400,330, program's own pointer not read; effect seen, 25 retraces to frame 639",
   "status": "ok",
   "x": 400,
   "y": 330,
@@ -1348,8 +1600,8 @@ Also attached: image/png.
   "polls": 25,
   "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "stop_seq": 639,
-  "frame": 646,
+  "stop_seq": 644,
+  "frame": 639,
   "instruction": {
     "address": "08DF:00000E08",
     "bytes": "A808",
@@ -1399,14 +1651,78 @@ Also attached: image/png.
   },
   "target": "ok",
   "screen": "win",
-  "identified_at_stop": 614,
+  "identified_at_stop": 619,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**23. `read_memory`**: OK next mines: mines at 0,7, 1,1, 1,7, 2,0, 4,1, 4,4, 5,0, 5,2, 7,5, 8,4
+**27. `run_to`**: OK next board drawn: the next board drawn
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "main_loop",
+  "control": "retrace",
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "run_to main_loop: TARGET at 08DF:00000131, control counted 0",
+  "status": "ok",
+  "verdict": "TARGET",
+  "target": "08DF:0131",
+  "ref": "main_loop",
+  "pc": "08DF:00000131",
+  "cpu_mode": "real",
+  "target_disarmed": true,
+  "control_hits": 0,
+  "controls": [
+    {"ref": "retrace", "at": "08DF:0DFF", "hits_in_run": 0, "removed": true}
+  ],
+  "frame": 639,
+  "regs": {
+    "EAX": "0x00000000",
+    "EBX": "0x00000000",
+    "ECX": "0x00000160",
+    "EDX": "0x000000e4",
+    "ESI": "0x000017d5",
+    "EDI": "0x000017d1",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000131",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0x08df",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08df"
+  },
+  "watches": [],
+  "cause": "run_to's target main_loop at 08DF:00000131",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 645,
+  "instruction": {
+    "address": "08DF:00000131",
+    "bytes": "E8CB0C",
+    "text": "call 0xdff",
+    "flow": "call",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "main_loop",
+    "delta": 0
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**28. `read_memory`**: OK next mines: mines at 0,7, 1,1, 1,7, 2,0, 4,1, 4,4, 5,0, 5,2, 7,5, 8,4
 
 <details><summary>call and reply</summary>
 
@@ -1431,7 +1747,7 @@ Also attached: image/png.
 
 </details>
 
-**24. `send_mouse`**: OK mine: a left click on the mine at 0,7, the machine left stopped a few retraces later, the explosion already sounding
+**29. `send_mouse`**: OK mine: a left click on the mine at 0,7, the machine left stopped a few retraces later, the explosion already sounding
 
 <details><summary>call and reply</summary>
 
@@ -1439,13 +1755,15 @@ Also attached: image/png.
 {
   "x": 472,
   "y": 204,
-  "button": "left"
+  "button": "left",
+  "expect": "BOOM 0 7$",
+  "seconds": 10
 }
 ```
 
 ```json
 {
-  "summary": "send_mouse: pointer at 472,204, program's own pointer not read; posted, unverified, 25 retraces to frame 671",
+  "summary": "send_mouse: pointer at 472,204, program's own pointer not read; effect seen, 25 retraces to frame 664",
   "status": "ok",
   "x": 472,
   "y": 204,
@@ -1462,19 +1780,19 @@ Also attached: image/png.
   },
   "driver_arrived": true,
   "polls": 25,
-  "pc": "08DF:00000E07",
+  "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "stop_seq": 664,
-  "frame": 671,
+  "stop_seq": 670,
+  "frame": 664,
   "instruction": {
-    "address": "08DF:00000E07",
-    "bytes": "EC",
-    "text": "in al, dx",
+    "address": "08DF:00000E08",
+    "bytes": "A808",
+    "text": "test al, 8",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": "retrace",
-    "delta": 8
+    "delta": 9
   },
   "regs": {
     "EAX": "0x00000004",
@@ -1485,7 +1803,7 @@ Also attached: image/png.
     "EDI": "0x00000fe3",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffc",
-    "EIP": "0x00000e07",
+    "EIP": "0x00000e08",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0x08df",
@@ -1494,12 +1812,24 @@ Also attached: image/png.
     "SS": "0x08df"
   },
   "watches": [],
-  "cause": "no declared code breakpoint at 08DF:00000E07: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: BOOM 0 7"], "mark": "<volatile>"},
+  "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+  "e9": {
+    "lines_total": "<volatile>",
+    "truncated": false,
+    "lines": ["Bochs port E9h: BOOM 0 7"],
+    "mark": "<volatile>"
+  },
   "motion": true,
   "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+    "checked": true,
+    "seen": true,
+    "expected": "BOOM 0 7$",
+    "verdict": "TARGET",
+    "line": "Bochs port E9h: BOOM 0 7",
+    "seen_before_waiting": "<volatile>",
+    "lines_before": "<volatile>",
+    "waited_s": "<volatile>",
+    "lines_total": "<volatile>"
   },
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -1507,7 +1837,7 @@ Also attached: image/png.
 
 </details>
 
-**25. `log`**: OK boom: the game logged BOOM 0 7
+**30. `log`**: OK boom: the game logged BOOM 0 7
 
 <details><summary>call and reply</summary>
 
@@ -1533,7 +1863,7 @@ Also attached: image/png.
 
 </details>
 
-**26. `audio_record`**: OK record: 45 retraces recorded from where the click left the machine
+**31. `audio_record`**: OK record: 45 retraces recorded from where the click left the machine
 
 <details><summary>call and reply</summary>
 
@@ -1546,13 +1876,13 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "audio_record wav 45 frames: ELAPSED, 30768 samples at 48000 Hz at ./tmp/demos/mines/boom.wav",
+  "summary": "audio_record wav 45 frames: ELAPSED, 30816 samples at 48000 Hz at ./tmp/demos/mines/boom.wav",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 45,
   "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "frame": 716,
+  "frame": 709,
   "regs": {
     "EAX": "0x00000004",
     "EBX": "0x00000000",
@@ -1573,7 +1903,7 @@ Also attached: image/png.
   "watches": [],
   "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-  "stop_seq": 665,
+  "stop_seq": 671,
   "instruction": {
     "address": "08DF:00000E08",
     "bytes": "A808",
@@ -1584,21 +1914,21 @@ Also attached: image/png.
     "symbol": "retrace",
     "delta": 9
   },
-  "emulated_before_s": 9.554478175,
-  "emulated_after_s": 10.195799075,
-  "frame_before": 671,
-  "frame_after": 716,
-  "cycles": 1789672,
+  "emulated_before_s": 9.45471755,
+  "emulated_after_s": 10.09603785,
+  "frame_before": 664,
+  "frame_after": 709,
+  "cycles": 1789637,
   "kind": "wav",
   "frames": 45,
   "began": true,
   "ended": true,
   "path": "<volatile>",
-  "bytes": 123116,
+  "bytes": 123308,
   "channels": 2,
   "sample_rate_hz": 48000,
-  "samples": 30768,
-  "emulated_s": 0.6413209,
+  "samples": 30816,
+  "emulated_s": 0.6413203,
   "sample_min": -18065,
   "sample_max": 18514,
   "session": {"alive": true, "running": false, "altered": false}
@@ -1607,7 +1937,7 @@ Also attached: image/png.
 
 </details>
 
-**27. `audio_compare`**: OK heard: a sound, peaking at -4.96 dBFS
+**32. `audio_compare`**: OK heard: a sound, peaking at -4.96 dBFS
 
 <details><summary>call and reply</summary>
 
@@ -1620,35 +1950,35 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "audio_compare measure: ch0 peak -4.96 dBFS, onset 0.0 s, ch1 peak -4.96 dBFS, onset 0.0 s",
+  "summary": "audio_compare measure: ch0 peak -4.96 dBFS, onset 0.0001 s, ch1 peak -4.96 dBFS, onset 0.0001 s",
   "status": "ok",
   "sample_rate_hz": 48000,
   "channels": 2,
   "bits": 16,
-  "window": [0.0, 0.641],
+  "window": "<volatile>",
   "measures": [
     {
       "channel": 0,
       "peak_dbfs": -4.96,
-      "rms_dbfs": -18.46,
+      "rms_dbfs": -18.47,
       "silent": false,
-      "silence_spans": {"count": 1, "first": [0.52, 0.641]},
-      "onset_s": 0.0,
+      "silence_spans": {"count": 1, "first": [0.5202, 0.642]},
+      "onset_s": 0.0001,
       "clipping_run": 7,
       "clipped": false
     },
     {
       "channel": 1,
       "peak_dbfs": -4.96,
-      "rms_dbfs": -18.46,
+      "rms_dbfs": -18.47,
       "silent": false,
-      "silence_spans": {"count": 1, "first": [0.52, 0.641]},
-      "onset_s": 0.0,
+      "silence_spans": {"count": 1, "first": [0.5202, 0.642]},
+      "onset_s": 0.0001,
       "clipping_run": 7,
       "clipped": false
     }
   ],
-  "pcm_sha256": "4187473d53866df36cce8d657ebcebcf9d185a7871563f1e95d784c69e4e9dbe",
+  "pcm_sha256": "5865b7b55353b0497196830d568b3cd2bd7db96b4b2308c71aeffd9e19bfc293",
   "path": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -1656,7 +1986,7 @@ Also attached: image/png.
 
 </details>
 
-**28. `audio_compare`**: OK exact: the explosion is boom.wav, sample for sample
+**33. `audio_compare`**: OK exact: the explosion is boom.wav, sample for sample
 
 <details><summary>call and reply</summary>
 
@@ -1691,7 +2021,7 @@ Also attached: image/png.
 
 </details>
 
-**29. `send_mouse`**: OK park again: the pointer parked at 790,590, off every region the map signs
+**34. `send_mouse`**: OK park again: the pointer parked at 790,590, off every region the map signs
 
 <details><summary>call and reply</summary>
 
@@ -1704,7 +2034,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_mouse: pointer at 790,590, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 727",
+  "summary": "send_mouse: pointer at 790,590, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 720",
   "status": "ok",
   "x": 790,
   "y": 590,
@@ -1721,8 +2051,8 @@ Also attached: image/png.
   "polls": 11,
   "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "stop_seq": 676,
-  "frame": 727,
+  "stop_seq": 682,
+  "frame": 720,
   "instruction": {
     "address": "08DF:00000E08",
     "bytes": "A808",
@@ -1764,7 +2094,7 @@ Also attached: image/png.
 
 </details>
 
-**30. `screen_map_find`**: OK is lose: the lose screen, its controls ok
+**35. `screen_map_find`**: OK is lose: the lose screen, its controls ok
 
 <details><summary>call and reply</summary>
 
@@ -1790,7 +2120,7 @@ Also attached: image/png.
 
 </details>
 
-**31. `close`**: OK close: closed: quit
+**36. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 

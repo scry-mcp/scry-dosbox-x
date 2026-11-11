@@ -37,13 +37,7 @@
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
-  "window": {
-    "display": 0,
-    "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
-    "onscreen": true,
-    "front": true,
-    "fullscreen": false
-  },
+  "window": "<volatile>",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
@@ -54,74 +48,7 @@
 
 </details>
 
-**2. `run_for`**: OK loaded: 400 retraces: Deluxe Paint is up, its data segment at 0x31b2
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "frames": 400,
-  "seconds": 60
-}
-```
-
-```json
-{
-  "summary": "run_for 400 frames: ELAPSED, 400 polls, at 0E85:00000B12",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 400,
-  "pc": "0E85:00000B12",
-  "cpu_mode": "real",
-  "frame": 400,
-  "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x0000018e",
-    "ECX": "0x005b0000",
-    "EDX": "0x0000a5ea",
-    "ESI": "0x00000008",
-    "EDI": "0x0000a0ae",
-    "EBP": "0x0000a010",
-    "ESP": "0x0000a010",
-    "EIP": "0x00000b12",
-    "CS": "0x0e85",
-    "DS": "0x31b2",
-    "ES": "0x0000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x31b2"
-  },
-  "watches": [],
-  "cause": "the retrace run_for ran to, at 0E85:00000B12",
-  "e9": {
-    "lines_total": 1,
-    "truncated": false,
-    "lines": ["Bochs port E9h: STUB  . scry device=present proto=7 motion=1"],
-    "mark": "<volatile>"
-  },
-  "stop_seq": 2,
-  "instruction": {
-    "address": "0E85:00000B12",
-    "bytes": "A31205",
-    "text": "mov word ptr [0x512], ax",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {"available": false, "why": "no symbol table is loaded"},
-    "delta": {"available": false, "why": "no symbol table is loaded"}
-  },
-  "emulated_before_s": 0.0007,
-  "emulated_after_s": 5.6986656,
-  "frame_before": 0,
-  "frame_after": 400,
-  "cycles": 56500352,
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**3. `screen_map_write`**: OK map: 1 screen and 13 controls loaded
+**2. `screen_map_write`**: OK map: 1 screens and 13 controls loaded
 
 <details><summary>call and reply</summary>
 
@@ -147,7 +74,237 @@
 
 </details>
 
-**4. `screen_map_find`**: OK find: the painting screen, 13 controls named
+**3. `screen_wait`**: OK loaded: Deluxe Paint is up: the map names its screen {'name': 'paint', 'layer': 'file'}
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "screen": "paint",
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "screen_wait screen 'paint': found after 7 retraces",
+  "status": "ok",
+  "verdict": "TARGET",
+  "predicate": "screen",
+  "already": false,
+  "waited_s": "<volatile>",
+  "polls": 7,
+  "sampled_every": 0,
+  "screen": {"name": "paint", "layer": "file"},
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": 7,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {
+    "lines_total": 1,
+    "truncated": false,
+    "lines": ["Bochs port E9h: STUB  . scry device=present proto=7 motion=1"],
+    "mark": "<volatile>"
+  },
+  "stop_seq": 2,
+  "instruction": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**4. `machine_map`**: OK placed: DP loaded with its PSP at 08DF, its data at 31B2
+
+<details><summary>call and reply</summary>
+
+```json
+{}
+```
+
+```json
+{
+  "summary": "machine_map (real): 15 mcbs, 2 devs, 20 kern, left out: bios_mem, callbacks, vga (see `omitted`)",
+  "status": "ok",
+  "cpu_mode": "real",
+  "mcbs": [
+    {
+      "memory": "conventional",
+      "mcb_seg": "0450",
+      "size_bytes": 10992,
+      "psp_seg": "0008",
+      "notes": "DOS",
+      "filename": "\u0002"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "0700",
+      "size_bytes": 2464,
+      "psp_seg": "0701",
+      "filename": "COMMAND"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "079B",
+      "size_bytes": 720,
+      "psp_seg": "0701",
+      "filename": "COMMAND"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "07C9",
+      "size_bytes": 1168,
+      "psp_seg": "0814",
+      "filename": "SCRY"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "0813",
+      "size_bytes": 2048,
+      "psp_seg": "0814",
+      "filename": "SCRY"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "0894",
+      "size_bytes": 1168,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "08DE",
+      "size_bytes": 232752,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "41B2",
+      "size_bytes": 8192,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "43B3",
+      "size_bytes": 64000,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "5354",
+      "size_bytes": 28304,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "5A3E",
+      "size_bytes": 9008,
+      "psp_seg": "0000",
+      "notes": "free",
+      "filename": "DP"
+    },
+    {"memory": "conventional", "mcb_seg": "5C72", "size_bytes": 16, "psp_seg": "08DF", "filename": "DP"},
+    {
+      "memory": "conventional",
+      "mcb_seg": "5C74",
+      "size_bytes": 276640,
+      "psp_seg": "0000",
+      "notes": "free",
+      "filename": ""
+    },
+    {
+      "memory": "upper",
+      "mcb_seg": "9FFF",
+      "size_bytes": 180224,
+      "psp_seg": "0008",
+      "notes": "DOS",
+      "filename": "SC"
+    },
+    {
+      "memory": "upper",
+      "mcb_seg": "CC00",
+      "size_bytes": 81904,
+      "psp_seg": "0000",
+      "notes": "free",
+      "filename": ""
+    }
+  ],
+  "devs": [
+    {"header": "0071:0048", "attr": "8004", "strat": "0000", "intr": "0000", "name": "NUL"},
+    {"header": "00F9:0000", "attr": "8013", "strat": "FFFF", "intr": "FFFF", "name": "CON"}
+  ],
+  "kern": [
+    {"seg": "0070", "size_bytes": 16, "what": "DOS_IHSEG"},
+    {"seg": "0071", "size_bytes": 800, "what": "DOS_INFOBLOCK_SEG"},
+    {"seg": "00a3", "size_bytes": 1376, "what": "DOS_SDA_SEG"},
+    {"seg": "00f9", "size_bytes": 64, "what": "DOS_CONDRV_SEG"},
+    {"seg": "00fd", "size_bytes": 256, "what": "DOS_CDA_SEG"},
+    {"seg": "010d", "size_bytes": 64, "what": "dos.tables.tempdta"},
+    {"seg": "0111", "size_bytes": 64, "what": "dos.tables.fcbdelete"},
+    {"seg": "0115", "size_bytes": 11520, "what": "SFT secondary table"},
+    {"seg": "03e5", "size_bytes": 192, "what": "dos.tables.dbcs"},
+    {"seg": "03f1", "size_bytes": 32, "what": "dos.tables.filenamechar"},
+    {"seg": "03f3", "size_bytes": 400, "what": "dos.tables.collatingseq"},
+    {"seg": "040c", "size_bytes": 64, "what": "Fake FCB SFT"},
+    {"seg": "0410", "size_bytes": 864, "what": "dos.tables.dpb"},
+    {"seg": "0446", "size_bytes": 48, "what": "External device command packet"},
+    {"seg": "0449", "size_bytes": 96, "what": "Fake disk buffer head"},
+    {"seg": "044f", "size_bytes": 16, "what": "driver.sys.data.list"},
+    {"seg": "0450", "size_bytes": 0, "what": "DOS_MEM_START"},
+    {"seg": "c400", "size_bytes": 16, "what": "xms_callback"},
+    {"seg": "c401", "size_bytes": 32, "what": "ems_baseseg"},
+    {"seg": "c403", "size_bytes": 16, "what": "i33loc"}
+  ],
+  "xms": [],
+  "emu_mem": {
+    "a20_gate": "ON",
+    "cpu_address_bits": 32,
+    "cpu_address_mask": "0xffffffff",
+    "cpu_address_mask_current": "0xffffffff",
+    "memory_reported_size_bytes": 16777216
+  },
+  "machine": "VGA S3 Trio",
+  "control": {
+    "cr0": "00000010",
+    "cr2": "00000000",
+    "cr3": "00000000",
+    "cpl": 0,
+    "eflags": "<volatile>",
+    "vm": 0,
+    "iopl": 3,
+    "nt": 1,
+    "gdtr": {"base": "00000000", "limit": "0000FFFF"},
+    "idt": {"base": "00000000", "limit": "000003FF"},
+    "tr": {"selector": "0000", "base": "000E3001", "limit": "000000B7*1"},
+    "ldtr": {"selector": "0000", "base": "000E3001", "limit": "000000B7*1"}
+  },
+  "counts": {"mcbs": 15, "devs": 2, "kern": 20, "xms": 0},
+  "sources": {
+    "mcbs": ["DOS MCBS"],
+    "devs": ["DOS DEVS"],
+    "kern": ["DOS KERN"],
+    "xms": ["DOS XMS"],
+    "emu_mem": ["EMU MEM"],
+    "machine": ["EMU MACHINE"],
+    "control": ["CPU"]
+  },
+  "coverage_note": "read from the debugger's own listings at this stop. `ems` and `ems_pages` are absent: `DOS EMS` printed a line no known shape matches: '     1    0/   0 000e0000-000e3fff virt -> 00175000-00178fff phys'. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off",
+  "truncated": false,
+  "omitted": ["bios_mem", "callbacks", "vga"],
+  "how": "sections=[...] names the sections to read; dest=<absolute path> writes every section read whole",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**5. `screen_map_find`**: OK find: the painting screen, 13 controls named
 
 <details><summary>call and reply</summary>
 
@@ -185,7 +342,7 @@
 
 </details>
 
-**5. `send_mouse`**: OK blue: blue picked off the palette
+**6. `send_mouse`**: OK blue: blue picked off the palette
 
 <details><summary>call and reply</summary>
 
@@ -198,7 +355,7 @@
 
 ```json
 {
-  "summary": "send_mouse: pointer at 300,179, program's own pointer not read; posted, unverified, 21 retraces to frame 421",
+  "summary": "send_mouse: pointer at 300,179, program's own pointer not read; posted, unverified, 21 retraces to frame 28",
   "status": "ok",
   "x": 300,
   "y": 179,
@@ -214,39 +371,14 @@
   },
   "driver_arrived": true,
   "polls": 21,
-  "pc": "100B:000002D1",
+  "pc": "<volatile>",
   "cpu_mode": "real",
   "stop_seq": 23,
-  "frame": 421,
-  "instruction": {
-    "address": "100B:000002D1",
-    "bytes": "50",
-    "text": "push ax",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {"available": false, "why": "no symbol table is loaded"},
-    "delta": {"available": false, "why": "no symbol table is loaded"}
-  },
-  "regs": {
-    "EAX": "0x0000a030",
-    "EBX": "0x00001094",
-    "ECX": "0x005b0000",
-    "EDX": "0x000000fe",
-    "ESI": "0x00000008",
-    "EDI": "0x0000a0ae",
-    "EBP": "0x0000a03e",
-    "ESP": "0x0000a02a",
-    "EIP": "0x000002d1",
-    "CS": "0x100b",
-    "DS": "0x31b2",
-    "ES": "0x0000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x31b2"
-  },
+  "frame": 28,
+  "instruction": "<volatile>",
+  "regs": "<volatile>",
   "watches": [],
-  "cause": "the retrace the input's post ran to, at 100B:000002D1",
+  "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "motion": true,
   "verify": {
@@ -262,7 +394,7 @@
 
 </details>
 
-**6. `scan`**: OK scan: 65535 bytes of the data segment are candidates
+**7. `scan`**: OK scan: 65535 bytes of the data segment are candidates
 
 <details><summary>call and reply</summary>
 
@@ -291,7 +423,7 @@
 
 </details>
 
-**7. `scan`**: OK is blue: 71 bytes hold 0x09 now
+**8. `scan`**: OK is blue: 71 bytes hold 0x09 now
 
 <details><summary>call and reply</summary>
 
@@ -329,7 +461,7 @@
 
 </details>
 
-**8. `send_mouse`**: OK orange: orange picked off the palette
+**9. `send_mouse`**: OK orange: orange picked off the palette
 
 <details><summary>call and reply</summary>
 
@@ -342,7 +474,7 @@
 
 ```json
 {
-  "summary": "send_mouse: pointer at 317,175, program's own pointer not read; posted, unverified, 25 retraces to frame 446",
+  "summary": "send_mouse: pointer at 317,175, program's own pointer not read; posted, unverified, 25 retraces to frame 53",
   "status": "ok",
   "x": 317,
   "y": 175,
@@ -358,39 +490,14 @@
   },
   "driver_arrived": true,
   "polls": 25,
-  "pc": "F000:0000CFC5",
+  "pc": "<volatile>",
   "cpu_mode": "real",
   "stop_seq": 48,
-  "frame": 446,
-  "instruction": {
-    "address": "F000:0000CFC5",
-    "bytes": "CF",
-    "text": "iret",
-    "flow": "return",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {"available": false, "why": "no symbol table is loaded"},
-    "delta": {"available": false, "why": "no symbol table is loaded"}
-  },
-  "regs": {
-    "EAX": "0x0000011c",
-    "EBX": "0x00001094",
-    "ECX": "0x005b0000",
-    "EDX": "0x000000fe",
-    "ESI": "0x0000ffff",
-    "EDI": "0x0000a0ae",
-    "EBP": "0x0000a00c",
-    "ESP": "0x00009ff8",
-    "EIP": "0x0000cfc5",
-    "CS": "0xf000",
-    "DS": "0x31b2",
-    "ES": "0x0000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x31b2"
-  },
+  "frame": 53,
+  "instruction": "<volatile>",
+  "regs": "<volatile>",
   "watches": [],
-  "cause": "the retrace the input's post ran to, at F000:0000CFC5",
+  "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "motion": true,
   "verify": {
@@ -406,7 +513,7 @@
 
 </details>
 
-**9. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above 9FF8, and 4 static ones from 31B2:017C
+**10. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above A02A, and 4 static ones from 31B2:017C
 
 <details><summary>call and reply</summary>
 
@@ -442,7 +549,7 @@
 
 </details>
 
-**10. `scan`**: OK unscan: scan closed
+**11. `scan`**: OK unscan: scan closed
 
 <details><summary>call and reply</summary>
 
@@ -463,7 +570,7 @@
 
 </details>
 
-**11. `watch_add`**: OK watch: the colour byte shown at every stop
+**12. `watch_add`**: OK watch: the colour byte shown at every stop
 
 <details><summary>call and reply</summary>
 
@@ -493,7 +600,7 @@
 
 </details>
 
-**12. `perform`**: OK sky: peach, the colour byte at 52, 1 drag
+**13. `perform`**: OK sky: peach, the colour byte at 52, 1 drag
 
 <details><summary>call and reply</summary>
 
@@ -517,27 +624,27 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 306,77, program's own pointer not read; posted, unverified, 25 retraces to frame 471",
+        "summary": "send_mouse: pointer at 306,77, program's own pointer not read; posted, unverified, 25 retraces to frame 78",
         "status": "ok",
         "stop_seq": 73,
-        "cause": "the retrace the input's post ran to, at 13F8:000002D7"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 317,169, program's own pointer not read; posted, unverified, 25 retraces to frame 496",
+        "summary": "send_mouse: pointer at 317,169, program's own pointer not read; posted, unverified, 25 retraces to frame 103",
         "status": "ok",
         "stop_seq": 98,
-        "cause": "the retrace the input's post ran to, at 0957:0000002C"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 294,112, program's own pointer not read; posted, unverified, 30 retraces to frame 526",
+        "summary": "send_mouse: pointer at 294,112, program's own pointer not read; posted, unverified, 30 retraces to frame 133",
         "status": "ok",
         "x": 2,
         "y": 14,
@@ -553,37 +660,12 @@
         },
         "driver_arrived": true,
         "polls": 30,
-        "pc": "F000:0000CFC5",
+        "pc": "<volatile>",
         "cpu_mode": "real",
         "stop_seq": 128,
-        "frame": 526,
-        "instruction": {
-          "address": "F000:0000CFC5",
-          "bytes": "CF",
-          "text": "iret",
-          "flow": "return",
-          "code_bits": 16,
-          "bytes_from": "memory",
-          "symbol": {"available": false, "why": "no symbol table is loaded"},
-          "delta": {"available": false, "why": "no symbol table is loaded"}
-        },
-        "regs": {
-          "EAX": "0x0000011c",
-          "EBX": "0x00000000",
-          "ECX": "0x005b0000",
-          "EDX": "0x00000cf5",
-          "ESI": "0x0000ffff",
-          "EDI": "0x0000a0ae",
-          "EBP": "0x0000a00c",
-          "ESP": "0x00009ff8",
-          "EIP": "0x0000cfc5",
-          "CS": "0xf000",
-          "DS": "0x31b2",
-          "ES": "0x0000",
-          "FS": "0x0000",
-          "GS": "0x0000",
-          "SS": "0x31b2"
-        },
+        "frame": 133,
+        "instruction": "<volatile>",
+        "regs": "<volatile>",
         "watches": [
           {
             "ref": "31B2:017C",
@@ -596,7 +678,7 @@
             "bytes": "34"
           }
         ],
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5",
+        "cause": "<volatile>",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
@@ -627,7 +709,7 @@
 
 </details>
 
-**13. `perform`**: OK sun: yellow, the colour byte at 14, 1 drag
+**14. `perform`**: OK sun: yellow, the colour byte at 14, 1 drag
 
 <details><summary>call and reply</summary>
 
@@ -659,27 +741,27 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 317,77, program's own pointer not read; posted, unverified, 25 retraces to frame 551",
+        "summary": "send_mouse: pointer at 317,77, program's own pointer not read; posted, unverified, 25 retraces to frame 158",
         "status": "ok",
         "stop_seq": 153,
-        "cause": "the retrace the input's post ran to, at 0957:00000029"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,189, program's own pointer not read; posted, unverified, 25 retraces to frame 576",
+        "summary": "send_mouse: pointer at 300,189, program's own pointer not read; posted, unverified, 25 retraces to frame 183",
         "status": "ok",
         "stop_seq": 178,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 238,112, program's own pointer not read; posted, unverified, 30 retraces to frame 606",
+        "summary": "send_mouse: pointer at 238,112, program's own pointer not read; posted, unverified, 30 retraces to frame 213",
         "status": "ok",
         "x": 210,
         "y": 112,
@@ -695,37 +777,12 @@
         },
         "driver_arrived": true,
         "polls": 30,
-        "pc": "100B:0000036A",
+        "pc": "<volatile>",
         "cpu_mode": "real",
         "stop_seq": 208,
-        "frame": 606,
-        "instruction": {
-          "address": "100B:0000036A",
-          "bytes": "740F",
-          "text": "je 0x37b",
-          "flow": "branch",
-          "code_bits": 16,
-          "bytes_from": "memory",
-          "symbol": {"available": false, "why": "no symbol table is loaded"},
-          "delta": {"available": false, "why": "no symbol table is loaded"}
-        },
-        "regs": {
-          "EAX": "0x00000070",
-          "EBX": "0x0000018e",
-          "ECX": "0x005b0000",
-          "EDX": "0x00000cf5",
-          "ESI": "0x00000008",
-          "EDI": "0x0000a0ae",
-          "EBP": "0x0000a03e",
-          "ESP": "0x0000a02a",
-          "EIP": "0x0000036a",
-          "CS": "0x100b",
-          "DS": "0x31b2",
-          "ES": "0x0000",
-          "FS": "0x0000",
-          "GS": "0x0000",
-          "SS": "0x31b2"
-        },
+        "frame": 213,
+        "instruction": "<volatile>",
+        "regs": "<volatile>",
         "watches": [
           {
             "ref": "31B2:017C",
@@ -738,7 +795,7 @@
             "bytes": "0e"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 100B:0000036A",
+        "cause": "<volatile>",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
@@ -769,7 +826,7 @@
 
 </details>
 
-**14. `perform`**: OK sea: navy, the colour byte at 1, 1 drag
+**15. `perform`**: OK sea: navy, the colour byte at 1, 1 drag
 
 <details><summary>call and reply</summary>
 
@@ -793,27 +850,27 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 306,77, program's own pointer not read; posted, unverified, 25 retraces to frame 631",
+        "summary": "send_mouse: pointer at 306,77, program's own pointer not read; posted, unverified, 25 retraces to frame 238",
         "status": "ok",
         "stop_seq": 233,
-        "cause": "the retrace the input's post ran to, at 13F8:000002CC"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,163, program's own pointer not read; posted, unverified, 25 retraces to frame 656",
+        "summary": "send_mouse: pointer at 300,163, program's own pointer not read; posted, unverified, 25 retraces to frame 263",
         "status": "ok",
         "stop_seq": 258,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 294,198, program's own pointer not read; posted, unverified, 30 retraces to frame 686",
+        "summary": "send_mouse: pointer at 294,198, program's own pointer not read; posted, unverified, 30 retraces to frame 293",
         "status": "ok",
         "x": 2,
         "y": 113,
@@ -829,37 +886,12 @@
         },
         "driver_arrived": true,
         "polls": 30,
-        "pc": "0957:00000041",
+        "pc": "<volatile>",
         "cpu_mode": "real",
         "stop_seq": 288,
-        "frame": 686,
-        "instruction": {
-          "address": "0957:00000041",
-          "bytes": "8B4402",
-          "text": "mov ax, word ptr [si + 2]",
-          "flow": "sequential",
-          "code_bits": 16,
-          "bytes_from": "memory",
-          "symbol": {"available": false, "why": "no symbol table is loaded"},
-          "delta": {"available": false, "why": "no symbol table is loaded"}
-        },
-        "regs": {
-          "EAX": "0x00000128",
-          "EBX": "0x00000000",
-          "ECX": "0x005b0000",
-          "EDX": "0x00000cf5",
-          "ESI": "0x00000190",
-          "EDI": "0x0000a0ae",
-          "EBP": "0x0000a014",
-          "ESP": "0x0000a012",
-          "EIP": "0x00000041",
-          "CS": "0x0957",
-          "DS": "0x31b2",
-          "ES": "0x0000",
-          "FS": "0x0000",
-          "GS": "0x0000",
-          "SS": "0x31b2"
-        },
+        "frame": 293,
+        "instruction": "<volatile>",
+        "regs": "<volatile>",
         "watches": [
           {
             "ref": "31B2:017C",
@@ -872,7 +904,7 @@
             "bytes": "01"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0957:00000041",
+        "cause": "<volatile>",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
@@ -903,7 +935,7 @@
 
 </details>
 
-**15. `perform`**: OK hull: brown, the colour byte at 6, 1 drag
+**16. `perform`**: OK hull: brown, the colour byte at 6, 1 drag
 
 <details><summary>call and reply</summary>
 
@@ -934,17 +966,17 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,173, program's own pointer not read; posted, unverified, 25 retraces to frame 711",
+        "summary": "send_mouse: pointer at 300,173, program's own pointer not read; posted, unverified, 25 retraces to frame 318",
         "status": "ok",
         "stop_seq": 313,
-        "cause": "the retrace the input's post ran to, at 100B:0000032D"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 112,158, program's own pointer not read; posted, unverified, 30 retraces to frame 741",
+        "summary": "send_mouse: pointer at 112,158, program's own pointer not read; posted, unverified, 30 retraces to frame 348",
         "status": "ok",
         "x": 60,
         "y": 150,
@@ -960,37 +992,12 @@
         },
         "driver_arrived": true,
         "polls": 30,
-        "pc": "F000:0000CFC5",
+        "pc": "<volatile>",
         "cpu_mode": "real",
         "stop_seq": 343,
-        "frame": 741,
-        "instruction": {
-          "address": "F000:0000CFC5",
-          "bytes": "CF",
-          "text": "iret",
-          "flow": "return",
-          "code_bits": 16,
-          "bytes_from": "memory",
-          "symbol": {"available": false, "why": "no symbol table is loaded"},
-          "delta": {"available": false, "why": "no symbol table is loaded"}
-        },
-        "regs": {
-          "EAX": "0x0000011c",
-          "EBX": "0x00000000",
-          "ECX": "0x005b0000",
-          "EDX": "0x00000cf5",
-          "ESI": "0x0000ffff",
-          "EDI": "0x0000a0ae",
-          "EBP": "0x0000a00c",
-          "ESP": "0x00009ff8",
-          "EIP": "0x0000cfc5",
-          "CS": "0xf000",
-          "DS": "0x31b2",
-          "ES": "0x0000",
-          "FS": "0x0000",
-          "GS": "0x0000",
-          "SS": "0x31b2"
-        },
+        "frame": 348,
+        "instruction": "<volatile>",
+        "regs": "<volatile>",
         "watches": [
           {
             "ref": "31B2:017C",
@@ -1003,7 +1010,7 @@
             "bytes": "06"
           }
         ],
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5",
+        "cause": "<volatile>",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
@@ -1034,7 +1041,7 @@
 
 </details>
 
-**16. `perform`**: OK sail: white, the colour byte at 15, 3 drags
+**17. `perform`**: OK sail: white, the colour byte at 15, 3 drags
 
 <details><summary>call and reply</summary>
 
@@ -1076,47 +1083,47 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 302,51, program's own pointer not read; posted, unverified, 25 retraces to frame 766",
+        "summary": "send_mouse: pointer at 302,51, program's own pointer not read; posted, unverified, 25 retraces to frame 373",
         "status": "ok",
         "stop_seq": 368,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,191, program's own pointer not read; posted, unverified, 25 retraces to frame 791",
+        "summary": "send_mouse: pointer at 300,191, program's own pointer not read; posted, unverified, 25 retraces to frame 398",
         "status": "ok",
         "stop_seq": 393,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 86,118, program's own pointer not read; posted, unverified, 30 retraces to frame 821",
+        "summary": "send_mouse: pointer at 86,118, program's own pointer not read; posted, unverified, 30 retraces to frame 428",
         "status": "ok",
         "stop_seq": 423,
-        "cause": "the retrace the input's post ran to, at 0E85:000009A8"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 108,146, program's own pointer not read; posted, unverified, 30 retraces to frame 851",
+        "summary": "send_mouse: pointer at 108,146, program's own pointer not read; posted, unverified, 30 retraces to frame 458",
         "status": "ok",
         "stop_seq": 453,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 86,146, program's own pointer not read; posted, unverified, 30 retraces to frame 881",
+        "summary": "send_mouse: pointer at 86,146, program's own pointer not read; posted, unverified, 30 retraces to frame 488",
         "status": "ok",
         "x": 108,
         "y": 146,
@@ -1132,37 +1139,12 @@
         },
         "driver_arrived": true,
         "polls": 30,
-        "pc": "0E85:00000A71",
+        "pc": "<volatile>",
         "cpu_mode": "real",
         "stop_seq": 483,
-        "frame": 881,
-        "instruction": {
-          "address": "0E85:00000A71",
-          "bytes": "B8426E",
-          "text": "mov ax, 0x6e42",
-          "flow": "sequential",
-          "code_bits": 16,
-          "bytes_from": "memory",
-          "symbol": {"available": false, "why": "no symbol table is loaded"},
-          "delta": {"available": false, "why": "no symbol table is loaded"}
-        },
-        "regs": {
-          "EAX": "0x00006e52",
-          "EBX": "0x000003e4",
-          "ECX": "0x005b0000",
-          "EDX": "0x0000a5ea",
-          "ESI": "0x00000008",
-          "EDI": "0x0000a0ae",
-          "EBP": "0x0000a006",
-          "ESP": "0x0000a004",
-          "EIP": "0x00000a71",
-          "CS": "0x0e85",
-          "DS": "0x31b2",
-          "ES": "0x0000",
-          "FS": "0x0000",
-          "GS": "0x0000",
-          "SS": "0x31b2"
-        },
+        "frame": 488,
+        "instruction": "<volatile>",
+        "regs": "<volatile>",
         "watches": [
           {
             "ref": "31B2:017C",
@@ -1175,7 +1157,7 @@
             "bytes": "0f"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0E85:00000A71",
+        "cause": "<volatile>",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
@@ -1206,7 +1188,7 @@
 
 </details>
 
-**17. `perform`**: OK word: SCRY typed at 20,180, then the line tool again, which ends the text
+**18. `perform`**: OK word: SCRY typed at 20,180, then the line tool again, which ends the text
 
 <details><summary>call and reply</summary>
 
@@ -1231,37 +1213,37 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 314,98, program's own pointer not read; posted, unverified, 25 retraces to frame 906",
+        "summary": "send_mouse: pointer at 314,98, program's own pointer not read; posted, unverified, 25 retraces to frame 513",
         "status": "ok",
         "stop_seq": 508,
-        "cause": "the retrace the input's post ran to, at 100B:00000239"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 20,180, program's own pointer not read; posted, unverified, 25 retraces to frame 931",
+        "summary": "send_mouse: pointer at 20,180, program's own pointer not read; posted, unverified, 25 retraces to frame 538",
         "status": "ok",
         "stop_seq": 533,
-        "cause": "the retrace the input's post ran to, at 13F8:00000212"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "send_keys",
       "reply": {
-        "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 981",
+        "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 588",
         "status": "ok",
         "stop_seq": 583,
-        "cause": "the retrace the input's post ran to, at 0E85:00000B1C"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 302,51, program's own pointer not read; posted, unverified, 25 retraces to frame 1006",
+        "summary": "send_mouse: pointer at 302,51, program's own pointer not read; posted, unverified, 25 retraces to frame 613",
         "status": "ok",
         "x": 302,
         "y": 51,
@@ -1277,37 +1259,12 @@
         },
         "driver_arrived": true,
         "polls": 25,
-        "pc": "0957:00000058",
+        "pc": "<volatile>",
         "cpu_mode": "real",
         "stop_seq": 608,
-        "frame": 1006,
-        "instruction": {
-          "address": "0957:00000058",
-          "bytes": "5E",
-          "text": "pop si",
-          "flow": "sequential",
-          "code_bits": 16,
-          "bytes_from": "memory",
-          "symbol": {"available": false, "why": "no symbol table is loaded"},
-          "delta": {"available": false, "why": "no symbol table is loaded"}
-        },
-        "regs": {
-          "EAX": "0x00000001",
-          "EBX": "0x0000105c",
-          "ECX": "0x005b0000",
-          "EDX": "0x00000bc9",
-          "ESI": "0x0000105e",
-          "EDI": "0x0000a0ae",
-          "EBP": "0x0000a014",
-          "ESP": "0x0000a012",
-          "EIP": "0x00000058",
-          "CS": "0x0957",
-          "DS": "0x31b2",
-          "ES": "0x0000",
-          "FS": "0x0000",
-          "GS": "0x0000",
-          "SS": "0x31b2"
-        },
+        "frame": 613,
+        "instruction": "<volatile>",
+        "regs": "<volatile>",
         "watches": [
           {
             "ref": "31B2:017C",
@@ -1320,7 +1277,7 @@
             "bytes": "0f"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0957:00000058",
+        "cause": "<volatile>",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "motion": true,
         "verify": {
@@ -1354,7 +1311,7 @@
 
 </details>
 
-**18. `read_memory`**: OK sun row: the row reads peach x 25, then yellow x 51, then peach x 52
+**19. `read_memory`**: OK sun row: the row reads peach x 25, then yellow x 51, then peach x 52
 
 <details><summary>call and reply</summary>
 
@@ -1379,7 +1336,7 @@
 
 </details>
 
-**19. `read_memory`**: OK boat row: the row reads navy x 30, then brown x 53, then navy x 29
+**20. `read_memory`**: OK boat row: the row reads navy x 30, then brown x 53, then navy x 29
 
 <details><summary>call and reply</summary>
 
@@ -1404,7 +1361,7 @@
 
 </details>
 
-**20. `screen_view`**: OK screen: mode M_VGA, 320x200 by palette index
+**21. `screen_view`**: OK screen: mode M_VGA, 320x200 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -1428,8 +1385,8 @@
   "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint/screen.png",
-    "bytes": 7911,
-    "sha256": "8440167220f277f21c93eac61323f6ab5ae17ea5583c06f1fa4620bd356f959a",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 1280,
     "height": 800,
     "scale": 4,
@@ -1445,7 +1402,7 @@ Also attached: image/png.
 
 </details>
 
-**21. `declaration_clear`**: OK unwatch: watch cleared
+**22. `declaration_clear`**: OK unwatch: watch cleared
 
 <details><summary>call and reply</summary>
 
@@ -1468,7 +1425,7 @@ Also attached: image/png.
 
 </details>
 
-**22. `close`**: OK close: closed: quit
+**23. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
@@ -1493,7 +1450,7 @@ Also attached: image/png.
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
-  "draft": ["start/dp"],
+  "draft": "<volatile>",
   "session": {"alive": false, "running": false, "altered": false}
 }
 ```

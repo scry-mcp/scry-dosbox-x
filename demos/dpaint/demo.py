@@ -24,7 +24,7 @@ from scry_core.demo import Reply, Run, Step, main
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos import host  # noqa: E402
-from demos.dpaint.program import click, declared, drag, opening  # noqa: E402
+from demos.dpaint.program import click, declared, drag, ds_segment, opening  # noqa: E402
 from demos.host import expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -43,10 +43,6 @@ HULL = ((60, 150), (112, 158))
 SAIL = [((86, 149), (86, 118)), ((86, 118), (108, 146)), ((108, 146), (86, 146))]
 TEXT_AT = (20, 180)
 WORD = "SCRY"
-
-
-def ds_segment(run: Run) -> int:
-    return int(run.replies["loaded"]["regs"]["DS"], 16)
 
 
 def boot(run: Run) -> dict[str, Any]:
@@ -119,6 +115,13 @@ def shape(name: str, tool: str | None, colour: str | None,
     return Step(name, "perform", {"steps": steps, "summaries": True}, check)
 
 
+def typed(reply: Reply, run: Run) -> str:
+    expect(reply["steps_completed"] == 4, f"{reply['steps_completed']} of 4 steps, failed at "
+                                           f"{reply['failed_at']}")
+    return (f"{WORD} typed at {TEXT_AT[0]},{TEXT_AT[1]}, then the line tool again, which ends "
+            "the text")
+
+
 def row(y: int, x: int, length: int) -> dict[str, Any]:
     """`read_memory`'s arguments for `length` pixels of row `y` from `x`, in mode 13h."""
     return {"ref": f"A000:{y * 320 + x:04X}", "length": length}
@@ -130,10 +133,7 @@ def crossing(*spans: tuple[str, int]) -> Any:
 
 
 STEPS = [
-    *opening(boot),
-    Step("map", "screen_map_write", {"method": "load", "path": HERE / "dpaint-screen-map.json"},
-         lambda reply, run: f"{reply['screens']} screen and {reply['controls']} controls "
-                            "loaded"),
+    *opening(boot, HERE / "dpaint-screen-map.json", "paint"),
     Step("find", "screen_map_find", {}, found),
     Step("blue", "send_mouse", {"target": "blue", "button": "left"},
          picked("blue picked off the palette"),
@@ -164,9 +164,7 @@ STEPS = [
         click("text"),
         {"op": "send_mouse", "x": TEXT_AT[0], "y": TEXT_AT[1], "button": "left"},
         {"op": "send_keys", "keys": list(WORD), "modifiers": ["shift"]},
-        click("line")], "summaries": True},
-        lambda reply, run: f"{WORD} typed at {TEXT_AT[0]},{TEXT_AT[1]}, then the line tool "
-                           "again, which ends the text"),
+        click("line")], "summaries": True}, typed),
     Step("sun row", "read_memory", lambda run: row(100, 160, 128),
          crossing(("peach", 25), ("yellow", 51), ("peach", 52)),
          highlight=("The picture is checked by reading it back: a row of the screen comes out of "

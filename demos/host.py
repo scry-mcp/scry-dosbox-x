@@ -16,7 +16,6 @@ from typing import Any
 from scry_core import live_host
 from scry_core.demo import Reply, Run, StepFailed
 from scry_core.demo import expect as expect
-from scry_core.game_demo import elapsed
 
 from scry_dosbox_x import binary as dosbox_binary
 from scry_dosbox_x import launch
@@ -46,7 +45,15 @@ VOLATILE = {"argv": "the emulator's command line, which names this host's paths"
                       "read a stop from and never a value",
             "output_chars": "the length of that output",
             "ran_path": "a file in the session's own temporary directory",
-            "replies_path": "a file in the session's own temporary directory"}
+            "replies_path": "a file in the session's own temporary directory",
+            "window": "where the host's display put the window, and how big it fits",
+            "draft": "what the host's own store keeps for review"}
+
+#: What a stop on a retrace shows of where the guest was: DOSBox-X's cycles drift by a few
+#: between hosts, so the retrace lands on another instruction while the screen and the state
+#: the demo checks are the same.
+RETRACE_STOP = {key: "the instruction a retrace stop lands on drifts with the host's cycles"
+                for key in ("pc", "regs", "instruction", "cause", "eflags", "following")}
 
 
 def isolated_store(demo: str) -> None:
@@ -124,11 +131,10 @@ def quit_cleanly(reply: Reply, run: Run) -> str:
 
 def map_placed(reply: Reply, run: Run) -> str:
     """The boot's stop placed the map `start` held, at the segment DOS loaded the game at."""
-    booted = elapsed("booted")(reply, run)
     placed = reply.get("symbols_placed") or {}
     if placed.get("placed") is not True:
         raise StepFailed(f"the boot's stop placed no map: {placed or 'no symbols_placed'}")
-    return (f"{booted}: DOS running the game, its map placed at segment "
+    return (f"stopped inside the game: its map placed at segment "
             f"{placed['load_segment']}, {placed['loaded']} symbols")
 
 

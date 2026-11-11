@@ -42,7 +42,12 @@ VOLATILE_PROGRAM = {**VOLATILE,
                     "conf": "where the reader's checkout keeps its derived conf",
                     "state_dir": "a directory in the session's own temporary directory",
                     "window": "the host's display and the window it fits",
-                    "file": "where the reader's checkout keeps its store"}
+                    "file": "where the reader's checkout keeps its store",
+                    "conf_digest": "`make mcp-conf` writes the checkout's own paths into the "
+                                   "conf"}
+#: What a key's confirmation reports that the host decides: the input lands on a running program
+#: when the host delivers it, and the line carries the program's own clock stamp of that moment.
+KEY_TIMING = {**INPUT_TIMING, "line": "the program's own clock stamp on the line"}
 #: What a wait on the log and a stop report that depends on when the host got there, not on
 #: what the program did: the wall time, the line counts and the stamp, the stop's own place.
 LOG_TIMING = {**INPUT_TIMING,
@@ -101,7 +106,7 @@ STEPS = [
                     "different lines: `log_wait` on the guest channel waits for the second, on "
                     "a running machine.")),
     Step("pause", "send_keys", {"keys": ["space"], "expect": "key down SPACE", "seconds": 10},
-         seen("space reached the app"), volatile=INPUT_TIMING,
+         seen("space reached the app"), volatile=KEY_TIMING,
          highlight=("`send_keys` with `expect` proves the key reached the application, not "
                     "only that the host sent one: the program logs every key it takes, by "
                     "name.")),
@@ -112,10 +117,10 @@ STEPS = [
     Step("go on", "resume", {"seconds": 0}, released("the program runs on")),
     Step("quit", "send_keys", {"keys": ["x"], "modifiers": ["alt"], "expect": ASKED,
                                "seconds": 10},
-         seen("File, Quit: the song is dirty, so the confirm opened"), volatile=INPUT_TIMING),
+         seen("File, Quit: the song is dirty, so the confirm opened"), volatile=KEY_TIMING),
     Step("confirm", "send_keys", {"keys": ["right", "enter"], "expect": CONFIRMED,
                                   "seconds": 10},
-         seen("Quit without saving"), volatile=INPUT_TIMING,
+         seen("Quit without saving"), volatile=KEY_TIMING,
          highlight=("The program is left by its own keys, and its log says which button the "
                     "confirm took, so the session closes over a guest that has quit rather "
                     "than one killed under a running program.")),

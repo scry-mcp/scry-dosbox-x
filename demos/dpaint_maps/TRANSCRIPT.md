@@ -37,13 +37,7 @@
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
-  "window": {
-    "display": 0,
-    "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
-    "onscreen": true,
-    "front": true,
-    "fullscreen": false
-  },
+  "window": "<volatile>",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
@@ -54,74 +48,7 @@
 
 </details>
 
-**2. `run_for`**: OK loaded: 400 retraces: Deluxe Paint is up, its data segment at 0x31b2
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "frames": 400,
-  "seconds": 60
-}
-```
-
-```json
-{
-  "summary": "run_for 400 frames: ELAPSED, 400 polls, at 0E85:00000A83",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 400,
-  "pc": "0E85:00000A83",
-  "cpu_mode": "real",
-  "frame": 400,
-  "regs": {
-    "EAX": "0x00006e42",
-    "EBX": "0x000003e4",
-    "ECX": "0x005b0000",
-    "EDX": "0x0000a57c",
-    "ESI": "0x00000007",
-    "EDI": "0x0000a0ae",
-    "EBP": "0x0000a006",
-    "ESP": "0x0000a004",
-    "EIP": "0x00000a83",
-    "CS": "0x0e85",
-    "DS": "0x31b2",
-    "ES": "0x0000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x31b2"
-  },
-  "watches": [],
-  "cause": "the retrace run_for ran to, at 0E85:00000A83",
-  "e9": {
-    "lines_total": 1,
-    "truncated": false,
-    "lines": ["Bochs port E9h: STUB  . scry device=present proto=7 motion=1"],
-    "mark": "<volatile>"
-  },
-  "stop_seq": 2,
-  "instruction": {
-    "address": "0E85:00000A83",
-    "bytes": "50",
-    "text": "push ax",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {"available": false, "why": "no symbol table is loaded"},
-    "delta": {"available": false, "why": "no symbol table is loaded"}
-  },
-  "emulated_before_s": 0.0007,
-  "emulated_after_s": 6.6466468999999995,
-  "frame_before": 0,
-  "frame_after": 400,
-  "cycles": 65734604,
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**3. `screen_map_write`**: OK map: 11 screens and 109 controls loaded
+**2. `screen_map_write`**: OK map: 11 screens and 109 controls loaded
 
 <details><summary>call and reply</summary>
 
@@ -147,7 +74,262 @@
 
 </details>
 
-**4. `screen_map_find`**: OK is paint: the map says: paint: freehand
+**3. `screen_wait`**: OK loaded: Deluxe Paint is up: the map names its screen {'name': 'paint: freehand', 'layer': 'file'}
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "screen": "paint: freehand",
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "screen_wait screen 'paint: freehand': found after 13 retraces",
+  "status": "ok",
+  "verdict": "TARGET",
+  "predicate": "screen",
+  "already": false,
+  "waited_s": "<volatile>",
+  "polls": 13,
+  "sampled_every": 0,
+  "screen": {"name": "paint: freehand", "layer": "file"},
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": 13,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {
+    "lines_total": 1,
+    "truncated": false,
+    "lines": ["Bochs port E9h: STUB  . scry device=present proto=7 motion=1"],
+    "mark": "<volatile>"
+  },
+  "stop_seq": 2,
+  "instruction": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**4. `machine_map`**: OK placed: DP loaded with its PSP at 08DF, its data at 31B2
+
+<details><summary>call and reply</summary>
+
+```json
+{}
+```
+
+```json
+{
+  "summary": "machine_map (real): 22 mcbs, 2 devs, 20 kern, left out: bios_mem, callbacks, vga (see `omitted`)",
+  "status": "ok",
+  "cpu_mode": "real",
+  "mcbs": [
+    {
+      "memory": "conventional",
+      "mcb_seg": "0450",
+      "size_bytes": 10992,
+      "psp_seg": "0008",
+      "notes": "DOS",
+      "filename": "\u0002"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "0700",
+      "size_bytes": 2464,
+      "psp_seg": "0701",
+      "filename": "COMMAND"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "079B",
+      "size_bytes": 720,
+      "psp_seg": "0701",
+      "filename": "COMMAND"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "07C9",
+      "size_bytes": 1168,
+      "psp_seg": "0814",
+      "filename": "SCRY"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "0813",
+      "size_bytes": 2048,
+      "psp_seg": "0814",
+      "filename": "SCRY"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "0894",
+      "size_bytes": 1168,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "08DE",
+      "size_bytes": 232752,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "41B2",
+      "size_bytes": 8192,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "43B3",
+      "size_bytes": 38400,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "4D14",
+      "size_bytes": 3824,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "4E04",
+      "size_bytes": 3824,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "4EF4",
+      "size_bytes": 3824,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "4FE4",
+      "size_bytes": 3824,
+      "psp_seg": "08DF",
+      "filename": "DP"
+    },
+    {
+      "memory": "conventional",
+      "mcb_seg": "50D4",
+      "size_bytes": 9008,
+      "psp_seg": "0000",
+      "notes": "free",
+      "filename": "DP"
+    },
+    {"memory": "conventional", "mcb_seg": "5308", "size_bytes": 16, "psp_seg": "08DF", "filename": "DP"},
+    {"memory": "conventional", "mcb_seg": "530A", "size_bytes": 16, "psp_seg": "08DF", "filename": "DP"},
+    {"memory": "conventional", "mcb_seg": "530C", "size_bytes": 16, "psp_seg": "08DF", "filename": "DP"},
+    {"memory": "conventional", "mcb_seg": "530E", "size_bytes": 16, "psp_seg": "08DF", "filename": "DP"},
+    {"memory": "conventional", "mcb_seg": "5310", "size_bytes": 16, "psp_seg": "08DF", "filename": "DP"},
+    {
+      "memory": "conventional",
+      "mcb_seg": "5312",
+      "size_bytes": 315072,
+      "psp_seg": "0000",
+      "notes": "free",
+      "filename": ""
+    },
+    {
+      "memory": "upper",
+      "mcb_seg": "9FFF",
+      "size_bytes": 180224,
+      "psp_seg": "0008",
+      "notes": "DOS",
+      "filename": "SC"
+    },
+    {
+      "memory": "upper",
+      "mcb_seg": "CC00",
+      "size_bytes": 81904,
+      "psp_seg": "0000",
+      "notes": "free",
+      "filename": ""
+    }
+  ],
+  "devs": [
+    {"header": "0071:0048", "attr": "8004", "strat": "0000", "intr": "0000", "name": "NUL"},
+    {"header": "00F9:0000", "attr": "8013", "strat": "FFFF", "intr": "FFFF", "name": "CON"}
+  ],
+  "kern": [
+    {"seg": "0070", "size_bytes": 16, "what": "DOS_IHSEG"},
+    {"seg": "0071", "size_bytes": 800, "what": "DOS_INFOBLOCK_SEG"},
+    {"seg": "00a3", "size_bytes": 1376, "what": "DOS_SDA_SEG"},
+    {"seg": "00f9", "size_bytes": 64, "what": "DOS_CONDRV_SEG"},
+    {"seg": "00fd", "size_bytes": 256, "what": "DOS_CDA_SEG"},
+    {"seg": "010d", "size_bytes": 64, "what": "dos.tables.tempdta"},
+    {"seg": "0111", "size_bytes": 64, "what": "dos.tables.fcbdelete"},
+    {"seg": "0115", "size_bytes": 11520, "what": "SFT secondary table"},
+    {"seg": "03e5", "size_bytes": 192, "what": "dos.tables.dbcs"},
+    {"seg": "03f1", "size_bytes": 32, "what": "dos.tables.filenamechar"},
+    {"seg": "03f3", "size_bytes": 400, "what": "dos.tables.collatingseq"},
+    {"seg": "040c", "size_bytes": 64, "what": "Fake FCB SFT"},
+    {"seg": "0410", "size_bytes": 864, "what": "dos.tables.dpb"},
+    {"seg": "0446", "size_bytes": 48, "what": "External device command packet"},
+    {"seg": "0449", "size_bytes": 96, "what": "Fake disk buffer head"},
+    {"seg": "044f", "size_bytes": 16, "what": "driver.sys.data.list"},
+    {"seg": "0450", "size_bytes": 0, "what": "DOS_MEM_START"},
+    {"seg": "c400", "size_bytes": 16, "what": "xms_callback"},
+    {"seg": "c401", "size_bytes": 32, "what": "ems_baseseg"},
+    {"seg": "c403", "size_bytes": 16, "what": "i33loc"}
+  ],
+  "xms": [],
+  "emu_mem": {
+    "a20_gate": "ON",
+    "cpu_address_bits": 32,
+    "cpu_address_mask": "0xffffffff",
+    "cpu_address_mask_current": "0xffffffff",
+    "memory_reported_size_bytes": 16777216
+  },
+  "machine": "VGA S3 Trio",
+  "control": {
+    "cr0": "00000010",
+    "cr2": "00000000",
+    "cr3": "00000000",
+    "cpl": 0,
+    "eflags": "<volatile>",
+    "vm": 0,
+    "iopl": 3,
+    "nt": 1,
+    "gdtr": {"base": "00000000", "limit": "0000FFFF"},
+    "idt": {"base": "00000000", "limit": "000003FF"},
+    "tr": {"selector": "0000", "base": "000E3001", "limit": "000000B7*1"},
+    "ldtr": {"selector": "0000", "base": "000E3001", "limit": "000000B7*1"}
+  },
+  "counts": {"mcbs": 22, "devs": 2, "kern": 20, "xms": 0},
+  "sources": {
+    "mcbs": ["DOS MCBS"],
+    "devs": ["DOS DEVS"],
+    "kern": ["DOS KERN"],
+    "xms": ["DOS XMS"],
+    "emu_mem": ["EMU MEM"],
+    "machine": ["EMU MACHINE"],
+    "control": ["CPU"]
+  },
+  "coverage_note": "read from the debugger's own listings at this stop. `ems` and `ems_pages` are absent: `DOS EMS` printed a line no known shape matches: '     4    0/   0 000e0000-000e3fff virt -> 00199000-0019cfff phys'. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off",
+  "truncated": false,
+  "omitted": ["bios_mem", "callbacks", "vga"],
+  "how": "sections=[...] names the sections to read; dest=<absolute path> writes every section read whole",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**5. `screen_map_find`**: OK is paint: the map says: paint: freehand
 
 <details><summary>call and reply</summary>
 
@@ -186,7 +368,7 @@
 
 </details>
 
-**5. `perform`**: OK open Color: the map named color menu
+**6. `perform`**: OK open Color: the map named color menu
 
 <details><summary>call and reply</summary>
 
@@ -194,6 +376,7 @@
 {
   "steps": [
     {"op": "send_mouse", "target": "color", "button": "left", "action": "down"},
+    {"op": "screen_wait", "screen": "color menu", "seconds": 60},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -202,21 +385,26 @@
 
 ```json
 {
-  "summary": "perform: 2 of 2 steps",
+  "summary": "perform: 3 of 3 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 251,5, program's own pointer not read; posted, unverified, 16 retraces to frame 416",
+        "summary": "send_mouse: pointer at 251,5, program's own pointer not read; posted, unverified, 16 retraces to frame 29",
         "status": "ok",
         "stop_seq": 18,
-        "cause": "the retrace the input's post ran to, at 0957:00000335"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'color menu': already on screen", "status": "ok"}
+    },
+    {
+      "step": 2,
       "op": "screen_map_find",
       "reply": {
         "summary": "screen_map_find: color menu (file), 2 controls",
@@ -234,7 +422,7 @@
       }
     }
   ],
-  "steps_total": 2,
+  "steps_total": 3,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
@@ -245,7 +433,7 @@
     "by_cause": {"the retrace the input's post ran to,": 1},
     "unaccounted": 15
   },
-  "steps_completed": 2,
+  "steps_completed": 3,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}
@@ -254,7 +442,7 @@
 
 </details>
 
-**6. `perform`**: OK choose Palette: the map named palette
+**7. `perform`**: OK choose Palette: the map named palette
 
 <details><summary>call and reply</summary>
 
@@ -263,6 +451,7 @@
   "steps": [
     {"op": "send_mouse", "target": "palette", "button": "left", "action": "up"},
     {"op": "run_to", "screen": "palette"},
+    {"op": "screen_wait", "screen": "palette", "seconds": 60},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -271,34 +460,29 @@
 
 ```json
 {
-  "summary": "perform: 3 of 3 steps",
+  "summary": "<volatile>",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 317,18, program's own pointer not read; posted, unverified, 20 retraces to frame 436",
-        "status": "ok",
-        "stop_seq": 38,
-        "cause": "the retrace the input's post ran to, at 153C:0000039A"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": 38, "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_to",
-      "reply": {
-        "summary": "run_to screen palette (judged): TARGET at 0DA7:000000C6",
-        "status": "ok",
-        "stop_seq": 39,
-        "cause": "the retrace a run to a screen ran to, at 0DA7:000000C6"
-      }
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": 39, "cause": "<volatile>"}
     },
     {
       "step": 2,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 3,
       "op": "screen_map_find",
       "reply": {
-        "summary": "screen_map_find: palette (file), 6 controls",
+        "summary": "<volatile>",
         "status": "ok",
         "matched": true,
         "screen": "palette",
@@ -317,7 +501,7 @@
       }
     }
   ],
-  "steps_total": 3,
+  "steps_total": 4,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
@@ -328,7 +512,7 @@
     "by_cause": {"the retrace the input's post ran to,": 1, "the retrace a run to a screen ran to,": 1},
     "unaccounted": 19
   },
-  "steps_completed": 3,
+  "steps_completed": 4,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}
@@ -337,7 +521,7 @@
 
 </details>
 
-**7. `perform`**: OK mix: the brown slot picked, and red's arrow held from the press to the release
+**8. `perform`**: OK mix: the brown slot picked, and red's arrow held until brown's red reached the top
 
 <details><summary>call and reply</summary>
 
@@ -345,8 +529,17 @@
 {
   "steps": [
     {"op": "send_mouse", "target": "brown", "button": "left"},
+    {"op": "watch_add", "ref": "31B2:31BC", "mode": "change", "fmt": "u8"},
     {"op": "send_mouse", "target": "red_up", "button": "left", "action": "down"},
-    {"op": "send_mouse", "button": "left", "action": "up"}
+    {
+      "op": "screen_wait",
+      "screen": "palette",
+      "on_watch": "31B2:31BC",
+      "condition": "b@31B2:31BC == 0x3f",
+      "seconds": 60
+    },
+    {"op": "send_mouse", "button": "left", "action": "up"},
+    {"op": "declaration_clear", "kind": "watch", "all": true}
   ],
   "summaries": true
 }
@@ -354,101 +547,81 @@
 
 ```json
 {
-  "summary": "perform: 3 of 3 steps",
+  "summary": "perform: 6 of 6 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; posted, unverified, 24 retraces to frame 461",
+        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; posted, unverified, 24 retraces to frame 74",
         "status": "ok",
         "stop_seq": 63,
-        "cause": "the retrace the input's post ran to, at 13F8:00000228"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 7,39, program's own pointer not read; posted, unverified, 20 retraces to frame 481",
-        "status": "ok",
-        "stop_seq": 83,
-        "cause": "the retrace the input's post ran to, at F000:0000CBE5"
-      }
+      "op": "watch_add",
+      "reply": {"summary": "watch_add 31B2:31BC: armed", "status": "ok"}
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 7,39; posted, unverified, 15 retraces to frame 496",
+        "summary": "send_mouse: pointer at 7,39, program's own pointer not read; posted, unverified, 22 retraces to frame 94",
         "status": "ok",
-        "units": "screen",
-        "button": "left",
-        "action": "up",
-        "route": "guest",
-        "pointer": {
-          "screen": {"x": 7, "y": 39, "width": 640, "height": 480},
-          "mouse": {"x": 60, "y": 316, "max_x": 5112, "max_y": 3832},
-          "buttons": [],
-          "bios_mode": "0x12"
-        },
-        "arrived": true,
-        "polls": 15,
-        "pc": "13F8:0000021D",
-        "cpu_mode": "real",
-        "stop_seq": 98,
-        "frame": 496,
-        "instruction": {
-          "address": "13F8:0000021D",
-          "bytes": "55",
-          "text": "push bp",
-          "flow": "sequential",
-          "code_bits": 16,
-          "bytes_from": "memory",
-          "symbol": {"available": false, "why": "no symbol table is loaded"},
-          "delta": {"available": false, "why": "no symbol table is loaded"}
-        },
-        "regs": {
-          "EAX": "0x00009fb8",
-          "EBX": "0x00000178",
-          "ECX": "0x005b0003",
-          "EDX": "0x00000000",
-          "ESI": "0x00009fd8",
-          "EDI": "0x00000000",
-          "EBP": "0x00009fbc",
-          "ESP": "0x00009faa",
-          "EIP": "0x0000021d",
-          "CS": "0x13f8",
-          "DS": "0x31b2",
-          "ES": "0x0000",
-          "FS": "0x0000",
-          "GS": "0x0000",
-          "SS": "0x31b2"
-        },
-        "watches": [],
-        "cause": "the retrace the input's post ran to, at 13F8:0000021D",
-        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-        "verify": {
-          "checked": false,
-          "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-        },
+        "stop_seq": 85,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 3,
+      "op": "screen_wait",
+      "reply": {
+        "summary": "screen_wait screen 'palette': found after 28 firings of watch '31B2:31BC'",
+        "status": "ok",
+        "stop_seq": 86,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 4,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 7,39; posted, unverified, 76 retraces to frame 115",
+        "status": "ok",
+        "stop_seq": 162,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 5,
+      "op": "declaration_clear",
+      "reply": {
+        "summary": "declaration_clear watch all: 1 cleared",
+        "status": "ok",
+        "declarations_cleared": 1,
+        "disarmed": ["BPMEM 31B2:31BC (3F)"],
         "session": {"alive": true, "running": false, "altered": false}
       }
     }
   ],
-  "steps_total": 3,
+  "steps_total": 6,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
     "stop_seq_first": 40,
-    "stop_seq_last": 98,
-    "surveyed": 3,
-    "by_cause": {"the retrace the input's post ran to,": 3},
-    "unaccounted": 56
+    "stop_seq_last": 162,
+    "surveyed": 4,
+    "by_cause": {
+      "the retrace the input's post ran to,": 1,
+      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 3
+    },
+    "unaccounted": 119
   },
-  "steps_completed": 3,
+  "steps_completed": 6,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}
@@ -457,7 +630,7 @@
 
 </details>
 
-**8. `palette`**: OK orange: the brown slot now holds #ff5500, orange
+**9. `palette`**: OK orange: the brown slot now holds #ff5500, orange
 
 <details><summary>call and reply</summary>
 
@@ -482,8 +655,8 @@
   "pel_mask": "ffh",
   "image": {
     "path": "./tmp/demos/dpaint_maps/orange.png",
-    "bytes": 927,
-    "sha256": "4f2ecf162576eca795550ef23660053e58ee706814419b700b766c0a5f0bd9f8",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 128,
     "height": 128,
     "scale": 8,
@@ -498,7 +671,7 @@ Also attached: image/png.
 
 </details>
 
-**9. `perform`**: OK sky, sun and sea: the map named paint: freehand, then paint: rectangle, then paint: circle, then paint: rectangle
+**10. `perform`**: OK sky, sun and sea: the map named paint: freehand, then paint: rectangle, then paint: circle, then paint: rectangle
 
 <details><summary>call and reply</summary>
 
@@ -506,12 +679,13 @@ Also attached: image/png.
 {
   "steps": [
     {"op": "send_mouse", "target": "ok", "button": "left"},
-    {"op": "run_for", "frames": 20},
+    {"op": "screen_wait", "screen": "paint: freehand", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "target": "rect_filled", "button": "left"},
     {"op": "send_mouse", "target": "brown", "button": "left"},
     {"op": "send_mouse", "x": 4, "y": 14, "button": "left", "action": "drag", "to_x": 587, "to_y": 259},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: rectangle", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "target": "circle_filled", "button": "left"},
     {"op": "send_mouse", "target": "yellow", "button": "left"},
@@ -525,11 +699,13 @@ Also attached: image/png.
       "to_y": 259
     },
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: circle", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "target": "rect_filled", "button": "left"},
     {"op": "send_mouse", "target": "blue", "button": "left"},
     {"op": "send_mouse", "x": 4, "y": 260, "button": "left", "action": "drag", "to_x": 587, "to_y": 475},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: rectangle", "seconds": 60},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -538,27 +714,27 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "perform: 18 of 18 steps",
+  "summary": "perform: 21 of 21 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 37,149, program's own pointer not read; posted, unverified, 25 retraces to frame 521",
+        "summary": "send_mouse: pointer at 37,149, program's own pointer not read; posted, unverified, 25 retraces to frame 140",
         "status": "ok",
-        "stop_seq": 123,
-        "cause": "the retrace the input's post ran to, at 0DA7:000000CB"
+        "stop_seq": 187,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {
-        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 100B:00000320",
+        "summary": "screen_wait screen 'paint: freehand': found after 2 retraces",
         "status": "ok",
-        "stop_seq": 124,
-        "cause": "the retrace run_for ran to, at 100B:00000320"
+        "stop_seq": 188,
+        "cause": "<volatile>"
       }
     },
     {
@@ -570,134 +746,149 @@ Also attached: image/png.
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 21 retraces to frame 562",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 23 retraces to frame 165",
         "status": "ok",
-        "stop_seq": 145,
-        "cause": "the retrace the input's post ran to, at 100B:0000037B"
+        "stop_seq": 211,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,448, program's own pointer not read; posted, unverified, 25 retraces to frame 587",
+        "summary": "send_mouse: pointer at 604,448, program's own pointer not read; posted, unverified, 25 retraces to frame 190",
         "status": "ok",
-        "stop_seq": 170,
-        "cause": "the retrace the input's post ran to, at 100B:00000338"
+        "stop_seq": 236,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 587,259, program's own pointer not read; posted, unverified, 30 retraces to frame 617",
+        "summary": "send_mouse: pointer at 587,259, program's own pointer not read; posted, unverified, 30 retraces to frame 220",
         "status": "ok",
-        "stop_seq": 200,
-        "cause": "the retrace the input's post ran to, at 0B94:00000244"
+        "stop_seq": 266,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 632",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 235",
         "status": "ok",
-        "stop_seq": 215,
-        "cause": "the retrace the input's post ran to, at 13F8:00000225"
+        "stop_seq": 281,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 7,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: paint: rectangle (file), 14 controls", "status": "ok"}
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: rectangle': already on screen", "status": "ok"}
     },
     {
       "step": 8,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 634,142, program's own pointer not read; posted, unverified, 25 retraces to frame 657",
-        "status": "ok",
-        "stop_seq": 240,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: paint: rectangle (file), 14 controls", "status": "ok"}
     },
     {
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 682",
+        "summary": "send_mouse: pointer at 634,142, program's own pointer not read; posted, unverified, 25 retraces to frame 260",
         "status": "ok",
-        "stop_seq": 265,
-        "cause": "the retrace the input's post ran to, at 100B:0000037B"
+        "stop_seq": 306,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 356,259, program's own pointer not read; posted, unverified, 30 retraces to frame 712",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 285",
         "status": "ok",
-        "stop_seq": 295,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 331,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 727",
+        "summary": "send_mouse: pointer at 356,259, program's own pointer not read; posted, unverified, 30 retraces to frame 315",
         "status": "ok",
-        "stop_seq": 310,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 361,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 12,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: paint: circle (file), 14 controls", "status": "ok"}
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 330",
+        "status": "ok",
+        "stop_seq": 376,
+        "cause": "<volatile>"
+      }
     },
     {
       "step": 13,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 25 retraces to frame 752",
-        "status": "ok",
-        "stop_seq": 335,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: circle': already on screen", "status": "ok"}
     },
     {
       "step": 14,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 604,344, program's own pointer not read; posted, unverified, 25 retraces to frame 777",
-        "status": "ok",
-        "stop_seq": 360,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: paint: circle (file), 14 controls", "status": "ok"}
     },
     {
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 587,475, program's own pointer not read; posted, unverified, 30 retraces to frame 807",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 25 retraces to frame 355",
         "status": "ok",
-        "stop_seq": 390,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 401,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 16,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 822",
+        "summary": "send_mouse: pointer at 604,344, program's own pointer not read; posted, unverified, 25 retraces to frame 380",
         "status": "ok",
-        "stop_seq": 405,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 426,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 17,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 587,475, program's own pointer not read; posted, unverified, 30 retraces to frame 410",
+        "status": "ok",
+        "stop_seq": 456,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 18,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 425",
+        "status": "ok",
+        "stop_seq": 471,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 19,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: rectangle': already on screen", "status": "ok"}
+    },
+    {
+      "step": 20,
       "op": "screen_map_find",
       "reply": {
         "summary": "screen_map_find: paint: rectangle (file), 14 controls",
@@ -727,18 +918,21 @@ Also attached: image/png.
       }
     }
   ],
-  "steps_total": 18,
+  "steps_total": 21,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 99,
-    "stop_seq_last": 405,
+    "stop_seq_first": 163,
+    "stop_seq_last": 471,
     "surveyed": 14,
-    "by_cause": {"the retrace the input's post ran to,": 13, "the retrace run_for ran to,": 1},
-    "unaccounted": 293
+    "by_cause": {
+      "the retrace the input's post ran to,": 13,
+      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 1
+    },
+    "unaccounted": 295
   },
-  "steps_completed": 18,
+  "steps_completed": 21,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}
@@ -747,7 +941,7 @@ Also attached: image/png.
 
 </details>
 
-**10. `perform`**: OK glints and hull: the map named paint: line, then paint: rectangle
+**11. `perform`**: OK glints and hull: the map named paint: line, then paint: rectangle
 
 <details><summary>call and reply</summary>
 
@@ -784,6 +978,7 @@ Also attached: image/png.
       "to_y": 296
     },
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: line", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "target": "rect_filled", "button": "left"},
     {"op": "send_mouse", "target": "black", "button": "left"},
@@ -797,6 +992,7 @@ Also attached: image/png.
       "to_y": 395
     },
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: rectangle", "seconds": 60},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -805,116 +1001,126 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "perform: 12 of 12 steps",
+  "summary": "perform: 14 of 14 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; posted, unverified, 25 retraces to frame 847",
+        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; posted, unverified, 25 retraces to frame 450",
         "status": "ok",
-        "stop_seq": 430,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 496,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 872",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 475",
         "status": "ok",
-        "stop_seq": 455,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 521,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 336,272, program's own pointer not read; posted, unverified, 30 retraces to frame 902",
+        "summary": "send_mouse: pointer at 336,272, program's own pointer not read; posted, unverified, 30 retraces to frame 505",
         "status": "ok",
-        "stop_seq": 485,
-        "cause": "the retrace the input's post ran to, at 100B:000002D1"
+        "stop_seq": 551,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 322,284, program's own pointer not read; posted, unverified, 30 retraces to frame 932",
+        "summary": "send_mouse: pointer at 322,284, program's own pointer not read; posted, unverified, 30 retraces to frame 535",
         "status": "ok",
-        "stop_seq": 515,
-        "cause": "the retrace the input's post ran to, at 100B:00000321"
+        "stop_seq": 581,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 308,296, program's own pointer not read; posted, unverified, 30 retraces to frame 962",
+        "summary": "send_mouse: pointer at 308,296, program's own pointer not read; posted, unverified, 30 retraces to frame 565",
         "status": "ok",
-        "stop_seq": 545,
-        "cause": "the retrace the input's post ran to, at 0E85:00000977"
+        "stop_seq": 611,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 977",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 580",
         "status": "ok",
-        "stop_seq": 560,
-        "cause": "the retrace the input's post ran to, at 0957:00000037"
+        "stop_seq": 626,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 6,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: paint: line (file), 14 controls", "status": "ok"}
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: line': already on screen", "status": "ok"}
     },
     {
       "step": 7,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 25 retraces to frame 1002",
-        "status": "ok",
-        "stop_seq": 585,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: paint: line (file), 14 controls", "status": "ok"}
     },
     {
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 1027",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 25 retraces to frame 605",
         "status": "ok",
-        "stop_seq": 610,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 651,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 180,395, program's own pointer not read; posted, unverified, 30 retraces to frame 1057",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 630",
         "status": "ok",
-        "stop_seq": 640,
-        "cause": "the retrace the input's post ran to, at 100B:000001C6"
+        "stop_seq": 676,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1072",
+        "summary": "send_mouse: pointer at 180,395, program's own pointer not read; posted, unverified, 30 retraces to frame 660",
         "status": "ok",
-        "stop_seq": 655,
-        "cause": "the retrace the input's post ran to, at 0957:00000047"
+        "stop_seq": 706,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 11,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 675",
+        "status": "ok",
+        "stop_seq": 721,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 12,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: rectangle': already on screen", "status": "ok"}
+    },
+    {
+      "step": 13,
       "op": "screen_map_find",
       "reply": {
         "summary": "screen_map_find: paint: rectangle (file), 14 controls",
@@ -944,18 +1150,18 @@ Also attached: image/png.
       }
     }
   ],
-  "steps_total": 12,
+  "steps_total": 14,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 406,
-    "stop_seq_last": 655,
+    "stop_seq_first": 472,
+    "stop_seq_last": 721,
     "surveyed": 10,
     "by_cause": {"the retrace the input's post ran to,": 10},
     "unaccounted": 240
   },
-  "steps_completed": 12,
+  "steps_completed": 14,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}
@@ -964,7 +1170,7 @@ Also attached: image/png.
 
 </details>
 
-**11. `perform`**: OK mast and sail: the map named paint: line, then paint: line
+**12. `perform`**: OK mast and sail: the map named paint: line, then paint: line
 
 <details><summary>call and reply</summary>
 
@@ -983,6 +1189,7 @@ Also attached: image/png.
       "to_y": 320
     },
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: line", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "target": "yellow", "button": "left"},
     {
@@ -1004,6 +1211,7 @@ Also attached: image/png.
       "to_y": 374
     },
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: line", "seconds": 60},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -1012,96 +1220,106 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "perform: 10 of 10 steps",
+  "summary": "perform: 12 of 12 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; posted, unverified, 25 retraces to frame 1097",
+        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; posted, unverified, 25 retraces to frame 700",
         "status": "ok",
-        "stop_seq": 680,
-        "cause": "the retrace the input's post ran to, at 13F8:000002CC"
+        "stop_seq": 746,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 1122",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 725",
         "status": "ok",
-        "stop_seq": 705,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 771,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 140,320, program's own pointer not read; posted, unverified, 30 retraces to frame 1152",
+        "summary": "send_mouse: pointer at 140,320, program's own pointer not read; posted, unverified, 30 retraces to frame 755",
         "status": "ok",
-        "stop_seq": 735,
-        "cause": "the retrace the input's post ran to, at 13F8:00000225"
+        "stop_seq": 801,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1167",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 770",
         "status": "ok",
-        "stop_seq": 750,
-        "cause": "the retrace the input's post ran to, at 0957:00000041"
+        "stop_seq": 816,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 4,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: paint: line (file), 14 controls", "status": "ok"}
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: line': already on screen", "status": "ok"}
     },
     {
       "step": 5,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 1192",
-        "status": "ok",
-        "stop_seq": 775,
-        "cause": "the retrace the input's post ran to, at 0957:00000058"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: paint: line (file), 14 controls", "status": "ok"}
     },
     {
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 176,374, program's own pointer not read; posted, unverified, 30 retraces to frame 1222",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 795",
         "status": "ok",
-        "stop_seq": 805,
-        "cause": "the retrace the input's post ran to, at 0B94:0000023B"
+        "stop_seq": 841,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 142,374, program's own pointer not read; posted, unverified, 30 retraces to frame 1252",
+        "summary": "send_mouse: pointer at 176,374, program's own pointer not read; posted, unverified, 30 retraces to frame 825",
         "status": "ok",
-        "stop_seq": 835,
-        "cause": "the retrace the input's post ran to, at 0B94:00000207"
+        "stop_seq": 871,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1267",
+        "summary": "send_mouse: pointer at 142,374, program's own pointer not read; posted, unverified, 30 retraces to frame 855",
         "status": "ok",
-        "stop_seq": 850,
-        "cause": "the retrace the input's post ran to, at 0957:0000004F"
+        "stop_seq": 901,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 9,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 870",
+        "status": "ok",
+        "stop_seq": 916,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 10,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: line': already on screen", "status": "ok"}
+    },
+    {
+      "step": 11,
       "op": "screen_map_find",
       "reply": {
         "summary": "screen_map_find: paint: line (file), 14 controls",
@@ -1131,18 +1349,18 @@ Also attached: image/png.
       }
     }
   ],
-  "steps_total": 10,
+  "steps_total": 12,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 656,
-    "stop_seq_last": 850,
+    "stop_seq_first": 722,
+    "stop_seq_last": 916,
     "surveyed": 8,
     "by_cause": {"the retrace the input's post ran to,": 8},
     "unaccounted": 187
   },
-  "steps_completed": 10,
+  "steps_completed": 12,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}
@@ -1151,7 +1369,7 @@ Also attached: image/png.
 
 </details>
 
-**12. `perform`**: OK SCRY: the map named paint: text, then paint: freehand
+**13. `perform`**: OK SCRY: the map named paint: text, then paint: freehand
 
 <details><summary>call and reply</summary>
 
@@ -1161,11 +1379,13 @@ Also attached: image/png.
     {"op": "send_mouse", "target": "black", "button": "left"},
     {"op": "send_mouse", "target": "text", "button": "left"},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: text", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "x": 40, "y": 60, "button": "left"},
     {"op": "send_keys", "keys": ["S", "C", "R", "Y"], "modifiers": ["shift"]},
     {"op": "send_mouse", "target": "freehand", "button": "left"},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: freehand", "seconds": 60},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -1174,86 +1394,96 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "perform: 9 of 9 steps",
+  "summary": "perform: 11 of 11 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 1292",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 895",
         "status": "ok",
-        "stop_seq": 875,
-        "cause": "the retrace the input's post ran to, at 0957:00000058"
+        "stop_seq": 941,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 629,185, program's own pointer not read; posted, unverified, 25 retraces to frame 1317",
+        "summary": "send_mouse: pointer at 629,185, program's own pointer not read; posted, unverified, 25 retraces to frame 920",
         "status": "ok",
-        "stop_seq": 900,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 966,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1332",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 935",
         "status": "ok",
-        "stop_seq": 915,
-        "cause": "the retrace the input's post ran to, at 100B:00000320"
+        "stop_seq": 981,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 3,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: text': already on screen", "status": "ok"}
+    },
+    {
+      "step": 4,
       "op": "screen_map_find",
       "reply": {"summary": "screen_map_find: paint: text (file), 14 controls", "status": "ok"}
     },
     {
-      "step": 4,
+      "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 40,60, program's own pointer not read; posted, unverified, 25 retraces to frame 1357",
+        "summary": "send_mouse: pointer at 40,60, program's own pointer not read; posted, unverified, 25 retraces to frame 960",
         "status": "ok",
-        "stop_seq": 940,
-        "cause": "the retrace the input's post ran to, at 100B:000002CE"
-      }
-    },
-    {
-      "step": 5,
-      "op": "send_keys",
-      "reply": {
-        "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 1407",
-        "status": "ok",
-        "stop_seq": 990,
-        "cause": "the retrace the input's post ran to, at 0957:00000029"
+        "stop_seq": 1006,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 6,
-      "op": "send_mouse",
+      "op": "send_keys",
       "reply": {
-        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; posted, unverified, 25 retraces to frame 1432",
+        "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 1010",
         "status": "ok",
-        "stop_seq": 1015,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 1056,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1447",
+        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; posted, unverified, 25 retraces to frame 1035",
         "status": "ok",
-        "stop_seq": 1030,
-        "cause": "the retrace the input's post ran to, at 100B:00000328"
+        "stop_seq": 1081,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 8,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1050",
+        "status": "ok",
+        "stop_seq": 1096,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 9,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: freehand': already on screen", "status": "ok"}
+    },
+    {
+      "step": 10,
       "op": "screen_map_find",
       "reply": {
         "summary": "screen_map_find: paint: freehand (file), 14 controls",
@@ -1283,18 +1513,18 @@ Also attached: image/png.
       }
     }
   ],
-  "steps_total": 9,
+  "steps_total": 11,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 851,
-    "stop_seq_last": 1030,
+    "stop_seq_first": 917,
+    "stop_seq_last": 1096,
     "surveyed": 7,
     "by_cause": {"the retrace the input's post ran to,": 7},
     "unaccounted": 173
   },
-  "steps_completed": 9,
+  "steps_completed": 11,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}
@@ -1303,7 +1533,7 @@ Also attached: image/png.
 
 </details>
 
-**13. `perform`**: OK flip the boat: the map named paint: grab, then paint: custom brush, then brush menu, then paint: custom brush, then paint: custom brush
+**14. `perform`**: OK flip the boat: the map named paint: grab, then paint: custom brush, then brush menu, then paint: custom brush, then paint: custom brush
 
 <details><summary>call and reply</summary>
 
@@ -1312,6 +1542,7 @@ Also attached: image/png.
   "steps": [
     {"op": "send_mouse", "target": "brush_grab", "button": "left"},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: grab", "seconds": 60},
     {"op": "screen_map_find"},
     {
       "op": "send_mouse",
@@ -1322,18 +1553,19 @@ Also attached: image/png.
       "to_x": 184,
       "to_y": 399
     },
-    {"op": "run_for", "frames": 10},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: custom brush", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "target": "brush", "button": "left", "action": "down"},
+    {"op": "screen_wait", "screen": "brush menu", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "target": "flip_horizontal", "button": "left", "action": "up"},
-    {"op": "run_for", "frames": 20},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: custom brush", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "x": 440, "y": 357, "button": "left"},
-    {"op": "run_for", "frames": 10},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: custom brush", "seconds": 60},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -1342,151 +1574,151 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "perform: 17 of 17 steps",
+  "summary": "perform: 19 of 19 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; posted, unverified, 25 retraces to frame 1472",
+        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; posted, unverified, 25 retraces to frame 1075",
         "status": "ok",
-        "stop_seq": 1055,
-        "cause": "the retrace the input's post ran to, at 13F8:00000220"
+        "stop_seq": 1121,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1487",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1090",
         "status": "ok",
-        "stop_seq": 1070,
-        "cause": "the retrace the input's post ran to, at 100B:0000032D"
+        "stop_seq": 1136,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 2,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: grab': already on screen", "status": "ok"}
+    },
+    {
+      "step": 3,
       "op": "screen_map_find",
       "reply": {"summary": "screen_map_find: paint: grab (file), 14 controls", "status": "ok"}
     },
     {
-      "step": 3,
+      "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; posted, unverified, 30 retraces to frame 1517",
+        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; posted, unverified, 30 retraces to frame 1120",
         "status": "ok",
-        "stop_seq": 1100,
-        "cause": "the retrace the input's post ran to, at 100B:0000023A"
-      }
-    },
-    {
-      "step": 4,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 100B:00000240",
-        "status": "ok",
-        "stop_seq": 1101,
-        "cause": "the retrace run_for ran to, at 100B:00000240"
+        "stop_seq": 1166,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1538",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1135",
         "status": "ok",
-        "stop_seq": 1112,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 1181,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 6,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: custom brush': already on screen", "status": "ok"}
+    },
+    {
+      "step": 7,
       "op": "screen_map_find",
       "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
     },
     {
-      "step": 7,
+      "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1558",
+        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1155",
         "status": "ok",
-        "stop_seq": 1132,
-        "cause": "the retrace the input's post ran to, at 0957:0000035D"
+        "stop_seq": 1201,
+        "cause": "<volatile>"
       }
-    },
-    {
-      "step": 8,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: brush menu (file), 2 controls", "status": "ok"}
     },
     {
       "step": 9,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; posted, unverified, 20 retraces to frame 1578",
-        "status": "ok",
-        "stop_seq": 1152,
-        "cause": "the retrace the input's post ran to, at 0DA7:00000337"
-      }
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'brush menu': already on screen", "status": "ok"}
     },
     {
       "step": 10,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 19A7:0000019E",
-        "status": "ok",
-        "stop_seq": 1153,
-        "cause": "the retrace run_for ran to, at 19A7:0000019E"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: brush menu (file), 2 controls", "status": "ok"}
     },
     {
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1609",
+        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; posted, unverified, 20 retraces to frame 1175",
         "status": "ok",
-        "stop_seq": 1164,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 1221,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 12,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1190",
+        "status": "ok",
+        "stop_seq": 1236,
+        "cause": "<volatile>"
+      }
     },
     {
       "step": 13,
-      "op": "send_mouse",
+      "op": "screen_wait",
       "reply": {
-        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; posted, unverified, 25 retraces to frame 1634",
+        "summary": "screen_wait screen 'paint: custom brush': found after 10 retraces",
         "status": "ok",
-        "stop_seq": 1189,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 1237,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 14,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at F000:0000CFC5",
-        "status": "ok",
-        "stop_seq": 1190,
-        "cause": "the retrace run_for ran to, at F000:0000CFC5"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
     },
     {
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1655",
+        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; posted, unverified, 21 retraces to frame 1221",
         "status": "ok",
-        "stop_seq": 1201,
-        "cause": "the retrace the input's post ran to, at 100B:00000324"
+        "stop_seq": 1258,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 16,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1236",
+        "status": "ok",
+        "stop_seq": 1273,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 17,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: custom brush': already on screen", "status": "ok"}
+    },
+    {
+      "step": 18,
       "op": "screen_map_find",
       "reply": {
         "summary": "screen_map_find: paint: custom brush (file), 14 controls",
@@ -1516,18 +1748,21 @@ Also attached: image/png.
       }
     }
   ],
-  "steps_total": 17,
+  "steps_total": 19,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 1031,
-    "stop_seq_last": 1201,
-    "surveyed": 12,
-    "by_cause": {"the retrace the input's post ran to,": 9, "the retrace run_for ran to,": 3},
-    "unaccounted": 159
+    "stop_seq_first": 1097,
+    "stop_seq_last": 1273,
+    "surveyed": 10,
+    "by_cause": {
+      "the retrace the input's post ran to,": 9,
+      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 1
+    },
+    "unaccounted": 167
   },
-  "steps_completed": 17,
+  "steps_completed": 19,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}
@@ -1536,7 +1771,7 @@ Also attached: image/png.
 
 </details>
 
-**14. `perform`**: OK Pict, and the brush put down: the map named pict menu, then paint: custom brush, then paint: freehand
+**15. `perform`**: OK Pict, and the brush put down: the map named pict menu, then paint: custom brush, then paint: freehand
 
 <details><summary>call and reply</summary>
 
@@ -1544,14 +1779,16 @@ Also attached: image/png.
 {
   "steps": [
     {"op": "send_mouse", "target": "pict", "button": "left", "action": "down"},
+    {"op": "screen_wait", "screen": "pict menu", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "button": "left", "action": "up"},
-    {"op": "run_for", "frames": 10},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: custom brush", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "target": "brush_dot", "button": "left"},
     {"op": "send_mouse", "target": "freehand", "button": "left"},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: freehand", "seconds": 60},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -1560,91 +1797,96 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "perform: 10 of 10 steps",
+  "summary": "perform: 12 of 12 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 119,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1675",
+        "summary": "send_mouse: pointer at 119,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1256",
         "status": "ok",
-        "stop_seq": 1221,
-        "cause": "the retrace the input's post ran to, at 0957:00000337"
+        "stop_seq": 1293,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'pict menu': already on screen", "status": "ok"}
+    },
+    {
+      "step": 2,
       "op": "screen_map_find",
       "reply": {"summary": "screen_map_find: pict menu (file), 1 control", "status": "ok"}
     },
     {
-      "step": 2,
+      "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 119,5; posted, unverified, 15 retraces to frame 1690",
+        "summary": "send_mouse: pointer at 119,5; posted, unverified, 15 retraces to frame 1271",
         "status": "ok",
-        "stop_seq": 1236,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 3,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 100B:0000023C",
-        "status": "ok",
-        "stop_seq": 1237,
-        "cause": "the retrace run_for ran to, at 100B:0000023C"
+        "stop_seq": 1308,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1711",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1286",
         "status": "ok",
-        "stop_seq": 1248,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 1323,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 5,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: custom brush': already on screen", "status": "ok"}
     },
     {
       "step": 6,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 599,21, program's own pointer not read; posted, unverified, 25 retraces to frame 1736",
-        "status": "ok",
-        "stop_seq": 1273,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
     },
     {
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; posted, unverified, 25 retraces to frame 1761",
+        "summary": "send_mouse: pointer at 599,21, program's own pointer not read; posted, unverified, 25 retraces to frame 1311",
         "status": "ok",
-        "stop_seq": 1298,
-        "cause": "the retrace the input's post ran to, at 13F8:00000225"
+        "stop_seq": 1348,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1776",
+        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; posted, unverified, 25 retraces to frame 1336",
         "status": "ok",
-        "stop_seq": 1313,
-        "cause": "the retrace the input's post ran to, at 13F8:0000021D"
+        "stop_seq": 1373,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 9,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1351",
+        "status": "ok",
+        "stop_seq": 1388,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 10,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: freehand': already on screen", "status": "ok"}
+    },
+    {
+      "step": 11,
       "op": "screen_map_find",
       "reply": {
         "summary": "screen_map_find: paint: freehand (file), 14 controls",
@@ -1674,18 +1916,18 @@ Also attached: image/png.
       }
     }
   ],
-  "steps_total": 10,
+  "steps_total": 12,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 1202,
-    "stop_seq_last": 1313,
-    "surveyed": 7,
-    "by_cause": {"the retrace the input's post ran to,": 6, "the retrace run_for ran to,": 1},
-    "unaccounted": 105
+    "stop_seq_first": 1274,
+    "stop_seq_last": 1388,
+    "surveyed": 6,
+    "by_cause": {"the retrace the input's post ran to,": 6},
+    "unaccounted": 109
   },
-  "steps_completed": 10,
+  "steps_completed": 12,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}
@@ -1694,7 +1936,7 @@ Also attached: image/png.
 
 </details>
 
-**15. `screen_view`**: OK word row: the row reads frame x 4, then orange x 37, then black x 4, then orange x 3, then black x 2, then orange x 6, then black x 5, then orange x 4, then black x 5, then orange x 518, then frame x 4
+**16. `screen_view`**: OK word row: the row reads frame x 4, then orange x 37, then black x 4, then orange x 3, then black x 2, then orange x 6, then black x 5, then orange x 4, then black x 5, then orange x 518, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -1721,8 +1963,8 @@ Also attached: image/png.
   "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/row-57.png",
-    "bytes": 866,
-    "sha256": "c6542d54e76dc4220a85b889e41406d264ff5633e3602ed525a1d907bfe5b87a",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 592,
     "height": 1,
     "scale": 1,
@@ -1737,7 +1979,7 @@ Also attached: image/png.
 
 </details>
 
-**16. `screen_view`**: OK sun row: the row reads frame x 4, then orange x 239, then yellow x 107, then orange x 238, then frame x 4
+**17. `screen_view`**: OK sun row: the row reads frame x 4, then orange x 239, then yellow x 107, then orange x 238, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -1764,8 +2006,8 @@ Also attached: image/png.
   "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/row-230.png",
-    "bytes": 862,
-    "sha256": "bfe6a11d2b399d1cdf990309472e3e7a319dd0189e1d9d4e6b92038a2fa738fb",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 592,
     "height": 1,
     "scale": 1,
@@ -1780,7 +2022,7 @@ Also attached: image/png.
 
 </details>
 
-**17. `screen_view`**: OK glint row: the row reads frame x 4, then blue x 252, then yellow x 81, then blue x 251, then frame x 4
+**18. `screen_view`**: OK glint row: the row reads frame x 4, then blue x 252, then yellow x 81, then blue x 251, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -1807,8 +2049,8 @@ Also attached: image/png.
   "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/row-272.png",
-    "bytes": 862,
-    "sha256": "374cb4507607384f48ae431769a8f6e8b5eb9bbbccd82e1efc1dd34324ea8338",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 592,
     "height": 1,
     "scale": 1,
@@ -1823,7 +2065,7 @@ Also attached: image/png.
 
 </details>
 
-**18. `screen_view`**: OK sail row: the row reads frame x 4, then blue x 136, then black x 1, then blue x 19, then yellow x 1, then blue x 258, then yellow x 1, then blue x 20, then black x 1, then blue x 147, then frame x 4
+**19. `screen_view`**: OK sail row: the row reads frame x 4, then blue x 136, then black x 1, then blue x 19, then yellow x 1, then blue x 258, then yellow x 1, then blue x 20, then black x 1, then blue x 147, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -1850,8 +2092,8 @@ Also attached: image/png.
   "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/row-350.png",
-    "bytes": 870,
-    "sha256": "7f67bd1cbb6676a90f1e71a5f7e425c7fce85cdd9ea47569d54a0f95b623ebba",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 592,
     "height": 1,
     "scale": 1,
@@ -1866,7 +2108,7 @@ Also attached: image/png.
 
 </details>
 
-**19. `screen_view`**: OK hull row: the row reads frame x 4, then blue x 96, then black x 81, then blue x 219, then black x 81, then blue x 107, then frame x 4
+**20. `screen_view`**: OK hull row: the row reads frame x 4, then blue x 96, then black x 81, then blue x 219, then black x 81, then blue x 107, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -1893,8 +2135,8 @@ Also attached: image/png.
   "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/row-388.png",
-    "bytes": 865,
-    "sha256": "0c6260b94b81920b1dfb89b6a5be77c7c9189dd446187bab6b6218814634051f",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 592,
     "height": 1,
     "scale": 1,
@@ -1909,7 +2151,7 @@ Also attached: image/png.
 
 </details>
 
-**20. `screen_view`**: OK screen: mode M_EGA, 640x480 by palette index
+**21. `screen_view`**: OK screen: mode M_EGA, 640x480 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -1933,8 +2175,8 @@ Also attached: image/png.
   "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/screen.png",
-    "bytes": 4012,
-    "sha256": "64514af0c959a72efb2abe3dc58abdcc5190cb5acca2009d633537ca1fe08d7a",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 640,
     "height": 480,
     "scale": 1,
@@ -1950,7 +2192,7 @@ Also attached: image/png.
 
 </details>
 
-**21. `close`**: OK close: closed: quit
+**22. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
@@ -1975,7 +2217,7 @@ Also attached: image/png.
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
-  "draft": ["start/dp"],
+  "draft": "<volatile>",
   "session": {"alive": false, "running": false, "altered": false}
 }
 ```

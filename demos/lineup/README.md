@@ -11,8 +11,10 @@ from `scry_core.games.lineup`, whose symbols and screens this script shares.
 
 The script runs to the routine that draws the high scores by name, drops a coin and reads the
 credits the game counted, starts a game, runs to the routine that writes its level, and plays: one
-column right, the next colour, a shot, each read back off the player's own variables. Each screen it
-arrives at is recognised off the game's map, signed in palette indices, because the VGA's 6-bit DAC
+column right, the next colour, a shot, each read back off the player's own variables once the
+frame that took the move has run (`Gest_Scores`, by name). Every arrival is the game's own code,
+never a time: each screen is waited for at the frame after the game's tick (`Check_Money100`), and
+recognised off the game's map, signed in palette indices, because the VGA's 6-bit DAC
 and the arcade's 5-bit palette show the same pixels in slightly different colours. Then the demo
 records two seconds of the stage's music off the Sound Blaster and holds it, sample for sample, to
 [`music.wav`](music.wav) beside this file.
@@ -51,7 +53,9 @@ Give this to an MCP client with this server connected:
 
 > Derive the live session's conf with the game's own `SCRIPTS/dosbox-x-mcp-conf.sh`, its
 > `DOSBOX_GUEST` set to this server's guest directory. Start the session from the profile `dos`,
-> the game's own `.scry/start/dos.json`, with this run's captures directory. Load the game's map
+> the game's own `.scry/start/dos.json`, on the normal core and with this run's captures directory.
+> Stop at the game's first DOS call of its own (`INT 21h AH=62h`) so its map is placed, and clear
+> that stop. Load the game's map
 > from its `.scry/maps/`. Replay the script its `.scry/perform/dos.json` declares with `perform`.
 > Record two seconds of sound, measure it and compare it with `music.wav`, take a picture of the
 > screen and close the session.
@@ -76,9 +80,9 @@ such as `./tmp/demos/lineup/music.wav` or `./demos/lineup/music.wav`, are shown 
 repository root, and the tools themselves take absolute paths.
 
 <!-- demo-transcript:begin -->
-The run is 9 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 11 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
-**4. `perform`**: OK script: 26 steps of the game's own document, 21 holding to it
+**6. `perform`**: OK script: 34 steps of the game's own document, 21 holding to it
 
 `perform` replays the script the game's own `.scry/perform/` declares, in one call: the same symbols, screens and inputs, each step held to what the document records.
 
@@ -93,205 +97,171 @@ The run is 9 calls; these are the ones that show how it is done, and every call 
 
 ```json
 {
-  "summary": "perform: 26 of 26 steps",
+  "summary": "perform: 34 of 34 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "run_to",
       "reply": {
-        "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 1",
+        "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 250",
         "status": "ok",
         "stop_seq": 3,
-        "cause": "run_to's target Draw_High_Scores_Screen at 08EB:00001DF6"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 1500 ms: ELAPSED, 106 polls, at 08EB:00001CA9",
-        "status": "ok",
-        "stop_seq": 4,
-        "cause": "the retrace run_for ran to, at 08EB:00001CA9"
-      }
+      "op": "breakpoint_at",
+      "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 2,
+      "op": "screen_wait",
+      "reply": {
+        "summary": "screen_wait screen 'hiscores': found after 2 firings of breakpoint 'Check_Money100'",
+        "status": "ok",
+        "stop_seq": 4,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 3,
+      "op": "declaration_clear",
+      "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
+    },
+    {
+      "step": 4,
       "op": "screen_map_find",
       "reply": {"summary": "screen_map_find: hiscores (file), 2 controls", "status": "ok"}
     },
     {
-      "step": 3,
+      "step": 5,
       "op": "read_memory",
       "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0000", "status": "ok"}
     },
     {
-      "step": 4,
+      "step": 6,
       "op": "send_keys",
       "reply": {
-        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 462",
+        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 361",
         "status": "ok",
         "stop_seq": 10,
-        "cause": "the retrace the input's post ran to, at F000:0000CA40"
+        "cause": "<volatile>"
       }
-    },
-    {
-      "step": 5,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 1000 ms: ELAPSED, 71 polls, at 08EB:00001CA9",
-        "status": "ok",
-        "stop_seq": 11,
-        "cause": "the retrace run_for ran to, at 08EB:00001CA9"
-      }
-    },
-    {
-      "step": 6,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: insert (file), 2 controls", "status": "ok"}
     },
     {
       "step": 7,
-      "op": "read_memory",
-      "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0300", "status": "ok"}
+      "op": "breakpoint_at",
+      "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 8,
-      "op": "send_keys",
+      "op": "screen_wait",
       "reply": {
-        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 539",
+        "summary": "screen_wait screen 'insert': found after 1 firing of breakpoint 'Check_Money100'",
         "status": "ok",
-        "stop_seq": 17,
-        "cause": "the retrace the input's post ran to, at 08EB:00009243"
+        "stop_seq": 11,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 9,
-      "op": "run_to",
-      "reply": {
-        "summary": "run_to Level_Write: TARGET at 08EB:000058FE, control counted 0",
-        "status": "ok",
-        "stop_seq": 18,
-        "cause": "run_to's target Level_Write at 08EB:000058FE"
-      }
+      "op": "declaration_clear",
+      "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 10,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:000004AC",
-        "status": "ok",
-        "stop_seq": 19,
-        "cause": "the retrace run_for ran to, at 08EB:000004AC"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: insert (file), 2 controls", "status": "ok"}
     },
     {
       "step": 11,
+      "op": "read_memory",
+      "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0300", "status": "ok"}
+    },
+    {
+      "step": 12,
+      "op": "send_keys",
+      "reply": {
+        "summary": "send_keys (guest): posted, unverified, 9 retraces to frame 371",
+        "status": "ok",
+        "stop_seq": 20,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 13,
+      "op": "run_to",
+      "reply": {
+        "summary": "run_to Level_Write: TARGET at 08EB:000058FE, control counted 7",
+        "status": "ok",
+        "stop_seq": 21,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 14,
+      "op": "breakpoint_at",
+      "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
+    },
+    {
+      "step": 15,
+      "op": "screen_wait",
+      "reply": {
+        "summary": "screen_wait screen 'level': found after 1 firing of breakpoint 'Check_Money100'",
+        "status": "ok",
+        "stop_seq": 22,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 16,
+      "op": "declaration_clear",
+      "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
+    },
+    {
+      "step": 17,
       "op": "screen_map_find",
       "reply": {"summary": "screen_map_find: level (file), 3 controls", "status": "ok"}
     },
     {
-      "step": 12,
+      "step": 18,
       "op": "read_memory",
       "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0200", "status": "ok"}
     },
     {
-      "step": 13,
+      "step": 19,
       "op": "read_memory",
       "reply": {"summary": "read_memory Stage_Act: 2 bytes at 08EB:0000B0D8: 0000", "status": "ok"}
     },
     {
-      "step": 14,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 3000 ms: ELAPSED, 211 polls, at 08EB:000086A8",
-        "status": "ok",
-        "stop_seq": 20,
-        "cause": "the retrace run_for ran to, at 08EB:000086A8"
-      }
-    },
-    {
-      "step": 15,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: play (file), 3 controls", "status": "ok"}
-    },
-    {
-      "step": 16,
-      "op": "read_memory",
-      "reply": {
-        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010003000100000003000000",
-        "status": "ok"
-      }
-    },
-    {
-      "step": 17,
-      "op": "send_keys",
-      "reply": {
-        "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 789",
-        "status": "ok",
-        "stop_seq": 36,
-        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
-      }
-    },
-    {
-      "step": 18,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:000004AC",
-        "status": "ok",
-        "stop_seq": 37,
-        "cause": "the retrace run_for ran to, at 08EB:000004AC"
-      }
-    },
-    {
-      "step": 19,
-      "op": "read_memory",
-      "reply": {
-        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000100000003000000",
-        "status": "ok"
-      }
-    },
-    {
       "step": 20,
-      "op": "send_keys",
-      "reply": {
-        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 810",
-        "status": "ok",
-        "stop_seq": 43,
-        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
-      }
+      "op": "breakpoint_at",
+      "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 21,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {
-        "summary": "run_for 200 ms: ELAPSED, 15 polls, at 08EB:00008621",
+        "summary": "screen_wait screen 'play': found after 150 firings of breakpoint 'Check_Money100'",
         "status": "ok",
-        "stop_seq": 44,
-        "cause": "the retrace run_for ran to, at 08EB:00008621"
+        "stop_seq": 23,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 22,
-      "op": "read_memory",
-      "reply": {
-        "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000200000003000000",
-        "status": "ok"
-      }
+      "op": "declaration_clear",
+      "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 23,
-      "op": "send_keys",
-      "reply": {
-        "summary": "send_keys (guest): posted, unverified, 16 retraces to frame 841",
-        "status": "ok",
-        "stop_seq": 60,
-        "cause": "the retrace the input's post ran to, at 08EB:000004AC"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: play (file), 3 controls", "status": "ok"}
     },
     {
-      "step": 25,
+      "step": 33,
       "op": "read_memory",
       "reply": {
         "summary": "read_memory Player1: 12 bytes at 08EB:0000AE32: 010004000200040003000200",
@@ -304,23 +274,24 @@ The run is 9 calls; these are the ones that show how it is done, and every call 
       }
     }
   ],
-  "steps_total": 26,
+  "steps_total": 34,
   "truncated": true,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
     "stop_seq_first": 3,
-    "stop_seq_last": 61,
+    "stop_seq_last": 72,
     "surveyed": 14,
     "by_cause": {
       "run_to's target Draw_High_Scores_Screen": 1,
-      "the retrace run_for ran to,": 7,
+      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 4,
       "the retrace the input's post ran to,": 5,
-      "run_to's target Level_Write": 1
+      "run_to's target Level_Write": 1,
+      "run_to's target Gest_Scores": 3
     },
-    "unaccounted": 45
+    "unaccounted": 56
   },
-  "steps_completed": 26,
+  "steps_completed": 34,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 21,
   "session": {"alive": true, "running": false, "altered": false}
@@ -329,7 +300,7 @@ The run is 9 calls; these are the ones that show how it is done, and every call 
 
 </details>
 
-**7. `audio_compare`**: OK exact: the recording is music.wav, sample for sample
+**9. `audio_compare`**: OK exact: the recording is music.wav, sample for sample
 
 The recording is compared with the platform's reference with alignment off: `exact` is true only when every sample is equal, so a changed sound, a different mixer or a drifted start fails the run.
 

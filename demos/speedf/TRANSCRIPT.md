@@ -6,6 +6,7 @@
 {
   "profile": "<host>",
   "shared": true,
+  "flags": ["-set", "cpu core=normal", "-set", "cpu cycles=fixed 50000"],
   "captures_dir": "<host>",
   "cwd": "<host>"
 }
@@ -17,7 +18,7 @@
   "status": "ok",
   "pid": "<volatile>",
   "conf": "<volatile>",
-  "conf_digest": "fa6947f920eb337d",
+  "conf_digest": "<volatile>",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -46,7 +47,6 @@
       "why": "the table carries no symbol kinds (a link map lists none), so its code symbols cannot be told from the rest"
     }
   },
-  "note": "this session runs the dynamic core, which checks breakpoints only between compiled blocks, so a code breakpoint inside one can be passed over and a run that never reaches it proves nothing. Start on the normal core: `start(flags=[\"-set\", \"cpu core=normal\"])`",
   "kept": "kept 1 (promote to review)",
   "profile": {
     "name": "<volatile>",
@@ -59,45 +59,73 @@
 
 </details>
 
-**2. `run_for`**: OK boot: booted: DOS running the game, its map placed at segment 08EB, 294 symbols
+**2. `breakpoint_interrupt`**: OK loaded: a stop on BPINT 10 AH=4F
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "milliseconds": 5000,
+  "number": 16,
+  "ah": 79
+}
+```
+
+```json
+{
+  "summary": "breakpoint_interrupt BPINT 10 AH=4F: stored",
+  "status": "ok",
+  "ref": "BPINT 10 AH=4F",
+  "stored": true,
+  "armed": true,
+  "entry": "BPINT 10 AH=4F",
+  "omitted": ["output", "output_chars", "clipped"],
+  "how": "detail=True adds what the debugger printed for this command",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**3. `resume`**: OK boot: stopped inside the game: its map placed at segment 08EB, 294 symbols
+
+<details><summary>call and reply</summary>
+
+```json
+{
   "seconds": 120
 }
 ```
 
 ```json
 {
-  "summary": "run_for 5000 ms: ELAPSED, 351 polls, at 15FC:0000002D",
+  "summary": "resume: OTHER_STOP, stopped at 08EE:00000022",
   "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 351,
-  "pc": "15FC:0000002D",
+  "verdict": "OTHER_STOP",
+  "omitted": ["output", "output_chars", "clipped"],
+  "how": "detail=True adds what the debugger printed for this command",
+  "waited_s": "<volatile>",
+  "pc": "08EE:00000022",
   "cpu_mode": "real",
-  "frame": 351,
+  "frame": 1,
   "regs": {
-    "EAX": "0x00000000",
+    "EAX": "0x00004f01",
     "EBX": "0x00000000",
-    "ECX": "0x005b005a",
-    "EDX": "0x00000000",
-    "ESI": "0x0000b8a6",
-    "EDI": "0xe0068998",
-    "EBP": "0x00000035",
-    "ESP": "0x0000b158",
-    "EIP": "0x0000002d",
-    "CS": "0x15fc",
-    "DS": "0x397e",
-    "ES": "0x491e",
-    "FS": "0x0008",
-    "GS": "0x1b73",
+    "ECX": "0x005b0110",
+    "EDX": "0x000008db",
+    "ESI": "0x00000000",
+    "EDI": "0x0000a000",
+    "EBP": "0x0000b1aa",
+    "ESP": "0x0000b1a2",
+    "EIP": "0x00000022",
+    "CS": "0x08ee",
+    "DS": "0x1b73",
+    "ES": "0x1b73",
+    "FS": "0x0000",
+    "GS": "0x0000",
     "SS": "0x1b73"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 15FC:0000002D",
+  "cause": "most likely the held `BPINT 10 AH=4F`: the guest is at `int 10`, at 08EE:00000022",
   "e9": {
     "lines_total": 1,
     "truncated": false,
@@ -106,88 +134,102 @@
   },
   "stop_seq": 2,
   "instruction": {
-    "address": "15FC:0000002D",
-    "bytes": "6626670FB61E",
-    "text": "movzx ebx, byte ptr es:[esi]",
-    "flow": "sequential",
+    "address": "08EE:00000022",
+    "bytes": "CD10",
+    "text": "int 0x10",
+    "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": "compose_frame",
-    "delta": 45
+    "symbol": "hw_init_video",
+    "delta": 14
   },
   "symbols_placed": {"placed": true, "path": "<volatile>", "load_segment": "08EB", "base": 36528, "loaded": 294},
-  "emulated_before_s": 0.0,
-  "emulated_after_s": 5.00101,
-  "frame_before": 0,
-  "frame_after": 351,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and this session started on the dynamic core: start on `flags=[\"-set\", \"cpu core=normal\"]` for a count"
-  },
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**3. `run_for`**: OK attract: the title and the attract
+**4. `declaration_clear`**: OK unloaded: the boot's stop cleared
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "milliseconds": 10000,
+  "kind": "breakpoint",
+  "all": true
+}
+```
+
+```json
+{
+  "summary": "declaration_clear breakpoint all: 1 cleared",
+  "status": "ok",
+  "declarations_cleared": 1,
+  "disarmed": ["BPINT 10 AH=4F"],
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**5. `run_to`**: OK title: stopped at titulo_dibuja_cred
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "titulo_dibuja_cred",
+  "control": "draw_block",
   "seconds": 120
 }
 ```
 
 ```json
 {
-  "summary": "run_for 10000 ms: ELAPSED, 628 polls, at 15FC:00000058",
+  "summary": "run_to titulo_dibuja_cred: TARGET at 0951:00000819, control counted 35",
   "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 628,
-  "pc": "15FC:00000058",
+  "verdict": "TARGET",
+  "target": "08EB:0E79",
+  "ref": "titulo_dibuja_cred",
+  "pc": "0951:00000819",
   "cpu_mode": "real",
-  "frame": 1052,
+  "target_disarmed": true,
+  "control_hits": 35,
+  "controls": [
+    {"ref": "draw_block", "at": "08EB:46F4", "hits_in_run": 35, "removed": true}
+  ],
+  "frame": 125,
   "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x00000000",
-    "ECX": "0x005b0071",
-    "EDX": "0x00000000",
-    "ESI": "0x000023cf",
-    "EDI": "0xe001e33c",
-    "EBP": "0x000000ac",
-    "ESP": "0x0000b156",
-    "EIP": "0x00000058",
-    "CS": "0x15fc",
-    "DS": "0x397e",
+    "EAX": "0x0000491e",
+    "EBX": "0x00007fff",
+    "ECX": "0x005b0000",
+    "EDX": "0x00000089",
+    "ESI": "0x0000c7cb",
+    "EDI": "0x0000bfcb",
+    "EBP": "0x0000b1aa",
+    "ESP": "0x0000b19e",
+    "EIP": "0x00000819",
+    "CS": "0x0951",
+    "DS": "0x1b73",
     "ES": "0x491e",
     "FS": "0x0008",
-    "GS": "0x1b73",
+    "GS": "0x0000",
     "SS": "0x1b73"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 15FC:00000058",
+  "cause": "run_to's target titulo_dibuja_cred at 0951:00000819",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 3,
   "instruction": {
-    "address": "15FC:00000058",
-    "bytes": "668BD0",
-    "text": "mov edx, eax",
+    "address": "0951:00000819",
+    "bytes": "52",
+    "text": "push dx",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": "compose_frame",
-    "delta": 88
-  },
-  "emulated_before_s": 5.00101,
-  "emulated_after_s": 15.01401,
-  "frame_before": 351,
-  "frame_after": 1052,
-  "cycles": {
-    "available": false,
-    "why": "the cycle count counts only what the normal core runs, and this session started on the dynamic core: start on `flags=[\"-set\", \"cpu core=normal\"]` for a count"
+    "symbol": "titulo_dibuja_cred",
+    "delta": 0
   },
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -195,7 +237,7 @@
 
 </details>
 
-**4. `read_memory`**: OK no credits: creditos holds 0
+**6. `read_memory`**: OK no credits: creditos holds 0
 
 <details><summary>call and reply</summary>
 
@@ -220,7 +262,7 @@
 
 </details>
 
-**5. `screen_view`**: OK screen: mode M_LIN15, 640x480 by palette index
+**7. `screen_view`**: OK screen: mode M_LIN15, 640x480 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -243,8 +285,8 @@
   "screen_indexed": false,
   "image": {
     "path": "<volatile>",
-    "bytes": 6718,
-    "sha256": "838bf8ecfddf977cb21dc4d7695709a5d967d8d78c89d45f339af5ff149b9d1d",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 640,
     "height": 480,
     "scale": 1,
@@ -260,7 +302,7 @@ Also attached: image/png.
 
 </details>
 
-**6. `close`**: OK close: closed: DOSBox-X quit on its own
+**8. `close`**: OK close: closed: DOSBox-X quit on its own
 
 <details><summary>call and reply</summary>
 
@@ -275,7 +317,7 @@ Also attached: image/png.
   "closed": true,
   "pid": "<volatile>",
   "conf": "<volatile>",
-  "conf_digest": "fa6947f920eb337d",
+  "conf_digest": "<volatile>",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -285,7 +327,7 @@ Also attached: image/png.
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
-  "draft": ["start/dos"],
+  "draft": "<volatile>",
   "session": {"alive": false, "running": false, "altered": false}
 }
 ```

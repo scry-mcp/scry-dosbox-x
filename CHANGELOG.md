@@ -4,6 +4,13 @@ What a client of the server notices.
 
 ## Unreleased
 
+- Every demo arrives by the program's own code or screen, never by a fixed time: MINES runs to
+  its loop after each click; LineUp stops at its first DOS call, waits for each screen at the
+  frame after its tick and reads each move once taken; Speed Fight stops at its first VESA
+  call and runs to its title, on the normal core and a fixed clock; the Deluxe Paint demos
+  wait for each screen on their map and hold the palette's arrow until a watch sees the
+  colour at its top. A transcript hides what the host decides (the window, the place a
+  retrace stop lands on, a derived conf's digest).
 - `screen_wait` takes `on_breakpoint` or `on_watch`: the screen is judged only at the frame's
   end after a firing of that declared breakpoint or change watch, never by sampling, and a
   `condition` filters the firings first. The reply counts `firings` and `frames_examined` in

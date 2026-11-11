@@ -45,6 +45,7 @@ def test_the_call_adds_the_window_and_its_captures_to_the_recipe(
     copy = _copy(tmp_path / "copy")
     assert demo.boot(Run(dir=tmp_path, options={"cwd": str(copy)})) == {
         "profile": str(copy / demo.PROFILE), "shared": True,
+        "flags": demo.NORMAL_CORE_FIXED_CLOCK,
         "captures_dir": str(tmp_path / "speedf-captures")}
     assert derived == [demo.CONF_SCRIPT], "the game's own deriver ran first"
 

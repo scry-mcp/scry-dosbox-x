@@ -37,13 +37,7 @@
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
-  "window": {
-    "display": 0,
-    "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
-    "onscreen": true,
-    "front": true,
-    "fullscreen": false
-  },
+  "window": "<volatile>",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
@@ -477,8 +471,8 @@
   "entries": 256,
   "image": {
     "path": "./tmp/demos/bricks/screen.png",
-    "bytes": 5608,
-    "sha256": "64126aceb88896f082fe44ad8e0b33f4e873fe46e5db8a5ea2d152b6488b0df6",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 1280,
     "height": 800,
     "scale": 4,
@@ -1266,7 +1260,7 @@ Also attached: image/png.
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
-  "draft": ["start/bricks"],
+  "draft": "<volatile>",
   "session": {"alive": false, "running": false, "altered": false}
 }
 ```

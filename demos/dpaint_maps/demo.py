@@ -21,7 +21,14 @@ from scry_core.verdict import Invalid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos import host  # noqa: E402
-from demos.dpaint.program import click, declared, drag, opening  # noqa: E402
+from demos.dpaint.program import (  # noqa: E402
+    WAIT_S,
+    click,
+    declared,
+    drag,
+    ds_segment,
+    opening,
+)
 from demos.host import expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -31,8 +38,9 @@ COLOURS = {"orange": 6, "blue": 1, "black": 0, "yellow": 14, "frame": 15}
 #: The orange the dialog mixes, as the DAC holds it in six bits a channel: brown's red raised to
 #: the top, its green and blue left as they were.
 ORANGE_DAC = "3f1500"
-#: Retraces a menu choice or a dialog button takes to draw what it opens or closes.
-DRAWN_FRAMES = 20
+#: Where this release keeps brown's red while the palette dialog mixes it, in its data segment,
+#: and the top of a six-bit channel.
+BROWN_RED, RED_TOP = 0x31BC, 0x3F
 #: Where the pointer waits off every region the map signs, over the toolbox's colour indicator:
 #: on the canvas a shape tool draws it as a crosshair across the whole screen.
 PARK = (610, 300)
@@ -86,8 +94,8 @@ def landed(*screens: str) -> Any:
         rows = [json.loads(line) for line in
                 Path(reply["replies_path"]).read_text(encoding="utf-8").splitlines()]
         short = [r["reply"]["verdict"] for r in rows
-                 if r["op"] == "run_for" and r["reply"]["verdict"] != "ELAPSED"]
-        expect(not short, f"a wait ended {short}, before its retraces")
+                 if r["op"] == "screen_wait" and r["reply"]["verdict"] != "TARGET"]
+        expect(not short, f"a wait ended {short}, before its screen")
         named = [r["reply"].get("screen", "no screen")
                  for r in rows if r["op"] == "screen_map_find"]
         expect(named == list(screens), f"the map named {named}, not {list(screens)}")
@@ -95,9 +103,22 @@ def landed(*screens: str) -> Any:
     return check
 
 
+def mix(run: Run) -> dict[str, Any]:
+    """Pick brown, press red's arrow, wait for brown's red to reach the top, release."""
+    red = f"{ds_segment(run):04X}:{BROWN_RED:04X}"
+    return {"steps": [click("brown"),
+                      {"op": "watch_add", "ref": red, "mode": "change", "fmt": "u8"},
+                      click("red_up", "down"),
+                      {"op": "screen_wait", "screen": "palette", "on_watch": red,
+                       "condition": f"b@{red} == {RED_TOP:#x}", "seconds": WAIT_S},
+                      {"op": "send_mouse", "button": "left", "action": "up"},
+                      {"op": "declaration_clear", "kind": "watch", "all": True}],
+            "summaries": True}
+
+
 def held(reply: Reply, run: Run) -> str:
     completed(reply)
-    return "the brown slot picked, and red's arrow held from the press to the release"
+    return "the brown slot picked, and red's arrow held until brown's red reached the top"
 
 
 def mixed(reply: Reply, run: Run) -> str:
@@ -112,19 +133,18 @@ def orange_swatch(run: Run) -> dict[str, Any]:
     return {"first": COLOURS["orange"], "count": 1, "dest": dest}
 
 
-def frames(n: int) -> dict[str, Any]:
-    return {"op": "run_for", "frames": n}
-
-
 FIND = {"op": "screen_map_find"}
 Move = tuple[list[dict[str, Any]], str]
 
 
-def moves(name: str, *made: Move, highlight: str = "") -> Step:
+def moves(name: str, *made: Move, highlight: str = "",
+          volatile: dict[str, str] | None = None) -> Step:
     """Moves between screens in one call, each followed by the map's word on where it landed."""
-    steps = [op for ops, _ in made for op in (*ops, FIND)]
+    steps = [op for ops, screen in made
+             for op in (*ops, {"op": "screen_wait", "screen": screen, "seconds": WAIT_S}, FIND)]
     return Step(name, "perform", {"steps": steps, "summaries": True},
-                landed(*(screen for _, screen in made)), highlight=highlight)
+                landed(*(screen for _, screen in made)), highlight=highlight,
+                volatile=volatile or {})
 
 
 def shape(picks: list[str], strokes: list[tuple[tuple[int, int], tuple[int, int]]],
@@ -167,29 +187,27 @@ ROWS = {
 }
 
 STEPS = [
-    *opening(boot),
-    Step("map", "screen_map_write", {"method": "load", "path": HERE / "dpaint-screen-map.json"},
-         lambda reply, run: f"{reply['screens']} screens and {reply['controls']} controls "
-                            "loaded"),
+    *opening(boot, HERE / "dpaint-screen-map.json", "paint: freehand"),
     Step("is paint", "screen_map_find", {}, found("paint: freehand")),
     moves("open Color", ([click("color", "down")], "color menu")),
     moves("choose Palette", ([click("palette", "up"), {"op": "run_to", "screen": "palette"}],
-                             "palette")),
-    # The press and the release are each posted over retraces of their own, and the program's
-    # repeat climbs red's 21 steps to the top inside them; `mixed` reads the DAC to prove it.
-    Step("mix", "perform", {"steps": [click("brown"), click("red_up", "down"),
-                                      {"op": "send_mouse", "button": "left", "action": "up"}],
-                            "summaries": True}, held,
+                             "palette"),
+          volatile={"summary": "a row's summary names the instruction its retrace stop lands "
+                               "on, which drifts with the host's cycles"}),
+    # The arrow is held until the program's own copy of brown's red reaches the top: a change
+    # watch on that byte, and the wait judged only at its firings, filtered by the value.
+    Step("mix", "perform", mix, held,
          highlight=("Deluxe Paint's menus and arrows act only while the button is held. "
                     "`send_mouse` takes `action: down` and `action: up` as the two halves of a "
-                    "click, and `perform` sends the pick, the press and the release as one call, "
-                    "so the arrow is held exactly from one step to the next.")),
+                    "click, and between them a `screen_wait` judged only when a watch on the "
+                    "program's copy of brown's red fires, filtered by `condition`, holds the "
+                    "arrow until the value reaches the top, whatever the program's pace.")),
     Step("orange", "palette", orange_swatch, mixed,
          highlight=("`palette` reads the VGA DAC back: the entry the dialog's arrows mixed, as the "
                     "colour the screen will show. The DAC holds six bits per channel; the reply "
                     "gives both its raw values and the eight-bit colour. Nothing but the program's "
                     "own dialog touched it.")),
-    moves("sky, sun and sea", ([click("ok"), frames(DRAWN_FRAMES)], "paint: freehand"),
+    moves("sky, sun and sea", ([click("ok")], "paint: freehand"),
           shape(["rect_filled", "brown"], [SKY], "paint: rectangle"),
           shape(["circle_filled", "yellow"], [SUN], "paint: circle"),
           shape(["rect_filled", "blue"], [SEA], "paint: rectangle")),
@@ -202,17 +220,17 @@ STEPS = [
             {"op": "send_keys", "keys": list(WORD), "modifiers": ["shift"]},
             click("freehand"), PARKED], "paint: freehand")),
     moves("flip the boat", ([click("brush_grab"), PARKED], "paint: grab"),
-          ([*drag(*LIFT), frames(10), PARKED], "paint: custom brush"),
+          ([*drag(*LIFT), PARKED], "paint: custom brush"),
           ([click("brush", "down")], "brush menu"),
-          ([click("flip_horizontal", "up"), frames(DRAWN_FRAMES), PARKED],
+          ([click("flip_horizontal", "up"), PARKED],
            "paint: custom brush"),
-          ([{"op": "send_mouse", "x": STAMP[0], "y": STAMP[1], "button": "left"}, frames(10),
+          ([{"op": "send_mouse", "x": STAMP[0], "y": STAMP[1], "button": "left"},
             PARKED], "paint: custom brush"),
          highlight=("The longest chain of map names in the run: lift the boat as a brush, flip it "
                     "from the Brush menu, stamp the mirror image. After each move the map is asked "
                     "where it landed, because the same pixels mean a different tool in hand.")),
     moves("Pict, and the brush put down", ([click("pict", "down")], "pict menu"),
-          ([{"op": "send_mouse", "button": "left", "action": "up"}, frames(10), PARKED],
+          ([{"op": "send_mouse", "button": "left", "action": "up"}, PARKED],
            "paint: custom brush"),
           ([click("brush_dot"), click("freehand"), PARKED], "paint: freehand")),
     *(Step(name, "screen_view", row(y), check) for name, (y, check) in ROWS.items()),

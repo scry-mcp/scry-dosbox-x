@@ -44,13 +44,15 @@ Give this to an MCP client with this server connected:
 > Start DOSBox-X windowed on `demos/mines/mines.conf`,
 > stopping at the program's own `int 3`, with the log in a file and the captures in my run's
 > directory. Load `mines.sym` at the segment it stopped in, and the screen map
-> `mines-screen-map.json` beside the conf. Run ten retraces and tell me which screen this is, click
-> its start, and tell me again. Open the Game menu by name, check it is the menu, and pick
-> Beginner. Read the board's size, where its mines are and the pixel of its top-left corner, all
+> `mines-screen-map.json` beside the conf. Run to `main_loop`, where the game goes once its title
+> is drawn, and tell me which screen this is; click its start, run to `main_loop` again and tell me
+> again. Open the Game menu by name, run to the loop, check it is the menu, pick Beginner and run
+> to the loop. Read the board's size, where its mines are and the pixel of its top-left corner, all
 > by symbol. Flag two of the mines with the right button, then open every safe cell with as few
-> left clicks as the game's flood fill allows, and show me it says WIN. Park the pointer off the
-> screen's signed regions, tell me which screen this is and show it to me. Click OK, read the new
-> board's mines, click on the first one, and record 45 retraces of sound from there. Show me the
+> left clicks as the game's flood fill allows, run to the loop, and show me it says WIN. Park the pointer off the
+> screen's signed regions, tell me which screen this is and show it to me. Click OK and run to the
+> loop, read the new board's mines, click on the first one until the game logs BOOM, and record
+> 45 retraces of sound from there. Show me the
 > game said BOOM, measure the recording, and compare it with `boom.wav` beside the conf without
 > aligning them. Park the pointer, tell me which screen this is, and close.
 
@@ -59,7 +61,7 @@ Give this to an MCP client with this server connected:
 | Family | Calls |
 |---|---|
 | Session | `start` (windowed, stopping at the program's `int 3`), `close` |
-| Advance | `resume` to the `int 3`, `run_for` by retraces on the conf's fixed clock |
+| Advance | `resume` to the `int 3`, `run_to` the game's loop by its symbol |
 | Names | `symbols_load` at the load segment |
 | Files | `audio_compare` (`measure`, `diff`) |
 | Input | `send_mouse` by control name off the map and at pixels, both buttons |
@@ -76,9 +78,75 @@ two honest runs (process ids, ports, wall-clock times, temporary paths, the host
 and its own arguments) is `<volatile>`.
 
 <!-- demo-transcript:begin -->
-The run is 31 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 36 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
-**14. `read_memory`**: OK mines: mines at 0,3, 1,2, 1,4, 2,0, 5,4, 6,5, 6,8, 7,2, 8,0, 8,3
+**5. `run_to`**: OK title: the game's loop reached: the title drawn and the pointer up
+
+The run arrives by a symbol, not by time: `main_loop` is where the game goes once the title is drawn, so the screen read next is whole on any host.
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "main_loop",
+  "control": "retrace",
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "run_to main_loop: TARGET at 08DF:00000131, control counted 0",
+  "status": "ok",
+  "verdict": "TARGET",
+  "target": "08DF:0131",
+  "ref": "main_loop",
+  "pc": "08DF:00000131",
+  "cpu_mode": "real",
+  "target_disarmed": true,
+  "control_hits": 0,
+  "controls": [
+    {"ref": "retrace", "at": "08DF:0DFF", "hits_in_run": 0, "removed": true}
+  ],
+  "frame": 2,
+  "regs": {
+    "EAX": "0x00000000",
+    "EBX": "0x0002010f",
+    "ECX": "0x00000148",
+    "EDX": "0x00000180",
+    "ESI": "0x000017d5",
+    "EDI": "0x00001835",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000131",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0x08df",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08df"
+  },
+  "watches": [],
+  "cause": "run_to's target main_loop at 08DF:00000131",
+  "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: TITLE"], "mark": "<volatile>"},
+  "stop_seq": 3,
+  "instruction": {
+    "address": "08DF:00000131",
+    "bytes": "E8CB0C",
+    "text": "call 0xdff",
+    "flow": "call",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "main_loop",
+    "delta": 0
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**17. `read_memory`**: OK mines: mines at 0,3, 1,2, 1,4, 2,0, 5,4, 6,5, 6,8, 7,2, 8,0, 8,3
 
 The board is read out of the game's memory by name: `mines` is a symbol of the build, one byte per cell. Where the mines are is data, and what the server can read, a player cannot.
 
@@ -105,7 +173,7 @@ The board is read out of the game's memory by name: `mines` is a symbol of the b
 
 </details>
 
-**17. `perform`**: OK clear: 19 clicks opened every safe cell, none on a mine
+**20. `perform`**: OK clear: 19 clicks opened every safe cell, none on a mine
 
 Each click is a `send_mouse` with an `expect`: the call returns only when the game's own log shows the reveal the click was meant to cause (`REVEAL row col`), so a click that missed fails at once instead of three clicks later. `perform` sends them all as one call.
 
@@ -147,9 +215,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 304,204, program's own pointer not read; effect seen, 25 retraces to frame 156",
+        "summary": "send_mouse: pointer at 304,204, program's own pointer not read; effect seen, 25 retraces to frame 149",
         "status": "ok",
-        "stop_seq": 149,
+        "stop_seq": 153,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -157,19 +225,19 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 352,204, program's own pointer not read; effect seen, 25 retraces to frame 181",
+        "summary": "send_mouse: pointer at 352,204, program's own pointer not read; effect seen, 25 retraces to frame 174",
         "status": "ok",
-        "stop_seq": 174,
-        "cause": "no declared code breakpoint at 08DF:00000E07: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+        "stop_seq": 178,
+        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,204, program's own pointer not read; effect seen, 25 retraces to frame 206",
+        "summary": "send_mouse: pointer at 400,204, program's own pointer not read; effect seen, 25 retraces to frame 199",
         "status": "ok",
-        "stop_seq": 199,
+        "stop_seq": 203,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -177,9 +245,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 424,204, program's own pointer not read; effect seen, 25 retraces to frame 231",
+        "summary": "send_mouse: pointer at 424,204, program's own pointer not read; effect seen, 25 retraces to frame 224",
         "status": "ok",
-        "stop_seq": 224,
+        "stop_seq": 228,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -187,9 +255,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 448,204, program's own pointer not read; effect seen, 25 retraces to frame 256",
+        "summary": "send_mouse: pointer at 448,204, program's own pointer not read; effect seen, 25 retraces to frame 249",
         "status": "ok",
-        "stop_seq": 249,
+        "stop_seq": 253,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -197,9 +265,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 376,228, program's own pointer not read; effect seen, 25 retraces to frame 281",
+        "summary": "send_mouse: pointer at 376,228, program's own pointer not read; effect seen, 25 retraces to frame 274",
         "status": "ok",
-        "stop_seq": 274,
+        "stop_seq": 278,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -207,9 +275,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,348, program's own pointer not read; effect seen, 25 retraces to frame 306",
+        "summary": "send_mouse: pointer at 400,348, program's own pointer not read; effect seen, 25 retraces to frame 299",
         "status": "ok",
-        "stop_seq": 299,
+        "stop_seq": 303,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -217,9 +285,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 448,348, program's own pointer not read; effect seen, 25 retraces to frame 331",
+        "summary": "send_mouse: pointer at 448,348, program's own pointer not read; effect seen, 25 retraces to frame 324",
         "status": "ok",
-        "stop_seq": 324,
+        "stop_seq": 328,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -227,9 +295,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 472,348, program's own pointer not read; effect seen, 25 retraces to frame 356",
+        "summary": "send_mouse: pointer at 472,348, program's own pointer not read; effect seen, 25 retraces to frame 349",
         "status": "ok",
-        "stop_seq": 349,
+        "stop_seq": 353,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -237,9 +305,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 376,372, program's own pointer not read; effect seen, 25 retraces to frame 381",
+        "summary": "send_mouse: pointer at 376,372, program's own pointer not read; effect seen, 25 retraces to frame 374",
         "status": "ok",
-        "stop_seq": 374,
+        "stop_seq": 378,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -247,9 +315,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,372, program's own pointer not read; effect seen, 25 retraces to frame 406",
+        "summary": "send_mouse: pointer at 400,372, program's own pointer not read; effect seen, 25 retraces to frame 399",
         "status": "ok",
-        "stop_seq": 399,
+        "stop_seq": 403,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -257,9 +325,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 424,372, program's own pointer not read; effect seen, 25 retraces to frame 431",
+        "summary": "send_mouse: pointer at 424,372, program's own pointer not read; effect seen, 25 retraces to frame 424",
         "status": "ok",
-        "stop_seq": 424,
+        "stop_seq": 428,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -267,9 +335,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 12,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 448,372, program's own pointer not read; effect seen, 25 retraces to frame 456",
+        "summary": "send_mouse: pointer at 448,372, program's own pointer not read; effect seen, 25 retraces to frame 449",
         "status": "ok",
-        "stop_seq": 449,
+        "stop_seq": 453,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -277,9 +345,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 13,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 472,372, program's own pointer not read; effect seen, 25 retraces to frame 481",
+        "summary": "send_mouse: pointer at 472,372, program's own pointer not read; effect seen, 25 retraces to frame 474",
         "status": "ok",
-        "stop_seq": 474,
+        "stop_seq": 478,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -287,9 +355,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 14,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 496,372, program's own pointer not read; effect seen, 25 retraces to frame 506",
+        "summary": "send_mouse: pointer at 496,372, program's own pointer not read; effect seen, 25 retraces to frame 499",
         "status": "ok",
-        "stop_seq": 499,
+        "stop_seq": 503,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -297,9 +365,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 328,396, program's own pointer not read; effect seen, 25 retraces to frame 531",
+        "summary": "send_mouse: pointer at 328,396, program's own pointer not read; effect seen, 25 retraces to frame 524",
         "status": "ok",
-        "stop_seq": 524,
+        "stop_seq": 528,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -307,9 +375,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 16,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 352,396, program's own pointer not read; effect seen, 25 retraces to frame 556",
+        "summary": "send_mouse: pointer at 352,396, program's own pointer not read; effect seen, 25 retraces to frame 549",
         "status": "ok",
-        "stop_seq": 549,
+        "stop_seq": 553,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -317,9 +385,9 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 17,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,396, program's own pointer not read; effect seen, 25 retraces to frame 581",
+        "summary": "send_mouse: pointer at 400,396, program's own pointer not read; effect seen, 25 retraces to frame 574",
         "status": "ok",
-        "stop_seq": 574,
+        "stop_seq": 578,
         "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
       }
     },
@@ -327,7 +395,7 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
       "step": 18,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 424,396, program's own pointer not read; effect seen, 25 retraces to frame 606",
+        "summary": "send_mouse: pointer at 424,396, program's own pointer not read; effect seen, 25 retraces to frame 599",
         "status": "ok",
         "x": 424,
         "y": 396,
@@ -344,19 +412,19 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
         },
         "driver_arrived": true,
         "polls": 25,
-        "pc": "08DF:00000E08",
+        "pc": "08DF:00000E0A",
         "cpu_mode": "real",
-        "stop_seq": 599,
-        "frame": 606,
+        "stop_seq": 603,
+        "frame": 599,
         "instruction": {
-          "address": "08DF:00000E08",
-          "bytes": "A808",
-          "text": "test al, 8",
-          "flow": "sequential",
+          "address": "08DF:00000E0A",
+          "bytes": "74FB",
+          "text": "je 0xe07",
+          "flow": "branch",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": "retrace",
-          "delta": 9
+          "delta": 11
         },
         "regs": {
           "EAX": "0x00000004",
@@ -367,7 +435,7 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
           "EDI": "0x00000fc4",
           "EBP": "0x0000091c",
           "ESP": "0x0000fffc",
-          "EIP": "0x00000e08",
+          "EIP": "0x00000e0a",
           "CS": "0x08df",
           "DS": "0x08df",
           "ES": "0x08df",
@@ -376,7 +444,7 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
           "SS": "0x08df"
         },
         "watches": [],
-        "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+        "cause": "no declared code breakpoint at 08DF:00000E0A: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
         "e9": {
           "lines_total": 2,
           "truncated": false,
@@ -404,8 +472,8 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 125,
-    "stop_seq_last": 599,
+    "stop_seq_first": 129,
+    "stop_seq_last": 603,
     "surveyed": 19,
     "by_cause": {
       "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 19
@@ -421,7 +489,7 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
 
 </details>
 
-**28. `audio_compare`**: OK exact: the explosion is boom.wav, sample for sample
+**33. `audio_compare`**: OK exact: the explosion is boom.wav, sample for sample
 
 The explosion was recorded off the emulated Sound Blaster's digital output, not off the speakers, and the comparison is a `diff` with alignment off: the two recordings are equal sample for sample, which is what `exact` says.
 

@@ -172,6 +172,19 @@ def cleared(reply: Reply, run: Run) -> str:
     return f"{wanted} clicks opened every safe cell, none on a mine"
 
 
+def drawn(what: str) -> Any:
+    """A run to the game's loop, which it re-enters only once a click's drawing is done."""
+    def check(reply: Reply, run: Run) -> str:
+        expect(reply["verdict"] == "TARGET", f"verdict {reply['verdict']}")
+        return what
+    return check
+
+
+def back_in_loop(name: str, what: str) -> Step:
+    return Step(name, "run_to", {"ref": "main_loop", "control": "retrace", "seconds": WAIT_S},
+                drawn(what))
+
+
 def won(reply: Reply, run: Run) -> str:
     expect(reply["lines_total"] == 1, f"the game logged WIN {reply['lines_total']} times")
     return "the game logged WIN"
@@ -188,14 +201,16 @@ def first_mine(run: Run) -> tuple[int, int]:
 
 
 def step_on(run: Run) -> dict[str, Any]:
-    x, y = centre(run, *first_mine(run))
-    return {"x": x, "y": y, "button": "left"}
+    r, c = first_mine(run)
+    x, y = centre(run, r, c)
+    return {"x": x, "y": y, "button": "left", "expect": f"BOOM {r} {c}$", "seconds": 10}
 
 
 def stepped(reply: Reply, run: Run) -> str:
     r, c = first_mine(run)
     expect(reply["driver_arrived"] is True,
            f"the pointer read back at {reply['pointer']['screen']}")
+    expect(reply["verify"]["seen"] is True, f"verify {reply['verify']}")
     return (f"a left click on the mine at {r},{c}, the machine left stopped a few retraces "
             f"later, the explosion already sounding")
 
@@ -233,20 +248,26 @@ STEPS = [
     Step("map", "screen_map_write", {"method": "load", "path": HERE / "mines-screen-map.json"},
          lambda reply, run: f"{reply['screens']} screens and {reply['controls']} controls "
                             "loaded"),
-    Step("title", "run_for", {"frames": 10, "seconds": WAIT_S},
-         lambda reply, run: "ten retraces: the title drawn"),
+    Step("title", "run_to", {"ref": "main_loop", "control": "retrace", "seconds": WAIT_S},
+         drawn("the game's loop reached: the title drawn and the pointer up"),
+         highlight=("The run arrives by a symbol, not by time: `main_loop` is where the game "
+                    "goes once the title is drawn, so the screen read next is whole on any "
+                    "host.")),
     Step("is title", "screen_map_find", {}, found("title")),
     Step("play", "send_mouse", {"target": "start", "button": "left", "expect": "NEW 9 9 10$",
                                 "seconds": 10},
          seen("a click on the title started a beginner's game"), volatile=INPUT_TIMING),
+    back_in_loop("board drawn", "the board drawn"),
     Step("is board", "screen_map_find", {}, found("board")),
     Step("menu", "send_mouse", {"target": "game", "button": "left", "expect": "MENU OPEN$",
                                 "seconds": 10},
          seen("Game opened the menu"), volatile=INPUT_TIMING),
+    back_in_loop("menu drawn", "the menu drawn"),
     Step("is menu", "screen_map_find", {}, found("menu")),
     Step("level", "send_mouse", {"target": "beginner", "button": "left",
                                  "expect": "NEW 9 9 10$", "seconds": 10},
          seen("Beginner started a new beginner's game"), volatile=INPUT_TIMING),
+    back_in_loop("board drawn again", "the new board drawn"),
     Step("is board again", "screen_map_find", {}, found("board")),
     Step("size", "read_memory", {"ref": "rows", "length": 2}, size),
     Step("mines", "read_memory", {"ref": "mines", "length": ROWS * COLS}, mines_read,
@@ -260,6 +281,7 @@ STEPS = [
                     "game's own log shows the reveal the click was meant to cause (`REVEAL row "
                     "col`), so a click that missed fails at once instead of three clicks later. "
                     "`perform` sends them all as one call.")),
+    back_in_loop("cleared drawn", "the last reveal and the win dialog drawn"),
     Step("won", "log", {"channel": "guest", "pattern": "WIN$"}, won),
     Step("park", "send_mouse", {"x": PARK[0], "y": PARK[1]}, parked),
     Step("is win", "screen_map_find", {}, found("win")),
@@ -267,8 +289,9 @@ STEPS = [
     Step("again", "send_mouse", {"target": "ok", "button": "left", "expect": "NEW 9 9 10$",
                                  "seconds": 10},
          seen("OK started the next game"), volatile=INPUT_TIMING),
+    back_in_loop("next board drawn", "the next board drawn"),
     Step("next mines", "read_memory", {"ref": "mines", "length": ROWS * COLS}, mines_read),
-    Step("mine", "send_mouse", step_on, stepped),
+    Step("mine", "send_mouse", step_on, stepped, volatile=INPUT_TIMING),
     Step("boom", "log", {"channel": "guest", "pattern": "BOOM"}, boom_said),
     Step("record", "audio_record", lambda run: {"frames": BOOM_FRAMES,
                                                 "dest": run.dir / "boom.wav"}, recorded,

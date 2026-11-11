@@ -37,7 +37,7 @@ uv run python demos/dpaint_maps/demo.py \
 The demo opens a window, scaled up twice by its conf, so the menus can be watched as they open;
 nothing in it needs the window. Like the first demo it needs a DOSBox-X whose input device
 carries relative motion (the repository's REFERENCE.md, *Input and the screen*), named with
-`--binary` or `DOSBOX_X_BINARY`; without it the demo stops at its second step, saying so.
+`--binary` or `DOSBOX_X_BINARY`; without it the demo stops at its third step, saying so.
 
 - `--cwd PATH` (absolute or `~`-led) is the directory holding `DP.EXE`, which the session runs
   from and mounts as C:. It is hidden in the transcript as `<host>`.
@@ -76,10 +76,12 @@ map signs.
 Give this to an MCP client with this server connected:
 
 > Start DOSBox-X windowed on `demos/dpaint_maps/dpaint-maps.conf`, running from
-> `/path/to/your/dpaint2`, with `DP.EXE k` as the program and the log in a file. Run 400 retraces and load the screen map `dpaint-screen-map.json` beside the conf. Pick
+> `/path/to/your/dpaint2`, with `DP.EXE k` as the program and the log in a file. Load the screen
+> map `dpaint-screen-map.json` beside the conf and run until it names the painting screen. Pick
 > menus, dialog buttons, tools and colours by the names it gives, drag the shapes at pixels, and
-> after every move to another screen tell me which screen the map says it is. Hold the button on
-> Color, choose Palette, pick the brown slot and hold the red arrow down until red tops out, read
+> after every move wait for the screen it should bring and tell me which screen the map says it
+> is. Hold the button on Color, choose Palette, pick the brown slot, watch where the program keeps
+> brown's red and hold the red arrow down until that byte reaches the top, read
 > that slot off the DAC, and press OK. Paint a sunset, a few shapes a call: a sky in the
 > brown slot as a filled rectangle, a yellow sun as a filled circle on the horizon, a blue sea
 > over its lower half, three yellow glints as lines, a black hull, a black mast and a yellow
@@ -94,7 +96,7 @@ Give this to an MCP client with this server connected:
 | Family | Calls |
 |---|---|
 | Session | `start` (windowed, running the program from `cwd`), `close` |
-| Advance | `run_for` by retraces on the conf's fixed clock |
+| Advance | `screen_wait` until the map names the screen a move brings, and once judged only when a watch on brown's red fires, until it reaches the top; `run_to` a screen the map names |
 | Input | `send_mouse` by control name off the map (a press to open a menu, a release to choose), at screen pixels, and as drags; `send_keys` for the word |
 | Read | `screen_map_write(method="load")`, `screen_map_find` after every move between screens |
 | Screen | `palette` for the mixed colour, `screen_view` for rows of the picture and the screen |
@@ -107,11 +109,11 @@ two honest runs (process ids, ports, wall-clock times, temporary paths, the host
 and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 <!-- demo-transcript:begin -->
-The run is 21 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 22 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
-**7. `perform`**: OK mix: the brown slot picked, and red's arrow held from the press to the release
+**8. `perform`**: OK mix: the brown slot picked, and red's arrow held until brown's red reached the top
 
-Deluxe Paint's menus and arrows act only while the button is held. `send_mouse` takes `action: down` and `action: up` as the two halves of a click, and `perform` sends the pick, the press and the release as one call, so the arrow is held exactly from one step to the next.
+Deluxe Paint's menus and arrows act only while the button is held. `send_mouse` takes `action: down` and `action: up` as the two halves of a click, and between them a `screen_wait` judged only when a watch on the program's copy of brown's red fires, filtered by `condition`, holds the arrow until the value reaches the top, whatever the program's pace.
 
 <details><summary>call and reply</summary>
 
@@ -119,8 +121,17 @@ Deluxe Paint's menus and arrows act only while the button is held. `send_mouse` 
 {
   "steps": [
     {"op": "send_mouse", "target": "brown", "button": "left"},
+    {"op": "watch_add", "ref": "31B2:31BC", "mode": "change", "fmt": "u8"},
     {"op": "send_mouse", "target": "red_up", "button": "left", "action": "down"},
-    {"op": "send_mouse", "button": "left", "action": "up"}
+    {
+      "op": "screen_wait",
+      "screen": "palette",
+      "on_watch": "31B2:31BC",
+      "condition": "b@31B2:31BC == 0x3f",
+      "seconds": 60
+    },
+    {"op": "send_mouse", "button": "left", "action": "up"},
+    {"op": "declaration_clear", "kind": "watch", "all": true}
   ],
   "summaries": true
 }
@@ -128,101 +139,81 @@ Deluxe Paint's menus and arrows act only while the button is held. `send_mouse` 
 
 ```json
 {
-  "summary": "perform: 3 of 3 steps",
+  "summary": "perform: 6 of 6 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; posted, unverified, 24 retraces to frame 461",
+        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; posted, unverified, 24 retraces to frame 74",
         "status": "ok",
         "stop_seq": 63,
-        "cause": "the retrace the input's post ran to, at 13F8:00000228"
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 7,39, program's own pointer not read; posted, unverified, 20 retraces to frame 481",
-        "status": "ok",
-        "stop_seq": 83,
-        "cause": "the retrace the input's post ran to, at F000:0000CBE5"
-      }
+      "op": "watch_add",
+      "reply": {"summary": "watch_add 31B2:31BC: armed", "status": "ok"}
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 7,39; posted, unverified, 15 retraces to frame 496",
+        "summary": "send_mouse: pointer at 7,39, program's own pointer not read; posted, unverified, 22 retraces to frame 94",
         "status": "ok",
-        "units": "screen",
-        "button": "left",
-        "action": "up",
-        "route": "guest",
-        "pointer": {
-          "screen": {"x": 7, "y": 39, "width": 640, "height": 480},
-          "mouse": {"x": 60, "y": 316, "max_x": 5112, "max_y": 3832},
-          "buttons": [],
-          "bios_mode": "0x12"
-        },
-        "arrived": true,
-        "polls": 15,
-        "pc": "13F8:0000021D",
-        "cpu_mode": "real",
-        "stop_seq": 98,
-        "frame": 496,
-        "instruction": {
-          "address": "13F8:0000021D",
-          "bytes": "55",
-          "text": "push bp",
-          "flow": "sequential",
-          "code_bits": 16,
-          "bytes_from": "memory",
-          "symbol": {"available": false, "why": "no symbol table is loaded"},
-          "delta": {"available": false, "why": "no symbol table is loaded"}
-        },
-        "regs": {
-          "EAX": "0x00009fb8",
-          "EBX": "0x00000178",
-          "ECX": "0x005b0003",
-          "EDX": "0x00000000",
-          "ESI": "0x00009fd8",
-          "EDI": "0x00000000",
-          "EBP": "0x00009fbc",
-          "ESP": "0x00009faa",
-          "EIP": "0x0000021d",
-          "CS": "0x13f8",
-          "DS": "0x31b2",
-          "ES": "0x0000",
-          "FS": "0x0000",
-          "GS": "0x0000",
-          "SS": "0x31b2"
-        },
-        "watches": [],
-        "cause": "the retrace the input's post ran to, at 13F8:0000021D",
-        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-        "verify": {
-          "checked": false,
-          "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-        },
+        "stop_seq": 85,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 3,
+      "op": "screen_wait",
+      "reply": {
+        "summary": "screen_wait screen 'palette': found after 28 firings of watch '31B2:31BC'",
+        "status": "ok",
+        "stop_seq": 86,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 4,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 7,39; posted, unverified, 76 retraces to frame 115",
+        "status": "ok",
+        "stop_seq": 162,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 5,
+      "op": "declaration_clear",
+      "reply": {
+        "summary": "declaration_clear watch all: 1 cleared",
+        "status": "ok",
+        "declarations_cleared": 1,
+        "disarmed": ["BPMEM 31B2:31BC (3F)"],
         "session": {"alive": true, "running": false, "altered": false}
       }
     }
   ],
-  "steps_total": 3,
+  "steps_total": 6,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
     "stop_seq_first": 40,
-    "stop_seq_last": 98,
-    "surveyed": 3,
-    "by_cause": {"the retrace the input's post ran to,": 3},
-    "unaccounted": 56
+    "stop_seq_last": 162,
+    "surveyed": 4,
+    "by_cause": {
+      "the retrace the input's post ran to,": 1,
+      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 3
+    },
+    "unaccounted": 119
   },
-  "steps_completed": 3,
+  "steps_completed": 6,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}
@@ -231,7 +222,7 @@ Deluxe Paint's menus and arrows act only while the button is held. `send_mouse` 
 
 </details>
 
-**8. `palette`**: OK orange: the brown slot now holds #ff5500, orange
+**9. `palette`**: OK orange: the brown slot now holds #ff5500, orange
 
 `palette` reads the VGA DAC back: the entry the dialog's arrows mixed, as the colour the screen will show. The DAC holds six bits per channel; the reply gives both its raw values and the eight-bit colour. Nothing but the program's own dialog touched it.
 
@@ -258,8 +249,8 @@ Deluxe Paint's menus and arrows act only while the button is held. `send_mouse` 
   "pel_mask": "ffh",
   "image": {
     "path": "./tmp/demos/dpaint_maps/orange.png",
-    "bytes": 927,
-    "sha256": "4f2ecf162576eca795550ef23660053e58ee706814419b700b766c0a5f0bd9f8",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 128,
     "height": 128,
     "scale": 8,
@@ -274,7 +265,7 @@ Also attached: image/png.
 
 </details>
 
-**13. `perform`**: OK flip the boat: the map named paint: grab, then paint: custom brush, then brush menu, then paint: custom brush, then paint: custom brush
+**14. `perform`**: OK flip the boat: the map named paint: grab, then paint: custom brush, then brush menu, then paint: custom brush, then paint: custom brush
 
 The longest chain of map names in the run: lift the boat as a brush, flip it from the Brush menu, stamp the mirror image. After each move the map is asked where it landed, because the same pixels mean a different tool in hand.
 
@@ -285,6 +276,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
   "steps": [
     {"op": "send_mouse", "target": "brush_grab", "button": "left"},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: grab", "seconds": 60},
     {"op": "screen_map_find"},
     {
       "op": "send_mouse",
@@ -295,18 +287,19 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "to_x": 184,
       "to_y": 399
     },
-    {"op": "run_for", "frames": 10},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: custom brush", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "target": "brush", "button": "left", "action": "down"},
+    {"op": "screen_wait", "screen": "brush menu", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "target": "flip_horizontal", "button": "left", "action": "up"},
-    {"op": "run_for", "frames": 20},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: custom brush", "seconds": 60},
     {"op": "screen_map_find"},
     {"op": "send_mouse", "x": 440, "y": 357, "button": "left"},
-    {"op": "run_for", "frames": 10},
     {"op": "send_mouse", "x": 610, "y": 300},
+    {"op": "screen_wait", "screen": "paint: custom brush", "seconds": 60},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -315,151 +308,151 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
 
 ```json
 {
-  "summary": "perform: 17 of 17 steps",
+  "summary": "perform: 19 of 19 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; posted, unverified, 25 retraces to frame 1472",
+        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; posted, unverified, 25 retraces to frame 1075",
         "status": "ok",
-        "stop_seq": 1055,
-        "cause": "the retrace the input's post ran to, at 13F8:00000220"
+        "stop_seq": 1121,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1487",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1090",
         "status": "ok",
-        "stop_seq": 1070,
-        "cause": "the retrace the input's post ran to, at 100B:0000032D"
+        "stop_seq": 1136,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 2,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: grab': already on screen", "status": "ok"}
+    },
+    {
+      "step": 3,
       "op": "screen_map_find",
       "reply": {"summary": "screen_map_find: paint: grab (file), 14 controls", "status": "ok"}
     },
     {
-      "step": 3,
+      "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; posted, unverified, 30 retraces to frame 1517",
+        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; posted, unverified, 30 retraces to frame 1120",
         "status": "ok",
-        "stop_seq": 1100,
-        "cause": "the retrace the input's post ran to, at 100B:0000023A"
-      }
-    },
-    {
-      "step": 4,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 100B:00000240",
-        "status": "ok",
-        "stop_seq": 1101,
-        "cause": "the retrace run_for ran to, at 100B:00000240"
+        "stop_seq": 1166,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1538",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1135",
         "status": "ok",
-        "stop_seq": 1112,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 1181,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 6,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: custom brush': already on screen", "status": "ok"}
+    },
+    {
+      "step": 7,
       "op": "screen_map_find",
       "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
     },
     {
-      "step": 7,
+      "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1558",
+        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1155",
         "status": "ok",
-        "stop_seq": 1132,
-        "cause": "the retrace the input's post ran to, at 0957:0000035D"
+        "stop_seq": 1201,
+        "cause": "<volatile>"
       }
-    },
-    {
-      "step": 8,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: brush menu (file), 2 controls", "status": "ok"}
     },
     {
       "step": 9,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; posted, unverified, 20 retraces to frame 1578",
-        "status": "ok",
-        "stop_seq": 1152,
-        "cause": "the retrace the input's post ran to, at 0DA7:00000337"
-      }
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'brush menu': already on screen", "status": "ok"}
     },
     {
       "step": 10,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 19A7:0000019E",
-        "status": "ok",
-        "stop_seq": 1153,
-        "cause": "the retrace run_for ran to, at 19A7:0000019E"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: brush menu (file), 2 controls", "status": "ok"}
     },
     {
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1609",
+        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; posted, unverified, 20 retraces to frame 1175",
         "status": "ok",
-        "stop_seq": 1164,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 1221,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 12,
-      "op": "screen_map_find",
-      "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1190",
+        "status": "ok",
+        "stop_seq": 1236,
+        "cause": "<volatile>"
+      }
     },
     {
       "step": 13,
-      "op": "send_mouse",
+      "op": "screen_wait",
       "reply": {
-        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; posted, unverified, 25 retraces to frame 1634",
+        "summary": "screen_wait screen 'paint: custom brush': found after 10 retraces",
         "status": "ok",
-        "stop_seq": 1189,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 1237,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 14,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at F000:0000CFC5",
-        "status": "ok",
-        "stop_seq": 1190,
-        "cause": "the retrace run_for ran to, at F000:0000CFC5"
-      }
+      "op": "screen_map_find",
+      "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
     },
     {
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 1655",
+        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; posted, unverified, 21 retraces to frame 1221",
         "status": "ok",
-        "stop_seq": 1201,
-        "cause": "the retrace the input's post ran to, at 100B:00000324"
+        "stop_seq": 1258,
+        "cause": "<volatile>"
       }
     },
     {
       "step": 16,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1236",
+        "status": "ok",
+        "stop_seq": 1273,
+        "cause": "<volatile>"
+      }
+    },
+    {
+      "step": 17,
+      "op": "screen_wait",
+      "reply": {"summary": "screen_wait screen 'paint: custom brush': already on screen", "status": "ok"}
+    },
+    {
+      "step": 18,
       "op": "screen_map_find",
       "reply": {
         "summary": "screen_map_find: paint: custom brush (file), 14 controls",
@@ -489,18 +482,21 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       }
     }
   ],
-  "steps_total": 17,
+  "steps_total": 19,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 1031,
-    "stop_seq_last": 1201,
-    "surveyed": 12,
-    "by_cause": {"the retrace the input's post ran to,": 9, "the retrace run_for ran to,": 3},
-    "unaccounted": 159
+    "stop_seq_first": 1097,
+    "stop_seq_last": 1273,
+    "surveyed": 10,
+    "by_cause": {
+      "the retrace the input's post ran to,": 9,
+      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 1
+    },
+    "unaccounted": 167
   },
-  "steps_completed": 17,
+  "steps_completed": 19,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}

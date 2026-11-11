@@ -1,6 +1,6 @@
 # Speed Fight: the PC game boots from its own recipe
 
-![Speed Fight's attract on the PC](screen.png)
+![Speed Fight's title on the PC](screen.png)
 
 *Speed Fight* (Eco-Games / GAMART, 1994) ran on an NEC V30 arcade board, and its team ported the
 same source to MS-DOS. This demo boots the PC game from the run recipe its own repository
@@ -9,8 +9,10 @@ the program spelled from where the autoexec leaves the guest, and the TLINK map 
 variables. The call gives only what is the run's own, and the reply says which keys the recipe
 filled.
 
-It then lets the title and the attract run, reads the credits by name, and saves a picture of
-the screen.
+It then runs to the routine the title calls once both its planes are drawn, reads the credits
+by name, and saves a picture of the screen. Every arrival is a place in the game's code, on the
+normal core and a fixed clock: the dynamic core the game's conf keeps can pass a code breakpoint
+over, and its `cycles=max` would hand the game as many cycles a second as the host can.
 
 ## The game
 
@@ -40,13 +42,16 @@ path, a server that did not start).
 Give this to an MCP client with this server connected:
 
 > Derive the game's live-session conf with `SCRIPTS/dosbox-mcp-conf.sh`, then start from the
-> recipe `.scry/start/dos.json` in the `--cwd` checkout, with a window. Run five seconds, then ten
-> more, read `creditos`, save a picture of the screen and close.
+> recipe `.scry/start/dos.json` in the `--cwd` checkout, with a window, the normal core and
+> `cycles=fixed 50000`. Stop
+> at the game's first VESA call (`INT 10h AH=4Fh`) so its map is placed, run to
+> `titulo_dibuja_cred` counting `draw_block` on the way, read `creditos`, save a picture of the
+> screen and close.
 
 ## The transcript
 
 <!-- demo-transcript:begin -->
-The run is 6 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 8 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
@@ -58,6 +63,7 @@ The run is 6 calls; these are the ones that show how it is done, and every call 
 {
   "profile": "<host>",
   "shared": true,
+  "flags": ["-set", "cpu core=normal", "-set", "cpu cycles=fixed 50000"],
   "captures_dir": "<host>",
   "cwd": "<host>"
 }
@@ -69,7 +75,7 @@ The run is 6 calls; these are the ones that show how it is done, and every call 
   "status": "ok",
   "pid": "<volatile>",
   "conf": "<volatile>",
-  "conf_digest": "fa6947f920eb337d",
+  "conf_digest": "<volatile>",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -98,7 +104,6 @@ The run is 6 calls; these are the ones that show how it is done, and every call 
       "why": "the table carries no symbol kinds (a link map lists none), so its code symbols cannot be told from the rest"
     }
   },
-  "note": "this session runs the dynamic core, which checks breakpoints only between compiled blocks, so a code breakpoint inside one can be passed over and a run that never reaches it proves nothing. Start on the normal core: `start(flags=[\"-set\", \"cpu core=normal\"])`",
   "kept": "kept 1 (promote to review)",
   "profile": {
     "name": "<volatile>",
@@ -111,7 +116,73 @@ The run is 6 calls; these are the ones that show how it is done, and every call 
 
 </details>
 
-**4. `read_memory`**: OK no credits: creditos holds 0
+**5. `run_to`**: OK title: stopped at titulo_dibuja_cred
+
+The run arrives by the game's own routine, not by time: `run_to` stops where the title calls its credits line, once both planes are drawn, so the picture that follows is the same on any host.
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "titulo_dibuja_cred",
+  "control": "draw_block",
+  "seconds": 120
+}
+```
+
+```json
+{
+  "summary": "run_to titulo_dibuja_cred: TARGET at 0951:00000819, control counted 35",
+  "status": "ok",
+  "verdict": "TARGET",
+  "target": "08EB:0E79",
+  "ref": "titulo_dibuja_cred",
+  "pc": "0951:00000819",
+  "cpu_mode": "real",
+  "target_disarmed": true,
+  "control_hits": 35,
+  "controls": [
+    {"ref": "draw_block", "at": "08EB:46F4", "hits_in_run": 35, "removed": true}
+  ],
+  "frame": 125,
+  "regs": {
+    "EAX": "0x0000491e",
+    "EBX": "0x00007fff",
+    "ECX": "0x005b0000",
+    "EDX": "0x00000089",
+    "ESI": "0x0000c7cb",
+    "EDI": "0x0000bfcb",
+    "EBP": "0x0000b1aa",
+    "ESP": "0x0000b19e",
+    "EIP": "0x00000819",
+    "CS": "0x0951",
+    "DS": "0x1b73",
+    "ES": "0x491e",
+    "FS": "0x0008",
+    "GS": "0x0000",
+    "SS": "0x1b73"
+  },
+  "watches": [],
+  "cause": "run_to's target titulo_dibuja_cred at 0951:00000819",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 3,
+  "instruction": {
+    "address": "0951:00000819",
+    "bytes": "52",
+    "text": "push dx",
+    "flow": "sequential",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "titulo_dibuja_cred",
+    "delta": 0
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**6. `read_memory`**: OK no credits: creditos holds 0
 
 `creditos` is read by name: the map `start` placed names the game's own variables at the segment DOS loaded it at, the same name the arcade build's map gives.
 

@@ -35,7 +35,7 @@ The demo opens a window, scaled up four times by its conf, so the painting can b
 in it needs the window. Deluxe Paint takes the mouse as movement events, so it needs a DOSBox-X
 whose input device carries relative motion (the repository's REFERENCE.md, *Input and the
 screen*), named with `--binary` or `DOSBOX_X_BINARY`; on a build without it the demo stops at its
-second step, saying so, because a drag would paint nothing between its button events.
+third step, saying so, because a drag would paint nothing between its button events.
 
 - `--cwd PATH` (absolute or `~`-led) is the directory holding `DP.EXE`, which the session runs
   from and mounts as C:. It is hidden in the transcript as `<host>`.
@@ -56,9 +56,9 @@ Give this to an MCP client with this server connected:
 
 > Start DOSBox-X windowed on `demos/dpaint/dpaint.conf`,
 > running from `/path/to/your/dpaint2`, with `DP.EXE f` as the
-> program and the log in a file. Run
-> 400 retraces and tell me where its data segment is. Load the screen map
-> `dpaint-screen-map.json` beside the conf and tell me which screen this is. Pick blue off the
+> program and the log in a file. Load the screen map
+> `dpaint-screen-map.json` beside the conf, run until it names the painting screen, and tell me
+> where DOS loaded the program and so where its data segment is. Pick blue off the
 > palette, start a value scan of the data segment, keep what holds 9; pick orange, keep what
 > holds 55, and tell me which survivors are static data and which are in the stack's frames.
 > Close the scan and watch the first static one, then paint a sunset, one call a shape: a peach
@@ -73,7 +73,7 @@ Give this to an MCP client with this server connected:
 | Family | Calls |
 |---|---|
 | Session | `start` (windowed, running the program from `cwd`), `close` |
-| Advance | `run_for` by retraces on the conf's fixed clock |
+| Advance | `screen_wait` until the map names the painting screen: the program has no symbols, no log and no place that runs once per change |
 | Input | `send_mouse` by control name off the map, at screen pixels, and as drags; `send_keys` for the word |
 | Scan | `scan` (`start`, `filter` twice, `clear`) |
 | Declarations | `watch_add` (the colour byte in view at every stop), `declaration_clear(kind="watch")` |
@@ -88,9 +88,9 @@ two honest runs (process ids, ports, wall-clock times, temporary paths, the host
 and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 <!-- demo-transcript:begin -->
-The run is 22 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 23 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
-**5. `send_mouse`**: OK blue: blue picked off the palette
+**6. `send_mouse`**: OK blue: blue picked off the palette
 
 Tools and colours are picked by name: the screen map says where `blue` sits on the palette, and `send_mouse` with a `target` moves the guest's own mouse driver there and presses. The script holds no coordinates.
 
@@ -105,7 +105,7 @@ Tools and colours are picked by name: the screen map says where `blue` sits on t
 
 ```json
 {
-  "summary": "send_mouse: pointer at 300,179, program's own pointer not read; posted, unverified, 21 retraces to frame 421",
+  "summary": "send_mouse: pointer at 300,179, program's own pointer not read; posted, unverified, 21 retraces to frame 28",
   "status": "ok",
   "x": 300,
   "y": 179,
@@ -121,39 +121,14 @@ Tools and colours are picked by name: the screen map says where `blue` sits on t
   },
   "driver_arrived": true,
   "polls": 21,
-  "pc": "100B:000002D1",
+  "pc": "<volatile>",
   "cpu_mode": "real",
   "stop_seq": 23,
-  "frame": 421,
-  "instruction": {
-    "address": "100B:000002D1",
-    "bytes": "50",
-    "text": "push ax",
-    "flow": "sequential",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {"available": false, "why": "no symbol table is loaded"},
-    "delta": {"available": false, "why": "no symbol table is loaded"}
-  },
-  "regs": {
-    "EAX": "0x0000a030",
-    "EBX": "0x00001094",
-    "ECX": "0x005b0000",
-    "EDX": "0x000000fe",
-    "ESI": "0x00000008",
-    "EDI": "0x0000a0ae",
-    "EBP": "0x0000a03e",
-    "ESP": "0x0000a02a",
-    "EIP": "0x000002d1",
-    "CS": "0x100b",
-    "DS": "0x31b2",
-    "ES": "0x0000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x31b2"
-  },
+  "frame": 28,
+  "instruction": "<volatile>",
+  "regs": "<volatile>",
   "watches": [],
-  "cause": "the retrace the input's post ran to, at 100B:000002D1",
+  "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "motion": true,
   "verify": {
@@ -169,7 +144,7 @@ Tools and colours are picked by name: the screen map says where `blue` sits on t
 
 </details>
 
-**9. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above 9FF8, and 4 static ones from 31B2:017C
+**10. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above A02A, and 4 static ones from 31B2:017C
 
 A value scan, the cheat finder's trick done through a debugger. The first scan kept every byte of the data segment, the filter after picking blue kept those holding blue's index, and this one, after orange, keeps those that held each in turn. The survivors are of two kinds, told apart by where they live: copies in the stack's frames, and static bytes in the data segment.
 
@@ -207,7 +182,7 @@ A value scan, the cheat finder's trick done through a debugger. The first scan k
 
 </details>
 
-**18. `read_memory`**: OK sun row: the row reads peach x 25, then yellow x 51, then peach x 52
+**19. `read_memory`**: OK sun row: the row reads peach x 25, then yellow x 51, then peach x 52
 
 The picture is checked by reading it back: a row of the screen comes out of video memory as colours and run lengths, in the order the strokes were painted.
 

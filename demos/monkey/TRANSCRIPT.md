@@ -2632,8 +2632,8 @@
   "entries": 256,
   "image": {
     "path": "./tmp/demos/monkey/screen.png",
-    "bytes": 22222,
-    "sha256": "4ea7e680152e9e1d2bbdabc9584775104b0cacd08c7bbe9fe3ef4ed93365de8a",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 640,
     "height": 400,
     "scale": 2,
@@ -2752,7 +2752,7 @@ Also attached: image/png.
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
-  "draft": ["start/monkey"],
+  "draft": "<volatile>",
   "session": "<volatile>"
 }
 ```
