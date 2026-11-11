@@ -59,6 +59,8 @@ TRACE_CELL = "AA a DOSTRACE restarted with a call open gives the new file no row
 CDVOL_TRIES = 3
 CDVOL_CELL = "AA full MSCDEX channel volume plays the track at its own level, not amplified"
 EDGE_CELL = "AA a BPIF row stops the machine once per false-to-true change, not while it holds"
+STOP_CLOCK_CELL = ("AA a stop of a guest the host cannot keep up with holds its clock: the next "
+                   "one-frame recording spans what it says")
 AA_CELLS = cells(
     (FILE_CELLS[0], "MEMDUMPLIN usage text: a dump by linear address, the name as typed"),
     (FILE_CELLS[1], "MEMDUMPLIN: a dump past the end of the 32-bit linear space"),
@@ -78,6 +80,7 @@ AA_CELLS = cells(
     (TRACE_CELL, "dos.cpp DOSTRACE: a call begun in an earlier trace has no row in the new file"),
     (CDVOL_CELL, "cdrom_image.cpp: the volume scales each sample once, not the mixer too"),
     (EDGE_CELL, "README.debugger BPIF: a row rises once per false-to-true change of its condition"),
+    (STOP_CLOCK_CELL, "dosbox.cpp Normal_Loop: a stop adds no tick the parked CPU did not run"),
 )
 #: A run of STI, of CLI and of STI;NOP pairs, each ended by RET.
 DYNAMIC_PROGRAMS = {
@@ -347,6 +350,29 @@ def _cd_volume() -> None:
             f"peak {full} at volume 255 and {half} at 128 (ratio {ratio:.3f}); the tone's own peak "
             f"is {CDVOL_TONE_PEAK}; {said_full}; {said_half}")
 
+#: More cycles a millisecond than any host emulates, spent by a guest that never halts
+#: (`JMP $`), so the emulator owes ticks at every stop.
+STOP_CLOCK_CYCLES = 3_000_000
+SPIN_GUEST = b"\xEB\xFE"
+
+
+def _stop_clock() -> None:
+    """A stop with ticks still owed: the recording that follows spans exactly the emulated
+    time it reports, which holds only if no tick was added while the CPU was parked."""
+    where = M.tmp("-stopclock-")
+    (where / "SPIN.COM").write_bytes(SPIN_GUEST)
+    conf = where / "behind.conf"
+    conf.write_text("[sdl]\nautolock=false\n[dosbox]\nmachine=svga_s3\nmemsize=16\n[cpu]\n"
+                    f"core=normal\ncputype=pentium\ncycles=fixed {STOP_CLOCK_CYCLES}\n"
+                    f'[autoexec]\nmount c "{where}"\nc:\nSPIN.COM\n', encoding="ascii")
+    boot(conf=conf, cwd=where, captures_dir=M.fresh("-cap"))
+    M.call(server.resume, seconds=2)
+    M.call(server.stop)
+    wav = M.call(server.audio_record, frames=1, seconds=20, dest=M.fresh(".wav"))
+    close_whatever()
+    M.judge(STOP_CLOCK_CELL, ok(wav) and wav.get("verdict") == "ELAPSED"
+            and isinstance(wav.get("emulated_s"), float), said(wav, 200))
+
 #: `mov ah,8; int 21h` (waits for a key, inside DOS), then echoes it with AH=2 and exits.
 TRACE_GUEST = bytes.fromhex("b408cd2188c2b402cd21b8004ccd21")
 TRACE_WAIT_S = 3
@@ -482,6 +508,7 @@ def section_aa() -> None:
     _tapdel_auto()
     _dostrace_restart()
     _cd_volume()
+    _stop_clock()
     _dpmi_files()
     _before_page_tables()
     _scrub()
