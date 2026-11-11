@@ -1249,6 +1249,8 @@ def test_the_modifier_vocabulary_is_the_dos_keyboard_s() -> None:
      {"path": _abs("x", "m.map"), "types": _abs("x", "t")}),
     ("capture_frame", {"frame": -1, "dest": _abs("x", "s.png")},
      {"frame": 3, "dest": _abs("x", "s.png")}),
+    ("capture_frame", {"frame": 3, "dest": _abs("x", "s%03d.png")},
+     {"frame": 3, "dest": _abs("x", "s.png")}),
     ("capture_frame", {"frame": 3, "dest": _abs("x", "s.png"), "capture_path": "c.avi"},
      {"frame": 3, "dest": _abs("x", "s.png"), "capture_path": _abs("x", "c.avi")}),
 ])

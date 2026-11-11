@@ -1207,6 +1207,17 @@ def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
     assert named["capture_path"] == str(own)
 
 
+def test_capture_frame_refuses_a_numbering_template_in_the_file_name_it_was_given(
+        tmp_path: Path) -> None:
+    """The name's `%` is judged as the caller wrote it, before the file-name rule takes it out,
+    and with no session: a list of steps holding it is refused before any step runs."""
+    dstate.STATE.session = None
+    got = server.capture_frame(frame=3, dest=str(tmp_path / "shot%03d.png"))
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert "containing `%` is refused" in got["message"], got
+    assert list(tmp_path.iterdir()) == []
+
+
 def test_close_says_how_the_session_ended() -> None:
     class Ended(FakeSession):
         def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
