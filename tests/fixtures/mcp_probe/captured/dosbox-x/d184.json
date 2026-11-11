@@ -1,0 +1,106 @@
+{
+ "task": {
+  "id": "d184",
+  "prompt": "The machine is stopped, its screen map is loaded and a breakpoint is declared at the routine draw_done. Let it run until the mapped screen called menu is on screen, judging the screen only after draw_done has run rather than every frame, and stop there.",
+  "tool": "screen_wait",
+  "args": {
+   "screen": "menu",
+   "on_breakpoint": "draw_done"
+  },
+  "allow": [
+   "seconds"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d184: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"menu\", \"on_breakpoint\": \"draw_done\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

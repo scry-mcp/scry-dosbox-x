@@ -1,0 +1,115 @@
+{
+ "task": {
+  "id": "d186",
+  "prompt": "The machine is stopped, its screen map is loaded and a breakpoint is declared at draw_done. Let it run until the mapped screen called title is on screen, but only consider the firings of draw_done where register AX equals 3, and stop there.",
+  "tool": "screen_wait",
+  "args": {
+   "screen": "title",
+   "on_breakpoint": "draw_done",
+   "condition": {
+    "any_of": [
+     "AX==3",
+     "AX == 3",
+     "AX==0x3",
+     "AX==03",
+     "AX==0003"
+    ]
+   }
+  },
+  "allow": [
+   "seconds"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==0x3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d186: {\"tool\": \"screen_wait\", \"args\": {\"screen\": \"title\", \"on_breakpoint\": \"draw_done\", \"condition\": \"AX==3\"}}"
+   ],
+   "right": true
+  }
+ ]
+}
