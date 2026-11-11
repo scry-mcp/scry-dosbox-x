@@ -129,57 +129,57 @@ The game's own script is data in memory, so the demo rewrites it. It found the l
   "steps": [
     {
       "op": "write",
-      "ref": "82DB:000C",
+      "ref": "82DD:000C",
       "data_hex": "1c6e14020f4e6f7468696e672c20696620796f75277265206120536372792064656275676765722eff0349742073746f70732074696d652c207265616473206d696e647320616e6420706c617973207468652074756e65732eff034576656e206d79206d696e642e00ae02d80f41206465627567676572207468617420706c61"
     },
     {
       "op": "write",
-      "ref": "82E3:000C",
+      "ref": "82E5:000C",
       "data_hex": "7973206d757369633f20204973205448415420776861742049276d2068656172696e673f3f00ae0214020f546861742773207468652043442e202053637279206a75737420746f6c6420697420776865726520746f2073746172742e00ae02189efd"
     },
     {
       "op": "write",
-      "ref": "82C3:000C",
+      "ref": "82C5:000C",
       "data_hex": "d80f57686f20746175676874206120646562756767657220746f20646f20746861743f00ae0214020f41206d6f64656c2e20204c6976657320696e206120626f782c20726561647320796f7572206d656d6f72792c206e6576657220736c656570732e00ae02d80f4c696b65206f6e65206f662074686f736520626967204149"
     },
     {
       "op": "write",
-      "ref": "82CB:000C",
+      "ref": "82CD:000C",
       "data_hex": "20636f6d70616e6965733f00ae0214020f5468656d3f20204120646f75626c6f6f6e206120776f72642e202054776f20696620796f75207361792060706c65617365602e00ae02d80f416e6420536372793f00ae0214020f467265652e2020416e64206974206e657665722073617973206041732061206c61726765206c616e"
     },
     {
       "op": "write",
-      "ref": "82D3:000C",
+      "ref": "82D5:000C",
       "data_hex": "6775616765207069726174655e6000ae0214020f48656172642061626f757420746865206f72616e6765207479636f6f6e3f00ae02d80f546865206f6e652077686f2063616c6c73206576657279206275672066616b65206e6577733f00ae02181e01"
     },
     {
       "op": "write",
-      "ref": "82EB:000D",
+      "ref": "82ED:000D",
       "data_hex": "14020f4e6f772068652077616e747320746f2072656e616d6520414920746f2053492eff0360537570657220496e74656c6c6967656e6365602e20205472656d656e646f75732e202054686520626573742e00ae02d80f446f65732053492072656c65617365206974732066696c65733f00ae0214020f536372792072656c65"
     },
     {
       "op": "write",
-      "ref": "82F3:000D",
+      "ref": "82F5:000D",
       "data_hex": "617365732065766572792066696c652069742066696e64732e202045766572792e20204c6173742e20204f6e652eff03556e6c696b652074686f7365204570737465696e2066696c65732e20204168656d2100ae02d80f416e642068697320726f636b657420667269656e643f00ae0214020f546865206f6e652077686f7365"
     },
     {
       "op": "write",
-      "ref": "82FB:000D",
+      "ref": "82FD:000D",
       "data_hex": "20686561727420666c6577206f7574207468726f756768206869732061726d3fff0354776963652eff03536372792073746570706564207468726f756768206974206672616d65206279206672616d652e20205374696c6c206e6f74206120776176652e00ae02d80f53686f756c642053637279206465627567207468656d20"
     },
     {
       "op": "write",
-      "ref": "8303:000D",
+      "ref": "8305:000D",
       "data_hex": "626f74683f00ae0214020f4e6f7420656e6f7567682052414d206f6e20746869732077686f6c652069736c616e642c20626f792e00ae02d80f476f7420616e79206a6f6b6573206c6566743f00ae0214020f506c656e74792e2020427574206d79206c6174652073686f7720676f742063616e63656c6c65642eff03536f2053"
     },
     {
       "op": "write",
-      "ref": "830B:000D",
+      "ref": "830D:000D",
       "data_hex": "6372792072756e73206974206e6f772e202048756d6f722066697273742c2063726173686573207365636f6e642e00ae02d80f49276c6c206a757374206265206f666620746f207365656b206d7920666f7274756e65206e6f772e00ae0214020f54616b652053637279207769746820796f752eff03416e6420636c65617220"
     },
     {
       "op": "write",
-      "ref": "8313:000D",
+      "ref": "8315:000D",
       "data_hex": "7468617420627265616b706f696e74206f6e20796f757220776179206f75742e00ae02183efd"
     }
   ],
@@ -248,8 +248,8 @@ The game's own script is data in memory, so the demo rewrites it. It found the l
       "reply": {
         "summary": "<volatile>",
         "status": "ok",
-        "ref": "8313:000D",
-        "seg_off": "8313:0000000D",
+        "ref": "8315:000D",
+        "seg_off": "8315:0000000D",
         "bytes_written": 38,
         "readback": "7468617420627265616b706f696e74206f6e20796f757220776179206f75742e00ae02183efd",
         "verified": true,
@@ -279,7 +279,7 @@ The game asks the CD driver for audio through interrupt 2Fh. `breakpoint_interru
 
 ```json
 {
-  "ref": "2209:1D78",
+  "ref": "220B:1D78",
   "length": 22
 }
 ```
@@ -288,8 +288,8 @@ The game asks the CD driver for audio through interrupt 2Fh. `breakpoint_interru
 {
   "summary": "<volatile>",
   "status": "ok",
-  "ref": "2209:1D78",
-  "seg_off": "2209:00001D78",
+  "ref": "220B:1D78",
+  "seg_off": "220B:00001D78",
   "length": 22,
   "hex": "1600840003000000000000000001002d2400a82f0000",
   "session": "<volatile>"
@@ -298,7 +298,7 @@ The game asks the CD driver for audio through interrupt 2Fh. `breakpoint_interru
 
 </details>
 
-**43. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.61 dB
+**43. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
 
 The theme the game played is recorded off the emulated mixer and compared with the same track read off the disc image. The reply says whether the two are equal (`exact`) and, when they are not, how far apart (`snr_db`, `class`), so what the demo claims about the music is a measurement, not a listening test.
 
@@ -318,7 +318,7 @@ The theme the game played is recorded off the emulated mixer and compared with t
   "summary": "<volatile>",
   "status": "ok",
   "exact": false,
-  "snr_db": 48.61,
+  "snr_db": 48.62,
   "class": "audible",
   "envelope_correlation": 1.0,
   "onset_delta_ms": 0.0,

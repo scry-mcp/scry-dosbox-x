@@ -56,10 +56,15 @@ WAIT_LOOP = "where in the game's wait loop the stop landed, which follows the CD
 SKY = {"op": "send_mouse", "x": 250, "y": 20}
 #: Where the pointer goes once a line is picked: above the menu, so the next one is judged whole.
 AWAY = {"op": "send_mouse", "x": 160, "y": 60}
-#: Retraces from a click to the menu it brings, on the conf's fixed clock, plus ten: the menus
-#: are picked from as they come, as a player would. After a line is picked the pointer moves
-#: away first; after the lookout is clicked it stays on him, off the menu.
-GREET_FRAMES, ASK_FRAMES, TELL_FRAMES = 77 + 10, 1036 + 10, 1253 + 10
+#: How long a step waits for the screen it brings: a walk or a speech ends well inside it on a
+#: host of any speed, and the wait ends at the screen, never at the bound.
+ARRIVE_S = 180
+#: A screen is judged every so many retraces: each judgement stops the game and reads the frame,
+#: and the screens waited for last seconds.
+JUDGED_EVERY = 7
+#: The retraces the game takes to answer the pointer once a screen is up, counted from the
+#: screen and so the same on any host.
+SETTLE = {"op": "run_for", "frames": 10}
 
 
 def disc(run: Run) -> Path:
@@ -134,14 +139,17 @@ def act(step: str, ops: list[dict[str, Any]], what: str) -> Step:
 
 
 def go(step: str, ops: list[dict[str, Any]], screen: str) -> Step:
-    """A gesture and the screen it lands on, in one call: the last reply is
-    `screen_map_find`'s, and it must name `screen`."""
+    """A gesture and the screen it brings, in one call: the machine runs until the map names
+    `screen`, however long this host takes to get there, and the last reply,
+    `screen_map_find`'s, must name it."""
     def check(reply: Reply, run: Run) -> str:
         performed("")(reply, run)
         said: str = found(screen)(Reply(reply["ran"][-1]["reply"]), run)
         return said
-    return Step(step, "perform", {"steps": [*ops, {"op": "screen_map_find"}],
-                                  "summaries": True}, check)
+    return Step(step, "perform",
+                {"steps": [*ops, {"op": "screen_wait", "screen": screen, "every": JUDGED_EVERY,
+                                  "seconds": ARRIVE_S}, SETTLE,
+                           {"op": "screen_map_find"}], "summaries": True}, check)
 
 
 def replies(reply: Reply) -> list[dict[str, Any]]:
@@ -157,17 +165,22 @@ def replies(reply: Reply) -> list[dict[str, Any]]:
 
 
 def hover(target: str) -> list[dict[str, Any]]:
-    """The pointer over a control, then the retraces the game takes to answer it."""
-    return [{"op": "send_mouse", "target": target}, {"op": "run_for", "frames": 5}]
+    """The pointer over a control."""
+    return [{"op": "send_mouse", "target": target}]
+
+
+def run_ms(milliseconds: int) -> dict[str, Any]:
+    """That much of the guest's time, however long the host takes over it."""
+    return {"op": "run_for", "milliseconds": milliseconds, "seconds": ARRIVE_S}
 
 
 def click(target: str, action: str = "click") -> dict[str, Any]:
     return {"op": "send_mouse", "target": target, "button": "left", "action": action}
 
 
-def ran(reply: Reply, run: Run) -> str:
-    expect(reply["verdict"] == "ELAPSED", f"verdict {reply['verdict']}")
-    return f"{reply['emulated_after_s'] - reply['emulated_before_s']:.1f} s of the guest's time"
+def arrived(reply: Reply, run: Run) -> str:
+    expect(reply["verdict"] == "TARGET", f"verdict {reply['verdict']}")
+    return f"the machine run until the map names {reply['screen']}"
 
 
 # ---------------------------------------------------------------- the lookout's script
@@ -327,48 +340,40 @@ def same_track(reply: Reply, run: Run) -> str:
 STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
          volatile={"summary": "it carries how long the debugger took to answer"}),
-    Step("menu", "run_for", {"milliseconds": 11000, "seconds": 120}, ran),
     Step("map", "screen_map_write", {"method": "load", "path": HERE / "monkey-screen-map.json"},
          lambda reply, run: f"{reply['screens']} screens, {reply['controls']} controls"),
+    Step("menu", "screen_wait", {"screen": "language", "every": JUDGED_EVERY,
+                                 "seconds": ARRIVE_S}, arrived),
     find("languages", "language"),
-    act("english", [click("english", "double"), {"op": "run_for", "milliseconds": 24000}],
+    act("english", [click("english", "double"), run_ms(24000)],
         "a double click on English, and the intro run on"),
-    act("skip", [{"op": "send_keys", "keys": ["escape"]}, {"op": "run_for", "milliseconds": 6000},
-                 {"op": "send_keys", "keys": ["escape"]}, {"op": "run_for", "milliseconds": 3000},
+    act("skip", [{"op": "send_keys", "keys": ["escape"]}, run_ms(6000),
+                 {"op": "send_keys", "keys": ["escape"]}, run_ms(3000),
                  {"op": "send_mouse", "x": 319, "y": 199}, {"op": "send_mouse", "x": 0, "y": 0},
                  SKY], "Escape twice, as a player skips the credits and the opening scene; "
                        "behind the title card, the pointer swept to both corners so the game's "
                        "own pointer and the driver's agree"),
-    go("dock", [{"op": "run_for", "milliseconds": 16000}], "dock"),
+    go("dock", [], "dock"),
     go("hover poster", hover("poster"), "dock: walk to poster"),
-    go("to the poster", [click("poster"), {"op": "run_for", "milliseconds": 8000}],
-       "by the poster"),
+    go("to the poster", [click("poster")], "by the poster"),
     go("look at", [click("look_at"), *hover("poster")], "by the poster: look at poster"),
-    go("read", [click("poster"), {"op": "run_for", "milliseconds": 1500}],
-       "poster: re-elect governor marley"),
-    go("read on", [{"op": "run_for", "milliseconds": 2000}], "poster: only one candidate"),
-    go("done reading", [{"op": "run_for", "milliseconds": 3500}],
-       "by the poster: walk to poster"),
-    go("way back", [click("way_back"), {"op": "run_for", "milliseconds": 4000}],
-       "dock: walk to cliffside"),
-    go("climb", [click("cliffside"), {"op": "run_for", "milliseconds": 8000}, SKY,
-                 {"op": "run_for", "frames": 10}], "cliff"),
+    go("read", [click("poster")], "poster: re-elect governor marley"),
+    go("read on", [], "poster: only one candidate"),
+    go("done reading", [], "by the poster: walk to poster"),
+    go("way back", [click("way_back")], "dock: walk to cliffside"),
+    go("climb", [click("cliffside"), SKY], "cliff"),
     go("talk to", [click("talk_to"), *hover("lookout")], "cliff: talk to lookout"),
-    go("greet", [click("lookout"), {"op": "run_for", "frames": GREET_FRAMES}],
-       "greeting choices"),
+    go("greet", [click("lookout")], "greeting choices"),
     go("hover novel", hover("characters_in_a_novel"), "greeting: characters in a novel"),
-    go("ask", [click("characters_in_a_novel"), AWAY, {"op": "run_for", "frames": ASK_FRAMES}],
-       "name choices"),
+    go("ask", [click("characters_in_a_novel"), AWAY], "name choices"),
     go("hover name", hover("im_guybrush_threepwood"), "name: im guybrush threepwood"),
-    go("tell", [click("im_guybrush_threepwood"), AWAY, {"op": "run_for", "frames": TELL_FRAMES}],
-       "name choices again"),
+    go("tell", [click("im_guybrush_threepwood"), AWAY], "name choices again"),
     go("hover heck", hover("whats_wrong_with_my_name"), "name: whats wrong with my name"),
     Step("save", "state_write", {"method": "save", "name": "comeback"},
          lambda reply, run: "the machine saved with the comeback under the pointer",
          volatile={"summary": "it carries the state's size and time",
                    "bytes": "the state is compressed, and its size follows what the guest holds"}),
-    go("before", [click("whats_wrong_with_my_name"), {"op": "run_for", "milliseconds": 4000}],
-       "lookout: sell shoes"),
+    go("before", [click("whats_wrong_with_my_name")], "lookout: sell shoes"),
     Step("restore", "state_write", {"method": "load", "name": "comeback"},
          lambda reply, run: "the machine back to before the click"),
     find("heck again?", "name: whats wrong with my name"),
@@ -412,14 +417,13 @@ STEPS = [
                     "`class`), so what the demo claims about the music is a measurement, not a "
                     "listening test.")),
     find("music?", "guybrush: a debugger that plays music"),
-    go("talk 1", [{"op": "run_for", "milliseconds": 28000}], "lookout: the orange tycoon"),
-    go("talk 2", [{"op": "run_for", "milliseconds": 16000}], "lookout: those files"),
-    go("talk 3", [{"op": "run_for", "milliseconds": 12000}], "lookout: still not a wave"),
-    go("talk 4", [{"op": "run_for", "milliseconds": 12000}], "lookout: humor first"),
+    go("talk 1", [], "lookout: the orange tycoon"),
+    go("talk 2", [], "lookout: those files"),
+    go("talk 3", [], "lookout: still not a wave"),
+    go("talk 4", [], "lookout: humor first"),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png", "scale": 2},
          host.pictured),
-    go("goodbye", [{"op": "run_for", "milliseconds": 30000}, SKY,
-                   {"op": "run_for", "frames": 10}], "cliff"),
+    go("goodbye", [SKY], "cliff"),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
 ]
 
@@ -433,6 +437,14 @@ DEMO = Demo(
               **{key: WAIT_LOOP for key in ("summary", "pc", "regs", "instruction", "cause",
                                             "stop_seq", "stops", "polls",
                                             "output_bytes_dropped")},
+              **{key: "the emulator's own count, a few cycles apart from run to run: the "
+                      "host's events reach the guest when the host delivers them"
+                 for key in ("cycles", "emulated_s", "emulated_before_s", "emulated_after_s")},
+              **{key: "the retrace a wait saw its screen at, which follows the host"
+                 for key in ("frame", "frame_before", "frame_after", "identified_at_stop",
+                             "retrace_pending")},
+              "conf_digest": "the conf names the reader's own directories",
+              "window": "the host's display and the window it fits",
               "session": "it counts the debugger's output dropped while the game ran, when any "
                          "was, which follows the host's clock"})
 

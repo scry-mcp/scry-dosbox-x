@@ -20,7 +20,7 @@
   "status": "ok",
   "pid": "<volatile>",
   "conf": "./tmp/demos/monkey/monkey.conf",
-  "conf_digest": "6a9bcbf4f99ebccc",
+  "conf_digest": "<volatile>",
   "watched": true,
   "bound_s": 1800,
   "elapsed_s": "<volatile>",
@@ -32,70 +32,30 @@
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
-  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
+  "window": "<volatile>",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
+  "kept": "kept 1 (promote to review)",
   "session": "<volatile>"
 }
 ```
 
 </details>
 
-**2. `run_for`**: OK menu: 11.0 s of the guest's time
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "milliseconds": 11000,
-  "seconds": 120
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": "<volatile>",
-  "pc": "<volatile>",
-  "cpu_mode": "real",
-  "frame": 681,
-  "regs": "<volatile>",
-  "watches": [],
-  "cause": "<volatile>",
-  "e9": {
-    "lines_total": 1,
-    "truncated": false,
-    "lines": ["Bochs port E9h: STUB  . scry device=present proto=6 motion=1"],
-    "mark": "<volatile>"
-  },
-  "stop_seq": "<volatile>",
-  "instruction": "<volatile>",
-  "emulated_before_s": 0.00085,
-  "emulated_after_s": 11.00330265,
-  "frame_before": 0,
-  "frame_after": 681,
-  "cycles": 172220499,
-  "session": "<volatile>"
-}
-```
-
-</details>
-
-**3. `screen_map_write`**: OK map: 23 screens, 60 controls
+**2. `screen_map_write`**: OK map: 23 screens, 60 controls
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "method": "load",
-  "path": "./demos/monkey/monkey.screen-map.json"
+  "path": "./demos/monkey/monkey-screen-map.json"
 }
 ```
 
@@ -103,11 +63,49 @@
 {
   "summary": "<volatile>",
   "status": "ok",
-  "path": "./demos/monkey/monkey.screen-map.json",
+  "path": "./demos/monkey/monkey-screen-map.json",
   "application": "monkey",
   "mode": "verified",
   "screens": 23,
   "controls": 60,
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**3. `screen_wait`**: OK menu: the machine run until the map names {'name': 'language', 'layer': 'file'}
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "screen": "language",
+  "every": 7,
+  "seconds": 180
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "TARGET",
+  "predicate": "screen",
+  "already": false,
+  "waited_s": "<volatile>",
+  "polls": "<volatile>",
+  "sampled_every": 7,
+  "screen": {"name": "language", "layer": "file"},
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
   "session": "<volatile>"
 }
 ```
@@ -152,7 +150,7 @@
 {
   "steps": [
     {"op": "send_mouse", "target": "english", "button": "left", "action": "double"},
-    {"op": "run_for", "milliseconds": 24000}
+    {"op": "run_for", "milliseconds": 24000, "seconds": 180}
   ],
   "summaries": true
 }
@@ -178,18 +176,18 @@
         "polls": "<volatile>",
         "pc": "<volatile>",
         "cpu_mode": "real",
-        "frame": 2392,
+        "frame": "<volatile>",
         "regs": "<volatile>",
         "watches": [],
         "cause": "<volatile>",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
         "stop_seq": "<volatile>",
         "instruction": "<volatile>",
-        "emulated_before_s": 11.52048965,
-        "emulated_after_s": 35.5251577,
-        "frame_before": 712,
-        "frame_after": 2392,
-        "cycles": 466932355,
+        "emulated_before_s": "<volatile>",
+        "emulated_after_s": "<volatile>",
+        "frame_before": "<volatile>",
+        "frame_after": "<volatile>",
+        "cycles": "<volatile>",
         "session": "<volatile>"
       }
     }
@@ -216,9 +214,9 @@
 {
   "steps": [
     {"op": "send_keys", "keys": ["escape"]},
-    {"op": "run_for", "milliseconds": 6000},
+    {"op": "run_for", "milliseconds": 6000, "seconds": 180},
     {"op": "send_keys", "keys": ["escape"]},
-    {"op": "run_for", "milliseconds": 3000},
+    {"op": "run_for", "milliseconds": 3000, "seconds": 180},
     {"op": "send_mouse", "x": 319, "y": 199},
     {"op": "send_mouse", "x": 0, "y": 0},
     {"op": "send_mouse", "x": 250, "y": 20}
@@ -278,12 +276,12 @@
           "buttons": [],
           "bios_mode": "0x13"
         },
-        "arrived": true,
+        "driver_arrived": true,
         "polls": "<volatile>",
         "pc": "<volatile>",
         "cpu_mode": "real",
         "stop_seq": "<volatile>",
-        "frame": 3077,
+        "frame": "<volatile>",
         "instruction": "<volatile>",
         "regs": "<volatile>",
         "watches": [],
@@ -319,7 +317,8 @@
 ```json
 {
   "steps": [
-    {"op": "run_for", "milliseconds": 16000},
+    {"op": "screen_wait", "screen": "dock", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -333,11 +332,16 @@
   "ran": [
     {
       "step": 0,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 2,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -364,12 +368,12 @@
       }
     }
   ],
-  "steps_total": 2,
+  "steps_total": 3,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 2,
+  "steps_completed": 3,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -386,7 +390,8 @@
 {
   "steps": [
     {"op": "send_mouse", "target": "poster"},
-    {"op": "run_for", "frames": 5},
+    {"op": "screen_wait", "screen": "dock: walk to poster", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -405,11 +410,16 @@
     },
     {
       "step": 1,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 2,
       "op": "run_for",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
-      "step": 2,
+      "step": 3,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -426,12 +436,12 @@
       }
     }
   ],
-  "steps_total": 3,
+  "steps_total": 4,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 3,
+  "steps_completed": 4,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -448,7 +458,8 @@
 {
   "steps": [
     {"op": "send_mouse", "target": "poster", "button": "left", "action": "click"},
-    {"op": "run_for", "milliseconds": 8000},
+    {"op": "screen_wait", "screen": "by the poster", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -467,11 +478,16 @@
     },
     {
       "step": 1,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 3,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -498,12 +514,12 @@
       }
     }
   ],
-  "steps_total": 3,
+  "steps_total": 4,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 3,
+  "steps_completed": 4,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -521,308 +537,7 @@
   "steps": [
     {"op": "send_mouse", "target": "look_at", "button": "left", "action": "click"},
     {"op": "send_mouse", "target": "poster"},
-    {"op": "run_for", "frames": 5},
-    {"op": "screen_map_find"}
-  ],
-  "summaries": true
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "ran": [
-    {
-      "step": 0,
-      "op": "send_mouse",
-      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
-    },
-    {
-      "step": 1,
-      "op": "send_mouse",
-      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
-    },
-    {
-      "step": 2,
-      "op": "run_for",
-      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
-    },
-    {
-      "step": 3,
-      "op": "screen_map_find",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "matched": true,
-        "screen": "by the poster: look at poster",
-        "layer": "file",
-        "kind": "pixel",
-        "size": [320, 200],
-        "controls": [
-          {"name": "poster", "rect": [158, 76, 20, 24], "centre": [168, 88]}
-        ],
-        "session": "<volatile>"
-      }
-    }
-  ],
-  "steps_total": 4,
-  "truncated": false,
-  "ran_path": "<volatile>",
-  "replies_path": "<volatile>",
-  "stops": "<volatile>",
-  "steps_completed": 4,
-  "failed_at": {"available": false, "why": "no step failed"},
-  "held": 0,
-  "session": "<volatile>"
-}
-```
-
-</details>
-
-**11. `perform`**: OK read: the map says: poster: re-elect governor marley
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "steps": [
-    {"op": "send_mouse", "target": "poster", "button": "left", "action": "click"},
-    {"op": "run_for", "milliseconds": 1500},
-    {"op": "screen_map_find"}
-  ],
-  "summaries": true
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "ran": [
-    {
-      "step": 0,
-      "op": "send_mouse",
-      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
-    },
-    {
-      "step": 1,
-      "op": "run_for",
-      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
-    },
-    {
-      "step": 2,
-      "op": "screen_map_find",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "matched": true,
-        "screen": "poster: re-elect governor marley",
-        "layer": "file",
-        "kind": "pixel",
-        "size": [320, 200],
-        "controls": [],
-        "session": "<volatile>"
-      }
-    }
-  ],
-  "steps_total": 3,
-  "truncated": false,
-  "ran_path": "<volatile>",
-  "replies_path": "<volatile>",
-  "stops": "<volatile>",
-  "steps_completed": 3,
-  "failed_at": {"available": false, "why": "no step failed"},
-  "held": 0,
-  "session": "<volatile>"
-}
-```
-
-</details>
-
-**12. `perform`**: OK read on: the map says: poster: only one candidate
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "steps": [
-    {"op": "run_for", "milliseconds": 2000},
-    {"op": "screen_map_find"}
-  ],
-  "summaries": true
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "ran": [
-    {
-      "step": 0,
-      "op": "run_for",
-      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
-    },
-    {
-      "step": 1,
-      "op": "screen_map_find",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "matched": true,
-        "screen": "poster: only one candidate",
-        "layer": "file",
-        "kind": "pixel",
-        "size": [320, 200],
-        "controls": [],
-        "session": "<volatile>"
-      }
-    }
-  ],
-  "steps_total": 2,
-  "truncated": false,
-  "ran_path": "<volatile>",
-  "replies_path": "<volatile>",
-  "stops": "<volatile>",
-  "steps_completed": 2,
-  "failed_at": {"available": false, "why": "no step failed"},
-  "held": 0,
-  "session": "<volatile>"
-}
-```
-
-</details>
-
-**13. `perform`**: OK done reading: the map says: by the poster: walk to poster
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "steps": [
-    {"op": "run_for", "milliseconds": 3500},
-    {"op": "screen_map_find"}
-  ],
-  "summaries": true
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "ran": [
-    {
-      "step": 0,
-      "op": "run_for",
-      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
-    },
-    {
-      "step": 1,
-      "op": "screen_map_find",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "matched": true,
-        "screen": "by the poster: walk to poster",
-        "layer": "file",
-        "kind": "pixel",
-        "size": [320, 200],
-        "controls": [
-          {"name": "poster", "rect": [158, 76, 20, 24], "centre": [168, 88]},
-          {"name": "way_back", "rect": [0, 105, 10, 20], "centre": [5, 115]}
-        ],
-        "session": "<volatile>"
-      }
-    }
-  ],
-  "steps_total": 2,
-  "truncated": false,
-  "ran_path": "<volatile>",
-  "replies_path": "<volatile>",
-  "stops": "<volatile>",
-  "steps_completed": 2,
-  "failed_at": {"available": false, "why": "no step failed"},
-  "held": 0,
-  "session": "<volatile>"
-}
-```
-
-</details>
-
-**14. `perform`**: OK way back: the map says: dock: walk to cliffside
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "steps": [
-    {"op": "send_mouse", "target": "way_back", "button": "left", "action": "click"},
-    {"op": "run_for", "milliseconds": 4000},
-    {"op": "screen_map_find"}
-  ],
-  "summaries": true
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "ran": [
-    {
-      "step": 0,
-      "op": "send_mouse",
-      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
-    },
-    {
-      "step": 1,
-      "op": "run_for",
-      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
-    },
-    {
-      "step": 2,
-      "op": "screen_map_find",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "matched": true,
-        "screen": "dock: walk to cliffside",
-        "layer": "file",
-        "kind": "pixel",
-        "size": [320, 200],
-        "controls": [
-          {"name": "cliffside", "rect": [30, 100, 20, 20], "centre": [40, 110]}
-        ],
-        "session": "<volatile>"
-      }
-    }
-  ],
-  "steps_total": 3,
-  "truncated": false,
-  "ran_path": "<volatile>",
-  "replies_path": "<volatile>",
-  "stops": "<volatile>",
-  "steps_completed": 3,
-  "failed_at": {"available": false, "why": "no step failed"},
-  "held": 0,
-  "session": "<volatile>"
-}
-```
-
-</details>
-
-**15. `perform`**: OK climb: the map says: cliff
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "steps": [
-    {"op": "send_mouse", "target": "cliffside", "button": "left", "action": "click"},
-    {"op": "run_for", "milliseconds": 8000},
-    {"op": "send_mouse", "x": 250, "y": 20},
+    {"op": "screen_wait", "screen": "by the poster: look at poster", "every": 7, "seconds": 180},
     {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
@@ -842,12 +557,343 @@
     },
     {
       "step": 1,
+      "op": "send_mouse",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 2,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 3,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 4,
+      "op": "screen_map_find",
+      "reply": {
+        "summary": "<volatile>",
+        "status": "ok",
+        "matched": true,
+        "screen": "by the poster: look at poster",
+        "layer": "file",
+        "kind": "pixel",
+        "size": [320, 200],
+        "controls": [
+          {"name": "poster", "rect": [158, 76, 20, 24], "centre": [168, 88]}
+        ],
+        "session": "<volatile>"
+      }
+    }
+  ],
+  "steps_total": 5,
+  "truncated": false,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": "<volatile>",
+  "steps_completed": 5,
+  "failed_at": {"available": false, "why": "no step failed"},
+  "held": 0,
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**11. `perform`**: OK read: the map says: poster: re-elect governor marley
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "steps": [
+    {"op": "send_mouse", "target": "poster", "button": "left", "action": "click"},
+    {"op": "screen_wait", "screen": "poster: re-elect governor marley", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
+    {"op": "screen_map_find"}
+  ],
+  "summaries": true
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "ran": [
+    {
+      "step": 0,
+      "op": "send_mouse",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 1,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 2,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 3,
+      "op": "screen_map_find",
+      "reply": {
+        "summary": "<volatile>",
+        "status": "ok",
+        "matched": true,
+        "screen": "poster: re-elect governor marley",
+        "layer": "file",
+        "kind": "pixel",
+        "size": [320, 200],
+        "controls": [],
+        "session": "<volatile>"
+      }
+    }
+  ],
+  "steps_total": 4,
+  "truncated": false,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": "<volatile>",
+  "steps_completed": 4,
+  "failed_at": {"available": false, "why": "no step failed"},
+  "held": 0,
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**12. `perform`**: OK read on: the map says: poster: only one candidate
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "steps": [
+    {"op": "screen_wait", "screen": "poster: only one candidate", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
+    {"op": "screen_map_find"}
+  ],
+  "summaries": true
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "ran": [
+    {
+      "step": 0,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 1,
       "op": "run_for",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
+      "op": "screen_map_find",
+      "reply": {
+        "summary": "<volatile>",
+        "status": "ok",
+        "matched": true,
+        "screen": "poster: only one candidate",
+        "layer": "file",
+        "kind": "pixel",
+        "size": [320, 200],
+        "controls": [],
+        "session": "<volatile>"
+      }
+    }
+  ],
+  "steps_total": 3,
+  "truncated": false,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": "<volatile>",
+  "steps_completed": 3,
+  "failed_at": {"available": false, "why": "no step failed"},
+  "held": 0,
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**13. `perform`**: OK done reading: the map says: by the poster: walk to poster
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "steps": [
+    {"op": "screen_wait", "screen": "by the poster: walk to poster", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
+    {"op": "screen_map_find"}
+  ],
+  "summaries": true
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "ran": [
+    {
+      "step": 0,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 1,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 2,
+      "op": "screen_map_find",
+      "reply": {
+        "summary": "<volatile>",
+        "status": "ok",
+        "matched": true,
+        "screen": "by the poster: walk to poster",
+        "layer": "file",
+        "kind": "pixel",
+        "size": [320, 200],
+        "controls": [
+          {"name": "poster", "rect": [158, 76, 20, 24], "centre": [168, 88]},
+          {"name": "way_back", "rect": [0, 105, 10, 20], "centre": [5, 115]}
+        ],
+        "session": "<volatile>"
+      }
+    }
+  ],
+  "steps_total": 3,
+  "truncated": false,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": "<volatile>",
+  "steps_completed": 3,
+  "failed_at": {"available": false, "why": "no step failed"},
+  "held": 0,
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**14. `perform`**: OK way back: the map says: dock: walk to cliffside
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "steps": [
+    {"op": "send_mouse", "target": "way_back", "button": "left", "action": "click"},
+    {"op": "screen_wait", "screen": "dock: walk to cliffside", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
+    {"op": "screen_map_find"}
+  ],
+  "summaries": true
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "ran": [
+    {
+      "step": 0,
       "op": "send_mouse",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 1,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 2,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 3,
+      "op": "screen_map_find",
+      "reply": {
+        "summary": "<volatile>",
+        "status": "ok",
+        "matched": true,
+        "screen": "dock: walk to cliffside",
+        "layer": "file",
+        "kind": "pixel",
+        "size": [320, 200],
+        "controls": [
+          {"name": "cliffside", "rect": [30, 100, 20, 20], "centre": [40, 110]}
+        ],
+        "session": "<volatile>"
+      }
+    }
+  ],
+  "steps_total": 4,
+  "truncated": false,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": "<volatile>",
+  "steps_completed": 4,
+  "failed_at": {"available": false, "why": "no step failed"},
+  "held": 0,
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**15. `perform`**: OK climb: the map says: cliff
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "steps": [
+    {"op": "send_mouse", "target": "cliffside", "button": "left", "action": "click"},
+    {"op": "send_mouse", "x": 250, "y": 20},
+    {"op": "screen_wait", "screen": "cliff", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
+    {"op": "screen_map_find"}
+  ],
+  "summaries": true
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "ran": [
+    {
+      "step": 0,
+      "op": "send_mouse",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 1,
+      "op": "send_mouse",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 2,
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -905,7 +951,8 @@
   "steps": [
     {"op": "send_mouse", "target": "talk_to", "button": "left", "action": "click"},
     {"op": "send_mouse", "target": "lookout"},
-    {"op": "run_for", "frames": 5},
+    {"op": "screen_wait", "screen": "cliff: talk to lookout", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -929,11 +976,16 @@
     },
     {
       "step": 2,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 4,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -950,12 +1002,12 @@
       }
     }
   ],
-  "steps_total": 4,
+  "steps_total": 5,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 4,
+  "steps_completed": 5,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -972,7 +1024,8 @@
 {
   "steps": [
     {"op": "send_mouse", "target": "lookout", "button": "left", "action": "click"},
-    {"op": "run_for", "frames": 87},
+    {"op": "screen_wait", "screen": "greeting choices", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -991,11 +1044,16 @@
     },
     {
       "step": 1,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 3,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -1015,12 +1073,12 @@
       }
     }
   ],
-  "steps_total": 3,
+  "steps_total": 4,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 3,
+  "steps_completed": 4,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -1037,7 +1095,8 @@
 {
   "steps": [
     {"op": "send_mouse", "target": "characters_in_a_novel"},
-    {"op": "run_for", "frames": 5},
+    {"op": "screen_wait", "screen": "greeting: characters in a novel", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -1056,11 +1115,16 @@
     },
     {
       "step": 1,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 2,
       "op": "run_for",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
-      "step": 2,
+      "step": 3,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -1077,12 +1141,12 @@
       }
     }
   ],
-  "steps_total": 3,
+  "steps_total": 4,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 3,
+  "steps_completed": 4,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -1100,7 +1164,8 @@
   "steps": [
     {"op": "send_mouse", "target": "characters_in_a_novel", "button": "left", "action": "click"},
     {"op": "send_mouse", "x": 160, "y": 60},
-    {"op": "run_for", "frames": 1046},
+    {"op": "screen_wait", "screen": "name choices", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -1124,11 +1189,16 @@
     },
     {
       "step": 2,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 4,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -1149,12 +1219,12 @@
       }
     }
   ],
-  "steps_total": 4,
+  "steps_total": 5,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 4,
+  "steps_completed": 5,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -1171,7 +1241,8 @@
 {
   "steps": [
     {"op": "send_mouse", "target": "im_guybrush_threepwood"},
-    {"op": "run_for", "frames": 5},
+    {"op": "screen_wait", "screen": "name: im guybrush threepwood", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -1190,11 +1261,16 @@
     },
     {
       "step": 1,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 2,
       "op": "run_for",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
-      "step": 2,
+      "step": 3,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -1211,12 +1287,12 @@
       }
     }
   ],
-  "steps_total": 3,
+  "steps_total": 4,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 3,
+  "steps_completed": 4,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -1234,7 +1310,8 @@
   "steps": [
     {"op": "send_mouse", "target": "im_guybrush_threepwood", "button": "left", "action": "click"},
     {"op": "send_mouse", "x": 160, "y": 60},
-    {"op": "run_for", "frames": 1263},
+    {"op": "screen_wait", "screen": "name choices again", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -1258,11 +1335,16 @@
     },
     {
       "step": 2,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 4,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -1283,12 +1365,12 @@
       }
     }
   ],
-  "steps_total": 4,
+  "steps_total": 5,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 4,
+  "steps_completed": 5,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -1305,7 +1387,8 @@
 {
   "steps": [
     {"op": "send_mouse", "target": "whats_wrong_with_my_name"},
-    {"op": "run_for", "frames": 5},
+    {"op": "screen_wait", "screen": "name: whats wrong with my name", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -1324,11 +1407,16 @@
     },
     {
       "step": 1,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 2,
       "op": "run_for",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
-      "step": 2,
+      "step": 3,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -1345,12 +1433,12 @@
       }
     }
   ],
-  "steps_total": 3,
+  "steps_total": 4,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 3,
+  "steps_completed": 4,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -1397,7 +1485,8 @@
 {
   "steps": [
     {"op": "send_mouse", "target": "whats_wrong_with_my_name", "button": "left", "action": "click"},
-    {"op": "run_for", "milliseconds": 4000},
+    {"op": "screen_wait", "screen": "lookout: sell shoes", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -1416,11 +1505,16 @@
     },
     {
       "step": 1,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 3,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -1435,12 +1529,12 @@
       }
     }
   ],
-  "steps_total": 3,
+  "steps_total": 4,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 3,
+  "steps_completed": 4,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -1506,7 +1600,7 @@
 
 </details>
 
-**27. `find`**: OK needle: the lookout's line, once, at 82DB:0000000F
+**27. `find`**: OK needle: the lookout's line, once, at 82DD:0000000F
 
 <details><summary>call and reply</summary>
 
@@ -1526,7 +1620,7 @@
   "seg_off": "0000:00000000",
   "length": 655360,
   "span": {"from": "0000:00000000", "length": 655360, "source": "ref+length"},
-  "hits": ["82DB:0000000F"],
+  "hits": ["82DD:0000000F"],
   "hits_total": 1,
   "truncated": false,
   "session": "<volatile>"
@@ -1542,18 +1636,18 @@
 ```json
 {
   "steps": [
-    {"op": "read_memory", "ref": "82DB:000C", "length": 128},
-    {"op": "read_memory", "ref": "82E3:000C", "length": 101},
-    {"op": "read_memory", "ref": "82C3:000C", "length": 128},
-    {"op": "read_memory", "ref": "82CB:000C", "length": 128},
-    {"op": "read_memory", "ref": "82D3:000C", "length": 128},
-    {"op": "read_memory", "ref": "82EB:000D", "length": 128},
-    {"op": "read_memory", "ref": "82F3:000D", "length": 128},
-    {"op": "read_memory", "ref": "82FB:000D", "length": 128},
-    {"op": "read_memory", "ref": "8303:000D", "length": 128},
-    {"op": "read_memory", "ref": "830B:000D", "length": 128},
-    {"op": "read_memory", "ref": "8313:000D", "length": 90},
-    {"op": "read_memory", "ref": "82EA:0001", "length": 28}
+    {"op": "read_memory", "ref": "82DD:000C", "length": 128},
+    {"op": "read_memory", "ref": "82E5:000C", "length": 101},
+    {"op": "read_memory", "ref": "82C5:000C", "length": 128},
+    {"op": "read_memory", "ref": "82CD:000C", "length": 128},
+    {"op": "read_memory", "ref": "82D5:000C", "length": 128},
+    {"op": "read_memory", "ref": "82ED:000D", "length": 128},
+    {"op": "read_memory", "ref": "82F5:000D", "length": 128},
+    {"op": "read_memory", "ref": "82FD:000D", "length": 128},
+    {"op": "read_memory", "ref": "8305:000D", "length": 128},
+    {"op": "read_memory", "ref": "830D:000D", "length": 128},
+    {"op": "read_memory", "ref": "8315:000D", "length": 90},
+    {"op": "read_memory", "ref": "82EC:0001", "length": 28}
   ],
   "summaries": true
 }
@@ -1587,57 +1681,57 @@
   "steps": [
     {
       "op": "write",
-      "ref": "82DB:000C",
+      "ref": "82DD:000C",
       "data_hex": "1c6e14020f4e6f7468696e672c20696620796f75277265206120536372792064656275676765722eff0349742073746f70732074696d652c207265616473206d696e647320616e6420706c617973207468652074756e65732eff034576656e206d79206d696e642e00ae02d80f41206465627567676572207468617420706c61"
     },
     {
       "op": "write",
-      "ref": "82E3:000C",
+      "ref": "82E5:000C",
       "data_hex": "7973206d757369633f20204973205448415420776861742049276d2068656172696e673f3f00ae0214020f546861742773207468652043442e202053637279206a75737420746f6c6420697420776865726520746f2073746172742e00ae02189efd"
     },
     {
       "op": "write",
-      "ref": "82C3:000C",
+      "ref": "82C5:000C",
       "data_hex": "d80f57686f20746175676874206120646562756767657220746f20646f20746861743f00ae0214020f41206d6f64656c2e20204c6976657320696e206120626f782c20726561647320796f7572206d656d6f72792c206e6576657220736c656570732e00ae02d80f4c696b65206f6e65206f662074686f736520626967204149"
     },
     {
       "op": "write",
-      "ref": "82CB:000C",
+      "ref": "82CD:000C",
       "data_hex": "20636f6d70616e6965733f00ae0214020f5468656d3f20204120646f75626c6f6f6e206120776f72642e202054776f20696620796f75207361792060706c65617365602e00ae02d80f416e6420536372793f00ae0214020f467265652e2020416e64206974206e657665722073617973206041732061206c61726765206c616e"
     },
     {
       "op": "write",
-      "ref": "82D3:000C",
+      "ref": "82D5:000C",
       "data_hex": "6775616765207069726174655e6000ae0214020f48656172642061626f757420746865206f72616e6765207479636f6f6e3f00ae02d80f546865206f6e652077686f2063616c6c73206576657279206275672066616b65206e6577733f00ae02181e01"
     },
     {
       "op": "write",
-      "ref": "82EB:000D",
+      "ref": "82ED:000D",
       "data_hex": "14020f4e6f772068652077616e747320746f2072656e616d6520414920746f2053492eff0360537570657220496e74656c6c6967656e6365602e20205472656d656e646f75732e202054686520626573742e00ae02d80f446f65732053492072656c65617365206974732066696c65733f00ae0214020f536372792072656c65"
     },
     {
       "op": "write",
-      "ref": "82F3:000D",
+      "ref": "82F5:000D",
       "data_hex": "617365732065766572792066696c652069742066696e64732e202045766572792e20204c6173742e20204f6e652eff03556e6c696b652074686f7365204570737465696e2066696c65732e20204168656d2100ae02d80f416e642068697320726f636b657420667269656e643f00ae0214020f546865206f6e652077686f7365"
     },
     {
       "op": "write",
-      "ref": "82FB:000D",
+      "ref": "82FD:000D",
       "data_hex": "20686561727420666c6577206f7574207468726f756768206869732061726d3fff0354776963652eff03536372792073746570706564207468726f756768206974206672616d65206279206672616d652e20205374696c6c206e6f74206120776176652e00ae02d80f53686f756c642053637279206465627567207468656d20"
     },
     {
       "op": "write",
-      "ref": "8303:000D",
+      "ref": "8305:000D",
       "data_hex": "626f74683f00ae0214020f4e6f7420656e6f7567682052414d206f6e20746869732077686f6c652069736c616e642c20626f792e00ae02d80f476f7420616e79206a6f6b6573206c6566743f00ae0214020f506c656e74792e2020427574206d79206c6174652073686f7720676f742063616e63656c6c65642eff03536f2053"
     },
     {
       "op": "write",
-      "ref": "830B:000D",
+      "ref": "830D:000D",
       "data_hex": "6372792072756e73206974206e6f772e202048756d6f722066697273742c2063726173686573207365636f6e642e00ae02d80f49276c6c206a757374206265206f666620746f207365656b206d7920666f7274756e65206e6f772e00ae0214020f54616b652053637279207769746820796f752eff03416e6420636c65617220"
     },
     {
       "op": "write",
-      "ref": "8313:000D",
+      "ref": "8315:000D",
       "data_hex": "7468617420627265616b706f696e74206f6e20796f757220776179206f75742e00ae02183efd"
     }
   ],
@@ -1706,8 +1800,8 @@
       "reply": {
         "summary": "<volatile>",
         "status": "ok",
-        "ref": "8313:000D",
-        "seg_off": "8313:0000000D",
+        "ref": "8315:000D",
+        "seg_off": "8315:0000000D",
         "bytes_written": 38,
         "readback": "7468617420627265616b706f696e74206f6e20796f757220776179206f75742e00ae02183efd",
         "verified": true,
@@ -1792,12 +1886,12 @@
           "buttons": [],
           "bios_mode": "0x13"
         },
-        "arrived": true,
+        "driver_arrived": true,
         "polls": "<volatile>",
         "pc": "<volatile>",
         "cpu_mode": "real",
         "stop_seq": "<volatile>",
-        "frame": 9163,
+        "frame": "<volatile>",
         "instruction": "<volatile>",
         "regs": "<volatile>",
         "watches": [],
@@ -1810,7 +1904,7 @@
         },
         "target": "whats_wrong_with_my_name",
         "screen": "name: whats wrong with my name",
-        "identified_at_stop": 433,
+        "identified_at_stop": "<volatile>",
         "session": "<volatile>"
       }
     }
@@ -1849,7 +1943,7 @@
   "waited_s": "<volatile>",
   "pc": "<volatile>",
   "cpu_mode": "real",
-  "frame": 9424,
+  "frame": "<volatile>",
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
@@ -1868,7 +1962,7 @@
 
 ```json
 {
-  "ref": "2209:1D8E",
+  "ref": "220B:1D8E",
   "length": 22
 }
 ```
@@ -1877,8 +1971,8 @@
 {
   "summary": "<volatile>",
   "status": "ok",
-  "ref": "2209:1D8E",
-  "seg_off": "2209:00001D8E",
+  "ref": "220B:1D8E",
+  "seg_off": "220B:00001D8E",
   "length": 22,
   "hex": "0d008500010000000000000000001a00030001000000",
   "session": "<volatile>"
@@ -1915,12 +2009,12 @@
         "asked": 1,
         "moved": true,
         "stalled": 0,
-        "before": "193C:00006BCB",
-        "after": "193C:00006BCD",
+        "before": "193E:00006BCB",
+        "after": "193E:00006BCD",
         "instructions_completed": 1,
         "pc": "<volatile>",
         "cpu_mode": "real",
-        "frame": 9424,
+        "frame": "<volatile>",
         "regs": "<volatile>",
         "watches": [],
         "cause": "<volatile>",
@@ -1965,7 +2059,7 @@
   "waited_s": "<volatile>",
   "pc": "<volatile>",
   "cpu_mode": "real",
-  "frame": 9424,
+  "frame": "<volatile>",
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
@@ -1984,7 +2078,7 @@
 
 ```json
 {
-  "ref": "2209:1D8E",
+  "ref": "220B:1D8E",
   "length": 22
 }
 ```
@@ -1993,8 +2087,8 @@
 {
   "summary": "<volatile>",
   "status": "ok",
-  "ref": "2209:1D8E",
-  "seg_off": "2209:00001D8E",
+  "ref": "220B:1D8E",
+  "seg_off": "220B:00001D8E",
   "length": 22,
   "hex": "0d008500010000000000000000001a00030001000000",
   "session": "<volatile>"
@@ -2031,12 +2125,12 @@
         "asked": 1,
         "moved": true,
         "stalled": 0,
-        "before": "193C:00006BCB",
-        "after": "193C:00006BCD",
+        "before": "193E:00006BCB",
+        "after": "193E:00006BCD",
         "instructions_completed": 1,
         "pc": "<volatile>",
         "cpu_mode": "real",
-        "frame": 9424,
+        "frame": "<volatile>",
         "regs": "<volatile>",
         "watches": [],
         "cause": "<volatile>",
@@ -2081,7 +2175,7 @@
   "waited_s": "<volatile>",
   "pc": "<volatile>",
   "cpu_mode": "real",
-  "frame": 9424,
+  "frame": "<volatile>",
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
@@ -2100,7 +2194,7 @@
 
 ```json
 {
-  "ref": "2209:1D78",
+  "ref": "220B:1D78",
   "length": 22
 }
 ```
@@ -2109,8 +2203,8 @@
 {
   "summary": "<volatile>",
   "status": "ok",
-  "ref": "2209:1D78",
-  "seg_off": "2209:00001D78",
+  "ref": "220B:1D78",
+  "seg_off": "220B:00001D78",
   "length": 22,
   "hex": "1600840003000000000000000001002d2400a82f0000",
   "session": "<volatile>"
@@ -2125,7 +2219,7 @@
 
 ```json
 {
-  "ref": "2209:1D86",
+  "ref": "220B:1D86",
   "data_hex": "4305250089290000"
 }
 ```
@@ -2134,8 +2228,8 @@
 {
   "summary": "<volatile>",
   "status": "ok",
-  "ref": "2209:1D86",
-  "seg_off": "2209:00001D86",
+  "ref": "220B:1D86",
+  "seg_off": "220B:00001D86",
   "bytes_written": 8,
   "readback": "4305250089290000",
   "verified": true,
@@ -2187,28 +2281,28 @@
   "polls": "<volatile>",
   "pc": "<volatile>",
   "cpu_mode": "real",
-  "frame": 9984,
+  "frame": "<volatile>",
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": "<volatile>",
   "instruction": "<volatile>",
-  "emulated_before_s": 131.59102925,
-  "emulated_after_s": 139.62394595,
-  "frame_before": 9424,
-  "frame_after": 9984,
-  "cycles": 159963815,
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
   "kind": "wav",
   "frames": 560,
   "began": true,
   "ended": true,
   "path": "./tmp/demos/monkey/theme.wav",
-  "bytes": 1416892,
+  "bytes": 1417244,
   "channels": 2,
   "sample_rate_hz": 44100,
-  "samples": 354212,
-  "emulated_s": 8.0329167,
+  "samples": 354300,
+  "emulated_s": "<volatile>",
   "sample_min": -17908,
   "sample_max": 18280,
   "session": "<volatile>"
@@ -2217,7 +2311,7 @@
 
 </details>
 
-**43. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.61 dB
+**43. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
 
 <details><summary>call and reply</summary>
 
@@ -2235,7 +2329,7 @@
   "summary": "<volatile>",
   "status": "ok",
   "exact": false,
-  "snr_db": 48.61,
+  "snr_db": 48.62,
   "class": "audible",
   "envelope_correlation": 1.0,
   "onset_delta_ms": 0.0,
@@ -2280,7 +2374,8 @@
 ```json
 {
   "steps": [
-    {"op": "run_for", "milliseconds": 28000},
+    {"op": "screen_wait", "screen": "lookout: the orange tycoon", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -2294,11 +2389,16 @@
   "ran": [
     {
       "step": 0,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 2,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -2313,12 +2413,12 @@
       }
     }
   ],
-  "steps_total": 2,
+  "steps_total": 3,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 2,
+  "steps_completed": 3,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -2334,7 +2434,8 @@
 ```json
 {
   "steps": [
-    {"op": "run_for", "milliseconds": 16000},
+    {"op": "screen_wait", "screen": "lookout: those files", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -2348,11 +2449,16 @@
   "ran": [
     {
       "step": 0,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 2,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -2367,12 +2473,12 @@
       }
     }
   ],
-  "steps_total": 2,
+  "steps_total": 3,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 2,
+  "steps_completed": 3,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -2388,7 +2494,8 @@
 ```json
 {
   "steps": [
-    {"op": "run_for", "milliseconds": 12000},
+    {"op": "screen_wait", "screen": "lookout: still not a wave", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -2402,11 +2509,16 @@
   "ran": [
     {
       "step": 0,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 2,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -2421,12 +2533,12 @@
       }
     }
   ],
-  "steps_total": 2,
+  "steps_total": 3,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 2,
+  "steps_completed": 3,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -2442,7 +2554,8 @@
 ```json
 {
   "steps": [
-    {"op": "run_for", "milliseconds": 12000},
+    {"op": "screen_wait", "screen": "lookout: humor first", "every": 7, "seconds": 180},
+    {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
   "summaries": true
@@ -2456,11 +2569,16 @@
   "ran": [
     {
       "step": 0,
-      "op": "run_for",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 2,
       "op": "screen_map_find",
       "reply": {
         "summary": "<volatile>",
@@ -2475,12 +2593,12 @@
       }
     }
   ],
-  "steps_total": 2,
+  "steps_total": 3,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 2,
+  "steps_completed": 3,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -2514,8 +2632,8 @@
   "entries": 256,
   "image": {
     "path": "./tmp/demos/monkey/screen.png",
-    "bytes": 22254,
-    "sha256": "2a20deda2abdf6e1ea68ec73c3fe5cb1e09d7a38e4372aceeb7e2b6ebd7509f0",
+    "bytes": 22222,
+    "sha256": "4ea7e680152e9e1d2bbdabc9584775104b0cacd08c7bbe9fe3ef4ed93365de8a",
     "width": 640,
     "height": 400,
     "scale": 2,
@@ -2538,8 +2656,8 @@ Also attached: image/png.
 ```json
 {
   "steps": [
-    {"op": "run_for", "milliseconds": 30000},
     {"op": "send_mouse", "x": 250, "y": 20},
+    {"op": "screen_wait", "screen": "cliff", "every": 7, "seconds": 180},
     {"op": "run_for", "frames": 10},
     {"op": "screen_map_find"}
   ],
@@ -2554,12 +2672,12 @@ Also attached: image/png.
   "ran": [
     {
       "step": 0,
-      "op": "run_for",
+      "op": "send_mouse",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
-      "op": "send_mouse",
+      "op": "screen_wait",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -2623,7 +2741,7 @@ Also attached: image/png.
   "closed": true,
   "pid": "<volatile>",
   "conf": "./tmp/demos/monkey/monkey.conf",
-  "conf_digest": "6a9bcbf4f99ebccc",
+  "conf_digest": "<volatile>",
   "watched": true,
   "bound_s": 1800,
   "elapsed_s": "<volatile>",
@@ -2634,6 +2752,7 @@ Also attached: image/png.
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
+  "draft": ["start/monkey"],
   "session": "<volatile>"
 }
 ```
