@@ -21,10 +21,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Reply, Run, Step, main
+from scry_core.demo import Demo, Loop, Reply, Run, Step, main
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
+    DISPLAY,
     INPUT_TIMING,
     VOLATILE,
     expect,
@@ -35,6 +36,7 @@ from demos.host import (  # noqa: E402
     seen,
     started,
     symbols_at,
+    window,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -58,7 +60,7 @@ def boot(run: Run) -> dict[str, Any]:
     (run.dir / "boom.wav").unlink(missing_ok=True)
     states = run.dir / "mines-states"
     shutil.rmtree(states, ignore_errors=True)
-    return {"conf": HERE / "mines.conf", "cwd": HERE, "session_seconds": 900, "shared": True,
+    return {**window(run), "conf": HERE / "mines.conf", "cwd": HERE, "session_seconds": 900,
             "break_on_int3": True,
             "logfile": run.dir / "mines-e9.log", "state_dir": states,
             "captures_dir": run.dir / "mines-captures"}
@@ -241,7 +243,7 @@ def exact(reply: Reply, run: Run) -> str:
 
 
 STEPS = [
-    Step("start", "start", boot, started, options=frozenset({"binary"}),
+    Step("start", "start", boot, started, options=frozenset({"binary", "display"}),
          volatile={"summary": "it carries how long the debugger took to answer"}),
     Step("ready", "resume", {"seconds": WAIT_S}, at_ready),
     Step("symbols", "symbols_load", symbols_at(HERE / "mines.sym"), loaded),
@@ -314,9 +316,9 @@ STEPS = [
 DEMO = Demo(
     name="mines", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
-    capture=lambda run: run.dir / "screen.png",
-    precheck=precheck,
-    volatile=VOLATILE)
+    capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+    precheck=precheck, offers=frozenset({"display"}),
+    host_args={"display": DISPLAY}, volatile=VOLATILE)
 
 
 if __name__ == "__main__":

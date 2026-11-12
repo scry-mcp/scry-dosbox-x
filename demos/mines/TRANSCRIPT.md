@@ -4,10 +4,12 @@
 
 ```json
 {
+  "shared": true,
+  "background": true,
+  "display": "<host>",
   "conf": "./demos/mines/mines.conf",
   "cwd": "./demos/mines",
   "session_seconds": 900,
-  "shared": true,
   "break_on_int3": true,
   "logfile": "./tmp/demos/mines/mines-e9.log",
   "state_dir": "./tmp/demos/mines/mines-states",
@@ -36,7 +38,7 @@
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": false,
+  "background": true,
   "presence": true,
   "window": "<volatile>",
   "declarations": {
@@ -1572,7 +1574,51 @@ Also attached: image/png.
 
 </details>
 
-**26. `send_mouse`**: OK again: OK started the next game
+**26. `record`**: OK loop: recording 240 frames in ./tmp/demos/mines/loop.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 240,
+  "dest": "./tmp/demos/mines/loop.avi"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 240,
+  "began": true,
+  "ended": true,
+  "path": "./tmp/demos/mines/loop.avi",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**27. `send_mouse`**: OK again: OK started the next game
 
 <details><summary>call and reply</summary>
 
@@ -1587,7 +1633,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_mouse: pointer at 400,330, program's own pointer not read; effect seen, 25 retraces to frame 639",
+  "summary": "send_mouse: pointer at 400,330, program's own pointer not read; effect seen, 21 retraces to frame 875",
   "status": "ok",
   "x": 400,
   "y": 330,
@@ -1603,11 +1649,11 @@ Also attached: image/png.
     "vbe_mode": "0x103"
   },
   "driver_arrived": true,
-  "polls": 25,
+  "polls": 21,
   "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "stop_seq": 644,
-  "frame": 639,
+  "stop_seq": 641,
+  "frame": 875,
   "instruction": {
     "address": "08DF:00000E08",
     "bytes": "A808",
@@ -1664,7 +1710,7 @@ Also attached: image/png.
 
 </details>
 
-**27. `run_to`**: OK next board drawn: the next board drawn
+**28. `run_to`**: OK next board drawn: the next board drawn
 
 <details><summary>call and reply</summary>
 
@@ -1690,7 +1736,7 @@ Also attached: image/png.
   "controls": [
     {"ref": "retrace", "at": "08DF:0DFF", "hits_in_run": 0, "removed": true}
   ],
-  "frame": 639,
+  "frame": 875,
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x00000000",
@@ -1711,7 +1757,7 @@ Also attached: image/png.
   "watches": [],
   "cause": "run_to's target main_loop at 08DF:00000131",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-  "stop_seq": 645,
+  "stop_seq": 642,
   "instruction": {
     "address": "08DF:00000131",
     "bytes": "E8CB0C",
@@ -1728,7 +1774,7 @@ Also attached: image/png.
 
 </details>
 
-**28. `read_memory`**: OK next mines: mines at 0,7, 1,1, 1,7, 2,0, 4,1, 4,4, 5,0, 5,2, 7,5, 8,4
+**29. `read_memory`**: OK next mines: mines at 0,7, 1,1, 1,7, 2,0, 4,1, 4,4, 5,0, 5,2, 7,5, 8,4
 
 <details><summary>call and reply</summary>
 
@@ -1753,7 +1799,7 @@ Also attached: image/png.
 
 </details>
 
-**29. `send_mouse`**: OK mine: a left click on the mine at 0,7, the machine left stopped a few retraces later, the explosion already sounding
+**30. `send_mouse`**: OK mine: a left click on the mine at 0,7, the machine left stopped a few retraces later, the explosion already sounding
 
 <details><summary>call and reply</summary>
 
@@ -1769,7 +1815,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_mouse: pointer at 472,204, program's own pointer not read; effect seen, 25 retraces to frame 664",
+  "summary": "send_mouse: pointer at 472,204, program's own pointer not read; effect seen, 25 retraces to frame 900",
   "status": "ok",
   "x": 472,
   "y": 204,
@@ -1788,8 +1834,8 @@ Also attached: image/png.
   "polls": 25,
   "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "stop_seq": 670,
-  "frame": 664,
+  "stop_seq": 667,
+  "frame": 900,
   "instruction": {
     "address": "08DF:00000E08",
     "bytes": "A808",
@@ -1843,7 +1889,7 @@ Also attached: image/png.
 
 </details>
 
-**30. `log`**: OK boom: the game logged BOOM 0 7
+**31. `log`**: OK boom: the game logged BOOM 0 7
 
 <details><summary>call and reply</summary>
 
@@ -1869,7 +1915,7 @@ Also attached: image/png.
 
 </details>
 
-**31. `audio_record`**: OK record: 45 retraces recorded from where the click left the machine
+**32. `audio_record`**: OK record: 45 retraces recorded from where the click left the machine
 
 <details><summary>call and reply</summary>
 
@@ -1882,13 +1928,13 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "audio_record wav 45 frames: ELAPSED, 30816 samples at 48000 Hz at ./tmp/demos/mines/boom.wav",
+  "summary": "audio_record wav 45 frames: ELAPSED, 30768 samples at 48000 Hz at ./tmp/demos/mines/boom.wav",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 45,
   "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "frame": 709,
+  "frame": 945,
   "regs": {
     "EAX": "0x00000004",
     "EBX": "0x00000000",
@@ -1909,7 +1955,7 @@ Also attached: image/png.
   "watches": [],
   "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-  "stop_seq": 671,
+  "stop_seq": 668,
   "instruction": {
     "address": "08DF:00000E08",
     "bytes": "A808",
@@ -1920,30 +1966,30 @@ Also attached: image/png.
     "symbol": "retrace",
     "delta": 9
   },
-  "emulated_before_s": 9.45471755,
-  "emulated_after_s": 10.09603785,
-  "frame_before": 664,
-  "frame_after": 709,
-  "cycles": 1789637,
+  "emulated_before_s": 12.818086224999998,
+  "emulated_after_s": 13.459407425,
+  "frame_before": 900,
+  "frame_after": 945,
+  "cycles": 1789674,
   "kind": "wav",
   "frames": 45,
   "began": true,
   "ended": true,
   "path": "<volatile>",
-  "bytes": 123308,
+  "bytes": 123116,
   "channels": 2,
   "sample_rate_hz": 48000,
-  "samples": 30816,
-  "emulated_s": 0.6413203,
-  "sample_min": -18065,
-  "sample_max": 18514,
+  "samples": 30768,
+  "emulated_s": 0.6413212,
+  "sample_min": -18099,
+  "sample_max": 18479,
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**32. `audio_compare`**: OK heard: a sound, peaking at -4.96 dBFS
+**33. `audio_compare`**: OK heard: a sound, peaking at -4.98 dBFS
 
 <details><summary>call and reply</summary>
 
@@ -1956,7 +2002,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "audio_compare measure: ch0 peak -4.96 dBFS, onset 0.0001 s, ch1 peak -4.96 dBFS, onset 0.0001 s",
+  "summary": "audio_compare measure: ch0 peak -4.98 dBFS, onset 0.0 s, ch1 peak -4.98 dBFS, onset 0.0 s",
   "status": "ok",
   "sample_rate_hz": 48000,
   "channels": 2,
@@ -1965,26 +2011,26 @@ Also attached: image/png.
   "measures": [
     {
       "channel": 0,
-      "peak_dbfs": -4.96,
+      "peak_dbfs": -4.98,
       "rms_dbfs": -18.47,
       "silent": false,
-      "silence_spans": {"count": 1, "first": [0.5202, 0.642]},
-      "onset_s": 0.0001,
+      "silence_spans": {"count": 1, "first": [0.5204, 0.641]},
+      "onset_s": 0.0,
       "clipping_run": 7,
       "clipped": false
     },
     {
       "channel": 1,
-      "peak_dbfs": -4.96,
+      "peak_dbfs": -4.98,
       "rms_dbfs": -18.47,
       "silent": false,
-      "silence_spans": {"count": 1, "first": [0.5202, 0.642]},
-      "onset_s": 0.0001,
+      "silence_spans": {"count": 1, "first": [0.5204, 0.641]},
+      "onset_s": 0.0,
       "clipping_run": 7,
       "clipped": false
     }
   ],
-  "pcm_sha256": "5865b7b55353b0497196830d568b3cd2bd7db96b4b2308c71aeffd9e19bfc293",
+  "pcm_sha256": "770c3049ce3f08cbbd1a4576cc1ebc8fc99a5f3674b073a1495d88dd2092e08a",
   "path": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -1992,7 +2038,7 @@ Also attached: image/png.
 
 </details>
 
-**33. `audio_compare`**: OK exact: the explosion is boom.wav, sample for sample
+**34. `audio_compare`**: OK exact: the explosion is boom.wav, sample for sample
 
 <details><summary>call and reply</summary>
 
@@ -2027,7 +2073,7 @@ Also attached: image/png.
 
 </details>
 
-**34. `send_mouse`**: OK park again: the pointer parked at 790,590, off every region the map signs
+**35. `send_mouse`**: OK park again: the pointer parked at 790,590, off every region the map signs
 
 <details><summary>call and reply</summary>
 
@@ -2040,7 +2086,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_mouse: pointer at 790,590, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 720",
+  "summary": "send_mouse: pointer at 790,590, program's own pointer not read; no button pressed; posted, unverified, 11 retraces to frame 956",
   "status": "ok",
   "x": 790,
   "y": 590,
@@ -2057,8 +2103,8 @@ Also attached: image/png.
   "polls": 11,
   "pc": "08DF:00000E08",
   "cpu_mode": "real",
-  "stop_seq": 682,
-  "frame": 720,
+  "stop_seq": 679,
+  "frame": 956,
   "instruction": {
     "address": "08DF:00000E08",
     "bytes": "A808",
@@ -2100,7 +2146,7 @@ Also attached: image/png.
 
 </details>
 
-**35. `screen_map_find`**: OK is lose: the lose screen, its controls ok
+**36. `screen_map_find`**: OK is lose: the lose screen, its controls ok
 
 <details><summary>call and reply</summary>
 
@@ -2126,7 +2172,7 @@ Also attached: image/png.
 
 </details>
 
-**36. `close`**: OK close: closed: quit
+**37. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 

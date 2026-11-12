@@ -4,9 +4,11 @@
 
 ```json
 {
+  "shared": true,
+  "background": true,
+  "display": "<host>",
   "conf": "./demos/dpaint_maps/dpaint-maps.conf",
   "session_seconds": 900,
-  "shared": true,
   "program": "DP.EXE k",
   "logfile": "./tmp/demos/dpaint_maps/dpaint-maps-e9.log",
   "state_dir": "./tmp/demos/dpaint_maps/dpaint-maps-states",
@@ -35,7 +37,7 @@
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": false,
+  "background": true,
   "presence": true,
   "window": "<volatile>",
   "declarations": {
@@ -2192,7 +2194,51 @@ Also attached: image/png.
 
 </details>
 
-**22. `close`**: OK close: closed: quit
+**22. `record`**: OK loop: recording 240 frames in ./tmp/demos/dpaint_maps/loop.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 240,
+  "dest": "./tmp/demos/dpaint_maps/loop.avi"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 240,
+  "began": true,
+  "ended": true,
+  "path": "./tmp/demos/dpaint_maps/loop.avi",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**23. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 

@@ -10,12 +10,13 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import recording
-from scry_core.demo import Demo, Reply, Run, Step, expect, main
+from scry_core.demo import Demo, Loop, Reply, Run, Step, expect, main
 from scry_core.game_demo import Binding, Press, map_load
 from scry_core.games import lineup
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
+    DISPLAY,
     INPUT_TIMING,
     RETRACE_STOP,
     VOLATILE,
@@ -26,6 +27,7 @@ from demos.host import (  # noqa: E402
     missing_under,
     precheck,
     started,
+    window,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -83,7 +85,8 @@ def checked(run: Run) -> str:
 def boot(run: Run) -> dict[str, Any]:
     """The game's own conf, derived by its own script, then the profile that names it."""
     conf_derived(run, CONF_SCRIPT)
-    return {"profile": str(game(run) / PROFILE), "shared": True, "flags": NORMAL_CORE,
+    return {**window(run), "profile": str(game(run) / PROFILE),
+            "flags": NORMAL_CORE,
             "captures_dir": str(run.dir / "lineup-captures")}
 
 
@@ -119,7 +122,7 @@ def steps() -> list[Step]:
 
 BINDING = Binding(
     platform="dosbox-x",
-    boot=[Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
+    boot=[Step("start", "start", boot, started, options=frozenset({"binary", "cwd", "display"}),
                volatile={"summary": "it carries how long the debugger took to answer",
                          "conf": "where the reader's copy of the game keeps its derived conf",
                          "name": "where the reader's copy of the game keeps its profile",
@@ -135,10 +138,10 @@ BINDING = Binding(
 DEMO = Demo(
     name="lineup", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=steps(),
-    capture=lambda run: run.dir / "screen.png",
-    offers=frozenset({"cwd"}), reads=frozenset({"cwd"}), precheck=checked,
+    capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+    offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_GAME,
-    host_args={"b": "the platform's own reference recording",
+    host_args={"b": "the platform's own reference recording", "display": DISPLAY,
                "cwd": "the reader's copy of the game, wherever it was cloned",
                "profile": "the reader's copy of the game, wherever it was cloned",
                "path": "a file of the reader's copy of the game",

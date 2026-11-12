@@ -9,10 +9,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Reply, Run, Step, expect, main
+from scry_core.demo import Demo, Loop, Reply, Run, Step, expect, main
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
+    DISPLAY,
     INPUT_TIMING,
     VOLATILE,
     checkout,
@@ -23,6 +24,7 @@ from demos.host import (  # noqa: E402
     quit_cleanly,
     seen,
     started,
+    window,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -69,7 +71,7 @@ def checked(run: Run) -> str:
 
 
 def boot(run: Run) -> dict[str, Any]:
-    return {"profile": str(checkout(run) / PROFILE), "shared": True,
+    return {**window(run), "profile": str(checkout(run) / PROFILE),
             "captures_dir": str(run.dir / "rechip-captures")}
 
 
@@ -89,7 +91,7 @@ def logged(what: str) -> Any:
 
 
 STEPS = [
-    Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
+    Step("start", "start", boot, started, options=frozenset({"binary", "cwd", "display"}),
          volatile={"summary": "it carries how long the debugger took to answer",
                    "conf": "where the reader's checkout keeps its derived conf",
                    "name": "where the reader's checkout keeps its profile"},
@@ -130,10 +132,11 @@ STEPS = [
 DEMO = Demo(
     name="rechip", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
-    capture=lambda run: run.dir / "screen.png",
-    offers=frozenset({"cwd"}), reads=frozenset({"cwd"}), precheck=checked,
+    capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+    offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_PROGRAM,
     host_args={"cwd": "the reader's checkout of the program, wherever it was cloned",
+               "display": DISPLAY,
                "profile": "the reader's checkout of the program, wherever it was cloned",
                "captures_dir": "the run's own directory"})
 

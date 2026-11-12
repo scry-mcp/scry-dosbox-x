@@ -40,8 +40,10 @@ nothing in it needs the window.
   and its `SCRIPTS/`.
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`,
   else the `dosbox-x` on your `PATH`.
+- `--display N` opens the window on that display; left out, on the host's main one. The
+  window opens behind, so the run takes nobody's focus.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md` and `screen.png` from a run where every step passed.
+- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where every step passed.
 
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
 line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2 a
@@ -80,7 +82,7 @@ such as `./tmp/demos/lineup/music.wav` or `./demos/lineup/music.wav`, are shown 
 repository root, and the tools themselves take absolute paths.
 
 <!-- demo-transcript:begin -->
-The run is 11 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 12 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
 **6. `perform`**: OK script: 34 steps of the game's own document, 21 holding to it
 

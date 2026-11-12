@@ -1,6 +1,6 @@
 # Bricks: a game, stopped where every brick falls
 
-![Bricks in mode 13h, stopped as the ball reaches its second brick](screen.png)
+![Bricks in mode 13h, the ball just after it took the second brick](screen.png)
 
 `BRICKS.COM` is a wall, a ball and a paddle in mode 13h, written in this directory to be
 debugged as much as played. It keeps its score in a variable with a name, sends every falling
@@ -26,8 +26,10 @@ REFERENCE.md, *Saved states*), named with `DOSBOX_X_BINARY`.
 
 - `--binary PATH` (absolute) picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`, else the
   `dosbox-x` on your `PATH`.
+- `--display N` opens the window on that display; left out, on the host's main one. The
+  window opens behind, so the run takes nobody's focus.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md` and `screen.png` from a run where every step
+- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where every step
   passed.
 
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
@@ -43,19 +45,17 @@ the mouse, which then centres it under the pointer. ESC returns to DOS.
 
 Give this to an MCP client with this server connected:
 
-> Start DOSBox-X windowed on `demos/bricks/bricks.conf` from that directory, stopping at the guest's own `int 3`, with the log in a file. Let it run
-> to that first stop and tell me where DOS loaded the program. Load `bricks.sym` with its base set
-> to that segment times 16, show me the start of `brick_hit`, put a breakpoint on it and keep
-> `score` in view at every stop. Run to the first brick and the second: which row and column, and
-> what is the score? Read `score` by name and show me the screen. Then clear the breakpoint, run
-> three frames and tell me where the ball is. Let the game run, press the right arrow three times
-> and show me the game took them, stop it and read `paddle_x`. Let it run again, press M to hand
-> the paddle to the mouse, put the pointer on pixel 240, 100 and show me the game saw it, then
-> press M again to take the paddle back. Stop and read `paddle_x`: the paddle should be centred
-> under the pointer. Let it run,
-> save a state, press the left arrow, load the state back, stop, and show me `paddle_x` is where
-> it was saved. Let it run, press SPACE to serve the ball waiting on the paddle, clear the watch
-> and close.
+> Start DOSBox-X windowed on `demos/bricks/bricks.conf` from that directory, stopping at the guest's own
+> `int 3`, with the log in a file. Let it run to that first stop and tell me where DOS loaded the program.
+> Load `bricks.sym` with its base set to that segment times 16, show me the start of `brick_hit`, put a
+> breakpoint on it and keep `score` in view at every stop. Run to the first brick and the second: which row
+> and column, and what is the score? Read `score` by name, then clear the breakpoint, run three frames, tell
+> me where the ball is and show me the screen. Let the game run, press the right arrow three times and show me
+> the game took them, stop it and read `paddle_x`. Let it run again, press M to hand the paddle to the mouse,
+> put the pointer on pixel 240, 100 and show me the game saw it, then press M again to take the paddle back.
+> Stop and read `paddle_x`: the paddle should be centred under the pointer. Let it run, save a state, press
+> the left arrow, load the state back, stop, and show me `paddle_x` is where it was saved. Let it run, press
+> SPACE to serve the ball waiting on the paddle, clear the watch and close.
 
 ## What it walks
 
@@ -78,7 +78,7 @@ two honest runs (process ids, ports, wall-clock times, temporary paths, the host
 and its own arguments) is `<volatile>`.
 
 <!-- demo-transcript:begin -->
-The run is 33 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 34 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
 **5. `breakpoint_at`**: OK break: breakpoint BP 08DF:02C8
 
@@ -179,7 +179,7 @@ A breakpoint asked for by name. `brick_hit` is a label in the symbol table the b
 
 </details>
 
-**29. `read_memory`**: OK restored: the paddle is back where the state was saved: the load undid the left arrow
+**30. `read_memory`**: OK restored: the paddle is back where the state was saved: the load undid the left arrow
 
 A saved state is the whole machine, not the game's own save. After the save the left arrow moves the paddle, the load puts the machine back, and the paddle read back is where it was before the arrow.
 

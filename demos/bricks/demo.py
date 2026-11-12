@@ -16,10 +16,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Reply, Run, Step, main
+from scry_core.demo import Demo, Loop, Reply, Run, Step, main
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
+    DISPLAY,
     INPUT_TIMING,
     VOLATILE,
     expect,
@@ -30,6 +31,7 @@ from demos.host import (  # noqa: E402
     seen,
     started,
     symbols_at,
+    window,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -62,7 +64,7 @@ def boot(run: Run) -> dict[str, Any]:
     (run.dir / "bricks-e9.log").unlink(missing_ok=True)
     states = run.dir / "bricks-states"
     shutil.rmtree(states, ignore_errors=True)
-    return {"conf": HERE / "bricks.conf", "cwd": HERE, "session_seconds": 900, "shared": True,
+    return {**window(run), "conf": HERE / "bricks.conf", "cwd": HERE, "session_seconds": 900,
             "break_on_int3": True, "logfile": run.dir / "bricks-e9.log",
             "state_dir": states}
 
@@ -157,7 +159,7 @@ BREAK_STOP = {key: "the stop lands wherever the game is when the break arrives"
                          "watches", "e9")}
 
 STEPS = [
-    Step("start", "start", boot, started, options=frozenset({"binary"}),
+    Step("start", "start", boot, started, options=frozenset({"binary", "display"}),
          volatile={"summary": "it carries how long the debugger took to answer"}),
     Step("ready", "resume", {"seconds": WAIT_S}, at_ready,
          shown=("summary", "cause", "instruction")),
@@ -186,7 +188,6 @@ STEPS = [
          at_brick(*SECOND_BRICK, FIRST_POINTS, "second")),
     Step("score", "read_memory", {"ref": "score", "length": 2}, score_is(FIRST_POINTS),
          shown=("summary", "hex")),
-    Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
     Step("unbreak", "declaration_clear", {"kind": "breakpoint", "all": True}, lambda reply,
          run: "breakpoint cleared"),
     Step("frames", "run_for", {"frames": 3, "seconds": WAIT_S}, frames,
@@ -194,6 +195,10 @@ STEPS = [
                    for key in ("summary", "regs", "instruction", "pc", "cause",
                                "emulated_before_s", "emulated_after_s")}),
     Step("ball", "read_memory", {"ref": "ball_x", "length": 8}, ball),
+    # The picture is taken here, before any input: the game's border breathes a shade a frame, so
+    # a capture after a key lands on a colour the host decided. The loop recorded after it has
+    # nothing armed, and the game plays on from where the recording left it.
+    Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
     Step("play", "resume", {}, lambda reply, run: "the game runs"),
     Step("keys", "drive", {"act": [{"op": "send_keys", "keys": ["right"], "expect": "KEY R",
                                     "seconds": 10}] * RIGHTS,
@@ -245,8 +250,9 @@ STEPS = [
 DEMO = Demo(
     name="bricks", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", front=ROOT / "README.md", steps=STEPS,
-    capture=lambda run: run.dir / "screen.png",
-    precheck=precheck,
+    capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+    precheck=precheck, offers=frozenset({"display"}),
+    host_args={"display": DISPLAY},
     volatile={**VOLATILE, "saved_at": "the wall-clock time a state was saved at"})
 
 

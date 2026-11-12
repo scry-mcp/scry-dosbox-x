@@ -29,7 +29,7 @@ from demos.dpaint.program import (  # noqa: E402
     ds_segment,
     opening,
 )
-from demos.host import expect, isolated_store, pictured  # noqa: E402
+from demos.host import expect, isolated_store, pictured, window  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 #: The colours the checked rows cross, by palette index; the brown slot holds orange once mixed,
@@ -62,7 +62,7 @@ PARKED = {"op": "send_mouse", "x": PARK[0], "y": PARK[1]}
 def boot(run: Run) -> dict[str, Any]:
     """A fresh log, and the saved states kept out of the program's directory."""
     (run.dir / "dpaint-maps-e9.log").unlink(missing_ok=True)
-    return {"conf": HERE / "dpaint-maps.conf", "session_seconds": 900, "shared": True,
+    return {**window(run), "conf": HERE / "dpaint-maps.conf", "session_seconds": 900,
             "program": "DP.EXE k",
             "logfile": run.dir / "dpaint-maps-e9.log",
             "state_dir": run.dir / "dpaint-maps-states"}

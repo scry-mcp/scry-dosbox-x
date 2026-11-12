@@ -4,10 +4,12 @@
 
 ```json
 {
+  "shared": true,
+  "background": true,
+  "display": "<host>",
   "conf": "./demos/bricks/bricks.conf",
   "cwd": "./demos/bricks",
   "session_seconds": 900,
-  "shared": true,
   "break_on_int3": true,
   "logfile": "./tmp/demos/bricks/bricks-e9.log",
   "state_dir": "./tmp/demos/bricks/bricks-states"
@@ -35,7 +37,7 @@
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": false,
+  "background": true,
   "presence": true,
   "window": "<volatile>",
   "declarations": {
@@ -453,48 +455,7 @@
 
 </details>
 
-**10. `screen_view`**: OK screen: mode M_VGA, 320x200 by palette index
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "dest": "./tmp/demos/bricks/screen.png"
-}
-```
-
-```json
-{
-  "summary": "screen_view M_VGA: 320x200 at [0, 0] pixels; 1280x800 PNG x4, inline",
-  "status": "ok",
-  "vga_mode": "M_VGA",
-  "kind": "pixel",
-  "width": 320,
-  "height": 200,
-  "mode": "render",
-  "crop": [0, 0, 320, 200],
-  "screen_indexed": true,
-  "entries": 256,
-  "image": {
-    "path": "./tmp/demos/bricks/screen.png",
-    "bytes": "<volatile>",
-    "sha256": "<volatile>",
-    "width": 1280,
-    "height": 800,
-    "scale": 4,
-    "indexed": true,
-    "inline": true
-  },
-  "display_start": "0h",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-Also attached: image/png.
-
-</details>
-
-**11. `declaration_clear`**: OK unbreak: breakpoint cleared
+**10. `declaration_clear`**: OK unbreak: breakpoint cleared
 
 <details><summary>call and reply</summary>
 
@@ -517,7 +478,7 @@ Also attached: image/png.
 
 </details>
 
-**12. `run_for`**: OK frames: three retraces, the emulated clock moved on
+**11. `run_for`**: OK frames: three retraces, the emulated clock moved on
 
 <details><summary>call and reply</summary>
 
@@ -565,7 +526,7 @@ Also attached: image/png.
 
 </details>
 
-**13. `read_memory`**: OK ball: the ball at (188, 82) moving (-2, +2)
+**12. `read_memory`**: OK ball: the ball at (188, 82) moving (-2, +2)
 
 <details><summary>call and reply</summary>
 
@@ -590,7 +551,92 @@ Also attached: image/png.
 
 </details>
 
-**14. `resume`**: OK play: the game runs
+**13. `screen_view`**: OK screen: mode M_VGA, 320x200 by palette index
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "dest": "./tmp/demos/bricks/screen.png"
+}
+```
+
+```json
+{
+  "summary": "screen_view M_VGA: 320x200 at [0, 0] pixels; 1280x800 PNG x4, inline",
+  "status": "ok",
+  "vga_mode": "M_VGA",
+  "kind": "pixel",
+  "width": 320,
+  "height": 200,
+  "mode": "render",
+  "crop": [0, 0, 320, 200],
+  "screen_indexed": true,
+  "entries": 256,
+  "image": {
+    "path": "./tmp/demos/bricks/screen.png",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
+    "width": 1280,
+    "height": 800,
+    "scale": 4,
+    "indexed": true,
+    "inline": true
+  },
+  "display_start": "0h",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+Also attached: image/png.
+
+</details>
+
+**14. `record`**: OK loop: recording 240 frames in ./tmp/demos/bricks/loop.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 240,
+  "dest": "./tmp/demos/bricks/loop.avi"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 240,
+  "began": true,
+  "ended": true,
+  "path": "./tmp/demos/bricks/loop.avi",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**15. `resume`**: OK play: the game runs
 
 <details><summary>call and reply</summary>
 
@@ -610,7 +656,7 @@ Also attached: image/png.
 
 </details>
 
-**15. `drive`**: OK keys: the game logged PLAYER, KEY R, KEY R, KEY R
+**16. `drive`**: OK keys: the game logged PLAYER, KEY R, KEY R, KEY R
 
 <details><summary>call and reply</summary>
 
@@ -734,7 +780,7 @@ Also attached: image/png.
 
 </details>
 
-**16. `stop`**: OK pause: stopped through the debugger channel
+**17. `stop`**: OK pause: stopped through the debugger channel
 
 <details><summary>call and reply</summary>
 
@@ -755,7 +801,7 @@ Also attached: image/png.
   "watches": "<volatile>",
   "cause": "<volatile>",
   "e9": "<volatile>",
-  "stop_seq": 6,
+  "stop_seq": 7,
   "instruction": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -763,7 +809,7 @@ Also attached: image/png.
 
 </details>
 
-**17. `read_memory`**: OK paddle: the paddle at x 164: the middle, then 3 steps right
+**18. `read_memory`**: OK paddle: the paddle at x 164: the middle, then 3 steps right
 
 <details><summary>call and reply</summary>
 
@@ -788,7 +834,7 @@ Also attached: image/png.
 
 </details>
 
-**18. `resume`**: OK again: the game runs
+**19. `resume`**: OK again: the game runs
 
 <details><summary>call and reply</summary>
 
@@ -808,7 +854,7 @@ Also attached: image/png.
 
 </details>
 
-**19. `send_keys`**: OK mouse on: M handed the paddle to the mouse: the game logged MOUSE ON
+**20. `send_keys`**: OK mouse on: M handed the paddle to the mouse: the game logged MOUSE ON
 
 <details><summary>call and reply</summary>
 
@@ -847,7 +893,7 @@ Also attached: image/png.
 
 </details>
 
-**20. `send_mouse`**: OK mouse: the pointer read back at pixel 240,100 and the game logged MOUSE
+**21. `send_mouse`**: OK mouse: the pointer read back at pixel 240,100 and the game logged MOUSE
 
 <details><summary>call and reply</summary>
 
@@ -893,7 +939,7 @@ Also attached: image/png.
 
 </details>
 
-**21. `send_keys`**: OK mouse off: M took the paddle back, so the pointer moves nothing from here on
+**22. `send_keys`**: OK mouse off: M took the paddle back, so the pointer moves nothing from here on
 
 <details><summary>call and reply</summary>
 
@@ -932,7 +978,7 @@ Also attached: image/png.
 
 </details>
 
-**22. `stop`**: OK mark: stopped through the debugger channel
+**23. `stop`**: OK mark: stopped through the debugger channel
 
 <details><summary>call and reply</summary>
 
@@ -953,7 +999,7 @@ Also attached: image/png.
   "watches": "<volatile>",
   "cause": "<volatile>",
   "e9": "<volatile>",
-  "stop_seq": 7,
+  "stop_seq": 8,
   "instruction": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -961,7 +1007,7 @@ Also attached: image/png.
 
 </details>
 
-**23. `read_memory`**: OK before save: the paddle at x 220, centred under the pointer at pixel 240
+**24. `read_memory`**: OK before save: the paddle at x 220, centred under the pointer at pixel 240
 
 <details><summary>call and reply</summary>
 
@@ -986,7 +1032,7 @@ Also attached: image/png.
 
 </details>
 
-**24. `resume`**: OK on again: the game runs
+**25. `resume`**: OK on again: the game runs
 
 <details><summary>call and reply</summary>
 
@@ -1006,7 +1052,7 @@ Also attached: image/png.
 
 </details>
 
-**25. `state_write`**: OK save: state saved as bricks.sav
+**26. `state_write`**: OK save: state saved as bricks.sav
 
 <details><summary>call and reply</summary>
 
@@ -1036,7 +1082,7 @@ Also attached: image/png.
 
 </details>
 
-**26. `send_keys`**: OK left: the left arrow moved the paddle after the save
+**27. `send_keys`**: OK left: the left arrow moved the paddle after the save
 
 <details><summary>call and reply</summary>
 
@@ -1075,7 +1121,7 @@ Also attached: image/png.
 
 </details>
 
-**27. `state_write`**: OK load: state loaded from bricks.sav
+**28. `state_write`**: OK load: state loaded from bricks.sav
 
 <details><summary>call and reply</summary>
 
@@ -1105,7 +1151,7 @@ Also attached: image/png.
 
 </details>
 
-**28. `stop`**: OK halt: stopped through the debugger channel
+**29. `stop`**: OK halt: stopped through the debugger channel
 
 <details><summary>call and reply</summary>
 
@@ -1126,7 +1172,7 @@ Also attached: image/png.
   "watches": "<volatile>",
   "cause": "<volatile>",
   "e9": "<volatile>",
-  "stop_seq": 8,
+  "stop_seq": 9,
   "instruction": "<volatile>",
   "session": {"alive": true, "running": false, "altered": true}
 }
@@ -1134,7 +1180,7 @@ Also attached: image/png.
 
 </details>
 
-**29. `read_memory`**: OK restored: the paddle is back where the state was saved: the load undid the left arrow
+**30. `read_memory`**: OK restored: the paddle is back where the state was saved: the load undid the left arrow
 
 <details><summary>call and reply</summary>
 
@@ -1159,7 +1205,7 @@ Also attached: image/png.
 
 </details>
 
-**30. `resume`**: OK play on: the game runs
+**31. `resume`**: OK play on: the game runs
 
 <details><summary>call and reply</summary>
 
@@ -1179,7 +1225,7 @@ Also attached: image/png.
 
 </details>
 
-**31. `send_keys`**: OK serve: SPACE served the ball that was waiting on the paddle
+**32. `send_keys`**: OK serve: SPACE served the ball that was waiting on the paddle
 
 <details><summary>call and reply</summary>
 
@@ -1218,7 +1264,7 @@ Also attached: image/png.
 
 </details>
 
-**32. `declaration_clear`**: OK unwatch: watch cleared
+**33. `declaration_clear`**: OK unwatch: watch cleared
 
 <details><summary>call and reply</summary>
 
@@ -1241,7 +1287,7 @@ Also attached: image/png.
 
 </details>
 
-**33. `close`**: OK close: closed: quit
+**34. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 

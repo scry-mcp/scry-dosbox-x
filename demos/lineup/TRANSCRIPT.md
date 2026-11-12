@@ -4,8 +4,10 @@
 
 ```json
 {
-  "profile": "<host>",
   "shared": true,
+  "background": true,
+  "display": "<host>",
+  "profile": "<host>",
   "flags": ["-set", "cpu core=normal"],
   "captures_dir": "<host>",
   "cwd": "<host>"
@@ -33,7 +35,7 @@
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": false,
+  "background": true,
   "presence": true,
   "window": "<volatile>",
   "declarations": {
@@ -570,7 +572,51 @@
 
 </details>
 
-**11. `close`**: OK close: closed: quit
+**11. `record`**: OK loop: recording 240 frames in ./tmp/demos/lineup/loop.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 240,
+  "dest": "./tmp/demos/lineup/loop.avi"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 240,
+  "began": true,
+  "ended": true,
+  "path": "<volatile>",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**12. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 

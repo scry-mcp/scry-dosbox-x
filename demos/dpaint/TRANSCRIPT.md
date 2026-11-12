@@ -4,9 +4,11 @@
 
 ```json
 {
+  "shared": true,
+  "background": true,
+  "display": "<host>",
   "conf": "./demos/dpaint/dpaint.conf",
   "session_seconds": 900,
-  "shared": true,
   "program": "DP.EXE f",
   "logfile": "./tmp/demos/dpaint/dpaint-e9.log",
   "state_dir": "./tmp/demos/dpaint/dpaint-states",
@@ -35,7 +37,7 @@
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": false,
+  "background": true,
   "presence": true,
   "window": "<volatile>",
   "declarations": {
@@ -1402,7 +1404,52 @@ Also attached: image/png.
 
 </details>
 
-**22. `declaration_clear`**: OK unwatch: watch cleared
+**22. `record`**: OK loop: recording 240 frames in ./tmp/demos/dpaint/loop.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 240,
+  "dest": "./tmp/demos/dpaint/loop.avi"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "note": "the stop landed in F000:0000CFC5 (linear 0xFCFC5), inside a ROM handler the program called into rather than in the program: `run_for` or `resume` leaves it, and a DPMI guest reaches a protected-mode stop with `stop(until=\"protected\")`",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 240,
+  "began": true,
+  "ended": true,
+  "path": "./tmp/demos/dpaint/loop.avi",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**23. `declaration_clear`**: OK unwatch: watch cleared
 
 <details><summary>call and reply</summary>
 
@@ -1425,7 +1472,7 @@ Also attached: image/png.
 
 </details>
 
-**23. `close`**: OK close: closed: quit
+**24. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 

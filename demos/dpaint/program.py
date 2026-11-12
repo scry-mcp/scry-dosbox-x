@@ -9,7 +9,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Reply, Run, Step
+from scry_core.demo import Demo, Loop, Reply, Run, Step
 from scry_core.verdict import Invalid
 
 from demos import host
@@ -100,7 +100,8 @@ def opening(boot: Callable[[Run], dict[str, Any]], screen_map: Path, first: str)
     the map names its first screen, and where DOS loaded it. The program has no symbols and no
     log, and every place in it a stop could wait at runs hundreds of times a retrace (its loop
     polls), so the arrival is the screen itself, judged each retrace."""
-    return [Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
+    return [Step("start", "start", boot, started,
+                 options=frozenset({"binary", "cwd", "display"}),
                  volatile={"summary": "it carries how long the debugger took to answer"}),
             Step("map", "screen_map_write", {"method": "load", "path": screen_map},
                  lambda reply, run: f"{reply['screens']} screens and {reply['controls']} "
@@ -110,11 +111,12 @@ def opening(boot: Callable[[Run], dict[str, Any]], screen_map: Path, first: str)
 
 
 def declared(name: str, here: Path, steps: list[Step]) -> Demo:
-    """A Deluxe Paint demo: run from the directory `--cwd` names, refused on any other build."""
+    """A Deluxe Paint demo: run from the directory `--cwd` names, refused on any other build,
+    its loop recorded after `screen`."""
     return Demo(
         name=name, root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
         readme=here / "README.md", steps=steps,
-        capture=lambda run: run.dir / "screen.png",
-        offers=frozenset({"cwd"}), precheck=precheck,
-        host_args={"cwd": "the directory holding the program"},
+        capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+        offers=frozenset({"cwd", "display"}), precheck=precheck,
+        host_args={"cwd": "the directory holding the program", "display": host.DISPLAY},
         volatile={**VOLATILE, **host.RETRACE_STOP})

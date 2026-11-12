@@ -43,8 +43,10 @@ carries relative motion (the repository's REFERENCE.md, *Input and the screen*),
   from and mounts as C:. It is hidden in the transcript as `<host>`.
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out,
   `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
+- `--display N` opens the window on that display; left out, on the host's main one. The
+  window opens behind, so the run takes nobody's focus.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md` and `screen.png` from a run where every step
+- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where every step
   passed.
 
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
@@ -109,7 +111,7 @@ two honest runs (process ids, ports, wall-clock times, temporary paths, the host
 and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 <!-- demo-transcript:begin -->
-The run is 22 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 23 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
 **8. `perform`**: OK mix: the brown slot picked, and red's arrow held until brown's red reached the top
 

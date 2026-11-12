@@ -36,8 +36,8 @@ def test_the_demo_needs_a_built_checkout(tmp_path: Path) -> None:
 def test_the_call_adds_only_the_run_s_own_to_the_recipe(tmp_path: Path) -> None:
     built = _checkout(tmp_path / "built")
     assert demo.boot(Run(dir=tmp_path, options={"cwd": str(built)})) == {
-        "profile": str(built / demo.PROFILE), "shared": True,
-        "captures_dir": str(tmp_path / "rechip-captures")}
+        "profile": str(built / demo.PROFILE), "shared": True, "background": True,
+        "display": 0, "captures_dir": str(tmp_path / "rechip-captures")}
 
 
 def test_a_resume_must_leave_the_guest_running(tmp_path: Path) -> None:

@@ -8,11 +8,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Run, Step, main
+from scry_core.demo import Demo, Loop, Run, Step, main
 from scry_core.game_demo import arrived, word_is
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
+    DISPLAY,
     VOLATILE,
     checkout,
     conf_derived,
@@ -23,6 +24,7 @@ from demos.host import (  # noqa: E402
     precheck,
     quit_cleanly,
     started,
+    window,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -63,13 +65,13 @@ def checked(run: Run) -> str:
 def boot(run: Run) -> dict[str, Any]:
     """The game's own conf, derived by its own script, then the profile that names it."""
     conf_derived(run, CONF_SCRIPT)
-    return {"profile": str(checkout(run) / PROFILE), "shared": True,
+    return {**window(run), "profile": str(checkout(run) / PROFILE),
             "flags": NORMAL_CORE_FIXED_CLOCK,
             "captures_dir": str(run.dir / "speedf-captures")}
 
 
 STEPS = [
-    Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
+    Step("start", "start", boot, started, options=frozenset({"binary", "cwd", "display"}),
          volatile={"summary": "it carries how long the debugger took to answer",
                    "conf": "where the reader's copy of the game keeps its derived conf",
                    "name": "where the reader's copy of the game keeps its profile",
@@ -101,10 +103,11 @@ STEPS = [
 DEMO = Demo(
     name="speedf", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
-    capture=lambda run: run.dir / "screen.png",
-    offers=frozenset({"cwd"}), reads=frozenset({"cwd"}), precheck=checked,
+    capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+    offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_GAME,
     host_args={"cwd": "the reader's copy of the game, wherever it was cloned",
+               "display": DISPLAY,
                "profile": "the reader's copy of the game, wherever it was cloned",
                "captures_dir": "the run's own directory"})
 

@@ -4,8 +4,10 @@
 
 ```json
 {
-  "profile": "<host>",
   "shared": true,
+  "background": true,
+  "display": "<host>",
+  "profile": "<host>",
   "flags": ["-set", "cpu core=normal", "-set", "cpu cycles=fixed 50000"],
   "captures_dir": "<host>",
   "cwd": "<host>"
@@ -33,7 +35,7 @@
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": false,
+  "background": true,
   "presence": true,
   "window": "<volatile>",
   "declarations": {
@@ -302,7 +304,51 @@ Also attached: image/png.
 
 </details>
 
-**8. `close`**: OK close: closed: DOSBox-X quit on its own
+**8. `record`**: OK loop: recording 240 frames in ./tmp/demos/speedf/loop.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 240,
+  "dest": "./tmp/demos/speedf/loop.avi"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 240,
+  "began": true,
+  "ended": true,
+  "path": "<volatile>",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**9. `close`**: OK close: closed: DOSBox-X quit on its own
 
 <details><summary>call and reply</summary>
 

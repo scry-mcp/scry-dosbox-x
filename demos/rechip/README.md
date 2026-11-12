@@ -26,9 +26,10 @@ uv run python demos/rechip/demo.py --cwd /path/to/rechip
 - `--cwd PATH` (absolute or `~`-led) is the program's own repository checkout.
 - `--binary PATH` picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`, else the `dosbox-x`
   on your `PATH`.
-- The window opens in front.
+- `--display N` opens the window on that display; left out, on the host's main one. The
+  window opens behind, so the run takes nobody's focus.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md` and `screen.png` from a run where
+- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where
   every step passed.
 
 Each line it prints is one call and its check. Exit codes: 0 every step passed, 1 a step failed,
@@ -58,7 +59,7 @@ Give this to an MCP client with this server connected:
 ## The transcript
 
 <!-- demo-transcript:begin -->
-The run is 11 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 12 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
@@ -68,8 +69,10 @@ The run is 11 calls; these are the ones that show how it is done, and every call
 
 ```json
 {
-  "profile": "<host>",
   "shared": true,
+  "background": true,
+  "display": "<host>",
+  "profile": "<host>",
   "captures_dir": "<host>",
   "cwd": "<host>"
 }
@@ -96,7 +99,7 @@ The run is 11 calls; these are the ones that show how it is done, and every call
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": false,
+  "background": true,
   "presence": true,
   "window": "<volatile>",
   "declarations": {
@@ -190,7 +193,7 @@ The program's own log says when it is up and when the song sounds, two different
 
 </details>
 
-**10. `send_keys`**: OK confirm: Quit without saving
+**11. `send_keys`**: OK confirm: Quit without saving
 
 The program is left by its own keys, and its log says which button the confirm took, so the session closes over a guest that has quit rather than one killed under a running program.
 

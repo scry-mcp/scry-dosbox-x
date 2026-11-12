@@ -19,12 +19,12 @@ import wave
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Reply, Run, Step, main
+from scry_core.demo import Demo, Loop, Reply, Run, Step, main
 from scry_core.verdict import Invalid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos import host  # noqa: E402
-from demos.host import VOLATILE, expect, isolated_store, started  # noqa: E402
+from demos.host import DISPLAY, VOLATILE, expect, isolated_store, started, window  # noqa: E402
 from demos.monkey import lookout  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -131,7 +131,8 @@ def boot(run: Run) -> dict[str, Any]:
     for stale in ("monkey-e9.log", "theme.wav", "theme-disc.wav", "screen.png"):
         (run.dir / stale).unlink(missing_ok=True)
     shutil.rmtree(run.dir / "monkey-states", ignore_errors=True)
-    return {"conf": conf, "session_seconds": 1800, "shared": True, "program": "D:\\MONKEY.COM",
+    return {**window(run), "conf": conf, "session_seconds": 1800,
+            "program": "D:\\MONKEY.COM",
             "logfile": run.dir / "monkey-e9.log", "state_dir": run.dir / "monkey-states"}
 
 
@@ -427,7 +428,7 @@ def same_track(reply: Reply, run: Run) -> str:
 
 
 STEPS = [
-    Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
+    Step("start", "start", boot, started, options=frozenset({"binary", "cwd", "display"}),
          volatile={"summary": "it carries how long the debugger took to answer"}),
     Step("map", "screen_map_write", {"method": "load", "path": HERE / "monkey-screen-map.json"},
          lambda reply, run: f"{reply['screens']} screens, {reply['controls']} controls"),
@@ -528,8 +529,10 @@ STEPS = [
 DEMO = Demo(
     name="monkey", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS, capture=lambda run: run.dir / "screen.png",
-    offers=frozenset({"cwd"}), reads=frozenset({"cwd"}), precheck=precheck,
+    loop=Loop("screen"),
+    offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=precheck,
     host_args={"cwd": "the directory holding the reader's disc image",
+               "display": DISPLAY,
                "binary": "the host's own DOSBox-X"},
     volatile={**VOLATILE, "saved_at": "the wall-clock time a state was saved at",
               **{key: WAIT_LOOP for key in ("stop_seq", "stops", "polls",

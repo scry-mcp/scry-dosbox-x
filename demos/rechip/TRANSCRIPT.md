@@ -4,8 +4,10 @@
 
 ```json
 {
-  "profile": "<host>",
   "shared": true,
+  "background": true,
+  "display": "<host>",
+  "profile": "<host>",
   "captures_dir": "<host>",
   "cwd": "<host>"
 }
@@ -32,7 +34,7 @@
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": false,
+  "background": true,
   "presence": true,
   "window": "<volatile>",
   "declarations": {
@@ -247,7 +249,52 @@ Also attached: image/png.
 
 </details>
 
-**8. `resume`**: OK go on: the program runs on
+**8. `record`**: OK loop: recording 240 frames in ./tmp/demos/rechip/loop.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 240,
+  "dest": "./tmp/demos/rechip/loop.avi"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "note": "the stop landed in F000:0000D224 (linear 0xFD224), inside a ROM handler the program called into rather than in the program: `run_for` or `resume` leaves it, and a DPMI guest reaches a protected-mode stop with `stop(until=\"protected\")`",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 240,
+  "began": true,
+  "ended": true,
+  "path": "./tmp/demos/rechip/loop.avi",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**9. `resume`**: OK go on: the program runs on
 
 <details><summary>call and reply</summary>
 
@@ -269,7 +316,7 @@ Also attached: image/png.
 
 </details>
 
-**9. `send_keys`**: OK quit: File, Quit: the song is dirty, so the confirm opened
+**10. `send_keys`**: OK quit: File, Quit: the song is dirty, so the confirm opened
 
 <details><summary>call and reply</summary>
 
@@ -309,7 +356,7 @@ Also attached: image/png.
 
 </details>
 
-**10. `send_keys`**: OK confirm: Quit without saving
+**11. `send_keys`**: OK confirm: Quit without saving
 
 <details><summary>call and reply</summary>
 
@@ -348,7 +395,7 @@ Also attached: image/png.
 
 </details>
 
-**11. `close`**: OK close: closed: DOSBox-X quit on its own
+**12. `close`**: OK close: closed: DOSBox-X quit on its own
 
 <details><summary>call and reply</summary>
 

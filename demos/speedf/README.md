@@ -28,9 +28,10 @@ uv run python demos/speedf/demo.py --cwd /path/to/speedf-msdos
 - `--cwd PATH` (absolute or `~`-led) is the game's own repository checkout.
 - `--binary PATH` picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`, else the `dosbox-x`
   on your `PATH`.
-- The window opens in front.
+- `--display N` opens the window on that display; left out, on the host's main one. The
+  window opens behind, so the run takes nobody's focus.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md` and `screen.png` from a run where
+- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where
   every step passed.
 
 Each line it prints is one call and its check. Exit codes: 0 every step passed, 1 a step failed,
@@ -51,7 +52,7 @@ Give this to an MCP client with this server connected:
 ## The transcript
 
 <!-- demo-transcript:begin -->
-The run is 8 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 9 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
@@ -61,8 +62,10 @@ The run is 8 calls; these are the ones that show how it is done, and every call 
 
 ```json
 {
-  "profile": "<host>",
   "shared": true,
+  "background": true,
+  "display": "<host>",
+  "profile": "<host>",
   "flags": ["-set", "cpu core=normal", "-set", "cpu cycles=fixed 50000"],
   "captures_dir": "<host>",
   "cwd": "<host>"
@@ -90,7 +93,7 @@ The run is 8 calls; these are the ones that show how it is done, and every call 
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": false,
+  "background": true,
   "presence": true,
   "window": "<volatile>",
   "declarations": {

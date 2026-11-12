@@ -22,8 +22,10 @@ be watched; nothing in it needs the window.
 
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`,
   else the `dosbox-x` on your `PATH`.
+- `--display N` opens the window on that display; left out, on the host's main one. The
+  window opens behind, so the run takes nobody's focus.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md` and `screen.png` from a run where every step
+- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where every step
   passed.
 
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
@@ -78,7 +80,7 @@ two honest runs (process ids, ports, wall-clock times, temporary paths, the host
 and its own arguments) is `<volatile>`.
 
 <!-- demo-transcript:begin -->
-The run is 36 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 37 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
 **5. `run_to`**: OK title: the game's loop reached: the title drawn and the pointer up
 
@@ -489,7 +491,7 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
 
 </details>
 
-**33. `audio_compare`**: OK exact: the explosion is boom.wav, sample for sample
+**34. `audio_compare`**: OK exact: the explosion is boom.wav, sample for sample
 
 The explosion was recorded off the emulated Sound Blaster's digital output, not off the speakers, and the comparison is a `diff` with alignment off: the two recordings are equal sample for sample, which is what `exact` says.
 

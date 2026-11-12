@@ -63,8 +63,10 @@ theme heard; nothing in it needs the window.
   lists, and a DOSBox-X that plays a CD image at the volume the program asks for: one that
   multiplies the drive's volume by its 0 to 255 value plays the theme four times as loud,
   clipped, and the step that holds the recording to the disc says so.
+- `--display N` opens the window on that display; left out, on the host's main one. The
+  window opens behind, so the run takes nobody's focus.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md` and `screen.png` from a run where every step passed.
+- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where every step passed.
 
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
 line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2 a
@@ -121,7 +123,7 @@ holds before the rewrite are `<volatile>` too: the step that reads them gives th
 verdict, and this repository carries none of them.
 
 <!-- demo-transcript:begin -->
-The run is 54 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 55 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
 **7. `perform`**: OK intro: the room variable read 35664, 35664, 0, 0, 10 up to the first scene; Escapes at SCUMM's ticks skipped it to the title card, room 96
 

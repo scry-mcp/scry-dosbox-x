@@ -4,9 +4,11 @@
 
 ```json
 {
+  "shared": true,
+  "background": true,
+  "display": "<host>",
   "conf": "./tmp/demos/monkey/monkey.conf",
   "session_seconds": 1800,
-  "shared": true,
   "program": "D:\\MONKEY.COM",
   "logfile": "./tmp/demos/monkey/monkey-e9.log",
   "state_dir": "./tmp/demos/monkey/monkey-states",
@@ -35,7 +37,7 @@
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": false,
+  "background": true,
   "presence": true,
   "window": "<volatile>",
   "declarations": {
@@ -2284,8 +2286,8 @@
   ],
   "stopped_on_its_own": {
     "stop_seq": "<volatile>",
-    "pc": "0985:00000113",
-    "cause": "no declared code breakpoint at 0985:00000113: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
+    "pc": "0985:0000010B",
+    "cause": "no declared code breakpoint at 0985:0000010B: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
   },
   "session": "<volatile>"
 }
@@ -3047,7 +3049,7 @@
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": "<volatile>",
-  "pc": "0985:00000107",
+  "pc": "0985:0000011C",
   "cpu_mode": "real",
   "frame": "<volatile>",
   "regs": {
@@ -3059,7 +3061,7 @@
     "EDI": "0x00006889",
     "EBP": "0x00008318",
     "ESP": "0x00008314",
-    "EIP": "0x00000107",
+    "EIP": "0x0000011c",
     "CS": "0x0985",
     "DS": "0x220b",
     "ES": "0xa000",
@@ -3068,14 +3070,14 @@
     "SS": "0x220b"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 0985:00000107",
+  "cause": "the retrace run_for ran to, at 0985:0000011C",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": "<volatile>",
   "instruction": {
-    "address": "0985:00000107",
-    "bytes": "8B36503B",
-    "text": "mov si, word ptr [0x3b50]",
-    "flow": "sequential",
+    "address": "0985:0000011C",
+    "bytes": "77E9",
+    "text": "ja 0x107",
+    "flow": "branch",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": {"available": false, "why": "no symbol table is loaded"},
@@ -3442,7 +3444,51 @@ Also attached: image/png.
 
 </details>
 
-**53. `perform`**: OK goodbye: the map says: cliff
+**53. `record`**: OK loop: recording 240 frames in ./tmp/demos/monkey/loop.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 240,
+  "dest": "./tmp/demos/monkey/loop.avi"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 240,
+  "began": true,
+  "ended": true,
+  "path": "./tmp/demos/monkey/loop.avi",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**54. `perform`**: OK goodbye: the map says: cliff
 
 <details><summary>call and reply</summary>
 
@@ -3531,7 +3577,7 @@ Also attached: image/png.
 
 </details>
 
-**54. `close`**: OK close: closed: quit
+**55. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
