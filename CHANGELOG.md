@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- `screen_view` and `snapshot` write their `dest` under the name the caller gave it, `_` and
+  capitals kept, and their reply's `path` is that name; the file-name rule is of the names a
+  server makes up, not of a caller's own path.
 - The demos ship a loop: each demo's `loop.mp4` sits beside its `screen.png`, recorded by the
   runner after the step that takes the still.
 - On the pinned scry-core (`pyproject.toml`), which carries the window every demo asks of

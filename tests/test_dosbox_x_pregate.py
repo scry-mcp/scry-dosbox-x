@@ -98,8 +98,6 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
     ("resume", {"seconds": "5"}, "is not a bound"),
     ("resume", {"seconds": math.nan}, "is not a bound"),
     ("resume", {"seconds": math.inf}, "is not a bound"),
-    ("snapshot", {"dest": absolute("shot")}, "no extension"),
-    ("screen_view", {"dest": absolute("shot")}, "no extension"),
     ("memdump", {"ref": "1000:0000", "length": 16, "dest": absolute("dump")}, "no extension"),
     ("trace", {"instructions": 1, "dest": absolute("run")}, "no extension"),
     ("comment_write save", {"dest": absolute("notes")}, "no extension"),
@@ -123,6 +121,8 @@ def test_a_value_wrong_with_no_machine_is_bad_argument_not_no_session(
     ("breakpoint_at", {"ref": "g_p"}),
     ("send_keys", {"keys": ["a"]}),
     ("find", {"ref": "1000:0000", "data_hex": "00", "length": 1}),
+    ("snapshot", {"dest": absolute("shot")}),
+    ("screen_view", {"dest": absolute("shot")}),
 ])
 def test_the_edge_of_each_rule_reaches_the_gate(tool: str, kw: dict[str, Any]) -> None:
     _refused(fold_calls.of(server, tool)(**kw), "no_session")

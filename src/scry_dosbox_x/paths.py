@@ -26,8 +26,35 @@ def dest_file(name: str, value: object) -> Path:
     return file_names.caller_file(judges.absolute(name, value), name)
 
 
+def named_dest(name: str, value: object) -> Path:
+    """A file a tool will write, under the name the caller gave it (`~` expanded, absolute):
+    the file-name rule of `scry_core.file_names` is of the names a server makes up, not of a
+    caller's own `dest`, which the caller reads back by. The place is not looked at."""
+    return judges.absolute(name, value)
+
+
 def fresh_dest(name: str, value: str | Path) -> Path:
     return judges.fresh_file(name, str(value))
+
+
+def fresh_named_dest(name: str, value: str | Path) -> Path:
+    """`named_dest`, in an existing directory, with nothing there yet."""
+    path = named_dest(name, str(value))
+    try:
+        there = path.parent.is_dir()
+    except OSError as e:
+        raise Invalid("bad_argument", f"{name}: {path} cannot be looked at: {e}") from None
+    if not there:
+        raise Invalid("bad_argument", f"{name}: {path.parent} is not a directory, so "
+                      f"{path.name} has nowhere to go")
+    try:
+        taken = path.exists() or path.is_symlink()
+    except OSError as e:
+        raise Invalid("bad_argument", f"{name}: {path} cannot be looked at: {e}") from None
+    if taken:
+        raise Invalid("bad_argument", f"{name}: {path} already exists. This will not overwrite "
+                      "it: name a path that is not there yet")
+    return path
 
 
 def fresh_folder(name: str, value: str | Path) -> Path:

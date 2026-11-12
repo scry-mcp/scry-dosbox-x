@@ -263,8 +263,14 @@ def optional_dest(dest: object) -> None:
         paths.dest_file("dest", dest)
 
 
+def optional_named_dest(dest: object) -> None:
+    """A picture `dest` kept under the name the caller gave; empty means the scratch's."""
+    if dest != "":
+        paths.named_dest("dest", dest)
+
+
 def _file_and_wait(dest: object, seconds: object) -> None:
-    """The decision `trace`, `record`, `audio_record` and `snapshot` share: where the file goes
+    """The decision `trace`, `record` and `audio_record` share: where the file goes
     and how long the call may take."""
     optional_dest(dest)
     vocab.check_wait(seconds)
@@ -546,7 +552,8 @@ def _capture_frame(frame: int, dest: str, capture_path: str = "", **_: Any) -> N
 
 
 def _snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S, **_: Any) -> None:
-    _file_and_wait(dest, seconds)
+    optional_named_dest(dest)
+    vocab.check_wait(seconds)
 
 
 def _palette(first: object = 0, count: int = 0, scale: int = 0, dest: str = "",
@@ -571,7 +578,7 @@ def _screen_view(crop: list[int] | None = None, scale: int = 0, dest: str = "",
     if crop is not None:
         judges.rect("crop", crop)
     picture.check_scale(scale)
-    optional_dest(dest)
+    optional_named_dest(dest)
     by_pens.check_view(mode, pens, point, crop, scale, dest, attach)
 
 

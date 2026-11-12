@@ -975,24 +975,43 @@ def test_a_snapshot_at_a_stop_writes_the_graphics_screen_from_video_memory(
     assert again["sha256"] == r["sha256"]
 
 
-@pytest.mark.parametrize("tool", ["screen_view", "snapshot", "palette"])
-def test_a_mixed_case_dest_is_written_under_its_normalised_name_and_the_reply_says_so(
-        tmp_path: Path, tool: str) -> None:
+@pytest.mark.parametrize("tool", ["screen_view", "snapshot"])
+def test_a_dest_is_written_under_the_name_the_caller_gave(tmp_path: Path, tool: str) -> None:
+    """`dest` is honoured as the caller wrote it: `a_b.png` stays `a_b.png` (the card's case),
+    and nothing of the name is rewritten; the reply's `path` is the name asked for."""
     screen_bench("screen-13h", tmp_path)
     out = tmp_path / "out"
     out.mkdir()
 
     def write(name: str) -> dict[str, Any]:
         return cast(dict[str, Any], getattr(server, tool)(dest=str(out / name)))
-    r = write("Shot_1.PNG")
+    r = write("a_b.png")
     assert r["status"] == "ok", r
-    assert (r["path"] if tool == "snapshot" else r["image"]["path"]) == str(out / "shot-1.png")
-    assert [p.name for p in out.iterdir()] == ["shot-1.png"]
-    taken = write("SHOT 1.png")
-    assert taken["code"] == "bad_argument" and "already exists" in taken["message"], taken
+    assert (r["path"] if tool == "snapshot" else r["image"]["path"]) == str(out / "a_b.png")
+    kept = write("Shot_1.PNG")
+    assert kept["status"] == "ok", kept
+    assert (kept["path"] if tool == "snapshot" else kept["image"]["path"]) == str(
+        out / "Shot_1.PNG")
     bare = write("shot")
-    assert bare["code"] == "bad_argument" and "no extension" in bare["message"], bare
+    assert bare["status"] == "ok", bare
+    assert (bare["path"] if tool == "snapshot" else bare["image"]["path"]) == str(out / "shot")
+    again = write("a_b.png")
+    assert again["code"] == "bad_argument" and "already exists" in again["message"], again
+    assert sorted(p.name for p in out.iterdir()) == ["Shot_1.PNG", "a_b.png", "shot"]
+
+
+def test_palette_still_writes_its_dest_under_the_file_name_rule(tmp_path: Path) -> None:
+    """`palette` keeps the file-name rule for its `dest`: the card's change is of `screen_view`
+    and `snapshot`."""
+    screen_bench("screen-13h", tmp_path)
+    out = tmp_path / "out"
+    out.mkdir()
+    r = cast(dict[str, Any], server.palette(dest=str(out / "Shot_1.PNG")))
+    assert r["status"] == "ok", r
+    assert r["image"]["path"] == str(out / "shot-1.png")
     assert [p.name for p in out.iterdir()] == ["shot-1.png"]
+    bare = cast(dict[str, Any], server.palette(dest=str(out / "shot")))
+    assert bare["code"] == "bad_argument" and "no extension" in bare["message"], bare
 
 
 def test_a_snapshot_at_a_stop_in_a_text_mode_is_refused_naming_screen_view(

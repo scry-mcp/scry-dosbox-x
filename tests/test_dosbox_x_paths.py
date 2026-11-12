@@ -105,6 +105,22 @@ def test_a_fresh_dest_has_its_directory_and_nothing_at_it(tmp_path: Path) -> Non
     assert there.read_bytes() == b"mine" and dangling.is_symlink()
 
 
+def test_a_named_dest_keeps_the_name_the_caller_gave_and_still_refuses_a_taken_one(
+        tmp_path: Path) -> None:
+    """`named_dest` is the path as the caller wrote it, not the file-name rule's: `Shot_1.PNG`
+    stays `Shot_1.PNG`; the fresh check still refuses a taken or unplaceable path."""
+    assert paths.named_dest("dest", str(tmp_path / "Shot_1.PNG")) == tmp_path / "Shot_1.PNG"
+    assert paths.fresh_named_dest("dest", str(tmp_path / "Shot_1.PNG")) == tmp_path / "Shot_1.PNG"
+    there = tmp_path / "there.bin"
+    there.write_bytes(b"mine")
+    for dest, words in ((there, "already exists"),
+                        (tmp_path / "missing" / "x.bin", "is not a directory")):
+        with pytest.raises(ds.Invalid, match=words) as e:
+            paths.fresh_named_dest("dest", str(dest))
+        assert e.value.code == "bad_argument"
+    assert there.read_bytes() == b"mine"
+
+
 def test_an_input_file_is_a_regular_file_there(tmp_path: Path) -> None:
     f = tmp_path / "x.sym"
     f.write_text("x")

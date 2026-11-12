@@ -950,18 +950,19 @@ def screen_wait(text: str = "", screen: str = "", palette: str = "", changed: bo
 @tool("Snapshot the screen to a PNG", summary=one_line.snapshot, on_cancel="none", replay="drop")
 def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.SNAPSHOT_WAIT_S,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """A still of the screen as a PNG, at `dest` if given (absolute, new). Running: taken in the
-    guest into the captures directory within `seconds` (`route` `guest`; `wait_expired` when none
-    appears); refused with no `logfile` or no stub in the log. At a stop: written from video
-    memory through `screen_view`'s decoder (`route` `video_memory`), unscaled, without running the
-    machine; a text mode is refused (`no_channel`), and `seconds` is not used.
+    """A still of the screen as a PNG, at `dest` if given (absolute, new, written under the name
+    you gave it). Running: taken in the guest into the captures directory within `seconds`
+    (`route` `guest`; `wait_expired` when none appears); refused with no `logfile` or no stub in
+    the log. At a stop: written from video memory through `screen_view`'s decoder (`route`
+    `video_memory`), unscaled, without running the machine; a text mode is refused
+    (`no_channel`), and `seconds` is not used.
 
     Reply: `route`, `path`, `bytes`, `sha256`.
     """
     session = live()
     if session.at_debugger():
         vocab.check_wait(seconds)
-        return st.answer(screen.still(session, paths.dest_file("dest", dest) if dest else None))
+        return st.answer(screen.still(session, paths.named_dest("dest", dest) if dest else None))
     if session.launch.logfile is None:
         # `S` IS ALSO THE DELETE KEY'S SCAN CODE: an older stub would press it, and with no log
         # there is no announce to tell the two apart.
@@ -969,7 +970,7 @@ def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.S
             "snapshot needs the guest's E9 log to see which stub is resident (its command is "
             "a scan code to an older one): start the session with logfile=")
     inputs.require_stub(session)
-    return st.answer(session.snapshot(paths.dest_file("dest", dest) if dest else None, seconds,
+    return st.answer(session.snapshot(paths.named_dest("dest", dest) if dest else None, seconds,
                                       bridge(ctx)))
 
 
@@ -1321,7 +1322,8 @@ def screen_view(mode: Annotated[str, vocab.enum(by_pens.MODES)] = "render",
     `[x, y]`); the last three read a palette-indexed graphics mode, where a pen is the DAC entry
     a pixel holds, and no `set_by` is answered. `crop` is `[x, y, width, height]` in characters
     or pixels and narrows all but `pixel`. `scale` 0 fits the largest up to 8x; `dest` a new
-    path (else a scratch); `attach` false leaves it unattached.
+    path (else a scratch), written under the name you gave it; `attach` false leaves it
+    unattached.
 
     Reply: `mode`, `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `text`,
     `cursor`; in graphics `screen_indexed`, `entries` (indexed) and `image` (not for mode
@@ -1340,7 +1342,7 @@ def screen_view(mode: Annotated[str, vocab.enum(by_pens.MODES)] = "render",
     session = live()
     session.require_stopped("a listing")
     return st.reply(**screen.screen_view(session, crop, scale,
-                                         paths.dest_file("dest", dest) if dest else None,
+                                         paths.named_dest("dest", dest) if dest else None,
                                          STATE.session_scratch(), attach, mode, pens, point))
 
 

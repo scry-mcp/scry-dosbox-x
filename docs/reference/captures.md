@@ -231,11 +231,12 @@ The frames are the AVI's own, not emulated frames, because the file is what is r
 snapshot(dest="", seconds=10.0)
 ```
 
-A still of the screen as a PNG, at `dest` if given (absolute, new). Running: taken in the
-guest into the captures directory within `seconds` (`route` `guest`; `wait_expired` when none
-appears); refused with no `logfile` or no stub in the log. At a stop: written from video
-memory through `screen_view`'s decoder (`route` `video_memory`), unscaled, without running the
-machine; a text mode is refused (`no_channel`), and `seconds` is not used.
+A still of the screen as a PNG, at `dest` if given (absolute, new, written under the name
+you gave it). Running: taken in the guest into the captures directory within `seconds`
+(`route` `guest`; `wait_expired` when none appears); refused with no `logfile` or no stub in
+the log. At a stop: written from video memory through `screen_view`'s decoder (`route`
+`video_memory`), unscaled, without running the machine; a text mode is refused
+(`no_channel`), and `seconds` is not used.
 
 Reply: `route`, `path`, `bytes`, `sha256`.
 
