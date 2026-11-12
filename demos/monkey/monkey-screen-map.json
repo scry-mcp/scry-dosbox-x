@@ -1206,6 +1206,35 @@
     }
    ],
    "controls": []
+  },
+  {
+   "name": "part one",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      52,
+      58,
+      198,
+      38
+     ],
+     "signature": "907e353d274dca7e"
+    },
+    {
+     "crop": [
+      52,
+      124,
+      196,
+      17
+     ],
+     "signature": "af61ded7c1722e9c"
+    }
+   ],
+   "controls": []
   }
  ]
 }

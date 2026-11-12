@@ -86,7 +86,7 @@ def pictured(reply: Reply, run: Run) -> str:
 
 def loaded(reply: Reply, run: Run) -> str:
     expect(reply["kept"] == reply["parsed"] > 0, f"{reply['kept']} of {reply['parsed']} kept")
-    return f"{reply['kept']} symbols placed at base {reply['base']:#x}"
+    return f"{reply['kept']} symbols placed at base {reply['base']}"
 
 
 def started(reply: Reply, run: Run) -> str:

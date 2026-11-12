@@ -45,11 +45,11 @@ INPUTS = {action: Press("send_keys", {"keys": [key]})
                               ("FIRE1", "space"), ("UP", "up"))}
 #: The reference the recording must equal: the same build mixes other samples on Windows, the
 #: same ones run after run.
-SOUND = "music-win32.wav" if sys.platform == "win32" else "music.wav"
+SOUND = Path("win32", "music.wav") if sys.platform == "win32" else Path("music.wav")
 #: The game's first DOS call of its own: `INT 21h AH=62h`, its PSP, asked at the top of
 #: `_lineup_run` (MAIN.ASM). Neither DOS's boot nor the input stub asks it, so the first stop there
 #: is inside the loaded game, and that stop places its map.
-GAME_LOADED = {"number": 0x21, "ah": 0x62}
+GAME_LOADED = {"number": "0x21", "ah": "0x62"}
 #: The normal core: the dynamic one the game's conf keeps can pass a code breakpoint over, and
 #: the script's waits judge the screen at the game's own tick.
 NORMAL_CORE = ["-set", "cpu core=normal"]
@@ -65,6 +65,8 @@ VOLATILE_GAME = {**VOLATILE,
                  "cycles": "the cycles a recording spans drift by a few between hosts",
                  "emulated_before_s": "it follows the host's cycles by a few",
                  "emulated_s": "it follows the host's cycles by a few",
+                 "emulated_after_s": "it follows the host's cycles by a few",
+                 "b": "the platform's own reference recording",
                  **RETRACE_STOP}
 
 
@@ -136,7 +138,8 @@ DEMO = Demo(
     capture=lambda run: run.dir / "screen.png",
     offers=frozenset({"cwd"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_GAME,
-    host_args={"cwd": "the reader's copy of the game, wherever it was cloned",
+    host_args={"b": "the platform's own reference recording",
+               "cwd": "the reader's copy of the game, wherever it was cloned",
                "profile": "the reader's copy of the game, wherever it was cloned",
                "path": "a file of the reader's copy of the game",
                "captures_dir": "the run's own directory"})

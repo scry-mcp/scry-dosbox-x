@@ -133,8 +133,8 @@ resume(seconds=60)
 ```
 symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="8df0")
 -> {
-  "summary": "symbols_load: 65 loaded of 65 parsed, base 36336, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
-  "base": 36336
+  "summary": "symbols_load: 65 loaded of 65 parsed, base 0x00008df0, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
+  "base": "0x00008df0"
 }
 ```
 

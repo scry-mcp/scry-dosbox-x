@@ -97,8 +97,8 @@ def score_is(points: int) -> Any:
 
 def frames(reply: Reply, run: Run) -> str:
     expect(reply["verdict"] == "ELAPSED", f"verdict {reply['verdict']}")
-    return f"three retraces, the emulated clock from {reply['emulated_before_s']:.4f} s to " \
-           f"{reply['emulated_after_s']:.4f} s"
+    expect(reply["emulated_after_s"] > reply["emulated_before_s"], "the emulated clock stood still")
+    return "three retraces, the emulated clock moved on"
 
 
 def ball(reply: Reply, run: Run) -> str:

@@ -47,8 +47,13 @@ Give this to an MCP client with this server connected:
 
 ## What it walks
 
-<!-- demo-flow:begin rechip -->
-<!-- demo-flow:end rechip -->
+| Family | Calls |
+|---|---|
+| Session | `start` from the program's profile (windowed), `close` over a guest that quit |
+| Advance | `resume` to let the program run, `stop` to hold it for the picture |
+| Log | `log_wait` on the program's own E9 lines |
+| Input | `send_keys` with `expect` on the line each key makes the program write |
+| Screen | `screen_view` |
 
 ## The transcript
 

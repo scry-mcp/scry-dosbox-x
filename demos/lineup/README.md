@@ -6,8 +6,8 @@
 ported the same source to MS-DOS: VGA mode 13h and a Sound Blaster 16. This demo boots the PC port
 from the run recipe its repository declares, `.scry/start/dos.json`, and replays the script that
 repository declares too, `.scry/perform/dos.json`, in one call: the game's own symbols, its screens
-and its inputs, written once by the game and replayed here. The MAME server plays the arcade board
-from `scry_core.games.lineup`, whose symbols and screens this script shares.
+and its inputs, written once by the game and replayed here. The arcade board's version plays the
+same script, `scry_core.games.lineup`, whose symbols and screens this one shares.
 
 The script runs to the routine that draws the high scores by name, drops a coin and reads the
 credits the game counted, starts a game, runs to the routine that writes its level, and plays: one
@@ -310,7 +310,7 @@ The recording is compared with the platform's reference with alignment off: `exa
 {
   "method": "diff",
   "a": "./tmp/demos/lineup/music.wav",
-  "b": "./demos/lineup/music.wav",
+  "b": "<host>",
   "align": false
 }
 ```
@@ -330,7 +330,7 @@ The recording is compared with the platform's reference with alignment off: `exa
   "length_delta_samples": 0,
   "aligned_by_samples": 0,
   "a": "./tmp/demos/lineup/music.wav",
-  "b": "./demos/lineup/music.wav",
+  "b": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```

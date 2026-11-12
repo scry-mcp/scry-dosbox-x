@@ -65,8 +65,8 @@
 
 ```json
 {
-  "number": 16,
-  "ah": 79
+  "number": "0x10",
+  "ah": "0x4F"
 }
 ```
 
@@ -143,7 +143,7 @@
     "symbol": "hw_init_video",
     "delta": 14
   },
-  "symbols_placed": {"placed": true, "path": "<volatile>", "load_segment": "08EB", "base": 36528, "loaded": 294},
+  "symbols_placed": {"placed": true, "path": "<volatile>", "load_segment": "08EB", "base": "0x00008eb0", "loaded": 294},
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```

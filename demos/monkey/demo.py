@@ -52,6 +52,8 @@ MIXER_LAG = 2
 #: played to, which follows the host's audio clock, so a retrace lands at another instruction of
 #: the same wait loop from one run to the next while every screen and sample stays the same.
 WAIT_LOOP = "where in the game's wait loop the stop landed, which follows the CD's playback"
+#: What a step that stops in the game's wait loop shows of where it stopped.
+STOP_IN_LOOP = {key: WAIT_LOOP for key in ("summary", "pc", "regs", "instruction", "cause")}
 #: Where the pointer waits while a screen is judged: over the sky, off every region the map signs.
 SKY = {"op": "send_mouse", "x": 250, "y": 20}
 #: Where the pointer goes once a line is picked: above the menu, so the next one is judged whole.
@@ -59,9 +61,29 @@ AWAY = {"op": "send_mouse", "x": 160, "y": 60}
 #: How long a step waits for the screen it brings: a walk or a speech ends well inside it on a
 #: host of any speed, and the wait ends at the screen, never at the bound.
 ARRIVE_S = 180
-#: A screen is judged every so many retraces: each judgement stops the game and reads the frame,
-#: and the screens waited for last seconds.
+#: The launcher's language menu and the lookout's lines are judged every so many retraces: the
+#: launcher has no symbols and no log, and the lines are paced by the CD (`line`); each judgement
+#: stops the machine and reads the frame.
 JUDGED_EVERY = 7
+#: Where SCUMM leaves the loop that waits for its next tick (`MONKEY.EXE`'s code segment, this
+#: pressing): by then it has copied the frame it built to the screen and set its palette, so a
+#: screen judged after it is whole. The code segment is the program's PSP plus 0x10.
+TICK_OFFSET = 0x011E
+#: SCUMM's variables in its data segment (the PSP plus 0x10 plus `DATA_PARAGRAPHS`, this
+#: pressing): the room is variable 4, two bytes each from `VARS`.
+DATA_PARAGRAPHS, VARS = 0x1886, 0x73E2
+ROOM = VARS + 4 * 2
+#: The values the room variable takes from the double click to the intro's first scene, room 10
+#: (the first ones are what SCUMM writes there while it starts, before any room), then the title
+#: card, room 96. SCUMM takes a key that skips a scene only once the scene has begun, which no stop
+#: marks, so from room 10 an Escape goes in after every `SKIP_EVERY`th of `SKIP_TICKS` SCUMM
+#: ticks: each lands at the same tick of the game's clock, so the same scenes are skipped.
+INTRO_ROOMS = (0x8B50, 0x8B50, 0, 0, 10)
+TITLE_ROOM = 96
+SKIP_EVERY, SKIP_TICKS = 5, 24
+#: The bound of each wait for a write of the room variable: the intro's longest scene ends well
+#: inside it on any host, and the wait ends at the write.
+INTRO_S = 300
 #: The retraces the game takes to answer the pointer once a screen is up, counted from the
 #: screen and so the same on any host.
 SETTLE = {"op": "run_for", "frames": 10}
@@ -135,21 +157,93 @@ def performed(what: str) -> Any:
 
 
 def act(step: str, ops: list[dict[str, Any]], what: str) -> Step:
-    return Step(step, "perform", {"steps": ops, "summaries": True}, performed(what))
+    return Step(step, "perform", {"steps": ops, "summaries": True}, performed(what),
+                volatile=STOP_IN_LOOP)
+
+
+def psp(run: Run) -> int:
+    """`MONKEY.EXE`'s PSP: the launcher is a MONKEY too, with far less memory."""
+    owners = [(m["size_bytes"], m["psp_seg"]) for m in run.replies["placed"]["mcbs"]
+              if m.get("filename") == "MONKEY" and m.get("notes") != "free"]
+    expect(bool(owners), "no memory block of MONKEY.EXE in the machine's map")
+    return int(max(owners)[1], 16)
+
+
+def tick(run: Run) -> str:
+    """SCUMM's tick, at the code segment DOS loaded `MONKEY.EXE` at."""
+    return f"{psp(run) + 0x10:04X}:{TICK_OFFSET:04X}"
+
+
+def room(run: Run) -> str:
+    """SCUMM's room variable."""
+    return f"{psp(run) + 0x10 + DATA_PARAGRAPHS:04X}:{ROOM:04X}"
+
+
+def intro(run: Run) -> dict[str, Any]:
+    """A change watch on the room to the intro's first scene, then SCUMM's tick with an Escape at
+    every `SKIP_EVERY`th, and the room read at the end."""
+    read = {"op": "read_memory", "ref": room(run), "length": 2}
+    ticks: list[dict[str, Any]] = []
+    for t in range(SKIP_TICKS):
+        ticks.append({"op": "resume", "seconds": ARRIVE_S})
+        if t % SKIP_EVERY == 0:
+            ticks.append({"op": "send_keys", "keys": ["escape"]})
+    return {"steps": [{"op": "watch_add", "ref": room(run), "mode": "change", "fmt": "u16"},
+                      *[{"op": "resume", "seconds": INTRO_S}, read] * len(INTRO_ROOMS),
+                      {"op": "declaration_clear", "kind": "watch", "all": True},
+                      {"op": "breakpoint_at", "ref": tick(run)}, *ticks, read,
+                      {"op": "declaration_clear", "kind": "breakpoint", "all": True}],
+            "settle_seconds": INTRO_S, "summaries": True}
+
+
+def roomed(reply: Reply, run: Run) -> str:
+    rows = [r for r in replies(reply) if "hex" in r]
+    got = tuple(int.from_bytes(bytes.fromhex(r["hex"]), "little") for r in rows)
+    want = (*INTRO_ROOMS, TITLE_ROOM)
+    expect(got == want, f"the room variable read {got}, not {want}")
+    return (f"the room variable read {', '.join(map(str, got[:-1]))} up to the first scene; "
+            f"Escapes at SCUMM's ticks skipped it to the title card, room {got[-1]}")
+
+
+def at_tick(screen: str, seconds: float, run: Run) -> list[dict[str, Any]]:
+    """Wait for `screen`, judged only at the frame after a SCUMM tick, the stop declared for the
+    wait alone."""
+    return [{"op": "breakpoint_at", "ref": tick(run)},
+            {"op": "screen_wait", "screen": screen, "on_breakpoint": tick(run),
+             "seconds": seconds},
+            {"op": "declaration_clear", "kind": "breakpoint", "all": True}]
+
+
+def placed(reply: Reply, run: Run) -> str:
+    return f"SCUMM's tick at {tick(run)}"
+
+
+def line(step: str, screen: str) -> Step:
+    """A line of the lookout's, which the CD's audio paces: the game waits for the track while the
+    line is up, and the track plays only while the machine runs, so a judgement at every SCUMM
+    tick (a stop each) costs hundreds of stops a line; the screen is sampled instead."""
+    def check(reply: Reply, run: Run) -> str:
+        performed("")(reply, run)
+        said: str = found(screen)(Reply(reply["ran"][-1]["reply"]), run)
+        return said
+    return Step(step, "perform",
+                {"steps": [{"op": "screen_wait", "screen": screen, "every": JUDGED_EVERY,
+                            "seconds": ARRIVE_S}, SETTLE, {"op": "screen_map_find"}],
+                 "summaries": True}, check, volatile=STOP_IN_LOOP)
 
 
 def go(step: str, ops: list[dict[str, Any]], screen: str) -> Step:
     """A gesture and the screen it brings, in one call: the machine runs until the map names
-    `screen`, however long this host takes to get there, and the last reply,
+    `screen` at a SCUMM tick, however long this host takes to get there, and the last reply,
     `screen_map_find`'s, must name it."""
     def check(reply: Reply, run: Run) -> str:
         performed("")(reply, run)
         said: str = found(screen)(Reply(reply["ran"][-1]["reply"]), run)
         return said
     return Step(step, "perform",
-                {"steps": [*ops, {"op": "screen_wait", "screen": screen, "every": JUDGED_EVERY,
-                                  "seconds": ARRIVE_S}, SETTLE,
-                           {"op": "screen_map_find"}], "summaries": True}, check)
+                lambda run: {"steps": [*ops, *at_tick(screen, ARRIVE_S, run), SETTLE,
+                                       {"op": "screen_map_find"}], "summaries": True},
+                check, volatile=STOP_IN_LOOP)
 
 
 def replies(reply: Reply) -> list[dict[str, Any]]:
@@ -167,11 +261,6 @@ def replies(reply: Reply) -> list[dict[str, Any]]:
 def hover(target: str) -> list[dict[str, Any]]:
     """The pointer over a control."""
     return [{"op": "send_mouse", "target": target}]
-
-
-def run_ms(milliseconds: int) -> dict[str, Any]:
-    """That much of the guest's time, however long the host takes over it."""
-    return {"op": "run_for", "milliseconds": milliseconds, "seconds": ARRIVE_S}
 
 
 def click(target: str, action: str = "click") -> dict[str, Any]:
@@ -343,16 +432,25 @@ STEPS = [
     Step("map", "screen_map_write", {"method": "load", "path": HERE / "monkey-screen-map.json"},
          lambda reply, run: f"{reply['screens']} screens, {reply['controls']} controls"),
     Step("menu", "screen_wait", {"screen": "language", "every": JUDGED_EVERY,
-                                 "seconds": ARRIVE_S}, arrived),
+                                 "seconds": ARRIVE_S}, arrived,
+         volatile={key: "a sampled stop lands where the launcher's loop is, which drifts with the "
+                        "host's cycles" for key in ("pc", "regs", "instruction", "cause")}),
     find("languages", "language"),
-    act("english", [click("english", "double"), run_ms(24000)],
-        "a double click on English, and the intro run on"),
-    act("skip", [{"op": "send_keys", "keys": ["escape"]}, run_ms(6000),
-                 {"op": "send_keys", "keys": ["escape"]}, run_ms(3000),
-                 {"op": "send_mouse", "x": 319, "y": 199}, {"op": "send_mouse", "x": 0, "y": 0},
-                 SKY], "Escape twice, as a player skips the credits and the opening scene; "
-                       "behind the title card, the pointer swept to both corners so the game's "
-                       "own pointer and the driver's agree"),
+    Step("placed", "machine_map", {}, placed,
+         volatile={"eflags": "the flags at the sampled stop before it, which drift with the "
+                             "host's cycles"}),
+    act("english", [click("english", "double")], "a double click on English"),
+    Step("intro", "perform", intro, roomed, volatile=STOP_IN_LOOP,
+         highlight=("The intro is followed by the game's own variable: a change watch on "
+                    "SCUMM's room stops the machine at each room the intro enters, and the "
+                    "Escapes that skip it go in at SCUMM's own ticks, so the run arrives at its "
+                    "title card by what the game does, at any host's speed.")),
+    Step("title", "perform", lambda run: {"steps": at_tick("part one", ARRIVE_S, run),
+                                          "summaries": True},
+         performed("the title card, judged at SCUMM's tick"), volatile=STOP_IN_LOOP),
+    act("sweep", [{"op": "send_mouse", "x": 319, "y": 199}, {"op": "send_mouse", "x": 0, "y": 0},
+                  SKY], "behind the title card, the pointer swept to both corners so the game's "
+                        "own pointer and the driver's agree"),
     go("dock", [], "dock"),
     go("hover poster", hover("poster"), "dock: walk to poster"),
     go("to the poster", [click("poster")], "by the poster"),
@@ -388,7 +486,7 @@ STEPS = [
                     "`perform` writes a new conversation of SCUMM bytecode over three stretches of "
                     "the script the game no longer needs, chained by jumps, reading each write "
                     "back. The lookout then says what the demo wrote, in the game's own voice.")),
-    Step("arm", "breakpoint_interrupt", {"number": 0x2F, "ah": 0x15},
+    Step("arm", "breakpoint_interrupt", {"number": "0x2F", "ah": "0x15"},
          lambda reply, run: "a stop on every request to the CD driver"),
     act("pick", [click("whats_wrong_with_my_name")], "the same comeback, picked again"),
     Step("first", "resume", {"seconds": 30}, at_mscdex),
@@ -417,10 +515,10 @@ STEPS = [
                     "`class`), so what the demo claims about the music is a measurement, not a "
                     "listening test.")),
     find("music?", "guybrush: a debugger that plays music"),
-    go("talk 1", [], "lookout: the orange tycoon"),
-    go("talk 2", [], "lookout: those files"),
-    go("talk 3", [], "lookout: still not a wave"),
-    go("talk 4", [], "lookout: humor first"),
+    line("talk 1", "lookout: the orange tycoon"),
+    line("talk 2", "lookout: those files"),
+    line("talk 3", "lookout: still not a wave"),
+    line("talk 4", "lookout: humor first"),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png", "scale": 2},
          host.pictured),
     go("goodbye", [SKY], "cliff"),
@@ -434,8 +532,7 @@ DEMO = Demo(
     host_args={"cwd": "the directory holding the reader's disc image",
                "binary": "the host's own DOSBox-X"},
     volatile={**VOLATILE, "saved_at": "the wall-clock time a state was saved at",
-              **{key: WAIT_LOOP for key in ("summary", "pc", "regs", "instruction", "cause",
-                                            "stop_seq", "stops", "polls",
+              **{key: WAIT_LOOP for key in ("stop_seq", "stops", "polls",
                                             "output_bytes_dropped")},
               **{key: "the emulator's own count, a few cycles apart from run to run: the "
                       "host's events reach the guest when the host delivers them"

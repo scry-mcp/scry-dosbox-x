@@ -38,7 +38,7 @@ CONF_SCRIPT = Path("SCRIPTS/dosbox-mcp-conf.sh")
 NORMAL_CORE_FIXED_CLOCK = ["-set", "cpu core=normal", "-set", "cpu cycles=fixed 50000"]
 #: The game's first VESA call (`INT 10h AH=4Fh`), which neither DOS's boot nor the input stub
 #: makes: the first stop there is inside the loaded game, and that stop places its map.
-GAME_LOADED = {"number": 0x10, "ah": 0x4F}
+GAME_LOADED = {"number": "0x10", "ah": "0x4F"}
 #: Called by `titulo_pantalla` once both planes of the title are drawn (SFTITLE.ASM); `draw_block`
 #: runs many times on the way, so it is the run's control.
 TITLE_DRAWN, DRAWING = "titulo_dibuja_cred", "draw_block"

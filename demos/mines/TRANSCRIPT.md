@@ -112,7 +112,7 @@
 
 </details>
 
-**3. `symbols_load`**: OK symbols: 141 symbols placed at base 0x8df0
+**3. `symbols_load`**: OK symbols: 141 symbols placed at base 0x00008df0
 
 <details><summary>call and reply</summary>
 
@@ -125,11 +125,17 @@
 
 ```json
 {
-  "summary": "symbols_load: 141 loaded of 141 parsed, base 36336, not checked against a build: no executable named mines.exe beside the table, so it could not be checked against its build",
+  "summary": "symbols_load: 141 loaded of 141 parsed, base 0x00008df0, not checked against a build: no executable named mines.exe beside the table, so it could not be checked against its build",
   "status": "ok",
-  "base": 36336,
-  "limit": -1,
-  "descriptor": -1,
+  "base": "0x00008df0",
+  "limit": {
+    "available": false,
+    "why": "no descriptor was read: the base was given, or each section has its own"
+  },
+  "descriptor": {
+    "available": false,
+    "why": "no descriptor was read: the base was given, or each section has its own"
+  },
   "declarations": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []},
   "pending": false,
   "checked": {

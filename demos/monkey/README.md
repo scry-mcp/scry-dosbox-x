@@ -77,9 +77,13 @@ Give this to an MCP client with this server connected:
 
 > Start DOSBox-X windowed on `demos/monkey/monkey.conf` (with the disc image and a directory for
 > C: written in), running `D:\MONKEY.COM` from `/path/to/your/monkey-cd`, with the log and the
-> saved states in files of the run's own. Run 11 seconds, load `monkey-screen-map.json` and tell
-> me which screen this is; double-click English. Skip the credits and the opening scene with
-> Escape, as a player would, and sweep the pointer to both corners while the title card is up.
+> saved states in files of the run's own. Load `monkey-screen-map.json`, wait for the language
+> menu and tell me which screen this is; find where DOS loaded `MONKEY.EXE` and double-click
+> English. Watch SCUMM's room (variable 4 of its variables in the data segment) and let the
+> intro run to each write of it up to its first scene, room 10; from there press Escape after
+> every fifth of 24 SCUMM ticks, then check the room is the title card, 96. Judge the title card, and
+> every screen after it, only where SCUMM leaves the loop that waits for its next tick (offset
+> 011E of its code segment), and sweep the pointer to both corners while the title card is up.
 > On the dock, walk to the governor's poster, Look at it, and name both lines Guybrush reads;
 > walk back and up the cliffside, Talk to the lookout, ask him whether we are all characters in
 > a novel, tell him my name, and put the pointer on the comeback, naming each screen and each
@@ -96,14 +100,15 @@ Give this to an MCP client with this server connected:
 | Family | Calls |
 |---|---|
 | Session | `start` (windowed, the CD image mounted), `close` |
-| Advance | `run_for` by milliseconds on the conf's fixed clock, `resume` to a stop, `step` over an `INT` |
+| Advance | `screen_wait` judged only at SCUMM's tick (`on_breakpoint`); sampled for the launcher's menu (it has no symbols, no log and no such place) and for the lookout's lines, which the CD's audio paces; `resume` to a stop, `step` over an `INT` |
 | Files | `audio_compare(method="diff")` |
 | Input | `send_mouse` by control name off the map, at screen pixels, double; `send_keys` |
 | States | `state_write` (`save`, then `load`) |
 | Read | `screen_map_write(method="load")`, `screen_map_find`, `find`, `read_memory` |
 | Screen | `screen_view` |
 | Write | `write` (the conversation, the drive's request) |
-| Declarations | `breakpoint_interrupt` (INT 2Fh, AH=15h), `declaration_clear` |
+| Declarations | `watch_add` (SCUMM's room), `breakpoint_interrupt` (INT 2Fh, AH=15h), `breakpoint_at` (SCUMM's tick), `declaration_clear` |
+| Machine | `machine_map` for where DOS loaded the game |
 | Lists | `perform` (a gesture: a click, the run it starts, the pointer parked) |
 | Captures | `audio_record` (the theme, at the CD's own rate) |
 
@@ -116,9 +121,219 @@ holds before the rewrite are `<volatile>` too: the step that reads them gives th
 verdict, and this repository carries none of them.
 
 <!-- demo-transcript:begin -->
-The run is 51 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 54 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
-**29. `perform`**: OK rewrite: 22 speeches, 1259 bytes of bytecode over 3 holes, each read back
+**7. `perform`**: OK intro: the room variable read 35664, 35664, 0, 0, 10 up to the first scene; Escapes at SCUMM's ticks skipped it to the title card, room 96
+
+The intro is followed by the game's own variable: a change watch on SCUMM's room stops the machine at each room the intro enters, and the Escapes that skip it go in at SCUMM's own ticks, so the run arrives at its title card by what the game does, at any host's speed.
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "steps": [
+    {"op": "watch_add", "ref": "220B:73EA", "mode": "change", "fmt": "u16"},
+    {"op": "resume", "seconds": 300},
+    {"op": "read_memory", "ref": "220B:73EA", "length": 2},
+    {"op": "resume", "seconds": 300},
+    {"op": "read_memory", "ref": "220B:73EA", "length": 2},
+    {"op": "resume", "seconds": 300},
+    {"op": "read_memory", "ref": "220B:73EA", "length": 2},
+    {"op": "resume", "seconds": 300},
+    {"op": "read_memory", "ref": "220B:73EA", "length": 2},
+    {"op": "resume", "seconds": 300},
+    {"op": "read_memory", "ref": "220B:73EA", "length": 2},
+    {"op": "declaration_clear", "kind": "watch", "all": true},
+    {"op": "breakpoint_at", "ref": "0985:011E"},
+    {"op": "resume", "seconds": 180},
+    {"op": "send_keys", "keys": ["escape"]},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "send_keys", "keys": ["escape"]},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "send_keys", "keys": ["escape"]},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "send_keys", "keys": ["escape"]},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "send_keys", "keys": ["escape"]},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "resume", "seconds": 180},
+    {"op": "read_memory", "ref": "220B:73EA", "length": 2},
+    {"op": "declaration_clear", "kind": "breakpoint", "all": true}
+  ],
+  "settle_seconds": 300,
+  "summaries": true
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "ran": [
+    {
+      "step": 0,
+      "op": "watch_add",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 1,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 2,
+      "op": "read_memory",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 3,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 4,
+      "op": "read_memory",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 5,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 6,
+      "op": "read_memory",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 7,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 8,
+      "op": "read_memory",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 9,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 10,
+      "op": "read_memory",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 11,
+      "op": "declaration_clear",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 12,
+      "op": "breakpoint_at",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 13,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 14,
+      "op": "send_keys",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 15,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 16,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 17,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 18,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 19,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 20,
+      "op": "send_keys",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 21,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 22,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 23,
+      "op": "resume",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 43,
+      "op": "declaration_clear",
+      "reply": {
+        "summary": "<volatile>",
+        "status": "ok",
+        "declarations_cleared": 1,
+        "disarmed": ["BP 0985:011E"],
+        "session": "<volatile>"
+      }
+    }
+  ],
+  "steps_total": 44,
+  "truncated": true,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": "<volatile>",
+  "steps_completed": 44,
+  "failed_at": {"available": false, "why": "no step failed"},
+  "held": 0,
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**32. `perform`**: OK rewrite: 22 speeches, 1259 bytes of bytecode over 3 holes, each read back
 
 The game's own script is data in memory, so the demo rewrites it. It found the lookout's line with `find` and read the original bytes back, and this `perform` writes a new conversation of SCUMM bytecode over three stretches of the script the game no longer needs, chained by jumps, reading each write back. The lookout then says what the demo wrote, in the game's own voice.
 
@@ -189,64 +404,64 @@ The game's own script is data in memory, so the demo rewrites it. It found the l
 
 ```json
 {
-  "summary": "<volatile>",
+  "summary": "perform: 11 of 11 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "write",
-      "reply": {"summary": "<volatile>", "status": "ok"}
+      "reply": {"summary": "write 82DD:000C: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 1,
       "op": "write",
-      "reply": {"summary": "<volatile>", "status": "ok"}
+      "reply": {"summary": "write 82E5:000C: 98 bytes, verified True", "status": "ok"}
     },
     {
       "step": 2,
       "op": "write",
-      "reply": {"summary": "<volatile>", "status": "ok"}
+      "reply": {"summary": "write 82C5:000C: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 3,
       "op": "write",
-      "reply": {"summary": "<volatile>", "status": "ok"}
+      "reply": {"summary": "write 82CD:000C: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 4,
       "op": "write",
-      "reply": {"summary": "<volatile>", "status": "ok"}
+      "reply": {"summary": "write 82D5:000C: 99 bytes, verified True", "status": "ok"}
     },
     {
       "step": 5,
       "op": "write",
-      "reply": {"summary": "<volatile>", "status": "ok"}
+      "reply": {"summary": "write 82ED:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 6,
       "op": "write",
-      "reply": {"summary": "<volatile>", "status": "ok"}
+      "reply": {"summary": "write 82F5:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 7,
       "op": "write",
-      "reply": {"summary": "<volatile>", "status": "ok"}
+      "reply": {"summary": "write 82FD:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 8,
       "op": "write",
-      "reply": {"summary": "<volatile>", "status": "ok"}
+      "reply": {"summary": "write 8305:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 9,
       "op": "write",
-      "reply": {"summary": "<volatile>", "status": "ok"}
+      "reply": {"summary": "write 830D:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 10,
       "op": "write",
       "reply": {
-        "summary": "<volatile>",
+        "summary": "write 8315:000D: 38 bytes, verified True",
         "status": "ok",
         "ref": "8315:000D",
         "seg_off": "8315:0000000D",
@@ -271,7 +486,7 @@ The game's own script is data in memory, so the demo rewrites it. It found the l
 
 </details>
 
-**39. `read_memory`**: OK request 3: PLAY AUDIO (84h) from 36:45:00, the theme's first sector, for 12200 sectors
+**42. `read_memory`**: OK request 3: PLAY AUDIO (84h) from 36:45:00, the theme's first sector, for 12200 sectors
 
 The game asks the CD driver for audio through interrupt 2Fh. `breakpoint_interrupt` stops the machine on every such request, and `read_memory` reads the request block the call points at: this one is PLAY AUDIO, with the sector the theme starts at. The next step writes a different start sector into that block, so the same game call plays the theme from the bar where the logo enters.
 
@@ -286,7 +501,7 @@ The game asks the CD driver for audio through interrupt 2Fh. `breakpoint_interru
 
 ```json
 {
-  "summary": "<volatile>",
+  "summary": "read_memory 220B:1D78: 22 bytes at 220B:00001D78: 1600840003000000000000000001002d2400a82f0000",
   "status": "ok",
   "ref": "220B:1D78",
   "seg_off": "220B:00001D78",
@@ -298,7 +513,7 @@ The game asks the CD driver for audio through interrupt 2Fh. `breakpoint_interru
 
 </details>
 
-**43. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
+**46. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.61 dB
 
 The theme the game played is recorded off the emulated mixer and compared with the same track read off the disc image. The reply says whether the two are equal (`exact`) and, when they are not, how far apart (`snr_db`, `class`), so what the demo claims about the music is a measurement, not a listening test.
 
@@ -315,10 +530,10 @@ The theme the game played is recorded off the emulated mixer and compared with t
 
 ```json
 {
-  "summary": "<volatile>",
+  "summary": "audio_compare diff: audible, SNR 48.61 dB, envelope 1.0",
   "status": "ok",
   "exact": false,
-  "snr_db": 48.62,
+  "snr_db": 48.61,
   "class": "audible",
   "envelope_correlation": 1.0,
   "onset_delta_ms": 0.0,

@@ -65,8 +65,8 @@
 
 ```json
 {
-  "number": 33,
-  "ah": 98
+  "number": "0x21",
+  "ah": "0x62"
 }
 ```
 
@@ -118,7 +118,7 @@
   },
   "stop_seq": 2,
   "instruction": "<volatile>",
-  "symbols_placed": {"placed": true, "path": "<volatile>", "load_segment": "08EB", "base": 36528, "loaded": 385},
+  "symbols_placed": {"placed": true, "path": "<volatile>", "load_segment": "08EB", "base": "0x00008eb0", "loaded": 385},
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -417,7 +417,7 @@
   "stop_seq": 73,
   "instruction": "<volatile>",
   "emulated_before_s": "<volatile>",
-  "emulated_after_s": 11.12076996,
+  "emulated_after_s": "<volatile>",
   "frame_before": 639,
   "frame_after": 780,
   "cycles": "<volatile>",
@@ -502,7 +502,7 @@
 {
   "method": "diff",
   "a": "./tmp/demos/lineup/music.wav",
-  "b": "./demos/lineup/music.wav",
+  "b": "<host>",
   "align": false
 }
 ```
@@ -522,7 +522,7 @@
   "length_delta_samples": 0,
   "aligned_by_samples": 0,
   "a": "./tmp/demos/lineup/music.wav",
-  "b": "./demos/lineup/music.wav",
+  "b": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```

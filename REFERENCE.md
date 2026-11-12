@@ -346,6 +346,12 @@ A step that left the guest at a new stop holds to the `regs` and the `frame` its
 
 The tool: [Lists](docs/reference/lists.md) (`perform_export`).
 
+## The store
+
+A repository can declare how a session starts on it, the screen maps of its program and the scripts that replay it, in a `.scry/` store it tracks, so a session gives only what is its own run's (`start(profile=...)`, `screen_map_write(method="load")`, `perform(path=...)`). A session keeps what it learned as drafts and writes nothing into the repository until a `promote` call names what to write: the store is tracked, so every entry is reviewed first, and every path in it is a placeholder ([the rule](https://github.com/scry-mcp/scry-core/blob/main/docs/store-paths.md)), so the file reads the same on any machine.
+
+The tool: [Store](docs/reference/store.md) (`promote`).
+
 ## Input and the screen
 
 Every input goes in inside the machine and nothing about the host is touched: no window comes to the front, the host pointer never moves, no Accessibility grant is asked for, and the window's scale changes nothing the guest sees. The tools: [Input](docs/reference/input.md), [Captures](docs/reference/captures.md), [Screen](docs/reference/screen.md) (`screen_view`, `screen_signature`, `palette`) and [Advance](docs/reference/advance.md) (`screen_wait`). A stretch of the screen or the sound is recorded between two stops through the debugger's `CAPTURE` (`record`, `audio_record`), so no window or menu is involved either.
