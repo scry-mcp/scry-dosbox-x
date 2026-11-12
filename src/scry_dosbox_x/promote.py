@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from collections.abc import Collection, Mapping
 from pathlib import Path
 from typing import Any
@@ -24,9 +25,11 @@ SERVER = "dosbox-x"
 
 
 def has_store(drafts: core.Drafts) -> bool:
-    """Whether a `.scry/` is above the project; unreadable says yes."""
+    """Whether a `.scry/` is above the project the draft names; unreadable or nameless says yes."""
     try:
-        return project_store.root(core.starting(drafts, recipe_paths)) is not None
+        own = os.getcwd()
+        starts = [path for path in core.starting(drafts, recipe_paths) if path != own]
+        return not starts or project_store.root(starts) is not None
     except OSError:
         return True
 
@@ -48,6 +51,8 @@ def guest_name(params: Mapping[str, Any]) -> str:
     for key in ("program", "conf"):
         value = str(params.get(key) or "").strip()
         if value:
+            if key == "conf":
+                return Path(value.replace("\\", "/")).stem.lower()
             return Path(value.split()[0].replace("\\", "/")).stem.lower()
     return ""
 
@@ -85,8 +90,12 @@ def after_map(method: str, reply: dict[str, Any]) -> dict[str, Any]:
 def promote(dry_run: bool = False, entries: list[str] | None = None,
             names: dict[str, str] | None = None, root: str = "") -> dict[str, Any]:
     """The `promote` tool's body, on this server's draft."""
+    try:
+        starts = starting()
+    except OSError:
+        starts = []
     return core.promote(STATE.drafts, dry_run=dry_run, entries=entries, names=names, root=root,
-                        starting=starting(), state=scratch(), server=SERVER)
+                        starting=starts, state=scratch(), server=SERVER)
 
 
 def starting() -> list[str]:

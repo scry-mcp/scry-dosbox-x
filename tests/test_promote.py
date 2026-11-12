@@ -71,6 +71,7 @@ def test_a_guest_is_named_by_its_program_s_own_stem() -> None:
     assert mpromote.guest_name({"program": "MOUSE.COM", "conf": "/x/p.conf"}) == "mouse"
     assert mpromote.guest_name({"program": "C:\\GAMES\\LINEUP.EXE"}) == "lineup"
     assert mpromote.guest_name({"program": "", "conf": "/x/PROBE.CONF"}) == "probe"
+    assert mpromote.guest_name({"conf": "/x/My Games/probe.conf"}) == "probe"
     assert mpromote.guest_name({}) == ""
 
 
@@ -147,7 +148,7 @@ def test_an_export_keeps_its_document_named_by_the_file_it_wrote(tmp_path: Path)
     path = tmp_path / "session.json"
     path.write_text(json.dumps(perform_document()))
     reply = mpromote.after_export(STATE.drafts, {"path": str(path)}, mpromote.PROMOTE_PATHS)
-    assert reply["kept"] == "kept 1 (promote to review)"
+    assert reply["kept"].startswith("kept 1 (promote to review)")
     assert STATE.drafts.entries() == ["perform/session"]
 
 
@@ -307,6 +308,16 @@ def test_a_working_directory_that_is_gone_does_not_cost_the_reply(
     assert mpromote.kept_line(STATE.drafts) == "kept 1 (promote to review)"
 
 
+def test_a_promote_with_a_root_does_not_need_the_working_directory(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    gone = tmp_path / "gone"
+    gone.mkdir()
+    monkeypatch.chdir(gone)
+    gone.rmdir()
+    kept_probe(tmp_path)
+    assert server.promote(dry_run=True, root=str(tmp_path))["store"] == str(tmp_path / ".scry")
+
+
 SETUP = [".scry/", ".scry/about.json", ".scry/README.md"]
 
 
@@ -343,6 +354,12 @@ def test_a_kept_line_says_how_to_set_up_a_store_only_when_none_is_above(
     assert "no .scry/ above" in mpromote.kept_line(STATE.drafts)
     (tmp_path / ".scry").mkdir()
     assert mpromote.kept_line(STATE.drafts) == "kept 1 (promote to review)"
+
+
+def test_a_store_above_the_server_s_own_directory_does_not_silence_the_hint(
+        tmp_path: Path) -> None:
+    kept_probe(tmp_path / "game")
+    assert "no .scry/ above" in mpromote.kept_line(STATE.drafts)
 
 
 def test_an_export_names_the_missing_store_too(tmp_path: Path,
