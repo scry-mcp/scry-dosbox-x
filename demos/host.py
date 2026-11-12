@@ -49,14 +49,6 @@ VOLATILE = {"argv": "the emulator's command line, which names this host's paths"
             "window": "where the host's display put the window, and how big it fits",
             "draft": "what the host's own store keeps for review"}
 
-DISPLAY = "the host's display layout"
-
-
-def window(run: Run) -> dict[str, Any]:
-    """What every demo's `start` asks of the window: watched and behind, on `--display`."""
-    return {"shared": True, "background": True, "display": run.options.get("display", 0)}
-
-
 #: What a stop on a retrace shows of where the guest was: DOSBox-X's cycles drift by a few
 #: between hosts, so the retrace lands on another instruction while the screen and the state
 #: the demo checks are the same.

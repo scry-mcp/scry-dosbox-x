@@ -19,12 +19,12 @@ import wave
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Loop, Reply, Run, Step, main
+from scry_core.demo import DISPLAY, Demo, Loop, Reply, Run, Step, main, window_args
 from scry_core.verdict import Invalid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos import host  # noqa: E402
-from demos.host import DISPLAY, VOLATILE, expect, isolated_store, started, window  # noqa: E402
+from demos.host import VOLATILE, expect, isolated_store, started  # noqa: E402
 from demos.monkey import lookout  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -131,7 +131,7 @@ def boot(run: Run) -> dict[str, Any]:
     for stale in ("monkey-e9.log", "theme.wav", "theme-disc.wav", "screen.png"):
         (run.dir / stale).unlink(missing_ok=True)
     shutil.rmtree(run.dir / "monkey-states", ignore_errors=True)
-    return {**window(run), "conf": conf, "session_seconds": 1800,
+    return {**window_args(run), "conf": conf, "session_seconds": 1800,
             "program": "D:\\MONKEY.COM",
             "logfile": run.dir / "monkey-e9.log", "state_dir": run.dir / "monkey-states"}
 

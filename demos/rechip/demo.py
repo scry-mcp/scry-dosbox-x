@@ -9,11 +9,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Loop, Reply, Run, Step, expect, main
+from scry_core.demo import DISPLAY, Demo, Loop, Reply, Run, Step, expect, main, window_args
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
-    DISPLAY,
     INPUT_TIMING,
     VOLATILE,
     checkout,
@@ -24,7 +23,6 @@ from demos.host import (  # noqa: E402
     quit_cleanly,
     seen,
     started,
-    window,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -73,7 +71,7 @@ def checked(run: Run) -> str:
 
 
 def boot(run: Run) -> dict[str, Any]:
-    return {**window(run), "profile": str(checkout(run) / PROFILE),
+    return {**window_args(run), "profile": str(checkout(run) / PROFILE),
             "captures_dir": str(run.dir / "rechip-captures")}
 
 

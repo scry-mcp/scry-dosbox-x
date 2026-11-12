@@ -16,11 +16,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Loop, Reply, Run, Step, main
+from scry_core.demo import DISPLAY, Demo, Loop, Reply, Run, Step, main, window_args
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
-    DISPLAY,
     INPUT_TIMING,
     VOLATILE,
     expect,
@@ -31,7 +30,6 @@ from demos.host import (  # noqa: E402
     seen,
     started,
     symbols_at,
-    window,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -64,7 +62,7 @@ def boot(run: Run) -> dict[str, Any]:
     (run.dir / "bricks-e9.log").unlink(missing_ok=True)
     states = run.dir / "bricks-states"
     shutil.rmtree(states, ignore_errors=True)
-    return {**window(run), "conf": HERE / "bricks.conf", "cwd": HERE, "session_seconds": 900,
+    return {**window_args(run), "conf": HERE / "bricks.conf", "cwd": HERE, "session_seconds": 900,
             "break_on_int3": True, "logfile": run.dir / "bricks-e9.log",
             "state_dir": states}
 

@@ -117,7 +117,7 @@ replies below are the last run's, written here by the demo itself
 (`uv run python demos/bricks/demo.py --update-readme`), each cut to the fields that make its
 point. The demo opens a window so the game can be watched.
 
-![Bricks in mode 13h, stopped as the ball reaches its second brick](demos/bricks/screen.png)
+![Bricks in mode 13h, the ball just after it took the second brick](demos/bricks/screen.png)
 
 <!-- demo-flow:begin bricks -->
 ```

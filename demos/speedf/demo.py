@@ -8,12 +8,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Loop, Run, Step, main
+from scry_core.demo import DISPLAY, Demo, Loop, Run, Step, main, window_args
 from scry_core.game_demo import arrived, word_is
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
-    DISPLAY,
     VOLATILE,
     checkout,
     conf_derived,
@@ -24,7 +23,6 @@ from demos.host import (  # noqa: E402
     precheck,
     quit_cleanly,
     started,
-    window,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -65,7 +63,7 @@ def checked(run: Run) -> str:
 def boot(run: Run) -> dict[str, Any]:
     """The game's own conf, derived by its own script, then the profile that names it."""
     conf_derived(run, CONF_SCRIPT)
-    return {**window(run), "profile": str(checkout(run) / PROFILE),
+    return {**window_args(run), "profile": str(checkout(run) / PROFILE),
             "flags": NORMAL_CORE_FIXED_CLOCK,
             "captures_dir": str(run.dir / "speedf-captures")}
 

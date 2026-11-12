@@ -10,13 +10,12 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import recording
-from scry_core.demo import Demo, Loop, Reply, Run, Step, expect, main
+from scry_core.demo import DISPLAY, Demo, Loop, Reply, Run, Step, expect, main, window_args
 from scry_core.game_demo import Binding, Press, map_load
 from scry_core.games import lineup
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
-    DISPLAY,
     INPUT_TIMING,
     RETRACE_STOP,
     VOLATILE,
@@ -27,7 +26,6 @@ from demos.host import (  # noqa: E402
     missing_under,
     precheck,
     started,
-    window,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -85,7 +83,7 @@ def checked(run: Run) -> str:
 def boot(run: Run) -> dict[str, Any]:
     """The game's own conf, derived by its own script, then the profile that names it."""
     conf_derived(run, CONF_SCRIPT)
-    return {**window(run), "profile": str(game(run) / PROFILE),
+    return {**window_args(run), "profile": str(game(run) / PROFILE),
             "flags": NORMAL_CORE,
             "captures_dir": str(run.dir / "lineup-captures")}
 

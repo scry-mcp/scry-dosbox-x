@@ -9,7 +9,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Loop, Reply, Run, Step
+from scry_core.demo import DISPLAY, Demo, Loop, Reply, Run, Step
 from scry_core.verdict import Invalid
 
 from demos import host
@@ -118,5 +118,5 @@ def declared(name: str, here: Path, steps: list[Step]) -> Demo:
         readme=here / "README.md", steps=steps,
         capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
         offers=frozenset({"cwd", "display"}), precheck=precheck,
-        host_args={"cwd": "the directory holding the program", "display": host.DISPLAY},
+        host_args={"cwd": "the directory holding the program", "display": DISPLAY},
         volatile={**VOLATILE, **host.RETRACE_STOP})
