@@ -107,6 +107,7 @@ Give this to an MCP client with this server connected:
 | Input | `send_mouse` by control name off the map, at screen pixels, double; `send_keys` |
 | States | `state_write` (`save`, then `load`) |
 | Read | `screen_map_write(method="load")`, `screen_map_find`, `find`, `read_memory` |
+| Captures | `record` (the loop) |
 | Screen | `screen_view` |
 | Write | `write` (the conversation, the drive's request) |
 | Declarations | `watch_add` (SCUMM's room), `breakpoint_interrupt` (INT 2Fh, AH=15h), `breakpoint_at` (SCUMM's tick), `declaration_clear` |

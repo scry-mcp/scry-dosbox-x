@@ -224,6 +224,12 @@ keeps it and prints its path (`scry_core.live_host`).
 
 ## Development scripts
 
+`demos/<name>/demo.py` runs one demo end to end; with `--update-readme` it rewrites the demo's
+guide from a run where every step passed: the transcript block in its README, `TRANSCRIPT.md`,
+`screen.png` and `loop.mp4` (the loop is recorded right after the step that takes the still).
+Converting the loop needs `ffmpeg` on the `PATH`; without it a demo that declares a loop ends
+INVALID and writes no loop.
+
 `tools/bench.py` measures a program's cost. It takes `--conf` (the config file to measure) and `--cwd`
 (the directory that config runs in) as required flags, with no default, and refuses without them,
 naming the flags. `--json`, `--reps` and `--song` are optional. The song, the boot marker it

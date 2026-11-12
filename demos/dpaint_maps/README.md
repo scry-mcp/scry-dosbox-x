@@ -101,6 +101,7 @@ Give this to an MCP client with this server connected:
 | Advance | `screen_wait` until the map names the screen a move brings, and once judged only when a watch on brown's red fires, until it reaches the top; `run_to` a screen the map names |
 | Input | `send_mouse` by control name off the map (a press to open a menu, a release to choose), at screen pixels, and as drags; `send_keys` for the word |
 | Read | `screen_map_write(method="load")`, `screen_map_find` after every move between screens |
+| Captures | `record` (the loop) |
 | Screen | `palette` for the mixed colour, `screen_view` for rows of the picture and the screen |
 | Lists | `perform` (each move with the map's word on where it landed; a shape's tool, colour and drags) |
 

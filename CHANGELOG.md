@@ -4,6 +4,8 @@ What a client of the server notices.
 
 ## Unreleased
 
+- The demos ship a loop: each demo's `loop.mp4` sits beside its `screen.png`, recorded by the
+  runner after the step that takes the still.
 - On the pinned scry-core (`pyproject.toml`), which carries the window every demo asks of
   its `start`.
 
@@ -21,6 +23,9 @@ What a client of the server notices.
 
 - On the pinned scry-core (`pyproject.toml`), which renders a repository's `.scry/README.md` from
   one template and holds the `record` text both servers answer.
+- On the pinned scry-core (`pyproject.toml`), whose `record` words say what a bound does when its
+  release answers, so a server that answers `ended: false` over a capture it could not turn off
+  is not contradicted.
 - On the pinned scry-core (`pyproject.toml`), whose demo runner records a demo's loop and
   converts it to its `loop.mp4` beside the capture.
 - `record` with an empty `dest` writes into the session's scratch and answers its `path`;
@@ -44,8 +49,8 @@ What a client of the server notices.
   its loop after each click; LineUp stops at its first DOS call, waits for each screen at the
   frame after its tick and reads each move once taken; Speed Fight stops at its first VESA
   call and runs to its title, on the normal core and a fixed clock; the Deluxe Paint demos
-  wait for each screen on their map and hold the palette's arrow until a watch sees the
-  colour at its top. A transcript hides what the host decides (the window, the place a
+  wait for each screen on their map, and the maps demo holds the palette's arrow until a
+  watch sees the colour at its top. A transcript hides what the host decides (the window, the place a
   retrace stop lands on, a derived conf's digest).
 - `screen_wait` takes `on_breakpoint` or `on_watch`: the screen is judged only at the frame's
   end after a firing of that declared breakpoint or change watch, never by sampling, and a

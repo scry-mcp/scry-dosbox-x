@@ -55,6 +55,7 @@ Give this to an MCP client with this server connected:
 | Log | `log_wait` on the program's own E9 lines |
 | Input | `send_keys` with `expect` on the line each key makes the program write |
 | Screen | `screen_view` |
+| Captures | `record` (the loop) |
 
 ## The transcript
 

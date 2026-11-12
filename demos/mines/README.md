@@ -71,7 +71,7 @@ Give this to an MCP client with this server connected:
 | Read | `screen_map_write(method="load")`, `screen_map_find` on every screen, `read_memory` by symbol |
 | Machine | `log` |
 | Screen | `screen_view` |
-| Captures | `audio_record` of the Sound Blaster's output |
+| Captures | `record` (the loop), `audio_record` of the Sound Blaster's output |
 
 ## The transcript
 

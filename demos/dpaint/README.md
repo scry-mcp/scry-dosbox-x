@@ -82,6 +82,7 @@ Give this to an MCP client with this server connected:
 | Lists | `perform` (one shape a call: its tool, its colour, its drags) |
 | Read | `screen_map_write(method="load")`, `screen_map_find`, `read_memory` of rows of video memory |
 | Screen | `screen_view` |
+| Captures | `record` (the loop) |
 
 ## The transcript
 

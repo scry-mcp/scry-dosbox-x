@@ -69,7 +69,7 @@ Give this to an MCP client with this server connected:
 | Session | `start` from the game's profile (windowed, parked at the debugger before DOS boots), `close` |
 | Script | `perform`, replaying the game's own `.scry/perform/dos.json` |
 | Read | `screen_map_write(method="load")` of the game's map, `screen_map_find` and `read_memory` by symbol, inside the document |
-| Captures | `audio_record` of the Sound Blaster's output |
+| Captures | `record` (the loop), `audio_record` of the Sound Blaster's output |
 | Files | `audio_compare` (`measure`, then `diff` against `music.wav`) |
 | Screen | `screen_view` |
 
