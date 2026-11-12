@@ -88,6 +88,14 @@ needs `shared=true` and `fullscreen=true`, because a pointer does not map inside
 `presence` indicator draws the orange edge that tells the watcher a session is live. All of it is
 on [`start`'s page](docs/reference/session.md#start).
 
+## Set up SCRY in your own project
+
+To keep what a session learned with your repository, ask it to `promote` the entries worth
+keeping. `promote(dry_run=true, root=<your repository>)` lists what would be created; once you
+approve, call it again with `entries` naming the ones you want instead of `dry_run`, and it
+creates `.scry/` with those entries, its `about.json` and its README. It writes nothing before that. What it builds, and how to render the page again, is
+in [scry-core's page on it](https://github.com/scry-mcp/scry-core/blob/main/docs/scry-readme.md#set-up-scry-in-a-new-project).
+
 ## Platforms
 
 macOS and Windows: the server and its tests run on both. The server talks to DOSBox-X's debugger
