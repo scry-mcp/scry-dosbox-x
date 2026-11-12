@@ -36,7 +36,7 @@ uv run python demos/speedf/demo.py --cwd /path/to/speedf-msdos
 
 Each line it prints is one call and its check. Exit codes: 0 every step passed, 1 a step failed,
 2 a usage error, 3 nothing was demonstrated (a copy without its store or its program, a relative
-path, a server that did not start).
+path, a server that did not start, a loop that could not be converted).
 
 ## The prompt
 

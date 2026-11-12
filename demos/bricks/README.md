@@ -29,13 +29,14 @@ REFERENCE.md, *Saved states*), named with `DOSBOX_X_BINARY`.
 - `--display N` opens the window on that display; left out, on the host's main one. The
   window opens behind, so the run takes nobody's focus.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where every step
+- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png`, `loop.mp4` and the front door's
+  flow from a run where every step
   passed.
 
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
 line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2
 a usage error, 3 nothing was demonstrated (a relative path, a server that did not
-start).
+start, a loop that could not be converted).
 
 To play it yourself, run it from this directory: `cd demos/bricks && dosbox-x -conf
 bricks.conf`. The arrows move the paddle and SPACE serves the ball; press M to hand the paddle to

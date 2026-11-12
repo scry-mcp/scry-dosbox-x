@@ -30,7 +30,7 @@ be watched; nothing in it needs the window.
 
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
 line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2
-a usage error, 3 nothing was demonstrated (a server that did not start).
+a usage error, 3 nothing was demonstrated (a server that did not start, a loop that could not be converted).
 
 The explosion is held against [`boom.wav`](boom.wav) here. The recording starts where the click's
 post leaves the machine, a few retraces after the game took the click, so it holds the explosion

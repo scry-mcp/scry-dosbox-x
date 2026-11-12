@@ -50,7 +50,7 @@ third step, saying so, because a drag would paint nothing between its button eve
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
 line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2
 a usage error, 3 nothing was demonstrated (no program directory, another build of it, a
-DOSBox-X without relative motion, a server that did not start).
+DOSBox-X without relative motion, a server that did not start, a loop that could not be converted).
 
 ## The prompt
 

@@ -196,8 +196,8 @@ STEPS = [
                                "emulated_before_s", "emulated_after_s")}),
     Step("ball", "read_memory", {"ref": "ball_x", "length": 8}, ball),
     # The picture is taken here, before any input: the game's border breathes a shade a frame, so
-    # a capture after a key lands on a colour the host decided. The loop recorded after it has
-    # nothing armed, and the game plays on from where the recording left it.
+    # a capture after a key lands on a colour the host decided. The loop recorded after it has no
+    # breakpoint left to stop it, and the game plays on from where the recording left it.
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
     Step("play", "resume", {}, lambda reply, run: "the game runs"),
     Step("keys", "drive", {"act": [{"op": "send_keys", "keys": ["right"], "expect": "KEY R",

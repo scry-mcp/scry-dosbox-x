@@ -1421,7 +1421,7 @@ Also attached: image/png.
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": "<volatile>",
-  "note": "the stop landed in F000:0000CFC5 (linear 0xFCFC5), inside a ROM handler the program called into rather than in the program: `run_for` or `resume` leaves it, and a DPMI guest reaches a protected-mode stop with `stop(until=\"protected\")`",
+  "note": "<volatile>",
   "pc": "<volatile>",
   "cpu_mode": "<volatile>",
   "frame": "<volatile>",

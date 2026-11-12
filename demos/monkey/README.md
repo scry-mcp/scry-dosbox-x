@@ -71,7 +71,7 @@ theme heard; nothing in it needs the window.
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
 line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2 a
 usage error, 3 nothing was demonstrated (no disc image, another pressing of it, a server that did
-not start).
+not start, a loop that could not be converted).
 
 ## The prompt
 

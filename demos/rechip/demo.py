@@ -62,7 +62,9 @@ LOG_TIMING = {**INPUT_TIMING,
 STOP_PLACE = {"pc": "where the program happened to be", "frame": "the frame the stop landed on",
               "regs": "the registers at that instant", "instruction": "the instruction there",
               "following": "the instructions after it", "e9": "the log's tail at that instant",
-              "cpu_mode": "the mode at that instant", "summary": "it names the stop's place"}
+              "cpu_mode": "the mode at that instant", "summary": "it names the stop's place",
+              "cause": "it names the address the stop landed at",
+              "note": "it names the address too, when the stop landed in a ROM handler"}
 
 
 def checked(run: Run) -> str:
