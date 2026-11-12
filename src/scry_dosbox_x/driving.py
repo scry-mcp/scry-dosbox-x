@@ -36,8 +36,10 @@ def release(session: ds.Session, command: str) -> list[str]:
     try:
         ok, lines = session.exec(command)
     except BaseException:
-        # sent, with no answer to say it was not taken: the next contact asks `RUNSTATE`
+        # sent, with no answer to say it was not taken: the next contact asks `RUNSTATE`, and
+        # until it does, whether the machine runs is unknown, which `session.running` says.
         session.forget_stop()
+        session._run_unknown = True
         raise
     if not ok:
         raise Invalid("unexpected_answer",

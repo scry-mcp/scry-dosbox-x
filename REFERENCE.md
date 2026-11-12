@@ -66,6 +66,8 @@ While a session holds the window, an orange edge tells whoever sits at the host 
 
 **Every reply opens with a `summary` and closes with a `session` block carrying `altered`.** Writing to a live machine is allowed, and a measurement on a forced state is not a measurement of the program; the reader three questions later has no other way to know. The first contact after a stop applies the declarations made while the guest ran, so a reader can be the call that arms a breakpoint; that arming belongs to the declaring call (`pending`), and the reader says `applied_on_stop`. Arming writes nothing on a build with the heavy debugger, which checks each instruction against its list; a build without it plants a code breakpoint as an `INT 3` byte in guest memory, so arming one there sets `altered`. A watch plants nothing on either.
 
+**`session.running` is the truth about the guest, never a guess.** It answers off the session's flag while the state is known; a release whose outcome no answer confirmed is re-read of `RUNSTATE`, and when that too cannot answer, the field is `unavailable` with why. A caller is never told a stopped machine runs.
+
 **A session whose emulator died is kept until `close`**: every call that needs the machine answers `session_broken`, and `altered` survives, which a caller measuring a forced state must not lose.
 
 **A signal to the server ends its emulator first.** A SIGTERM, a SIGHUP or a Ctrl-C closes the session, after the tool holding the lock returns or a bounded wait for it, before the server leaves.
@@ -263,6 +265,11 @@ was asked to do while the guest ran.
 The server invents no stop and serves no cached memory as a current value: a stop comes from
 something armed before the guest was released, or from `stop`, which is why the queue is drained at
 the stop.
+
+**A run whose release was never confirmed does not report the machine running on that guess.** The
+release command was sent and no answer said whether it was taken, so a `run_for`, `run_to` or
+`resume` that ends `host_failed` re-reads the machine for `session.running`; the caller waiting on
+the guest sees `false` when it stopped, `unavailable` when it still cannot be read.
 
 ### Addresses in a reply
 

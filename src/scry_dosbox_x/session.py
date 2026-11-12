@@ -285,6 +285,9 @@ class Session(dprocess.Process):
         # WHICH OF THE DEBUGGER'S OPTIONAL COMMANDS THIS BUILD PARSES, as `start` read them.
         self.commands = launch.debugger_commands
         self._at_debugger = False   # set by a stop seen, cleared by a release
+        #: Whether a release's outcome is not confirmed: the command was sent and no answer said
+        #: it was taken, so the guest may be running or stopped and nobody knows yet.
+        self._run_unknown = False
         self.stop_count = 0         # how many times the flag went False -> True: each is a
         # stop the server may not have observed through a tool
         self.paging: bool | None = None     # the last stop survey's paging bit, None unread
@@ -359,12 +362,14 @@ class Session(dprocess.Process):
             self.stop_count += 1
             self._surveyed = None
         self._at_debugger = True
+        self._run_unknown = False
 
     def forget_stop(self) -> None:
         """The machine was released, or was seen running."""
         self.fired_entry = None
         self._at_debugger = False
         self._surveyed = None
+        self._run_unknown = False
 
     @property
     def parked(self) -> bool:
@@ -962,12 +967,25 @@ class Session(dprocess.Process):
             else:
                 image = ((held.st_size, held.st_mtime_ns)
                          != (self.image["size"], self.image["mtime_ns"]))
+        # WHETHER THE GUEST RUNS, off the session's own flag: no channel round trip on every
+        # reply, except past a release whose outcome no answer confirmed, which is re-read.
+        running: bool | dict[str, Any] = self.alive() and not self._at_debugger
+        if getattr(self, "_run_unknown", False):
+            if not self.has(dbg.RUNSTATE):
+                running = contract.unavailable(
+                    "the machine was released and this build has no `RUNSTATE` to re-read whether "
+                    "it stopped, so whether it runs is unknown: `stop` brings it back")
+            else:
+                try:
+                    running = not self.at_debugger()
+                except Invalid as e:
+                    running = contract.unavailable(
+                        f"the machine was released and its state could not be read back ({e}), "
+                        "so whether it runs is unknown")
         return {
             "pid": self.proc.pid,
             "alive": self.alive(),
-            # WHETHER THE GUEST RUNS, off the session's own flag: no channel round trip on every
-            # reply.
-            "running": self.alive() and not self._at_debugger,
+            "running": running,
             "altered": self.altered,
             "range_widened": self.driver_range,
             # WHAT THE STOPS FOUND OF THE PROGRAM: a block once it is gone, else None.

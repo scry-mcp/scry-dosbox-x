@@ -356,6 +356,7 @@ def session_over(machine: Machine, cwd: Path, *, logfile: Path | None = None,
     s.commands = frozenset(machine.commands)
     s.control = machine  # type: ignore[assignment]
     s.altered, s.stop_count, s._at_debugger = False, 0, False
+    s._run_unknown = False
     s.plants_int3 = False       # the heavy debugger, as every build this suite stands in for
     s.conf_digest, s.started_at, s.dropped = "", time.monotonic(), 0
     s.paging, s.clock_ms, s.cycles = None, None, None

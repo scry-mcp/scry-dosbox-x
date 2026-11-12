@@ -217,6 +217,48 @@ def test_a_build_without_runstate_is_refused_before_a_retrace_goes_out(tmp_path:
     assert "EXEC VRT" not in machine.sent
 
 
+def test_a_release_that_never_confirms_does_not_answer_running_true_on_a_guess(
+        tmp_path: Path) -> None:
+    """A `VRT` whose reply never ends leaves the machine's state unconfirmed: the session block
+    re-reads it and never guesses `running: true`."""
+    machine = live(Machine(regs=dict(REAL_STOP)), tmp_path)
+
+    def never_confirms(_body: str) -> None:
+        raise ds.Invalid("host_failed",
+                         "the debugger channel did not finish its reply to EXEC within 5 s; "
+                         "whether it acted is unknown")
+
+    machine.hooks["VRT"] = never_confirms
+    got = cast(dict[str, Any], server.run_for(frames=1))
+    assert got["status"] == "INVALID" and got["code"] == "host_failed", got
+    # The double still holds the machine stopped, so the honest re-read says it is not running.
+    assert got["session"]["running"] is False, got["session"]
+
+
+def test_a_release_that_never_confirms_and_cannot_be_reread_says_running_is_unknown(
+        tmp_path: Path) -> None:
+    """When the re-read also cannot answer, `running` says it is unknown, not `true`."""
+    machine = live(Machine(regs=dict(REAL_STOP)), tmp_path)
+
+    def never_confirms(_body: str) -> None:
+        raise ds.Invalid("host_failed",
+                         "the debugger channel did not finish its reply to EXEC within 5 s; "
+                         "whether it acted is unknown")
+
+    def runstate_fails_on_the_reread(_body: str) -> tuple[bool, list[str]] | None:
+        if "EXEC VRT" in machine.sent:
+            raise ds.Invalid("host_failed",
+                             "the debugger channel did not finish its reply to RUNSTATE within "
+                             "5 s; whether it acted is unknown")
+        return None
+
+    machine.hooks["VRT"] = never_confirms
+    machine.hooks["RUNSTATE"] = runstate_fails_on_the_reread
+    got = cast(dict[str, Any], server.run_for(frames=1))
+    assert got["status"] == "INVALID" and got["code"] == "host_failed", got
+    assert got["session"]["running"]["available"] is False, got["session"]
+
+
 def test_a_sequence_reads_whether_run_for_left_the_machine_running() -> None:
     """A release that came back with a stop left the machine stopped; one without, running."""
     assert _leaves_running("run_for", {"verdict": "ELAPSED"}) is True
