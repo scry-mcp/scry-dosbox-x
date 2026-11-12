@@ -1201,44 +1201,33 @@
   }
  },
  "promote": {
-  "from": "[L] arguments judged, and the debugger's own files: L the recipe this boot ran and the map it learned are written into a store of the run's own only when the call approves them, and the map reads back",
+  "from": "a recipe this boot ran is written into a store of the run's own only when the call approves it: a review of a repository with no store",
   "call": {
    "dry_run": true,
-   "root": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote"
+   "root": "$TMPDIR/dosbox-x-promote-example-<run>/game"
   },
   "reply": {
-   "summary": "promote: 3 candidates in $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/.scry",
+   "summary": "promote: 1 candidate in $TMPDIR/dosbox-x-promote-example-<run>/game/.scry; would create .scry/, .scry/about.json, .scry/README.md",
    "status": "ok",
-   "store": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/.scry",
+   "store": "$TMPDIR/dosbox-x-promote-example-<run>/game/.scry",
    "candidates": [
     {
-     "entry": "maps/probe",
-     "kind": "maps",
-     "name": "probe",
-     "file": ".scry/maps/probe-screen-map.json",
-     "bytes": 328,
-     "change": "new"
-    },
-    {
-     "entry": "start/probe",
+     "entry": "start/bricks",
      "kind": "start",
-     "name": "probe",
-     "file": ".scry/start/probe.json",
-     "bytes": 122,
-     "change": "new"
-    },
-    {
-     "entry": "start/probe-profile",
-     "kind": "start",
-     "name": "probe-profile",
-     "file": ".scry/start/probe-profile.json",
-     "bytes": 197,
+     "name": "bricks",
+     "file": ".scry/start/bricks.json",
+     "bytes": 124,
      "change": "new"
     }
    ],
    "unchanged": [],
-   "total_bytes": 647,
-   "store_bytes": 647
+   "total_bytes": 124,
+   "store_bytes": 1419,
+   "would_create": [
+    ".scry/",
+    ".scry/about.json",
+    ".scry/README.md"
+   ]
   }
  },
  "read_memory": {

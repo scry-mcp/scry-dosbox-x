@@ -4,8 +4,12 @@ What a client of the server notices.
 
 ## Unreleased
 
-- On scry-core 0.104.0, whose pre-commit measures the prose of `.lua` files too and which
+- On scry-core 0.106.0, whose pre-commit measures the prose of `.lua` files too and which
   renders a repository's `.scry/README.md` from one template.
+- An approved `promote` into a repository with no `.scry/` also writes its `about.json` and
+  `README.md`: `dry_run` lists what it would create in `would_create`, the approval says what it
+  created in `created`. A reply that kept something for `promote` says when there is no `.scry/`
+  above the project, and how to see what an approval would create.
 - Interrupts and offsets read as a programmer writes them: `breakpoint_interrupt` and
   `interrupt_vectors` take `number` and `ah` as `0x` hex (`"0x21"`) as well as integers, and
   each vector's `number` answers as `0x21`, not 33; `symbols_find` takes `offset` as `0x` hex

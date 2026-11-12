@@ -41,7 +41,10 @@ def perform_document() -> dict[str, Any]:
 
 
 @pytest.fixture(autouse=True)
-def fresh_drafts() -> None:
+def fresh_drafts(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    ambient = tmp_path / "ambient"
+    (ambient / ".scry").mkdir(parents=True)
+    monkeypatch.chdir(ambient)
     STATE.drafts = core_promote.Drafts()
     STATE.maps = screen_map.Maps()
     STATE.guest = ""
@@ -277,3 +280,75 @@ def test_a_perform_document_s_start_block_says_where_the_store_is() -> None:
     STATE.drafts.keep("perform", "x", {"start": {"cwd": "/game/guest"},
                                        "steps": [{"op": "a", "recorded": {"v": 1}}]})
     assert mpromote.starting()[0] == "/game/guest"
+
+
+def test_an_export_looks_for_the_store_where_the_document_it_kept_points(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".scry").mkdir(parents=True)
+    bare = tmp_path / "elsewhere"
+    bare.mkdir()
+    monkeypatch.chdir(bare)
+    document = perform_document()
+    document["start"]["cwd"] = str(repo)
+    path = tmp_path / "run.json"
+    path.write_text(json.dumps(document))
+    kept = mpromote.after_export(STATE.drafts, {"path": str(path)}, mpromote.PROMOTE_PATHS)
+    assert kept["kept"] == "kept 1 (promote to review)"
+
+
+def test_a_working_directory_that_is_gone_does_not_cost_the_reply(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    gone = tmp_path / "gone"
+    gone.mkdir()
+    monkeypatch.chdir(gone)
+    gone.rmdir()
+    kept_probe(tmp_path)
+    assert mpromote.kept_line(STATE.drafts) == "kept 1 (promote to review)"
+
+
+SETUP = [".scry/", ".scry/about.json", ".scry/README.md"]
+
+
+def kept_probe(repo: Path, **more: Any) -> None:
+    params = {**START, "conf": str(repo / "probe.conf"), "cwd": str(repo), **more}
+    mpromote.note_start(params)
+    mpromote.keep_start(params, defaults=server._START_DEFAULTS)
+
+
+def test_an_approved_promotion_into_a_bare_repository_sets_up_the_store(tmp_path: Path) -> None:
+    repo = tmp_path / "game"
+    repo.mkdir()
+    kept_probe(repo)
+    review = server.promote(dry_run=True, root=str(repo))
+    assert review["would_create"] == SETUP and "created" not in review
+    assert not (repo / ".scry").exists()
+    written = server.promote(entries=["start/probe"], root=str(repo))
+    assert written["created"] == SETUP and "would_create" not in written
+    assert json.loads((repo / ".scry" / "about.json").read_text())["server"] == "dosbox-x"
+    assert (repo / ".scry" / "README.md").is_file()
+
+
+def test_a_second_promotion_creates_nothing_more(tmp_path: Path) -> None:
+    kept_probe(tmp_path)
+    server.promote(entries=["start/probe"], root=str(tmp_path))
+    kept_probe(tmp_path, session_seconds=901)
+    assert "created" not in server.promote(entries=["start/probe"], root=str(tmp_path))
+
+
+def test_a_kept_line_says_how_to_set_up_a_store_only_when_none_is_above(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    kept_probe(tmp_path)
+    assert "no .scry/ above" in mpromote.kept_line(STATE.drafts)
+    (tmp_path / ".scry").mkdir()
+    assert mpromote.kept_line(STATE.drafts) == "kept 1 (promote to review)"
+
+
+def test_an_export_names_the_missing_store_too(tmp_path: Path,
+                                               monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    path = tmp_path / "run.json"
+    path.write_text(json.dumps(perform_document()))
+    kept = mpromote.after_export(STATE.drafts, {"path": str(path)}, mpromote.PROMOTE_PATHS)
+    assert "no .scry/ above" in kept["kept"]
