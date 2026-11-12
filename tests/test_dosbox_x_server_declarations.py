@@ -162,6 +162,15 @@ def test_a_by_address_declaration_on_a_running_machine_is_kept_unarmed_not_inval
     assert w["state"] == "pending"
 
 
+def test_an_interrupt_and_its_function_are_written_in_hex(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    armed = server.breakpoint_interrupt(number="0x21", ah="0x4B")
+    assert armed["status"] == "ok" and armed["entry"] == "BPINT 21 AH=4B", armed
+    assert [r["entry"] for r in fake.rows] == ["BPINT 21 AH=4B"]
+    decimal = server.breakpoint_interrupt(number="33")
+    assert decimal["status"] == "INVALID" and decimal["code"] == "bad_argument", decimal
+
+
 def test_an_interrupt_breakpoint_is_stored_listed_cleared_and_not_double_armed(
         tmp_path: Path) -> None:
     fake = _names(tmp_path)

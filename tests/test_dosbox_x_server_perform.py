@@ -1346,13 +1346,13 @@ def test_start_with_an_input_port_keeps_session_as_the_last_key(
 @pytest.mark.parametrize(("ah", "refusal"), [
     (None, None),                                  # an explicit null is the `| None` it declares
     (2, None),
-    ("2", "ah is "),                               # anything else is judged as the scalar
-    (True, "ah is "),                              # and a bool is never a number
+    ("2", "section is "),                          # anything else is judged as the scalar
+    (True, "section is "),                         # and a bool is never a number
 ])
 def test_a_step_takes_null_for_an_optional_scalar_and_judges_anything_else(
     ah: Any, refusal: str | None,
 ) -> None:
-    said = step_judge.wrong_type(server.breakpoint_interrupt, {"number": 0x21, "ah": ah})
+    said = step_judge.wrong_type(server.symbols_find, {"name": "x", "section": ah})
     assert (said is None) if refusal is None else (said or "").startswith(refusal), said
 
 

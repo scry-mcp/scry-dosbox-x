@@ -286,7 +286,7 @@ Example, from a live run:
   "looked": {
     "guest": {
       "available": true,
-      "since_mark": 98414,
+      "since_mark": 89830,
       "lines_written": 0,
       "lines_total": 0,
       "truncated": false,

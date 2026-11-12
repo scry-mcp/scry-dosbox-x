@@ -1076,11 +1076,11 @@ def state_write(method: Annotated[str, vocab.enum(tuple(folds.STATE_METHODS))], 
 
 
 @tool("Arm an interrupt breakpoint", summary=one_line.breakpoint_interrupt)
-def breakpoint_interrupt(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)],
-                         ah: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)] | None = None,
+def breakpoint_interrupt(number: judges.NumberArg, ah: judges.NumberArg | None = None,
                          detail: bool = False) -> dict[str, Any]:
     """Break on an interrupt, optionally one `ah` function. Arm it before `resume`. `number` and
-    `ah` are hex given as integers: `0x21` for DOS, not `21`. Pending while the guest runs.
+    `ah` are `0x` hex (`"0x21"` for DOS) or integers, 0x00 to 0xFF. Pending while the guest
+    runs.
 
     Reply: `ref` (e.g. `BPINT 21 AH=4B`, what `declaration_clear` takes), `stored`,
     `already_stored`, `armed`, `state` (while the guest runs), `entry` (once armed);
@@ -1088,7 +1088,7 @@ def breakpoint_interrupt(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)],
 
     Reference: REFERENCE.md, Declarations.
     """
-    return arming.breakpoint_interrupt(live(), number, ah, detail)
+    return arming.breakpoint_interrupt(live(), *checks.interrupt(number, ah), detail)
 
 
 @tool("Declare a registerpoint", summary=one_line.regpoint_add)
@@ -1154,23 +1154,26 @@ def symbols_load(path: str, base: str = "",
 
 
 @tool("Look a symbol up", summary=one_line.symbols_find, read_only=True)
-def symbols_find(name: str = "", offset: int | None = None,
+def symbols_find(name: str = "", offset: judges.NumberArg | None = None,
                  section: int | None = None,
                  linear: str = "",
                  limit: Annotated[int, vocab.bounds(1, placement.SYMBOLS_LIMIT_MAX)] = 10,
                  ) -> dict[str, Any]:
     """Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefix matches by
-    section and offset, case ignored, each in the spelling the map gave, up to `limit`. `offset` (an
-    integer) or `linear` (hex text), with `section`: the nearest symbol at or below.
+    section and offset, case ignored, each in the spelling the map gave, up to `limit`.
+    `offset` (`0x` hex or an integer) or `linear` (hex text), with `section`: the nearest symbol
+    at or below.
 
-    Reply: `query`; by name, `symbols_total`, `symbols` (`name`, `offset`, `addr`), `truncated`;
+    Reply: `query`; by name, `symbols_total`, `symbols` (`name`, `offset` as `0x` hex, `addr`),
+    `truncated`;
     by address, the symbol's fields and `delta`. INVALID: no table.
     """
     # THE SESSION IS ASKED FOR FIRST, as every read tool asks: a session whose emulator died is
     # `session_broken` there, and the table is forgotten when the session OBJECT changes, so it
     # never answers `ok` with a linear address for a process that is gone.
     live()
-    return placement.find(name or None, offset, section, linear or None, limit)
+    return placement.find(name or None, None if offset is None else checks.number("offset", offset),
+                          section, linear or None, limit)
 
 
 # ------------------------------------------------------------------------------- comments
@@ -1258,14 +1261,15 @@ def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]
 
 
 @tool("Read the interrupt vectors", summary=one_line.interrupt_vectors, replay="drop")
-def interrupt_vectors(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)] | None = None,
-                      ) -> dict[str, Any]:
+def interrupt_vectors(number: judges.NumberArg | None = None) -> dict[str, Any]:
     """Which handler every interrupt vector points at and what holds it, from the debugger's
     `INTVEC` table: a handler is placed in the MCB, kernel or BIOS block holding it and named by
-    loaded symbols. `number` (0 to 255) narrows the reply to one vector. In protected mode the
+    loaded symbols. `number` (`0x` hex or an integer, 0x00 to 0xFF) narrows the reply to one
+    vector. In protected mode the
     table is the IDT.
 
-    Reply: `cpu_mode`, `vectors` (each `number`, `seg_off`, `addr`, a holder row, `symbol`),
+    Reply: `cpu_mode`, `vectors` (each `number` as `0x` hex, `seg_off`, `addr`, a holder row,
+    `symbol`),
     `counts`, `sources`, `coverage_note`.
 
     Refused: `number` out of range or a `MCPIVT.TXT` already there (`bad_argument`); a running
@@ -1276,7 +1280,8 @@ def interrupt_vectors(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)] | Non
     """
     session = live()
     session.require_stopped("`INTVEC`")
-    return st.reply(**machine.interrupt_vectors(session, number))
+    return st.reply(**machine.interrupt_vectors(
+        session, None if number is None else checks.interrupt(number, None)[0]))
 
 
 # ------------------------------------------------------------------------ the screen

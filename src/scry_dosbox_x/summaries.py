@@ -301,8 +301,9 @@ def audio_record(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def symbols_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
     # A LOAD WITH NOTHING TO CHECK WOULD READ LIKE A PROVED ONE: the line says which of the
     # two it is, and the full `why` stays in the reply's `checked`.
-    line = (f"symbols_load: {reply.get('loaded')} loaded of {reply.get('parsed')} parsed, base "
-            f"{reply.get('base')}")
+    base = _word(reply.get("base"))
+    line = (f"symbols_load: {reply.get('loaded')} loaded of {reply.get('parsed')} parsed"
+            + (f", base {base}" if base else ""))
     held = reply.get("debugger_holds")
     if isinstance(held, int) and not isinstance(held, bool):
         line += f", the debugger holds {_said(held, 'row')} (`LV` appends)"
@@ -347,7 +348,7 @@ def interrupt_vectors(args: dict[str, Any], reply: dict[str, Any]) -> str:
         held = next((f"{s} {_named(row[s])}" for s in ("mcbs", "kern", "bios_mem")
                      if isinstance(row.get(s), dict)),
                     "not placed (see `coverage_note`)" if not_placed else "held by no block read")
-        return f"interrupt_vectors INT {row.get('number', 0):02X}: {row.get('seg_off')}, {held}"
+        return f"interrupt_vectors INT {str(row.get('number'))[2:]}: {row.get('seg_off')}, {held}"
     vectors = _said(len(rows), "vector")
     if "mcbs" not in sources:
         return f"interrupt_vectors: {vectors}, no MCB chain read to count program blocks in"

@@ -233,7 +233,7 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.17s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.136s",
   "status": "ok",
   "pid": "<volatile>",
   "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
@@ -242,7 +242,7 @@ Example, from a live run:
   "elapsed_s": 0.5,
   "captures": "off",
   "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1022-save",
-  "ready_after_s": 0.17,
+  "ready_after_s": 0.136,
   "argv": ["~/.local/state/dosbox-x-builds/scry/dosbox-x", "-conf", "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
   "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
@@ -408,15 +408,10 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "window: display 0, on screen, covered",
-  "status": "ok",
-  "window": {
-    "display": 0,
-    "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
-    "onscreen": true,
-    "front": false,
-    "fullscreen": false
-  }
+  "summary": "window: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
+  "status": "INVALID",
+  "code": "no_session",
+  "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
 }
 ```
 <!-- scry-reference:end window -->

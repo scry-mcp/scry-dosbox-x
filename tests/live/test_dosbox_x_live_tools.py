@@ -692,7 +692,7 @@ def test_interrupt_vectors_places_the_dos_handler_and_leaves_no_file(tmp_path: P
     one = cast(dict[str, Any], server.interrupt_vectors(number=0x21))
     assert one["status"] == "ok" and len(one["vectors"]) == 1, one
     row = one["vectors"][0]
-    assert row["number"] == 0x21 and row["seg_off"] != "0000:00000000", row
+    assert row["number"] == "0x21" and row["seg_off"] != "0000:00000000", row
     assert any(k in row for k in ("mcbs", "kern", "bios_mem")), one["coverage_note"]
     whole = cast(dict[str, Any], server.interrupt_vectors())
     assert whole["status"] == "ok" and len(whole["vectors"]) == 256

@@ -41,18 +41,18 @@ Reference: REFERENCE.md, Names for addresses.
 
 | reply field | type |
 |---|---|
-| `base` | integer |
+| `base` | string or object |
 | `base_from` | string |
 | `bytes` | integer |
 | `debugger_holds` | integer |
 | `declarations` | object |
-| `descriptor` | integer |
+| `descriptor` | string or object |
 | `disambiguated` | integer |
 | `excluded_pattern` | integer |
 | `excluded_sections` | integer |
 | `excluded_unplaceable` | integer |
 | `kept` | integer |
-| `limit` | integer |
+| `limit` | string or object |
 | `loaded` | integer |
 | `overlay_idle` | integer |
 | `parsed` | integer |
@@ -78,11 +78,17 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "symbols_load: 5 loaded of 5 parsed, base 32768, not checked against a build: no executable named MAPDEMO.exe beside the table, so it could not be checked against its build",
+  "summary": "symbols_load: 5 loaded of 5 parsed, base 0x00008000, not checked against a build: no executable named MAPDEMO.exe beside the table, so it could not be checked against its build",
   "status": "ok",
-  "base": 32768,
-  "limit": -1,
-  "descriptor": -1,
+  "base": "0x00008000",
+  "limit": {
+    "available": false,
+    "why": "no descriptor was read: the base was given, or each section has its own"
+  },
+  "descriptor": {
+    "available": false,
+    "why": "no descriptor was read: the base was given, or each section has its own"
+  },
   "declarations": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []},
   "pending": false,
   "checked": {
@@ -152,16 +158,18 @@ symbols_find(name="", offset=null, section=null, linear="", limit=10)
 ```
 
 Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefix matches by
-section and offset, case ignored, each in the spelling the map gave, up to `limit`. `offset` (an
-integer) or `linear` (hex text), with `section`: the nearest symbol at or below.
+section and offset, case ignored, each in the spelling the map gave, up to `limit`.
+`offset` (`0x` hex or an integer) or `linear` (hex text), with `section`: the nearest symbol
+at or below.
 
-Reply: `query`; by name, `symbols_total`, `symbols` (`name`, `offset`, `addr`), `truncated`;
+Reply: `query`; by name, `symbols_total`, `symbols` (`name`, `offset` as `0x` hex, `addr`),
+`truncated`;
 by address, the symbol's fields and `delta`. INVALID: no table.
 
 | argument | type | default |
 |---|---|---|
 | `name` | string | `""` |
-| `offset` | integer or null | `null` |
+| `offset` | integer or string or null | `null` |
 | `section` | integer or null | `null` |
 | `linear` | string | `""` |
 | `limit` | integer (>= 1, <= 50) | `10` |
@@ -173,7 +181,7 @@ by address, the symbol's fields and `delta`. INVALID: no table.
 | `idle` | boolean |
 | `kind` | string |
 | `name` | string |
-| `offset` | integer |
+| `offset` | string |
 | `query` | string |
 | `section` | integer |
 | `symbols` | array |
@@ -198,7 +206,7 @@ Example, from a live run:
     {
       "name": "MAP_DATA_SYMBOL",
       "kind": "?",
-      "offset": 32,
+      "offset": "0x20",
       "section": -1,
       "addr": "0x00008020",
       "idle": true

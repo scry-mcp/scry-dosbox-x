@@ -82,7 +82,7 @@
    "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b4",
-    "ECX": "0x00001360",
+    "ECX": "0x00001345",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -102,7 +102,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 94726
+    "mark": 86037
    },
    "stop_seq": 11,
    "instruction": {
@@ -254,8 +254,8 @@
    "summary": "capture_frame 2: 5072 bytes to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n11.png",
    "status": "ok",
    "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n11.png",
-   "bytes": 5072,
-   "sha256": "aee93b1749a9c93112b4fca12509d5ad9da94fc94b41bf781612e590a0a4342b",
+   "bytes": "<volatile>",
+   "sha256": "<volatile>",
    "capture_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n6-cap/screen_001.avi",
    "frame": 2
   }
@@ -549,7 +549,7 @@
    "looked": {
     "guest": {
      "available": true,
-     "since_mark": 98414,
+     "since_mark": 89830,
      "lines_written": 0,
      "lines_total": 0,
      "truncated": false,
@@ -652,7 +652,7 @@
    "cpu_mode": "real",
    "vectors": [
     {
-     "number": 33,
+     "number": "0x21",
      "seg_off": "F000:0000D100",
      "addr": "0x000fd100",
      "bios_mem": {
@@ -695,19 +695,19 @@
    "channel": "emulator"
   },
   "reply": {
-   "summary": "log emulator /./: 40 of 165 lines",
+   "summary": "log emulator /./: 40 of 164 lines",
    "status": "ok",
    "pattern": ".",
    "channel": "emulator",
-   "lines_total": 165,
+   "lines_total": 164,
    "truncated": true,
    "lines": [
+    "pixratio 1.350, dw false, dh false",
     "Aspect ratio: 720 x 540  xToY=1.333 yToX=0.750",
     "surface consider=720x400 final=720x400",
-    "DEBUG: RUNSTATE running cycles=232419 ms=24.000100000 frames=2",
-    "DEBUG: RUNSTATE running cycles=272285 ms=28.000100000 frames=2",
-    "DEBUG: RUNSTATE running cycles=312152 ms=32.000100000 frames=2",
-    "DEBUG: RUNSTATE running cycles=352063 ms=36.000100000 frames=3",
+    "DEBUG: RUNSTATE running cycles=242385 ms=25.000100000 frames=2",
+    "DEBUG: RUNSTATE running cycles=292219 ms=30.000100000 frames=2",
+    "DEBUG: RUNSTATE running cycles=332124 ms=34.000100000 frames=2",
     "... 34 more"
    ]
   }
@@ -996,8 +996,8 @@
    "pel_mask": "ffh",
    "image": {
     "path": "$TMPDIR/dosbox-x-session-<run>/gfx/palette-1.png",
-    "bytes": 1009,
-    "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 256,
     "height": 128,
     "scale": 8,
@@ -1274,7 +1274,7 @@
    "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b8",
-    "ECX": "0x00006aa2",
+    "ECX": "0x00006a87",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -1294,7 +1294,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 91080
+    "mark": 82253
    },
    "stop_seq": 10,
    "instruction": {
@@ -1400,7 +1400,7 @@
    "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1d1",
+    "ECX": "0x0000c1b6",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -1420,7 +1420,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 89963
+    "mark": 81136
    },
    "stop_seq": 7,
    "instruction": {
@@ -1439,11 +1439,11 @@
      "why": "no symbol table is loaded"
     }
    },
-   "emulated_before_s": 1.9731157000000001,
+   "emulated_before_s": 1.9731115,
    "emulated_after_s": 1.9747000000000001,
    "frame_before": 138,
    "frame_after": 139,
-   "cycles": 15835
+   "cycles": 15876
   }
  },
  "run_to": {
@@ -1454,7 +1454,7 @@
    "control": "0814:0130"
   },
   "reply": {
-   "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 85",
+   "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 71",
    "status": "ok",
    "verdict": "TIMEOUT",
    "target": "0000:0003",
@@ -1462,21 +1462,21 @@
    "pc": "0814:00000130",
    "cpu_mode": "real",
    "target_disarmed": true,
-   "control_hits": 85,
+   "control_hits": 71,
    "controls": [
     {
      "ref": "0814:0130",
      "at": "0814:0130",
-     "hits_in_run": 85,
+     "hits_in_run": 71,
      "removed": true
     }
    ],
-   "note": "it came to rest ON the control 0814:0130 (its hit number 85) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
+   "note": "it came to rest ON the control 0814:0130 (its hit number 71) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
    "frame": 138,
    "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000ffac",
+    "ECX": "0x0000ffba",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -1498,7 +1498,7 @@
     "lines": [
      "Bochs port E9h: [+ 00000.000] PROBE . tick"
     ],
-    "mark": 32966
+    "mark": 32946
    },
    "stop_seq": 6,
    "instruction": {
@@ -1862,8 +1862,8 @@
    "status": "ok",
    "route": "guest",
    "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/P/n4.png",
-   "bytes": 885,
-   "sha256": "5053cd8f49a0d5bea6531db5520c7dfb0c06340f05b59d4baff51012d24313f5"
+   "bytes": "<volatile>",
+   "sha256": "<volatile>"
   }
  },
  "start": {
@@ -1876,7 +1876,7 @@
    "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1022-save"
   },
   "reply": {
-   "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.17s",
+   "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.136s",
    "status": "ok",
    "pid": "<volatile>",
    "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
@@ -1885,7 +1885,7 @@
    "elapsed_s": 0.5,
    "captures": "off",
    "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1022-save",
-   "ready_after_s": 0.17,
+   "ready_after_s": 0.136,
    "argv": [
     "~/.local/state/dosbox-x-builds/scry/dosbox-x",
     "-conf",
@@ -1937,7 +1937,7 @@
     {
      "name": "matrix-a-stopped",
      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1022-save/matrix-a-stopped.sav",
-     "bytes": 87791,
+     "bytes": 87795,
      "version": "<volatile>",
      "program": "PROBE",
      "machine": "MCH_VGA",
@@ -1959,11 +1959,11 @@
    "seconds": 10
   },
   "reply": {
-   "summary": "state_write save: matrix-a-stopped, 87791 bytes, PROBE <time>",
+   "summary": "state_write save: matrix-a-stopped, 87795 bytes, PROBE <time>",
    "status": "ok",
    "name": "matrix-a-stopped",
    "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1022-save/matrix-a-stopped.sav",
-   "bytes": 87791,
+   "bytes": 87795,
    "version": "<volatile>",
    "program": "PROBE",
    "machine": "MCH_VGA",
@@ -2032,7 +2032,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 6965
+    "mark": 6945
    },
    "stop_seq": 5,
    "instruction": {
@@ -2052,7 +2052,7 @@
     "stop_seq": 4,
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-    "since_s": 0.1,
+    "since_s": 0.2,
     "wall_at": "<volatile>"
    },
    "note": "the machine was already stopped"
@@ -2072,7 +2072,7 @@
     {
      "name": "MAP_DATA_SYMBOL",
      "kind": "?",
-     "offset": 32,
+     "offset": "0x20",
      "section": -1,
      "addr": "0x00008020",
      "idle": true
@@ -2088,11 +2088,17 @@
    "base": "8000"
   },
   "reply": {
-   "summary": "symbols_load: 5 loaded of 5 parsed, base 32768, not checked against a build: no executable named MAPDEMO.exe beside the table, so it could not be checked against its build",
+   "summary": "symbols_load: 5 loaded of 5 parsed, base 0x00008000, not checked against a build: no executable named MAPDEMO.exe beside the table, so it could not be checked against its build",
    "status": "ok",
-   "base": 32768,
-   "limit": -1,
-   "descriptor": -1,
+   "base": "0x00008000",
+   "limit": {
+    "available": false,
+    "why": "no descriptor was read: the base was given, or each section has its own"
+   },
+   "descriptor": {
+    "available": false,
+    "why": "no descriptor was read: the base was given, or each section has its own"
+   },
    "declarations": {
     "rearmed": [],
     "stale": [],
@@ -2142,7 +2148,7 @@
    "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1c1",
+    "ECX": "0x0000c1a6",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -2162,7 +2168,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 90529
+    "mark": 81702
    },
    "stop_seq": 8,
    "instruction": {
@@ -2218,23 +2224,13 @@
   }
  },
  "window": {
-  "from": "[G] the windowed tools, on the probe guest and on the DPMI guest: G the host lists that window where `window` says",
+  "from": "[A] every tool in every machine state, on the probe guest: A none    window",
   "call": {},
   "reply": {
-   "summary": "window: display 0, on screen, covered",
-   "status": "ok",
-   "window": {
-    "display": 0,
-    "bounds": {
-     "x": 40,
-     "y": 30,
-     "width": 640,
-     "height": 432
-    },
-    "onscreen": true,
-    "front": false,
-    "fullscreen": false
-   }
+   "summary": "window: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
+   "status": "INVALID",
+   "code": "no_session",
+   "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
   }
  },
  "write": {

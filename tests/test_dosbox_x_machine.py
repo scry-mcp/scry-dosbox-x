@@ -577,7 +577,7 @@ def test_real_mode_vectors_land_in_the_bios_block_that_holds_them(tmp_path: Path
     r = vectors_of(IntvecBench("probe-booted", tmp_path / "x.log", tmp_path), number=0x21)
     assert r["status"] == "ok" and r["cpu_mode"] == "real"
     [row] = r["vectors"]
-    assert row["number"] == 0x21 and row["seg_off"] == "F000:0000D100", row
+    assert row["number"] == "0x21" and row["seg_off"] == "F000:0000D100", row
     assert row["addr"] == "0x000fd100", row
     assert row["bios_mem"]["what"] == "DOSBox callback area" and "mcbs" not in row
     assert r["counts"]["vectors"] == 256 and r["sources"]["vectors"] == ["INTVEC"]
@@ -594,13 +594,13 @@ DOS_REAL16_PUBLICS = (("NEW_KEY_PC", 0x3660 + 0x95), ("NEW_IRQ_VIDEO", 0x3660 + 
 def test_a_program_hooking_the_timer_and_the_keyboard_holds_them_by_name(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     r = vectors_of(IntvecBench("dos-real16", tmp_path / "x.log", tmp_path))
-    rows = {v["number"]: v for v in r["vectors"]}
+    rows = {int(v["number"], 16): v for v in r["vectors"]}
     for n in (0x08, 0x09):
         assert rows[n]["mcbs"]["filename"] == "REAL16" and "symbol" not in rows[n]
     assert rows[0x1C]["mcbs"]["filename"] == "INJECT"
     install_dos_real16_table(monkeypatch)
     r = vectors_of(IntvecBench("dos-real16", tmp_path / "x.log", tmp_path))
-    rows = {v["number"]: v for v in r["vectors"]}
+    rows = {int(v["number"], 16): v for v in r["vectors"]}
     assert (rows[0x08]["symbol"]["name"], rows[0x08]["symbol"]["delta"]) == ("NEW_IRQ_VIDEO", 0)
     assert (rows[0x09]["symbol"]["name"], rows[0x09]["symbol"]["delta"]) == ("NEW_KEY_PC", 0)
     assert "symbol" not in rows[0x21], "below the table's lowest symbol names nothing"
@@ -619,7 +619,7 @@ def test_protected_mode_vectors_go_through_the_descriptor_and_the_pages(tmp_path
     base."""
     r = vectors_of(IntvecBench("dos-djgpp32", tmp_path / "x.log", tmp_path))
     assert r["cpu_mode"] == "paged"
-    rows = {v["number"]: v for v in r["vectors"]}
+    rows = {int(v["number"], 16): v for v in r["vectors"]}
     assert rows[0x08]["addr"] == "0x000cfff0" and rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
     assert rows[0x21]["addr"] == "0x000d0054" and rows[0x21]["mcbs"]["filename"] == "CWSDPMI"
     assert set(r["sources"]) >= {"vectors", "gdt", "ldt", "paging", "mcbs"}
@@ -639,8 +639,9 @@ def test_without_a_logfile_the_vectors_are_placed_all_the_same(tmp_path: Path) -
     dstate.STATE.session = cast(ds.Session, s)
     dstate.STATE.remember_stop(cast(ds.Session, s), {"cs": "0814", "eip": "00000106",
                                                      "mode": "Real"}, {}, [], {"attributed": False})
-    r = cast(dict[str, Any], server.interrupt_vectors(number=0x21))
+    r = cast(dict[str, Any], server.interrupt_vectors(number="0x21"))
     assert r["status"] == "ok" and [v["seg_off"] for v in r["vectors"]] == ["F000:0000D100"]
+    assert [v["number"] for v in r["vectors"]] == ["0x21"], "a vector reads as it is written"
     assert "no block read" not in r["summary"] and "logfile" not in r["coverage_note"], r
     assert s.asked, "the holders are read off the listings"
 
@@ -754,7 +755,7 @@ def test_a_sectioned_table_with_no_symbol_below_a_vector_names_nothing_and_answe
     monkeypatch.setitem(dstate.STATE.section_bases, 2, 0xC000)
     r = vectors_of(IntvecBench("dos-real16", tmp_path / "x.log", tmp_path))
     assert r["status"] == "ok", r
-    rows = {v["number"]: v for v in r["vectors"]}
+    rows = {int(v["number"], 16): v for v in r["vectors"]}
     assert "symbol" not in rows[0x08] and rows[0x08]["addr"] == "0x0000c04b"
 
 
@@ -778,14 +779,14 @@ def test_the_one_line_says_a_free_block_is_free_and_a_table_with_no_chain_read_s
     free = {"memory": "conventional", "mcb_seg": "3500", "size_bytes": 61440, "psp_seg": "0000",
             "notes": "free", "filename": "DJGPP32"}
     line = one_line.interrupt_vectors({"number": 8}, {"vectors": [
-        {"number": 8, "seg_off": "3600:00000000", "mcbs": free}]})
+        {"number": "0x08", "seg_off": "3600:00000000", "mcbs": free}]})
     assert line == "interrupt_vectors INT 08: 3600:00000000, mcbs 3500 DJGPP32 (free)"
     region = {"start": "000f0000", "end": "000f8daf", "status": "FREE", "what": ""}
     region_line = one_line.interrupt_vectors({"number": 1}, {"vectors": [
-        {"number": 1, "seg_off": "F000:00000100", "bios_mem": region}]})
+        {"number": "0x01", "seg_off": "F000:00000100", "bios_mem": region}]})
     assert region_line.endswith("bios_mem 000f0000 FREE")
     unplaced = one_line.interrupt_vectors({"number": None}, {
-        "vectors": [{"number": n, "seg_off": "F000:00000000"} for n in range(256)],
+        "vectors": [{"number": f"0x{n:02X}", "seg_off": "F000:00000000"} for n in range(256)],
         "sources": {"vectors": ["INTVEC"]}})
     assert unplaced == ("interrupt_vectors: 256 vectors, no MCB chain read to count program "
                         "blocks in")
@@ -817,7 +818,7 @@ class Unmapped(IntvecBench):
 def test_a_handler_on_a_page_no_run_maps_has_no_holder_and_the_note_says_why(
         tmp_path: Path) -> None:
     r = vectors_of(Unmapped("dos-djgpp32", tmp_path / "x.log", tmp_path))
-    rows = {v["number"]: v for v in r["vectors"]}
+    rows = {int(v["number"], 16): v for v in r["vectors"]}
     assert rows[0x60]["addr"] == "0x00400000"
     assert not {"mcbs", "kern", "bios_mem"} & set(rows[0x60]), rows[0x60]
     assert rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
@@ -847,7 +848,7 @@ def test_a_selector_naming_no_descriptor_leaves_that_vector_unplaced_and_says_wh
         tmp_path: Path) -> None:
     r = vectors_of(Rewritten("dos-djgpp32", tmp_path / "x.log", tmp_path,
                              "INT 60:  002B:3BA0", "INT 60:  0100:3BA0"))
-    rows = {v["number"]: v for v in r["vectors"]}
+    rows = {int(v["number"], 16): v for v in r["vectors"]}
     assert set(rows[0x60]) == {"number", "seg_off"} and "addr" in rows[0x61]
     assert ("no `addr` for 1 vector: their selector names no descriptor in `gdt`"
             in r["coverage_note"]), r["coverage_note"]
@@ -950,7 +951,7 @@ def test_protected_mode_without_paging_places_a_handler_at_its_linear_address(
     paging off the linear address is the physical one."""
     r = vectors_of(ProtectedNoPaging("dos-djgpp32", tmp_path / "x.log", tmp_path))
     assert r["cpu_mode"] == "protected" and "paging" not in r["sources"]
-    rows = {v["number"]: v for v in r["vectors"]}
+    rows = {int(v["number"], 16): v for v in r["vectors"]}
     assert rows[0x08]["addr"] == "0x000cfff0" and rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
 
 

@@ -806,7 +806,7 @@ def _cut_after_placing(monkeypatch: pytest.MonkeyPatch) -> tuple[Any, dict[str, 
     s = StoppedCode("code-stop1")
     install()
     dstate.STATE.session = cast(ds.Session, s)
-    said = {"placed": True, "path": "/x/APP.MAP", "load_segment": "025C", "base": 0x25C0,
+    said = {"placed": True, "path": "/x/APP.MAP", "load_segment": "025C", "base": "0x000025c0",
             "loaded": 3}
     monkeypatch.setattr(start_symbols, "place_if_due", lambda session: said)
 

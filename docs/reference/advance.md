@@ -71,7 +71,7 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 85",
+  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 71",
   "status": "ok",
   "verdict": "TIMEOUT",
   "target": "0000:0003",
@@ -79,16 +79,16 @@ Example, from a live run:
   "pc": "0814:00000130",
   "cpu_mode": "real",
   "target_disarmed": true,
-  "control_hits": 85,
+  "control_hits": 71,
   "controls": [
-    {"ref": "0814:0130", "at": "0814:0130", "hits_in_run": 85, "removed": true}
+    {"ref": "0814:0130", "at": "0814:0130", "hits_in_run": 71, "removed": true}
   ],
-  "note": "it came to rest ON the control 0814:0130 (its hit number 85) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
+  "note": "it came to rest ON the control 0814:0130 (its hit number 71) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
   "frame": 138,
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000ffac",
+    "ECX": "0x0000ffba",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -108,7 +108,7 @@ Example, from a live run:
     "lines_total": 1,
     "truncated": false,
     "lines": ["Bochs port E9h: [+ 00000.000] PROBE . tick"],
-    "mark": 32966
+    "mark": 32946
   },
   "stop_seq": 6,
   "instruction": {
@@ -207,7 +207,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1d1",
+    "ECX": "0x0000c1b6",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -223,7 +223,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 89963},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 81136},
   "stop_seq": 7,
   "instruction": {
     "address": "0814:00000130",
@@ -235,11 +235,11 @@ Example, from a live run:
     "symbol": {"available": false, "why": "no symbol table is loaded"},
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
-  "emulated_before_s": 1.9731157000000001,
+  "emulated_before_s": 1.9731115,
   "emulated_after_s": 1.9747000000000001,
   "frame_before": 138,
   "frame_after": 139,
-  "cycles": 15835
+  "cycles": 15876
 }
 ```
 <!-- scry-reference:end run_for -->
@@ -324,7 +324,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002bc",
-    "ECX": "0x0000c1c1",
+    "ECX": "0x0000c1a6",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -340,7 +340,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 90529},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 81702},
   "stop_seq": 8,
   "instruction": {
     "address": "0814:00000130",
@@ -586,7 +586,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "no declared code breakpoint at F000:0000FEA6: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 6965},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 6945},
   "stop_seq": 5,
   "instruction": {"available": false, "why": "the bytes at F000:0000FEA6 (FE...) start no instruction"}
 }
@@ -722,7 +722,7 @@ Example, from a live run:
     "stop_seq": 4,
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-    "since_s": 0.1,
+    "since_s": 0.2,
     "wall_at": "<volatile>"
   },
   "note": "the machine was already stopped"

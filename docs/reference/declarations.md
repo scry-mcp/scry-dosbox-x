@@ -79,7 +79,8 @@ breakpoint_interrupt(number, ah=null, detail=false)
 ```
 
 Break on an interrupt, optionally one `ah` function. Arm it before `resume`. `number` and
-`ah` are hex given as integers: `0x21` for DOS, not `21`. Pending while the guest runs.
+`ah` are `0x` hex (`"0x21"` for DOS) or integers, 0x00 to 0xFF. Pending while the guest
+runs.
 
 Reply: `ref` (e.g. `BPINT 21 AH=4B`, what `declaration_clear` takes), `stored`,
 `already_stored`, `armed`, `state` (while the guest runs), `entry` (once armed);
@@ -89,8 +90,8 @@ Reference: REFERENCE.md, Declarations.
 
 | argument | type | default |
 |---|---|---|
-| `number` | integer (>= 0, <= 255) | required |
-| `ah` | integer (>= 0, <= 255) or null | `null` |
+| `number` | integer or string | required |
+| `ah` | integer or string or null | `null` |
 | `detail` | boolean | `false` |
 
 | reply field | type |

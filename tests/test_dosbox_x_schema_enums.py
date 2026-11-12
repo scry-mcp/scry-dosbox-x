@@ -78,8 +78,6 @@ RANGES: list[tuple[str, str, int, int]] = [
     ("disassemble", "length", 1, code.LENGTH_MAX),
     ("symbols_find", "limit", 1, placement.SYMBOLS_LIMIT_MAX),
     ("step", "count", 1, stepping.STEP_MAX), ("trace", "instructions", 1, tracing.INSTRUCTIONS_MAX),
-    ("breakpoint_interrupt", "number", 0, ds.BYTE_MAX),
-    ("breakpoint_interrupt", "ah", 0, ds.BYTE_MAX), ("interrupt_vectors", "number", 0, ds.BYTE_MAX),
     ("send_mouse", "x", 0, inputs.MAX_COORD), ("send_mouse", "y", 0, inputs.MAX_COORD),
     ("send_mouse", "to_x", 0, inputs.MAX_COORD), ("send_mouse", "to_y", 0, inputs.MAX_COORD),
     ("start", "session_seconds", 1, dlaunch.MAX_SECONDS),

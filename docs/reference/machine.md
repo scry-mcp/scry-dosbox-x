@@ -202,10 +202,12 @@ interrupt_vectors(number=null)
 
 Which handler every interrupt vector points at and what holds it, from the debugger's
 `INTVEC` table: a handler is placed in the MCB, kernel or BIOS block holding it and named by
-loaded symbols. `number` (0 to 255) narrows the reply to one vector. In protected mode the
+loaded symbols. `number` (`0x` hex or an integer, 0x00 to 0xFF) narrows the reply to one
+vector. In protected mode the
 table is the IDT.
 
-Reply: `cpu_mode`, `vectors` (each `number`, `seg_off`, `addr`, a holder row, `symbol`),
+Reply: `cpu_mode`, `vectors` (each `number` as `0x` hex, `seg_off`, `addr`, a holder row,
+`symbol`),
 `counts`, `sources`, `coverage_note`.
 
 Refused: `number` out of range or a `MCPIVT.TXT` already there (`bad_argument`); a running
@@ -216,7 +218,7 @@ Reference: REFERENCE.md, Reading and writing.
 
 | argument | type | default |
 |---|---|---|
-| `number` | integer (>= 0, <= 255) or null | `null` |
+| `number` | integer or string or null | `null` |
 
 | reply field | type |
 |---|---|
@@ -241,7 +243,7 @@ Example, from a live run:
   "cpu_mode": "real",
   "vectors": [
     {
-      "number": 33,
+      "number": "0x21",
       "seg_off": "F000:0000D100",
       "addr": "0x000fd100",
       "bios_mem": {"start": "000fca00", "end": "000fdfff", "status": "ALLOC DYN", "what": "DOSBox callback area"}
@@ -325,13 +327,13 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "log emulator /./: 40 of 165 lines",
+  "summary": "log emulator /./: 40 of 164 lines",
   "status": "ok",
   "pattern": ".",
   "channel": "emulator",
-  "lines_total": 165,
+  "lines_total": 164,
   "truncated": true,
-  "lines": ["Aspect ratio: 720 x 540  xToY=1.333 yToX=0.750", "surface consider=720x400 final=720x400", "DEBUG: RUNSTATE running cycles=232419 ms=24.000100000 frames=2", "DEBUG: RUNSTATE running cycles=272285 ms=28.000100000 frames=2", "DEBUG: RUNSTATE running cycles=312152 ms=32.000100000 frames=2", "DEBUG: RUNSTATE running cycles=352063 ms=36.000100000 frames=3", "... 34 more"]
+  "lines": ["pixratio 1.350, dw false, dh false", "Aspect ratio: 720 x 540  xToY=1.333 yToX=0.750", "surface consider=720x400 final=720x400", "DEBUG: RUNSTATE running cycles=242385 ms=25.000100000 frames=2", "DEBUG: RUNSTATE running cycles=292219 ms=30.000100000 frames=2", "DEBUG: RUNSTATE running cycles=332124 ms=34.000100000 frames=2", "... 34 more"]
 }
 ```
 <!-- scry-reference:end log -->

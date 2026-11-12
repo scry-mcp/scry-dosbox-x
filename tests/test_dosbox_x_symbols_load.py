@@ -159,7 +159,9 @@ ILINK32_BASES = {"1": "401000", "2": "423000", "3": "4289B8"}
 def test_a_sectioned_table_has_no_descriptor(tmp_path: Path) -> None:
     _names(tmp_path)
     got = _ok(server.symbols_load(path=str(ILINK32_MAP), section_bases=ILINK32_BASES))
-    assert (got["limit"], got["descriptor"]) == (-1, -1), got
+    assert got["limit"]["available"] is False and got["descriptor"]["available"] is False, got
+    assert got["summary"].startswith(f"symbols_load: {got['loaded']} loaded of "), got["summary"]
+    assert "available" not in got["summary"] and ", base" not in got["summary"], got["summary"]
 
 
 def test_a_real_mode_stop_with_no_base_names_both_ways_to_give_one(tmp_path: Path) -> None:

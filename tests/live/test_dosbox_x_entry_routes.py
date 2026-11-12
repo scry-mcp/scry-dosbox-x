@@ -57,12 +57,12 @@ def test_djgpp_entry_reaches_the_client_and_symbols_place() -> None:
     sel = reach_djgpp()
     load = cast(dict[str, Any], server.symbols_load(path=str(guest.SYM)))
     assert load["status"] == "ok", load
-    assert load["base"] == sel["base"], (
+    assert int(load["base"], 16) == sel["base"], (
         "symbols_load measured a base other than the reached CS descriptor's")
     assert cast(int, load["loaded"]) > 0
     main = cast(dict[str, Any], server.symbols_find(name="_main"))
     assert main["status"] == "ok" and main["symbols"], main
-    assert main["symbols"][0]["offset"] <= sel["limit"], (
+    assert int(main["symbols"][0]["offset"], 16) <= sel["limit"], (
         "the reached selector's limit does not bracket `_main`, so this is not the "
         "client's code segment")
 

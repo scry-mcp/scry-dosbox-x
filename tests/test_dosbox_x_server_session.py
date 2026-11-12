@@ -864,7 +864,7 @@ def test_find_answers_with_both_addresses(tmp_path: Path) -> None:
     server.symbols_load(path=_source(tmp_path))
     got = cast(dict[str, Any], server.symbols_find(name="_main"))
     assert got["status"] == "ok", got
-    assert got["symbols"][0]["offset"] == 0x0016DF20, got
+    assert got["symbols"][0]["offset"] == "0x16DF20", got
     assert got["symbols"][0]["addr"] == "0x0056df20", got
 
 

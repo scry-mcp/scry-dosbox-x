@@ -67,8 +67,8 @@ Example, from a live run:
   "pel_mask": "ffh",
   "image": {
     "path": "$TMPDIR/dosbox-x-session-<run>/gfx/palette-1.png",
-    "bytes": 1009,
-    "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
     "width": 256,
     "height": 128,
     "scale": 8,

@@ -598,7 +598,8 @@ def interrupt_vectors(session: ds.Session, number: int | None) -> dict[str, Any]
         reading.notes.append("every vector is 0000:0000: nothing has filled the table yet")
     else:
         reading.notes.extend(_place(rows, reading))
-    chosen = [r for r in rows if number is None or r["number"] == number]
+    chosen = [{**r, "number": f"0x{r['number']:02X}"} for r in rows
+              if number is None or r["number"] == number]
     return {"cpu_mode": contract.or_unavailable(reading.mode, NO_MODE_WHY), "vectors": chosen,
             "counts": {"vectors": len(rows),
                        "held": sum(1 for r in rows if any(s in r for s in HOLDER_SECTIONS)),

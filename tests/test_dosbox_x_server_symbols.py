@@ -46,8 +46,8 @@ def test_the_base_is_measured_off_the_machine_and_not_assumed(tmp_path: Path) ->
     install(mode="Pr32")
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert got["status"] == "ok", got
-    assert got["base"] == MEASURED_BASE, got
-    assert got["limit"] == 0x0009FFFF, got
+    assert got["base"] == f"0x{MEASURED_BASE:08x}", got
+    assert got["limit"] == "0x0009ffff", got
     assert got["base_from"] == "CS", got
 
 
@@ -56,8 +56,8 @@ def test_the_base_is_read_from_this_commands_echo_and_not_the_first_on_screen(
     install(mode="Pr32")
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                    base_from="DS"))
-    assert got["base"] == MEASURED_BASE, got
-    assert got["base"] != 0x00008240, "it answered with the stack selector's base"
+    assert got["base"] == f"0x{MEASURED_BASE:08x}", got
+    assert got["base"] != "0x00008240", "it answered with the stack selector's base"
 
 
 def test_an_explicit_base_reports_no_limit_rather_than_inventing_one(
@@ -65,8 +65,8 @@ def test_an_explicit_base_reports_no_limit_rather_than_inventing_one(
     install()
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                    base="100000"))
-    assert got["base"] == 0x00100000, got
-    assert got["limit"] == -1, got
+    assert got["base"] == "0x00100000", got
+    assert got["limit"]["available"] is False, got
     assert got["base_from"] == "caller", got
 
 
@@ -205,7 +205,7 @@ def test_a_32_bit_map_reaches_the_caller_through_the_tool(tmp_path: Path) -> Non
     for name, offset in (("_main", 0x130), ("_errno", 0x2090)):
         found = cast(dict[str, Any], server.symbols_find(name=name))
         one = found["symbols"][0]
-        assert one["offset"] == offset, one
+        assert one["offset"] == f"0x{offset:X}", one
         assert one["idle"] is False, one
         at[name] = (one["section"], int(one["addr"], 16))
     assert at == {"_main": (1, 0x00401130), "_errno": (2, 0x00425090)}, at
@@ -320,7 +320,7 @@ def test_a_selector_number_places_a_table_at_a_real_mode_stop(tmp_path: Path) ->
     s = FakeSession()                                       # real mode
     dstate.STATE.session = s                                # type: ignore[assignment]
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path), base_from="00af"))
-    assert got["status"] == "ok" and got["base"] == MEASURED_BASE, got
+    assert got["status"] == "ok" and got["base"] == f"0x{MEASURED_BASE:08x}", got
     assert "SELINFO 00AF" in s.executed, s.executed
     assert dstate.STATE.base_measured_from == "00AF", dstate.STATE.base_measured_from
     protected = FakeSession(mode="Pr32")
@@ -365,7 +365,7 @@ def test_a_real_mode_map_with_no_base_is_refused_before_selinfo_is_asked(
     pr16 = FakeSession(mode="Pr16")
     dstate.STATE.session = pr16                             # type: ignore[assignment]
     measured = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
-    assert measured["status"] == "ok" and measured["base"] == MEASURED_BASE, measured
+    assert measured["status"] == "ok" and measured["base"] == f"0x{MEASURED_BASE:08x}", measured
 
 
 def test_an_absent_descriptor_is_refused_rather_than_placed_at_base_zero(
@@ -418,10 +418,10 @@ def test_the_descriptor_type_is_reported_so_a_caller_can_see_what_was_read(
         tmp_path: Path) -> None:
     install(mode="Pr32")
     measured = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
-    assert measured["descriptor"] == 0x1B, measured
+    assert measured["descriptor"] == "0x1B", measured
     given = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                      base="1000"))
-    assert given["descriptor"] == -1, given
+    assert given["descriptor"]["available"] is False, given
 
 
 def test_a_limit_means_nothing_where_one_symbol_comes_back_and_is_not_refused_there(
@@ -614,7 +614,7 @@ def test_an_offset_alone_is_refused_on_a_sectioned_table(tmp_path: Path) -> None
     # WITH THE SECTION NAMED it answers, and the two sections give DIFFERENT symbols for
     # the same offset -- which is the whole reason the bare form is refused.
     one = cast(dict[str, Any], server.symbols_find(offset=0x2090, section=1))
-    two = cast(dict[str, Any], server.symbols_find(offset=0x2090, section=2))
+    two = cast(dict[str, Any], server.symbols_find(offset="0x2090", section=2))
     assert (one["name"], one["delta"]) == ("_main", 0x2090 - 0x130), one
     assert (two["name"], two["delta"]) == ("_errno", 0), two
 
@@ -761,7 +761,7 @@ def test_a_sectioned_table_places_by_base_says_it_has_no_flat_one_and_counts_wha
     src = ILINK32_MAP
     got = cast(dict[str, Any], server.symbols_load(
         path=str(src), section_bases={"1": "0x423000", "2": "0x401000", "3": "0x4289B8"}))
-    assert got["status"] == "ok" and got["base"] == -1, got
+    assert got["status"] == "ok" and got["base"]["available"] is False, got
     found = cast(dict[str, Any], server.symbols_find(linear="00423130"))
     assert found["name"] == "_main" and found["delta"] == 0, found
     real = NamesFake(mode="Real")
@@ -916,7 +916,7 @@ def test_symbols_load_takes_its_base_as_hex_text(tmp_path: Path, spelled: str) -
     src.write_text(TLINK_TEXT, encoding="utf-8")
     got = cast(dict[str, Any], server.symbols_load(path=str(src), base=spelled))
     assert got["status"] == "ok", got
-    assert got["base"] == 0x1000, got
+    assert got["base"] == "0x00001000", got
 
 
 @pytest.mark.parametrize("bad", [4096, "-1000", "10_00", "0xZZ", ""])

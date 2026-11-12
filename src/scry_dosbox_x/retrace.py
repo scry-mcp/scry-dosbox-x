@@ -527,7 +527,7 @@ def _expired(session: ds.Session, watched: Watched, every: int, seconds: float, 
     sampled = ("" if not every else
                f", judged every {every} retraces, so a screen shorter than that is passed over")
     # THE SAME FIELDS AS A FOUND WAIT, `already` included and false: a bound that ran out is
-    # a wait nothing answered before a frame ran, and the MAME twin says so the same way.
+    # a wait nothing answered before a frame ran.
     base: dict[str, Any] = {
         "verdict": contract.TIMEOUT, "predicate": watched.name, "already": False, "polls": polls,
         "sampled_every": every, **watched.state(),

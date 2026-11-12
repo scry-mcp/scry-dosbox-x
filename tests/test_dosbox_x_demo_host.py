@@ -67,3 +67,8 @@ def test_the_boot_stop_must_have_placed_the_map(tmp_path: Path) -> None:
     for said in ({}, {"symbols_placed": {"placed": False, "why": "real mode"}}):
         with pytest.raises(StepFailed, match="placed no map"):
             host.map_placed(Reply({"verdict": "ELAPSED", **said}), Run(dir=tmp_path))
+
+
+def test_a_symbols_load_is_reported_at_the_base_the_reply_writes() -> None:
+    reply = Reply({"kept": 3, "parsed": 3, "base": "0x00008df0"})
+    assert host.loaded(reply, Run(dir=Path())) == "3 symbols placed at base 0x00008df0"

@@ -303,17 +303,25 @@ def _breakpoint_at(ref: str, by: str = "auto", **_: Any) -> None:
     declared("breakpoint", ref, by)
 
 
-def _breakpoint_interrupt(number: int, ah: int | None = None, **_: Any) -> None:
-    ds.check_interrupt(number, ah)
+def interrupt(vector: judges.NumberArg, ah: judges.NumberArg | None) -> tuple[int, int | None]:
+    """An interrupt and its `ah` as integers, each an integer or `0x` hex, in range."""
+    got = number("number", vector), None if ah is None else number("ah", ah)
+    ds.check_interrupt(*got)
+    return got
+
+
+def _breakpoint_interrupt(number: judges.NumberArg, ah: judges.NumberArg | None = None,
+                          **_: Any) -> None:
+    interrupt(number, ah)
 
 
 def _regpoint_add(condition: str, **_: Any) -> None:
     grammar.condition_row(condition)
 
 
-def _interrupt_vectors(number: int | None = None, **_: Any) -> None:
+def _interrupt_vectors(number: judges.NumberArg | None = None, **_: Any) -> None:
     if number is not None:
-        ds.check_interrupt(number, None)
+        interrupt(number, None)
 
 
 def tap_fields(mode: str, trigger: str, trigger_type: str, length: int, fmt: str
@@ -610,9 +618,10 @@ def _screen_wait(text: object = "", screen: object = "", palette: object = "", e
     vocab.check_wait(seconds)
 
 
-def _symbols_find(name: str = "", offset: int | None = None,
+def _symbols_find(name: str = "", offset: judges.NumberArg | None = None,
                   linear: str = "", limit: int = 10, **_: Any) -> None:
-    placement.check_find_args(name or None, offset, linear or None, limit)
+    placement.check_find_args(name or None, None if offset is None else number("offset", offset),
+                              linear or None, limit)
 
 
 # Debugger commands that let the guest run, by first word. One sent through `debug` does not clear

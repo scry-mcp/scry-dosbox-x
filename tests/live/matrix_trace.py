@@ -325,7 +325,7 @@ def _dpmi() -> None:
             seen.append(f"{row.get('first')} {note[:60]}")
             if joined or tracing.NO_LINEAR not in note:
                 break
-        M.judge(DPMI_CELLS[0], joined and isinstance(base, int) and base != 0,
+        M.judge(DPMI_CELLS[0], joined and bool(hexint(base)),
                 f"_tick at {own}, base {base}: {seen}")
         done.add(DPMI_CELLS[0])
         r = _window("_tick", DPMI_WINDOW, "long")

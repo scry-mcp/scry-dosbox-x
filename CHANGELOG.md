@@ -4,6 +4,13 @@ What a client of the server notices.
 
 ## Unreleased
 
+- Interrupts and offsets read as a programmer writes them: `breakpoint_interrupt` and
+  `interrupt_vectors` take `number` and `ah` as `0x` hex (`"0x21"`) as well as integers, and
+  each vector's `number` answers as `0x21`, not 33; `symbols_find` takes `offset` as `0x` hex
+  and answers every `offset` in hex; `symbols_load` answers `base`, `limit` and `descriptor` in
+  hex, and `unavailable` where no descriptor was read, not -1, as does the `base` of a stop's
+  `symbols_placed`. The Monkey Island demo skips its
+  intro again, by Escapes sent at the game's own ticks.
 - On macOS the server reads the screens from a child process when it places a window, so it is
   no longer held as an application and Activity Monitor cannot show it as not responding.
 - Every demo arrives by the program's own code or screen, never by a fixed time: MINES runs to

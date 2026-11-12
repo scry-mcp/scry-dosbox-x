@@ -138,8 +138,8 @@ Example, from a live run:
   "summary": "capture_frame 2: 5072 bytes to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n11.png",
   "status": "ok",
   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n11.png",
-  "bytes": 5072,
-  "sha256": "aee93b1749a9c93112b4fca12509d5ad9da94fc94b41bf781612e590a0a4342b",
+  "bytes": "<volatile>",
+  "sha256": "<volatile>",
   "capture_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n6-cap/screen_001.avi",
   "frame": 2
 }
@@ -266,8 +266,8 @@ Example, from a live run:
   "status": "ok",
   "route": "guest",
   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/P/n4.png",
-  "bytes": 885,
-  "sha256": "5053cd8f49a0d5bea6531db5520c7dfb0c06340f05b59d4baff51012d24313f5"
+  "bytes": "<volatile>",
+  "sha256": "<volatile>"
 }
 ```
 <!-- scry-reference:end snapshot -->
@@ -359,7 +359,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b8",
-    "ECX": "0x00006aa2",
+    "ECX": "0x00006a87",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -375,7 +375,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 91080},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 82253},
   "stop_seq": 10,
   "instruction": {
     "address": "0814:00000130",
@@ -502,7 +502,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b4",
-    "ECX": "0x00001360",
+    "ECX": "0x00001345",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -518,7 +518,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 94726},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 86037},
   "stop_seq": 11,
   "instruction": {
     "address": "0814:00000130",

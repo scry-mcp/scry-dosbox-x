@@ -169,7 +169,7 @@ def _machine(psp: int, mapf: Path) -> tuple[bool, str]:
 def _vectors() -> None:
     """The game hooks INT 08/09 with mapped handlers; the serial stub hooks the timer tick."""
     r = M.call(server.interrupt_vectors)
-    rows = {v.get("number"): v for v in r.get("vectors") or []}
+    rows = {int(v["number"], 16): v for v in r.get("vectors") or []}
     hooked = [(rows.get(n, {}).get("mcbs") or {}).get("filename") for n in (0x08, 0x09)]
     named = [((rows.get(n, {}).get("symbol") or {}).get("name"),
               (rows.get(n, {}).get("symbol") or {}).get("delta")) for n in (0x08, 0x09)]

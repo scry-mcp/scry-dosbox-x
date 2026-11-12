@@ -636,7 +636,7 @@ class SymbolsFindReply(DosboxEnvelope, total=False):
     idle: bool
     kind: str
     name: str
-    offset: int
+    offset: str
     query: Required[str]
     section: int
     symbols: Annotated[list[Any], When("by name")]
@@ -645,19 +645,19 @@ class SymbolsFindReply(DosboxEnvelope, total=False):
 
 
 class SymbolsLoadReply(DosboxEnvelope, total=False):
-    base: int
+    base: str | dict[str, Any]
     base_from: str
     bytes: int
     #: Every row the debugger holds now (`LV` appends), beside what this load put in.
     debugger_holds: Annotated[int, When("an earlier load's rows are still in the debugger")]
     declarations: Required[dict[str, Any]]
-    descriptor: int
+    descriptor: str | dict[str, Any]
     disambiguated: int
     excluded_pattern: int
     excluded_sections: int
     excluded_unplaceable: int
     kept: Required[int]
-    limit: int
+    limit: str | dict[str, Any]
     loaded: Required[int]
     overlay_idle: int
     parsed: Required[int]

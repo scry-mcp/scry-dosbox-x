@@ -377,7 +377,7 @@ def test_a_dynamic_core_is_refused_by_its_counter_and_the_file_is_kept(tmp_path:
 
 def test_a_placement_said_at_the_trace_stop_survives_the_counter_refusing_the_trace(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    said = {"placed": True, "path": "/x/APP.MAP", "load_segment": "025C", "base": 0x25C0,
+    said = {"placed": True, "path": "/x/APP.MAP", "load_segment": "025C", "base": "0x000025c0",
             "loaded": 3}
     monkeypatch.setattr(start_symbols, "place_if_due", lambda session: said)
     tracer(tmp_path, [("probe-dynamic-cs-ip-16", "dynamic")])

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from scry_core import judges, prose
+from scry_core import reply_contract as contract
 from scry_core import value_format as vf
 
 from scry_dosbox_x import coff, grammar
@@ -361,8 +362,17 @@ def _placed(s: sym.Symbol) -> dict[str, Any]:
     the reader does no arithmetic), and whether the address is conditional (`idle`)."""
     # `idle` is Borland's overlay mark passed through, per symbol because the `overlay_idle`
     # total cannot say whether this name carries it; false for `nm` and GNU-map symbols.
-    return {"name": s.name, "kind": s.kind, "offset": s.offset, "section": s.section,
+    return {"name": s.name, "kind": s.kind, "offset": f"0x{s.offset:X}", "section": s.section,
             "addr": st.flat(linear_of(s)), "idle": s.idle}
+
+
+NO_BASE_WHY = "a sectioned table places each section at its own base"
+NO_DESCRIPTOR_WHY = "no descriptor was read: the base was given, or each section has its own"
+
+
+def _read(value: int, shown: str, why: str) -> str | dict[str, Any]:
+    """A descriptor's field as hex, or unavailable where none was read (-1)."""
+    return contract.or_unavailable(None if value < 0 else shown, why)
 
 
 def linear_of(s: sym.Symbol) -> int:
@@ -513,7 +523,9 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
             "session placed before any map keep their place as it was, and a later load "
             "takes them")
     extra: dict[str, Any] = {"debugger_holds": holds} if holds != loaded else {}
-    return st.reply(base=desc["base"], limit=desc["limit"], descriptor=desc["type"],
+    return st.reply(base=_read(desc["base"], st.flat(desc["base"]), NO_BASE_WHY),
+                  limit=_read(desc["limit"], st.flat(desc["limit"]), NO_DESCRIPTOR_WHY),
+                  descriptor=_read(desc["type"], f"0x{desc['type']:02X}", NO_DESCRIPTOR_WHY),
                   declarations=rearm, pending=pending, checked=checked,
                   base_from=("caller" if base is not None else base_from.upper()),
                   parsed=plan.parsed, kept=plan.kept,
