@@ -5,7 +5,7 @@ What a client of the server notices.
 ## Unreleased
 
 - On the pinned scry-core (`pyproject.toml`), which renders a repository's `.scry/README.md` from
-  one template.
+  one template and holds the `record` text both servers answer.
 - A `promote` that names `root` no longer fails when the working directory is gone.
 - A guest whose conf's path holds a space keeps its own name, not the first word of the path.
 - An approved `promote` into a repository with no `.scry/` also writes its `about.json` and
