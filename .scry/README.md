@@ -1,51 +1,35 @@
-# `.scry/`: this repository's run recipes
+# `.scry/`
 
-What this repository declares about how its guests run, so a session can boot one without
-composing `start`'s arguments by hand. The server reads it; nothing here is written by a tool.
+This repository's run recipes: what it declares about how its guests run, so a session can boot one without composing `start`'s arguments by hand.
 
-    .scry/
-      README.md             this page
-      start/<name>.json     a run recipe: `start`'s arguments, in the `scry-start/1` format
+SCRY is a set of MCP servers (`mame`, `dosbox-x`) that let an assistant run a program in an
+emulator and inspect it live. This folder is what this repository declares for it: how the
+program starts and, where it has them, what its screens look like and a session that
+drives it.
 
-`maps/` and `perform/` hold a screen map and a `perform` document when this repository has one.
-The maps this repository ships beside their demos stay there: a demo's map is part of what the
-demo shows.
+## How to start
 
-## The recipes
+Call the `dosbox-x` server's `start` tool with a recipe's name: `start(profile="<name>")`. An argument in the same call wins over the recipe's. A recipe's paths resolve against the directory holding `.scry/`, and what would be this machine's path is a [placeholder](https://github.com/scry-mcp/scry-core/blob/main/docs/store-paths.md).
 
-| name | boots |
-| --- | --- |
-| `probe` | `tests/guest/probe.conf`, the small guest the live tier owns |
-| `mouse` | `tests/guest/mouse.conf` with `MOUSE.COM`, the input guest |
-| `dpmi` | `tests/guest/dpmi.conf` with `DPMI.EXE D:\DPMI.C` |
-| `bricks` | `demos/bricks/bricks.conf`, the int 3 guest of the bricks demo |
-| `mines` | `demos/mines/mines.conf`, the VBE guest of the mines demo |
+## Recipes
 
-`lineup`, `monkey` and `dpaint` have no recipe: their conf is written per run from a template
-whose values are the game's own directory, a disc image or the run's C: drive, and the game
-itself is not in this repository. A recipe that cannot boot alone is not a recipe.
+A recipe is the arguments of `start`, so a session boots a program without composing them by hand.
 
-## How a path is written
+- `bricks` (`start/bricks.json`): `demos/bricks/bricks.conf`, the int 3 guest of the bricks demo.
+- `dpmi` (`start/dpmi.json`): `tests/guest/dpmi.conf` with `DPMI.EXE D:\DPMI.C`.
+- `mines` (`start/mines.json`): `demos/mines/mines.conf`, the VBE guest of the mines demo.
+- `mouse` (`start/mouse.json`): `tests/guest/mouse.conf` with `MOUSE.COM`, the input guest.
+- `probe` (`start/probe.json`): `tests/guest/probe.conf`, the small guest the live tier owns.
 
-Every recipe resolves against one base, the directory holding `.scry/`, so a relative path is
-relative to this repository. What a tracked file must not carry, a host path, is written as a
-[placeholder](https://github.com/scry-mcp/scry-core/blob/main/docs/store-paths.md).
+The maps this repository ships beside their demos stay there: a demo's map is part of what the demo shows.
 
-The guests and the bricks demo are named through `DOSBOX_X_LIVE_GUEST_DIR` and
-`DOSBOX_X_LIVE_BRICKS_DIR` because a live run copies them to a writable directory and points
-those variables at the copy. The matrix exports them with this repository's own directories as
-their default, so a run from a clone reads the same recipes. A session booting a recipe outside
-the harness exports them too.
+`lineup`, `monkey` and `dpaint` have no recipe: their conf is written per run from a template whose values are the game's own directory, a disc image or the run's C: drive, and the game itself is not in this repository. A recipe that cannot boot alone is not a recipe.
 
-## The caller wins
+The guests and the bricks demo are named through `DOSBOX_X_LIVE_GUEST_DIR` and `DOSBOX_X_LIVE_BRICKS_DIR` because a live run copies them to a writable directory and points those variables at the copy. The matrix exports them with this repository's own directories as their default, so a run from a clone reads the same recipes. A session booting a recipe outside the harness exports them too.
 
-A recipe fills only what the call does not give, so `start(profile="mouse", shared=True)` keeps
-`shared` from the call and takes the rest from `mouse.json`. The reply's `profile` block names
-the file and every key it supplied.
+A recipe declares how a program starts: paths, arguments, how long a session lives. What the program's trace means (which stop serves a case, how a key is spelled, what a screen delta proves) stays in this repository's rules and its tests, because only this repository holds the gate that keeps it true.
 
-## What stays out
+---
 
-A recipe declares how a program starts: paths, arguments, how long a session lives. What the
-program's trace means (which stop serves a case, how a key is spelled, what a screen delta
-proves) stays in this repository's rules and its tests, because only this repository holds the
-gate that keeps it true.
+This page is rendered from `about.json` and the files beside it; edit those and run
+`python -m scry_core.scry_readme`, never this page.
