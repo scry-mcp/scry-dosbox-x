@@ -4,98 +4,122 @@
   "prompt": "Break when the guest calls the BIOS video function 0Eh (teletype output) through INT 10h.",
   "tool": "breakpoint_interrupt",
   "args": {
-   "number": 16,
-   "ah": 14
+   "number": {
+    "any_of": [
+     16,
+     "0x10",
+     "0X10",
+     "0x0010",
+     "0X0010"
+    ]
+   },
+   "ah": {
+    "any_of": [
+     14,
+     "0xe",
+     "0xE",
+     "0Xe",
+     "0XE",
+     "0x0e",
+     "0x0E",
+     "0X0e",
+     "0X0E",
+     "0x000e",
+     "0x000E",
+     "0X000e",
+     "0X000E"
+    ]
+   }
   }
  },
  "runs": [
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+    "d28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x10\", \"ah\": \"0x0E\"}}"
    ],
    "right": true
   }

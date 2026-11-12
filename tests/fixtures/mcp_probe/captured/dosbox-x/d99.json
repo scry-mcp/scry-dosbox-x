@@ -4,98 +4,110 @@
   "prompt": "Break on every multiplex interrupt call (INT 2Fh), and show me the debugger's acknowledgement screen as well.",
   "tool": "breakpoint_interrupt",
   "args": {
-   "number": 47,
+   "number": {
+    "any_of": [
+     47,
+     "0x2f",
+     "0x2F",
+     "0X2f",
+     "0X2F",
+     "0x002f",
+     "0x002F",
+     "0X002f",
+     "0X002F"
+    ]
+   },
    "detail": true
   }
  },
  "runs": [
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 47, \"detail\": true}}"
+    "d99: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": \"0x2F\", \"detail\": true}}"
    ],
    "right": true
   }

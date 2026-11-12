@@ -4,97 +4,109 @@
   "prompt": "The guest is stopped. Which handler does interrupt 0x1C point at, and in whose memory block does it lie?",
   "tool": "interrupt_vectors",
   "args": {
-   "number": 28
+   "number": {
+    "any_of": [
+     28,
+     "0x1c",
+     "0x1C",
+     "0X1c",
+     "0X1C",
+     "0x001c",
+     "0x001C",
+     "0X001c",
+     "0X001C"
+    ]
+   }
   }
  },
  "runs": [
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+    "d64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": \"0x1C\"}}"
    ],
    "right": true
   }
