@@ -263,11 +263,17 @@ def optional_dest(dest: object) -> None:
         paths.dest_file("dest", dest)
 
 
+def _file_and_wait(dest: object, seconds: object) -> None:
+    """The decision `trace`, `record`, `audio_record` and `snapshot` share: where the file goes
+    and how long the call may take."""
+    optional_dest(dest)
+    vocab.check_wait(seconds)
+
+
 def _trace(instructions: int, shape: str = "normal", dest: str = "", seconds: float = 60.0,
            **_: Any) -> None:
     tracing.check_arguments(instructions, shape)
-    optional_dest(dest)
-    vocab.check_wait(seconds)
+    _file_and_wait(dest, seconds)
 
 
 def _run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
@@ -283,12 +289,6 @@ def _run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
     vocab.check_wait(seconds)
 
 
-def _capture_args(dest: str, seconds: float) -> None:
-    """What `record` and `audio_record` judge alike: where the file goes and how long it may."""
-    optional_dest(dest)
-    vocab.check_wait(seconds)
-
-
 def _record(frames: int, dest: str = "", seconds: float = 60.0, **_: Any) -> None:
     if _count("frames", frames) < 2:
         raise ds.Invalid("bad_argument", f"frames={frames!r} is below 2: one frame is a still, "
@@ -297,7 +297,7 @@ def _record(frames: int, dest: str = "", seconds: float = 60.0, **_: Any) -> Non
         raise ds.Invalid("bad_argument", f"dest={dest!r}: an `.avi` file, or empty for the "
                          "session's scratch; the capture writes an AVI under whatever name it "
                          "is moved to, so another suffix would name the wrong kind of file")
-    _capture_args(dest, seconds)
+    _file_and_wait(dest, seconds)
 
 
 def _audio_record(frames: int, dest: str = "", seconds: float = 60.0, kind: str = "wav",
@@ -308,7 +308,7 @@ def _audio_record(frames: int, dest: str = "", seconds: float = 60.0, kind: str 
     if _count("frames", frames) < 1:
         raise ds.Invalid("bad_argument", f"frames={frames!r} is not a whole number of one or "
                          "more: the retraces the capture is on for")
-    _capture_args(dest, seconds)
+    _file_and_wait(dest, seconds)
 
 
 def _breakpoint_at(ref: str, by: str = "auto", **_: Any) -> None:
@@ -546,8 +546,7 @@ def _capture_frame(frame: int, dest: str, capture_path: str = "", **_: Any) -> N
 
 
 def _snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S, **_: Any) -> None:
-    optional_dest(dest)
-    vocab.check_wait(seconds)
+    _file_and_wait(dest, seconds)
 
 
 def _palette(first: object = 0, count: int = 0, scale: int = 0, dest: str = "",
