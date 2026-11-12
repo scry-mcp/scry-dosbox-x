@@ -151,7 +151,7 @@ def test_a_load_says_how_many_bytes_it_handed_the_debugger(tmp_path: Path) -> No
     assert got["bytes"] == 2 + dsym.RECORD, got
 
 
-# A real ILINK32 map of three sections (tests/fixtures/borland-ilink32/PROVENANCE.txt).
+# A real ILINK32 map of three sections (tests/fixtures/borland-ilink32/provenance.txt).
 ILINK32_MAP = Path(__file__).parent / "fixtures" / "borland-ilink32" / "sections32.map"
 ILINK32_BASES = {"1": "401000", "2": "423000", "3": "4289B8"}
 

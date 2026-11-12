@@ -7,4 +7,4 @@ program, whose map has no publics) and `dos-djgpp32` (a DJGPP program under a DP
 A DOS file name inside a capture keeps its 8.3 length, so a neutral name stands in for it at the
 same width.
 
-A directory's PROVENANCE, where it has one, says how its files were captured.
+A directory's provenance, where it has one, says how its files were captured.

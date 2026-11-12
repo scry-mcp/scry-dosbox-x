@@ -1,7 +1,7 @@
 """`trace` against a debugger double that replays what a real one printed and wrote.
 
 Every survey, every `LOG` command's delta and every log file the double hands back is a file
-under `fixtures/trace/`, captured from live sessions (its PROVENANCE says which): the counter
+under `fixtures/trace/`, captured from live sessions (its provenance says which): the counter
 `cc=`, the prompt a stop announces itself with and the lines of the log are the debugger's,
 not an opinion of this file.
 """
@@ -253,7 +253,7 @@ def no_log_left(cwd: Path) -> bool:
 SHAPE_FILES = [(bench, shape) for bench in ("probe-settle", "dos-real16", "dos-djgpp32")
                for shape in tracing.SHAPES]
 #: Where each bench's 64-instruction captures stopped, read off the pane after each (the
-#: PROVENANCE's run): the last line of the log is that instruction, in the shape's spelling.
+#: provenance's run): the last line of the log is that instruction, in the shape's spelling.
 STOPPED_AT = {"probe-settle": {s: ("0814", "00000106") for s in tracing.SHAPES} | {
                   "short": ("0814", "0106")},
               "dos-real16": {s: ("15A3", "0000003C") for s in tracing.SHAPES} | {
@@ -1283,7 +1283,7 @@ def test_with_the_captures_directory_the_working_directory_the_default_lands_the
 
 def test_a_trace_started_on_a_code_breakpoint_stops_there_again_and_says_so(
         tmp_path: Path) -> None:
-    """The log is the live run's (PROVENANCE), at 0814:0108 with a breakpoint there."""
+    """The log is the live run's (provenance), at 0814:0108 with a breakpoint there."""
     machine = tracer(tmp_path, [("probe-on-bp-cs-ip", "ran"), (None, "close")], at=(0x814, 0x108))
     _real_bp("0814:0108")
     machine.breakpoints.insert(0, "BP 0814:0108")

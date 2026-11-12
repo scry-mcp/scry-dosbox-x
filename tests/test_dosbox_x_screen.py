@@ -1,7 +1,7 @@
 """The screen tools and the `vga` section, against what a real debugger wrote.
 
 The listings, pages and video-memory windows are files under `fixtures/vga/`, captured from
-live sessions (its PROVENANCE says where each one stopped), so the shapes the parsers accept are
+live sessions (its provenance says where each one stopped), so the shapes the parsers accept are
 the debugger's and the answers the decoders give are the guest's own arithmetic. Where a case
 changes a capture (one word edited), it says so.
 """

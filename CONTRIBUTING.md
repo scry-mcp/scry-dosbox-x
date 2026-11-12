@@ -20,6 +20,13 @@ contract tests and `tests/live/` the tiers that drive a real emulator.
 
 ## The battery
 
+The suite runs with a home and a temp folder of its own (scry-core's `private_run`, on in
+`pyproject.toml`) and fails a run that leaves a file in that home; it stands aside when a `live`
+case is selected. Every name the server writes goes through `scry_core.file_names` and follows
+scry-core's [rule of file names](https://github.com/scry-mcp/scry-core/blob/main/docs/file-names.md);
+`tests/conftest.py` fails a case whose files break it, except the debugger's own names it lists
+(`MCPDUMP.BIN` and the like), which a new debugger-named file joins.
+
 ```sh
 uv run ruff check .
 uv run mypy --strict .
@@ -42,10 +49,11 @@ symlink), and the floor counts the whole tree.
 `PATH`, here as on a contributor's machine); the live tier stays on macOS and Windows, where an
 emulator and a display are. Without `nasm` the guest-building cases skip, and without `ffmpeg` the
 media ones; the workflow installs both so that a green run covers them. The committed guest binaries
-are nasm 3's, so their byte-identity cases skip under the nasm 2 Ubuntu ships, and run on macOS and
-Windows.
+are built by the nasm major `tests/test_dosbox_x_guest.py` names, so their byte-identity cases skip
+under the older one Ubuntu ships, and run on macOS and Windows.
 
-A tool's reply model is its contract. A field every `ok` reply of the tool carries is `Required[...]`
+A tool's reply model is its contract. A number whose natural notation is hex (an address, an offset, an interrupt, a
+port) is answered as `0x` text and taken as `0x` text or an integer. A field every `ok` reply of the tool carries is `Required[...]`
 in the model; one that comes only under a condition is `Annotated[T, When("words")]`, and the
 tool's `Reply:` sentence says those words beside the field; a datum that could not be read is
 `unavailable(why)` and never absent. The battery refuses an `ok` reply that lacks a required field,
@@ -169,8 +177,8 @@ log tail of the session live at the time. It exits 0 with no FAIL, 1 with one, 3
 invalid (no cell ran among them). Its docstring holds the command and the variables it reads.
 
 **Parts run side by side.** The matrix runs each section (a letter; a name of two letters, once the alphabet runs out, is chosen with commas, `AA,` for a lone one), and
-`tests/live/run_live_pytest.py` each live test, as a process of its own, as many at once as
-`DOSBOX_X_LIVE_JOBS` says (unset, half the host's CPUs; `1`, one after another in one process),
+`tests/live/run_live_pytest.py` each windowless live test (the `windowed` ones follow one at a
+time), as a process of its own, as many at once as `DOSBOX_X_LIVE_JOBS` says (unset, half the host's CPUs; `1`, one after another in one process),
 merged from the summaries they declare through `scry_core.live_pool`.
 
 ```sh

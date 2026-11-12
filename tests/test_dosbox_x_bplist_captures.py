@@ -1,4 +1,4 @@
-"""The breakpoint list as a live run printed it (tests/fixtures/bplist/PROVENANCE.txt)."""
+"""The breakpoint list as a live run printed it (tests/fixtures/bplist/provenance.txt)."""
 
 from __future__ import annotations
 

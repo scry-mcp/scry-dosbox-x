@@ -1,7 +1,7 @@
 """`machine_map` and the listing reader under it, against what a real debugger wrote.
 
 The listings and screens are files under `fixtures/machine/`, captured from live sessions (its
-PROVENANCE says where each one stopped), so the shapes the parsers accept are the debugger's.
+provenance says where each one stopped), so the shapes the parsers accept are the debugger's.
 Where a case changes a capture (one line edited, a screen cut at a line), it says so.
 """
 from __future__ import annotations

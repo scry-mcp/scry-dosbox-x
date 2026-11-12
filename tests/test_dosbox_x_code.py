@@ -2,7 +2,7 @@
 width of a segment, the operands it names, and its refusals.
 
 The guests' bytes and every pane were captured from a real session (`fixtures/disasm/`, its
-`PROVENANCE.txt`); where a case needs a shape no capture holds it changes one field of one of
+`provenance.txt`); where a case needs a shape no capture holds it changes one field of one of
 them and says which, and the few instructions written out as bytes cite the SDM's encoding.
 """
 

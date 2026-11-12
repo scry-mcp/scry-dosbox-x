@@ -20,7 +20,7 @@ REAL_THREE = bytes.fromhex(
     .replace(" ", ""))
 
 # Captured by the round trip the module performs (`LV` a binary, `SV` the list), not by `IV`,
-# which uppercases and truncates (tests/fixtures/symbols-lv/PROVENANCE.txt).
+# which uppercases and truncates (tests/fixtures/symbols-lv/provenance.txt).
 REAL_THREE_LOWER = (Path(__file__).parent / "fixtures" / "symbols-lv" / "three-lower.bin"
                     ).read_bytes()
 

@@ -550,7 +550,7 @@ TLINK_TEXT = (
     "Program entry point at 0000:0000\r\n")
 
 
-# a real ILINK32 map (tests/fixtures/borland-ilink32/PROVENANCE.txt): `Start` reads ZERO and the
+# a real ILINK32 map (tests/fixtures/borland-ilink32/provenance.txt): `Start` reads ZERO and the
 # bases are distinct, so ignoring the section index would misplace every symbol
 ILINK32_MAP = Path(__file__).parent / "fixtures" / "borland-ilink32" / "sections32.map"
 ILINK32_BASES = {"1": "0x401000", "2": "0x423000", "3": "0x4289B8"}
