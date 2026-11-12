@@ -56,6 +56,8 @@ T_CELLS = cells(
      "captures docstring"),
     ("T audio_compare hears the WAV, finds it exact against itself and different from silence",
      "audio_compare docstring; known: sound.asm's tone, and a silent copy of the WAV's format"),
+    ("T record with no dest writes into the session's scratch and names it",
+     "record docstring; known: the session's own scratch"),
 )
 
 
@@ -121,6 +123,10 @@ def section_t() -> None:
     M.judge(T_CELLS[5].label, sorted(c["kind"] for c in recorded) == ["avi", "dro", "mid", "wav"]
             and all(c.get("complete") is True for c in recorded), str(recorded)[:140])
     M.judge(T_CELLS[6].label, *_compared(wav))
+    home = M.call(server.record, seconds=30, frames=2)
+    held_path = Path(str(home.get("path"))) if ok(home) else Path("/")
+    M.judge(T_CELLS[7].label, ok(home) and held_path.is_file()
+            and "dosbox-x-session-" in str(held_path.parent), said(home))
     close_whatever()
 
 

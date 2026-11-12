@@ -979,26 +979,24 @@ def record(frames: int, dest: str = "", seconds: Annotated[float, vocab.WAIT_BOU
     """Record exactly `frames` retraces of the screen to an AVI, then stop. Needs the machine
     STOPPED and a build whose debugger has `CAPTURE`; headless or windowed.
 
-    `dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
-    `seconds` bounds the wait for the recording. The AVI is checked before its path is given;
-    zero frames is INVALID.
+    {RECORD_ARGS}
 
-    One frame is written per retrace, but none for the first from the stop `start` leaves. A run
-    cut short (`verdict` `TIMEOUT`, `OTHER_STOP`) is checked for what it holds. A capture that
-    could not be turned off is `ended: false`, no `path`, and records until `close`.
+    One frame is written per retrace, but none for the first from the stop `start` leaves.
+    {RECORD_CUT} A capture that could not be turned off is `ended: false`, no `path`, and
+    records until `close`.
 
-    Refused: `frames` under 1, a video capture already on (`capture_video`), a build with no
+    Refused: `frames` under 2, a video capture already on (`capture_video`), a build with no
     `CAPTURE`, a running machine.
 
-    Reply: `verdict`, `kind`, `frames`, `began`, `ended`, `path`, `bytes`, `avi_frames`,
-    `note`, the run's fields as `run_for` gives them, {STOP_FIELDS}.
+    Reply, once answered: {RECORD_REPLY}, `kind`, `note`, the run's fields as `run_for` gives
+    them, {STOP_FIELDS}.
 
     Reference: REFERENCE.md, Input and the screen.
     """
     session = live()
     return recordings.recording(session, "record", recordings.VIDEO, frames,
-                                paths.dest_file("dest", dest) if dest else None, seconds,
-                                bridge(ctx))
+                                paths.dest_file("dest", dest) if dest
+                                else recordings.scratch_dest(), seconds, bridge(ctx))
 
 
 @tool("Record the sound to a file", summary=one_line.audio_record, on_cancel="stop")

@@ -16,7 +16,7 @@ from typing import Any, cast
 import pytest
 from channel_double import REAL_STOP, Machine, Stop, session_over
 from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
-from scry_core import cancel
+from scry_core import cancel, roster
 
 from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import capture_files, recordings, retrace, server, summaries
@@ -231,6 +231,44 @@ def test_record_checks_the_avi_and_counts_its_frames(tmp_path: Path) -> None:
     got = _ok(server.record(frames=2))
     assert _capture_commands(machine)[1:] == ["CAPTURE VIDEO ON", "CAPTURE VIDEO OFF"]
     assert (got["kind"], got["avi_frames"]) == ("avi", 2), got
+    assert set(roster.RECORD_REPLY_FIELDS) <= set(got), got
+
+
+def test_record_with_no_dest_writes_under_the_session_scratch_and_names_it(
+        tmp_path: Path) -> None:
+    live(tmp_path)
+    got = _ok(server.record(frames=2))
+    scratch = dstate.STATE.session_scratch()
+    assert Path(got["path"]).parent == scratch, got
+    assert Path(got["path"]).name.startswith("record-"), got
+    assert Path(got["path"]).read_bytes() == SOURCES["VIDEO"].read_bytes()
+    assert not (tmp_path / "capture" / "sound_000.avi").exists(), "moved, not copied"
+
+
+def test_a_second_recording_with_no_dest_takes_the_first_free_name(tmp_path: Path) -> None:
+    """A reply's path may be written back by the caller: the next empty `dest` cannot take it."""
+    live(tmp_path)
+    first = Path(_ok(server.record(frames=2))["path"])
+    first.write_bytes(b"the caller's own file, at the name the reply gave")
+    dstate.STATE.session.control.releases = [Stop(ms=FRAME_MS)] * 2  # type: ignore[union-attr]
+    second = _ok(server.record(frames=2))
+    assert second["status"] == "ok", second
+    assert Path(second["path"]) != first and Path(second["path"]).is_file(), second
+    assert first.read_bytes() == b"the caller's own file, at the name the reply gave"
+
+
+@pytest.mark.parametrize("frames", [0, 1])
+def test_record_refuses_fewer_than_two_frames_where_a_still_belongs(frames: int) -> None:
+    got = cast(dict[str, Any], server.record(frames=frames))
+    assert got["code"] == "bad_argument" and "is below 2" in got["message"], got
+    assert "`snapshot`" in got["message"], got
+
+
+@pytest.mark.parametrize("name", ["x.wav", "x.avi.txt"])
+def test_record_refuses_a_dest_whose_suffix_names_another_kind(
+        name: str, tmp_path: Path) -> None:
+    got = cast(dict[str, Any], server.record(frames=2, dest=str(tmp_path / name)))
+    assert got["code"] == "bad_argument" and "`.avi`" in got["message"], got
 
 
 def test_a_wav_or_avi_writer_that_opened_nothing_is_refused(tmp_path: Path) -> None:

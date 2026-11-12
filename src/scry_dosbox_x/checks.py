@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 from scry_core import (
@@ -282,12 +283,21 @@ def _run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
     vocab.check_wait(seconds)
 
 
-def _record(frames: int, dest: str = "", seconds: float = 60.0, **_: Any) -> None:
-    if _count("frames", frames) < 1:
-        raise ds.Invalid("bad_argument", f"frames={frames!r} is not a whole number of one or "
-                         "more: the retraces the capture is on for")
+def _capture_args(dest: str, seconds: float) -> None:
+    """What `record` and `audio_record` judge alike: where the file goes and how long it may."""
     optional_dest(dest)
     vocab.check_wait(seconds)
+
+
+def _record(frames: int, dest: str = "", seconds: float = 60.0, **_: Any) -> None:
+    if _count("frames", frames) < 2:
+        raise ds.Invalid("bad_argument", f"frames={frames!r} is below 2: one frame is a still, "
+                         "and a still is `snapshot`")
+    if dest and Path(dest).suffix.lower() != ".avi":
+        raise ds.Invalid("bad_argument", f"dest={dest!r}: an `.avi` file, or empty for the "
+                         "session's scratch; the capture writes an AVI under whatever name it "
+                         "is moved to, so another suffix would name the wrong kind of file")
+    _capture_args(dest, seconds)
 
 
 def _audio_record(frames: int, dest: str = "", seconds: float = 60.0, kind: str = "wav",
@@ -295,7 +305,10 @@ def _audio_record(frames: int, dest: str = "", seconds: float = 60.0, kind: str 
     if kind not in capture_files.AUDIO_KINDS:
         raise ds.Invalid("bad_argument",
                          f"kind={kind!r} is one of {', '.join(capture_files.AUDIO_KINDS)}")
-    _record(frames, dest, seconds)
+    if _count("frames", frames) < 1:
+        raise ds.Invalid("bad_argument", f"frames={frames!r} is not a whole number of one or "
+                         "more: the retraces the capture is on for")
+    _capture_args(dest, seconds)
 
 
 def _breakpoint_at(ref: str, by: str = "auto", **_: Any) -> None:

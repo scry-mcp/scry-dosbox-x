@@ -6,6 +6,8 @@ What a client of the server notices.
 
 - On the pinned scry-core (`pyproject.toml`), which renders a repository's `.scry/README.md` from
   one template and holds the `record` text both servers answer.
+- `record` with an empty `dest` writes into the session's scratch and answers its `path`;
+  `frames` under 2 and a `dest` whose suffix is not `.avi` are refused.
 - A `promote` that names `root` no longer fails when the working directory is gone.
 - A guest whose conf's path holds a space keeps its own name, not the first word of the path.
 - An approved `promote` into a repository with no `.scry/` also writes its `about.json` and

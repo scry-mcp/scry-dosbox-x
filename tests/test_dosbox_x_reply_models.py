@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 
 import pytest
-from scry_core import reply_schema
+from scry_core import reply_schema, roster
 
 from scry_dosbox_x import docs, replies, server
 
@@ -52,3 +52,15 @@ def test_every_tool_that_answers_with_a_stop_names_its_fields() -> None:
     tools = asyncio.run(server.mcp.list_tools())
     lacks = reply_schema.stop_fields_lacking(tools, replies.MODELS, docs.STOP_FIELDS)
     assert not lacks, lacks
+
+
+def test_record_answers_the_family_both_servers_declare() -> None:
+    declared = set(roster.RECORD_REPLY_FIELDS)
+    assert declared <= set(replies.MODELS["record"].__annotations__), declared
+
+
+def test_record_speaks_the_words_scry_core_declares() -> None:
+    tools = asyncio.run(server.mcp.list_tools())
+    doc = next(t for t in tools if t.name == "record").description or ""
+    for words in (roster.RECORD_ARGS, roster.RECORD_CUT, roster.RECORD_REPLY):
+        assert words in doc, words

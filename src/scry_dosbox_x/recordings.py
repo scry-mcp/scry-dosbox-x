@@ -154,6 +154,16 @@ def _opl_run_files(last: Path, began: float) -> list[Path]:
     return [path for _, path in sorted(mine)]
 
 
+def scratch_dest() -> Path:
+    """A free `.avi` name in the session's scratch. The reply names it, so a caller may write
+    there later: the first name nothing holds, never a counter that could collide with it."""
+    scratch = st.STATE.session_scratch()
+    number = 1
+    while paths.taken(scratch / f"record-{number}.avi"):
+        number += 1
+    return scratch / f"record-{number}.avi"
+
+
 def recording(session: ds.Session, tool: str, kind: str, frames: int, dest: Path | None,
               seconds: float, progress: ds.Progress) -> dict[str, Any]:
     """The body of `record` (`kind` `VIDEO`) and `audio_record`."""

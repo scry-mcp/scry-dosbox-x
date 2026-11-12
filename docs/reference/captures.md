@@ -286,19 +286,17 @@ record(frames, dest="", seconds=60.0)
 Record exactly `frames` retraces of the screen to an AVI, then stop. Needs the machine
 STOPPED and a build whose debugger has `CAPTURE`; headless or windowed.
 
-`dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
-`seconds` bounds the wait for the recording. The AVI is checked before its path is given;
-zero frames is INVALID.
+`dest`: an absolute `.avi` path not there yet; empty lands in the session's scratch, gone at `close`, and the reply names it either way. `frames` is 2 or more. `seconds` bounds the wait for the recording. The AVI is read before its path is given.
 
-One frame is written per retrace, but none for the first from the stop `start` leaves. A run
-cut short (`verdict` `TIMEOUT`, `OTHER_STOP`) is checked for what it holds. A capture that
-could not be turned off is `ended: false`, no `path`, and records until `close`.
+One frame is written per retrace, but none for the first from the stop `start` leaves.
+A run cut at that bound is released before the reply: when the release answers, the reply says `ended: true` and names the AVI it read back, and a file that does not read as finished is INVALID. A capture that could not be turned off is `ended: false`, no `path`, and
+records until `close`.
 
-Refused: `frames` under 1, a video capture already on (`capture_video`), a build with no
+Refused: `frames` under 2, a video capture already on (`capture_video`), a build with no
 `CAPTURE`, a running machine.
 
-Reply: `verdict`, `kind`, `frames`, `began`, `ended`, `path`, `bytes`, `avi_frames`,
-`note`, the run's fields as `run_for` gives them, the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause`, `regpoint_hit` (a registerpoint stopped it) and `e9`.
+Reply, once answered: `verdict`, `frames`, `path`, `began`, `ended`, `bytes`, `avi_frames`, `kind`, `note`, the run's fields as `run_for` gives
+them, the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause`, `regpoint_hit` (a registerpoint stopped it) and `e9`.
 
 Reference: REFERENCE.md, Input and the screen.
 
