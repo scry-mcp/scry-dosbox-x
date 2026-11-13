@@ -167,7 +167,9 @@ class ControlChannel:
             if time.monotonic() >= deadline:
                 raise Invalid("host_failed",
                     f"the debugger channel did not finish its reply to {command.split()[0]} "
-                    f"within {seconds:g} s; whether it acted is unknown")
+                    f"within {seconds:g} s; whether it acted is unknown. A guest stuck in a "
+                    f"long host call (a DOS file or device operation the emulator waits on) "
+                    f"is a likely cause")
             try:
                 chunk = conn.recv(65536)
             except TimeoutError:

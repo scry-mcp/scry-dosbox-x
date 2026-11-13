@@ -430,6 +430,27 @@ def test_a_wait_on_a_machine_stopped_at_the_debugger_refuses_at_once(tmp_path: P
     assert running.e9_wait("never_going_to_appear", seconds=0.3)["verdict"] == "TIMEOUT"
 
 
+class BusyChannelLogSession(LogSession):
+    """A session whose debugger channel is busy: `at_debugger` raises `host_failed`."""
+
+    def at_debugger(self) -> bool:
+        raise ds.Invalid("host_failed",
+                         "the debugger channel did not finish its reply to EXEC within 5 s")
+
+
+def test_a_wait_reads_the_logfile_while_the_debugger_channel_is_busy(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A guest stuck in a long host call does not stop the file read: the wait answers from the
+    logfile, treating the busy channel as "still running", and never raises `host_failed`."""
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    monkeypatch.setattr(core_wait, "POLL_S", 0.05)
+    busy = BusyChannelLogSession(log)
+    assert busy.e9_wait("BOOT", seconds=0.3)["already"] is True
+    expired = busy.e9_wait("never_going_to_appear", seconds=0.2)
+    assert expired["verdict"] == "TIMEOUT", expired
+
+
 def test_a_waited_answer_says_how_many_lines_sat_before_the_match(tmp_path: Path) -> None:
     log = tmp_path / "guest.log"
     log.write_text(f"{E9_BOOT}\n{E9_HELP}\n", encoding="utf-8")

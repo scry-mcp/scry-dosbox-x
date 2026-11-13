@@ -300,11 +300,13 @@ def stop_cpu_mode(session: ds.Session, stopped: bool | None = None) -> str | dic
                        STATE.last_stop.get("paging"))
 
 
-def live() -> ds.Session:
+def live(probe: bool = True) -> ds.Session:
     """The session, or INVALID: `no_session`, or `session_broken` with `exit_code`.
 
     A dead session is kept until `close`, so its `session` block still says whether it was
-    written to (`altered`)."""
+    written to (`altered`). `probe=False` skips the stop survey a file read does not need, so
+    `log` and `log_wait` answer from the logfile while the debugger channel is busy (a guest
+    stuck in a long host call), which a probe would turn into `host_failed`."""
     ses = STATE.session
     if ses is None:
         raise ds.Invalid("no_session", "there is no live session. `start` one first; a reply from "
@@ -315,5 +317,6 @@ def live() -> ds.Session:
         raise ds.Invalid("session_broken",
                          f"DOSBox-X {ended} under this session: `close` "
                          f"collects what it left, then `start` a new one", exit_code=exit_code)
-    drain_if_stopped(ses)
+    if probe:
+        drain_if_stopped(ses)
     return ses

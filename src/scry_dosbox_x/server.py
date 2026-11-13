@@ -402,7 +402,7 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
     if channel == dos_calls_trace.CHANNEL:
         live()
         return dos_calls_trace.log(pattern, limit, since_mark, labels)
-    lines, total = live().log(pattern, limit, channel, since_mark)
+    lines, total = live(probe=False).log(pattern, limit, channel, since_mark)
     reply: dict[str, Any] = dict(pattern=pattern, channel=channel, lines_total=total,
                                  truncated=total > len(lines), lines=lines)
     if labels:
@@ -429,7 +429,7 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
 
     Reference: REFERENCE.md, The log.
     """
-    session = live()
+    session = live(probe=False)
     if channel == dos_calls_trace.CHANNEL:
         try:
             return dos_calls_trace.log_wait(session, pattern, seconds, since_mark, bridge(ctx))

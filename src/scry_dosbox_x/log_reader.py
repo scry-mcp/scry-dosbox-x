@@ -185,8 +185,16 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
     asked: list[bool] = []
 
     def stopped() -> bool:
-        asked.append(ses.at_debugger())
-        return asked[-1]
+        try:
+            at = ses.at_debugger()
+        except Invalid as e:
+            # A channel busy in a long host call (a guest stuck in FindFirst) is not a stop:
+            # the machine is running, so the wait goes on reading the file.
+            if e.code == "host_failed":
+                return False
+            raise
+        asked.append(at)
+        return at
 
     got = core_wait.wait(rx, fresh, seconds=seconds, stopped=stopped,
                          alive=ses.alive, progress=progress,
