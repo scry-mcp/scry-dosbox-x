@@ -30,8 +30,8 @@ STILL_TOOLS = frozenset({
     "perform_export",
     "read_memory", "registers", "regpoint_add", "scan", "screen_signature", "screen_view",
     "series_capture", "window",
-    "snapshot", "start", "state_list", "status", "symbols_find", "symbols_load", "watch_add",
-    "promote"})
+    "snapshot", "start", "state_list", "status", "symbols_find", "symbols_load", "wait",
+    "watch_add", "promote"})
 
 NO_COMMAND = "this DOSBox-X's debugger has no PRESENCE command"
 NO_OUTPUT = ("this output cannot be drawn on (an 8-bit output, or the TrueType output while it "

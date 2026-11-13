@@ -1,0 +1,102 @@
+{
+ "task": {
+  "id": "d187",
+  "prompt": "The guest is running. Let it keep playing for 5 seconds and come back, without stopping it.",
+  "tool": "wait",
+  "args": {
+   "seconds": 5
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d187: {\"tool\": \"wait\", \"args\": {\"seconds\": 5}}"
+   ],
+   "right": true
+  }
+ ]
+}

@@ -294,6 +294,22 @@ class ResumeReply(DosboxEnvelope, total=False):
     watches: list[Any]
 
 
+class WaitReply(DosboxEnvelope, total=False):
+    cause: str
+    regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
+    cpu_mode: str | dict[str, Any]
+    e9: dict[str, Any]
+    enrichment: dict[str, Any]
+    frame: int | dict[str, Any]
+    instruction: DosboxInstruction
+    pc: str | dict[str, Any]
+    regs: dict[str, Any]
+    stop_seq: int
+    verdict: Annotated[str, When("with a stop during the wait")]
+    waited_s: Required[float]
+    watches: list[Any]
+
+
 class RunForReply(DosboxEnvelope, total=False):
     cause: str
     regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
@@ -848,6 +864,7 @@ MODELS: dict[str, type] = {
     "read_memory": ReadMemoryReply,
     "registers": RegistersReply,
     "resume": ResumeReply,
+    "wait": WaitReply,
     "run_for": RunForReply,
     "record": RecordReply,
     "audio_record": AudioRecordReply,

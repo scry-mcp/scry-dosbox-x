@@ -663,6 +663,64 @@ Example, from a live run:
 
 It asks `RUNSTATE` as `run_to` does and reports progress. A running guest is refused because a `RUN` there does nothing and an `ok` would read like a release. Nothing has to be declared first: `stop` brings a running guest back, headless or windowed. A release that stopped at once is a stop too, but only for a call with a bound: `seconds` 0 returns straight after the release with no look for a stop, and a stop after it is what the next call finds.
 
+<!-- scry-reference:begin wait -->
+## `wait`
+
+*Wait while the guest runs*
+
+```text
+wait(seconds=30.0)
+```
+
+Let a running guest play for `seconds` and answer where it is after, without releasing or
+stopping it. The wait is deliberate, so its expiry is the answer, never a failure; if the
+machine stops on its own during the wait (a breakpoint), the stop reply comes back.
+
+Reply: `waited_s`, and with a stop during the wait `verdict` `OTHER_STOP` with the stop reply
+of `run_to`; else a `note` that the machine is still running. Refused (`not_running`) when the
+machine is stopped: `wait` lets a running guest play, `resume` releases a stopped one.
+
+Reference: REFERENCE.md, Advancing the machine.
+
+| argument | type | default |
+|---|---|---|
+| `seconds` | number (> 0, <= 600.0) | `30.0` |
+
+| reply field | type |
+|---|---|
+| `cause` | string |
+| `regpoint_hit` | object |
+| `cpu_mode` | string or object |
+| `e9` | object |
+| `enrichment` | object |
+| `frame` | integer or object |
+| `instruction` | DosboxInstruction |
+| `pc` | string or object |
+| `regs` | object |
+| `stop_seq` | integer |
+| `verdict` | string |
+| `waited_s` | number |
+| `watches` | array |
+
+Example, from a live run:
+
+```json
+{
+  "seconds": 1.0
+}
+```
+
+```json
+{
+  "summary": "wait 1.002s: running",
+  "status": "ok",
+  "waited_s": 1.002,
+  "note": "the machine is still running after 1 s; a deliberate wait that expires is this answer, not a failure",
+  "session": {"alive": true, "running": true, "altered": false}
+}
+```
+<!-- scry-reference:end wait -->
+
 <!-- scry-reference:begin stop -->
 ## `stop`
 

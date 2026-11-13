@@ -474,6 +474,10 @@ def _resume(seconds: float = 0.0, **_: Any) -> None:
     vocab.check_wait(seconds, zero_means="no wait")
 
 
+def _wait(seconds: float = 30.0, **_: Any) -> None:
+    vocab.check_wait(seconds)
+
+
 #: Handed in by the server once its tools exist: this module cannot import the tools.
 STEP_OPS: Callable[[], dict[str, Callable[..., Any]]] | None = None
 
@@ -692,7 +696,7 @@ def _folded(name: str) -> Check:
 BY_OP: dict[str, Check] = {
     "send_keys": _send_keys, "send_mouse": _send_mouse,
     "log": _log, "log_wait": _log_wait,
-    "resume": _resume, "step": _step, "run_to": _run_to, "run_for": _run_for,
+    "resume": _resume, "wait": _wait, "step": _step, "run_to": _run_to, "run_for": _run_for,
     "record": _record, "audio_record": _audio_record,
     "trace": _trace,
     "breakpoint_at": _breakpoint_at, "breakpoint_interrupt": _breakpoint_interrupt,

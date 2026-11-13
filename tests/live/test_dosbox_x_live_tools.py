@@ -317,6 +317,22 @@ def test_resume_lets_the_guest_advance() -> None:
     assert stopped["status"] == "ok" and stopped["pc"] != "F000:0000FFF0", stopped
 
 
+def test_wait_holds_a_running_guest_for_its_bound_and_refuses_a_stopped_one(
+        tmp_path: Path) -> None:
+    """`wait` lets a running guest play without touching it, and a stopped machine refuses."""
+    log = tmp_path / "guest.log"
+    start_ok(session_seconds=90, logfile=str(log))
+    server.resume()
+    assert wait_for(lambda: log.exists() and dlogs.count_e9(
+        log.read_text(encoding="utf-8", errors="replace")) >= 1), "the guest never logged"
+    waited = cast(dict[str, Any], server.wait(seconds=1.0))
+    assert waited["status"] == "ok" and waited["waited_s"] >= 0.9, waited
+    assert waited["session"]["running"] is True, waited
+    server.stop()
+    refused = cast(dict[str, Any], server.wait(seconds=1.0))
+    assert refused["status"] == "INVALID" and refused["code"] == "not_running", refused
+
+
 def test_e9_returns_matching_lines_and_counts_all_of_them(tmp_path: Path) -> None:
     """THE POSITIVE PATH, which no live case had ever exercised."""
     a_running_guest_that_has_logged(tmp_path)

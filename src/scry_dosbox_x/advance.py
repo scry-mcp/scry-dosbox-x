@@ -116,6 +116,40 @@ def resume(seconds: float, detail: bool,
     return running.stop_or_base(session, halted, base, retrace_may_stop=True)
 
 
+def wait(session: ds.Session, seconds: float, progress: ds.Progress) -> dict[str, Any]:
+    """Let a running guest play `seconds` and report where it ended, as `resume`'s wait does
+    without the release. A stopped machine is refused, and a deliberate wait that expires is the
+    answer, never a failure."""
+    if session.at_debugger():
+        raise ds.Invalid("not_running",
+                         "the machine is stopped at the debugger: `wait` lets a running guest "
+                         "play, so `resume` it first")
+    session.require_run_state("a wait")
+    began = time.monotonic()
+    halted = False
+    stopped_at: dict[str, str] | None = None
+    while not halted:
+        expired, _ = ds.Session.await_stop(session, began, began + seconds, "wait",
+                                            progress, label="wait")
+        if expired:
+            break
+        try:
+            stopped_at = session.where()
+            halted = True
+        except ds.NotStopped:
+            continue
+        except ds.Invalid:
+            stopped_at, halted = None, True
+    base: dict[str, Any] = {"waited_s": round(time.monotonic() - began, 3)}
+    if halted:
+        base.update(running.position(stopped_at, None))
+        return running.stop_or_base(session, halted, {"verdict": contract.OTHER_STOP, **base},
+                                    retrace_may_stop=True)
+    base["note"] = (f"the machine is still running after {seconds:g} s; a deliberate wait that "
+                    f"expires is this answer, not a failure")
+    return running.stop_or_base(session, halted, base)
+
+
 def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dict[str, Any]:
     """Run to `ref`, with `control` as the place that proves the run was hot."""
     session = live()

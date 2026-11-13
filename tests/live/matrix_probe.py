@@ -196,7 +196,8 @@ def _args(tool: str, state: str) -> dict[str, Any]:
     control = p.at(p.spin) if p else NEVER_RUNS_CONTROL
     table: dict[str, dict[str, Any]] = {
         "build_check": {}, "status": {}, "close": {}, "registers": {}, "scan clear": {},
-        "resume": {}, "stop": {}, "state_list": {}, "declaration_list breakpoint": {},
+        "resume": {}, "stop": {}, "wait": {"seconds": 1.0}, "state_list": {},
+        "declaration_list breakpoint": {},
                                         "declaration_list watch": {},
         "captures": {},
         "start": {"conf": str(PROBE_CONF), "cwd": str(GUEST), "session_seconds": SESSION_S,
@@ -374,6 +375,8 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                   "write docstring: readback, verified"),
         "stop": (lambda r: ok(r) and r.get("interrupted") is False,
                  "stop docstring: `false` when already stopped"),
+        "wait": (lambda r: refused(r, "not_running"),
+                 "wait docstring: a stopped machine is refused, `resume` it first"),
         "step": (lambda r: ok(r) and r.get("instructions_completed") == 1,
                  "step docstring: instructions_completed"),
         "run_to": (lambda r: ok(r) and r.get("verdict") == "TIMEOUT"
@@ -522,6 +525,8 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "start": (lambda r: refused(r, "session_live"), "start docstring"),
         "stop": (lambda r: ok(r) and r.get("interrupted") is True and r.get("via") == "break",
                  "stop docstring: BREAK down the debugger channel, headless too"),
+        "wait": (lambda r: ok(r) and "waited_s" in r and "pc" not in r,
+                 "wait docstring: waits the bound and answers, the guest still running"),
         "status": (lambda r: ok(r) and alive(r) and _unavailable(r.get("cpu_mode")),
                    "status docstring: cpu_mode unavailable, with its why, while it runs"),
         "log": (lambda r: ok(r) and bool(r.get("lines")), "log docstring: works running"),
@@ -677,7 +682,8 @@ _STOPPED_ORDER = [
     "screen_map_write add", "screen_map_find", "screen_map_write save", "screen_map_write load",
     "screen_map_write pointer",
     "set_register", "write", "stop",
-    "step", "run_to", "run_for", "trace", "state_write save", "state_write load", "snapshot",
+    "step", "run_to", "run_for", "wait", "trace", "state_write save", "state_write load",
+    "snapshot",
     "window",
                   "record", "audio_record", "state_list",
     "breakpoint_interrupt", "symbols_load", "symbols_find", "comment_write add", "comment_list",

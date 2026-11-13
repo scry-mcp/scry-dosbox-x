@@ -2192,6 +2192,23 @@
    }
   }
  },
+ "wait": {
+  "from": "[A] every tool in every machine state, on the probe guest: A running wait",
+  "call": {
+   "seconds": 1.0
+  },
+  "reply": {
+   "summary": "wait 1.002s: running",
+   "status": "ok",
+   "waited_s": 1.002,
+   "note": "the machine is still running after 1 s; a deliberate wait that expires is this answer, not a failure",
+   "session": {
+    "alive": true,
+    "running": true,
+    "altered": false
+   }
+  }
+ },
  "watch_add": {
   "from": "[A] every tool in every machine state, on the probe guest: A stopped watch_add",
   "call": {

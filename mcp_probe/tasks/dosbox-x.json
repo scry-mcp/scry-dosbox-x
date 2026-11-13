@@ -260,6 +260,14 @@
    "tool": "stop"
   },
   {
+   "id": "d187",
+   "prompt": "The guest is running. Let it keep playing for 5 seconds and come back, without stopping it.",
+   "tool": "wait",
+   "args": {
+    "seconds": 5
+   }
+  },
+  {
    "id": "d22",
    "prompt": "Step into the next 4 instructions, following calls, and show me the E9 lines the guest wrote since the previous stop.",
    "tool": "step",

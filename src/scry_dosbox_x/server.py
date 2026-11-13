@@ -769,6 +769,22 @@ def resume(seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail:
     return advance.resume(seconds, detail, bridge(ctx))
 
 
+@tool("Wait while the guest runs", summary=one_line.wait, on_cancel="none", replay="wall")
+def wait(seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
+         ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
+    """Let a running guest play for `seconds` and answer where it is after, without releasing or
+    stopping it. The wait is deliberate, so its expiry is the answer, never a failure; if the
+    machine stops on its own during the wait (a breakpoint), the stop reply comes back.
+
+    Reply: `waited_s`, and with a stop during the wait `verdict` `OTHER_STOP` with the stop reply
+    of `run_to`; else a `note` that the machine is still running. Refused (`not_running`) when the
+    machine is stopped: `wait` lets a running guest play, `resume` releases a stopped one.
+
+    Reference: REFERENCE.md, Advancing the machine.
+    """
+    return advance.wait(live(), seconds, bridge(ctx))
+
+
 @tool("Stop a running machine", summary=one_line.stop, on_cancel="stop", replay="wall")
 def stop(until: Annotated[str, vocab.enum(advance.STOP_UNTIL)] = "",
          ctx: Context[Any, Any] | None = None) -> dict[str, Any]:

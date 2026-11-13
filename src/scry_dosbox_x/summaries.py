@@ -215,6 +215,11 @@ def resume(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return f"resume: {verdict}{where}"
 
 
+def wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    where = f"stopped at {_at(reply.get('pc'))}" if "pc" in reply else "running"
+    return f"wait {reply.get('waited_s')}s: {where}"
+
+
 def stop(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if runs := reply.get("runs_to_protected"):
         return f"stop: {runs} short runs, at {_at(reply.get('pc'))}"
