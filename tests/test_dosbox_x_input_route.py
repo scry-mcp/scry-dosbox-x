@@ -250,6 +250,26 @@ def test_both_axes_are_bounded_on_the_screen_and_in_the_driver(tmp_path: Path) -
     assert fake.commands_sent[-2] == [inputs.move_command(636, 196)]
 
 
+def test_a_pointer_read_on_target_while_the_driver_maps_elsewhere_is_not_called_arrived(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A program that integrates the driver's motion at its own ratio can read on target while
+    the driver sits on another screen unit: the reply says `arrived: false` and names the
+    disagreement, instead of claiming the click landed where it was asked."""
+    from scry_core import screen_map
+    fake = _guest(tmp_path)
+    fake.running = False                       # parked, so the move is steered
+    fake.video_mode = 0x13                     # 320x200 graphics
+    fake.pointer = (0, 0)
+    dstate.STATE.maps = screen_map.Maps()
+    dstate.STATE.maps.pointer = Pointer("1000:0010", "1000:0012", 2)
+    monkeypatch.setattr(inputs, "program_reader",
+                        lambda _s, _p: lambda: (fake.pointer[0] // 3, fake.pointer[1]))
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert got["status"] == "ok", got
+    assert got["arrived"] is False, got
+    assert inputs.POINTER_DRIVER_DISAGREE in got["note"], got
+
+
 def test_the_stub_s_own_line_is_never_the_program_s_reaction(tmp_path: Path) -> None:
     """The stub still writes on the program's channel (a second copy saying it stays out), and
     such a line can land after the mark `expect` waits from: a pattern it matches would be

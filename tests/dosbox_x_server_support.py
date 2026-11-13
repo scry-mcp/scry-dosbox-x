@@ -722,7 +722,7 @@ class NamesFake(SessionGates):
                 f"screen=720x400 vbe={self.vbe[0]} attr={self.vbe[1]} "
                 f"res={self.vbe[2]}x{self.vbe[3]}")
 
-    def send_commands(self, commands: list[bytes]) -> list[str]:
+    def send_commands(self, commands: list[bytes], advance: Any = None) -> list[str]:
         self.commands_sent.append(list(commands))
         reports: list[str] = []
         keys = b"".join(c[1:] for c in commands if c[:1] == b"K")

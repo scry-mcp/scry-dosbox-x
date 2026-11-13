@@ -648,6 +648,11 @@ NO_MOTION_WHY = ("this build's integration device takes no relative motion, so t
                  "takes movement events (AX=0Ch) or drives a PS/2 mouse saw nothing move")
 UNREAD_MOTION_WHY = ("the session has no log, where the stub says whether the build takes "
                      "relative motion")
+POINTER_DRIVER_DISAGREE = (
+    "the program's pointer reads on target but the driver's position does not match it, so the "
+    "two disagree and a click, which goes through the driver, would land where the driver is, "
+    "not where it was asked: the driver's range changed under the steering (INT 33h AX=07h/08h, "
+    "as a program resetting it or a window move does)")
 
 
 def _motion(session: ds.Session) -> bool | dict[str, Any]:
@@ -857,9 +862,13 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         except ds.Invalid as e:
             raise _delivered(e, parked) from None
         arrival = end_at or target
-        landed = dpointer.arrived(
-            steered, arrival is None or _landed(after, arrival, to_x if end_at else x,
-                                                to_y if end_at else y, units), end_at is not None)
+        driver_landed = arrival is None or _landed(after, arrival, to_x if end_at else x,
+                                                   to_y if end_at else y, units)
+        landed = dpointer.arrived(steered, driver_landed, end_at is not None)
+        disagreed = (steered is not None and steered.arrived and arrival is not None
+                     and not driver_landed)
+        if disagreed:
+            landed = False
         shown = _pointer(after)
         if steered is not None:
             shown["program"] = dpointer.shown(steered)
@@ -878,6 +887,8 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         if arrival is not None and not landed:
             # The driver's granularity or a program's own range (INT 33h AX=07h/08h) moved it out.
             fields["asked"] = {"x": arrival[0], "y": arrival[1]}
+        if disagreed:
+            fields["note"] = POINTER_DRIVER_DISAGREE
         return fields
     asked: dict[str, Any] = {**({"x": x, "y": y} if x is not None and y is not None else {}),
                             "units": units,
