@@ -24,6 +24,14 @@ ROWS = [
      "filename": "LINEUP"},
 ]
 
+#: A DJGPP go32 stub lives in conventional memory under its own name; its code runs protected
+#: mode off the DPMI selector.
+DPMI_ROWS = [
+    *ROWS,
+    {"memory": "conventional", "mcb_seg": "0A00", "size_bytes": 300000, "psp_seg": "0A01",
+     "filename": "DPMI"},
+]
+
 
 def test_the_load_segment_is_the_programs_own_block_past_its_psp() -> None:
     assert ss.load_segment(ROWS, "lineup") == 0x024C + 0x10
@@ -120,6 +128,29 @@ def test_a_register_base_waits_for_a_stop_with_a_descriptor_to_read(
     assert STATE.start_symbols is not None and loads == []
     got = ss.place_if_due(_Session("listing", "Pr32"))  # type: ignore[arg-type]
     assert got is not None and got["placed"] is True and loads == [(None, "DS")]
+
+
+def test_a_coff_program_waits_for_a_protected_mode_stop_and_places_by_cs(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A DJGPP program's symbols count from the DPMI selector, not the DOS load segment: with
+    `base_from="program"` its real-mode stops hold the table, and a protected-mode stop places
+    it by CS. The reply carries the selector base, no `load_segment`."""
+    monkeypatch.setattr(STATE, "start_symbols", ss.Held("/x/DPMI.MAP", "program", coff=True))
+    monkeypatch.setattr(dosbox_machine, "parse_mcbs", lambda text: DPMI_ROWS)
+    loads: list[Any] = []
+
+    def load(session: Any, source: str, src: Path, base: int | None, base_from: str,
+             *rest: Any, **kw: Any) -> dict[str, Any]:
+        loads.append((base, base_from))
+        return {"base": "0x400000", "loaded": 1}
+    monkeypatch.setattr(dosbox_placement, "load", load)
+    assert ss.place_if_due(_Session("listing", "Real")) is None  # type: ignore[arg-type]
+    held_through = STATE.start_symbols is not None and loads == []
+    assert held_through, "held through the stub's real-mode stops"
+    got = ss.place_if_due(_Session("listing", "Pr32"))  # type: ignore[arg-type]
+    assert got == {"placed": True, "path": "/x/DPMI.MAP", "base": "0x400000", "loaded": 1}
+    assert loads == [(None, "CS")], "placed by CS, no load-segment base"
+    assert "load_segment" not in got
 
 
 def test_a_placement_the_table_refuses_is_said_once_and_dropped(

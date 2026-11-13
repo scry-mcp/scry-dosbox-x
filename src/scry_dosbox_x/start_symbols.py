@@ -30,6 +30,9 @@ class Held:
     com: bool = False
     #: The table's comparison with the executable beside it, as `coff.check` answered it.
     checked: dict[str, Any] = field(default_factory=dict)
+    #: The program is a DJGPP COFF image: its symbols count from the DPMI selector, never the
+    #: DOS load segment.
+    coff: bool = False
 
 
 def check(symbols: str, base_from: str) -> Held | None:
@@ -53,7 +56,8 @@ def check(symbols: str, base_from: str) -> Held | None:
     checked = coff.check(path, parsed)
     com = any(p.suffix.lower() == ".com" and p.stem.upper() == path.stem.upper()
               for p in path.parent.iterdir())
-    return Held(str(path), word, com, checked)
+    exe = coff.executable_beside(path)
+    return Held(str(path), word, com, checked, exe is not None and coff.is_coff(exe))
 
 
 def load_segment(rows: list[dict[str, Any]], program: str, com: bool = False) -> int | None:
@@ -76,16 +80,25 @@ def place_if_due(session: ds.Session) -> dict[str, Any] | None:
         return None                     # caught mid-change: the next stop reads again
     segment = load_segment(rows, Path(held.path).stem, held.com)
     program = held.base_from == PROGRAM
-    if segment is None or (not program and grammar.real_segments(session.where()["mode"])):
-        return None             # a register base needs a descriptor, which real mode lacks
+    dpm = program and held.coff
+    if segment is None:
+        return None
+    # A selector/register base needs a descriptor, which real mode lacks: a DJGPP program's
+    # go32 stub runs its real-mode stops before it switches, and the table is held through them
+    # until a protected-mode stop has CS's DPMI selector to measure.
+    if (dpm or not program) and grammar.real_segments(session.where()["mode"]):
+        return None
     STATE.start_symbols = None
     try:
         loaded = placement.load(session, held.path, Path(held.path),
-                                segment * 16 if program else None,
+                                segment * 16 if (program and not dpm) else None,
                                 "CS" if program else held.base_from, None, False, None,
                                 rearm_declarations=arming.rearm_declarations,
                                 take_the_map=comments.park_rows_take_the_map)
     except ds.Invalid as e:
         return {"placed": False, "path": held.path, "code": e.code, "why": str(e)}
+    if dpm:
+        return {"placed": True, "path": held.path, "base": loaded["base"],
+                "loaded": loaded["loaded"]}
     return {"placed": True, "path": held.path, "load_segment": f"{segment:04X}",
             "base": loaded["base"], "loaded": loaded["loaded"]}

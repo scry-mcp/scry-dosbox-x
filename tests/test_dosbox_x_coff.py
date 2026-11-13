@@ -25,6 +25,23 @@ def test_the_guests_table_agrees_with_its_executable() -> None:
     assert got["against"].endswith("dpmi.exe") and got["agree"] > 100, got
 
 
+def test_is_coff_tells_a_djgpp_image_from_a_real_mode_exe(tmp_path: Path) -> None:
+    assert coff.is_coff(GUEST / "dpmi.exe") is True
+    real = tmp_path / "real.exe"
+    real.write_bytes(b"MZ" + bytes(510))
+    assert coff.is_coff(real) is False
+    assert coff.is_coff(tmp_path / "missing.exe") is False
+
+
+def test_a_stripped_coff_image_is_still_coff(tmp_path: Path) -> None:
+    whole = bytearray((GUEST / "dpmi.exe").read_bytes())
+    start = coff._coff_start(bytes(whole))
+    whole[start + 8:start + 12] = bytes(4)            # the symbol table's offset, zeroed
+    stripped = tmp_path / "dpmi.exe"
+    stripped.write_bytes(bytes(whole))
+    assert coff.is_coff(stripped) is True
+
+
 def test_a_table_of_a_relinked_build_is_refused_naming_what_differs(tmp_path: Path) -> None:
     shutil.copy(GUEST / "dpmi.exe", tmp_path / "dpmi.exe")
     rows = []

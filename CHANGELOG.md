@@ -4,6 +4,10 @@ What a client of the server notices.
 
 ## Unreleased
 
+- `start(symbols=, base_from="program")` on a DJGPP program places its symbols at the program's
+  own DPMI selector, not the DOS load segment: the go32 stub lives in the load segment while the
+  protected-mode code runs off the selector, so a breakpoint armed on such a symbol now fires
+  where the code runs instead of landing on a dead address.
 - A refused `record` or `audio_record` removes its file: a capture the server rejects (a short
   WAV, a header that disagrees with its file, a truncated stream) no longer stays in the capture
   folder, so a repository's folder does not fill with files no run owns.

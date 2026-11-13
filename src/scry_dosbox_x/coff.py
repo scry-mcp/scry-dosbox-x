@@ -82,6 +82,21 @@ def _symbols(data: bytes) -> dict[str, int] | None:
     return out
 
 
+def is_coff(exe: Path) -> bool:
+    """Whether `exe` is a DJGPP COFF image: an I386 COFF header past its go32 stub. A COFF
+    image runs in protected mode, so its symbols count from the DPMI selector, never the DOS
+    load segment; a stripped image is still COFF, a real-mode EXE and a missing file are not."""
+    try:
+        data = exe.read_bytes()
+    except OSError:
+        return False
+    try:
+        start = _coff_start(data)
+    except CutImage:
+        return False
+    return len(data) >= start + 2 and struct.unpack_from("<H", data, start)[0] == I386_MAGIC
+
+
 def executable_beside(table: Path) -> Path | None:
     """The executable beside a table under its stem, matched in any case as DOS does."""
     want = f"{table.stem}.exe".lower()

@@ -102,7 +102,7 @@ server holds the newest 50000 calls it has read, `n` staying the file's number.
 `log_categories`: `[log]` category to level, into `logfile`. `guest_files`: host files the
 guest should leave, read by `guest_file` and `close`. `symbols`: a table `symbols_load`
 reads, judged here and placed at the first stop where DOS holds the program its stem names
-(`<stem>.exe`); `base_from` `program` (its load segment) or a register, as `symbols_load`
+(`<stem>.exe`); `base_from` `program` (its own base) or a register, as `symbols_load`
 measures one, at a protected-mode stop. That stop's reply says `symbols_placed` once
 (`placed`, `path`, `load_segment`, `base`, `loaded`; a placement refused: `placed: false`,
 `code`, `why`); a later `symbols_load` replaces it.
@@ -284,7 +284,7 @@ A watched start opens DOSBox-X's window on the display `display` names (the OS's
 
 **`program` loads the stub itself when the conf's autoexec does not run it**, which is why the autoexec must not `exit` before `program` runs.
 
-**A `symbols` table is judged before the boot and answered there.** `start` refuses one the executable beside it contradicts, without an emulator having run, and `symbols.checked` says what the comparison found: the executable and how many global code symbols agreed, or why nothing could be compared. The placement at the first stop compares again, since the executable can be relinked while the boot happens: a table that disagrees then is `symbols_placed`'s own refusal, said once.
+**A `symbols` table is judged before the boot and answered there.** `start` refuses one the executable beside it contradicts, without an emulator having run, and `symbols.checked` says what the comparison found: the executable and how many global code symbols agreed, or why nothing could be compared. The placement at the first stop compares again, since the executable can be relinked while the boot happens: a table that disagrees then is `symbols_placed`'s own refusal, said once. `base_from` `program` places the table at the program's own base: its DOS load segment for a real-mode program, or, when the executable beside the table is a DJGPP COFF image, the DPMI selector `CS` resolves at a protected-mode stop, since the load segment is the go32 stub's real-mode home, not where the protected-mode code runs.
 
 **The server derives no conf and mounts its own stub.** `start` runs the conf you name as it is and adds, on the command line, a mount of its guest directory on a drive the conf's `[autoexec]` does not use, running `SCRY.COM` from it. A conf taken from a repository's launch script therefore has to drop its boot line and its `exit`, which would end the session before `program` runs, and must not run a copy of `SCRY.COM` of its own: one that speaks another protocol is noted at `start`. What else a repository may declare to the server is [scry-core#123](https://github.com/scry-mcp/scry-core/issues/123).
 

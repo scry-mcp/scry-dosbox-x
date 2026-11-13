@@ -249,7 +249,7 @@ def start(conf: str = "", cwd: str = "",
     `log_categories`: `[log]` category to level, into `logfile`. `guest_files`: host files the
     guest should leave, read by `guest_file` and `close`. `symbols`: a table `symbols_load`
     reads, judged here and placed at the first stop where DOS holds the program its stem names
-    (`<stem>.exe`); `base_from` `program` (its load segment) or a register, as `symbols_load`
+    (`<stem>.exe`); `base_from` `program` (its own base) or a register, as `symbols_load`
     measures one, at a protected-mode stop. That stop's reply says `symbols_placed` once
     (`placed`, `path`, `load_segment`, `base`, `loaded`; a placement refused: `placed: false`,
     `code`, `why`); a later `symbols_load` replaces it.
