@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- `start(profile=...)` with no `cwd` says so plainly: a named profile not found above the
+  server's directory is refused with `cwd` named as the way to point the server at the
+  repository that holds the recipe, instead of only the directories it searched.
 - `session.running` says the truth about the guest, never a guess: past a `run_for`, `run_to` or
   `resume` whose release no answer confirmed, it re-reads the machine, so a caller is told `false`
   when it stopped and `unavailable` when it still cannot be read.

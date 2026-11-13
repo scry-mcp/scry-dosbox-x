@@ -76,6 +76,23 @@ def test_a_profile_found_nowhere_is_refused_naming_the_directories_searched(
         lifecycle.with_profile("nowhere", keys=KEYS, arguments=call(), given=())
 
 
+def test_a_named_profile_not_found_without_cwd_says_cwd_is_required(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(ds.Invalid) as e:
+        lifecycle.with_profile("nowhere", keys=KEYS, arguments=call(), given=())
+    assert "cwd" in str(e.value), str(e.value)
+
+
+def test_a_profile_passed_as_a_path_not_found_carries_no_cwd_hint(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(ds.Invalid) as e:
+        lifecycle.with_profile(str(tmp_path / "missing.json"), keys=KEYS,
+                               arguments=call(), given=())
+    assert "cwd" not in str(e.value), str(e.value)
+
+
 def test_a_key_no_start_takes_is_refused_by_name(tmp_path: Path,
                                                  monkeypatch: pytest.MonkeyPatch) -> None:
     stored(tmp_path, {**RECIPE, "steps": []})

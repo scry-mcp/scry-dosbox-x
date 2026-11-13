@@ -94,10 +94,19 @@ def with_profile(profile: str, *, keys: Collection[str], arguments: dict[str, An
     `given` does not carry; and the reply's `profile` block. The store is looked for from this
     process's directory, then from `cwd`, which names the guest and not its repository."""
     starting = [os.getcwd()]
-    if cwd := str(arguments.get("cwd") or ""):
+    cwd = str(arguments.get("cwd") or "")
+    if cwd:
         starting.append(cwd)
-    found = project_store.applied(profile, starting=starting, keys=keys,
-                                  path_keys=START_PATHS, given=given, arguments=arguments)
+    try:
+        found = project_store.applied(profile, starting=starting, keys=keys,
+                                      path_keys=START_PATHS, given=given, arguments=arguments)
+    except ds.Invalid as e:
+        if not cwd and not project_store.absolute(profile) and str(e).startswith("no .scry/"):
+            raise ds.Invalid(e.code, f"{e}. Pass `cwd` to name the repository that holds "
+                             f"`.scry/`: a named profile is looked for only from this server's "
+                             f"own directory and from `cwd`, so without one the recipe in the "
+                             f"repository you are working in is never found") from None
+        raise
     return found.arguments, found.shown()
 
 
