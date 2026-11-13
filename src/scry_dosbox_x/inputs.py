@@ -58,6 +58,9 @@ SCAN_SET1: dict[str, tuple[int, ...]] = {
     "left": (0xE0, 0x4B), "right": (0xE0, 0x4D), "end": (0xE0, 0x4F),
     "down": (0xE0, 0x50), "pagedown": (0xE0, 0x51), "insert": (0xE0, 0x52),
     "delete": (0xE0, 0x53),
+    # A modifier held on its own (`action` down/up) keeps a program from going idle without
+    # holding a real key the program may map.
+    "shift": (0x2A,), "ctrl": (0x1D,), "control": (0x1D,), "alt": (0x38,), "option": (0x38,),
 }
 MAX_KEYS_PER_CALL = 64    # each scan byte is a frame, a BIOS tick apart, under the session's lock
 SCAN_MODIFIERS: dict[str, tuple[int, ...]] = {

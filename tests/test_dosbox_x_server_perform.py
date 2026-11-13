@@ -424,6 +424,10 @@ def test_scan_sequence_composes_set1_makes_and_breaks_in_order() -> None:
     assert inputs.scan_sequence(["a"], "shift", "up") == bytes([0x9E, 0xAA])
     assert inputs.scan_sequence(["up"], "-", "down") == bytes([0xE0, 0x48])
     assert inputs.scan_sequence(["up"], "-", "up") == bytes([0xE0, 0xC8])
+    # A modifier held on its own, as a key, keeps a program from going idle.
+    assert inputs.scan_sequence(["Shift"], "-", "down") == bytes([0x2A])
+    assert inputs.scan_sequence(["shift"], "-", "up") == bytes([0xAA])
+    assert inputs.scan_sequence(["ctrl", "alt"], "-", "down") == bytes([0x1D, 0x38])
     with pytest.raises(ds.Invalid, match="unknown key name"):
         inputs.scan_sequence(["a", "bogus"], "-")
     with pytest.raises(ds.Invalid, match="no command key"):
