@@ -75,6 +75,22 @@ def e9_text(ses: ds.Session) -> str:
     return text
 
 
+def lost_lines_note(ses: ds.Session) -> str:
+    """Whether the logfile is shorter than it has been: lines a read returned earlier are gone,
+    and the shrink is said once. A growing log is the norm and says nothing."""
+    log = ses.launch.logfile
+    if log is None or not log.exists():
+        return ""
+    size = log.stat().st_size
+    if ses.log_seen_bytes <= size:
+        ses.log_seen_bytes = size
+        return ""
+    note = (f"the log lost lines it once held: it is {size} bytes now and was "
+            f"{ses.log_seen_bytes}, so a line read earlier can now answer as never written")
+    ses.log_seen_bytes = size
+    return note
+
+
 def e9_since(ses: ds.Session, offset: int, channel: str = "guest") -> tuple[list[str], int]:
     """The complete lines of `channel` after byte `offset`, and the new offset."""
     log = ses.launch.logfile

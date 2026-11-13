@@ -291,6 +291,7 @@ class Session(dprocess.Process):
         self.stop_count = 0         # how many times the flag went False -> True: each is a
         # stop the server may not have observed through a tool
         self.keys_posted = 0        # how many `send_keys` posted: the first can be swallowed
+        self.log_seen_bytes = 0     # the logfile's high-water mark: a smaller file lost lines
         self.paging: bool | None = None     # the last stop survey's paging bit, None unread
         # THIS STOP'S SURVEY, kept until the machine moves or a register is written.
         self._surveyed: tuple[dict[str, str], dict[str, str], bool] | None = None

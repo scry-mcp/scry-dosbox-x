@@ -405,11 +405,14 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
     if channel == dos_calls_trace.CHANNEL:
         live()
         return dos_calls_trace.log(pattern, limit, since_mark, labels)
-    lines, total = live(probe=False).log(pattern, limit, channel, since_mark)
+    session = live(probe=False)
+    lines, total = session.log(pattern, limit, channel, since_mark)
     reply: dict[str, Any] = dict(pattern=pattern, channel=channel, lines_total=total,
                                  truncated=total > len(lines), lines=lines)
     if labels:
         reply["labels"] = dlogs.label_counts(lines)
+    if note := log_reader.lost_lines_note(session):
+        reply["note"] = note
     return st.reply(**reply)
 
 
@@ -446,6 +449,9 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
         log_reader.log_file_from(session, since_mark, channel)
     try:
         got = session.log_wait(pattern, seconds, channel, mark=since_mark, progress=bridge(ctx))
+        if note := log_reader.lost_lines_note(session):
+            existing = got.get("note")
+            got["note"] = f"{existing} {note}".strip() if existing else note
         return st.answer({**got, "channel": channel})
     except ds.E9Stopped as e:
         running.observe_stop(session)          # the stop the wait found is recorded and named

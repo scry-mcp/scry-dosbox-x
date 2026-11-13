@@ -38,6 +38,7 @@ class LogSession:
     def __init__(self, log: Path, *, alive: bool = True) -> None:
         self.launch = SimpleNamespace(logfile=log, watched=False)
         self._alive = alive
+        self.log_seen_bytes = 0
 
     def alive(self) -> bool:
         return self._alive
@@ -449,6 +450,20 @@ def test_a_wait_reads_the_logfile_while_the_debugger_channel_is_busy(
     assert busy.e9_wait("BOOT", seconds=0.3)["already"] is True
     expired = busy.e9_wait("never_going_to_appear", seconds=0.2)
     assert expired["verdict"] == "TIMEOUT", expired
+
+
+def test_a_log_that_shrank_says_it_lost_lines(tmp_path: Path) -> None:
+    """A logfile that grows back is read from its start; a smaller one lost lines, said once."""
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n{E9_HELP}\n", encoding="utf-8")
+    ses = cast(ds.Session, SimpleNamespace(launch=SimpleNamespace(logfile=log),
+                                           log_seen_bytes=0))
+    assert log_reader.lost_lines_note(ses) == ""
+    assert ses.log_seen_bytes == log.stat().st_size
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")       # a dump rewrote it shorter
+    note = log_reader.lost_lines_note(ses)
+    assert "lost lines" in note, note
+    assert log_reader.lost_lines_note(ses) == "", "the loss is said once, then re-baselined"
 
 
 def test_a_waited_answer_says_how_many_lines_sat_before_the_match(tmp_path: Path) -> None:

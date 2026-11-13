@@ -134,6 +134,7 @@ class FakeSession(SessionGates):
                  mode: str = "Real") -> None:
         self.altered = False
         self.keys_posted = 0
+        self.log_seen_bytes = 0
         # the data-view screens are real-mode; a case on the protected-mode `SELINFO` capture says
         # `Pr32`
         self.mode = mode
@@ -643,6 +644,7 @@ class NamesFake(SessionGates):
         self._running = False
         self.stop_count = 0
         self.keys_posted = 0
+        self.log_seen_bytes = 0
         self.stop_unread = False
         self.reap_failed = ""
         self.drain_failure = ""
