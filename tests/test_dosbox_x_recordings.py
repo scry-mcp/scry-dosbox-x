@@ -81,7 +81,7 @@ def test_with_no_dest_the_file_stays_where_the_emulator_wrote_it(tmp_path: Path)
 @pytest.mark.parametrize(("frame_ms", "held"), [
     # 1344 samples at 48000 Hz are 28.0 ms: two ticks either side of that is the bound
     (14.0 + 0.999, True), (14.0 + 1.001, False), (14.0 - 0.999, True), (14.0 - 1.001, False)])
-def test_a_wav_that_misses_its_span_by_more_than_two_ticks_is_refused_and_kept(
+def test_a_wav_that_misses_its_span_by_more_than_two_ticks_is_refused_and_removed(
         tmp_path: Path, frame_ms: float, held: bool) -> None:
     install()
     machine = Machine(regs=dict(REAL_STOP), releases=[Stop(ms=frame_ms)] * 2,
@@ -93,7 +93,7 @@ def test_a_wav_that_misses_its_span_by_more_than_two_ticks_is_refused_and_kept(
         return
     assert got["code"] == "readback_refused" and "does not hold the run" in got["message"], got
     assert got["path"] == str(tmp_path / "capture" / "sound_000.wav")
-    assert Path(got["path"]).is_file(), "a refused recording is kept, never deleted"
+    assert not Path(got["path"]).exists(), "a refused recording is removed, never left behind"
     short = frame_ms > 14.0
     assert ("lower the guest's fixed `cycles`" in got["message"]) is short, got["message"]
 

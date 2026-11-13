@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A refused `record` or `audio_record` removes its file: a capture the server rejects (a short
+  WAV, a header that disagrees with its file, a truncated stream) no longer stays in the capture
+  folder, so a repository's folder does not fill with files no run owns.
 - `log` on a running guest says when lines may still be in flight: the emulator flushes its log
   in its own time, so a line the guest has just written may not be in the file yet, and its
   absence from the reply is not proof it was never written.

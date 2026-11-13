@@ -214,7 +214,13 @@ def recording(session: ds.Session, tool: str, kind: str, frames: int, dest: Path
         raise Invalid("readback_refused", f"the {kind} capture was on over the run and its "
                       "writer opened no file")
     path = Path(closed)
-    fields = _file_fields(kind, path, ran)
+    try:
+        fields = _file_fields(kind, path, ran)
+    except Invalid:
+        # A rejected capture is this run's garbage: remove it from the capture folder, so a
+        # repository's folder does not fill with files no run owns.
+        path.unlink(missing_ok=True)
+        raise
     rolled = [{"path": str(p), "bytes": p.stat().st_size}
               for p in _opl_run_files(path, began)] if kind == "OPL" else []
     if dest is not None:
