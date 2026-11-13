@@ -75,6 +75,17 @@ def e9_text(ses: ds.Session) -> str:
     return text
 
 
+def in_flight_note(ses: ds.Session) -> str:
+    """Whether lines may still be in flight: a running emulator flushes its log in its own
+    time, so a line the guest has just written may not be in the file yet, and its absence
+    from a `log` read is not proof it was never written. A parked one writes nothing further,
+    so the caveat says nothing."""
+    if ses.parked:
+        return ""
+    return ("the emulator flushes its log in its own time, so a line the guest has just "
+            "written may not be in the file yet")
+
+
 def lost_lines_note(ses: ds.Session) -> str:
     """Whether the logfile is shorter than it has been: lines a read returned earlier are gone,
     and the shrink is said once. A growing log is the norm and says nothing."""

@@ -18,8 +18,8 @@ import pytest
 from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 from test_dosbox_x_e9_wait import E9_BOOT, E9_HELP, LogSession
 
+from scry_dosbox_x import log_reader, server
 from scry_dosbox_x import logs as dlogs
-from scry_dosbox_x import server
 from scry_dosbox_x import session as ds
 
 EMU_LINE = "LOG: DOSBox-X version 2025.05.03"           # an emulator line, no E9 prefix
@@ -93,6 +93,23 @@ def test_the_log_tool_passes_channel_and_labels_through() -> None:
     assert got["labels"] == {"one": 1}
     bad = server.log(pattern="PERF", channel="serial")
     assert bad["status"] == "INVALID" and bad["code"] == "bad_argument"
+
+
+def test_log_notes_lines_may_be_in_flight_on_a_running_machine() -> None:
+    from types import SimpleNamespace
+    from typing import cast
+    running = cast(ds.Session, SimpleNamespace(parked=False))
+    assert "not be in the file yet" in log_reader.in_flight_note(running)
+    parked = cast(ds.Session, SimpleNamespace(parked=True))
+    assert log_reader.in_flight_note(parked) == ""
+
+
+def test_the_log_tool_carries_the_in_flight_note_on_a_running_machine(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    s = install()
+    monkeypatch.setattr(s, "at_debugger", lambda: False)      # running, so lines are in flight
+    got = server.log(pattern="PERF", channel="guest", limit=7)
+    assert got["status"] == "ok" and "not be in the file yet" in got.get("note", ""), got
 
 
 def test_perform_knows_the_pair_under_its_new_names() -> None:

@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- `log` on a running guest says when lines may still be in flight: the emulator flushes its log
+  in its own time, so a line the guest has just written may not be in the file yet, and its
+  absence from the reply is not proof it was never written.
 - `start(profile=...)` with no `cwd` says so plainly: a named profile not found above the
   server's directory is refused with `cwd` named as the way to point the server at the
   repository that holds the recipe, instead of only the directories it searched.

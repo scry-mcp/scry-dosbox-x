@@ -411,8 +411,10 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
                                  truncated=total > len(lines), lines=lines)
     if labels:
         reply["labels"] = dlogs.label_counts(lines)
-    if note := log_reader.lost_lines_note(session):
-        reply["note"] = note
+    notes = [n for n in (log_reader.lost_lines_note(session),
+                         log_reader.in_flight_note(session)) if n]
+    if notes:
+        reply["note"] = "; ".join(notes)
     return st.reply(**reply)
 
 
