@@ -536,7 +536,7 @@ def memdump(ref: str, length: int, dest: str) -> dict[str, Any]:
     session = live()
     session.require_stopped("a dump")
     seg, off = placement.read_target(ref, "DS", session)
-    dumped = dumping.dump_range(session, seg, off, length, paths.dest_file("dest", dest))
+    dumped = dumping.dump_range(session, seg, off, length, paths.named_dest("dest", dest))
     return st.reply(ref=ref, seg_off=st.seg_off(seg, off), length=length, path=str(dumped.path),
                     bytes=dumped.path.stat().st_size)
 
@@ -894,7 +894,7 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
     """
     session = live()
     return tracing.trace(session, instructions, shape,
-                         paths.dest_file("dest", dest) if dest else None, seconds, bridge(ctx))
+                         paths.named_dest("dest", dest) if dest else None, seconds, bridge(ctx))
 
 
 @tool("Wait for a screen, its text or its palette", summary=one_line.screen_wait,
@@ -996,7 +996,7 @@ def record(frames: int, dest: str = "", seconds: Annotated[float, vocab.WAIT_BOU
     """
     session = live()
     return recordings.recording(session, "record", recordings.VIDEO, frames,
-                                paths.dest_file("dest", dest) if dest
+                                paths.named_dest("dest", dest) if dest
                                 else recordings.scratch_dest(), seconds, bridge(ctx))
 
 
@@ -1030,7 +1030,7 @@ def audio_record(frames: int, dest: str = "",
     """
     session = live()
     return recordings.recording(session, "audio_record", capture_files.AUDIO_KINDS[kind],
-                                frames, paths.dest_file("dest", dest) if dest else None, seconds,
+                                frames, paths.named_dest("dest", dest) if dest else None, seconds,
                                 bridge(ctx))
 
 
@@ -1306,7 +1306,7 @@ def palette(first: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES - 1)] | str
     session = live()
     session.require_stopped("a listing")
     return st.reply(**vgadac.palette(session, checks.number("first", first), count, scale,
-                                     paths.dest_file("dest", dest) if dest else None,
+                                     paths.named_dest("dest", dest) if dest else None,
                                      STATE.session_scratch()))
 
 
@@ -1674,7 +1674,7 @@ def capture_frame(frame: int, dest: str, capture_path: str = "") -> dict[str, An
     Reply: `path`, `bytes`, `sha256`, `capture_path`, `frame`.
     """
     session = live()
-    return caps.capture_frame(session, frame, paths.dest_file("dest", dest),
+    return caps.capture_frame(session, frame, paths.named_dest("dest", dest),
                               judges.existing_file("capture_path", capture_path, "capture")
                               if capture_path else None)
 

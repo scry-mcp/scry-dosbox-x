@@ -1020,7 +1020,7 @@ def _dumped(session: Session, command: str, length: int, dest: Path,
     # the next call.
     dcollect.judge_collection(dest, session.launch.cwd, candidates, "dump")
     dcollect.refuse_leftover(candidates, "dump")
-    dest = paths.fresh_dest("dest", dest)
+    dest = paths.fresh_named_dest("dest", dest)
     # EVERY REFUSAL FROM THE COMMAND ON TAKES THIS CALL'S FILE AWAY.
     try:
         out = session.command(command)

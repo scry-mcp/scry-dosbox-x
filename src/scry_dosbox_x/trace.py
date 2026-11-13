@@ -77,8 +77,12 @@ def check_arguments(instructions: object, shape: object) -> None:
 
 def set_path(path: Path) -> Path:
     """Where a trace's set file goes: beside it, named from the whole trace file name, so two
-    traces that differ only by extension keep two set files."""
-    return path.with_name(file_names.name(path.stem, path.suffix[1:], "set", extension="jsonl"))
+    traces that differ only by extension keep two set files. The set file is a name the server
+    makes up, so the file-name rule normalises it even when `path` is a `dest` the caller wrote
+    with capitals and underscores."""
+    return path.with_name(file_names.name(file_names.word(path.stem, "dest"),
+                                          file_names.word(path.suffix[1:], "dest"),
+                                          "set", extension="jsonl"))
 
 
 def log_places(cwd: Path) -> list[Path]:
@@ -89,7 +93,7 @@ def log_places(cwd: Path) -> list[Path]:
 def target(session: ds.Session, dest: Path | None) -> Path:
     """`dest`, judged, or the first free `trace-<n>.trace` in the captures directory."""
     if dest is not None:
-        path = paths.fresh_dest("dest", dest)
+        path = paths.fresh_named_dest("dest", dest)
         cwd = session.launch.cwd
         dcollect.judge_collection(path, cwd, log_places(cwd), "trace")
     else:

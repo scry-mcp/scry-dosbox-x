@@ -142,7 +142,7 @@ def dump_range(session: ds.Session, seg: int, off: int, length: int, dest: Path,
     candidates = session._memdump_candidates()
     dcollect.judge_collection(dest, session.launch.cwd, candidates, "dump")
     dcollect.refuse_leftover(candidates, "dump")
-    dest = paths.fresh_dest("dest", dest)
+    dest = paths.fresh_named_dest("dest", dest)
     if found is not None or not grammar.real_segments(session.where()["mode"]):
         judge_protected(session, seg, off, length, found)
         return Dump(session.memdump(seg, off, length, dest), False)

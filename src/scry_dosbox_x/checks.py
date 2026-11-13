@@ -124,7 +124,7 @@ def number(name: str, value: object) -> int:
 
 
 def check_save_comments(dest: object, **_: Any) -> None:
-    paths.dest_file("dest", dest)
+    paths.named_dest("dest", dest)
 
 
 def check_load_comments(path: object, **_: Any) -> None:
@@ -260,7 +260,7 @@ RUN_FOR_MS_MAX = 2 ** 53
 def optional_dest(dest: object) -> None:
     """A file `dest` whose empty string means the scratch's."""
     if dest != "":
-        paths.dest_file("dest", dest)
+        paths.named_dest("dest", dest)
 
 
 def optional_named_dest(dest: object) -> None:
@@ -413,7 +413,7 @@ def _disassemble(ref: str, length: int = 16, **_: Any) -> None:
 def _memdump(ref: str, length: int, dest: str, **_: Any) -> None:
     address_shape(ref)
     ds.check_dump_length(length)
-    paths.dest_file("dest", dest)
+    paths.named_dest("dest", dest)
 
 
 def _write(ref: str, data_hex: str, **_: Any) -> None:
@@ -544,9 +544,8 @@ def _drive_arguments(act: list[dict[str, Any]], expect: str, seconds: float | No
 
 
 def _capture_frame(frame: int, dest: str, capture_path: str = "", **_: Any) -> None:
-    # The `%` as the caller wrote it: the file-name rule takes it out of the name.
     ds.check_frame_args(frame, paths.absolute("dest", dest))
-    paths.dest_file("dest", dest)
+    paths.named_dest("dest", dest)
     if capture_path:
         paths.absolute("capture_path", capture_path)
 

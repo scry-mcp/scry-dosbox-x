@@ -198,7 +198,7 @@ def test_an_ffmpeg_that_says_why_in_bytes_that_are_not_utf8_is_still_a_refusal(
     assert e.value.code == "host_failed" and "cannot open" in str(e.value), e.value
 
 
-def test_a_still_is_written_under_its_normalised_name_and_that_is_the_path_returned(
+def test_a_frame_is_written_under_the_name_the_caller_gave_and_that_is_the_path_returned(
         tmp_path: Path) -> None:
     src = tmp_path / "cap.avi"
     src.write_bytes(b"RIFF")
@@ -213,9 +213,9 @@ def test_a_still_is_written_under_its_normalised_name_and_that_is_the_path_retur
     with (mock.patch("scry_dosbox_x.frames.subprocess.run", writes),
           mock.patch("scry_dosbox_x.frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg"))):
         got = ds.Session.frame(fake, 0, out / "Frame_1.PNG", _src(fake))  # type: ignore[arg-type]
-        assert got == out / "frame-1.png" and [p.name for p in out.iterdir()] == ["frame-1.png"]
+        assert got == out / "Frame_1.PNG" and [p.name for p in out.iterdir()] == ["Frame_1.PNG"]
         with pytest.raises(ds.Invalid, match="already exists"):
-            ds.Session.frame(fake, 0, out / "FRAME 1.png", _src(fake))  # type: ignore[arg-type]
+            ds.Session.frame(fake, 0, out / "Frame_1.PNG", _src(fake))  # type: ignore[arg-type]
 
 
 def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:

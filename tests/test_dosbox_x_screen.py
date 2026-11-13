@@ -1000,18 +1000,14 @@ def test_a_dest_is_written_under_the_name_the_caller_gave(tmp_path: Path, tool: 
     assert sorted(p.name for p in out.iterdir()) == ["Shot_1.PNG", "a_b.png", "shot"]
 
 
-def test_palette_still_writes_its_dest_under_the_file_name_rule(tmp_path: Path) -> None:
-    """`palette` keeps the file-name rule for its `dest`: the card's change is of `screen_view`
-    and `snapshot`."""
+def test_palette_writes_its_dest_under_the_name_the_caller_gave(tmp_path: Path) -> None:
     screen_bench("screen-13h", tmp_path)
     out = tmp_path / "out"
     out.mkdir()
     r = cast(dict[str, Any], server.palette(dest=str(out / "Shot_1.PNG")))
     assert r["status"] == "ok", r
-    assert r["image"]["path"] == str(out / "shot-1.png")
-    assert [p.name for p in out.iterdir()] == ["shot-1.png"]
-    bare = cast(dict[str, Any], server.palette(dest=str(out / "shot")))
-    assert bare["code"] == "bad_argument" and "no extension" in bare["message"], bare
+    assert r["image"]["path"] == str(out / "Shot_1.PNG")
+    assert [p.name for p in out.iterdir()] == ["Shot_1.PNG"]
 
 
 def test_a_snapshot_at_a_stop_in_a_text_mode_is_refused_naming_screen_view(

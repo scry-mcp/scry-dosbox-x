@@ -421,15 +421,13 @@ def test_save_writes_the_comment_file_sorted_whole(tmp_path: Path) -> None:
     assert stat.S_IMODE(dest.stat().st_mode) == 0o644
 
 
-def test_save_writes_a_mixed_case_dest_under_its_normalised_name_and_says_so(
+def test_save_writes_a_mixed_case_dest_under_the_name_given_and_says_so(
         tmp_path: Path) -> None:
     install()
     ok(server.comment_write("add", ref="0814:010B", text="x"))
     got = ok(server.comment_write("save", dest=str(tmp_path / "Probe.Comments.TSV")))
-    assert got["path"] == str(tmp_path / "probe-comments.tsv")
-    assert [p.name for p in tmp_path.iterdir()] == ["probe-comments.tsv"]
-    assert "no extension" in refused(server.comment_write("save", dest=str(tmp_path / "notes")),
-                                     "bad_argument")
+    assert got["path"] == str(tmp_path / "Probe.Comments.TSV")
+    assert [p.name for p in tmp_path.iterdir()] == ["Probe.Comments.TSV"]
 
 
 def test_an_empty_store_saves_the_header_alone(tmp_path: Path) -> None:
@@ -482,8 +480,7 @@ def test_save_refuses_the_declaration_stores_own_file() -> None:
     before = path.read_bytes()
     # The second spelling names this file only where the file system folds case (macOS).
     folded = str(path).upper()
-    renamed = str(path.with_name(path.stem.upper() + "_." + path.suffix[1:].upper()))
-    for spelled in (str(path), renamed, *([folded] if Path(folded).parent.is_dir() else [])):
+    for spelled in (str(path), *([folded] if Path(folded).parent.is_dir() else [])):
         assert "store's own file" in refused(server.comment_write("save", dest=spelled),
                                              "bad_argument")
     assert path.read_bytes() == before

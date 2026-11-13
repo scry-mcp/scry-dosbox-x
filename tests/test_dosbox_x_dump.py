@@ -334,27 +334,25 @@ def test_a_dest_whose_written_name_is_the_debuggers_own_file_is_refused(
     s.launch.captures_dir = caps
     own = [c for c in s._memdump_candidates() if c.parent == caps]
     assert own, "the control: the debugger writes a dump file in the captures directory"
-    spelled = caps / own[0].name.replace(".", "_.").upper()
+    spelled = own[0]
     got = dumped("0000:0000", length, spelled)
     assert got["status"] == "INVALID" and "where the debugger writes" in got["message"], got
     assert s.typed == [] and list(caps.iterdir()) == []
 
 
 @pytest.mark.parametrize("length", [0x20, 0x20000], ids=["one command", "windowed"])
-def test_a_mixed_case_dest_is_written_under_its_normalised_name_and_the_reply_says_so(
+def test_a_mixed_case_dest_is_written_under_the_name_given_and_the_reply_says_so(
         tmp_path: Path, length: int) -> None:
     s = debugger(tmp_path)
     out = tmp_path / "out"
     out.mkdir()
     got = dumped("0000:0000", length, out / "Dump_1.BIN")
-    assert got["status"] == "ok" and got["path"] == str(out / "dump-1.bin"), got
-    assert [p.name for p in out.iterdir()] == ["dump-1.bin"]
+    assert got["status"] == "ok" and got["path"] == str(out / "Dump_1.BIN"), got
+    assert [p.name for p in out.iterdir()] == ["Dump_1.BIN"]
     typed = len(s.typed)
-    taken = dumped("0000:0000", length, out / "DUMP 1.bin")
+    taken = dumped("0000:0000", length, out / "Dump_1.BIN")
     assert taken["code"] == "bad_argument" and "already exists" in taken["message"], taken
-    bare = dumped("0000:0000", length, out / "dump")
-    assert bare["code"] == "bad_argument" and "no extension" in bare["message"], bare
-    assert len(s.typed) == typed and [p.name for p in out.iterdir()] == ["dump-1.bin"]
+    assert len(s.typed) == typed and [p.name for p in out.iterdir()] == ["Dump_1.BIN"]
 
 
 def test_a_range_past_ffff_ffff_is_refused_before_anything_is_typed(tmp_path: Path) -> None:

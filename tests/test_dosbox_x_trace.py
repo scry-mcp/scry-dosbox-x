@@ -342,7 +342,7 @@ def test_sixteen_instructions_ask_seventeen_lines_in_hex_and_come_back_elapsed(
     assert got["summary"].startswith("trace 16 cs_ip: ELAPSED, 16 executed at 1 address")
 
 
-def test_a_mixed_case_dest_is_written_normalised_with_a_set_file_named_from_its_whole_name(
+def test_a_mixed_case_dest_is_written_under_the_name_given_with_a_set_file_from_its_whole_name(
         tmp_path: Path) -> None:
     settle(tmp_path)
     out = tmp_path / "out"
@@ -351,8 +351,8 @@ def test_a_mixed_case_dest_is_written_normalised_with_a_set_file_named_from_its_
                                             dest=str(out / "Run_1.LOG")))
     assert got["status"] == "ok", got
     assert (got["trace"]["path"], got["trace"]["set_path"]) == (
-        str(out / "run-1.log"), str(out / "run-1-log-set.jsonl")), got["trace"]
-    assert sorted(p.name for p in out.iterdir()) == ["run-1-log-set.jsonl", "run-1.log"]
+        str(out / "Run_1.LOG"), str(out / "run-1-log-set.jsonl")), got["trace"]
+    assert sorted(p.name for p in out.iterdir()) == ["Run_1.LOG", "run-1-log-set.jsonl"]
     assert tracing.set_path(out / "run-1.trace") != tracing.set_path(out / "run-1.log")
 
 

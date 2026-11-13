@@ -7,8 +7,9 @@ What a client of the server notices.
 - `session.running` says the truth about the guest, never a guess: past a `run_for`, `run_to` or
   `resume` whose release no answer confirmed, it re-reads the machine, so a caller is told `false`
   when it stopped and `unavailable` when it still cannot be read.
-- `screen_view` and `snapshot` write their `dest` under the name the caller gave it, `_` and
-  capitals kept, and their reply's `path` is that name; the file-name rule is of the names a
+- Every tool that writes a file honours the `dest` a caller names, `_` and capitals kept, and its
+  reply's `path` is that name: `screen_view`, `snapshot`, `palette`, `record`, `audio_record`,
+  `memdump`, `trace`, `capture_frame` and `comment_write`; the file-name rule is of the names a
   server makes up, not of a caller's own path.
 - The demos ship a loop: each demo's `loop.mp4` sits beside its `screen.png`, recorded by the
   runner after the step that takes the still.

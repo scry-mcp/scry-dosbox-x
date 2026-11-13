@@ -171,7 +171,7 @@ def recording(session: ds.Session, tool: str, kind: str, frames: int, dest: Path
         raise dbg.missing(CAPTURE, f"`{tool}`")
     session.require_stopped(tool)
     if dest is not None:
-        dest = paths.fresh_dest("dest", dest)
+        dest = paths.fresh_named_dest("dest", dest)
     _ok, listed = session.exec(CAPTURE)
     held = _states(listed).get(kind)
     if held is None:
