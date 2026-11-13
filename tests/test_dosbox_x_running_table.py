@@ -33,6 +33,7 @@ class RunningGuest(SessionGates):
     def __init__(self, tmp_path: Path) -> None:
         self.altered = False
         self.stop_count = 1
+        self.keys_posted = 0
         self.reap_failed = ""
         self.drain_failure = ""
         self.ended_how = "none"

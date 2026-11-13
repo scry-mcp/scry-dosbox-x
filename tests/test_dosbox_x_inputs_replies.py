@@ -28,6 +28,16 @@ def test_a_miss_says_what_it_waited_for_and_how_long_in_every_key() -> None:
         "expected": "key_cue_a", "waited_s": 2.0, "arrived_during": 3, "lines_examined": 4}, got
 
 
+def test_a_miss_on_the_sessions_first_key_names_the_swallow() -> None:
+    """The first key of a fresh session can be dropped: the miss says to resend, not to hunt."""
+    reaction = {"verdict": "TIMEOUT", "waited_s": 2.0, "arrived_during": 3, "lines_examined": 4,
+                "note": "nothing new"}
+    first = inputs.verify_block("key_cue_a", reaction, first_key=True)
+    later = inputs.verify_block("key_cue_a", reaction)
+    assert "first key can be swallowed" in first["note"], first["note"]
+    assert "first key can be swallowed" not in later["note"], later["note"]
+
+
 def test_a_key_with_no_expect_says_what_would_confirm_it(tmp_path: Path) -> None:
     fake = _names(tmp_path, watched=True)
     fake.running = True

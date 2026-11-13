@@ -125,6 +125,7 @@ class FakeSession(SessionGates):
     def __init__(self, *, alive: bool = True, answer: str = "some output", took: bool = True,
                  mode: str = "Real") -> None:
         self.altered = False
+        self.keys_posted = 0
         # the data-view screens are real-mode; a case on the protected-mode `SELINFO` capture says
         # `Pr32`
         self.mode = mode
@@ -633,6 +634,7 @@ class NamesFake(SessionGates):
         # the guest runs: every console method refuses as the real ones do, `at_debugger()` says so
         self._running = False
         self.stop_count = 0
+        self.keys_posted = 0
         self.stop_unread = False
         self.reap_failed = ""
         self.drain_failure = ""

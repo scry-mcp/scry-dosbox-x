@@ -404,11 +404,15 @@ def _report(session: ds.Session, advance: Retraces | None = None) -> Report:
     # On the stub's own line: on E9 it could land inside one of the program's lines.
     return parse_report(_send(session, [OP_REPORT], advance)[0])
 
-def verify_block(expect: str, reaction: dict[str, object]) -> dict[str, Any]:
+def verify_block(expect: str, reaction: dict[str, object],
+                 first_key: bool = False) -> dict[str, Any]:
     """The `verify` block shared by `send_keys`, `send_mouse` and `drive`. `seen_before_waiting`
     is `e9_wait`'s `already`, renamed because with the mark taken before the post it includes a
-    reaction written while the key was going in, not only one from before the post."""
+    reaction written while the key was going in, not only one from before the post. `first_key`
+    adds the one miss a caller should retry rather than chase: a fresh session's first key."""
     if reaction["verdict"] != contract.TARGET:
+        first = (" A fresh session's first key can be swallowed while the guest settles, so "
+                 "resend it once before hunting for a modal." if first_key else "")
         return {"checked": True, "seen": False, "expected": expect,
                 "verdict": reaction["verdict"], "waited_s": reaction["waited_s"],
                 "arrived_during": reaction["arrived_during"],
@@ -416,7 +420,7 @@ def verify_block(expect: str, reaction: dict[str, object]) -> dict[str, Any]:
                 "note": f"no new line matching the pattern: {reaction['note']}. The input "
                         f"was delivered and this is a miss on the pattern: the program "
                         f"swallowed it (a modal, a loading state), reacted without writing "
-                        f"that line, or the pattern does not match what it writes"}
+                        f"that line, or the pattern does not match what it writes.{first}"}
     return {"checked": True, "seen": True, "expected": expect, "verdict": contract.TARGET,
             "line": reaction["line"], "seen_before_waiting": reaction["already"],
             "lines_before": reaction["lines_before"],
@@ -435,7 +439,8 @@ def drive_wait_s(seconds: float | None) -> float:
 
 def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | None,
                      seconds: float | None, *, progress: ds.Progress = ds.no_progress,
-                     parked: Retraces | None = None, **fields: Any) -> dict[str, Any]:
+                     parked: Retraces | None = None, first_key: bool = False,
+                     **fields: Any) -> dict[str, Any]:
     """Post one input and say whether the PROGRAM REACTED. `post()` sends the commands and
     returns the reply's own fields.
 
@@ -449,7 +454,7 @@ def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | No
     verification impossible is refused before the post, which cannot be taken back.
     """
     try:
-        return _verify(session, kind, post, expect, seconds, progress, fields, parked)
+        return _verify(session, kind, post, expect, seconds, progress, fields, parked, first_key)
     except Delivered as e:
         return st.reply(status="INVALID", code=e.code, **fields, **e.fields, delivered=True,
                         verify={"checked": False, "why": "the send failed part-way"},
@@ -458,7 +463,8 @@ def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | No
 
 def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
             seconds: float | None, progress: ds.Progress,
-            fields: dict[str, Any], parked: Retraces | None = None) -> dict[str, Any]:
+            fields: dict[str, Any], parked: Retraces | None = None,
+            first_key: bool = False) -> dict[str, Any]:
     if expect is None:
         return st.reply(**fields, **post(), verify={
             "checked": False,
@@ -496,7 +502,7 @@ def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
                       verify={"checked": False, "expected": expect, "why": str(e)},
                       message=f"the {kind} went into the guest and its effect could NOT be "
                              f"verified: {e}")
-    return st.reply(**host, verify=verify_block(expect, reaction))
+    return st.reply(**host, verify=verify_block(expect, reaction, first_key))
 
 
 def check_expectation(expect: str | None, seconds: float | None) -> None:
@@ -596,16 +602,19 @@ def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
     check_keys(keys, modifiers, expect, seconds)
     parked = _ready(session, "a key", expect)
     seq = scan_sequence(keys, "+".join(modifiers) if modifiers else "-", action)
+    first_key = session.keys_posted == 0
 
     def post() -> dict[str, Any]:
         try:
             _send(session, key_commands(seq), parked)
         except ds.Invalid as e:
             raise _delivered(e, parked) from None
+        session.keys_posted += 1
         return {"route": "guest", "posted": len(keys), "bytes": len(seq), "frames": len(seq),
                 **_parked_fields(parked)}
     return _post_and_verify(session, "key", post, expect, seconds, progress=progress,
-                            parked=parked, keys=keys, modifiers=modifiers or [])
+                            parked=parked, first_key=first_key, keys=keys,
+                            modifiers=modifiers or [])
 
 
 def _target(report: Report, x: int, y: int, units: str) -> tuple[int, int]:
@@ -867,7 +876,8 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
             # The driver's granularity or a program's own range (INT 33h AX=07h/08h) moved it out.
             fields["asked"] = {"x": arrival[0], "y": arrival[1]}
         return fields
-    asked = {**({"x": x, "y": y} if x is not None and y is not None else {}), "units": units,
-             **({"button": button, "action": action} if button is not None else {})}
+    asked: dict[str, Any] = {**({"x": x, "y": y} if x is not None and y is not None else {}),
+                            "units": units,
+                            **({"button": button, "action": action} if button is not None else {})}
     return _post_and_verify(session, "mouse event", post, expect, seconds, progress=progress,
                             parked=parked, **asked)
