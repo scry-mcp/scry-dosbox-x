@@ -352,9 +352,12 @@ def status() -> dict[str, Any]:
         stopped = STATE.session.parked            # what the drain's own reading left
     shown: dict[str, Any] = ({} if STATE.session is None
                              else {"presence": lifecycle.presence_shown(STATE.session)})
+    outside = ("" if STATE.session is None or STATE.session.alive()
+               else STATE.session.outside_kill_note())
     return st.reply(**st.process_facts(), last_stop=STATE.dated(),
                     pending=STATE.pending_summary(),
-                    **running.status_facts(STATE.session, stopped), **shown)
+                    **running.status_facts(STATE.session, stopped), **shown,
+                    **({"note": outside} if outside else {}))
 
 
 @tool("Close the session", summary=one_line.close, body_session=True, on_cancel="kill")

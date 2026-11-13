@@ -118,6 +118,14 @@ class SessionGates:
     delete_rows = ds.Session.delete_rows
     gone_if_dead = ds.Session.gone_if_dead
 
+    def killed_from_outside(self) -> bool:
+        """The real session's answer; a fake is never killed from outside."""
+        return False
+
+    def outside_kill_note(self) -> str:
+        """The real session's answer; a fake is never killed from outside."""
+        return ""
+
 
 class FakeSession(SessionGates):
     """The narrowest faithful stand-in for a session: it does what the contract says."""

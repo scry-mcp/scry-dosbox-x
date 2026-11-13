@@ -100,6 +100,25 @@ def test_a_new_process_holds_nothing_and_closes_once(monkeypatch: pytest.MonkeyP
     assert child.sent == [15], "a closed session was signalled again"
 
 
+def test_a_signal_the_server_did_not_send_is_named_as_from_outside(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A SIGKILL this server did not send is told apart from its own close and guardian."""
+    clock = _Clock(monkeypatch)
+    p = _process(_Deaf(clock, None, None))
+    p.proc.returncode = -9
+    p.ended_how = "none"
+    p._guard_deadline = 0.0                      # no guardian to fire
+    assert p.killed_from_outside() is True
+    assert "memory manager" in p.outside_kill_note()
+    p.ended_how = "killed"                       # this server's own close sent the SIGKILL
+    assert p.killed_from_outside() is False and p.outside_kill_note() == ""
+    p.ended_how = "none"
+    p._guard_deadline = time.time() + 1000.0     # the guardian had not fired yet
+    assert p.killed_from_outside() is True
+    p._guard_deadline = time.time() - 1.0        # the guardian's deadline had passed
+    assert p.killed_from_outside() is False
+
+
 @pytest.mark.parametrize(("grace", "said"), [
     (None, "SIGKILL was sent and the process had not been reaped 8.0s later"),
     (0, "SIGKILL was sent and the process had not been reaped 1.0s later")])

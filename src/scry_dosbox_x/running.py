@@ -314,9 +314,11 @@ def live(probe: bool = True) -> ds.Session:
     if not ses.alive():
         exit_code = ses.proc.poll()
         ended = "is not running" if exit_code is None else prose.ended_by(exit_code)
+        note = ses.outside_kill_note()
         raise ds.Invalid("session_broken",
                          f"DOSBox-X {ended} under this session: `close` "
-                         f"collects what it left, then `start` a new one", exit_code=exit_code)
+                         f"collects what it left, then `start` a new one", exit_code=exit_code,
+                         **({"note": note} if note else {}))
     if probe:
         drain_if_stopped(ses)
     return ses

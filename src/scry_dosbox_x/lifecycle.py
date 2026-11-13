@@ -331,6 +331,7 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
     unreaped = STATE.session.reap_failed
     drained = STATE.session.drain_failure
     ended_by = STATE.session.ended_how
+    outside = STATE.session.outside_kill_note()
     STATE.session = None
     STATE.forget_symbols()
     STATE.clear_running_state()
@@ -339,6 +340,8 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
         f"the emulator was SIGKILLed and not reaped ({unreaped}): it may still be on the "
         f"machine" if unreaped else "the emulator's exit code could not be read")
     notes = [f"the emulator's output reader: {drained}"] if drained else []
+    if outside:
+        notes.append(outside)
     return {"status": "ok", "closed": True, **facts, "ended_by": ended_by,
             "exit_code": exit_code, **tails, **left,
             **({"note": " ".join(notes)} if notes else {}),

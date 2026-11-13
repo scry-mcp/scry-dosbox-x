@@ -32,6 +32,9 @@ class _ClosesWithoutEnding:
     def stdout_tail(self, chars: int) -> str:
         return ""
 
+    def outside_kill_note(self) -> str:
+        return ""
+
 
 @pytest.mark.skipif(sys.platform == "win32", reason="the stray is POSIX's `sleep` in a group")
 def test_a_process_close_left_running_is_killed_and_the_case_is_told() -> None:

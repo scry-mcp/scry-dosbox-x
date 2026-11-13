@@ -57,6 +57,10 @@ PROCESS_NAME = "scry-dosbox-x"
 GUARDIAN_NAME = guardian.name_of(PROCESS_NAME)
 #: Guardian deadline past the bound, on the host's clock (`-time-limit` counts emulated time).
 GUARDIAN_GRACE_S = 10.0
+#: A signal the server did not send, on a host whose usual SIGKILL sender is the memory manager.
+OUTSIDE_KILL_NOTE = ("the emulator was killed from outside this server; on macOS the usual "
+                     "sender is the memory manager, see JetsamEvent-*.ips in "
+                     "/Library/Logs/DiagnosticReports")
 
 # A full pipe or terminal blocks the emulator in the kernel, so a thread drains it; past
 # DRAIN_KEEP the oldest bytes go, counted in `dropped`.
@@ -111,6 +115,8 @@ class Process:
         self.drain_failure = ""
         # `quit`, `killed`, `died` (gone before `close`), `none`.
         self.ended_how = "none"
+        # The guardian's wall-clock deadline; 0 when there is no guardian to fire.
+        self._guard_deadline = 0.0
         self._closing = threading.Lock()
         self._closed = False
         # SIGKILL sent, child not reaped; read off the object by the `close` tool.
@@ -171,8 +177,9 @@ class Process:
                         os.close(ends[1])
             if (ledger := live_host.EmulatorLedger.from_environment()) is not None:
                 ledger.record(self.proc.pid, self.argv[0])
-            self.guard = guardian.spawn(self.proc, PROCESS_NAME,
-                                        deadline=time.time() + launch.seconds + GUARDIAN_GRACE_S)
+            deadline = time.time() + launch.seconds + GUARDIAN_GRACE_S
+            self.guard = guardian.spawn(self.proc, PROCESS_NAME, deadline=deadline)
+            self._guard_deadline = deadline if self.guard is not None else 0.0
             if self._out is not None:
                 # Not lazy: boot chatter fills the pipe before the first question.
                 self._drainer = threading.Thread(target=self._drain, name="dosbox-drain",
@@ -244,6 +251,17 @@ class Process:
 
     def alive(self) -> bool:
         return self.proc.poll() is None
+
+    def killed_from_outside(self) -> bool:
+        """A signal this server did not send: not its close, and before its guardian's deadline."""
+        code = self.proc.poll()
+        if code is None or code >= 0 or self.ended_how not in ("none", "died"):
+            return False
+        return self._guard_deadline == 0.0 or time.time() < self._guard_deadline
+
+    def outside_kill_note(self) -> str:
+        """`OUTSIDE_KILL_NOTE` when killed from outside, else ""."""
+        return OUTSIDE_KILL_NOTE if self.killed_from_outside() else ""
 
     def close(self, grace: float = 8.0, progress: Progress = no_progress) -> int | None:
         """End the session; a cancel mid-wait reruns `_close` shielded, then keeps unwinding."""
