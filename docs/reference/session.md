@@ -478,7 +478,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end close -->
 
-**The `ended_by` values**: `quit` is the emulator leaving on the first signal, which is what a session launched here does, program loaded or not, because `start` turns the quit warning off; `killed` is a conf that puts the warning back or a wedged guest, ended by SIGKILL, and every close on Windows, which has no signal to ask with and terminates the process; `died` is already exited when called; `none` is nothing to close. **`exit_code`** is unavailable when SIGKILLed and still not reaped, since an emulator may still be on the machine.
+**The `ended_by` values**: `quit` is the emulator leaving when asked, which is what a session launched here does, program loaded or not, because `start` turns the quit warning off: SIGTERM on macOS, and the debugger's `QUIT` on Windows, which has no signal to ask with; `killed` is a conf that puts the warning back or a wedged guest that ignored the ask, ended by SIGKILL (a terminate on Windows); `died` is already exited when called; `none` is nothing to close. **`exit_code`** is unavailable when SIGKILLed and still not reaped, since an emulator may still be on the machine.
 
 **The `session` block is the session after the close**: `alive` and `running` false and `altered` false, as with no session at all.
 
