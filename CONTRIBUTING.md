@@ -52,6 +52,12 @@ media ones; the workflow installs both so that a green run covers them. The comm
 are built by the nasm major `tests/test_dosbox_x_guest.py` names, so their byte-identity cases skip
 under the older one Ubuntu ships, and run on macOS and Windows.
 
+The dosbox-x server starts DOSBox-X headless (`-set "sdl videodriver=dummy"`), so it can be
+driven over an ssh session on Windows, no display needed, unlike MAME. A venv made with a minor
+version has its `home` on a junction an elevated or ssh session cannot traverse (`uv trampoline
+failed to spawn Python child process`); make it with the exact patch version (`uv venv -p
+<patch>`), whose `home` is the real directory.
+
 A tool's reply model is its contract. A number whose natural notation is hex (an address, an offset, an interrupt, a
 port) is answered as `0x` text and taken as `0x` text or an integer. A field every `ok` reply of the tool carries is `Required[...]`
 in the model; one that comes only under a condition is `Annotated[T, When("words")]`, and the
