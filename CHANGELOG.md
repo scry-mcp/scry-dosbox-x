@@ -8,6 +8,10 @@ What a client of the server notices.
   device operation it waits on) answer `delivered: false` and say the input was not sent, where
   they said whether it acted was unknown: nothing was written, so sending it again once `status`
   answers puts it in once.
+- A `send_keys` or `send_mouse` cut part-way by a long host call says how many of its input
+  commands were written and that a key it pressed is left down, where it said some of it may
+  have gone in. The next input sends that release before its own commands and says so in
+  `note`, where the key used to stay down until something else released it.
 - A steered `send_mouse` whose program pointer is on the place answers `arrived: true` wherever
   the driver sits: a program that adds the driver's motion to a pointer of its own takes a
   click where that pointer is, so moves that answered `arrived: false` with a note about the

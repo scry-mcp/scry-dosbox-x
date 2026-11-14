@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from channel_double import SilentChannel
 from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
@@ -326,6 +327,146 @@ def test_a_send_cancelled_between_a_make_and_its_break_sends_the_break_it_owes(
     # it to arrive, where a sleep bet on the machine's load
     stub.settle(host)
     assert stub.carried == [b"K\xe0", b"K\x48", b"K\xe0", b"K\xc8"], stub.carried
+
+
+def test_a_send_cut_by_a_silent_channel_releases_its_key_first_at_the_next_send(
+        pair: Any) -> None:
+    """A key whose press went out while the guest was in a host call, and whose release was
+    never written: the guest takes the press once the call ends and the key stays down. The
+    next send that reaches the stub releases it before its own commands."""
+    host, guest = pair
+    stub = Stub(guest, deaf=True)            # a guest inside a host call takes no frame
+    silent = SilentChannel(0.2)
+    stalled = {"yes": True}
+
+    def parked() -> bool:
+        return silent.ask() if stalled["yes"] else False
+    sent = link.Link(host, parked=parked)
+    try:
+        with pytest.raises(Invalid, match=r"\(0 of 2 commands acknowledged\)"):
+            sent.send([b"K\x2c", b"K\xac"])
+        stalled["yes"] = False
+        stub.ticks = True                    # the host call ended: the stub runs again
+        sent.send([b"K\x2e", b"K\xae"])
+    finally:
+        silent.close()
+    stub.settle(host)
+    assert stub.carried == [b"K\x2c", b"K\xac", b"K\x2e", b"K\xae"], stub.carried
+
+
+def _acks_the_first(guest: socket.socket, frames: int) -> list[bytes]:
+    """A stub that takes the first `frames` key frames and then nothing, as a guest that went
+    into a host call; what it took is returned as it takes it."""
+    taken: list[bytes] = []
+
+    def run() -> None:
+        buf = b""
+        with contextlib.suppress(OSError):
+            while got := guest.recv(64):
+                buf += got
+                while len(buf) >= 5:
+                    frame, buf = buf[:5], buf[5:]
+                    if len(taken) < frames:
+                        taken.append(frame[2:4])
+                        guest.sendall(bytes((link.ACK, frame[1], frame[2], 1)))
+    threading.Thread(target=run, daemon=True).start()
+    return taken
+
+
+@pytest.mark.parametrize(("taken", "written", "held"), [
+    (0, 1, 0),      # only the make's prefix went out: no key is down
+    (1, 2, 1),      # the make went out
+    (2, 3, 1),      # the break's prefix went out too, not the break
+])
+def test_a_cut_extended_key_counts_the_keys_left_down_not_the_releases_owed(
+        pair: Any, taken: int, written: int, held: int) -> None:
+    host, guest = pair
+    _acks_the_first(guest, taken)
+    silent = SilentChannel(0.1)
+    try:
+        with pytest.raises(link.Cut) as cut:
+            link.Link(host, parked=silent.ask).send([b"K\xe0", b"K\x48", b"K\xe0", b"K\xc8"])
+    finally:
+        silent.close()
+    assert (cut.value.written, cut.value.held) == (written, held), (
+        cut.value.written, cut.value.held)
+
+
+@pytest.mark.parametrize("why", ["a call that holds its keys", "a state loaded since"])
+def test_a_cut_owes_no_release_to_a_key_held_on_purpose_or_to_a_replaced_machine(
+        pair: Any, why: str) -> None:
+    host, guest = pair
+    stub = Stub(guest, deaf=True)
+    silent = SilentChannel(0.1)
+    stalled = {"yes": True}
+
+    def parked() -> bool:
+        return silent.ask() if stalled["yes"] else False
+    sent = link.Link(host, parked=parked)
+    try:
+        press = [b"K\x2c"] if why == "a call that holds its keys" else [b"K\x2c", b"K\xac"]
+        with pytest.raises(link.Cut):
+            sent.send(press)
+        if why == "a state loaded since":
+            sent.unprove()
+        stalled["yes"] = False
+        stub.ticks = True
+        sent.send([b"K\x2e", b"K\xae"])
+    finally:
+        silent.close()
+    stub.settle(host)
+    assert b"K\xac" not in stub.carried and sent.releases_sent == 0, stub.carried
+
+
+def test_a_release_the_stub_did_not_take_stays_owed_until_it_does(pair: Any) -> None:
+    """A send that finds the guest still in its host call cannot pay the debt: it writes
+    nothing of its own and keeps the debt, since an unacknowledged frame may be lost, and the
+    send after the host call pays it before its own keys. A release the guest then takes twice
+    leaves the key up either way."""
+    host, guest = pair
+    stub = Stub(guest, deaf=True)
+    silent = SilentChannel(0.1)
+    stalled = {"yes": True}
+
+    def parked() -> bool:
+        return silent.ask() if stalled["yes"] else False
+    sent = link.Link(host, parked=parked)
+    try:
+        with pytest.raises(link.Cut):
+            sent.send([b"K\x2c", b"K\xac"])
+        with pytest.raises(link.Cut) as still:
+            sent.send([b"K\x2e", b"K\xae"])
+        assert (still.value.written, still.value.held) == (0, 1), still.value
+        stalled["yes"] = False
+        stub.ticks = True
+        sent.send([b"K\x20", b"K\xa0"])
+    finally:
+        silent.close()
+    stub.settle(host)
+    assert stub.carried == [b"K\x2c", b"K\xac", b"K\xac", b"K\x20", b"K\xa0"], stub.carried
+    assert sent.owed == [] and sent.inputs_written == 3, (sent.owed, sent.inputs_written)
+
+
+def test_a_cancel_whose_release_the_stub_did_not_take_leaves_it_to_the_next_send(
+        pair: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    host, guest = pair
+    stub = Stub(guest, deaf=True)
+    monkeypatch.setattr(link, "ACK_WAIT_S", 0.05)
+
+    def cancelled_after_the_make() -> None:
+        if not cancel.shielding() and stub.uart:
+            raise asyncio.CancelledError
+    monkeypatch.setattr(cancel, "check", cancelled_after_the_make)
+    sent = link.Link(host)
+    with pytest.raises(asyncio.CancelledError):
+        sent.send([b"K\x2c", b"K\xac"])
+    monkeypatch.setattr(cancel, "check", lambda: None)
+    stub.ticks = True
+    sent.send([b"K\x2e", b"K\xae"])
+    stub.settle(host)
+    assert stub.carried[0] == b"K\x2c" and stub.carried[-3:] == [b"K\xac", b"K\x2e", b"K\xae"], (
+        stub.carried)
+    assert sent.owed == [] and sent.releases_sent == 1, (sent.owed, sent.releases_sent)
 
 
 def test_a_send_cancelled_after_every_key_was_released_owes_nothing(

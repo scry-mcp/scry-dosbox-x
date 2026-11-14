@@ -53,9 +53,8 @@ def frame(seq: int, command: bytes) -> bytes:
     return bytes((SYNC,)) + body + bytes((check,))
 
 
-def owed_breaks(written: list[bytes]) -> list[bytes]:
-    """The key commands that release every key `written` pressed and did not release, last
-    pressed first; an extended key's break repeats its prefix."""
+def keys_down(written: list[bytes]) -> tuple[list[tuple[bool, int]], bool]:
+    """The keys `written` left down, in press order, and whether it ended on a bare prefix."""
     down: list[tuple[bool, int]] = []
     extended = False
     for command in written:
@@ -71,6 +70,13 @@ def owed_breaks(written: list[bytes]) -> list[bytes]:
                 down.remove(key)
         elif key not in down:
             down.append(key)
+    return down, extended
+
+
+def owed_breaks(written: list[bytes]) -> list[bytes]:
+    """The key commands that release every key `written` pressed and did not release, last
+    pressed first; an extended key's break repeats its prefix."""
+    down, extended = keys_down(written)
     owed: list[bytes] = []
     for prefixed, code in reversed(down):
         if prefixed:
@@ -79,6 +85,23 @@ def owed_breaks(written: list[bytes]) -> list[bytes]:
     if extended:
         owed.append(bytes((OP_KEY, FAKE_SHIFT_BREAK)))
     return owed
+
+
+class Cut(Invalid):
+    """A send refused part-way: `written` of its `total` input commands went out, and `held`
+    keys stay down for a later send to release."""
+
+    def __init__(self, cause: Invalid, written: list[bytes], acknowledged: int,
+                 commands: list[bytes], held: int) -> None:
+        super().__init__(cause.code,
+                         f"{cause} ({acknowledged} of {len(commands)} commands acknowledged)")
+        self.cause, self.held = cause, held
+        self.written, self.total = _inputs(written), _inputs(commands)
+
+
+def _inputs(commands: list[bytes]) -> int:
+    """The commands that act on the guest, reports aside."""
+    return sum(1 for c in commands if c[0] != OP_REPORT)
 
 
 class Link:
@@ -101,10 +124,18 @@ class Link:
         self._acked_ms: float | None = None
         self._acked_running_ms: float | None = None
         self._written: list[bytes] = []
+        #: Releases a cut send owes, paid ahead of the next send, and the keys they release.
+        self.owed: list[bytes] = []
+        self.held = 0
+        #: Since the link opened, so a caller can tell what one call put in.
+        self.inputs_written = 0
+        self.releases_sent = 0
 
     def unprove(self) -> None:
         """The stub's memory was replaced (a state loaded)."""
         self.proved = False
+        # The held key was the replaced machine's.
+        self.owed, self.held = [], 0
 
     def send(self, commands: list[bytes], advance: Advance | None = None) -> list[str]:
         """Send in order; return the `R` report lines. A refusal says how many were acked.
@@ -125,33 +156,51 @@ class Link:
         reports: list[str] = []
         acknowledged = 0
         self._written = []
+        base: int | None = None
         try:
             if not self.proved:
                 self._deliver(bytes((OP_REPORT,)))
                 self._line()
                 self.proved = True
+            self._pay_owed()
+            base = len(self._written)
             for command in commands:
-                try:
-                    self._deliver(command)
-                    acknowledged += 1
-                    if command[0] == OP_REPORT:
-                        reports.append(self._line())
-                except Invalid as e:
-                    raise Invalid(e.code, f"{e} ({acknowledged} of {len(commands)} commands "
-                                  f"acknowledged)") from None
+                self._deliver(command)
+                acknowledged += 1
+                if command[0] == OP_REPORT:
+                    reports.append(self._line())
+        except Invalid as e:
+            written = self._written[base:] if base is not None else []
+            # A call that holds keys on purpose (`action="down"`) owes no release.
+            if not owed_breaks(commands):
+                self._owe(written)
+            raise Cut(e, written, acknowledged, commands, self.held) from None
         except BaseException as e:
             if cancel.is_cancellation(e):
+                self._owe(self._written[base:] if base is not None else [])
                 self._release_keys()
             raise
+        finally:
+            if base is not None:
+                self.inputs_written += _inputs(self._written[base:])
         return reports
 
+    def _owe(self, written: list[bytes]) -> None:
+        self.owed += owed_breaks(written)
+        self.held += len(keys_down(written)[0])
+
+    def _pay_owed(self) -> None:
+        """The releases owed, each dropped once taken: a key left down repeats in the guest."""
+        while self.owed:
+            self._deliver(self.owed[0])
+            del self.owed[0]
+            self.releases_sent += 1
+        self.held = 0
+
     def _release_keys(self) -> None:
-        """The breaks a cancelled send owes: a key whose make went out and whose break did not
-        stays down in the guest, repeating until something releases it. Best effort, the
-        cancel being the answer the caller gets."""
+        """A cancelled send's releases, best effort: what the stub does not take stays owed."""
         with cancel.shielded(), contextlib.suppress(Invalid):
-            for command in owed_breaks(self._written):
-                self._deliver(command)
+            self._pay_owed()
 
     def _deliver(self, command: bytes) -> None:
         """Return once the command has run (by this send or an earlier one); else refuse."""

@@ -944,6 +944,16 @@ class Session(dprocess.Process):
             raise Invalid("bad_argument", "nothing to send")
         return self._link.send(commands, advance)
 
+    @property
+    def inputs_written(self) -> int:
+        """The input commands the route has written since it opened."""
+        return 0 if self._link is None else self._link.inputs_written
+
+    @property
+    def releases_sent(self) -> int:
+        """The key releases a cut send owed that went out ahead of a later send."""
+        return 0 if self._link is None else self._link.releases_sent
+
     # ------------------------------------------------------------------ closing
 
     @property

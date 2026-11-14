@@ -22,10 +22,10 @@ from typing import Any, TypeVar, cast
 from scry_core import cancel
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
-from scry_core.reply_contract import Code, unavailable
+from scry_core.reply_contract import unavailable
 from scry_core.screen_map import Pointer
 
-from scry_dosbox_x import control, placement, retrace, running, taps
+from scry_dosbox_x import control, placement, retrace, running, stub_link, taps
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import pointer as dpointer
@@ -278,32 +278,91 @@ def require_stub(session: ds.Session) -> None:
 
 
 class Delivered(ds.Invalid):
-    """A failure after the commands went into the guest; `fields` ride into the reply."""
+    """A failure inside the post; `fields` ride into the reply. `went_in` counts the input
+    commands of this call the route wrote, None when nothing accounts for them."""
 
-    def __init__(self, code: Code, message: str, fields: dict[str, Any]) -> None:
-        super().__init__(code, message)
-        self.fields = fields
-
-
-def _delivered(e: ds.Invalid, parked: Retraces | None = None) -> Delivered:
-    """A send that failed part-way: some of it may have gone in, so it is not to be resent."""
-    return Delivered(e.code, str(e), {"route": "guest", **_parked_fields(parked)})
+    def __init__(self, cause: ds.Invalid, went_in: int | None, fields: dict[str, Any]) -> None:
+        super().__init__(cause.code, str(cause))
+        self.cause, self.went_in, self.fields = cause, went_in, fields
 
 
-def _not_sent(kind: str, e: control.ChannelSilent, **fields: Any) -> dict[str, Any]:
+@dataclass(frozen=True)
+class Counts:
+    """The route's own counts as a call began, so its reply can say what this call put in."""
+
+    written: int
+    released: int
+
+    @classmethod
+    def of(cls, session: ds.Session) -> Counts:
+        return cls(session.inputs_written, session.releases_sent)
+
+
+def _delivered(e: ds.Invalid, session: ds.Session, counts: Counts,
+               parked: Retraces | None = None) -> Delivered:
+    """A post that failed: what of it went in, when the route or the cause can say."""
+    went_in = session.inputs_written - counts.written
+    known = went_in or isinstance(e, (stub_link.Cut, control.ChannelSilent))
+    return Delivered(e, went_in if known else None,
+                     {"route": "guest", **_parked_fields(parked), **_released(session, counts)})
+
+
+def _root(e: ds.Invalid) -> ds.Invalid:
+    """The refusal that stopped a send, under the link's account of it."""
+    return e.cause if isinstance(e, stub_link.Cut) else e
+
+
+def _why(e: ds.Invalid) -> str:
+    root = _root(e)
+    return root.silence if isinstance(root, control.ChannelSilent) else str(root)
+
+
+def _held(e: ds.Invalid) -> str:
+    """The keys a cut send left down, which the next input releases first."""
+    n = e.held if isinstance(e, stub_link.Cut) else 0
+    if not n:
+        return ""
+    return (f" {n} key{'s are' if n > 1 else ' is'} left pressed in the guest, "
+            f"{'their releases' if n > 1 else 'its release'} not written: the next input this "
+            f"session sends releases {'them' if n > 1 else 'it'} first.")
+
+
+def _not_sent(kind: str, e: ds.Invalid, **fields: Any) -> dict[str, Any]:
     """A call that wrote nothing of its input: the same call sent again goes in once."""
-    return st.reply(status="INVALID", code=e.code, **fields, delivered=False,
+    root = _root(e)
+    after = (f". {control.UNTIL_IT_ENDS}: send it then"
+             if isinstance(root, control.ChannelSilent) else ".")
+    return st.reply(status="INVALID", code=root.code, **fields, delivered=False,
                     verify={"checked": False, "why": "nothing was sent"},
                     message=f"the {kind} was NOT sent: nothing of it was written to the guest, "
-                            f"because {e.silence}. {control.UNTIL_IT_ENDS}: send it then")
+                            f"because {_why(e)}{after}{_held(e)}")
 
 
 def _unsent(kind: str, e: ds.Invalid, **fields: Any) -> dict[str, Any]:
     """The reply of a call a silent channel stopped before its post; any other refusal is
     raised as it came."""
-    if not isinstance(e, control.ChannelSilent):
+    if not isinstance(_root(e), control.ChannelSilent):
         raise e
     return _not_sent(kind, e, **fields)
+
+
+def _cut(kind: str, e: Delivered) -> str:
+    """What a post cut part-way put in, and what it left for the next one."""
+    n = e.went_in or 0
+    went = f"{n} input command{'s' if n != 1 else ''} of this call went to the guest"
+    if isinstance(e.cause, stub_link.Cut) and (left := e.cause.total - e.cause.written):
+        went += f" and {left} {'was' if left == 1 else 'were'} not written"
+    return (f"the {kind} was cut part-way, because {_why(e.cause)}: {went}.{_held(e.cause)} Do "
+            f"not send the same {kind} again, since what was written goes in and would go in "
+            f"twice: send only what was not written")
+
+
+def _released(session: ds.Session, counts: Counts) -> dict[str, Any]:
+    """The note of a call that first released what an earlier send left pressed."""
+    if session.releases_sent == counts.released:
+        return {}
+    return {"note": "before its own commands this call released the keys an earlier send, cut "
+                    "or cancelled part-way, had left pressed"}
 
 
 def _parked_fields(parked: Retraces | None) -> dict[str, Any]:
@@ -486,9 +545,13 @@ def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | No
     try:
         return _verify(session, kind, post, expect, seconds, progress, fields, parked, first_key)
     except Delivered as e:
+        if e.went_in == 0:
+            return _not_sent(kind, e.cause, **fields, **e.fields)
+        message = (f"the {kind} was sent, and some of it may have gone in: {e}"
+                   if e.went_in is None else _cut(kind, e))
         return st.reply(status="INVALID", code=e.code, **fields, **e.fields, delivered=True,
                         verify={"checked": False, "why": "the send failed part-way"},
-                        message=f"the {kind} was sent, and some of it may have gone in: {e}")
+                        message=message)
 
 
 def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
@@ -630,6 +693,7 @@ def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
               progress: ds.Progress = ds.no_progress, action: str = "press") -> dict[str, Any]:
     """The body of the `send_keys` tool."""
     check_keys(keys, modifiers, expect, seconds)
+    counts = Counts.of(session)
     try:
         parked = _ready(session, "a key", expect)
     except ds.Invalid as e:
@@ -641,10 +705,10 @@ def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
         try:
             _send(session, key_commands(seq), parked)
         except ds.Invalid as e:
-            raise _delivered(e, parked) from None
+            raise _delivered(e, session, counts, parked) from None
         session.keys_posted += 1
         return {"route": "guest", "posted": len(keys), "bytes": len(seq), "frames": len(seq),
-                **_parked_fields(parked)}
+                **_parked_fields(parked), **_released(session, counts)}
     return _post_and_verify(session, "key", post, expect, seconds, progress=progress,
                             parked=parked, first_key=first_key, keys=keys,
                             modifiers=modifiers or [])
@@ -889,6 +953,7 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
     asked: dict[str, Any] = {**({"x": x, "y": y} if x is not None and y is not None else {}),
                             "units": units,
                             **({"button": button, "action": action} if button is not None else {})}
+    counts = Counts.of(session)
     try:
         parked = _ready(session, "a mouse event", expect)
         before = _report(session, parked)
@@ -905,7 +970,7 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         start = (program_reader(session, program)()
                  if program is not None and places is not None else None)
     except ds.Invalid as e:
-        return _unsent("mouse event", e, **asked)
+        return _unsent("mouse event", e, **asked, **_released(session, counts))
 
     def pressing(end_at: tuple[int, int] | None) -> list[bytes]:
         if button is None:
@@ -937,7 +1002,7 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
                 _send(session, moves + pressing(end_at), parked)
                 after = _report(session, parked)
         except ds.Invalid as e:
-            raise _delivered(e, parked) from None
+            raise _delivered(e, session, counts, parked) from None
         arrival = end_at or target
         driver_landed = arrival is None or _landed(after, arrival, to_x if end_at else x,
                                                    to_y if end_at else y, units)
@@ -964,8 +1029,10 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         if arrival is not None and not landed:
             # The driver's granularity or a program's own range (INT 33h AX=07h/08h) moved it out.
             fields["asked"] = {"x": arrival[0], "y": arrival[1]}
-        if disagreed:
-            fields["note"] = POINTER_DRIVER_DISAGREE
+        notes = [n for n in (POINTER_DRIVER_DISAGREE if disagreed else "",
+                             _released(session, counts).get("note", "")) if n]
+        if notes:
+            fields["note"] = "; ".join(notes)
         return fields
     return _post_and_verify(session, "mouse event", post, expect, seconds, progress=progress,
                             parked=parked, **asked)

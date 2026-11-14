@@ -29,7 +29,7 @@ from window_double import window_if
 
 from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import declarations as dec
-from scry_dosbox_x import folds, grammar, inputs, server
+from scry_dosbox_x import folds, grammar, inputs, server, stub_link
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import session as ds
@@ -117,6 +117,10 @@ class SessionGates:
     require_run_state = ds.Session.require_run_state
     delete_rows = ds.Session.delete_rows
     gone_if_dead = ds.Session.gone_if_dead
+    # the input route's counts; a case that puts a real link behind `send_commands` sets it
+    _link: stub_link.Link | None = None
+    inputs_written = ds.Session.inputs_written
+    releases_sent = ds.Session.releases_sent
 
     def killed_from_outside(self) -> bool:
         """The real session's answer; a fake is never killed from outside."""

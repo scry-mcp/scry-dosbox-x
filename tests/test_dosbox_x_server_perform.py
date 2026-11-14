@@ -1129,6 +1129,7 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
         launch = SimpleNamespace(watched=False, input_port=5555, logfile=None)
         stub_protocol = inputs.STUB_PROTOCOL
         keys_posted = 1
+        inputs_written = releases_sent = 0
 
         def e9_mark(self) -> int:
             return 0

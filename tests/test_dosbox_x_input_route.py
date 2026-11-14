@@ -5,7 +5,10 @@ line cannot fake, and what a call says when its commands went in and the read-ba
 
 from __future__ import annotations
 
+import contextlib
 import dataclasses
+import socket
+import threading
 from collections.abc import Callable, Iterator
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,7 +19,7 @@ from channel_double import SilentChannel
 from dosbox_x_server_support import _guest, _names
 from scry_core.screen_map import Pointer
 
-from scry_dosbox_x import inputs, running, server
+from scry_dosbox_x import inputs, running, server, stub_link
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import pointer as dpointer
@@ -670,6 +673,123 @@ def test_an_input_sent_while_the_channel_is_silent_says_nothing_went_in(
     assert "NOT sent" in message and "`status`" in message, message
     assert "whether it acted is unknown" not in message, message
     assert fake.commands_sent == [] and silent.asked == 1, (fake.commands_sent, silent.asked)
+
+
+#: Each opcode's whole frame on the line: SYNC, sequence, the command, the check.
+FRAME_LENGTHS = {b"K": 5, b"B": 5, b"M": 8, b"W": 8, b"R": 4}
+
+
+def _stub(guest: socket.socket, carried: list[bytes], reports: int = 99) -> threading.Thread:
+    """The stub on the other end of a real link: it takes each frame on its line, acknowledged
+    as carried, and answers the first `reports` reports with a line; a report past them gets no
+    answer, as from a guest that stopped running."""
+    def run() -> None:
+        buf, answered = b"", 0
+        with contextlib.suppress(OSError):
+            while got := guest.recv(64):
+                buf += got
+                while len(buf) >= 3 and len(buf) >= FRAME_LENGTHS[buf[2:3]]:
+                    length = FRAME_LENGTHS[buf[2:3]]
+                    frame, buf = buf[:length], buf[length:]
+                    if frame[2:3] == b"R":
+                        if answered == reports:
+                            continue
+                        answered += 1
+                        guest.sendall(bytes((stub_link.ACK, frame[1], frame[2], 1))
+                                      + AUTHORED_TEXT.encode() + b"\r\n")
+                        continue
+                    carried.append(frame[2:-1])
+                    guest.sendall(bytes((stub_link.ACK, frame[1], frame[2], 1)))
+    thread = threading.Thread(target=run, daemon=True)
+    thread.start()
+    return thread
+
+
+def _linked(fake: Any, silent: SilentChannel) -> tuple[dict[str, bool], socket.socket,
+                                                        socket.socket]:
+    """A real link behind the double's route, whose parked check is the silent channel while
+    `stalled` says so."""
+    host, guest = socket.socketpair()
+    stalled = {"yes": True}
+
+    def parked() -> bool:
+        return silent.ask() if stalled["yes"] else False
+    link = stub_link.Link(host, parked=parked)
+    fake.send_commands, fake._link = link.send, link
+    return stalled, host, guest
+
+
+def test_a_key_cut_by_a_silent_channel_says_what_went_in_and_is_released_by_the_next(
+        tmp_path: Path, silent: SilentChannel) -> None:
+    """A key whose press went out and whose acknowledgement waited on a silent channel: its
+    release was never written, so the key is down and the same key sent again goes in twice.
+    The reply says what was written and that the key is held; a send while the channel is still
+    silent writes nothing and says the key is still held; the first send after it releases the
+    key first and says so."""
+    fake = _guest(tmp_path)
+    stalled, host, guest = _linked(fake, silent)
+    carried: list[bytes] = []
+    try:
+        got = cast(dict[str, Any], server.send_keys(keys=["z"]))
+        still = cast(dict[str, Any], server.send_keys(keys=["c"]))
+        stalled["yes"] = False
+        stub = _stub(guest, carried)
+        later = cast(dict[str, Any], server.send_keys(keys=["c"]))
+    finally:
+        host.close()
+        guest.close()
+    stub.join(timeout=5)
+    assert got["status"] == "INVALID" and got.get("delivered") is True, got
+    message = got["message"]
+    assert "1 input command of this call went to the guest and 1 was not written" in message, (
+        message)
+    assert "1 key is left pressed" in message and "again" in message, message
+    assert "whether it acted is unknown" not in message, message
+    assert "may have gone in" not in message, message
+    assert still.get("delivered") is False and "NOT sent" in still["message"], still
+    assert "1 key is left pressed" in still["message"], still["message"]
+    assert carried[0] == b"K\x2c" and carried[-3:] == [b"K\xac", b"K\x2e", b"K\xae"], carried
+    assert later["status"] == "ok" and "released" in later.get("note", ""), later
+
+
+def test_a_click_whose_read_back_waited_on_a_silent_channel_counts_the_click(
+        tmp_path: Path, silent: SilentChannel) -> None:
+    """The move and the click went in and the report after them is what the silence cut: the
+    reply counts the three input commands, never the report."""
+    fake = _guest(tmp_path)
+    _, host, guest = _linked(fake, silent)
+    carried: list[bytes] = []
+    stub = _stub(guest, carried, reports=1)
+    try:
+        got = cast(dict[str, Any], server.send_mouse(x=10, y=5, button="left"))
+    finally:
+        host.close()
+        guest.close()
+    stub.join(timeout=5)
+    assert carried == [inputs.move_command(84, 44), b"B\x80", b"B\x00"], carried
+    assert got["status"] == "INVALID" and got.get("delivered") is True, got
+    message = got["message"]
+    assert "3 input commands of this call went to the guest" in message, message
+    assert "were not written" not in message and "left pressed" not in message, message
+
+
+def test_a_mouse_event_whose_first_report_waited_on_a_silent_channel_was_not_sent(
+        tmp_path: Path, silent: SilentChannel) -> None:
+    """The report read before any move is the one the silence cut: no input went in."""
+    fake = _guest(tmp_path)
+    _, host, guest = _linked(fake, silent)
+    carried: list[bytes] = []
+    stub = _stub(guest, carried, reports=0)
+    try:
+        got = cast(dict[str, Any], server.send_mouse(x=10, y=5, button="left"))
+    finally:
+        host.close()
+        guest.close()
+    stub.join(timeout=5)
+    assert carried == [], carried
+    assert got["status"] == "INVALID" and got.get("delivered") is False, got
+    assert (got["x"], got["y"], got["units"]) == (10, 5, "screen"), got
+    assert "NOT sent" in got["message"], got["message"]
 
 
 def test_a_first_report_that_fails_delivered_nothing(tmp_path: Path) -> None:
