@@ -164,7 +164,7 @@
       "size_bytes": 10992,
       "psp_seg": "0008",
       "notes": "DOS",
-      "filename": "\u0002"
+      "filename": "\"\u0005"
     },
     {
       "memory": "conventional",
@@ -2284,11 +2284,7 @@
   "controls": [
     {"name": "whats_wrong_with_my_name", "rect": [0, 144, 120, 8], "centre": [60, 148]}
   ],
-  "stopped_on_its_own": {
-    "stop_seq": "<volatile>",
-    "pc": "0985:0000010B",
-    "cause": "no declared code breakpoint at 0985:0000010B: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told"
-  },
+  "stopped_on_its_own": {"stop_seq": "<volatile>", "pc": "<volatile>", "cause": "<volatile>"},
   "session": "<volatile>"
 }
 ```
@@ -3049,40 +3045,15 @@
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": "<volatile>",
-  "pc": "0985:0000011C",
+  "pc": "<volatile>",
   "cpu_mode": "real",
   "frame": "<volatile>",
-  "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x0000000c",
-    "ECX": "0x005b0000",
-    "EDX": "0x00000028",
-    "ESI": "0x00000003",
-    "EDI": "0x00006889",
-    "EBP": "0x00008318",
-    "ESP": "0x00008314",
-    "EIP": "0x0000011c",
-    "CS": "0x0985",
-    "DS": "0x220b",
-    "ES": "0xa000",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x220b"
-  },
+  "regs": "<volatile>",
   "watches": [],
-  "cause": "the retrace run_for ran to, at 0985:0000011C",
+  "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": "<volatile>",
-  "instruction": {
-    "address": "0985:0000011C",
-    "bytes": "77E9",
-    "text": "ja 0x107",
-    "flow": "branch",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {"available": false, "why": "no symbol table is loaded"},
-    "delta": {"available": false, "why": "no symbol table is loaded"}
-  },
+  "instruction": "<volatile>",
   "emulated_before_s": "<volatile>",
   "emulated_after_s": "<volatile>",
   "frame_before": "<volatile>",

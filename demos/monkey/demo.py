@@ -52,8 +52,11 @@ MIXER_LAG = 2
 #: played to, which follows the host's audio clock, so a retrace lands at another instruction of
 #: the same wait loop from one run to the next while every screen and sample stays the same.
 WAIT_LOOP = "where in the game's wait loop the stop landed, which follows the CD's playback"
-#: What a step that stops in the game's wait loop shows of where it stopped.
-STOP_IN_LOOP = {key: WAIT_LOOP for key in ("summary", "pc", "regs", "instruction", "cause")}
+#: Where a stop in the game's wait loop landed, as a reply shows it: a recording ends on such a
+#: stop, and a state saved at one carries it to the first read after the load.
+STOP_PLACE = {key: WAIT_LOOP for key in ("pc", "regs", "instruction", "cause")}
+#: What a step that stops in the game's wait loop shows of where it stopped, its summary too.
+STOP_IN_LOOP = {"summary": WAIT_LOOP, **STOP_PLACE}
 #: Where the pointer waits while a screen is judged: over the sky, off every region the map signs.
 SKY = {"op": "send_mouse", "x": 250, "y": 20}
 #: Where the pointer goes once a line is picked: above the menu, so the next one is judged whole.
@@ -475,7 +478,8 @@ STEPS = [
     go("before", [click("whats_wrong_with_my_name")], "lookout: sell shoes"),
     Step("restore", "state_write", {"method": "load", "name": "comeback"},
          lambda reply, run: "the machine back to before the click"),
-    find("heck again?", "name: whats wrong with my name"),
+    Step("heck again?", "screen_map_find", {}, found("name: whats wrong with my name"),
+         volatile=STOP_PLACE),
     Step("needle", "find", {"data_hex": lookout.NEEDLE.hex(), "ref": "0000:0000",
                             "length": 0xA0000}, needle_found),
     Step("script", "perform", originals, originals_held,
@@ -508,7 +512,8 @@ STEPS = [
     Step("disarm", "declaration_clear", {"kind": "breakpoint", "all": True},
          lambda reply, run: "the stop on the CD driver cleared"),
     Step("theme", "audio_record", lambda run: {"frames": THEME_FRAMES,
-                                               "dest": run.dir / "theme.wav"}, recorded),
+                                               "dest": run.dir / "theme.wav"}, recorded,
+         volatile=STOP_PLACE),
     Step("the disc", "audio_compare", reference, same_track,
          highlight=("The theme the game played is recorded off the emulated mixer and compared "
                     "with the same track read off the disc image. The reply says whether the two "
