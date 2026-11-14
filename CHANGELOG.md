@@ -10,6 +10,10 @@ What a client of the server notices.
   driver disagreeing now answer true. The note and the false answer remain for one case, a
   driver range that changed during the move without the steering changing it; a range the
   program sets on the click itself no longer counts.
+- A steered `send_mouse` whose program pointer is already on the place sends no move, and its
+  reply carries no `motion`: a click after a hover on the same control moved the driver to the
+  place's middle, which carried the program's pointer off it, and the nudge back left the
+  driver further from the pointer over a walk of such calls.
 - `start`'s `plan` and `drive`'s `act` say what a step looks like, `{"op": <tool>, ...arguments}`,
   in the words `perform` uses: a first call no longer guesses the key and meets a refusal asking
   for `op`.

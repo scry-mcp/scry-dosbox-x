@@ -229,6 +229,23 @@ def test_a_program_that_takes_each_move_retraces_late_is_steered_on_with_no_swee
     assert steered.arrived and steered.seen == (100, 50) and steered.reach is None, steered
 
 
+def test_a_program_pointer_already_on_the_aim_is_left_where_it_is(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A move to the middle of the aim's unit would carry the program's pointer off the aim."""
+    world = _World(base=(0, 0))
+    _report, steered = _steered(world, (160, 100), monkeypatch, (322, 100))
+    assert steered == dpointer.Steered((160, 100), True, 0), steered
+    assert {tuple(d) for _at, d in world.history} == {(320, 100)}, world.history
+
+
+@pytest.mark.parametrize(("aim", "target"), [((161, 100), (322, 100)), ((160, 101), (320, 101))])
+def test_a_program_pointer_off_the_aim_on_one_axis_is_moved(
+        aim: tuple[int, int], target: tuple[int, int], monkeypatch: pytest.MonkeyPatch) -> None:
+    world = _World(base=(0, 0))
+    _report, steered = _steered(world, aim, monkeypatch, target)
+    assert steered.arrived and world.history[1][1] == list(target), world.history
+
+
 def test_a_sweep_reads_each_corner_once_the_program_took_the_move_there(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """Two program units a driver unit leave an odd aim between two of them, so the steering
@@ -411,6 +428,16 @@ def test_a_range_a_click_sets_is_not_the_move_s(
     got = cast(dict[str, Any], server.send_mouse(x=100, y=50, button="left"))
     assert got["status"] == "ok" and fake.mouse_max == (319, 199), got
     assert got["arrived"] is True and "note" not in got, got
+
+
+def test_a_program_pointer_on_the_aim_before_the_call_sends_no_move(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Nothing moved, so nothing reached the motion counters either."""
+    fake = _program_pointer(tmp_path, monkeypatch, lambda f: (f.pointer[0] // 2, f.pointer[1]))
+    fake.pointer, fake.stub_motion = (201, 50), True
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert got["status"] == "ok" and not _moved(fake), fake.commands_sent
+    assert got["arrived"] is True and "motion" not in got, got
 
 
 def test_a_range_the_steering_widened_itself_is_no_disagreement(

@@ -706,10 +706,10 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
            places: tuple[tuple[int, int], tuple[int, int]], aim: tuple[int, int],
            target: tuple[int, int], before: Report, start: tuple[int, int]
            ) -> tuple[Report, dpointer.Steered | None, bool]:
-    """The driver moved to `target`, then nudged until the program's own pointer, at `start`
-    before the move, is on `aim`; the report after the last nudge, and whether the driver's
-    range is not the one `before` had or the steering widened it to. A mode with no known size
-    has no ratio to nudge by, and is left as it is."""
+    """The driver moved to `target` unless the program's own pointer, read as `start`, is on
+    `aim` already, then nudged until that pointer is on `aim`; the report after the last nudge,
+    and whether the driver's range is not the one `before` had or the steering widened it to. A
+    mode with no known size has no ratio to nudge by, and is left as it is."""
     read = program_reader(session, program)
     own_range = [(before.max_x, before.max_y)]
     last = [start]
@@ -736,7 +736,10 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
         last[0] = seen
         return seen
 
-    move(*target)
+    if start != aim:
+        # The program adds the driver's motion to its own pointer, so moving a driver that sits
+        # elsewhere to `target` would carry a pointer already on the aim off it.
+        move(*target)
     after = _report(session, parked)
     size = after.units()
     if size is None:
@@ -929,7 +932,7 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         fields: dict[str, Any] = {"route": "guest", "pointer": shown,
                                   "arrived" if judged else "driver_arrived": landed,
                                   **_parked_fields(parked)}
-        if target is not None:
+        if target is not None and not (steered is not None and start == (x, y) and end_at is None):
             fields["motion"] = _motion(session)
         if arrival is not None and not landed:
             # The driver's granularity or a program's own range (INT 33h AX=07h/08h) moved it out.
