@@ -23,8 +23,9 @@ the lookout and Guybrush talk debuggers, AI and orange tycoons until the game ta
 conversation back.
 
 The game moves its own pointer by the mouse driver's motion and stops it at the screen's edges,
-so it can sit a few pixels away from the driver's. Before the dock appears, behind the title
-card, the demo sweeps the pointer to both corners, which stops both at the same place.
+so it can sit a few pixels away from the driver's, and a click lands where the game's pointer
+is. Once the title card is up the demo tells the server where the game keeps that pointer, and
+every move by name is steered until the game's own pointer is on the control.
 
 ## The game
 
@@ -85,8 +86,9 @@ Give this to an MCP client with this server connected:
 > intro run to each write of it up to its first scene, room 10; from there count 24 SCUMM ticks,
 > pressing Escape after the first and after every fifth one past it, then check the room is the
 > title card, 96. Judge the title card, and every screen after it but the lookout's lines, only
-> where SCUMM leaves the loop that waits for its next tick (offset 011E of its code segment), and
-> sweep the pointer to both corners while the title card is up.
+> where SCUMM leaves the loop that waits for its next tick (offset 011E of its code segment); once
+> the title card is up, the game's own pointer is the two words at 2000:94EA and 2000:94EC, so
+> steer every move onto it.
 > On the dock, walk to the governor's poster, Look at it, and name both lines Guybrush reads;
 > walk back and up the cliffside, Talk to the lookout, ask him whether we are all characters in
 > a novel, tell him my name, and put the pointer on the comeback, naming each screen and each
@@ -108,7 +110,7 @@ Give this to an MCP client with this server connected:
 | Files | `audio_compare(method="diff")` |
 | Input | `send_mouse` by control name off the map, at screen pixels, double; `send_keys` |
 | States | `state_write` (`save`, then `load`) |
-| Read | `screen_map_write(method="load")`, `screen_map_find`, `find`, `read_memory` |
+| Read | `screen_map_write` (`load`, then `pointer`), `screen_map_find`, `find`, `read_memory` |
 | Captures | `record` (the loop), `audio_record` (the theme, at the CD's own rate) |
 | Screen | `screen_view` |
 | Write | `write` (the conversation, the drive's request) |
@@ -517,7 +519,7 @@ The game asks the CD driver for audio through interrupt 2Fh. `breakpoint_interru
 
 </details>
 
-**46. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.61 dB
+**46. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
 
 The theme the game played is recorded off the emulated mixer and compared with the same track read off the disc image. The reply says whether the two are equal (`exact`) and, when they are not, how far apart (`snr_db`, `class`), so what the demo claims about the music is a measurement, not a listening test.
 
@@ -534,10 +536,10 @@ The theme the game played is recorded off the emulated mixer and compared with t
 
 ```json
 {
-  "summary": "audio_compare diff: audible, SNR 48.61 dB, envelope 1.0",
+  "summary": "audio_compare diff: audible, SNR 48.62 dB, envelope 1.0",
   "status": "ok",
   "exact": false,
-  "snr_db": 48.61,
+  "snr_db": 48.62,
   "class": "audible",
   "envelope_correlation": 1.0,
   "onset_delta_ms": 0.0,

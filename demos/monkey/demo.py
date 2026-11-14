@@ -57,6 +57,10 @@ WAIT_LOOP = "where in the game's wait loop the stop landed, which follows the CD
 STOP_PLACE = {key: WAIT_LOOP for key in ("pc", "regs", "instruction", "cause")}
 #: What a step that stops in the game's wait loop shows of where it stopped, its summary too.
 STOP_IN_LOOP = {"summary": WAIT_LOOP, **STOP_PLACE}
+#: Where the game keeps its own pointer, in its 320 x 200 units: two words of `MONKEY.EXE`'s main
+#: block, this pressing and conf. Declared once the game runs, since the launcher's language menu
+#: is another program and holds other data there.
+GAME_POINTER = {"x": "2000:94EA", "y": "2000:94EC", "bytes": 2}
 #: Where the pointer waits while a screen is judged: over the sky, off every region the map signs.
 SKY = {"op": "send_mouse", "x": 250, "y": 20}
 #: Where the pointer goes once a line is picked: above the menu, so the next one is judged whole.
@@ -453,9 +457,8 @@ STEPS = [
     Step("title", "perform", lambda run: {"steps": at_tick("part one", ARRIVE_S, run),
                                           "summaries": True},
          performed("the title card, judged at SCUMM's tick"), volatile=STOP_IN_LOOP),
-    act("sweep", [{"op": "send_mouse", "x": 319, "y": 199}, {"op": "send_mouse", "x": 0, "y": 0},
-                  SKY], "behind the title card, the pointer swept to both corners so the game's "
-                        "own pointer and the driver's agree"),
+    Step("pointer", "screen_map_write", {"method": "pointer", "pointer": GAME_POINTER},
+         lambda reply, run: "the game's own pointer declared: each move is steered onto it"),
     go("dock", [], "dock"),
     go("hover poster", hover("poster"), "dock: walk to poster"),
     go("to the poster", [click("poster")], "by the poster"),

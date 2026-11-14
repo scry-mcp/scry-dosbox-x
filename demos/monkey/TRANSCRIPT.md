@@ -667,80 +667,22 @@
 
 </details>
 
-**9. `perform`**: OK sweep: behind the title card, the pointer swept to both corners so the game's own pointer and the driver's agree
+**9. `screen_map_write`**: OK pointer: the game's own pointer declared: each move is steered onto it
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "steps": [
-    {"op": "send_mouse", "x": 319, "y": 199},
-    {"op": "send_mouse", "x": 0, "y": 0},
-    {"op": "send_mouse", "x": 250, "y": 20}
-  ],
-  "summaries": true
+  "method": "pointer",
+  "pointer": {"x": "2000:94EA", "y": "2000:94EC", "bytes": 2}
 }
 ```
 
 ```json
 {
-  "summary": "<volatile>",
+  "summary": "screen_map_write pointer: the program's pointer at 2000:94EA and 2000:94EC, 2 bytes each",
   "status": "ok",
-  "ran": [
-    {
-      "step": 0,
-      "op": "send_mouse",
-      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
-    },
-    {
-      "step": 1,
-      "op": "send_mouse",
-      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
-    },
-    {
-      "step": 2,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "<volatile>",
-        "status": "ok",
-        "x": 250,
-        "y": 20,
-        "units": "screen",
-        "route": "guest",
-        "pointer": {
-          "screen": {"x": 250, "y": 20, "width": 320, "height": 200},
-          "mouse": {"x": 500, "y": 20, "max_x": 639, "max_y": 199},
-          "buttons": [],
-          "bios_mode": "0x13"
-        },
-        "driver_arrived": true,
-        "polls": "<volatile>",
-        "pc": "<volatile>",
-        "cpu_mode": "real",
-        "stop_seq": "<volatile>",
-        "frame": "<volatile>",
-        "instruction": "<volatile>",
-        "regs": "<volatile>",
-        "watches": [],
-        "cause": "<volatile>",
-        "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-        "motion": true,
-        "verify": {
-          "checked": false,
-          "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-        },
-        "session": "<volatile>"
-      }
-    }
-  ],
-  "steps_total": 3,
-  "truncated": false,
-  "ran_path": "<volatile>",
-  "replies_path": "<volatile>",
-  "stops": "<volatile>",
-  "steps_completed": 3,
-  "failed_at": {"available": false, "why": "no step failed"},
-  "held": 0,
+  "pointer": {"x": "2000:94EA", "y": "2000:94EC", "bytes": 2},
   "session": "<volatile>"
 }
 ```
@@ -2572,12 +2514,13 @@
         "action": "click",
         "route": "guest",
         "pointer": {
-          "screen": {"x": 60, "y": 148, "width": 320, "height": 200},
-          "mouse": {"x": 120, "y": 148, "max_x": 639, "max_y": 199},
+          "screen": {"x": 55, "y": 148, "width": 320, "height": 200},
+          "mouse": {"x": 110, "y": 148, "max_x": 639, "max_y": 199},
           "buttons": [],
-          "bios_mode": "0x13"
+          "bios_mode": "0x13",
+          "program": {"x": 60, "y": 148, "corrections": 0}
         },
-        "driver_arrived": true,
+        "arrived": true,
         "polls": "<volatile>",
         "pc": "<volatile>",
         "cpu_mode": "real",
@@ -2588,7 +2531,6 @@
         "watches": [],
         "cause": "<volatile>",
         "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-        "motion": true,
         "verify": {
           "checked": false,
           "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
@@ -3041,7 +2983,7 @@
 
 ```json
 {
-  "summary": "audio_record wav 560 frames: ELAPSED, 354653 samples at 44100 Hz at ./tmp/demos/monkey/theme.wav",
+  "summary": "audio_record wav 560 frames: ELAPSED, 354564 samples at 44100 Hz at ./tmp/demos/monkey/theme.wav",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": "<volatile>",
@@ -3064,10 +3006,10 @@
   "began": true,
   "ended": true,
   "path": "./tmp/demos/monkey/theme.wav",
-  "bytes": 1418656,
+  "bytes": 1418300,
   "channels": 2,
   "sample_rate_hz": 44100,
-  "samples": 354653,
+  "samples": 354564,
   "emulated_s": "<volatile>",
   "sample_min": -17908,
   "sample_max": 18280,
@@ -3077,7 +3019,7 @@
 
 </details>
 
-**46. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.61 dB
+**46. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
 
 <details><summary>call and reply</summary>
 
@@ -3092,10 +3034,10 @@
 
 ```json
 {
-  "summary": "audio_compare diff: audible, SNR 48.61 dB, envelope 1.0",
+  "summary": "audio_compare diff: audible, SNR 48.62 dB, envelope 1.0",
   "status": "ok",
   "exact": false,
-  "snr_db": 48.61,
+  "snr_db": 48.62,
   "class": "audible",
   "envelope_correlation": 1.0,
   "onset_delta_ms": 0.0,
