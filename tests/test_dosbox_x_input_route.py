@@ -178,7 +178,7 @@ def _steered(world: _World, aim: tuple[int, int], monkeypatch: pytest.MonkeyPatc
     before = inputs.parse_report(world.line())
     return inputs._steer(cast(Any, world), cast(Any, parked or world), Pointer("a", "b", 2),
                          ((0, 0), (0, 0)), aim, target or (world.driver[0], world.driver[1]),
-                         before, world.program())
+                         before, world.program())[:2]
 
 
 @pytest.mark.parametrize("lag", [0, 6])
@@ -318,24 +318,111 @@ def test_both_axes_are_bounded_on_the_screen_and_in_the_driver(tmp_path: Path) -
     assert fake.commands_sent[-2] == [inputs.move_command(636, 196)]
 
 
-def test_a_pointer_read_on_target_while_the_driver_maps_elsewhere_is_not_called_arrived(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A program that integrates the driver's motion at its own ratio can read on target while
-    the driver sits on another screen unit: the reply says `arrived: false` and names the
-    disagreement, instead of claiming the click landed where it was asked."""
+def _program_pointer(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                     program: Callable[[Any], tuple[int, int]]) -> Any:
+    """A parked guest in mode 13h whose map declares the pointer `program` reads."""
     from scry_core import screen_map
     fake = _guest(tmp_path)
     fake.running = False                       # parked, so the move is steered
     fake.video_mode = 0x13                     # 320x200 graphics
-    fake.pointer = (0, 0)
     dstate.STATE.maps = screen_map.Maps()
     dstate.STATE.maps.pointer = Pointer("1000:0010", "1000:0012", 2)
-    monkeypatch.setattr(inputs, "program_reader",
-                        lambda _s, _p: lambda: (fake.pointer[0] // 3, fake.pointer[1]))
+    monkeypatch.setattr(inputs, "program_reader", lambda _s, _p: lambda: program(fake))
+    return fake
+
+
+def test_a_program_pointer_on_target_arrives_wherever_the_driver_sits(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A program that integrates the driver's motion takes a click where its own pointer is."""
+    fake = _program_pointer(tmp_path, monkeypatch, lambda f: (f.pointer[0] // 3, f.pointer[1]))
+    fake.pointer = (0, 0)
     got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
     assert got["status"] == "ok", got
-    assert got["arrived"] is False, got
-    assert inputs.POINTER_DRIVER_DISAGREE in got["note"], got
+    assert got["pointer"]["screen"]["x"] != 100, got
+    assert got["arrived"] is True and "note" not in got and "asked" not in got, got
+
+
+def _moved(fake: Any) -> bool:
+    return any(c[:1] == b"M" for sent in fake.commands_sent for c in sent)
+
+
+@pytest.mark.parametrize(("start", "reset", "seen"), [
+    ((639, 199), (319, 199), None),
+    ((639, 199), (639, 99), None),
+    ((319, 199), (639, 199), (639, 199)),     # a widening of an earlier call, reset since
+])
+def test_a_driver_range_that_changed_under_the_steering_is_not_called_arrived(
+        start: tuple[int, int], reset: tuple[int, int], seen: tuple[int, int] | None,
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The program sets the driver's range (INT 33h AX=07h/08h) once the move is under way, even
+    to one the steering widened to in an earlier call."""
+    def resetting(f: Any) -> tuple[int, int]:
+        if _moved(f):
+            f.mouse_max = reset
+        return f.pointer[0] // 3, f.pointer[1]
+    fake = _program_pointer(tmp_path, monkeypatch, resetting)
+    fake.pointer, fake.mouse_max = (0, 0), start
+    if seen is not None:
+        fake.driver_range, fake.driver_range_seen = {"x": seen[0], "y": seen[1]}, seen
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert got["status"] == "ok", got
+    assert got["arrived"] is False and "asked" in got, got
+    assert got["note"] == inputs.POINTER_DRIVER_DISAGREE, got
+
+
+def test_a_changed_range_with_the_driver_on_the_unit_asked_is_no_disagreement(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A program that reads the driver's position agrees with it whatever the range."""
+    def reading(f: Any) -> tuple[int, int]:
+        if _moved(f):
+            f.mouse_max = (1279, 199)
+        return inputs.to_screen(f.pointer[0], 320, f.mouse_max[0]), f.pointer[1]
+    fake = _program_pointer(tmp_path, monkeypatch, reading)
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert got["status"] == "ok" and fake.mouse_max == (1279, 199), got
+    assert got["arrived"] is True and "note" not in got, got
+
+
+def test_a_pointer_that_never_arrives_is_not_blamed_on_a_changed_range(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def held(f: Any) -> tuple[int, int]:
+        if _moved(f):
+            f.mouse_max = (319, 199)
+        return min(f.pointer[0] // 3, 50), f.pointer[1]
+    _program_pointer(tmp_path, monkeypatch, held)
+    monkeypatch.setattr(inputs, "TAKE_RETRACES", 0)    # the double runs no retraces
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert got["status"] == "ok", got
+    assert got["arrived"] is False and "note" not in got, got
+
+
+def test_a_range_a_click_sets_is_not_the_move_s(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A range the program sets on the click (a menu that opens) is not the move's."""
+    fake = _program_pointer(tmp_path, monkeypatch, lambda f: (f.pointer[0] // 3, f.pointer[1]))
+    fake.pointer = (0, 0)
+    send = fake.send_commands
+
+    def clicked(commands: list[bytes], advance: Any = None) -> list[str]:
+        if any(c[:1] == b"B" for c in commands):
+            fake.mouse_max = (319, 199)
+        return cast(list[str], send(commands, advance))
+    fake.send_commands = clicked
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50, button="left"))
+    assert got["status"] == "ok" and fake.mouse_max == (319, 199), got
+    assert got["arrived"] is True and "note" not in got, got
+
+
+def test_a_range_the_steering_widened_itself_is_no_disagreement(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """An aim past what the driver's range lets the program reach widens the range."""
+    fake = _program_pointer(tmp_path, monkeypatch,
+                            lambda f: (f.pointer[0] // 3 + 20, f.pointer[1]))
+    got = cast(dict[str, Any], server.send_mouse(x=300, y=50))
+    assert got["status"] == "ok", got
+    assert fake.mouse_max != (639, 199), fake.mouse_max
+    assert got["pointer"]["screen"]["x"] != 300, got
+    assert got["arrived"] is True and "note" not in got, got
 
 
 def test_a_program_s_pointer_that_cannot_be_read_before_the_move_is_refused_unsent(

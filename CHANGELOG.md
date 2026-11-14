@@ -4,6 +4,12 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A steered `send_mouse` whose program pointer is on the place answers `arrived: true` wherever
+  the driver sits: a program that adds the driver's motion to a pointer of its own takes a
+  click where that pointer is, so moves that answered `arrived: false` with a note about the
+  driver disagreeing now answer true. The note and the false answer remain for one case, a
+  driver range that changed during the move without the steering changing it; a range the
+  program sets on the click itself no longer counts.
 - `start`'s `plan` and `drive`'s `act` say what a step looks like, `{"op": <tool>, ...arguments}`,
   in the words `perform` uses: a first call no longer guesses the key and meets a refusal asking
   for `op`.

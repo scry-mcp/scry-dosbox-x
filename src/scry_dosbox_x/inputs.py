@@ -658,10 +658,10 @@ NO_MOTION_WHY = ("this build's integration device takes no relative motion, so t
 UNREAD_MOTION_WHY = ("the session has no log, where the stub says whether the build takes "
                      "relative motion")
 POINTER_DRIVER_DISAGREE = (
-    "the program's pointer reads on target but the driver's position does not match it, so the "
-    "two disagree and a click, which goes through the driver, would land where the driver is, "
-    "not where it was asked: the driver's range changed under the steering (INT 33h AX=07h/08h, "
-    "as a program resetting it or a window move does)")
+    "the program's pointer reads on target, but the driver is on another screen unit and its "
+    "range (INT 33h AX=07h/08h) is not the one it had before the move, a change the steering did "
+    "not make: a program that takes a click's position from the driver would click where the "
+    "driver is")
 
 
 def _motion(session: ds.Session) -> bool | dict[str, Any]:
@@ -705,11 +705,13 @@ def program_reader(session: ds.Session, program: Pointer) -> Callable[[], tuple[
 def _steer(session: ds.Session, parked: Retraces, program: Pointer,
            places: tuple[tuple[int, int], tuple[int, int]], aim: tuple[int, int],
            target: tuple[int, int], before: Report, start: tuple[int, int]
-           ) -> tuple[Report, dpointer.Steered | None]:
+           ) -> tuple[Report, dpointer.Steered | None, bool]:
     """The driver moved to `target`, then nudged until the program's own pointer, at `start`
-    before the move, is on `aim`; the report after the last nudge. A mode with no known size has
-    no ratio to nudge by, and is left as it is."""
+    before the move, is on `aim`; the report after the last nudge, and whether the driver's
+    range is not the one `before` had or the steering widened it to. A mode with no known size
+    has no ratio to nudge by, and is left as it is."""
     read = program_reader(session, program)
+    own_range = [(before.max_x, before.max_y)]
     last = [start]
     sent_to = [before.x, before.y]
     moved = [False]
@@ -738,7 +740,7 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
     after = _report(session, parked)
     size = after.units()
     if size is None:
-        return after, None
+        return after, None, False
     latest = [after]
 
     def nudge(dx: int, dy: int) -> tuple[int, int]:
@@ -787,6 +789,7 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
             return None
         _send(session, [range_command(*wanted)], parked)
         latest[0] = _report(session, parked)
+        own_range[0] = (latest[0].max_x, latest[0].max_y)
         session.driver_range = {"x": wanted[0], "y": wanted[1]}
         session.driver_range_seen = (latest[0].max_x, latest[0].max_y)
         session.altered = True
@@ -795,7 +798,7 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
         aim,
         seen_now,
         nudge, ((after.max_x + 1) / size[0], (after.max_y + 1) / size[1]), resync, widen)
-    return latest[0], steered
+    return latest[0], steered, (latest[0].max_x, latest[0].max_y) != own_range[0]
 
 
 #: How many times a pinned sweep's far end is moved back toward the origin.
@@ -888,12 +891,13 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         end_at = end
         steered: dpointer.Steered | None = None
         range_before = session.driver_range is not None
+        range_moved = False
         try:
             if program is not None and start is not None and parked is not None:
                 assert places is not None and x is not None and y is not None
                 assert target is not None
-                after, steered = _steer(session, parked, program, places, (x, y), target, before,
-                                        start)
+                after, steered, range_moved = _steer(session, parked, program, places, (x, y),
+                                                     target, before, start)
                 if to_x is not None and to_y is not None:
                     end_at = _target(after, to_x, to_y, units)    # the range may have grown
                 if buttons := pressing(end_at):
@@ -909,7 +913,7 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
                                                    to_y if end_at else y, units)
         landed = dpointer.arrived(steered, driver_landed, end_at is not None)
         disagreed = (steered is not None and steered.arrived and arrival is not None
-                     and not driver_landed)
+                     and not driver_landed and range_moved)
         if disagreed:
             landed = False
         shown = _pointer(after)

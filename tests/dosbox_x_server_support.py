@@ -737,6 +737,11 @@ class NamesFake(SessionGates):
                 x, y = int.from_bytes(c[1:3], "little"), int.from_bytes(c[3:5], "little")
                 self.pointer = (min(x, self.mouse_max[0]) // snap * snap,
                                 min(y, self.mouse_max[1]) // snap * snap)
+            elif c[:1] == b"W":
+                self.mouse_max = (int.from_bytes(c[1:3], "little"),
+                                  int.from_bytes(c[3:5], "little"))
+                self.pointer = (min(self.pointer[0], self.mouse_max[0]),
+                                min(self.pointer[1], self.mouse_max[1]))
             elif c[:1] == b"R":
                 self.reports += 1
                 if self.reports in self.reports_lost:
