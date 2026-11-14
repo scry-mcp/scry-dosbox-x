@@ -12,6 +12,9 @@ What a client of the server notices.
   commands were written and that a key it pressed is left down, where it said some of it may
   have gone in. The next input sends that release before its own commands and says so in
   `note`, where the key used to stay down until something else released it.
+- `log_wait` during a long host call keeps its bound (plus at most one debugger request's),
+  reports in `waited_s` the time it took, and no longer says the machine is still running when
+  nothing answered that question.
 - A steered `send_mouse` whose program pointer is on the place answers `arrived: true` wherever
   the driver sits: a program that adds the driver's motion to a pointer of its own takes a
   click where that pointer is, so moves that answered `arrived: false` with a note about the

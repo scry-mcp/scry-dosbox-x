@@ -307,7 +307,7 @@ Live, the bytes a listing shows are held to the memory `read_memory` reads.
 
 **Only whole lines are read, from a byte offset**. A log written through stdio ends mid-line between flushes, and a reader indexing by line number consumes an index on the fragment, so the completed line is never tested. Every ending of a wait takes one last read, since a line written between the emulator check and the deadline would never be looked for.
 
-**A wait on a machine stopped at the debugger ends at once**, refused with the position: a stopped guest writes nothing, and expiry would blame the program. The check is the debugger's `RUNSTATE`, asked at every poll, so a stop landing during the wait comes back as the stop, not "still running".
+**A wait on a machine stopped at the debugger ends at once**, refused with the position: a stopped guest writes nothing, and expiry would blame the program. The check is the debugger's `RUNSTATE`, asked at every poll, so a stop landing during the wait comes back as the stop, not "still running". A channel that does not answer (the emulator inside a long host call) is asked once, since each question costs the channel's whole bound: the wait then reads the file alone and ends within its own bound plus that one question, and its `TIMEOUT` says the run state is not known rather than "still running".
 
 **The emulator's own categories are chosen at `start`** (`log_categories`, a `[log]` category and its level) and land in the `emulator` channel. They say what the emulator did, in its words; a category at `debug` writes a line per event (`files` one per read call), so turn on what the question needs.
 

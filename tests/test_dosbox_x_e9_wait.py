@@ -14,6 +14,7 @@ from types import SimpleNamespace
 from typing import cast
 
 import pytest
+from channel_double import SilentChannel
 from scry_core import log_wait as core_wait
 from scry_core import progress as mprogress
 from scry_core import vocabulary as vocab
@@ -450,6 +451,29 @@ def test_a_wait_reads_the_logfile_while_the_debugger_channel_is_busy(
     assert busy.e9_wait("BOOT", seconds=0.3)["already"] is True
     expired = busy.e9_wait("never_going_to_appear", seconds=0.2)
     assert expired["verdict"] == "TIMEOUT", expired
+
+
+def test_a_wait_on_a_silent_channel_keeps_its_bound_and_claims_no_run_state(
+        tmp_path: Path) -> None:
+    """Each question to a silent channel costs the channel's whole bound: the wait asks it once,
+    so it ends within its own bound and that one question, `waited_s` is the time it took, and
+    the note does not claim a run state nothing answered."""
+    log = tmp_path / "guest.log"
+    log.write_text("Bochs port E9h: OPEN BEGIN T=000D6087\n", encoding="utf-8")
+    silent = SilentChannel(0.5)               # a question that costs most of the bound
+    busy = LogSession(log)
+    busy.at_debugger = silent.ask  # type: ignore[method-assign]
+    try:
+        began = time.monotonic()
+        got = busy.log_wait("OPEN END", seconds=0.8, channel="guest")
+        took = time.monotonic() - began
+    finally:
+        silent.close()
+    assert got["verdict"] == "TIMEOUT", got
+    assert took <= 0.8 + silent.seconds + 0.1 and silent.asked == 1, (took, silent.asked)
+    assert abs(float(cast(float, got["waited_s"])) - round(took, 1)) <= 0.3, (got["waited_s"], took)
+    note = str(got["note"])
+    assert "still running" not in note and "not known" in note, note
 
 
 def test_a_log_that_shrank_says_it_lost_lines(tmp_path: Path) -> None:

@@ -13,9 +13,9 @@ from scry_core.progress import Progress, no_progress
 from scry_core.prose import counted
 from scry_core.reply_contract import Invalid
 
+from scry_dosbox_x import control, stub_link
 from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import session as ds
-from scry_dosbox_x import stub_link
 
 
 def e9(ses: ds.Session, pattern: str, limit: int = 40) -> tuple[list[str], int]:
@@ -210,14 +210,19 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
     if advance is not None:
         return _parked_wait(rx, pattern, channel, seconds, fresh, advance)
     asked: list[bool] = []
+    silent: list[Invalid] = []
 
     def stopped() -> bool:
+        # Each question to a silent channel costs its whole bound, so asking at every look
+        # would run the wait far past its own: once silent, the file alone is read.
+        if silent:
+            return False
         try:
             at = ses.at_debugger()
         except Invalid as e:
-            # A channel busy in a long host call (a guest stuck in FindFirst) is not a stop:
-            # the machine is running, so the wait goes on reading the file.
+            # A channel busy in a long host call (a guest stuck in FindFirst) is not a stop.
             if e.code == "host_failed":
+                silent.append(e)
                 return False
             raise
         asked.append(at)
@@ -235,7 +240,16 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
     if got.ending == "GONE":
         raise Invalid("session_broken", core_wait.gone_message(pattern, got, seconds))
     region = "in the log altogether" if mark == 0 else f"since the mark at byte {mark}"
+    note = core_wait.timeout_note(pattern, got, region, "guest")
+    if silent:
+        why = (silent[0].silence if isinstance(silent[0], control.ChannelSilent)
+               else "the debugger channel did not answer when asked")
+        note = (f"{note.removesuffix(STILL_RUNNING)} Whether the machine is running or stopped "
+                f"is not known: {why}, and {control.UNTIL_IT_ENDS}")
     return {"verdict": contract.TIMEOUT, "pattern": pattern, "channel": channel,
             "arrived_during": got.arrived_during, "lines_examined": got.lines_examined,
-            "waited_s": got.waited_s,
-            "note": core_wait.timeout_note(pattern, got, region, "guest")}
+            "waited_s": got.waited_s, "note": note}
+
+
+#: The run state `timeout_note` closes on, which only an answer from the channel backs.
+STILL_RUNNING = " The machine is still running"
