@@ -4,6 +4,11 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A `send_mouse` steered by a map's `pointer` reads the program's pointer only once the program
+  has taken each move: a program that reads the mouse once a pass of its own loop shows a move
+  some retraces late, and a read before then made a nudge look like a pointer that stopped, so
+  the steering swept the corners and ended `arrived: false` with a `reach` the pointer never
+  had. Such a move now arrives; its `polls` include the retraces it waited.
 - `start(symbols=, base_from="program")` on a DJGPP program places its symbols at the program's
   own DPMI selector, not the DOS load segment: the go32 stub lives in the load segment while the
   protected-mode code runs off the selector, so a breakpoint armed on such a symbol now fires

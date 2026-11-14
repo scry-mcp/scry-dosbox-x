@@ -17,7 +17,7 @@ import contextlib
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any, TypeVar, cast
 
 from scry_core import cancel
 from scry_core import reply_contract as contract
@@ -357,9 +357,18 @@ STOP_KEYS = ("pc", "cpu_mode", "stop_seq", "frame", "instruction", "regs", "watc
 def _send(session: ds.Session, commands: list[bytes],
           advance: Retraces | None = None) -> list[str]:
     """The commands down the stub's link, its report lines back."""
+    return _observing(session, lambda: session.send_commands(commands) if advance is None
+                      else session.send_commands(commands, advance))
+
+
+_Ran = TypeVar("_Ran")
+
+
+def _observing(session: ds.Session, run: Callable[[], _Ran]) -> _Ran:
+    """`run` on the parked machine; a declared breakpoint that stopped it there is the session's
+    stop from then on."""
     try:
-        return (session.send_commands(commands) if advance is None
-                else session.send_commands(commands, advance))
+        return run()
     except ds.Invalid as e:
         if e.code == "wait_stopped":
             running.observe_stop(session)
@@ -695,9 +704,38 @@ def program_reader(session: ds.Session, program: Pointer) -> Callable[[], tuple[
 
 def _steer(session: ds.Session, parked: Retraces, program: Pointer,
            places: tuple[tuple[int, int], tuple[int, int]], aim: tuple[int, int],
-           after: Report) -> tuple[Report, dpointer.Steered | None]:
-    """The driver nudged until the program's own pointer is on `aim`; the report after the last
-    nudge. A mode with no known size has no ratio to nudge by, and is left as it is."""
+           target: tuple[int, int], before: Report, start: tuple[int, int]
+           ) -> tuple[Report, dpointer.Steered | None]:
+    """The driver moved to `target`, then nudged until the program's own pointer, at `start`
+    before the move, is on `aim`; the report after the last nudge. A mode with no known size has
+    no ratio to nudge by, and is left as it is."""
+    read = program_reader(session, program)
+    last = [start]
+    sent_to = [before.x, before.y]
+    moved = [False]
+
+    def move(x: int, y: int) -> None:
+        _send(session, [move_command(x, y)], parked)
+        moved[0] = moved[0] or [x, y] != sent_to
+        sent_to[:] = [x, y]
+
+    def seen_now() -> tuple[int, int]:
+        """The program's pointer once it took the last move: a program reads the mouse once a
+        pass of its own loop, so for some retraces after the stub took a move its pointer still
+        shows the one before. A pointer its clamp holds never changes, and is taken at the
+        bound as it reads."""
+        seen = read()
+        for _ in range(TAKE_RETRACES if moved[0] else 0):
+            if seen != last[0]:
+                break
+            _observing(session, parked)
+            seen = read()
+        moved[0] = False
+        last[0] = seen
+        return seen
+
+    move(*target)
+    after = _report(session, parked)
     size = after.units()
     if size is None:
         return after, None
@@ -705,16 +743,14 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
 
     def nudge(dx: int, dy: int) -> None:
         here = latest[0]
-        _send(session, [move_command(min(max(here.x + dx, 0), here.max_x),
-                                     min(max(here.y + dy, 0), here.max_y))], parked)
+        move(min(max(here.x + dx, 0), here.max_x), min(max(here.y + dy, 0), here.max_y))
         latest[0] = _report(session, parked)
-    seen_now = program_reader(session, program)
 
     def resync() -> tuple[tuple[int, int], tuple[int, int]]:
         here = latest[0]
-        _send(session, [move_command(0, 0)], parked)
+        move(0, 0)
         low = seen_now()
-        _send(session, [move_command(here.max_x, here.max_y)], parked)
+        move(here.max_x, here.max_y)
         latest[0] = _report(session, parked)
         return low, seen_now()
     def interior_reach(reach: tuple[tuple[int, int], tuple[int, int]]
@@ -731,7 +767,7 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
                 break
             for axis in pinned:
                 driver[axis] //= 2
-            _send(session, [move_command(*driver)], parked)
+            move(*driver)
             high = list(seen_now())
         return ((driver[0], abs(high[0] - low[0])), (driver[1], abs(high[1] - low[1])))
 
@@ -763,6 +799,9 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
 
 #: How many times a pinned sweep's far end is moved back toward the origin.
 CLAMP_HALVINGS = 6
+#: How many retraces a read after a move waits for the program to take it: longer than a
+#: program's lag, and no longer than that needs, since a pointer its clamp holds waits all of it.
+TAKE_RETRACES = 24
 
 
 def _range_for(screen: int, max_: int, span: int) -> int:
@@ -830,6 +869,9 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
                dpointer.unsteered(parked is not None, target is not None, units, sized))
     places = (dpointer.locate(program, lambda ref: placement.pointer_target(ref, session))
               if program is not None and target is not None and why_not is None else None)
+    # Read before the post, whose failures say the commands may have gone in.
+    start = (program_reader(session, program)()
+             if program is not None and places is not None else None)
 
     def pressing(end_at: tuple[int, int] | None) -> list[bytes]:
         if button is None:
@@ -846,11 +888,11 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         steered: dpointer.Steered | None = None
         range_before = session.driver_range is not None
         try:
-            if program is not None and places is not None and parked is not None:
-                assert x is not None and y is not None
-                _send(session, moves, parked)
-                after = _report(session, parked)
-                after, steered = _steer(session, parked, program, places, (x, y), after)
+            if program is not None and start is not None and parked is not None:
+                assert places is not None and x is not None and y is not None
+                assert target is not None
+                after, steered = _steer(session, parked, program, places, (x, y), target, before,
+                                        start)
                 if to_x is not None and to_y is not None:
                     end_at = _target(after, to_x, to_y, units)    # the range may have grown
                 if buttons := pressing(end_at):

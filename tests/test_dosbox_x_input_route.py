@@ -18,6 +18,7 @@ from scry_core.screen_map import Pointer
 from scry_dosbox_x import inputs, running, server
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import logs as dlogs
+from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
 
@@ -118,20 +119,31 @@ def test_the_range_that_spans_a_screen_comes_from_what_a_sweep_measured(
 class _World:
     """The stub's driver and a program that follows its motion: the program's pointer is `base`
     plus the driver's position over `per` driver units a program unit, whatever the range, and
-    held on the program's own screen when `edge` is given."""
+    held on the program's own screen when `edge` is given. The stub takes each command at a
+    retrace, and the program shows the driver as it was `lag` retraces ago, as one that reads
+    the mouse once a pass of its own loop does."""
 
     def __init__(self, max_: tuple[int, int] = (639, 199), per: tuple[float, float] = (2.0, 1.0),
-                 base: tuple[int, int] = (352, 284), edge: tuple[int, int] | None = None) -> None:
+                 base: tuple[int, int] = (352, 284), edge: tuple[int, int] | None = None,
+                 lag: int = 0) -> None:
         self.driver, self.max, self.per, self.base = [320, 100], list(max_), per, base
         self.edge = edge
         self.ranges: list[bytes] = []
         self.driver_range: dict[str, int] | None = None
         self.driver_range_seen: tuple[int, int] | None = None
         self.altered = False
+        self.lag, self.retraces, self.commands = lag, 0, 0
+        self.history = [(-lag, list(self.driver))]
+
+    def __call__(self) -> float:
+        """One retrace of the parked post."""
+        self.retraces += 1
+        return float(self.retraces)
 
     def program(self) -> tuple[int, int]:
-        x = self.base[0] + round(self.driver[0] / self.per[0])
-        y = self.base[1] + round(self.driver[1] / self.per[1])
+        driver = next(d for at, d in reversed(self.history) if self.retraces - at >= self.lag)
+        x = self.base[0] + round(driver[0] / self.per[0])
+        y = self.base[1] + round(driver[1] / self.per[1])
         return (x, y) if self.edge is None else (min(x, self.edge[0]), min(y, self.edge[1]))
 
     def line(self) -> str:
@@ -142,6 +154,9 @@ class _World:
     def send_commands(self, commands: list[bytes], advance: Any = None) -> list[str]:
         out = []
         for c in commands:
+            if advance is not None:
+                advance()
+            self.commands += 1
             if c[:1] == b"M":
                 self.driver = [min(int.from_bytes(c[1:3], "little"), self.max[0]),
                                min(int.from_bytes(c[3:5], "little"), self.max[1])]
@@ -151,20 +166,25 @@ class _World:
                 self.driver = [min(self.driver[0], self.max[0]), min(self.driver[1], self.max[1])]
             elif c[:1] == b"R":
                 out.append(self.line())
+            self.history.append((self.retraces, list(self.driver)))
         return out
 
 
-def _steered(world: _World, aim: tuple[int, int],
-             monkeypatch: pytest.MonkeyPatch) -> Any:
+def _steered(world: _World, aim: tuple[int, int], monkeypatch: pytest.MonkeyPatch,
+             target: tuple[int, int] | None = None,
+             parked: Callable[[], float] | None = None) -> Any:
+    """`_steer` from the call's own move to `target`, by default where the driver already is."""
     monkeypatch.setattr(inputs, "program_reader", lambda _s, _p: world.program)
-    after = inputs.parse_report(world.line())
-    return inputs._steer(cast(Any, world), cast(Any, None), Pointer("a", "b", 2),
-                         ((0, 0), (0, 0)), aim, after)
+    before = inputs.parse_report(world.line())
+    return inputs._steer(cast(Any, world), cast(Any, parked or world), Pointer("a", "b", 2),
+                         ((0, 0), (0, 0)), aim, target or (world.driver[0], world.driver[1]),
+                         before, world.program())
 
 
+@pytest.mark.parametrize("lag", [0, 6])
 def test_an_aim_past_the_drivers_range_widens_it_once_and_the_pointer_arrives(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    world = _World()
+        lag: int, monkeypatch: pytest.MonkeyPatch) -> None:
+    world = _World(lag=lag)
     _report, steered = _steered(world, (900, 600), monkeypatch)
     assert steered is not None and steered.arrived and steered.seen == (900, 600), steered
     assert world.ranges == [inputs.range_command(2043, 767)], world.ranges
@@ -197,6 +217,54 @@ def test_a_widening_never_narrows_an_axis_the_range_already_covers(
     world = _World(max_=(639, 1500))
     _steered(world, (900, 600), monkeypatch)
     assert world.max[1] == 1500 and world.max[0] >= 2043, world.max
+
+
+def test_a_program_that_takes_each_move_retraces_late_is_steered_on_with_no_sweep(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Read at once, its pointer still shows the move before: a nudge seems to move nothing, the
+    steering gives up on it and sweeps the corners."""
+    world = _World(base=(0, 0), lag=6)
+    target = (inputs.to_driver(100, 1024, 639), inputs.to_driver(50, 768, 199))
+    _report, steered = _steered(world, (100, 50), monkeypatch, target)
+    assert steered.arrived and steered.seen == (100, 50) and steered.reach is None, steered
+
+
+def test_a_sweep_reads_each_corner_once_the_program_took_the_move_there(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Two program units a driver unit leave an odd aim between two of them, so the steering
+    fails and sweeps; each corner is the pointer at that corner, not the one before the move."""
+    world = _World(per=(0.5, 1.0), lag=6)
+    _report, steered = _steered(world, (501, 300), monkeypatch, (60, 10))
+    assert not steered.arrived, steered
+    assert steered.reach == ((352, 284), (352 + 639 * 2, 284 + 199)), steered
+
+
+def test_a_pointer_a_clamp_holds_is_read_at_the_bound_and_given_up_on_with_its_span(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Every move is waited on in vain: each read after one ends at the bound and takes the
+    pointer as it reads, and the steering gives up with the span it found. The last nudge, at
+    the driver's top already, moves nothing and is not waited on."""
+    world = _World(edge=(352, 284))
+    _report, steered = _steered(world, (400, 300), monkeypatch, (60, 10))
+    assert steered == dpointer.Steered((352, 284), False, 2, ((352, 284), (352, 284))), steered
+    assert world.retraces - world.commands == 4 * inputs.TAKE_RETRACES, (
+        world.retraces, world.commands)
+
+
+def test_a_breakpoint_that_stops_the_wait_for_the_program_is_the_session_s_stop(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The retraces waited on run the machine as a send's do, so a stop there is observed too."""
+    world = _World(base=(0, 0), lag=6)
+    stops: list[object] = []
+    monkeypatch.setattr(running, "observe_stop", stops.append)
+
+    def parked() -> float:
+        if world.retraces == 2:                   # the move and its report are in
+            raise ds.Invalid("wait_stopped", "a declared breakpoint stopped the machine")
+        return world()
+    with pytest.raises(ds.Invalid, match="breakpoint"):
+        _steered(world, (100, 50), monkeypatch, (62, 50), parked)
+    assert stops == [world], stops
 
 
 def test_a_widened_range_is_in_every_session_block_while_it_holds(
@@ -268,6 +336,25 @@ def test_a_pointer_read_on_target_while_the_driver_maps_elsewhere_is_not_called_
     assert got["status"] == "ok", got
     assert got["arrived"] is False, got
     assert inputs.POINTER_DRIVER_DISAGREE in got["note"], got
+
+
+def test_a_program_s_pointer_that_cannot_be_read_before_the_move_is_refused_unsent(
+        tmp_path: Path) -> None:
+    """The steering reads the program's pointer before its first move; a read that fails there
+    sent nothing, so the call is refused as one that can be made again."""
+    from scry_core import screen_map
+    fake = _guest(tmp_path)
+    fake.running = False
+    fake.video_mode = 0x13
+    dstate.STATE.maps = screen_map.Maps()
+    dstate.STATE.maps.pointer = Pointer("1000:0010", "1000:0012", 2)
+
+    def unreadable(*_a: object, **_k: object) -> bytes:
+        raise ds.Invalid("unexpected_answer", "the memory read did not come")
+    fake.read_bytes = unreadable
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert got["status"] == "INVALID" and "delivered" not in got, got
+    assert [c for c in fake.commands_sent if c != [inputs.OP_REPORT]] == [], fake.commands_sent
 
 
 def test_the_stub_s_own_line_is_never_the_program_s_reaction(tmp_path: Path) -> None:
