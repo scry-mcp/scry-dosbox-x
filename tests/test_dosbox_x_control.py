@@ -8,9 +8,11 @@ import socket
 import threading
 import time
 from collections.abc import Callable, Iterable
+from pathlib import Path
 from typing import Any
 
 import pytest
+from channel_double import Machine, SilentChannel, session_over
 from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
@@ -134,6 +136,22 @@ def test_a_reply_that_never_ends_is_host_failed_not_a_guess() -> None:
         assert e.value.code == "host_failed" and "unknown" in str(e.value)
     finally:
         channel.close()
+
+
+def test_a_running_guest_whose_channel_is_silent_is_said_silent_through_the_session(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The input tools tell "nothing was sent" from the silence's own type, so it has to come
+    through the session's run-state question whole."""
+    monkeypatch.setattr(control, "REPLY_S", 0.2)
+    silent = SilentChannel(0.2)
+    session = session_over(Machine(stopped=False), tmp_path)
+    session.control = silent.channel
+    try:
+        with pytest.raises(control.ChannelSilent) as e:
+            session.at_debugger()
+    finally:
+        silent.close()
+    assert "RUNSTATE" in e.value.silence and e.value.code == "host_failed", e.value.silence
 
 
 def test_an_emulator_that_never_dials_is_no_channel(monkeypatch: pytest.MonkeyPatch) -> None:

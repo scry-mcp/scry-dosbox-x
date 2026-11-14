@@ -25,9 +25,9 @@ from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Code, unavailable
 from scry_core.screen_map import Pointer
 
+from scry_dosbox_x import control, placement, retrace, running, taps
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import logs as dlogs
-from scry_dosbox_x import placement, retrace, running, taps
 from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import program as dprogram
 from scry_dosbox_x import run_state as rs
@@ -290,6 +290,22 @@ def _delivered(e: ds.Invalid, parked: Retraces | None = None) -> Delivered:
     return Delivered(e.code, str(e), {"route": "guest", **_parked_fields(parked)})
 
 
+def _not_sent(kind: str, e: control.ChannelSilent, **fields: Any) -> dict[str, Any]:
+    """A call that wrote nothing of its input: the same call sent again goes in once."""
+    return st.reply(status="INVALID", code=e.code, **fields, delivered=False,
+                    verify={"checked": False, "why": "nothing was sent"},
+                    message=f"the {kind} was NOT sent: nothing of it was written to the guest, "
+                            f"because {e.silence}. {control.UNTIL_IT_ENDS}: send it then")
+
+
+def _unsent(kind: str, e: ds.Invalid, **fields: Any) -> dict[str, Any]:
+    """The reply of a call a silent channel stopped before its post; any other refusal is
+    raised as it came."""
+    if not isinstance(e, control.ChannelSilent):
+        raise e
+    return _not_sent(kind, e, **fields)
+
+
 def _parked_fields(parked: Retraces | None) -> dict[str, Any]:
     return {} if parked is None else parked.fields()
 
@@ -392,7 +408,9 @@ def program_reaction(expect: str) -> str:
 
 def _ready(session: ds.Session, what: str, expect: str | None) -> Retraces | None:
     """A log for `expect`, a stub of this protocol; on a parked machine, the retraces the post
-    will run it by, which needs `RUNSTATE`."""
+    will run it by, which needs `RUNSTATE`. The stop's queue is applied first, as at any
+    tool's first contact."""
+    running.drain_if_stopped(session)
     parked = session.at_debugger()
     if parked:
         running.observe_stop(session)
@@ -612,7 +630,10 @@ def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
               progress: ds.Progress = ds.no_progress, action: str = "press") -> dict[str, Any]:
     """The body of the `send_keys` tool."""
     check_keys(keys, modifiers, expect, seconds)
-    parked = _ready(session, "a key", expect)
+    try:
+        parked = _ready(session, "a key", expect)
+    except ds.Invalid as e:
+        return _unsent("key", e, keys=keys, modifiers=modifiers or [])
     seq = scan_sequence(keys, "+".join(modifiers) if modifiers else "-", action)
     first_key = session.keys_posted == 0
 
@@ -865,20 +886,26 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
     """The body of the `send_mouse` tool. `aimed` is the control a `target` named
     (`screen_map.Maps.target`); a drag presses at `x`, `y` and releases at `to_x`, `to_y`."""
     check_mouse(x, y, button, action, units, expect, seconds, None, to_x, to_y)
-    parked = _ready(session, "a mouse event", expect)
-    before = _report(session, parked)
-    if aimed is not None:
-        _still_the_screen(before, aimed)
-    target = None if x is None or y is None else _target(before, x, y, units)
-    end = None if to_x is None or to_y is None else _target(before, to_x, to_y, units)
-    sized = before.units() is not None
-    why_not = (None if program is None else
-               dpointer.unsteered(parked is not None, target is not None, units, sized))
-    places = (dpointer.locate(program, lambda ref: placement.pointer_target(ref, session))
-              if program is not None and target is not None and why_not is None else None)
-    # Read before the post, whose failures say the commands may have gone in.
-    start = (program_reader(session, program)()
-             if program is not None and places is not None else None)
+    asked: dict[str, Any] = {**({"x": x, "y": y} if x is not None and y is not None else {}),
+                            "units": units,
+                            **({"button": button, "action": action} if button is not None else {})}
+    try:
+        parked = _ready(session, "a mouse event", expect)
+        before = _report(session, parked)
+        if aimed is not None:
+            _still_the_screen(before, aimed)
+        target = None if x is None or y is None else _target(before, x, y, units)
+        end = None if to_x is None or to_y is None else _target(before, to_x, to_y, units)
+        sized = before.units() is not None
+        why_not = (None if program is None else
+                   dpointer.unsteered(parked is not None, target is not None, units, sized))
+        places = (dpointer.locate(program, lambda ref: placement.pointer_target(ref, session))
+                  if program is not None and target is not None and why_not is None else None)
+        # Read before the post, whose failures say the commands may have gone in.
+        start = (program_reader(session, program)()
+                 if program is not None and places is not None else None)
+    except ds.Invalid as e:
+        return _unsent("mouse event", e, **asked)
 
     def pressing(end_at: tuple[int, int] | None) -> list[bytes]:
         if button is None:
@@ -940,8 +967,5 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         if disagreed:
             fields["note"] = POINTER_DRIVER_DISAGREE
         return fields
-    asked: dict[str, Any] = {**({"x": x, "y": y} if x is not None and y is not None else {}),
-                            "units": units,
-                            **({"button": button, "action": action} if button is not None else {})}
     return _post_and_verify(session, "mouse event", post, expect, seconds, progress=progress,
                             parked=parked, **asked)

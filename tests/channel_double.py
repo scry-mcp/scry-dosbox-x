@@ -9,6 +9,7 @@ which `RUNSTATE` then reports. `session_over` builds a `Session` on it with no p
 
 from __future__ import annotations
 
+import socket
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -16,7 +17,8 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from scry_dosbox_x import binary as dosbox_binary
-from scry_dosbox_x import grammar
+from scry_dosbox_x import control, grammar
+from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import session as ds
 
@@ -378,3 +380,23 @@ def protected(machine: Machine) -> Machine:
     machine.selinfo = {"CS": SELINFO_CODE32, **{r: SELINFO_DATA32 for r in ("DS", "ES", "SS")}}
     return machine
 
+
+
+class SilentChannel:
+    """The channel of an emulator inside a long host call: connected, answering nothing, so
+    `ask` (`RUNSTATE`) ends `host_failed` at the bound `seconds`."""
+
+    def __init__(self, seconds: float) -> None:
+        self.channel = control.ControlChannel(lambda: None)
+        self.seconds = seconds
+        self.asked = 0
+        self._emulator = socket.create_connection((control.LOCAL_HOST, self.channel.port))
+
+    def ask(self) -> bool:
+        self.asked += 1
+        ok, _ = self.channel.request(f"EXEC {dbg.RUNSTATE}", self.seconds)
+        raise AssertionError(f"a silent channel answered ({ok})")
+
+    def close(self) -> None:
+        self._emulator.close()
+        self.channel.close()

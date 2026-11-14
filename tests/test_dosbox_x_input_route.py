@@ -6,12 +6,13 @@ line cannot fake, and what a call says when its commands went in and the read-ba
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from channel_double import SilentChannel
 from dosbox_x_server_support import _guest, _names
 from scry_core.screen_map import Pointer
 
@@ -21,6 +22,7 @@ from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
+from scry_dosbox_x.mcp import RECORDER
 
 #: Authored in the format the stub's source prints:
 #: text mode 3, then mode 13h with the left button held.
@@ -546,6 +548,7 @@ def test_a_stub_of_a_newer_protocol_is_refused_too(tmp_path: Path) -> None:
     fake.log = [f"Bochs port E9h: STUB  . scry device=present proto={newer}"]
     got = cast(dict[str, Any], server.send_keys(keys=["a"]))
     assert got["status"] == "INVALID" and f"protocol {newer}" in got["message"], got
+    assert "delivered" not in got, got
     assert fake.commands_sent == []
 
 
@@ -635,6 +638,38 @@ def test_keys_that_failed_part_way_say_some_of_them_may_have_gone_in(tmp_path: P
     got = cast(dict[str, Any], server.send_keys(keys=["a", "b", "c"]))
     assert got["status"] == "INVALID" and got["delivered"] is True, got
     assert got["code"] == "session_broken", got
+
+
+@pytest.fixture
+def silent() -> Iterator[SilentChannel]:
+    channel = SilentChannel(0.2)
+    yield channel
+    channel.close()
+
+
+@pytest.mark.parametrize(("tool", "kw", "echoed"), [
+    ("send_keys", {"keys": ["c", "d"]}, {"keys": ["c", "d"], "modifiers": []}),
+    ("send_mouse", {"x": 200, "y": 80, "units": "mouse"}, {"x": 200, "y": 80, "units": "mouse"})])
+def test_an_input_sent_while_the_channel_is_silent_says_nothing_went_in(
+        tmp_path: Path, silent: SilentChannel, tool: str, kw: dict[str, Any],
+        echoed: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> None:
+    """The run-state question every input asks first gets no reply and no frame is written, so
+    the same input sent again goes in once: the reply says it was not sent, how to learn the
+    host call ended, and asks the silent channel only once."""
+    fake = _guest(tmp_path)
+    fake.at_debugger = silent.ask
+    # A call recorder an earlier case left on reads `parked`, a flag on the real session that
+    # this double answers by asking.
+    monkeypatch.setattr(RECORDER, "recording", None)
+    got = cast(dict[str, Any], getattr(server, tool)(**kw))
+    assert got["status"] == "INVALID" and got["code"] == "host_failed", got
+    assert got.get("delivered") is False, got
+    assert {k: got.get(k) for k in echoed} == echoed, got
+    assert got["verify"] == {"checked": False, "why": "nothing was sent"}, got
+    message = got["message"]
+    assert "NOT sent" in message and "`status`" in message, message
+    assert "whether it acted is unknown" not in message, message
+    assert fake.commands_sent == [] and silent.asked == 1, (fake.commands_sent, silent.asked)
 
 
 def test_a_first_report_that_fails_delivered_nothing(tmp_path: Path) -> None:

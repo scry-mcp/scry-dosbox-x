@@ -207,7 +207,7 @@ def test_a_mouse_move_keeps_its_reply_when_the_session_dies_after_it(
         return delivered
     asked: list[int] = []
 
-    def live() -> object:
+    def live(probe: bool = True) -> object:
         """A session the first time, refused after it, as `live()` refuses a dead one."""
         asked.append(1)
         if len(asked) > 1:
@@ -218,6 +218,21 @@ def test_a_mouse_move_keeps_its_reply_when_the_session_dies_after_it(
     monkeypatch.setattr(inputs, "send_mouse", died)
     out = server.send_mouse(x=1, y=1)
     assert out["status"] == "ok" and out["delivered"] is True, out
+
+
+def test_a_mouse_event_that_was_not_sent_leaves_the_pointer_off(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    from scry_dosbox_x import inputs, running
+    not_sent = {"status": "INVALID", "code": "host_failed", "delivered": False,
+                "message": "the mouse event was NOT sent", "x": 1, "y": 1, "units": "screen",
+                "verify": {"checked": False, "why": "nothing was sent"}}
+    turned_on: list[object] = []
+    monkeypatch.setattr(running, "live", lambda probe=True: object())
+    monkeypatch.setattr(server, "live", lambda probe=True: object())
+    monkeypatch.setattr(inputs, "send_mouse", lambda *_a, **_k: not_sent)
+    monkeypatch.setattr(dpresence, "pointer_moved", turned_on.append)
+    out = server.send_mouse(x=1, y=1)
+    assert out["delivered"] is False and turned_on == [], (out, turned_on)
 
 
 @pytest.mark.parametrize("bare, said", [

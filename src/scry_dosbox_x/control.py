@@ -98,6 +98,25 @@ def _no_poll() -> None:
     """No-op poll."""
 
 
+HOST_CALL = "a long host call (a DOS file or device operation the emulator waits on)"
+#: How a caller learns the host call ended: `status` fails while it lasts.
+UNTIL_IT_ENDS = "`status` answers again at once when the host call ends"
+
+
+class ChannelSilent(Invalid):
+    """`host_failed` for a request the emulator never finished answering. `silence` says why
+    without the request's own doubt, for a caller that knows what it did before asking."""
+
+    def __init__(self, command: str, seconds: float) -> None:
+        verb, *rest = command.split()
+        asked = rest[0] if verb == "EXEC" and rest else verb
+        self.silence = (f"the debugger channel did not answer {asked} within {seconds:g} s, as "
+                        f"it does not while the emulator is inside {HOST_CALL}")
+        super().__init__("host_failed",
+            f"the debugger channel did not finish its reply to {verb} within {seconds:g} s; "
+            f"whether it acted is unknown. A guest stuck in {HOST_CALL} is a likely cause")
+
+
 class ControlChannel:
     """One session's end of the debugger channel; a lock keeps one request in flight."""
 
@@ -165,11 +184,7 @@ class ControlChannel:
         while (got := parse_reply(self._buf, rid)) is None:
             poll()
             if time.monotonic() >= deadline:
-                raise Invalid("host_failed",
-                    f"the debugger channel did not finish its reply to {command.split()[0]} "
-                    f"within {seconds:g} s; whether it acted is unknown. A guest stuck in a "
-                    f"long host call (a DOS file or device operation the emulator waits on) "
-                    f"is a likely cause")
+                raise ChannelSilent(command, seconds)
             try:
                 chunk = conn.recv(65536)
             except TimeoutError:

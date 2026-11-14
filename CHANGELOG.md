@@ -4,6 +4,10 @@ What a client of the server notices.
 
 ## Unreleased
 
+- `send_keys` and `send_mouse` while the emulator is inside a long host call (a DOS file or
+  device operation it waits on) answer `delivered: false` and say the input was not sent, where
+  they said whether it acted was unknown: nothing was written, so sending it again once `status`
+  answers puts it in once.
 - A steered `send_mouse` whose program pointer is on the place answers `arrived: true` wherever
   the driver sits: a program that adds the driver's motion to a pointer of its own takes a
   click where that pointer is, so moves that answered `arrived: false` with a note about the
