@@ -741,10 +741,11 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
         return after, None
     latest = [after]
 
-    def nudge(dx: int, dy: int) -> None:
+    def nudge(dx: int, dy: int) -> tuple[int, int]:
         here = latest[0]
         move(min(max(here.x + dx, 0), here.max_x), min(max(here.y + dy, 0), here.max_y))
         latest[0] = _report(session, parked)
+        return latest[0].x - here.x, latest[0].y - here.y
 
     def resync() -> tuple[tuple[int, int], tuple[int, int]]:
         here = latest[0]

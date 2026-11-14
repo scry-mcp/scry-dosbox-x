@@ -64,12 +64,13 @@ def unsteered(parked: bool, moved: bool, units: str, sized: bool) -> str | None:
 
 
 def steer(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
-          nudge: Callable[[int, int], None], ratio: tuple[float, float],
+          nudge: Callable[[int, int], tuple[int, int]], ratio: tuple[float, float],
           resync: Callable[[], tuple[tuple[int, int], tuple[int, int]]] | None = None,
           widen: Callable[[tuple[tuple[int, int], tuple[int, int]]], tuple[float, float] | None]
           | None = None) -> Steered:
     """Nudge the driver by the gap to `aim` until the pointer is on it or stops moving; `ratio` is
-    driver units a program unit. A driver at its edge loses the motion its program never sees, so
+    driver units a program unit, learnt from what `nudge` says it moved. A driver at its edge
+    loses the motion its program never sees, so
     when the nudges fail `resync` (a sweep to both edges, where each clamps; it returns the
     program's pointer at each) runs once and the steering starts again. An aim outside the span
     that sweep found is past the driver's range: `widen` (given the span) widens the range and
@@ -93,20 +94,19 @@ def _inside(aim: tuple[int, int], reach: tuple[tuple[int, int], tuple[int, int]]
 
 
 def _chase(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
-           nudge: Callable[[int, int], None], ratio: tuple[float, float]
+           nudge: Callable[[int, int], tuple[int, int]], ratio: tuple[float, float]
            ) -> tuple[Steered, tuple[float, float]]:
     seen = seen_now()
     corrections = 0
     rx, ry = ratio
     while seen != aim and corrections < CORRECTIONS:
-        dx, dy = _nudge(aim[0] - seen[0], rx), _nudge(aim[1] - seen[1], ry)
-        nudge(dx, dy)
+        made = nudge(_nudge(aim[0] - seen[0], rx), _nudge(aim[1] - seen[1], ry))
         corrections += 1
         moved = seen_now()
         if moved == seen:
             break
-        rx = _learnt(rx, dx, moved[0] - seen[0])
-        ry = _learnt(ry, dy, moved[1] - seen[1])
+        rx = _learnt(rx, made[0], moved[0] - seen[0])
+        ry = _learnt(ry, made[1], moved[1] - seen[1])
         seen = moved
     return Steered(seen, seen == aim, corrections), (rx, ry)
 

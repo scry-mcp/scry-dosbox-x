@@ -4,6 +4,10 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A steered `send_mouse` learns the ratio between the driver and the program's pointer from the
+  motion the driver made, not from what was asked of it: a nudge the driver's edge cut short
+  taught a ratio that grew with every nudge at the edge, so the round after the corner sweep
+  swung the pointer from edge to edge and ended `arrived: false`. It now lands on the place.
 - A `send_mouse` steered by a map's `pointer` reads the program's pointer only once the program
   has taken each move: a program that reads the mouse once a pass of its own loop shows a move
   some retraces late, and a read before then made a nudge look like a pointer that stopped, so

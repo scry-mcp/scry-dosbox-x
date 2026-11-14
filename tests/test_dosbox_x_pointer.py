@@ -21,10 +21,11 @@ class Program:
     def seen(self) -> tuple[int, int]:
         return self.at
 
-    def nudge(self, dx: int, dy: int) -> None:
+    def nudge(self, dx: int, dy: int) -> tuple[int, int]:
         self.nudges.append((dx, dy))
         self.at = (min(max(self.at[0] + round(dx / self.ratio), 0), self.limit[0]),
                    min(max(self.at[1] + round(dy / self.ratio), 0), self.limit[1]))
+        return dx, dy
 
 
 def test_a_pointer_that_drifted_is_steered_onto_the_target() -> None:
@@ -71,8 +72,10 @@ class Clamped:
     def seen(self) -> tuple[int, int]:
         return self.program, 0
 
-    def nudge(self, dx: int, _dy: int) -> None:
+    def nudge(self, dx: int, _dy: int) -> tuple[int, int]:
+        was = self.driver
         self.move(self.driver + dx)
+        return self.driver - was, 0
 
     def resync(self) -> tuple[tuple[int, int], tuple[int, int]]:
         self.move(0)
@@ -84,6 +87,27 @@ class Clamped:
 def test_a_pointer_lagging_a_driver_at_its_edge_is_resynced_by_a_sweep_and_steered() -> None:
     """The driver is at its right edge, 55 units behind: no nudge can reach the aim."""
     world = Clamped(driver=639, program=264)
+    got = pointer.steer((271, 0), world.seen, world.nudge, (2.0, 2.0), world.resync)
+    assert got.arrived and got.seen == (271, 0), got
+
+
+class Pinned(Clamped):
+    """`Clamped`, and a move past the edge the driver already sits on still carries the program
+    one unit on, as a stub's move to a coordinate the driver snaps back from does."""
+
+    def move(self, to: int) -> None:
+        if to > self.max and self.driver == self.max:
+            self.program = min(self.program + 1, self.limit)
+        else:
+            super().move(to)
+
+
+def test_a_nudge_the_driver_s_edge_cut_short_teaches_the_motion_the_driver_made() -> None:
+    """Captured off a steered move on Monkey Island's dock: the first nudge asks for more than
+    the room left, and the nudges at the edge move the program one unit each; a ratio learnt
+    from what was asked grows with every one of them and swings the second round off the
+    screen."""
+    world = Pinned(driver=542, program=215)
     got = pointer.steer((271, 0), world.seen, world.nudge, (2.0, 2.0), world.resync)
     assert got.arrived and got.seen == (271, 0), got
 
@@ -115,8 +139,10 @@ class Narrow:
     def seen(self) -> tuple[int, int]:
         return self.base + round(self.driver / self.ratio), 0
 
-    def nudge(self, dx: int, _dy: int) -> None:
+    def nudge(self, dx: int, _dy: int) -> tuple[int, int]:
+        was = self.driver
         self.driver = min(max(self.driver + dx, 0), self.max)
+        return self.driver - was, 0
 
     def resync(self) -> tuple[tuple[int, int], tuple[int, int]]:
         self.driver = 0
