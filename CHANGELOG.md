@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- `start`'s `plan` and `drive`'s `act` say what a step looks like, `{"op": <tool>, ...arguments}`,
+  in the words `perform` uses: a first call no longer guesses the key and meets a refusal asking
+  for `op`.
 - A steered `send_mouse` learns the ratio between the driver and the program's pointer from the
   motion the driver made, not from what was asked of it: a nudge the driver's edge cut short
   taught a ratio that grew with every nudge at the edge, so the round after the corner sweep

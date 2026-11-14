@@ -199,8 +199,9 @@ drive(act, expect="", seconds=null, pattern=".", limit=40, settle_seconds=30.0, 
 
 A sequence that also waits for a line of the E9 log; with no line to wait for, `perform`
 is the call. Marks the E9 log, runs `act` (steps in `perform`'s
-vocabulary), then with `expect` waits up to `seconds` (default 5, at most
-600) for a new matching line. Needs a `logfile`.
+vocabulary, a step `{"op": <tool>, ...arguments}`), then with `expect` waits up to
+`seconds` (default 5, at most 600) for a new matching line. Needs a
+`logfile`.
 
 `pattern` and `limit` only filter the lines shown; `settle_seconds` is the call's, as in
 `perform`. Refused: `seconds` without `expect`.

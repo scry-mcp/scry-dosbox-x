@@ -241,8 +241,8 @@ def start(conf: str = "", cwd: str = "",
     answers `window`; `window` judges the size once the guest runs.
     `flags`: argv tokens, a `-set` value one token. `logfile`: the guest's E9 channel, for `log`,
     `log_wait`, `drive`. `program` runs after autoexec; `capture_video` records it. `plan` runs
-    as `perform` does, each wait bounded by `settle_seconds` (default {SETTLE_S}). `input_port`:
-    COM1's TCP port, 0 a free one.
+    as `perform` does, a step `{"op": <tool>, ...arguments}`, each wait bounded by
+    `settle_seconds` (default {SETTLE_S}). `input_port`: COM1's TCP port, 0 a free one.
     `state_dir`: where `state_write` saves; empty, the session's scratch (gone at `close`).
     `dos_calls`: record every INT 21h for `log(channel="dos")`, up to the build's row cap; the
     server holds the newest {DOS_CALLS_KEPT} calls it has read, `n` staying the file's number.
@@ -1791,8 +1791,9 @@ def drive(act: list[dict[str, Any]], expect: str = "",
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """A sequence that also waits for a line of the E9 log; with no line to wait for, `perform`
     is the call. Marks the E9 log, runs `act` (steps in `perform`'s
-    vocabulary), then with `expect` waits up to `seconds` (default {EXPECT_WAIT_S}, at most
-    {WAIT_MAX_S}) for a new matching line. Needs a `logfile`.
+    vocabulary, a step `{"op": <tool>, ...arguments}`), then with `expect` waits up to
+    `seconds` (default {EXPECT_WAIT_S}, at most {WAIT_MAX_S}) for a new matching line. Needs a
+    `logfile`.
 
     `pattern` and `limit` only filter the lines shown; `settle_seconds` is the call's, as in
     `perform`. Refused: `seconds` without `expect`.

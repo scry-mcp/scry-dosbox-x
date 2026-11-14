@@ -94,8 +94,8 @@ refused naming the count. The server waits for the window to be listed on that d
 answers `window`; `window` judges the size once the guest runs.
 `flags`: argv tokens, a `-set` value one token. `logfile`: the guest's E9 channel, for `log`,
 `log_wait`, `drive`. `program` runs after autoexec; `capture_video` records it. `plan` runs
-as `perform` does, each wait bounded by `settle_seconds` (default 30). `input_port`:
-COM1's TCP port, 0 a free one.
+as `perform` does, a step `{"op": <tool>, ...arguments}`, each wait bounded by
+`settle_seconds` (default 30). `input_port`: COM1's TCP port, 0 a free one.
 `state_dir`: where `state_write` saves; empty, the session's scratch (gone at `close`).
 `dos_calls`: record every INT 21h for `log(channel="dos")`, up to the build's row cap; the
 server holds the newest 50000 calls it has read, `n` staying the file's number.
