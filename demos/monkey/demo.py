@@ -79,8 +79,9 @@ ROOM = VARS + 4 * 2
 #: The values the room variable takes from the double click to the intro's first scene, room 10
 #: (the first ones are what SCUMM writes there while it starts, before any room), then the title
 #: card, room 96. SCUMM takes a key that skips a scene only once the scene has begun, which no stop
-#: marks, so from room 10 an Escape goes in after every `SKIP_EVERY`th of `SKIP_TICKS` SCUMM
-#: ticks: each lands at the same tick of the game's clock, so the same scenes are skipped.
+#: marks, so from room 10 an Escape goes in after the first of `SKIP_TICKS` SCUMM ticks and every
+#: `SKIP_EVERY`th past it: each lands at the same tick of the game's clock, so the same scenes are
+#: skipped.
 INTRO_ROOMS = (0x8B50, 0x8B50, 0, 0, 10)
 TITLE_ROOM = 96
 SKIP_EVERY, SKIP_TICKS = 5, 24
@@ -184,8 +185,8 @@ def room(run: Run) -> str:
 
 
 def intro(run: Run) -> dict[str, Any]:
-    """A change watch on the room to the intro's first scene, then SCUMM's tick with an Escape at
-    every `SKIP_EVERY`th, and the room read at the end."""
+    """A change watch on the room to the intro's first scene, then SCUMM's tick with an Escape
+    after the first and every `SKIP_EVERY`th past it, and the room read at the end."""
     read = {"op": "read_memory", "ref": room(run), "length": 2}
     ticks: list[dict[str, Any]] = []
     for t in range(SKIP_TICKS):

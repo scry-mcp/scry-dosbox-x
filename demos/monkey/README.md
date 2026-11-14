@@ -82,10 +82,11 @@ Give this to an MCP client with this server connected:
 > saved states in files of the run's own. Load `monkey-screen-map.json`, wait for the language
 > menu and tell me which screen this is; find where DOS loaded `MONKEY.EXE` and double-click
 > English. Watch SCUMM's room (variable 4 of its variables in the data segment) and let the
-> intro run to each write of it up to its first scene, room 10; from there press Escape after
-> every fifth of 24 SCUMM ticks, then check the room is the title card, 96. Judge the title card, and
-> every screen after it, only where SCUMM leaves the loop that waits for its next tick (offset
-> 011E of its code segment), and sweep the pointer to both corners while the title card is up.
+> intro run to each write of it up to its first scene, room 10; from there count 24 SCUMM ticks,
+> pressing Escape after the first and after every fifth one past it, then check the room is the
+> title card, 96. Judge the title card, and every screen after it but the lookout's lines, only
+> where SCUMM leaves the loop that waits for its next tick (offset 011E of its code segment), and
+> sweep the pointer to both corners while the title card is up.
 > On the dock, walk to the governor's poster, Look at it, and name both lines Guybrush reads;
 > walk back and up the cliffside, Talk to the lookout, ask him whether we are all characters in
 > a novel, tell him my name, and put the pointer on the comeback, naming each screen and each
@@ -94,26 +95,26 @@ Give this to an MCP client with this server connected:
 > around it is the disc's, and write the new conversation over it. Stop on every request to the
 > CD driver and pick the comeback again; let the two STOP AUDIO requests through, move the PLAY
 > AUDIO request's start to the bar where the logo enters, record eight seconds and hold them to
-> that bar of my own disc's track 18. Name five moments of the conversation as it plays, show me
-> the screen, and close once the lookout is done and the cliff is back.
+> that bar of my own disc's track 18. Name five moments of the conversation as it plays, sampling
+> the screen every few retraces since the CD paces the lines; show me the screen, and close once
+> the lookout is done and the cliff is back.
 
 ## What it walks
 
 | Family | Calls |
 |---|---|
 | Session | `start` (windowed, the CD image mounted), `close` |
-| Advance | `screen_wait` judged only at SCUMM's tick (`on_breakpoint`); sampled for the launcher's menu (it has no symbols, no log and no such place) and for the lookout's lines, which the CD's audio paces; `resume` to a stop, `step` over an `INT` |
+| Advance | `screen_wait` judged only at SCUMM's tick (`on_breakpoint`); sampled for the launcher's menu (it has no symbols, no log and no such place) and for the lookout's lines, which the CD's audio paces; `run_for` the retraces the game takes to answer the pointer once a screen is up; `resume` to a stop, `step` over an `INT` |
 | Files | `audio_compare(method="diff")` |
 | Input | `send_mouse` by control name off the map, at screen pixels, double; `send_keys` |
 | States | `state_write` (`save`, then `load`) |
 | Read | `screen_map_write(method="load")`, `screen_map_find`, `find`, `read_memory` |
-| Captures | `record` (the loop) |
+| Captures | `record` (the loop), `audio_record` (the theme, at the CD's own rate) |
 | Screen | `screen_view` |
 | Write | `write` (the conversation, the drive's request) |
 | Declarations | `watch_add` (SCUMM's room), `breakpoint_interrupt` (INT 2Fh, AH=15h), `breakpoint_at` (SCUMM's tick), `declaration_clear` |
 | Machine | `machine_map` for where DOS loaded the game |
 | Lists | `perform` (a gesture: a click, the run it starts, the pointer parked) |
-| Captures | `audio_record` (the theme, at the CD's own rate) |
 
 ## The transcript
 
