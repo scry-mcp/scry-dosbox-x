@@ -33,8 +33,8 @@ uv run python demos/dpaint/demo.py \
 
 The demo opens a window, scaled up four times by its conf, so the painting can be watched; nothing
 in it needs the window. Deluxe Paint takes the mouse as movement events, so it needs a DOSBox-X
-whose input device carries relative motion (the repository's REFERENCE.md, *Input and the
-screen*), named with `--binary` or `DOSBOX_X_BINARY`; on a build without it the demo stops at its
+whose input device carries relative motion (the repository's REFERENCE.md, *Debugger commands*),
+named with `--binary` or `DOSBOX_X_BINARY`; on a build without it the demo stops at its
 third step, saying so, because a drag would paint nothing between its button events.
 
 - `--cwd PATH` (absolute or `~`-led) is the directory holding `DP.EXE`, which the session runs

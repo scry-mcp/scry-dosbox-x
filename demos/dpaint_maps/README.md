@@ -36,7 +36,7 @@ uv run python demos/dpaint_maps/demo.py \
 
 The demo opens a window, scaled up twice by its conf, so the menus can be watched as they open;
 nothing in it needs the window. Like the first demo it needs a DOSBox-X whose input device
-carries relative motion (the repository's REFERENCE.md, *Input and the screen*), named with
+carries relative motion (the repository's REFERENCE.md, *Debugger commands*), named with
 `--binary` or `DOSBOX_X_BINARY`; without it the demo stops at its third step, saying so.
 
 - `--cwd PATH` (absolute or `~`-led) is the directory holding `DP.EXE`, which the session runs
