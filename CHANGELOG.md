@@ -50,6 +50,26 @@ What a client of the server notices.
 - `start(profile=...)` with no `cwd` says so plainly: a named profile not found above the
   server's directory is refused with `cwd` named as the way to point the server at the
   repository that holds the recipe, instead of only the directories it searched.
+- `send_keys` takes `shift`, `ctrl` and `alt` (and `control`, `option`) as keys: with `action`
+  `down` and `up` a modifier can be held on its own, where `modifiers` needed a real key beside
+  it, so holding one keeps a program from going idle without holding a key the program may map.
+- A new tool, `wait`, lets a running guest play for `seconds` and answers `waited_s` and where it
+  is, without releasing or stopping it: its expiry is the answer, never a failure, and a stop
+  during the wait (a breakpoint) comes back as the stop reply. A stopped machine is refused as
+  `not_running`.
+- `log` and `log_wait` say when the logfile lost lines it once held: a capture could eat the
+  guest's lines, and the next `log` answered none as if the program never wrote them. Once, the
+  `note` gives the file's size now and the size it had.
+- `close`, `status` and the `session_broken` reply tell the server's own kill of the emulator
+  from one sent from outside, and for an outside one name the macOS memory manager and its
+  report directory, where a guest it killed read as a crash of the guest.
+- A `send_keys` with `expect` that does not see its pattern, when it is the session's first,
+  adds to `verify.note` that the guest may drop a first key while it settles: send it once more
+  before hunting for a modal that is not there.
+- `log` and `log_wait` read the logfile without asking the debugger channel first, so they answer
+  while the guest sits in one long host call (a DOS call over a large folder) instead of
+  `host_failed`; a `host_failed` reply names that as the likely cause, so `send_keys` and
+  `perform` say why the debugger did not answer.
 - `session.running` says the truth about the guest, never a guess: past a `run_for`, `run_to` or
   `resume` whose release no answer confirmed, it re-reads the machine, so a caller is told `false`
   when it stopped and `unavailable` when it still cannot be read.
