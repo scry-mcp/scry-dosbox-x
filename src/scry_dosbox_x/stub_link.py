@@ -92,7 +92,11 @@ def owed_releases(written: list[bytes]) -> list[Release]:
 
 def owed_breaks(written: list[bytes]) -> list[bytes]:
     """The key commands of `owed_releases`, in order."""
-    return [command for commands, _ in owed_releases(written) for command in commands]
+    return _commands(owed_releases(written))
+
+
+def _commands(releases: list[Release]) -> list[bytes]:
+    return [command for commands, _ in releases for command in commands]
 
 
 class Cut(Invalid):
@@ -146,7 +150,7 @@ class Link:
 
     @property
     def owed(self) -> list[bytes]:
-        return [command for commands, _ in self._debt for command in commands]
+        return _commands(self._debt)
 
     @property
     def held(self) -> int:
