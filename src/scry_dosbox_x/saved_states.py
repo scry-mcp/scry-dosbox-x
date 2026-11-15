@@ -144,7 +144,7 @@ def save_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
 def _replaced(ses: ds.Session) -> None:
     """The machine is the loaded one, whole or in part."""
     ses.altered = ses.machine_replaced = True
-    ses.fired_entry = None
+    ses.fired_entry = ses.pointer_owed = None
     _stub_replaced(ses)
 
 

@@ -27,6 +27,7 @@ from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import inputs, server
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import mcp as dosbox_mcp
+from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
 
@@ -97,6 +98,7 @@ class StateFake:
         self.moves: list[str] = []
         self.altered = False
         self.machine_replaced = False
+        self.pointer_owed: dpointer.Owed | None = None
         self._link: Any = None
         self.stop_count = 0
         self.halts_on_release = False
@@ -273,6 +275,14 @@ def test_a_state_of_a_program_not_running_says_to_run_it_first_and_loads_nothing
     assert exc.value.code == "needs_call", exc.value
     assert "PROBE" in said and "`resume`" in said and "nothing was loaded" in said, said
     assert fake.altered is False, "a state the emulator would not take replaced nothing"
+
+
+def test_a_loaded_state_owes_no_pointer_move_of_the_machine_it_replaced(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
+    write_state(tmp_path / "save" / "boot.sav")
+    fake.pointer_owed = dpointer.Owed(None)
+    ds.Session.load_state(as_session(fake), "boot", 5.0)
+    assert fake.pointer_owed is None
 
 
 def test_state_load_needs_a_named_state_and_marks_altered(tmp_path: Path) -> None:

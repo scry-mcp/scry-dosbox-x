@@ -24,20 +24,18 @@ class Steered:
 
 @dataclass(frozen=True)
 class Owed:
-    """A move the steering did not send; `before`, the program's pointer it left, if read."""
+    """A move no steered read followed; `before`, the program's pointer it left, if read."""
 
     before: tuple[int, int] | None
 
 
 def taken(read: Callable[[], tuple[int, int]], advance: Callable[[], object],
-          owed: Owed | None, bound: int) -> tuple[int, int]:
-    """The program's pointer once it took `owed`, up to `bound` retraces; with nothing owed, now."""
+          before: tuple[int, int] | None, bound: int) -> tuple[int, int]:
+    """The pointer once off `before` (the first read, if None), within `bound` advances."""
     seen = read()
-    if owed is None:
-        return seen
-    before = seen if owed.before is None else owed.before
+    left = seen if before is None else before
     for _ in range(bound):
-        if seen != before:
+        if seen != left:
             break
         advance()
         seen = read()
@@ -46,7 +44,7 @@ def taken(read: Callable[[], tuple[int, int]], advance: Callable[[], object],
 
 def locate(declared: Pointer, place: Callable[[str], tuple[int, int]]) -> tuple[
         tuple[int, int], tuple[int, int]]:
-    """Both refs resolved, before anything is sent."""
+    """Both refs resolved before anything is sent."""
     return place(declared.x), place(declared.y)
 
 
@@ -135,7 +133,7 @@ def _chase(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
 
 
 def _nudge(gap: int, ratio: float) -> int:
-    """`gap` in driver units, at least one."""
+    """`gap` in driver units, at least one if there is a gap."""
     return round(gap * ratio) or (gap > 0) - (gap < 0)
 
 

@@ -499,6 +499,65 @@ def test_a_move_the_steering_did_not_send_is_taken_before_the_next_steered_read(
     assert fake.program_now() == (100, 50)
 
 
+def test_a_steered_move_a_mode_switch_left_unsteered_is_owed_to_the_next(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _lagging(tmp_path, monkeypatch)
+    send = fake.send_commands
+
+    def switching(commands: list[bytes], advance: Any = None) -> list[str]:
+        out = cast(list[str], send(commands, advance))
+        if any(c[:1] == b"M" for c in commands):
+            fake.video_mode = 0x6A                  # a mode this server does not map
+        return out
+    fake.send_commands = switching
+    first = cast(dict[str, Any], server.send_mouse(x=150, y=50))
+    assert first["status"] == "ok" and "x" not in first["pointer"]["program"], first
+    fake.send_commands, fake.video_mode = send, 0x13
+    fake.commands_sent.clear()
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert got["status"] == "ok" and _moved(fake), (got, fake.commands_sent)
+    fake.retraces += LAG
+    assert fake.program_now() == (100, 50)
+
+
+def test_the_driver_s_range_is_read_after_the_wait_for_an_owed_move(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The program sets the driver's range while it takes the owed move; a range read before
+    the wait would make the steering's own moves look like a change it did not make."""
+    fake = _lagging(tmp_path, monkeypatch)
+    assert cast(dict[str, Any], server.send_mouse(x=300, y=50, units="mouse"))["status"] == "ok"
+    taking = inputs.Retraces.__call__
+
+    def resetting(self: Any) -> float:
+        fake.mouse_max = (319, 199)
+        return taking(self)
+    monkeypatch.setattr(inputs.Retraces, "__call__", resetting)
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert got["status"] == "ok" and got["arrived"] is True and "note" not in got, got
+
+
+def test_an_owed_move_is_waited_for_once(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _lagging(tmp_path, monkeypatch)
+    server.send_mouse(x=300, y=50, units="mouse")
+    assert fake.pointer_owed is not None
+    server.send_mouse(x=100, y=50)
+    assert fake.pointer_owed is None
+
+
+def test_a_drag_s_end_already_taken_is_not_waited_for(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The steering knows the program's pointer the end left, so a pointer already off it is
+    read at once."""
+    fake = _lagging(tmp_path, monkeypatch)
+    server.send_mouse(x=100, y=50, button="left", action="drag", to_x=150, to_y=50)
+    fake.retraces += LAG
+    before = fake.retraces
+    got = cast(dict[str, Any], server.send_mouse(x=150, y=50))
+    assert got["status"] == "ok" and got["arrived"] is True, got
+    assert fake.retraces - before < inputs.TAKE_RETRACES, fake.retraces - before
+
+
 def test_with_no_move_owed_the_first_steered_read_waits_for_nothing(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     fake = _lagging(tmp_path, monkeypatch)

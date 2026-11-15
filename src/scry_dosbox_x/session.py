@@ -28,8 +28,8 @@ from scry_dosbox_x import binary as dbinary
 from scry_dosbox_x import collect as dcollect
 from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import grammar, paths, stub_link
-from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import launch as dlaunch
+from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import process as dprocess
 from scry_dosbox_x import program as dprogram
 

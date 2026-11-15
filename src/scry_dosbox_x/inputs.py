@@ -787,13 +787,14 @@ def program_reader(session: ds.Session, program: Pointer) -> Callable[[], tuple[
     return seen
 
 
-def _first_read(session: ds.Session, parked: Retraces, program: Pointer) -> tuple[int, int]:
-    """The program's pointer before a steered call moves anything, once it took a move the
-    steering did not send: read earlier, it shows the pointer before that move."""
-    seen = dpointer.taken(program_reader(session, program), lambda: _observing(session, parked),
-                          session.pointer_owed, TAKE_RETRACES)
-    session.pointer_owed = None
-    return seen
+def _take_owed(session: ds.Session, parked: Retraces, program: Pointer) -> None:
+    """Run the machine until the program took a move the steering did not send: read before
+    it does, its pointer is where that move found it."""
+    owed = session.pointer_owed
+    if owed is not None:
+        dpointer.taken(program_reader(session, program), lambda: _observing(session, parked),
+                       owed.before, TAKE_RETRACES)
+        session.pointer_owed = None
 
 
 def _steer(session: ds.Session, parked: Retraces, program: Pointer, aim: tuple[int, int],
@@ -819,12 +820,8 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer, aim: tuple[i
         pass of its own loop, so for some retraces after the stub took a move its pointer still
         shows the one before. A pointer its clamp holds never changes, and is taken at the
         bound as it reads."""
-        seen = read()
-        for _ in range(TAKE_RETRACES if moved[0] else 0):
-            if seen != last[0]:
-                break
-            _observing(session, parked)
-            seen = read()
+        seen = dpointer.taken(read, lambda: _observing(session, parked), last[0],
+                              TAKE_RETRACES if moved[0] else 0)
         moved[0] = False
         last[0] = seen
         return seen
@@ -964,19 +961,28 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
     counts = Counts.of(session)
     try:
         parked = _ready(session, "a mouse event", expect)
-        before = _report(session, parked)
-        if aimed is not None:
-            _still_the_screen(before, aimed)
-        target = None if x is None or y is None else _target(before, x, y, units)
-        end = None if to_x is None or to_y is None else _target(before, to_x, to_y, units)
-        sized = before.units() is not None
-        why_not = (None if program is None else
-                   dpointer.unsteered(parked is not None, target is not None, units, sized))
-        places = (dpointer.locate(program, lambda ref: placement.pointer_target(ref, session))
-                  if program is not None and target is not None and why_not is None else None)
+
+        def placed() -> tuple[Report, tuple[int, int] | None, tuple[int, int] | None,
+                              str | None, bool]:
+            before = _report(session, parked)
+            if aimed is not None:
+                _still_the_screen(before, aimed)
+            target = None if x is None or y is None else _target(before, x, y, units)
+            end = None if to_x is None or to_y is None else _target(before, to_x, to_y, units)
+            why_not = (None if program is None else
+                       dpointer.unsteered(parked is not None, target is not None, units,
+                                          before.units() is not None))
+            steers = program is not None and target is not None and why_not is None
+            if steers and program is not None:
+                dpointer.locate(program, lambda ref: placement.pointer_target(ref, session))
+            return before, target, end, why_not, steers
+        before, target, end, why_not, steering = placed()
+        if steering and parked is not None and program is not None and session.pointer_owed:
+            # The wait runs the machine, so what the driver reported before it is read again.
+            _take_owed(session, parked, program)
+            before, target, end, why_not, steering = placed()
         # Read before the post, whose failures say the commands may have gone in.
-        start = (_first_read(session, parked, program)
-                 if program is not None and places is not None and parked is not None else None)
+        start = program_reader(session, program)() if steering and program is not None else None
     except ds.Invalid as e:
         return _unsent("mouse event", e, **asked, **_released(session, counts))
 
@@ -1000,6 +1006,8 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
                 assert x is not None and y is not None and target is not None
                 after, steered, range_moved = _steer(session, parked, program, (x, y), target,
                                                      before, start)
+                if steered is None and start != (x, y):
+                    session.pointer_owed = dpointer.Owed(start)   # moved, then not steered
                 if to_x is not None and to_y is not None:
                     end_at = _target(after, to_x, to_y, units)    # the range may have grown
                     session.pointer_owed = dpointer.Owed(None if steered is None
