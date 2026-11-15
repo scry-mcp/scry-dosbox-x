@@ -796,8 +796,7 @@ def _first_read(session: ds.Session, parked: Retraces, program: Pointer) -> tupl
     return seen
 
 
-def _steer(session: ds.Session, parked: Retraces, program: Pointer,
-           places: tuple[tuple[int, int], tuple[int, int]], aim: tuple[int, int],
+def _steer(session: ds.Session, parked: Retraces, program: Pointer, aim: tuple[int, int],
            target: tuple[int, int], before: Report, start: tuple[int, int]
            ) -> tuple[Report, dpointer.Steered | None, bool]:
     """The driver moved to `target` unless the program's own pointer, read as `start`, is on
@@ -998,10 +997,9 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         range_moved = False
         try:
             if program is not None and start is not None and parked is not None:
-                assert places is not None and x is not None and y is not None
-                assert target is not None
-                after, steered, range_moved = _steer(session, parked, program, places, (x, y),
-                                                     target, before, start)
+                assert x is not None and y is not None and target is not None
+                after, steered, range_moved = _steer(session, parked, program, (x, y), target,
+                                                     before, start)
                 if to_x is not None and to_y is not None:
                     end_at = _target(after, to_x, to_y, units)    # the range may have grown
                     session.pointer_owed = dpointer.Owed(None if steered is None

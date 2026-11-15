@@ -181,9 +181,9 @@ def _steered(world: _World, aim: tuple[int, int], monkeypatch: pytest.MonkeyPatc
     """`_steer` from the call's own move to `target`, by default where the driver already is."""
     monkeypatch.setattr(inputs, "program_reader", lambda _s, _p: world.program)
     before = inputs.parse_report(world.line())
-    return inputs._steer(cast(Any, world), cast(Any, parked or world), Pointer("a", "b", 2),
-                         ((0, 0), (0, 0)), aim, target or (world.driver[0], world.driver[1]),
-                         before, world.program())[:2]
+    return inputs._steer(cast(Any, world), cast(Any, parked or world), Pointer("a", "b", 2), aim,
+                         target or (world.driver[0], world.driver[1]), before,
+                         world.program())[:2]
 
 
 @pytest.mark.parametrize("lag", [0, 6])
