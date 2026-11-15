@@ -43,7 +43,7 @@
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
-  "kept": "kept 1 (promote to review)",
+  "kept": "<volatile>",
   "session": "<volatile>"
 }
 ```
