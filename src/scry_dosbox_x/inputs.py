@@ -787,6 +787,15 @@ def program_reader(session: ds.Session, program: Pointer) -> Callable[[], tuple[
     return seen
 
 
+def _first_read(session: ds.Session, parked: Retraces, program: Pointer) -> tuple[int, int]:
+    """The program's pointer before a steered call moves anything, once it took a move the
+    steering did not send: read earlier, it shows the pointer before that move."""
+    seen = dpointer.taken(program_reader(session, program), lambda: _observing(session, parked),
+                          session.pointer_owed, TAKE_RETRACES)
+    session.pointer_owed = None
+    return seen
+
+
 def _steer(session: ds.Session, parked: Retraces, program: Pointer,
            places: tuple[tuple[int, int], tuple[int, int]], aim: tuple[int, int],
            target: tuple[int, int], before: Report, start: tuple[int, int]
@@ -967,8 +976,8 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         places = (dpointer.locate(program, lambda ref: placement.pointer_target(ref, session))
                   if program is not None and target is not None and why_not is None else None)
         # Read before the post, whose failures say the commands may have gone in.
-        start = (program_reader(session, program)()
-                 if program is not None and places is not None else None)
+        start = (_first_read(session, parked, program)
+                 if program is not None and places is not None and parked is not None else None)
     except ds.Invalid as e:
         return _unsent("mouse event", e, **asked, **_released(session, counts))
 
@@ -995,10 +1004,14 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
                                                      target, before, start)
                 if to_x is not None and to_y is not None:
                     end_at = _target(after, to_x, to_y, units)    # the range may have grown
+                    session.pointer_owed = dpointer.Owed(None if steered is None
+                                                         else steered.seen)
                 if buttons := pressing(end_at):
                     _send(session, buttons, parked)
                     after = _report(session, parked)
             else:
+                if program is not None and (moves or end_at is not None):
+                    session.pointer_owed = dpointer.Owed(None)
                 _send(session, moves + pressing(end_at), parked)
                 after = _report(session, parked)
         except ds.Invalid as e:

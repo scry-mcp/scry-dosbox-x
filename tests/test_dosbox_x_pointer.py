@@ -209,6 +209,23 @@ def test_the_refs_are_resolved_before_anything_moves() -> None:
         pointer.locate(Pointer("nosuch", "nosuch"), unknown)
 
 
+@pytest.mark.parametrize(("owed", "takes_at", "want", "advanced"), [
+    (None, 2, (0, 0), 0),                                   # nothing owed: read at once
+    (pointer.Owed(None), 2, (5, 5), 2),                     # the first read stands for before
+    (pointer.Owed((0, 0)), 2, (5, 5), 2),
+    (pointer.Owed((9, 9)), 2, (0, 0), 0),                   # already off before: taken
+    (pointer.Owed((0, 0)), 99, (0, 0), 24),                 # never taken: the bound, then on
+])
+def test_a_move_owed_is_waited_for_until_the_pointer_leaves_where_it_was(
+        owed: pointer.Owed | None, takes_at: int, want: tuple[int, int], advanced: int) -> None:
+    ran = [0]
+
+    def read() -> tuple[int, int]:
+        return (5, 5) if ran[0] >= takes_at else (0, 0)
+    got = pointer.taken(read, lambda: ran.__setitem__(0, ran[0] + 1), owed, 24)
+    assert (got, ran[0]) == (want, advanced)
+
+
 def test_a_gap_of_one_unit_is_nudged_at_least_one_driver_unit() -> None:
     program = Program(drift=(4, 4), ratio=1.0)
     got = pointer.steer((5, 5), program.seen, program.nudge, (0.4, 0.4))

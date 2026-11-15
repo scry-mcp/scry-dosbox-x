@@ -90,6 +90,7 @@ class SessionGates:
     """The real session's stop and build gates, run against a fake's own `at_debugger`."""
 
     driver_range: dict[str, int] | None = None
+    pointer_owed = ds.Session.pointer_owed
 
     def watch_program(self) -> None:
         """The program watch reads the debugger, which this double has no channel to."""

@@ -28,6 +28,7 @@ from scry_dosbox_x import binary as dbinary
 from scry_dosbox_x import collect as dcollect
 from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import grammar, paths, stub_link
+from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import process as dprocess
 from scry_dosbox_x import program as dprogram
@@ -269,6 +270,8 @@ class Session(dprocess.Process):
     driver_range: dict[str, int] | None = None
     # What the driver's report said right after, to tell that range from a reset to the default.
     driver_range_seen: tuple[int, int] | None = None
+    # A pointer move `send_mouse` made outside the steering: the next steered read waits for it.
+    pointer_owed: dpointer.Owed | None = None
 
     def __init__(self, launch: dlaunch.Launch) -> None:
         dlaunch.validate(launch)

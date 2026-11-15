@@ -445,6 +445,67 @@ def test_a_program_pointer_on_the_aim_before_the_call_sends_no_move(
     assert got["arrived"] is True and "motion" not in got, got
 
 
+LAG = 3
+
+
+def _lagging(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Any:
+    """A parked guest whose program takes each driver move `LAG` retraces after it went in, at
+    two driver units a program unit; `fake.retraces` counts the retraces the server ran."""
+    history: list[tuple[int, tuple[int, int]]] = []
+
+    def program(f: Any) -> tuple[int, int]:
+        driver = next(d for at, d in reversed(history) if f.retraces - at >= LAG)
+        return driver[0] // 2, driver[1]
+    fake = _program_pointer(tmp_path, monkeypatch, program)
+    fake.pointer, fake.retraces = (200, 50), 0
+    fake.program_now = lambda: program(fake)
+    history.append((-LAG, fake.pointer))
+    send = fake.send_commands
+
+    def sent(commands: list[bytes], advance: Any = None) -> list[str]:
+        out = cast(list[str], send(commands, advance))
+        history.append((fake.retraces, fake.pointer))
+        return out
+    fake.send_commands = sent
+
+    def retrace(_self: Any) -> float:
+        fake.retraces += 1
+        return float(fake.retraces)
+    monkeypatch.setattr(inputs.Retraces, "__call__", retrace)
+    return fake
+
+
+@pytest.mark.parametrize("owing", ["mouse units", "running guest", "drag end"])
+def test_a_move_the_steering_did_not_send_is_taken_before_the_next_steered_read(
+        owing: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The program still shows the pointer before that move, which here is on the next aim: read
+    then, the steered call would send nothing and leave the pointer where the move takes it."""
+    fake = _lagging(tmp_path, monkeypatch)
+    if owing == "mouse units":
+        first = server.send_mouse(x=300, y=50, units="mouse")
+    elif owing == "running guest":
+        fake.running = True
+        first = server.send_mouse(x=150, y=50)
+        fake.running = False
+    else:
+        first = server.send_mouse(x=100, y=50, button="left", action="drag", to_x=150, to_y=50)
+    assert cast(dict[str, Any], first)["status"] == "ok", first
+    fake.commands_sent.clear()
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert got["status"] == "ok" and _moved(fake), (got, fake.commands_sent)
+    assert got["arrived"] is True, got
+    fake.retraces += LAG                            # every move that went in is taken
+    assert fake.program_now() == (100, 50)
+
+
+def test_with_no_move_owed_the_first_steered_read_waits_for_nothing(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _lagging(tmp_path, monkeypatch)
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert got["status"] == "ok" and got["arrived"] is True, got
+    assert fake.retraces == 0 and not _moved(fake), (fake.retraces, fake.commands_sent)
+
+
 def test_a_range_the_steering_widened_itself_is_no_disagreement(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """An aim past what the driver's range lets the program reach widens the range."""

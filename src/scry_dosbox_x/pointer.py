@@ -21,6 +21,28 @@ class Steered:
     reach: tuple[tuple[int, int], tuple[int, int]] | None = None
 
 
+@dataclass(frozen=True)
+class Owed:
+    """A move the steering did not send; `before`, the program's pointer it left, if read."""
+
+    before: tuple[int, int] | None
+
+
+def taken(read: Callable[[], tuple[int, int]], advance: Callable[[], object],
+          owed: Owed | None, bound: int) -> tuple[int, int]:
+    """The program's pointer once it took `owed`, up to `bound` retraces; with nothing owed, now."""
+    seen = read()
+    if owed is None:
+        return seen
+    before = seen if owed.before is None else owed.before
+    for _ in range(bound):
+        if seen != before:
+            break
+        advance()
+        seen = read()
+    return seen
+
+
 def locate(declared: Pointer, place: Callable[[str], tuple[int, int]]) -> tuple[
         tuple[int, int], tuple[int, int]]:
     """Both refs resolved, before anything is sent."""
@@ -71,8 +93,8 @@ def steer(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
     """Nudge the driver by the gap to `aim` until the pointer is on it or stops moving; `ratio` is
     driver units a program unit, learnt from what `nudge` says it moved. A driver at its edge
     loses the motion its program never sees, so
-    when the nudges fail `resync` (a sweep to both edges, where each clamps; it returns the
-    program's pointer at each) runs once and the steering starts again. An aim outside the span
+    when the nudges fail `resync` (a sweep to both edges, returning the program's pointer at
+    each) runs once and the steering starts again. An aim outside the span
     that sweep found is past the driver's range: `widen` (given the span) widens the range and
     returns the new ratio, or None when it left the range alone, and the sweep is made again."""
     steered, ratio = _chase(aim, seen_now, nudge, ratio)
@@ -112,7 +134,7 @@ def _chase(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
 
 
 def _nudge(gap: int, ratio: float) -> int:
-    """`gap` in driver units, at least one when there is a gap."""
+    """`gap` in driver units, at least one."""
     return round(gap * ratio) or (gap > 0) - (gap < 0)
 
 

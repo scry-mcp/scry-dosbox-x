@@ -4,6 +4,12 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A steered `send_mouse` after a pointer move the steering did not send (`units="mouse"`, a
+  move while the guest ran, a drag's end) first waits, a retrace at a time and up to the
+  bound its reads already use, for the program to take that move, where it read the
+  program's pointer at once and could find it where the move had not yet carried it: on the
+  place, it sent nothing and left the pointer to land elsewhere. With no such move behind it,
+  nothing waits.
 - On the pinned scry-core (`pyproject.toml`), `promote` writes an entry only into the store of
   the repository it was learned in (the one whose store a call read it from, else the current
   `start`'s: its profile's, else the one its guest runs in), so a session that ran programs of
