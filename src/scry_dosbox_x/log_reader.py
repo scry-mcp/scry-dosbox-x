@@ -240,16 +240,14 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
     if got.ending == "GONE":
         raise Invalid("session_broken", core_wait.gone_message(pattern, got, seconds))
     region = "in the log altogether" if mark == 0 else f"since the mark at byte {mark}"
-    note = core_wait.timeout_note(pattern, got, region, "guest")
+    run_state = core_wait.STILL_RUNNING
     if silent:
         why = (silent[0].silence if isinstance(silent[0], control.ChannelSilent)
                else "the debugger channel did not answer when asked")
-        note = (f"{note.removesuffix(STILL_RUNNING)} Whether the machine is running or stopped "
-                f"is not known: {why}, and {control.UNTIL_IT_ENDS}")
+        run_state = (f"Whether the machine is running or stopped is not known: {why}, and "
+                     f"{control.UNTIL_IT_ENDS}")
+    note = core_wait.timeout_note(pattern, got, region, "guest", run_state=run_state)
     return {"verdict": contract.TIMEOUT, "pattern": pattern, "channel": channel,
             "arrived_during": got.arrived_during, "lines_examined": got.lines_examined,
             "waited_s": got.waited_s, "note": note}
 
-
-#: The run state `timeout_note` closes on, which only an answer from the channel backs.
-STILL_RUNNING = " The machine is still running"
