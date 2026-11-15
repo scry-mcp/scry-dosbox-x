@@ -44,12 +44,12 @@ def typed_addr(seg: int, off: int, off_width: int = 4) -> str:
     return f"{typed_hex(seg, 4)}:{typed_hex(off, off_width)}"
 
 
-def exec_lines(session: ds.Session, command: str,
-               seconds: float | None = None) -> tuple[bool, list[str]]:
+def exec_lines(session: ds.Session, command: str, seconds: float | None = None, *,
+               unless_silent: bool = False) -> tuple[bool, list[str]]:
     """`EXEC command`: whether the debugger took it, and every line it printed. A reply cut at
     the channel's capture cap is refused: a listing with a hole in it is no reading."""
     ok, lines = session.control.request(f"EXEC {command}", seconds or control.REPLY_S,
-                                        poll=cancel.check)
+                                        poll=cancel.check, unless_silent=unless_silent)
     cut = DISCARDED.match(lines[-1]) if lines else None
     if cut is not None:
         raise Invalid("unexpected_answer",

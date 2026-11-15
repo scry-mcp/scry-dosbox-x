@@ -108,7 +108,8 @@ class Machine:
     # ------------------------------------------------------------------ the channel
 
     def request(self, command: str, seconds: float = 5.0,
-                poll: Callable[[], None] = lambda: None) -> tuple[bool, list[str]]:
+                poll: Callable[[], None] = lambda: None, *,
+                unless_silent: bool = False) -> tuple[bool, list[str]]:
         self.sent.append(command)
         if not self.alive:
             raise ds.Invalid("session_broken", "the debugger channel dropped (the emulator "

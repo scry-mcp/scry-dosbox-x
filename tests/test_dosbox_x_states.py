@@ -59,7 +59,7 @@ class Channel:
         self.raises: ds.Invalid | None = None
 
     def request(self, command: str, seconds: float = 5.0,
-                poll: Any = None) -> tuple[bool, list[str]]:
+                poll: Any = None, *, unless_silent: bool = False) -> tuple[bool, list[str]]:
         self.sent.append(command)
         assert self.session.parked, "a state command was sent with the guest running"
         if poll is not None:
@@ -858,7 +858,8 @@ def test_a_state_command_waits_the_callers_bound(tmp_path: Path) -> None:
     asked: list[float] = []
     request = fake.control.request
 
-    def recorded(command: str, seconds: float = 5.0, poll: Any = None) -> tuple[bool, list[str]]:
+    def recorded(command: str, seconds: float = 5.0, poll: Any = None,
+                 **_: Any) -> tuple[bool, list[str]]:
         asked.append(seconds)
         return request(command, seconds, poll)
     fake.control.request = recorded  # type: ignore[method-assign]

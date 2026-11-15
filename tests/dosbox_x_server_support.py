@@ -79,7 +79,7 @@ class RunStateOnly:
         self.fake = fake
 
     def request(self, command: str, seconds: float = 5.0,
-                poll: Any = None) -> tuple[bool, list[str]]:
+                poll: Any = None, *, unless_silent: bool = False) -> tuple[bool, list[str]]:
         assert command == "EXEC RUNSTATE", f"the fake's channel takes only RUNSTATE: {command!r}"
         stopped = getattr(self.fake, "run_state", self.fake.at_debugger)()
         state = "stopped" if stopped else "running"

@@ -74,9 +74,10 @@ def section_s() -> None:
     sent: list[str] = []
     channel = Session.exec
 
-    def counted(self: Session, command: str, seconds: float | None = None) -> Any:
+    def counted(self: Session, command: str, seconds: float | None = None, *,
+                unless_silent: bool = False) -> Any:
         sent.append(command)
-        return channel(self, command, seconds)
+        return channel(self, command, seconds, unless_silent=unless_silent)
     Session.exec = counted  # type: ignore[method-assign]
     try:
         asked = {"run_to": M.call(server.run_to, ref="F000:E05B", control="0000:0001",

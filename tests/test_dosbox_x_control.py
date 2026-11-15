@@ -155,20 +155,27 @@ def test_a_running_guest_whose_channel_is_silent_is_said_silent_through_the_sess
 
 
 def test_a_channel_is_known_silent_from_a_request_it_left_unanswered_until_one_answers() -> None:
-    """What the presence writer reads before it asks: during a host call, asking again only
-    holds the channel for its whole bound in front of the next call's own request."""
+    """`unless_silent` sends nothing between a request left unanswered and the next answered."""
     channel = control.ControlChannel(lambda: None)
-    _emulator(channel.port,
-              lambda line: b"" if line.endswith("1 PING") else f"BEGIN {_rid(line)} OK\nEND "
-                                                              f"{_rid(line)}\n".encode())
+    heard: list[str] = []
+
+    def answer(line: str) -> bytes:
+        heard.append(line)
+        rid = _rid(line)
+        return b"" if line.endswith("1 PING") else f"BEGIN {rid} OK\nEND {rid}\n".encode()
+    _emulator(channel.port, answer)
     try:
         seen = [channel.silent]
         with pytest.raises(control.ChannelSilent):
             channel.request("PING", seconds=0.2)
         seen.append(channel.silent)
+        with pytest.raises(Invalid, match="not sent"):
+            channel.request("EXEC PRESENCE held", unless_silent=True)
         assert channel.request("PING") == (True, [])
         seen.append(channel.silent)
+        assert channel.request("EXEC PRESENCE held", unless_silent=True) == (True, [])
         assert seen == [False, True, False], seen
+        assert [h.split(" ", 2)[2] for h in heard] == ["PING", "PING", "EXEC PRESENCE held"], heard
     finally:
         channel.close()
 
@@ -237,7 +244,7 @@ class _Channel:
         self.sent: list[str] = []
 
     def request(self, command: str, seconds: float = control.REPLY_S,
-                poll: Any = None) -> tuple[bool, list[str]]:
+                poll: Any = None, *, unless_silent: bool = False) -> tuple[bool, list[str]]:
         self.sent.append(command)
         if command == "EXEC RUNSTATE":
             state = "stopped" if self.parks else "running"

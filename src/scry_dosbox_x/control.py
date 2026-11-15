@@ -101,6 +101,9 @@ def _no_poll() -> None:
 HOST_CALL = "a long host call (a DOS file or device operation the emulator waits on)"
 #: How a caller learns the host call ended: `status` fails while it lasts.
 UNTIL_IT_ENDS = "`status` answers again at once when the host call ends"
+#: Why a request that may wait was not sent.
+NOT_SENT_SILENT = ("not sent: the debugger channel's last request went unanswered, and this one "
+                   "would hold it for its whole bound in front of the next")
 
 
 class ChannelSilent(Invalid):
@@ -162,15 +165,19 @@ class ControlChannel:
                        f"redials within a second, and the next request takes that connection")
 
     def request(self, command: str, seconds: float = REPLY_S,
-                poll: Callable[[], None] = _no_poll) -> tuple[bool, list[str]]:
+                poll: Callable[[], None] = _no_poll, *,
+                unless_silent: bool = False) -> tuple[bool, list[str]]:
         """Send `PING`, `BREAK` or `EXEC <cmd>`; return `(ok, lines)`.
 
         No reply within `seconds` is `host_failed`, and whether the request acted is unknown.
-        `poll` runs at each slice of the wait."""
+        `poll` runs at each slice of the wait. `unless_silent` refuses, sending nothing, while
+        the last request is unanswered, judged once the channel is this request's."""
         if not command.strip() or "\n" in command or "\r" in command:
             raise Invalid("bad_argument", f"a channel request is one non-empty line; got "
                           f"{command!r}")
         with self._in_flight:
+            if unless_silent and self.silent:
+                raise Invalid("host_failed", NOT_SENT_SILENT)
             return self._request(command, seconds, poll)
 
     def _request(self, command: str, seconds: float,

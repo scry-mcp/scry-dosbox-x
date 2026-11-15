@@ -6,16 +6,20 @@ move; and a start plan lighting the window."""
 from __future__ import annotations
 
 import asyncio
+import contextlib
+import socket
+import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pytest
 from scry_core import presence
+from scry_core.reply_contract import Invalid
 
+from scry_dosbox_x import control, lifecycle, server
 from scry_dosbox_x import debugger as dbg
-from scry_dosbox_x import lifecycle, server
 from scry_dosbox_x import presence as dpresence
 
 
@@ -46,14 +50,14 @@ class _Session:
         self.answers = list(answers)
         self.commands = commands
         self.sent: list[str] = []
-        self.channel_silent = False
         self.bare: tuple[bool, list[str]] = (
             True, ["PRESENCE off frames=0 pointer=0 output=none version=2"])
 
     def has(self, command: str) -> bool:
         return command in self.commands
 
-    def exec(self, command: str, seconds: float | None = None) -> tuple[bool, list[str]]:
+    def exec(self, command: str, seconds: float | None = None, *,
+             unless_silent: bool = False) -> tuple[bool, list[str]]:
         if command == "PRESENCE":
             return self.bare
         self.sent.append(command)
@@ -79,20 +83,42 @@ def test_a_build_with_the_command_is_drawn_and_its_answer_kept() -> None:
     shown.close()
 
 
-def test_a_channel_known_silent_is_not_asked_to_draw_until_it_answers_again() -> None:
-    """Inside a host call the channel answers nothing, and a delivery sent then would hold it
-    for its whole bound in front of the next call's own request."""
-    shown, channel = _shown(DRAWN, DRAWN)
-    adapter = shown.adapter
-    assert isinstance(adapter, dpresence.ChannelAdapter)
-    shown.close()
-    channel.channel_silent = True
-    with pytest.raises(RuntimeError, match="silent"):
-        adapter.show("acting")
-    assert len(channel.sent) == 1, channel.sent
-    channel.channel_silent = False
-    adapter.show("acting")
-    assert channel.sent[1].startswith("PRESENCE acting "), channel.sent
+def test_a_delivery_that_waited_behind_a_request_the_channel_left_unanswered_is_not_sent(
+) -> None:
+    """The delivery is asked while another request still waits on the silent channel."""
+    channel = control.ControlChannel(lambda: None)
+    emulator = socket.create_connection((control.LOCAL_HOST, channel.port))
+    heard: list[bytes] = []
+
+    class OverChannel:
+        control, commands = channel, frozenset({"PRESENCE"})
+
+        def has(self, command: str) -> bool:
+            return command in self.commands
+
+        def exec(self, command: str, seconds: float | None = None,
+                 **kw: Any) -> tuple[bool, list[str]]:
+            return dbg.exec_lines(cast(Any, self), command, seconds, **kw)
+    adapter = dpresence.ChannelAdapter(cast(Any, OverChannel()))
+    adapter.version = dpresence.MIN_VERSION
+    def unanswered() -> None:
+        with contextlib.suppress(Invalid):
+            channel.request("EXEC RUNSTATE", 0.3)
+    tool = threading.Thread(target=unanswered)
+    try:
+        tool.start()
+        time.sleep(0.05)
+        with contextlib.suppress(Exception):
+            adapter.show("acting")
+        tool.join()
+        emulator.settimeout(0.2)
+        with contextlib.suppress(TimeoutError):
+            while got := emulator.recv(4096):
+                heard.append(got)
+    finally:
+        emulator.close()
+        channel.close()
+    assert b"PRESENCE" not in b"".join(heard), heard
 
 
 def test_a_build_whose_debugger_has_no_presence_command_is_said_unavailable_unsent() -> None:

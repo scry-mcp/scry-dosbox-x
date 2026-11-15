@@ -338,21 +338,16 @@ class Session(dprocess.Process):
 
     # ------------------------------------------------------------------ the channel
 
-    @property
-    def channel_silent(self) -> bool:
-        """`ControlChannel.silent`."""
-        channel = getattr(self, "control", None)
-        return channel is not None and channel.silent
-
     def has(self, command: str) -> bool:
         """Whether this build's debugger parses `command`."""
         return command in self.commands
 
-    def exec(self, command: str, seconds: float | None = None) -> tuple[bool, list[str]]:
+    def exec(self, command: str, seconds: float | None = None, *,
+             unless_silent: bool = False) -> tuple[bool, list[str]]:
         """One debugger command: whether it was taken and every line it printed."""
         if command.split()[:1] and command.split()[0].upper() not in KEEPS_SURVEY:
             self._surveyed = None
-        return dbg.exec_lines(self, command, seconds)
+        return dbg.exec_lines(self, command, seconds, unless_silent=unless_silent)
 
     def command(self, text: str, seconds: float | None = None) -> str:
         """One debugger command and what it printed, as one text."""

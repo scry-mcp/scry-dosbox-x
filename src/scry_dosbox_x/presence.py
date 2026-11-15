@@ -37,9 +37,6 @@ NO_COMMAND = "this DOSBox-X's debugger has no PRESENCE command"
 NO_OUTPUT = ("this output cannot be drawn on (an 8-bit output, or the TrueType output while it "
              "shows text)")
 NO_WINDOW = "a session started without `shared` has no window to draw on"
-#: The writer retries a failed delivery on its own, by then past the host call or not.
-SILENT = ("the debugger channel is silent (its last request went unanswered), and a delivery "
-          "would hold it in front of the next call's own request")
 #: The bare command names the build's version; a build that refuses the bare form is version 1.
 MIN_VERSION = 2
 #: The INT 33h driver's default graphics pointer, hot spot top-left: `X` outline, `o` fill, `.`
@@ -75,10 +72,9 @@ def channel_args(look: presence.Look = presence.LOOK) -> str:
 
 
 class Debugger(Protocol):
-    @property
-    def channel_silent(self) -> bool: ...
     def has(self, command: str) -> bool: ...
-    def exec(self, command: str, seconds: float | None = None) -> tuple[bool, list[str]]: ...
+    def exec(self, command: str, seconds: float | None = None, *,
+             unless_silent: bool = False) -> tuple[bool, list[str]]: ...
 
 
 class ChannelAdapter:
@@ -92,8 +88,6 @@ class ChannelAdapter:
         self.version: int | None = None
 
     def show(self, state: presence.State) -> None:
-        if self._session.channel_silent:
-            raise RuntimeError(SILENT)
         if not self._session.has("PRESENCE"):
             raise presence.Unavailable(NO_COMMAND)
         if self.version is None:
@@ -102,8 +96,9 @@ class ChannelAdapter:
             raise presence.Unavailable(
                 f"this DOSBox-X's PRESENCE is version {self.version}, which draws the pointer at a "
                 f"share of the window; version {MIN_VERSION} sizes it by the guest's pixels")
+        # The writer retries a delivery refused on a silent channel on its own.
         ok, lines = self._session.exec(
-            f"PRESENCE {state} {self._args} pointer={int(self.pointer)}")
+            f"PRESENCE {state} {self._args} pointer={int(self.pointer)}", unless_silent=True)
         if not ok:
             # A refused key also ends with the debugger's own line, after its reason.
             if lines == [dbg.NOT_RECOGNIZED]:

@@ -157,7 +157,8 @@ class _Channel:
         self.child, self.answer = child, answer
         self.asked: list[str] = []
 
-    def request(self, command: str, seconds: float = 5.0) -> tuple[bool, list[str]]:
+    def request(self, command: str, seconds: float = 5.0, *,
+                unless_silent: bool = False) -> tuple[bool, list[str]]:
         self.asked.append(command)
         if self.answer == "left":
             self.child.term_s = 0.0
