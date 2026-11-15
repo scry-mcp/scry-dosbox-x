@@ -252,8 +252,8 @@ def start(conf: str = "", cwd: str = "",
     reads, judged here and placed at the first stop where DOS holds the program its stem names
     (`<stem>.exe`); `base_from` `program` (its own base) or a register, as `symbols_load`
     measures one, at a protected-mode stop. That stop's reply says `symbols_placed` once
-    (`placed`, `path`, `load_segment`, `base`, `loaded`; a placement refused: `placed: false`,
-    `code`, `why`); a later `symbols_load` replaces it.
+    (`placed`, `path`, `load_segment` in real mode, `base`, `loaded`; refused: `placed:
+    false`, `code`, `why`); a later `symbols_load` replaces it.
 
     Refused: a live session, a window that never appears on the asked display
     (`window_not_visible`, the session left live to `window` or `close`), `flags` setting what
@@ -939,7 +939,7 @@ def screen_wait(text: str = "", screen: str = "", palette: str = "", changed: bo
     `on_breakpoint` / `on_watch`: judge only at the retrace after a firing of that declared
     breakpoint or `change` watch (its `ref` as `declaration_list` lists it), never sampling;
     `condition` ({CONDITION_GRAMMAR}) filters the firings first. The first firing is awaited even
-    when the predicate already holds. Runs on the normal core.
+    when the predicate already holds.
 
     `every`: 0 judges every retrace; N judges every Nth, for a predicate whose read is a full
     frame, and a screen that lasts fewer than N retraces is passed over. `seconds` bounds the

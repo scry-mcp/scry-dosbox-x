@@ -104,8 +104,8 @@ guest should leave, read by `guest_file` and `close`. `symbols`: a table `symbol
 reads, judged here and placed at the first stop where DOS holds the program its stem names
 (`<stem>.exe`); `base_from` `program` (its own base) or a register, as `symbols_load`
 measures one, at a protected-mode stop. That stop's reply says `symbols_placed` once
-(`placed`, `path`, `load_segment`, `base`, `loaded`; a placement refused: `placed: false`,
-`code`, `why`); a later `symbols_load` replaces it.
+(`placed`, `path`, `load_segment` in real mode, `base`, `loaded`; refused: `placed:
+false`, `code`, `why`); a later `symbols_load` replaces it.
 
 Refused: a live session, a window that never appears on the asked display
 (`window_not_visible`, the session left live to `window` or `close`), `flags` setting what

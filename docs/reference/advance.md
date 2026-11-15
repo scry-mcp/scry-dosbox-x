@@ -407,7 +407,7 @@ named at the start; a frame it names nothing is a transition). None or several i
 `on_breakpoint` / `on_watch`: judge only at the retrace after a firing of that declared
 breakpoint or `change` watch (its `ref` as `declaration_list` lists it), never sampling;
 `condition` (up to 4 terms joined by `&&`, each a register (`AX`, `d0`) or a memory read (`b@ref`, `w@ref`, `d@ref`), a comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`) and a hex value (`0x` allowed)) filters the firings first. The first firing is awaited even
-when the predicate already holds. Runs on the normal core.
+when the predicate already holds.
 
 `every`: 0 judges every retrace; N judges every Nth, for a predicate whose read is a full
 frame, and a screen that lasts fewer than N retraces is passed over. `seconds` bounds the
