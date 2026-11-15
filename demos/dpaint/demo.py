@@ -89,7 +89,7 @@ def colour_found(reply: Reply, run: Run) -> str:
                                       f"{[f'{o:04X}' for o in statics]}")
     expect(reply["truncated"] is False, f"{reply['hits_total']} survivors, not all listed")
     return (f"{len(offsets)} bytes followed both clicks: {len(offsets) - len(statics)} in the "
-            f"stack's frames above {sp:04X}, and {len(statics)} static ones from "
+            f"stack's frames above the stack pointer, and {len(statics)} static ones from "
             f"{ds_segment(run):04X}:{COLOUR_STATICS[0]:04X}")
 
 

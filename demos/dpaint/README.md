@@ -147,7 +147,7 @@ Tools and colours are picked by name: the screen map says where `blue` sits on t
 
 </details>
 
-**10. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above A02A, and 4 static ones from 31B2:017C
+**10. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above the stack pointer, and 4 static ones from 31B2:017C
 
 A value scan, the cheat finder's trick done through a debugger. The first scan kept every byte of the data segment, the filter after picking blue kept those holding blue's index, and this one, after orange, keeps those that held each in turn. The survivors are of two kinds, told apart by where they live: copies in the stack's frames, and static bytes in the data segment.
 

@@ -43,7 +43,7 @@
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
-  "kept": "kept 1 (promote to review)",
+  "kept": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -138,7 +138,7 @@
       "size_bytes": 10992,
       "psp_seg": "0008",
       "notes": "DOS",
-      "filename": "\u0002"
+      "filename": "\"\u0005"
     },
     {
       "memory": "conventional",
@@ -515,7 +515,7 @@
 
 </details>
 
-**10. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above A02A, and 4 static ones from 31B2:017C
+**10. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above the stack pointer, and 4 static ones from 31B2:017C
 
 <details><summary>call and reply</summary>
 
