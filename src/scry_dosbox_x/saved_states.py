@@ -150,8 +150,8 @@ def _replaced(ses: ds.Session) -> None:
 
 def load_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:
     """Load `<state_dir>/<name>.sav`. A parked guest stays parked and the load counts as a stop
-    of its own. The session is altered from here on, also after a refusal other than a missing
-    channel, since a load refused part-way may have replaced some of the machine."""
+    of its own. The session is altered from here on, also after a refusal the emulator gave once
+    it began to load, since a load refused part-way may have replaced some of the machine."""
     ses.machine_replaced = False
     name = dlaunch.check_state_name(name)
     vocab.check_wait(seconds)
