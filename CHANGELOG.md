@@ -164,10 +164,9 @@ What a client of the server notices.
   at the start.
 - The files the server writes are named in lowercase words joined by hyphens, with one
   extension ([the rule](https://github.com/scry-mcp/scry-core/blob/main/docs/file-names.md)):
-  a file `dest`, a `logfile` or a state's `name` given as `Shot_1.PNG` or `Boss_1` is written
-  as `shot-1.png` or `boss-1.sav`, and a reply that carries the path names the file as
-  written. A file `dest` or a `logfile` with no extension is refused, with no session too; a
-  directory `dest` keeps its name. A state is loaded by any spelling of its name. A state or a
+  a `logfile` or a state's `name` given as `Run_1.LOG` or `Boss_1` is written as `run-1.log`
+  or `boss-1.sav`, and a reply that carries the path names the file as written. A `logfile`
+  with no extension is refused, with no session too; a directory `dest` keeps its name. A state is loaded by any spelling of its name. A state or a
   screen map kept under an earlier spelling (`Boss_1.sav`, `<application>.screen-map.json`) is
   not found until its file is renamed; `state_list` says so in the row's `note`. A trace's set
   file is `<trace name>-<extension>-set.jsonl`, a screen map
