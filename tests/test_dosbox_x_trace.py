@@ -356,6 +356,11 @@ def test_a_mixed_case_dest_is_written_under_the_name_given_with_a_set_file_from_
     assert tracing.set_path(out / "run-1.trace") != tracing.set_path(out / "run-1.log")
 
 
+def test_a_dest_with_no_extension_has_a_set_file_from_its_stem(tmp_path: Path) -> None:
+    """A caller's name is honoured as given, so one without an extension is a trace too."""
+    assert tracing.set_path(tmp_path / "My_Trace") == tmp_path / "my-trace-set.jsonl"
+
+
 def test_the_default_shape_is_the_familys_bare_command(tmp_path: Path) -> None:
     machine = tracer(tmp_path, [("probe-settle-normal-16", "ran")])
     got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "n.trace")))

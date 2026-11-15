@@ -80,8 +80,8 @@ def set_path(path: Path) -> Path:
     traces that differ only by extension keep two set files. The set file is a name the server
     makes up, so the file-name rule normalises it even when `path` is a `dest` the caller wrote
     with capitals and underscores."""
-    return path.with_name(file_names.name(file_names.word(path.stem, "dest"),
-                                          file_names.word(path.suffix[1:], "dest"),
+    parts = (path.stem, path.suffix[1:]) if path.suffix else (path.name,)
+    return path.with_name(file_names.name(*(file_names.word(part, "dest") for part in parts),
                                           "set", extension="jsonl"))
 
 
