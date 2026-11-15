@@ -258,13 +258,7 @@ RUN_FOR_MS_MAX = 2 ** 53
 
 
 def optional_dest(dest: object) -> None:
-    """A file `dest` whose empty string means the scratch's."""
-    if dest != "":
-        paths.named_dest("dest", dest)
-
-
-def optional_named_dest(dest: object) -> None:
-    """A picture `dest` kept under the name the caller gave; empty means the scratch's."""
+    """A file `dest` kept under the name the caller gave; empty means the scratch's."""
     if dest != "":
         paths.named_dest("dest", dest)
 
@@ -555,7 +549,7 @@ def _capture_frame(frame: int, dest: str, capture_path: str = "", **_: Any) -> N
 
 
 def _snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S, **_: Any) -> None:
-    optional_named_dest(dest)
+    optional_dest(dest)
     vocab.check_wait(seconds)
 
 
@@ -581,7 +575,7 @@ def _screen_view(crop: list[int] | None = None, scale: int = 0, dest: str = "",
     if crop is not None:
         judges.rect("crop", crop)
     picture.check_scale(scale)
-    optional_named_dest(dest)
+    optional_dest(dest)
     by_pens.check_view(mode, pens, point, crop, scale, dest, attach)
 
 
