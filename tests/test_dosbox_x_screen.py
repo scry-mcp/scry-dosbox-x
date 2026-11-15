@@ -977,7 +977,7 @@ def test_a_snapshot_at_a_stop_writes_the_graphics_screen_from_video_memory(
 
 @pytest.mark.parametrize("tool", ["screen_view", "snapshot"])
 def test_a_dest_is_written_under_the_name_the_caller_gave(tmp_path: Path, tool: str) -> None:
-    """`dest` is honoured as the caller wrote it: `a_b.png` stays `a_b.png` (the card's case),
+    """`dest` is honoured as the caller wrote it: `a_b.png` stays `a_b.png`,
     and nothing of the name is rewritten; the reply's `path` is the name asked for."""
     screen_bench("screen-13h", tmp_path)
     out = tmp_path / "out"
