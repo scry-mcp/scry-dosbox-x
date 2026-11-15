@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A `send_keys` or `send_mouse` cut part-way while paying the releases an earlier cut send
+  owed counts only the keys still down, where it also counted those whose release had just
+  gone in.
 - A steered `send_mouse` summary, inside `perform(summaries=true)` too, says "program's pointer
   at" with the place `arrived` judged, and the driver's place beside it when the two differ,
   where it said "pointer at" with the driver's place alone.

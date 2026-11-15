@@ -392,6 +392,45 @@ def test_a_cut_extended_key_counts_the_keys_left_down_not_the_releases_owed(
         cut.value.written, cut.value.held)
 
 
+@pytest.mark.parametrize(("press", "taken", "held", "paid", "left", "owed"), [
+    # two keys left down, one release paid: one key is down, not two
+    ([b"K\x2c", b"K\x2e", b"K\xae", b"K\xac"], 1, 2, 1, 1, [b"K\xac"]),
+    # an extended key and the fake shift its dangling prefix owes; the key's release paid, and
+    # the fake shift's lets no key up
+    ([b"K\xe0", b"K\x48", b"K\xe0", b"K\xc8"], 2, 1, 2, 0, [b"K\xaa"]),
+])
+def test_a_debt_paid_in_part_counts_only_the_keys_still_down(
+        pair: Any, press: list[bytes], taken: int, held: int, paid: int, left: int,
+        owed: list[bytes]) -> None:
+    host, guest = pair
+    budget = [taken]                       # the frame after these is written and never taken
+
+    def run() -> None:
+        buf = b""
+        with contextlib.suppress(OSError):
+            while got := guest.recv(64):
+                buf += got
+                while len(buf) >= 5:
+                    frame, buf = buf[:5], buf[5:]
+                    if budget[0] > 0:
+                        budget[0] -= 1
+                        guest.sendall(bytes((link.ACK, frame[1], frame[2], 1)))
+    threading.Thread(target=run, daemon=True).start()
+    silent = SilentChannel(0.1)
+    sent = link.Link(host, parked=silent.ask)
+    try:
+        with pytest.raises(link.Cut) as first:
+            sent.send(press)
+        assert first.value.held == held, first.value
+        budget[0] = paid
+        with pytest.raises(link.Cut) as second:
+            sent.send([b"K\x20", b"K\xa0"])
+    finally:
+        silent.close()
+    assert (second.value.written, second.value.held) == (0, left), second.value
+    assert sent.owed == owed, sent.owed
+
+
 @pytest.mark.parametrize("why", ["a call that holds its keys", "a state loaded since"])
 def test_a_cut_owes_no_release_to_a_key_held_on_purpose_or_to_a_replaced_machine(
         pair: Any, why: str) -> None:

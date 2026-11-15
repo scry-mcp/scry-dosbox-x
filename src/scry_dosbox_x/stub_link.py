@@ -73,18 +73,26 @@ def keys_down(written: list[bytes]) -> tuple[list[tuple[bool, int]], bool]:
     return down, extended
 
 
-def owed_breaks(written: list[bytes]) -> list[bytes]:
-    """The key commands that release every key `written` pressed and did not release, last
-    pressed first; an extended key's break repeats its prefix."""
+#: A release owed: its key commands, and whether it lets a key up (the fake shift's does not,
+#: and its break is a real left shift's bytes).
+Release = tuple[tuple[bytes, ...], bool]
+
+
+def owed_releases(written: list[bytes]) -> list[Release]:
+    """What releases every key `written` pressed and did not release, last pressed first; an
+    extended key's break repeats its prefix."""
     down, extended = keys_down(written)
-    owed: list[bytes] = []
-    for prefixed, code in reversed(down):
-        if prefixed:
-            owed.append(bytes((OP_KEY, EXTENDED)))
-        owed.append(bytes((OP_KEY, code | 0x80)))
+    owed: list[Release] = [
+        ((bytes((OP_KEY, EXTENDED)),) * prefixed + (bytes((OP_KEY, code | 0x80)),), True)
+        for prefixed, code in reversed(down)]
     if extended:
-        owed.append(bytes((OP_KEY, FAKE_SHIFT_BREAK)))
+        owed.append(((bytes((OP_KEY, FAKE_SHIFT_BREAK)),), False))
     return owed
+
+
+def owed_breaks(written: list[bytes]) -> list[bytes]:
+    """The key commands of `owed_releases`, in order."""
+    return [command for commands, _ in owed_releases(written) for command in commands]
 
 
 class Cut(Invalid):
@@ -124,9 +132,8 @@ class Link:
         self._acked_ms: float | None = None
         self._acked_running_ms: float | None = None
         self._written: list[bytes] = []
-        #: Releases a cut send owes, paid ahead of the next send, and the keys they release.
-        self.owed: list[bytes] = []
-        self.held = 0
+        #: Releases a cut send owes, paid ahead of the next send.
+        self._debt: list[Release] = []
         #: Since the link opened, so a caller can tell what one call put in.
         self.inputs_written = 0
         self.releases_sent = 0
@@ -135,7 +142,16 @@ class Link:
         """The stub's memory was replaced (a state loaded)."""
         self.proved = False
         # The held key was the replaced machine's.
-        self.owed, self.held = [], 0
+        self._debt = []
+
+    @property
+    def owed(self) -> list[bytes]:
+        return [command for commands, _ in self._debt for command in commands]
+
+    @property
+    def held(self) -> int:
+        """The keys still down until the debt is paid."""
+        return sum(key for _, key in self._debt)
 
     def send(self, commands: list[bytes], advance: Advance | None = None) -> list[str]:
         """Send in order; return the `R` report lines. A refusal says how many were acked.
@@ -186,16 +202,15 @@ class Link:
         return reports
 
     def _owe(self, written: list[bytes]) -> None:
-        self.owed += owed_breaks(written)
-        self.held += len(keys_down(written)[0])
+        self._debt += owed_releases(written)
 
     def _pay_owed(self) -> None:
         """The releases owed, each dropped once taken: a key left down repeats in the guest."""
-        while self.owed:
-            self._deliver(self.owed[0])
-            del self.owed[0]
+        while self._debt:
+            (first, *rest), key = self._debt[0]
+            self._deliver(first)
+            self._debt[0:1] = [(tuple(rest), key)] if rest else []
             self.releases_sent += 1
-        self.held = 0
 
     def _release_keys(self) -> None:
         """A cancelled send's releases, best effort: what the stub does not take stays owed."""
