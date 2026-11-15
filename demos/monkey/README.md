@@ -12,7 +12,7 @@ dialogue menus are picked from as they appear.
 
 Then the demo does what no player can. It saves the machine with the comeback "What the heck is
 wrong with `Guybrush Threepwood`?" under the pointer, lets the lookout answer as the game wrote
-it, and loads the save. It finds the answer in guest memory and writes a conversation of its own
+it until the menu comes back, and loads the save. It finds the answer in guest memory and writes a conversation of its own
 over the room's script: twenty-two speeches of SCUMM bytecode, the lookout's and Guybrush's,
 chained by jumps across three stretches of the script the game no longer needs, and opened by
 the intro's own call for the theme. It stops the CD driver's play request as it goes by and moves
@@ -20,7 +20,8 @@ its start to the bar where the logo enters. The same comeback is picked again, t
 from that bar, the recording is compared with the reader's own disc, sample against sample, and
 must stay above a signal-to-noise floor (the mixer touches the disc's samples on the way), and
 the lookout and Guybrush talk debuggers, AI and orange tycoons until the game takes the
-conversation back.
+conversation back. Guybrush then walks off under the arch, and the demo ends once the room has
+gone dark.
 
 The game moves its own pointer by the mouse driver's motion and stops it at the screen's edges,
 so it can sit a few pixels away from the driver's, and a click lands where the game's pointer
@@ -93,13 +94,14 @@ Give this to an MCP client with this server connected:
 > walk back and up the cliffside, Talk to the lookout, ask him whether we are all characters in
 > a novel, tell him my name, and put the pointer on the comeback, naming each screen and each
 > hover as the game answers it and picking each menu as it appears. Save the machine, pick the
-> comeback, show me his answer, and load the save. Find his answer in memory, check the script
+> comeback, show me his answer until the menu is back without it, and load the save. Find his answer in memory, check the script
 > around it is the disc's, and write the new conversation over it. Stop on every request to the
 > CD driver and pick the comeback again; let the two STOP AUDIO requests through, move the PLAY
 > AUDIO request's start to the bar where the logo enters, record eight seconds and hold them to
 > that bar of my own disc's track 18. Name five moments of the conversation as it plays, sampling
-> the screen every few retraces since the CD paces the lines; show me the screen, and close once
-> the lookout is done and the cliff is back.
+> the screen every few retraces since the CD paces the lines; show me the screen. Once the lookout
+> is done and the cliff is back, click the way out under the arch, and close once the room is
+> dark.
 
 ## What it walks
 
@@ -127,7 +129,7 @@ holds before the rewrite are `<volatile>` too: the step that reads them gives th
 verdict, and this repository carries none of them.
 
 <!-- demo-transcript:begin -->
-The run is 55 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 57 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
 **7. `perform`**: OK intro: the room variable read 35664, 35664, 0, 0, 10 up to the first scene; Escapes at SCUMM's ticks skipped it to the title card, room 96
 
@@ -339,7 +341,7 @@ The intro is followed by the game's own variable: a change watch on SCUMM's room
 
 </details>
 
-**32. `perform`**: OK rewrite: 22 speeches, 1259 bytes of bytecode over 3 holes, each read back
+**33. `perform`**: OK rewrite: 22 speeches, 1259 bytes of bytecode over 3 holes, each read back
 
 The game's own script is data in memory, so the demo rewrites it. It found the lookout's line with `find` and read the original bytes back, and this `perform` writes a new conversation of SCUMM bytecode over three stretches of the script the game no longer needs, chained by jumps, reading each write back. The lookout then says what the demo wrote, in the game's own voice.
 
@@ -492,7 +494,7 @@ The game's own script is data in memory, so the demo rewrites it. It found the l
 
 </details>
 
-**42. `read_memory`**: OK request 3: PLAY AUDIO (84h) from 36:45:00, the theme's first sector, for 12200 sectors
+**43. `read_memory`**: OK request 3: PLAY AUDIO (84h) from 36:45:00, the theme's first sector, for 12200 sectors
 
 The game asks the CD driver for audio through interrupt 2Fh. `breakpoint_interrupt` stops the machine on every such request, and `read_memory` reads the request block the call points at: this one is PLAY AUDIO, with the sector the theme starts at. The next step writes a different start sector into that block, so the same game call plays the theme from the bar where the logo enters.
 
@@ -519,7 +521,7 @@ The game asks the CD driver for audio through interrupt 2Fh. `breakpoint_interru
 
 </details>
 
-**46. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
+**47. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
 
 The theme the game played is recorded off the emulated mixer and compared with the same track read off the disc image. The reply says whether the two are equal (`exact`) and, when they are not, how far apart (`snr_db`, `class`), so what the demo claims about the music is a measurement, not a listening test.
 

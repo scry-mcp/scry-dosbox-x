@@ -703,6 +703,15 @@
       16,
       20
      ]
+    },
+    {
+     "name": "way_out",
+     "rect": [
+      302,
+      90,
+      16,
+      20
+     ]
     }
    ]
   },
@@ -1108,6 +1117,35 @@
    "controls": []
   },
   {
+   "name": "name choices left",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      320,
+      40
+     ],
+     "signature": "c65016e12f7f826b"
+    },
+    {
+     "crop": [
+      205,
+      0,
+      30,
+      15
+     ],
+     "signature": "3f513a4a43a5b7db"
+    }
+   ],
+   "controls": []
+  },
+  {
    "name": "guybrush: a debugger that plays music",
    "kind": "pixel",
    "size": [
@@ -1232,6 +1270,26 @@
       17
      ],
      "signature": "af61ded7c1722e9c"
+    }
+   ],
+   "controls": []
+  },
+  {
+   "name": "dark",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      144
+     ],
+     "signature": "854a33230149513d"
     }
    ],
    "controls": []

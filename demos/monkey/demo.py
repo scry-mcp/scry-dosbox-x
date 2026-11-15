@@ -481,6 +481,7 @@ STEPS = [
          volatile={"summary": "it carries the state's size and time",
                    "bytes": "the state is compressed, and its size follows what the guest holds"}),
     go("before", [click("whats_wrong_with_my_name")], "lookout: sell shoes"),
+    go("said", [], "name choices left"),
     Step("restore", "state_write", {"method": "load", "name": "comeback"},
          lambda reply, run: "the machine back to before the click"),
     Step("heck again?", "screen_map_find", {}, found("name: whats wrong with my name"),
@@ -533,6 +534,7 @@ STEPS = [
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png", "scale": 2},
          host.pictured),
     go("goodbye", [SKY], "cliff"),
+    go("walk off", [click("way_out")], "dark"),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
 ]
 

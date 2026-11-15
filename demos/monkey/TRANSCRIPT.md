@@ -50,7 +50,7 @@
 
 </details>
 
-**2. `screen_map_write`**: OK map: 24 screens, 60 controls
+**2. `screen_map_write`**: OK map: 26 screens, 61 controls
 
 <details><summary>call and reply</summary>
 
@@ -63,13 +63,13 @@
 
 ```json
 {
-  "summary": "screen_map_write load: 24 screens, 60 controls of monkey",
+  "summary": "screen_map_write load: 26 screens, 61 controls of monkey",
   "status": "ok",
   "path": "./demos/monkey/monkey-screen-map.json",
   "application": "monkey",
   "mode": "verified",
-  "screens": 24,
-  "controls": 60,
+  "screens": 26,
+  "controls": 61,
   "session": "<volatile>"
 }
 ```
@@ -1439,7 +1439,8 @@
           {"name": "close", "rect": [4, 186, 32, 12], "centre": [20, 192]},
           {"name": "talk_to", "rect": [46, 186, 52, 12], "centre": [72, 192]},
           {"name": "pull", "rect": [104, 186, 34, 12], "centre": [121, 192]},
-          {"name": "lookout", "rect": [94, 66, 16, 20], "centre": [102, 76]}
+          {"name": "lookout", "rect": [94, 66, 16, 20], "centre": [102, 76]},
+          {"name": "way_out", "rect": [302, 90, 16, 20], "centre": [310, 100]}
         ],
         "session": "<volatile>"
       }
@@ -2176,7 +2177,79 @@
 
 </details>
 
-**28. `state_write`**: OK restore: the machine back to before the click
+**28. `perform`**: OK said: the map says: name choices left
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "steps": [
+    {"op": "breakpoint_at", "ref": "0985:011E"},
+    {"op": "screen_wait", "screen": "name choices left", "on_breakpoint": "0985:011E", "seconds": 180},
+    {"op": "declaration_clear", "kind": "breakpoint", "all": true},
+    {"op": "run_for", "frames": 10},
+    {"op": "screen_map_find"}
+  ],
+  "summaries": true
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "ran": [
+    {
+      "step": 0,
+      "op": "breakpoint_at",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 1,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 2,
+      "op": "declaration_clear",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 3,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 4,
+      "op": "screen_map_find",
+      "reply": {
+        "summary": "<volatile>",
+        "status": "ok",
+        "matched": true,
+        "screen": "name choices left",
+        "layer": "file",
+        "kind": "pixel",
+        "size": [320, 200],
+        "controls": [],
+        "session": "<volatile>"
+      }
+    }
+  ],
+  "steps_total": 5,
+  "truncated": false,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": "<volatile>",
+  "steps_completed": 5,
+  "failed_at": {"available": false, "why": "no step failed"},
+  "held": 0,
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**29. `state_write`**: OK restore: the machine back to before the click
 
 <details><summary>call and reply</summary>
 
@@ -2206,7 +2279,7 @@
 
 </details>
 
-**29. `screen_map_find`**: OK heck again?: the map says: name: whats wrong with my name
+**30. `screen_map_find`**: OK heck again?: the map says: name: whats wrong with my name
 
 <details><summary>call and reply</summary>
 
@@ -2233,7 +2306,7 @@
 
 </details>
 
-**30. `find`**: OK needle: the lookout's line, once, at 82DD:0000000F
+**31. `find`**: OK needle: the lookout's line, once, at 82DD:0000000F
 
 <details><summary>call and reply</summary>
 
@@ -2262,7 +2335,7 @@
 
 </details>
 
-**31. `perform`**: OK script: 1371 bytes around the line are the disc's own script, hole by hole
+**32. `perform`**: OK script: 1371 bytes around the line are the disc's own script, hole by hole
 
 <details><summary>call and reply</summary>
 
@@ -2305,7 +2378,7 @@
 
 </details>
 
-**32. `perform`**: OK rewrite: 22 speeches, 1259 bytes of bytecode over 3 holes, each read back
+**33. `perform`**: OK rewrite: 22 speeches, 1259 bytes of bytecode over 3 holes, each read back
 
 <details><summary>call and reply</summary>
 
@@ -2456,7 +2529,7 @@
 
 </details>
 
-**33. `breakpoint_interrupt`**: OK arm: a stop on every request to the CD driver
+**34. `breakpoint_interrupt`**: OK arm: a stop on every request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -2483,7 +2556,7 @@
 
 </details>
 
-**34. `perform`**: OK pick: the same comeback, picked again
+**35. `perform`**: OK pick: the same comeback, picked again
 
 <details><summary>call and reply</summary>
 
@@ -2556,7 +2629,7 @@
 
 </details>
 
-**35. `resume`**: OK first: stopped on INT 2Fh AX=1510h, a request to the CD driver
+**36. `resume`**: OK first: stopped on INT 2Fh AX=1510h, a request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -2614,7 +2687,7 @@
 
 </details>
 
-**36. `read_memory`**: OK request 1: STOP AUDIO (85h), let through
+**37. `read_memory`**: OK request 1: STOP AUDIO (85h), let through
 
 <details><summary>call and reply</summary>
 
@@ -2639,7 +2712,7 @@
 
 </details>
 
-**37. `perform`**: OK pass 1: the request answered
+**38. `perform`**: OK pass 1: the request answered
 
 <details><summary>call and reply</summary>
 
@@ -2697,7 +2770,7 @@
 
 </details>
 
-**38. `resume`**: OK second: stopped on INT 2Fh AX=1510h, a request to the CD driver
+**39. `resume`**: OK second: stopped on INT 2Fh AX=1510h, a request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -2755,7 +2828,7 @@
 
 </details>
 
-**39. `read_memory`**: OK request 2: STOP AUDIO (85h), let through
+**40. `read_memory`**: OK request 2: STOP AUDIO (85h), let through
 
 <details><summary>call and reply</summary>
 
@@ -2780,7 +2853,7 @@
 
 </details>
 
-**40. `perform`**: OK pass 2: the request answered
+**41. `perform`**: OK pass 2: the request answered
 
 <details><summary>call and reply</summary>
 
@@ -2838,7 +2911,7 @@
 
 </details>
 
-**41. `resume`**: OK third: stopped on INT 2Fh AX=1510h, a request to the CD driver
+**42. `resume`**: OK third: stopped on INT 2Fh AX=1510h, a request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -2896,7 +2969,7 @@
 
 </details>
 
-**42. `read_memory`**: OK request 3: PLAY AUDIO (84h) from 36:45:00, the theme's first sector, for 12200 sectors
+**43. `read_memory`**: OK request 3: PLAY AUDIO (84h) from 36:45:00, the theme's first sector, for 12200 sectors
 
 <details><summary>call and reply</summary>
 
@@ -2921,7 +2994,7 @@
 
 </details>
 
-**43. `write`**: OK to the logo: the drive will start at 37:05:67, the logo's bar
+**44. `write`**: OK to the logo: the drive will start at 37:05:67, the logo's bar
 
 <details><summary>call and reply</summary>
 
@@ -2947,7 +3020,7 @@
 
 </details>
 
-**44. `declaration_clear`**: OK disarm: the stop on the CD driver cleared
+**45. `declaration_clear`**: OK disarm: the stop on the CD driver cleared
 
 <details><summary>call and reply</summary>
 
@@ -2970,7 +3043,7 @@
 
 </details>
 
-**45. `audio_record`**: OK theme: 8.0 s of the mixer at 44100 Hz
+**46. `audio_record`**: OK theme: 8.0 s of the mixer at 44100 Hz
 
 <details><summary>call and reply</summary>
 
@@ -3019,7 +3092,7 @@
 
 </details>
 
-**46. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
+**47. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
 
 <details><summary>call and reply</summary>
 
@@ -3051,7 +3124,7 @@
 
 </details>
 
-**47. `screen_map_find`**: OK music?: the map says: guybrush: a debugger that plays music
+**48. `screen_map_find`**: OK music?: the map says: guybrush: a debugger that plays music
 
 <details><summary>call and reply</summary>
 
@@ -3075,7 +3148,7 @@
 
 </details>
 
-**48. `perform`**: OK talk 1: the map says: lookout: the orange tycoon
+**49. `perform`**: OK talk 1: the map says: lookout: the orange tycoon
 
 <details><summary>call and reply</summary>
 
@@ -3135,7 +3208,7 @@
 
 </details>
 
-**49. `perform`**: OK talk 2: the map says: lookout: those files
+**50. `perform`**: OK talk 2: the map says: lookout: those files
 
 <details><summary>call and reply</summary>
 
@@ -3195,7 +3268,7 @@
 
 </details>
 
-**50. `perform`**: OK talk 3: the map says: lookout: still not a wave
+**51. `perform`**: OK talk 3: the map says: lookout: still not a wave
 
 <details><summary>call and reply</summary>
 
@@ -3255,7 +3328,7 @@
 
 </details>
 
-**51. `perform`**: OK talk 4: the map says: lookout: humor first
+**52. `perform`**: OK talk 4: the map says: lookout: humor first
 
 <details><summary>call and reply</summary>
 
@@ -3315,7 +3388,7 @@
 
 </details>
 
-**52. `screen_view`**: OK screen: mode M_VGA, 320x200 by palette index
+**53. `screen_view`**: OK screen: mode M_VGA, 320x200 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -3357,7 +3430,7 @@ Also attached: image/png.
 
 </details>
 
-**53. `record`**: OK loop: recording 240 frames in ./tmp/demos/monkey/loop.avi
+**54. `record`**: OK loop: recording 240 frames in ./tmp/demos/monkey/loop.avi
 
 <details><summary>call and reply</summary>
 
@@ -3401,7 +3474,7 @@ Also attached: image/png.
 
 </details>
 
-**54. `perform`**: OK goodbye: the map says: cliff
+**55. `perform`**: OK goodbye: the map says: cliff
 
 <details><summary>call and reply</summary>
 
@@ -3470,7 +3543,8 @@ Also attached: image/png.
           {"name": "close", "rect": [4, 186, 32, 12], "centre": [20, 192]},
           {"name": "talk_to", "rect": [46, 186, 52, 12], "centre": [72, 192]},
           {"name": "pull", "rect": [104, 186, 34, 12], "centre": [121, 192]},
-          {"name": "lookout", "rect": [94, 66, 16, 20], "centre": [102, 76]}
+          {"name": "lookout", "rect": [94, 66, 16, 20], "centre": [102, 76]},
+          {"name": "way_out", "rect": [302, 90, 16, 20], "centre": [310, 100]}
         ],
         "session": "<volatile>"
       }
@@ -3490,7 +3564,85 @@ Also attached: image/png.
 
 </details>
 
-**55. `close`**: OK close: closed: quit
+**56. `perform`**: OK walk off: the map says: dark
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "steps": [
+    {"op": "send_mouse", "target": "way_out", "button": "left", "action": "click"},
+    {"op": "breakpoint_at", "ref": "0985:011E"},
+    {"op": "screen_wait", "screen": "dark", "on_breakpoint": "0985:011E", "seconds": 180},
+    {"op": "declaration_clear", "kind": "breakpoint", "all": true},
+    {"op": "run_for", "frames": 10},
+    {"op": "screen_map_find"}
+  ],
+  "summaries": true
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "ran": [
+    {
+      "step": 0,
+      "op": "send_mouse",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 1,
+      "op": "breakpoint_at",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 2,
+      "op": "screen_wait",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 3,
+      "op": "declaration_clear",
+      "reply": {"summary": "<volatile>", "status": "ok"}
+    },
+    {
+      "step": 4,
+      "op": "run_for",
+      "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
+    },
+    {
+      "step": 5,
+      "op": "screen_map_find",
+      "reply": {
+        "summary": "<volatile>",
+        "status": "ok",
+        "matched": true,
+        "screen": "dark",
+        "layer": "file",
+        "kind": "pixel",
+        "size": [320, 200],
+        "controls": [],
+        "session": "<volatile>"
+      }
+    }
+  ],
+  "steps_total": 6,
+  "truncated": false,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": "<volatile>",
+  "steps_completed": 6,
+  "failed_at": {"available": false, "why": "no step failed"},
+  "held": 0,
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**57. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
