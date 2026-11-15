@@ -46,6 +46,7 @@ class _Session:
         self.answers = list(answers)
         self.commands = commands
         self.sent: list[str] = []
+        self.channel_silent = False
         self.bare: tuple[bool, list[str]] = (
             True, ["PRESENCE off frames=0 pointer=0 output=none version=2"])
 
@@ -76,6 +77,22 @@ def test_a_build_with_the_command_is_drawn_and_its_answer_kept() -> None:
     assert isinstance(shown.adapter, dpresence.ChannelAdapter)
     assert dpresence.frames(shown.adapter.answer) == 3
     shown.close()
+
+
+def test_a_channel_known_silent_is_not_asked_to_draw_until_it_answers_again() -> None:
+    """Inside a host call the channel answers nothing, and a delivery sent then would hold it
+    for its whole bound in front of the next call's own request."""
+    shown, channel = _shown(DRAWN, DRAWN)
+    adapter = shown.adapter
+    assert isinstance(adapter, dpresence.ChannelAdapter)
+    shown.close()
+    channel.channel_silent = True
+    with pytest.raises(RuntimeError, match="silent"):
+        adapter.show("acting")
+    assert len(channel.sent) == 1, channel.sent
+    channel.channel_silent = False
+    adapter.show("acting")
+    assert channel.sent[1].startswith("PRESENCE acting "), channel.sent
 
 
 def test_a_build_whose_debugger_has_no_presence_command_is_said_unavailable_unsent() -> None:

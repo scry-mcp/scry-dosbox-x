@@ -338,6 +338,12 @@ class Session(dprocess.Process):
 
     # ------------------------------------------------------------------ the channel
 
+    @property
+    def channel_silent(self) -> bool:
+        """`ControlChannel.silent`."""
+        channel = getattr(self, "control", None)
+        return channel is not None and channel.silent
+
     def has(self, command: str) -> bool:
         """Whether this build's debugger parses `command`."""
         return command in self.commands

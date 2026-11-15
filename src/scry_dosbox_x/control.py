@@ -132,6 +132,8 @@ class ControlChannel:
         self._next = 1
         self._in_flight = threading.Lock()
         self.port: int = self._listener.getsockname()[1]
+        #: The last request went unanswered and none has been answered since.
+        self.silent = False
 
     def _connected(self) -> socket.socket:
         if self._conn is not None:
@@ -184,6 +186,7 @@ class ControlChannel:
         while (got := parse_reply(self._buf, rid)) is None:
             poll()
             if time.monotonic() >= deadline:
+                self.silent = True
                 raise ChannelSilent(command, seconds)
             try:
                 chunk = conn.recv(65536)
@@ -195,6 +198,7 @@ class ControlChannel:
                 raise self._dropped("the emulator closed it")
             self._buf += chunk
         ok, lines, self._buf = got
+        self.silent = False
         return ok, lines
 
     def close(self) -> None:

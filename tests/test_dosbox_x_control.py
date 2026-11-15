@@ -154,6 +154,25 @@ def test_a_running_guest_whose_channel_is_silent_is_said_silent_through_the_sess
     assert "RUNSTATE" in e.value.silence and e.value.code == "host_failed", e.value.silence
 
 
+def test_a_channel_is_known_silent_from_a_request_it_left_unanswered_until_one_answers() -> None:
+    """What the presence writer reads before it asks: during a host call, asking again only
+    holds the channel for its whole bound in front of the next call's own request."""
+    channel = control.ControlChannel(lambda: None)
+    _emulator(channel.port,
+              lambda line: b"" if line.endswith("1 PING") else f"BEGIN {_rid(line)} OK\nEND "
+                                                              f"{_rid(line)}\n".encode())
+    try:
+        seen = [channel.silent]
+        with pytest.raises(control.ChannelSilent):
+            channel.request("PING", seconds=0.2)
+        seen.append(channel.silent)
+        assert channel.request("PING") == (True, [])
+        seen.append(channel.silent)
+        assert seen == [False, True, False], seen
+    finally:
+        channel.close()
+
+
 def test_an_emulator_that_never_dials_is_no_channel(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(control, "CONTROL_ACCEPT_S", 0.3)
     channel = control.ControlChannel(lambda: None)

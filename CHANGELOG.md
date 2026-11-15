@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- Inside a long host call each call answers `host_failed` after the debugger channel's bound
+  once, where the presence edge's own delivery held the channel for a bound in front of
+  nearly every call and doubled it; the edge waits for the channel to answer again.
 - `state_write(method="load")` of a state saved in another program than the one running (at
   the stop before DOS boots, none is) answers `needs_call`, naming the program to run first,
   and leaves the session unaltered, where it answered `unexpected_answer` and marked it
