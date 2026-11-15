@@ -319,6 +319,12 @@ def test_the_two_nothings_are_counted_apart() -> None:
     assert dlogs.count_e9(NOISE + REPLAY) == 0
 
 
+#: What `_close` signals a child that ignores the request to leave: SIGTERM then SIGKILL, and on
+#: Windows, which asks through the debugger's `QUIT`, the termination alone.
+CLOSE_SIGNALS = ([guardian.KILL] if dprocess.TERMINATES
+                 else [signal.SIGTERM, guardian.KILL])
+
+
 def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
 ) -> None:
     """SIGKILL cannot be ignored."""
@@ -341,7 +347,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     assert fake.reap_failed.startswith("SIGKILL was sent"), (
         f"the session reported nothing about a child it could not reap: "
         f"{fake.reap_failed!r}")
-    assert (sent[0], sent[-1]) == (signal.SIGTERM, guardian.KILL), sent
+    assert sent == CLOSE_SIGNALS, sent
 
     class IgnoresTermDiesOnKill:
         returncode = -9
@@ -370,7 +376,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
         _out=None, _signal_group=ok_sent.append)
     ok._ask_to_leave = lambda: ds.Session._ask_to_leave(ok)  # type: ignore[arg-type]
     assert ds.Session._close(ok) == -9  # type: ignore[arg-type]
-    assert (ok_sent[0], ok_sent[-1]) == (signal.SIGTERM, guardian.KILL), ok_sent
+    assert ok_sent == CLOSE_SIGNALS, ok_sent
     assert proc.stretches == 2, "the control never reached the SIGKILL wait"
     assert ok.reap_failed == "", (
         "a child that WAS reaped after SIGKILL was reported as unreapable, which is "
