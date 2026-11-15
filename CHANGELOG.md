@@ -289,7 +289,7 @@ floor.
 - `start` takes `display` (the OS's index, the main display when omitted) and `fullscreen`, and a
   watched start answers `window`, proved in the host's window list; a window that never appears on
   the asked display is `window_not_visible`. `SCRY_EMULATOR_ARGS` is gone, and `flags` setting what
-  those two arguments own are refused by name. `fullscreen` on `sdl output=surface` is refused. A windowed start is placed 40 px inside the asked display's corner, since the scry build ignores `sdl display` alone on macOS; `fullscreen` on a display other than 0 is refused there, because a start is halted at its first instruction and the window reaches full screen on another display only once the emulator runs.
+  those two arguments own are refused by name. `fullscreen` on `sdl output=surface` is refused. A windowed start is placed 40 px inside the asked display's corner, since DOSBox-X ignores `sdl display` alone on macOS; `fullscreen` on a display other than 0 is refused there, because a start is halted at its first instruction and the window reaches full screen on another display only once the emulator runs.
 - A new tool, `window`, answers where the window is at any time, and with `front=true` brings it
   in front of what covers it. Without `front` it answers the window
   wherever the owner put it, another display included. A `front` that fails on a session

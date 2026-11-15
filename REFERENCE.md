@@ -76,7 +76,7 @@ While a session holds the window, an orange edge tells whoever sits at the host 
 
 **A value as wrong with no machine as with one is judged before the session gate**, so with no session it answers `bad_argument`, never `no_session`.
 
-An argument held to a vocabulary lists its words as its schema's `enum`, a scalar held to a range publishes `minimum` and `maximum`. Three ranges are wider than their judge: `input_port` is also refused from 1 to 1023, `symbols_find`'s `limit` is judged on the `name` question only, and `palette`'s `first + count` may not pass 256.
+An argument held to a vocabulary lists its words as its schema's `enum`, a scalar held to a range publishes `minimum` and `maximum`. Some ranges are wider than their judge: `input_port` is also refused from 1 to 1023, `symbols_find`'s `limit` is judged on the `name` question only, `palette`'s `first + count` may not pass 256, and three counts publish no `minimum`: `record`'s `frames` is refused below 2, `audio_record`'s below 1, and `run_for` takes exactly one of `milliseconds` and `frames` above zero.
 
 **A read that found nothing says which kind of nothing.** "No line matched" is an empty list; "there is no log to match against" is `INVALID`. A caller that cannot tell them apart reports a broken instrument as a clean result.
 
