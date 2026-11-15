@@ -43,7 +43,7 @@ FILE_CELLS = (
     "AA MEMDUMPLIN before any page tables are loaded is refused and leaves no data",
     "AA VGAMEMDUMP keeps the file name's case",
 )
-SERVER_NAME_CELL = "AA memdump writes a mixed-case dest in lowercase and its reply names that file"
+SERVER_NAME_CELL = "AA memdump writes a mixed-case dest under the name given and its reply names it"
 PORT_CELL = ("AA PORTINFO answers port 60 with R1=1 and an unclaimed port with zeros, and "
              "refuses 10000")
 RUNSTATE_CELL = ("AA RUNSTATE names the BPIF row that stopped the machine, and no longer after "
@@ -67,8 +67,8 @@ AA_CELLS = cells(
     (FILE_CELLS[2], "MEMDUMPLIN usage text: nothing until a DPMI host loaded the page tables; "
      "the file is opened before the walk, as MEMDUMPBIN's is"),
     (FILE_CELLS[3], "VGAMEMDUMP usage text: the file name as typed"),
-    (SERVER_NAME_CELL, "README: a file a tool writes is named by one rule, and a reply that "
-     "carries its path names the file as written"),
+    (SERVER_NAME_CELL, "REFERENCE: a `dest` a caller names is written under the name given, `_` "
+     "and capitals kept, and the reply's `path` is that name"),
     (PORT_CELL, "PORTINFO usage text: R1/R2/R4/W1/W2/W4 per port, hex within the I/O space"),
     (RUNSTATE_CELL, "RUNSTATE: `bpif=` rides the stop a BPIF row made and goes with the next run"),
     (FRAMES_CELL, "README.debugger RUNSTATE: frames counts the frames the guest started"),
@@ -138,8 +138,8 @@ def _dpmi_files() -> None:
     named = M.call(server.memdump, ref=f"0038:{linear:08X}", length=0x20,
                    dest=str(folder / MIXED_NAME))
     written = sorted(p.name for p in folder.iterdir())
-    M.judge(SERVER_NAME_CELL, ok(named) and named.get("path") == str(folder / MIXED_NAME.lower())
-            and written == [MIXED_NAME.lower()], f"{said(named)[:80]}; names {written}")
+    M.judge(SERVER_NAME_CELL, ok(named) and named.get("path") == str(folder / MIXED_NAME)
+            and written == [MIXED_NAME], f"{said(named)[:80]}; names {written}")
     close_whatever()
 
 
