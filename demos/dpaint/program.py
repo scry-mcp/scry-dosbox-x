@@ -102,7 +102,8 @@ def opening(boot: Callable[[Run], dict[str, Any]], screen_map: Path, first: str)
     polls), so the arrival is the screen itself, judged each retrace."""
     return [Step("start", "start", boot, started,
                  options=frozenset({"binary", "cwd", "display"}),
-                 volatile={"summary": "it carries how long the debugger took to answer"}),
+                 volatile={"summary": "it carries how long the debugger took to answer",
+                           **host.KEPT_ELSEWHERE}),
             Step("map", "screen_map_write", {"method": "load", "path": screen_map},
                  lambda reply, run: f"{reply['screens']} screens and {reply['controls']} "
                                     "controls loaded"),

@@ -438,7 +438,7 @@ def same_track(reply: Reply, run: Run) -> str:
 STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary", "cwd", "display"}),
          volatile={"summary": "it carries how long the debugger took to answer",
-                   "kept": "it names the repository the disc sits in, a directory of the host"}),
+                   **host.KEPT_ELSEWHERE}),
     Step("map", "screen_map_write", {"method": "load", "path": HERE / "monkey-screen-map.json"},
          lambda reply, run: f"{reply['screens']} screens, {reply['controls']} controls"),
     Step("menu", "screen_wait", {"screen": "language", "every": JUDGED_EVERY,

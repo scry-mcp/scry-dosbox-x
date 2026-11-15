@@ -184,9 +184,9 @@ Deluxe Paint's menus and arrows act only while the button is held. `send_mouse` 
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 7,39; posted, unverified, 76 retraces to frame 115",
+        "summary": "send_mouse: pointer at 7,39; posted, unverified, 75 retraces to frame 115",
         "status": "ok",
-        "stop_seq": 162,
+        "stop_seq": 161,
         "cause": "<volatile>"
       }
     },
@@ -208,13 +208,13 @@ Deluxe Paint's menus and arrows act only while the button is held. `send_mouse` 
   "replies_path": "<volatile>",
   "stops": {
     "stop_seq_first": 40,
-    "stop_seq_last": 162,
+    "stop_seq_last": 161,
     "surveyed": 4,
     "by_cause": {
       "the retrace the input's post ran to,": 1,
       "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 3
     },
-    "unaccounted": 119
+    "unaccounted": 118
   },
   "steps_completed": 6,
   "failed_at": {"available": false, "why": "no step failed"},
@@ -320,7 +320,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "reply": {
         "summary": "send_mouse: pointer at 605,185, program's own pointer not read; posted, unverified, 25 retraces to frame 1075",
         "status": "ok",
-        "stop_seq": 1121,
+        "stop_seq": 1120,
         "cause": "<volatile>"
       }
     },
@@ -330,7 +330,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1090",
         "status": "ok",
-        "stop_seq": 1136,
+        "stop_seq": 1135,
         "cause": "<volatile>"
       }
     },
@@ -350,7 +350,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "reply": {
         "summary": "send_mouse: pointer at 184,399, program's own pointer not read; posted, unverified, 30 retraces to frame 1120",
         "status": "ok",
-        "stop_seq": 1166,
+        "stop_seq": 1165,
         "cause": "<volatile>"
       }
     },
@@ -360,7 +360,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1135",
         "status": "ok",
-        "stop_seq": 1181,
+        "stop_seq": 1180,
         "cause": "<volatile>"
       }
     },
@@ -380,7 +380,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "reply": {
         "summary": "send_mouse: pointer at 203,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1155",
         "status": "ok",
-        "stop_seq": 1201,
+        "stop_seq": 1200,
         "cause": "<volatile>"
       }
     },
@@ -400,7 +400,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "reply": {
         "summary": "send_mouse: pointer at 269,18, program's own pointer not read; posted, unverified, 20 retraces to frame 1175",
         "status": "ok",
-        "stop_seq": 1221,
+        "stop_seq": 1220,
         "cause": "<volatile>"
       }
     },
@@ -410,7 +410,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1190",
         "status": "ok",
-        "stop_seq": 1236,
+        "stop_seq": 1235,
         "cause": "<volatile>"
       }
     },
@@ -420,7 +420,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "reply": {
         "summary": "screen_wait screen 'paint: custom brush': found after 10 retraces",
         "status": "ok",
-        "stop_seq": 1237,
+        "stop_seq": 1236,
         "cause": "<volatile>"
       }
     },
@@ -435,7 +435,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "reply": {
         "summary": "send_mouse: pointer at 440,357, program's own pointer not read; posted, unverified, 21 retraces to frame 1221",
         "status": "ok",
-        "stop_seq": 1258,
+        "stop_seq": 1257,
         "cause": "<volatile>"
       }
     },
@@ -445,7 +445,7 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1236",
         "status": "ok",
-        "stop_seq": 1273,
+        "stop_seq": 1272,
         "cause": "<volatile>"
       }
     },
@@ -490,8 +490,8 @@ The longest chain of map names in the run: lift the boat as a brush, flip it fro
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 1097,
-    "stop_seq_last": 1273,
+    "stop_seq_first": 1096,
+    "stop_seq_last": 1272,
     "surveyed": 10,
     "by_cause": {
       "the retrace the input's post ran to,": 9,

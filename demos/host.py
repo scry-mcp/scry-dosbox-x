@@ -67,6 +67,8 @@ def isolated_store(demo: str) -> None:
 
 #: The normal core: the dynamic one can pass a code breakpoint over.
 NORMAL_CORE = ["-set", "cpu core=normal"]
+#: `start`'s kept line, for a program whose directory lies in no project with a `.scry/`.
+KEPT_ELSEWHERE = {"kept": "it names the repository the program sits in, a directory of the host"}
 
 
 #: Counts an input step reports that depend on when the host delivered the input, not on what
