@@ -85,6 +85,7 @@ from scry_core import (  # noqa: E402
     signalled_end,
 )
 from scry_core import presence as scry_presence  # noqa: E402
+from scry_core import promote as core_promote  # noqa: E402
 from scry_core import (
     scan_vocabulary as words,
 )
@@ -283,16 +284,11 @@ def start(conf: str = "", cwd: str = "",
                                                given=given.names() or ())
     params.pop("profile")
     # Around the launch: a `plan` runs inside it, and one of its `add` steps names a map by the
-    # guest this call starts.
-    with mpromote.launching(params):
+    # guest this call starts and keeps it in the project that guest runs in.
+    with mpromote.launching(params, str(block["file"]) if block is not None else ""):
         reply = lifecycle.start(**params, progress=bridge(ctx), ops=_step_ops)
-    if block is not None:
-        STATE.drafts.loaded_entry("start", Path(str(block["file"])).stem,
-                                  source=str(block["file"]))
-    else:
-        STATE.drafts.forget("start")
     if mpromote.keep_start(params, defaults=_START_DEFAULTS):
-        reply["kept"] = mpromote.kept_line(STATE.drafts)
+        reply["kept"] = core_promote.kept_line(STATE.drafts)
     if block is not None:
         reply["profile"] = block
     return reply
@@ -1734,7 +1730,7 @@ def perform_export(dest: str, overwrite: bool = False) -> dict[str, Any]:
 
     Reference: REFERENCE.md, From an investigation to a bench.
     """
-    return mpromote.after_export(STATE.drafts, st.reply(**recording.export(
+    return core_promote.after_export(STATE.drafts, st.reply(**recording.export(
         RECORDER, dest, overwrite)), mpromote.PROMOTE_PATHS)
 
 

@@ -1,9 +1,9 @@
-"""`promote`: what this session learned, kept as a candidate and written on approval."""
+"""`promote`: what this session learned, kept as a candidate and written on approval; where it
+may be written is scry-core's to decide."""
 
 from __future__ import annotations
 
-import os
-from collections.abc import Collection, Iterator, Mapping
+from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
@@ -25,28 +25,6 @@ NEEDS = ("conf", "cwd", "session_seconds")
 SERVER = "dosbox-x"
 
 
-def has_store(drafts: core.Drafts) -> bool:
-    """Whether a `.scry/` is above the project the draft names; unreadable or nameless says yes."""
-    try:
-        own = os.getcwd()
-        starts = [path for path in core.starting(drafts, recipe_paths) if path != own]
-        return not starts or project_store.root(starts) is not None
-    except OSError:
-        return True
-
-
-def kept_line(drafts: core.Drafts) -> str:
-    """Core's kept line, told if a store exists."""
-    return core.kept_line(drafts, has_store(drafts))
-
-
-def after_export(drafts: core.Drafts, reply: dict[str, Any],
-                 path_keys: Collection[str]) -> dict[str, Any]:
-    """The export's reply, its store sought after the keep."""
-    kept = core.after_export(drafts, reply, path_keys)
-    return {**kept, "kept": kept_line(drafts)} if "kept" in kept else kept
-
-
 def guest_name(params: Mapping[str, Any]) -> str:
     """The name a guest is known by: its program's stem, else its conf's."""
     for key in ("program", "conf"):
@@ -58,14 +36,24 @@ def guest_name(params: Mapping[str, Any]) -> str:
     return ""
 
 
+def anchor(params: Mapping[str, Any]) -> str:
+    """Where a start's guest lives: its `cwd`, else its `conf`'s directory."""
+    cwd = str(params.get("cwd") or "").strip()
+    conf = str(params.get("conf") or "").strip()
+    return cwd or (str(Path(conf).parent) if conf else "")
+
+
 @contextmanager
-def launching(params: Mapping[str, Any]) -> Iterator[None]:
-    """The guest this session runs, set before the launch so a `plan`'s `add` knows it; a start
-    that raises leaving no session of its own live leaves the live session's."""
+def launching(params: Mapping[str, Any], profile: str = "") -> Iterator[None]:
+    """The guest this session runs and the project it runs in, set before the launch so a
+    `plan`'s `add` knows both; a start that raises leaving no session of its own live leaves
+    the live session's."""
     before, session = STATE.guest, STATE.session
     STATE.guest = guest_name(params)
     try:
-        yield
+        with STATE.drafts.starting(profile=profile, anchor=anchor(params),
+                                   live=lambda: STATE.session):
+            yield
     except BaseException:
         if STATE.session in (None, session):
             STATE.guest = before
@@ -93,34 +81,20 @@ def after_map(method: str, reply: dict[str, Any]) -> dict[str, Any]:
     if method != "add" or not application:
         return reply
     if STATE.drafts.keep("maps", application, STATE.maps.document(application)):
-        return {**reply, "kept": kept_line(STATE.drafts)}
+        return {**reply, "kept": core.kept_line(STATE.drafts)}
     return reply
 
 
 def promote(dry_run: bool = False, entries: list[str] | None = None,
             names: dict[str, str] | None = None, root: str = "") -> dict[str, Any]:
     """The `promote` tool's body, on this server's draft."""
-    try:
-        starts = starting()
-    except OSError:
-        starts = []
     return core.promote(STATE.drafts, dry_run=dry_run, entries=entries, names=names, root=root,
-                        starting=starts, state=scratch(), server=SERVER)
-
-
-def starting() -> list[str]:
-    """Where the store is looked for, as core orders it from this server's recipe paths."""
-    return core.starting(STATE.drafts, recipe_paths)
+                        state=scratch(), server=SERVER)
 
 
 def after_close(reply: dict[str, Any], state: str) -> dict[str, Any]:
     """`close`'s reply, naming what it left waiting."""
-    return core.after_close(STATE.drafts, reply, starting=starting, state=state)
-
-
-def recipe_paths(recipe: Mapping[str, Any]) -> list[str]:
-    """What in a recipe says which repository it belongs to: the guest's directory, its conf."""
-    return [str(recipe.get("cwd") or ""), str(recipe.get("conf") or "")]
+    return core.after_close(STATE.drafts, reply, state=state)
 
 
 def scratch() -> str:

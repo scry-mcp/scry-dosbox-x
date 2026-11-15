@@ -4,6 +4,14 @@ What a client of the server notices.
 
 ## Unreleased
 
+- On the pinned scry-core (`pyproject.toml`), `promote` writes an entry only into the store of
+  the repository it was learned in (the one whose store a call read it from, else the current
+  `start`'s: its profile's, else the one its guest runs in), so a session that ran programs of
+  two repositories never files one
+  in the other's and the server's own directory never lends its store. An entry whose
+  repository holds no store is `unwritable` in a review and refused in an approval, naming the
+  `root` to pass; the `kept` line names each such repository; a call writes one store; with
+  `root`, a candidate kept in another repository says `from`.
 - A `start` refused before it launches (a session already live) leaves the live session's guest
   as it was, so the next map `add` is still named after the program on its screen.
 - `send_keys` and `send_mouse` while the emulator is inside a long host call (a DOS file or

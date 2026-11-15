@@ -93,28 +93,19 @@ def test_a_refused_start_leaves_the_live_session_s_guest(
     assert got["code"] == "session_live" and STATE.guest == "probe", (got, STATE.guest)
 
 
-def test_a_start_refused_with_its_own_session_live_keeps_its_guest(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(STATE, "session", None)
-    STATE.guest = "probe"
-    with pytest.raises(Invalid), mpromote.launching({**START, "program": "LINEUP.EXE"}):
-        monkeypatch.setattr(STATE, "session", object())
-        raise Invalid("window_not_visible", "the window never appeared")
-    assert STATE.guest == "lineup"
-
-
 def test_the_guest_is_noted_before_the_launch_so_a_plan_s_add_knows_it() -> None:
-    noted({**START, "program": "LINEUP.EXE"})
-    assert STATE.guest == "lineup"
-    STATE.maps.session["play"] = screen()
-    assert mpromote.after_map("add", {"screen": "play"})["kept"] == "kept 1 (promote to review)"
+    with mpromote.launching({**START, "program": "LINEUP.EXE"}):
+        assert STATE.guest == "lineup"
+        STATE.maps.session["play"] = screen()
+        kept = mpromote.after_map("add", {"screen": "play"})["kept"]
+    assert kept.startswith("kept 1 (promote to review)")
     assert STATE.drafts.entries() == ["maps/lineup"]
 
 
 def test_a_start_keeps_its_recipe_without_the_run_s_own_arguments() -> None:
     noted(START)
     mpromote.keep_start(START, defaults=server._START_DEFAULTS)
-    kept = STATE.drafts.kept["start", "probe"].document
+    kept = STATE.drafts.held("start", "probe")[0].document
     assert kept == {"format": "scry-start/1", "conf": "/x/probe.conf", "cwd": "/x",
                     "session_seconds": 900, "shared": True, "presence": False,
                     "break_on_int3": True}
@@ -139,15 +130,16 @@ def test_a_map_add_is_named_by_the_entry_this_session_read() -> None:
     STATE.maps.session_application = "lineup"
     STATE.maps.session["play"] = screen()
     reply = mpromote.after_map("add", {"screen": "play"})
-    assert reply["kept"] == "kept 1 (promote to review)"
+    assert reply["kept"].startswith("kept 1 (promote to review)")
     assert STATE.drafts.entries() == ["maps/lineup"]
-    assert STATE.drafts.kept["maps", "lineup"].document["application"] == "lineup"
+    assert STATE.drafts.held("maps", "lineup")[0].document["application"] == "lineup"
 
 
 def test_a_map_add_after_a_start_is_named_by_the_guest() -> None:
     STATE.guest = "probe"
     STATE.maps.session["play"] = screen()
-    assert mpromote.after_map("add", {"screen": "play"})["kept"] == "kept 1 (promote to review)"
+    kept = mpromote.after_map("add", {"screen": "play"})["kept"]
+    assert kept.startswith("kept 1 (promote to review)")
     assert STATE.drafts.entries() == ["maps/probe"]
 
 
@@ -172,11 +164,14 @@ def test_a_map_add_with_no_name_at_all_proposes_nothing() -> None:
     assert STATE.drafts.entries() == []
 
 
+def exported(path: Path) -> dict[str, Any]:
+    return core_promote.after_export(STATE.drafts, {"path": str(path)}, mpromote.PROMOTE_PATHS)
+
+
 def test_an_export_keeps_its_document_named_by_the_file_it_wrote(tmp_path: Path) -> None:
     path = tmp_path / "session.json"
     path.write_text(json.dumps(perform_document()))
-    reply = mpromote.after_export(STATE.drafts, {"path": str(path)}, mpromote.PROMOTE_PATHS)
-    assert reply["kept"].startswith("kept 1 (promote to review)")
+    assert exported(path)["kept"].startswith("kept 1 (promote to review)")
     assert STATE.drafts.entries() == ["perform/session"]
 
 
@@ -184,7 +179,7 @@ def test_an_export_after_a_replay_updates_the_entry_it_replayed(tmp_path: Path) 
     path = tmp_path / "session.json"
     path.write_text(json.dumps(perform_document()))
     STATE.drafts.loaded_entry("perform", "dos")
-    mpromote.after_export(STATE.drafts, {"path": str(path)}, mpromote.PROMOTE_PATHS)
+    exported(path)
     assert STATE.drafts.entries() == ["perform/dos"]
 
 
@@ -201,12 +196,6 @@ def test_close_reports_what_was_left_unkept() -> None:
     reply = server.close()
     assert reply["draft"] == ["start/probe"]
     assert reply["closed"] is False
-
-
-def test_a_recipe_s_conf_also_says_where_the_store_is() -> None:
-    STATE.drafts.keep("perform", "x", {"start": {"cwd": "/game/guest", "conf": "/game/run.conf"},
-                                       "steps": [{"op": "a", "recorded": {"v": 1}}]})
-    assert mpromote.starting()[:2] == ["/game/guest", "/game/run.conf"]
 
 
 def test_close_leaves_out_what_the_store_already_holds(
@@ -265,13 +254,6 @@ def test_a_root_creates_the_store_only_on_the_approved_call(tmp_path: Path) -> N
     assert (repo / ".scry" / "start" / "probe.json").is_file()
 
 
-def test_the_store_is_looked_for_from_the_recipe_s_own_working_directory() -> None:
-    STATE.drafts.keep("start", "probe", {"format": "scry-start/1", "conf": "probe.conf",
-                                         "cwd": "/somewhere/guest",
-                                         "session_seconds": 900})
-    assert "/somewhere/guest" in mpromote.starting()
-
-
 def test_a_start_that_only_loads_its_profile_learned_nothing() -> None:
     STATE.drafts.loaded_entry("start", "dos")
     with given.remembered({"profile", "state_dir"}):
@@ -286,44 +268,77 @@ def test_a_start_that_only_loads_its_profile_learned_nothing() -> None:
 def test_a_kept_start_leaves_the_run_s_own_keys_to_the_store() -> None:
     noted(START)
     mpromote.keep_start(START, defaults=server._START_DEFAULTS)
-    assert set(STATE.drafts.kept["start", "probe"].own) == set(mpromote.RUN_OWN)
+    assert set(STATE.drafts.held("start", "probe")[0].own) == set(mpromote.RUN_OWN)
 
 
-def test_the_recipe_s_directory_is_searched_before_this_process_s() -> None:
-    STATE.drafts.keep("start", "probe", {"format": "scry-start/1", "conf": "probe.conf",
-                                         "cwd": "/somewhere/guest",
-                                         "session_seconds": 900})
-    starts = mpromote.starting()
-    assert starts[0] == "/somewhere/guest" and starts[-1] == os.getcwd()
+def test_a_start_s_guest_lives_in_its_cwd_else_its_conf_s_directory() -> None:
+    assert mpromote.anchor({"cwd": " /game/guest ", "conf": "/elsewhere/run.conf"}) == \
+        "/game/guest"
+    assert mpromote.anchor({"cwd": "", "conf": "/game/run.conf"}) == str(Path("/game"))
+    assert mpromote.anchor({}) == ""
 
 
-def test_a_map_learned_from_a_loaded_recipe_is_looked_for_in_that_recipe_s_store(
-        tmp_path: Path) -> None:
-    source = f"{tmp_path}/game/.scry/start/dos.json"
-    STATE.drafts.loaded_entry("start", "dos", source=source)
-    STATE.drafts.keep("maps", "dos", {"format": "scry-screen-map/1", "screens": [screen()]})
-    assert mpromote.starting()[0] == source
+def test_a_recipe_belongs_to_the_project_its_guest_runs_in(tmp_path: Path) -> None:
+    game = tmp_path / "game"
+    (game / ".scry").mkdir(parents=True)
+    (game / "guest").mkdir()
+    kept_probe(game / "guest")
+    assert STATE.drafts.held("start", "probe")[0].project == str(game)
+    assert server.promote(dry_run=True)["store"] == str(game / ".scry")
 
 
-def test_a_perform_document_s_start_block_says_where_the_store_is() -> None:
-    STATE.drafts.keep("perform", "x", {"start": {"cwd": "/game/guest"},
-                                       "steps": [{"op": "a", "recorded": {"v": 1}}]})
-    assert mpromote.starting()[0] == "/game/guest"
+def test_a_recipe_read_from_a_profile_belongs_to_the_profile_s_store(tmp_path: Path) -> None:
+    profile = tmp_path / "game" / ".scry" / "start" / "dos.json"
+    profile.parent.mkdir(parents=True)
+    bench = tmp_path / "bench"
+    bench.mkdir()
+    params = {**START, "conf": str(bench / "dos.conf"), "cwd": str(bench)}
+    with mpromote.launching(params, str(profile)):
+        pass
+    with given.remembered({"profile", "session_seconds"}):
+        mpromote.keep_start(params, defaults=server._START_DEFAULTS)
+    assert STATE.drafts.held("start", "dos")[0].project == str(tmp_path / "game")
 
 
-def test_an_export_looks_for_the_store_where_the_document_it_kept_points(
+def test_a_refused_start_leaves_the_live_session_s_project(tmp_path: Path) -> None:
+    (tmp_path / "game").mkdir()
+    noted({**START, "cwd": str(tmp_path / "game")})
+    with pytest.raises(Invalid), mpromote.launching({**START, "cwd": str(tmp_path)}):
+        raise Invalid("session_live", "a session is already live")
+    STATE.maps.session["play"] = screen()
+    mpromote.after_map("add", {"screen": "play"})
+    assert STATE.drafts.held("maps", "probe")[0].project == str(tmp_path / "game")
+
+
+def test_a_start_refused_with_its_own_session_live_keeps_its_guest_and_project(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    repo = tmp_path / "repo"
-    (repo / ".scry").mkdir(parents=True)
-    bare = tmp_path / "elsewhere"
-    bare.mkdir()
-    monkeypatch.chdir(bare)
-    document = perform_document()
-    document["start"]["cwd"] = str(repo)
-    path = tmp_path / "run.json"
-    path.write_text(json.dumps(document))
-    kept = mpromote.after_export(STATE.drafts, {"path": str(path)}, mpromote.PROMOTE_PATHS)
-    assert kept["kept"] == "kept 1 (promote to review)"
+    (tmp_path / "game").mkdir()
+    monkeypatch.setattr(STATE, "session", None)
+    noted({**START, "cwd": str(tmp_path / "old")})
+    with pytest.raises(Invalid), mpromote.launching(
+            {**START, "cwd": str(tmp_path / "game"), "program": "LINEUP.EXE"}):
+        monkeypatch.setattr(STATE, "session", object())
+        raise Invalid("window_not_visible", "the window never appeared")
+    assert STATE.guest == "lineup" and STATE.drafts.started_in == str(tmp_path / "game")
+
+
+def test_two_projects_each_keep_their_own_recipe_and_store(tmp_path: Path) -> None:
+    game, bare = tmp_path / "game", tmp_path / "bare"
+    (game / ".scry").mkdir(parents=True)
+    (bare / ".git").mkdir(parents=True)
+    kept_probe(game, program="ALPHA.EXE")
+    kept_probe(bare, program="BETA.EXE")
+    kept = core_promote.kept_line(STATE.drafts)
+    assert f"start/beta: no .scry/ in {bare}" in kept and f"root={bare})" in kept, kept
+    review = server.promote(dry_run=True)
+    assert review["store"] == str(game / ".scry")
+    assert [c["entry"] for c in review["candidates"]] == ["start/alpha"]
+    assert [u["entry"] for u in review["unwritable"]] == ["start/beta"]
+    refused = server.promote(entries=["start/alpha", "start/beta"])
+    assert refused["code"] == "bad_argument" and "start/beta" in refused["message"]
+    server.promote(entries=["start/alpha"])
+    assert not (game / ".scry" / "start" / "beta.json").exists()
+    assert not (bare / ".scry").exists()
 
 
 def working_directory_gone(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -336,9 +351,10 @@ def working_directory_gone(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_a_working_directory_that_is_gone_does_not_cost_the_reply(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    (tmp_path / ".scry").mkdir()
     working_directory_gone(monkeypatch)
     kept_probe(tmp_path)
-    assert mpromote.kept_line(STATE.drafts) == "kept 1 (promote to review)"
+    assert core_promote.kept_line(STATE.drafts) == "kept 1 (promote to review)"
 
 
 def test_a_promote_with_a_root_does_not_need_the_working_directory(
@@ -377,19 +393,20 @@ def test_a_second_promotion_creates_nothing_more(tmp_path: Path) -> None:
     assert "created" not in server.promote(entries=["start/probe"], root=str(tmp_path))
 
 
-def test_a_kept_line_says_how_to_set_up_a_store_only_when_none_is_above(
+def test_a_kept_line_says_how_to_set_up_a_store_only_when_none_is_there(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     kept_probe(tmp_path)
-    assert "no .scry/ above" in mpromote.kept_line(STATE.drafts)
+    assert f"no .scry/ in {tmp_path}" in core_promote.kept_line(STATE.drafts)
     (tmp_path / ".scry").mkdir()
-    assert mpromote.kept_line(STATE.drafts) == "kept 1 (promote to review)"
+    assert core_promote.kept_line(STATE.drafts) == "kept 1 (promote to review)"
 
 
-def test_a_store_above_the_server_s_own_directory_does_not_silence_the_hint(
+def test_a_store_in_the_server_s_own_directory_does_not_silence_the_hint(
         tmp_path: Path) -> None:
+    (tmp_path / "game").mkdir()
     kept_probe(tmp_path / "game")
-    assert "no .scry/ above" in mpromote.kept_line(STATE.drafts)
+    assert f"no .scry/ in {tmp_path / 'game'}" in core_promote.kept_line(STATE.drafts)
 
 
 def test_an_export_names_the_missing_store_too(tmp_path: Path,
@@ -397,5 +414,5 @@ def test_an_export_names_the_missing_store_too(tmp_path: Path,
     monkeypatch.chdir(tmp_path)
     path = tmp_path / "run.json"
     path.write_text(json.dumps(perform_document()))
-    kept = mpromote.after_export(STATE.drafts, {"path": str(path)}, mpromote.PROMOTE_PATHS)
-    assert "no .scry/ above" in kept["kept"]
+    noted({**START, "cwd": str(tmp_path)})
+    assert f"no .scry/ in {tmp_path}" in exported(path)["kept"]
