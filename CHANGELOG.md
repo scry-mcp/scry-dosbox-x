@@ -4,6 +4,8 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A steered `send_mouse` whose move leaves the guest in a mode this server does not map says
+  so in `pointer.program` (unavailable, no ratio to nudge by), where the block was missing.
 - A steered `send_mouse` after a pointer move the steering did not send (`units="mouse"`, a
   move while the guest ran, a drag's end) first waits, a retrace at a time and up to the
   bound its reads already use, for the program to take that move, where it read the

@@ -9,6 +9,7 @@ from scry_core.screen_map import Pointer
 
 #: A pointer a clamp holds is not chased for ever.
 CORRECTIONS = 4
+NO_RATIO = "the mode's size is unknown, so there is no ratio to nudge by"
 
 
 @dataclass(frozen=True)
@@ -82,7 +83,7 @@ def unsteered(parked: bool, moved: bool, units: str, sized: bool) -> str | None:
         return "the guest runs, and a running guest's memory cannot be read"
     if units != "screen":
         return "units='mouse' aims at the driver, not the program"
-    return None if sized else "the mode's size is unknown, so there is no ratio to nudge by"
+    return None if sized else NO_RATIO
 
 
 def steer(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],

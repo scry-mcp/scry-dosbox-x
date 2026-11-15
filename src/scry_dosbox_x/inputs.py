@@ -1027,8 +1027,9 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
             shown["program"] = dpointer.shown(steered)
             if session.driver_range is not None and not range_before:
                 shown["program"]["range_widened"] = dict(session.driver_range)
-        elif why_not is not None:
-            shown["program"] = unavailable(why_not)
+        elif why_not is not None or start is not None:
+            # Read before the move, then left by it in a mode with no known size.
+            shown["program"] = unavailable(why_not or dpointer.NO_RATIO)
         # A screen-unit move that no program pointer judged proves only where the DRIVER is, which
         # a program with its own pointer tracking can disagree with.
         judged = steered is not None or arrival is None or units == "mouse"

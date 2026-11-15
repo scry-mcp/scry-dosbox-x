@@ -17,6 +17,7 @@ from typing import Any, cast
 import pytest
 from channel_double import SilentChannel
 from dosbox_x_server_support import _guest, _names
+from scry_core.reply_contract import unavailable
 from scry_core.screen_map import Pointer
 
 from scry_dosbox_x import inputs, running, server, stub_link
@@ -516,6 +517,25 @@ def test_a_range_the_steering_widened_itself_is_no_disagreement(
     assert fake.mouse_max != (639, 199), fake.mouse_max
     assert got["pointer"]["screen"]["x"] != 300, got
     assert got["arrived"] is True and "note" not in got, got
+
+
+def test_a_mode_the_move_left_unsized_says_why_the_program_s_pointer_was_not_steered(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The program switches to a mode this server does not map while the move goes in, so there
+    is no ratio to nudge by: the reply still carries `pointer.program`, saying why."""
+    fake = _program_pointer(tmp_path, monkeypatch, lambda f: (f.pointer[0] // 3, f.pointer[1]))
+    fake.pointer = (0, 0)
+    send = fake.send_commands
+
+    def switching(commands: list[bytes], advance: Any = None) -> list[str]:
+        out = cast(list[str], send(commands, advance))
+        if any(c[:1] == b"M" for c in commands):
+            fake.video_mode = 0x6A
+        return out
+    fake.send_commands = switching
+    got = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert got["status"] == "ok" and got["driver_arrived"] is False, got
+    assert got["pointer"]["program"] == unavailable(dpointer.NO_RATIO), got["pointer"]
 
 
 def test_a_program_s_pointer_that_cannot_be_read_before_the_move_is_refused_unsent(
