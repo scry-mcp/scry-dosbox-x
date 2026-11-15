@@ -1898,6 +1898,20 @@ def test_a_declared_breakpoint_ends_a_wait_on_a_watch_and_is_not_taken_for_a_ret
     assert "0814:0108" in r["cause"] and len(vrts(machine)) == 1
 
 
+@pytest.mark.parametrize(("refs", "named"), [((), False), (("0814:0108",), True)])
+def test_a_wait_that_never_fires_on_a_dynamic_core_names_a_code_breakpoint_only_if_declared(
+        tmp_path: Path, refs: tuple[str, ...], named: bool) -> None:
+    at_breakpoint(tmp_path, ["probe-booted"] * 3, [Stop(FRAME_STOP, ms=FRAME_MS)] * 2, refs=refs)
+    assert dstate.STATE.store is not None and dstate.STATE.session is not None
+    dstate.STATE.session.launch.core = "dynamic_x86"
+    dstate.STATE.store.add(arming.declare("watch", "address", "0040:006C", cpu=grammar.REAL_MODE,
+                                          watch_mode="change", width=1, fmt="u8"))
+    r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", on_watch="0040:006C",
+                                                seconds=0.5))
+    assert r["status"] == "INVALID" and r["code"] == "never_fired", r
+    assert ("a code breakpoint is declared" in r["message"]) is named, r["message"]
+
+
 @pytest.mark.parametrize(("kw", "code"), [
     ({"text": "C:", "on_breakpoint": "0814:0999"}, "unknown_ref"),
     ({"text": "C:", "on_watch": "0814:0108"}, "unknown_ref"),

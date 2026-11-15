@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A `screen_wait` judged on a watch that never fired, on a dynamic core, no longer says a code
+  breakpoint is declared when none is: the caveat about a core passing one over comes only with
+  a declared code breakpoint.
 - A map `screen_map_write` loaded names the entry it was read from, so an `add` after the
   load updates that map in the store it came from, as the `promote` description says,
   where it was kept as a new map of the current `start`'s repository.

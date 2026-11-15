@@ -409,7 +409,8 @@ def screen_wait(session: ds.Session, text: str, screen: str, palette: str, every
     if spec is not None:
         return at_stop.screen_wait_at(
             session, spec, watched, seconds, progress, _advance, _cut, _stop_reply, _bound,
-            _ended_at, "" if session.launch.core == COUNTED_CORE else UNCUT_NOTE)
+            _ended_at, UNCUT_NOTE if (session.launch.core != COUNTED_CORE
+                                      and arming.declares_code_breakpoint()) else "")
     step = every or 1
     hit = watched.hit()
     if hit is not None:
