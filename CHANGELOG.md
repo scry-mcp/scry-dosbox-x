@@ -4,6 +4,10 @@ What a client of the server notices.
 
 ## Unreleased
 
+- `state_write(method="load")` of a state saved in another program than the one running (at
+  the stop before DOS boots, none is) answers `needs_call`, naming the program to run first,
+  and leaves the session unaltered, where it answered `unexpected_answer` and marked it
+  altered though the emulator replaced nothing.
 - A `send_keys` or `send_mouse` cut part-way while paying the releases an earlier cut send
   owed counts only the keys still down, where it also counted those whose release had just
   gone in.

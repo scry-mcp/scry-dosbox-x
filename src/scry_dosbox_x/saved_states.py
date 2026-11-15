@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import contextlib
+import re
 import time
 from pathlib import Path
 
@@ -75,12 +76,31 @@ def state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> dic
             f"`{verb}` came back without the debugger's own answer to it "
                       f"({said or 'nothing came back'}): saved states need a build whose "
                       f"debugger carries `{verb}` (REFERENCE.md, Saved states)")
+    if verb == "LOADSTATE" and (saved := _other_program(lines)) is not None:
+        raise Invalid("needs_call",
+            f"the emulator loads a state only into the program it was saved from, and "
+            f"{path.name} was saved while {saved} ran, which is not what runs at this stop "
+            f"(before DOS boots, nothing does): let the machine run until {saved} does "
+            f"(`resume`, `run_to`), then load it; nothing was loaded")
     why = (" A state of another DOSBox-X version, program, memory size or machine type is "
            "refused rather than asked about." if verb == "LOADSTATE" else
            " The host would not take the file (a full volume answers `SAVE_FAILED`).")
     where = " The emulator's log says more." if ses.launch.logfile is not None else ""
     raise Invalid("unexpected_answer",
         f"the emulator refused {verb} of {path}: {said}.{why}{where}")
+
+
+#: The emulator's log line when a state's program is not the one running; it aborts there,
+#: before any of the machine is replaced.
+OTHER_PROGRAM = re.compile(r"^Aborted\. Check your program name: (.+)$")
+
+
+def _other_program(lines: list[str]) -> str | None:
+    """The program a refused state was saved from, when that is why it was refused."""
+    for line in lines:
+        if m := OTHER_PROGRAM.match(line.strip()):
+            return m.group(1).strip()
+    return None
 
 
 def channel_marks(ses: ds.Session) -> dict[str, object]:
@@ -149,7 +169,7 @@ def load_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     except BaseException as e:
         # sent, then refused or cancelled: part of it may be loaded
         if ses.state_sent and not (isinstance(e, Invalid)
-                                    and e.code in ("no_channel", "bad_argument")):
+                                    and e.code in ("no_channel", "bad_argument", "needs_call")):
             _replaced(ses)
             if parked:
                 ses.stop_count += 1

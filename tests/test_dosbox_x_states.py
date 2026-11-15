@@ -53,6 +53,7 @@ class Channel:
         self.session, self.carries = session, carries
         self.sent: list[str] = []
         self.refuse = ""                     # the emulator's own refusal, when set
+        self.logged: list[str] = []          # what its log says before the refusal
         self.partial = False                 # a failed save leaves a half-written file
         self.raises: ds.Invalid | None = None
 
@@ -70,7 +71,8 @@ class Channel:
         if self.refuse:
             if self.partial:
                 Path(path).write_bytes(b"PK half")
-            return False, [f"DEBUG: {verb} {self.refuse}", "*** Debugger command not recognized"]
+            return False, [*self.logged, f"DEBUG: {verb} {self.refuse}",
+                           "*** Debugger command not recognized"]
         if verb == "SAVESTATE":
             write_state(Path(path))
             return True, [f"DEBUG: Saved {path}"]
@@ -255,6 +257,22 @@ def test_the_emulators_own_refusal_is_unexpected_answer_saying_why(tmp_path: Pat
         with pytest.raises(ds.Invalid) as exc:
             ds.Session.load_state(as_session(fake), "boot", 5.0)
         assert exc.value.code == "unexpected_answer" and refusal in str(exc.value)
+
+
+def test_a_state_of_a_program_not_running_says_to_run_it_first_and_loads_nothing(
+        tmp_path: Path) -> None:
+    """The lines a build answered at the stop before DOS boots, to a state saved in a game."""
+    fake = StateFake(tmp_path / "save")
+    source = write_state(tmp_path / "save" / "boot.sav")
+    fake.control.refuse = f"failed: {source} (the log says why)"
+    fake.control.logged = [f"Loading state from slot: 1 ({source})",
+                           "Aborted. Check your program name: PROBE"]
+    with pytest.raises(ds.Invalid) as exc:
+        ds.Session.load_state(as_session(fake), "boot", 5.0)
+    said = str(exc.value)
+    assert exc.value.code == "needs_call", exc.value
+    assert "PROBE" in said and "`resume`" in said and "nothing was loaded" in said, said
+    assert fake.altered is False, "a state the emulator would not take replaced nothing"
 
 
 def test_state_load_needs_a_named_state_and_marks_altered(tmp_path: Path) -> None:

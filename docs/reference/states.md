@@ -138,6 +138,6 @@ Example, from a live run:
 ```
 <!-- scry-reference:end state_write -->
 
-`load` refuses a state of another version, program, memory size or machine type because it replaces the whole machine. `save` alters nothing. A DOSBox-X build without the `SAVESTATE`/`LOADSTATE` commands answers `no_channel`.
+`load` refuses a state of another version, program, memory size or machine type because it replaces the whole machine. A state of another program is the one a call can mend: the emulator loads a state only while the program it was saved from runs, so at the stop before DOS boots, or in another program, `load` answers `needs_call` naming that program, and the machine is left as it was; run it until that program runs, then load. `save` alters nothing. A DOSBox-X build without the `SAVESTATE`/`LOADSTATE` commands answers `no_channel`.
 
 `mark` is where each log channel ended as the load was sent: `log`/`log_wait`'s `since_mark` for that channel reads what came after it. It is a position in the file, not a moment, so a line written before the load and not yet flushed lands after it.
