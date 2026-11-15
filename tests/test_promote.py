@@ -148,8 +148,29 @@ def test_a_map_save_and_a_map_load_keep_nothing() -> None:
     STATE.maps.session["play"] = screen()
     saved = mpromote.after_map("save", {"application": "lineup", "screens": 1})
     assert saved == {"application": "lineup", "screens": 1}
-    assert mpromote.after_map("load", {"application": "lineup"}) == {"application": "lineup"}
     assert STATE.drafts.entries() == [] and STATE.drafts.loaded == {}
+
+
+def test_a_map_load_keeps_nothing_and_names_the_entry_it_read(tmp_path: Path) -> None:
+    read = str(tmp_path / ".scry" / "maps" / "lineup-screen-map.json")
+    loaded = {"application": "lineup", "path": read}
+    assert mpromote.after_map("load", loaded) == loaded
+    assert STATE.drafts.entries() == []
+    assert (STATE.drafts.loaded_name("maps"), STATE.drafts.sources["maps"]) == ("lineup", read)
+
+
+def test_a_map_loaded_from_another_store_and_added_to_belongs_to_that_store(
+        tmp_path: Path) -> None:
+    (tmp_path / "game").mkdir()
+    with STATE.drafts.starting(anchor=str(tmp_path / "game")):
+        pass
+    other = tmp_path / "other" / ".scry" / "maps" / "lineup-screen-map.json"
+    other.parent.mkdir(parents=True)
+    mpromote.after_map("load", {"application": "lineup", "path": str(other)})
+    STATE.maps.session_application = "lineup"
+    STATE.maps.session["play"] = screen()
+    mpromote.after_map("add", {"screen": "play"})
+    assert STATE.drafts.held("maps", "lineup")[0].project == str(tmp_path / "other")
 
 
 def test_a_map_add_with_no_screen_proposes_nothing() -> None:

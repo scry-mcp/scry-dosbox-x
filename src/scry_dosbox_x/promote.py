@@ -78,6 +78,9 @@ def keep_start(params: Mapping[str, Any], *, defaults: Mapping[str, Any]) -> boo
 def after_map(method: str, reply: dict[str, Any]) -> dict[str, Any]:
     """A map's `add` keeps what it learned, named by this session's entry or the guest."""
     application = STATE.maps.session_application or STATE.guest
+    if method == "load":
+        STATE.drafts.loaded_entry("maps", str(reply.get("application", "")),
+                                  source=str(reply.get("path", "")))
     if method != "add" or not application:
         return reply
     if STATE.drafts.keep("maps", application, STATE.maps.document(application)):
