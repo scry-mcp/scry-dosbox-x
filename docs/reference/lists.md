@@ -13,7 +13,7 @@ A sequence of this server's operations in one call, in order on the open session
 stopping at the first failure; `drive` is this plus a wait for a line of the E9 log.
 
 `steps`: `{"op": <tool>, ...arguments}`, any tool but `build_check`, `start`, `close`,
-`perform`, `drive`, `perform_export`. `path`: a `perform` document (absolute or `~`-led:
+`perform`, `drive`, `perform_export`, `window`, `promote`. `path`: a `perform` document (absolute or `~`-led:
 `.scry/perform/<name>.json`, or a file `perform_export` wrote) whose steps are replayed; give
 `steps` or `path`, never both.
 A `send_keys` or `send_mouse` whose `expect`

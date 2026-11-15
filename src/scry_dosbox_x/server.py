@@ -1758,7 +1758,7 @@ def perform(steps: list[dict[str, Any]] | None = None, path: str = "",
     stopping at the first failure; `drive` is this plus a wait for a line of the E9 log.
 
     `steps`: `{"op": <tool>, ...arguments}`, any tool but `build_check`, `start`, `close`,
-    `perform`, `drive`, `perform_export`. {PERFORM_SOURCE}
+    `perform`, `drive`, `perform_export`, `window`, `promote`. {PERFORM_SOURCE}
     A `send_keys` or `send_mouse` whose `expect`
     misses ends the list `TIMEOUT`. A step's `recorded`, `{field: value}` of its
     own reply, must hold, else INVALID `diverged`.
