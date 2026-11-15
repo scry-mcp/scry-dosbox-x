@@ -4,6 +4,19 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A map `screen_map_write` loaded names the entry it was read from, so an `add` after the
+  load updates that map in the store it came from, as the `promote` description says,
+  where it was kept as a new map of the current `start`'s repository.
+- `window`'s `front` is said as it is computed: on screen, with no other application's
+  window over its centre.
+- `trace` with a `dest` that has no extension writes its set file beside it, named from the
+  stem, where it refused the call after the gate in words about a name with no letters.
+- After a release no answer confirmed, a reply on a channel silent through a long host call
+  waits the channel's bound once, where its `session` block asked `RUNSTATE` again and
+  waited a second bound; a `step` with no stop says it is running only when it is.
+- `screen_wait`'s description no longer says a wait on a declared stop runs on the normal
+  core (it runs on any), and `start` says `symbols_placed` carries `load_segment` in real
+  mode only.
 - On the pinned scry-core (`pyproject.toml`), `screen_wait`'s description gives `condition`
   a register of the stopped cpu, never a register this server refuses.
 - Inside a long host call each call answers `host_failed` after the debugger channel's bound
