@@ -26,7 +26,7 @@ RUN_FOR_ONLY = frozenset({"polls", "emulated_before_s", "emulated_after_s", "fra
 STOP_UNTIL = ("", "protected")
 PROTECTED_RUNS_MAX = 256
 PROTECTED_RUN_S = 0.007
-#: Each run is this many times `PROTECTED_RUN_S` longer than the last, in a cycle: equal runs land
+#: The runs grow by one `PROTECTED_RUN_S` each up to this many, then start again: equal runs land
 #: at one point of a program's own cycle.
 PROTECTED_RUN_STEPS = 11
 
