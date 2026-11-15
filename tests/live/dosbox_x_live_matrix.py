@@ -5,8 +5,8 @@
 Exit 0 no FAIL, 1 FAIL, 3 invalid, 2 argument. Env:
 DOSBOX_X_BINARY, DOSBOX_X_LIVE_BENCH, DOSBOX_X_LEAK_BINARY, DOSBOX_X_STOCK_BINARY,
 RECHIP_DIR (a ReChip build, section P's private VESA case), DOSBOX_X_LIVE_SECTIONS
-(letters, `AA,B` for two-letter ones), DOSBOX_X_LIVE_JOBS (default half the CPUs),
-SCRY_FOCUS_CONTROL=1.
+(letters, `AA,B` for two-letter ones, `AA,` for one alone), DOSBOX_X_LIVE_JOBS (default half
+the CPUs), SCRY_FOCUS_CONTROL=1.
 """
 from __future__ import annotations
 
@@ -100,7 +100,11 @@ def _main() -> int:
               file=sys.stderr)
         return 2
     letters = {s.block for s in M.sections}
-    wanted = chosen_sections(ENV.get(SECTIONS_VAR, ""))
+    try:
+        wanted = chosen_sections(ENV.get(SECTIONS_VAR, ""), letters)
+    except ValueError as e:
+        print(f"INVALID: {SECTIONS_VAR}: {e}", file=sys.stderr)
+        return EXIT_INVALID
     unknown = sorted(set(wanted) - letters)
     if unknown:
         print(f"INVALID: {SECTIONS_VAR} names no section {unknown}; "

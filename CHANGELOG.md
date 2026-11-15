@@ -4,6 +4,10 @@ What a client of the server notices.
 
 ## Unreleased
 
+- scry-core 0.111.2 pinned: the pre-commit hook starts the `jscpd.cmd` npm installs on Windows,
+  so the hook's cases run there; `DOSBOX_X_LIVE_SECTIONS=AA` (letters that spell section AA) and
+  a value that names no section (`,`) are refused at INVALID, where the first ran section A and
+  the second every section.
 - On a debugger channel that went silent, the window's presence edge no longer sends its first
   version request either: a reply waited one bound less for it.
 - A `screen_wait` judged on a watch that never fired, on a dynamic core, no longer says a code
