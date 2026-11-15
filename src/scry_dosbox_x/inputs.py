@@ -37,6 +37,9 @@ from scry_dosbox_x.state import STATE
 
 # Scan set 1 make codes by the mapper-style names `send_keys` takes. The stub injects whatever
 # bytes it is handed, so the E0 prefixes and break codes are composed here.
+SCAN_MODIFIERS: dict[str, tuple[int, ...]] = {
+    "shift": (0x2A,), "ctrl": (0x1D,), "control": (0x1D,), "alt": (0x38,), "option": (0x38,),
+}
 SCAN_SET1: dict[str, tuple[int, ...]] = {
     "escape": (0x01,), "esc": (0x01,),
     "1": (0x02,), "2": (0x03,), "3": (0x04,), "4": (0x05,), "5": (0x06,), "6": (0x07,),
@@ -60,12 +63,9 @@ SCAN_SET1: dict[str, tuple[int, ...]] = {
     "delete": (0xE0, 0x53),
     # A modifier held on its own (`action` down/up) keeps a program from going idle without
     # holding a real key the program may map.
-    "shift": (0x2A,), "ctrl": (0x1D,), "control": (0x1D,), "alt": (0x38,), "option": (0x38,),
+    **SCAN_MODIFIERS,
 }
 MAX_KEYS_PER_CALL = 64    # each scan byte is a frame, a BIOS tick apart, under the session's lock
-SCAN_MODIFIERS: dict[str, tuple[int, ...]] = {
-    "shift": (0x2A,), "ctrl": (0x1D,), "control": (0x1D,), "alt": (0x38,), "option": (0x38,),
-}
 
 
 def scan_sequence(keys: list[str], mods: str, action: str = "press") -> bytes:
