@@ -11,8 +11,9 @@ from typing import Any
 import pytest
 from scry_core import given, media_replies, screen_map, tool_replies
 from scry_core import promote as core_promote
+from scry_core.reply_contract import Invalid
 
-from scry_dosbox_x import checks, replies, server
+from scry_dosbox_x import checks, lifecycle, replies, server
 from scry_dosbox_x import promote as mpromote
 from scry_dosbox_x import state as dst
 
@@ -25,6 +26,12 @@ START: dict[str, Any] = {
     "settle_seconds": None, "input_port": 0, "display": None, "size": None,
     "fullscreen": None, "background": None, "flags": None, "binary": "", "symbols": "",
 }
+
+
+def noted(params: dict[str, Any]) -> None:
+    """What a start that ran leaves noted: `launching` once its launch returned."""
+    with mpromote.launching(params):
+        pass
 
 
 def screen(name: str = "play") -> screen_map.Screen:
@@ -75,8 +82,29 @@ def test_a_guest_is_named_by_its_program_s_own_stem() -> None:
     assert mpromote.guest_name({}) == ""
 
 
+def test_a_refused_start_leaves_the_live_session_s_guest(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def refused(**_arguments: Any) -> dict[str, Any]:
+        raise Invalid("session_live", "a session is already live")
+    monkeypatch.setattr(lifecycle, "start", refused)
+    STATE.guest = "probe"
+    got = server.start(conf=str(tmp_path / "lineup.conf"), cwd=str(tmp_path),
+                       session_seconds=60, program="LINEUP.EXE")
+    assert got["code"] == "session_live" and STATE.guest == "probe", (got, STATE.guest)
+
+
+def test_a_start_refused_with_its_own_session_live_keeps_its_guest(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(STATE, "session", None)
+    STATE.guest = "probe"
+    with pytest.raises(Invalid), mpromote.launching({**START, "program": "LINEUP.EXE"}):
+        monkeypatch.setattr(STATE, "session", object())
+        raise Invalid("window_not_visible", "the window never appeared")
+    assert STATE.guest == "lineup"
+
+
 def test_the_guest_is_noted_before_the_launch_so_a_plan_s_add_knows_it() -> None:
-    mpromote.note_start({**START, "program": "LINEUP.EXE"})
+    noted({**START, "program": "LINEUP.EXE"})
     assert STATE.guest == "lineup"
     STATE.maps.session["play"] = screen()
     assert mpromote.after_map("add", {"screen": "play"})["kept"] == "kept 1 (promote to review)"
@@ -84,7 +112,7 @@ def test_the_guest_is_noted_before_the_launch_so_a_plan_s_add_knows_it() -> None
 
 
 def test_a_start_keeps_its_recipe_without_the_run_s_own_arguments() -> None:
-    mpromote.note_start(START)
+    noted(START)
     mpromote.keep_start(START, defaults=server._START_DEFAULTS)
     kept = STATE.drafts.kept["start", "probe"].document
     assert kept == {"format": "scry-start/1", "conf": "/x/probe.conf", "cwd": "/x",
@@ -93,14 +121,14 @@ def test_a_start_keeps_its_recipe_without_the_run_s_own_arguments() -> None:
 
 
 def test_a_start_from_a_profile_is_named_by_the_profile_it_read() -> None:
-    mpromote.note_start({**START, "program": "LINEUP.EXE"})
+    noted({**START, "program": "LINEUP.EXE"})
     STATE.drafts.loaded_entry("start", "dos")
     mpromote.keep_start({**START, "program": "LINEUP.EXE"}, defaults=server._START_DEFAULTS)
     assert STATE.drafts.entries() == ["start/dos"]
 
 
 def test_a_start_with_no_program_and_no_conf_proposes_nothing() -> None:
-    mpromote.note_start({**START, "conf": ""})
+    noted({**START, "conf": ""})
     assert mpromote.keep_start({**START, "conf": ""},
                                defaults=server._START_DEFAULTS) is False
     assert STATE.drafts.entries() == []
@@ -168,7 +196,7 @@ def test_a_replay_the_reader_refuses_marks_no_entry(tmp_path: Path) -> None:
 
 
 def test_close_reports_what_was_left_unkept() -> None:
-    mpromote.note_start(START)
+    noted(START)
     mpromote.keep_start(START, defaults=server._START_DEFAULTS)
     reply = server.close()
     assert reply["draft"] == ["start/probe"]
@@ -185,7 +213,7 @@ def test_close_leaves_out_what_the_store_already_holds(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     recipe = {**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)}
-    mpromote.note_start(recipe)
+    noted(recipe)
     mpromote.keep_start(recipe, defaults=server._START_DEFAULTS)
     server.promote(entries=["start/probe"], root=str(tmp_path))
     mpromote.keep_start(recipe, defaults=server._START_DEFAULTS)
@@ -194,7 +222,7 @@ def test_close_leaves_out_what_the_store_already_holds(
 
 
 def test_a_promotion_empties_the_draft_and_close_then_says_nothing(tmp_path: Path) -> None:
-    mpromote.note_start({**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)})
+    noted({**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)})
     mpromote.keep_start({**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)},
                         defaults=server._START_DEFAULTS)
     server.promote(entries=["start/probe"], root=str(tmp_path))
@@ -206,7 +234,7 @@ def test_promote_reviews_and_writes_in_a_store_of_its_own(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     params = {**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)}
-    mpromote.note_start(params)
+    noted(params)
     mpromote.keep_start(params, defaults=server._START_DEFAULTS)
     review = server.promote(dry_run=True, root=str(tmp_path))
     assert [c["entry"] for c in review["candidates"]] == ["start/probe"]
@@ -219,7 +247,7 @@ def test_promote_reviews_and_writes_in_a_store_of_its_own(
 def test_a_promotion_with_no_store_names_root(tmp_path: Path,
                                               monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
-    mpromote.note_start(START)
+    noted(START)
     mpromote.keep_start(START, defaults=server._START_DEFAULTS)
     reply = server.promote(dry_run=True)
     assert reply["code"] == "bad_argument" and "root" in reply["message"]
@@ -229,7 +257,7 @@ def test_a_root_creates_the_store_only_on_the_approved_call(tmp_path: Path) -> N
     repo = tmp_path / "game"
     repo.mkdir()
     params = {**START, "conf": str(repo / "probe.conf"), "cwd": str(repo)}
-    mpromote.note_start(params)
+    noted(params)
     mpromote.keep_start(params, defaults=server._START_DEFAULTS)
     assert server.promote(dry_run=True, root=str(repo))["candidates"][0]["change"] == "new"
     assert not (repo / ".scry").exists()
@@ -256,7 +284,7 @@ def test_a_start_that_only_loads_its_profile_learned_nothing() -> None:
 
 
 def test_a_kept_start_leaves_the_run_s_own_keys_to_the_store() -> None:
-    mpromote.note_start(START)
+    noted(START)
     mpromote.keep_start(START, defaults=server._START_DEFAULTS)
     assert set(STATE.drafts.kept["start", "probe"].own) == set(mpromote.RUN_OWN)
 
@@ -325,7 +353,7 @@ SETUP = [".scry/", ".scry/about.json", ".scry/README.md"]
 
 def kept_probe(repo: Path, **more: Any) -> None:
     params = {**START, "conf": str(repo / "probe.conf"), "cwd": str(repo), **more}
-    mpromote.note_start(params)
+    noted(params)
     mpromote.keep_start(params, defaults=server._START_DEFAULTS)
 
 

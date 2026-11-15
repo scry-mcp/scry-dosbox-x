@@ -4,6 +4,8 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A `start` refused before it launches (a session already live) leaves the live session's guest
+  as it was, so the next map `add` is still named after the program on its screen.
 - `send_keys` and `send_mouse` while the emulator is inside a long host call (a DOS file or
   device operation it waits on) answer `delivered: false` and say the input was not sent, where
   they said whether it acted was unknown: nothing was written, so sending it again once `status`

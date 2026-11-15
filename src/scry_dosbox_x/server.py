@@ -282,10 +282,10 @@ def start(conf: str = "", cwd: str = "",
         params, block = lifecycle.with_profile(profile, keys=_PROFILE_KEYS, arguments=params,
                                                given=given.names() or ())
     params.pop("profile")
-    # Before the launch: a `plan` runs inside it, and one of its `add` steps names a map by the
+    # Around the launch: a `plan` runs inside it, and one of its `add` steps names a map by the
     # guest this call starts.
-    mpromote.note_start(params)
-    reply = lifecycle.start(**params, progress=bridge(ctx), ops=_step_ops)
+    with mpromote.launching(params):
+        reply = lifecycle.start(**params, progress=bridge(ctx), ops=_step_ops)
     if block is not None:
         STATE.drafts.loaded_entry("start", Path(str(block["file"])).stem,
                                   source=str(block["file"]))

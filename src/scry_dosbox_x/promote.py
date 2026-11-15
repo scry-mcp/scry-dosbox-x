@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Collection, Mapping
+from collections.abc import Collection, Iterator, Mapping
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -57,9 +58,18 @@ def guest_name(params: Mapping[str, Any]) -> str:
     return ""
 
 
-def note_start(params: Mapping[str, Any]) -> None:
-    """The guest this session runs, set before the launch so a `plan`'s `add` knows it."""
+@contextmanager
+def launching(params: Mapping[str, Any]) -> Iterator[None]:
+    """The guest this session runs, set before the launch so a `plan`'s `add` knows it; a start
+    that raises leaving no session of its own live leaves the live session's."""
+    before, session = STATE.guest, STATE.session
     STATE.guest = guest_name(params)
+    try:
+        yield
+    except BaseException:
+        if STATE.session in (None, session):
+            STATE.guest = before
+        raise
 
 
 def keep_start(params: Mapping[str, Any], *, defaults: Mapping[str, Any]) -> bool:
