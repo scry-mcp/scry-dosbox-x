@@ -408,6 +408,7 @@ Some tools need a debugger command a build may lack; `build_check` lists the one
 | `DOSTRACE` | every INT 21h at entry and return, into a file | `log` and `log_wait` on the `dos` channel, `start(dos_calls=True)` |
 | `PIC` | the interrupt controllers' state, and masking, acknowledging, raising or lowering a line | `pic` |
 | `A20` | the A20 gate, read or set | `a20` |
+| `MEMDUMPLIN` | memory dumped by linear address, through the page tables | reads by linear address, `send_mouse` steering a protected-mode pointer |
 
 On a build without `RUNSTATE` a session starts, every reading answers at the stop `start` leaves, and input, captures and declarations work; `resume` with no bound releases the machine and says that nothing will tell when it stops again, and `stop` brings it back to the debugger wherever it is. No DOSBox-X release carries `RUNSTATE` yet.
 
