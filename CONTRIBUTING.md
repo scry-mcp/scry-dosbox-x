@@ -53,7 +53,7 @@ are built by the nasm major `tests/test_dosbox_x_guest.py` names, so their byte-
 under the older one Ubuntu ships, and run on macOS and Windows.
 
 The dosbox-x server starts DOSBox-X headless (`-set "sdl videodriver=dummy"`), so it can be
-driven over an ssh session on Windows, no display needed, unlike MAME. A venv made with a minor
+driven over an ssh session on Windows, no display needed. A venv made with a minor
 version has its `home` on a junction an elevated or ssh session cannot traverse (`uv trampoline
 failed to spawn Python child process`); make it with the exact patch version (`uv venv -p
 <patch>`), whose `home` is the real directory.
