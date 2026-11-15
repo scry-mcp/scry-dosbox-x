@@ -787,14 +787,13 @@ def program_reader(session: ds.Session, program: Pointer) -> Callable[[], tuple[
     return seen
 
 
-def _take_owed(session: ds.Session, parked: Retraces, program: Pointer) -> None:
+def _take_owed(session: ds.Session, parked: Retraces, program: Pointer,
+               owed: dpointer.Owed) -> None:
     """Run the machine until the program took a move the steering did not send: read before
     it does, its pointer is where that move found it."""
-    owed = session.pointer_owed
-    if owed is not None:
-        dpointer.taken(program_reader(session, program), lambda: _observing(session, parked),
-                       owed.before, TAKE_RETRACES)
-        session.pointer_owed = None
+    dpointer.taken(program_reader(session, program), lambda: _observing(session, parked),
+                   owed.before, TAKE_RETRACES)
+    session.pointer_owed = None
 
 
 def _steer(session: ds.Session, parked: Retraces, program: Pointer, aim: tuple[int, int],
@@ -977,9 +976,10 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
                 dpointer.locate(program, lambda ref: placement.pointer_target(ref, session))
             return before, target, end, why_not, steers
         before, target, end, why_not, steering = placed()
-        if steering and parked is not None and program is not None and session.pointer_owed:
+        owed = session.pointer_owed
+        if steering and parked is not None and program is not None and owed is not None:
             # The wait runs the machine, so what the driver reported before it is read again.
-            _take_owed(session, parked, program)
+            _take_owed(session, parked, program, owed)
             before, target, end, why_not, steering = placed()
         # Read before the post, whose failures say the commands may have gone in.
         start = program_reader(session, program)() if steering and program is not None else None
