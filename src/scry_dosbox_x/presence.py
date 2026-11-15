@@ -91,7 +91,7 @@ class ChannelAdapter:
         if not self._session.has("PRESENCE"):
             raise presence.Unavailable(NO_COMMAND)
         if self.version is None:
-            self.version = build_version(self._session.exec("PRESENCE")[1])
+            self.version = build_version(self._session.exec("PRESENCE", unless_silent=True)[1])
         if self.version < MIN_VERSION:
             raise presence.Unavailable(
                 f"this DOSBox-X's PRESENCE is version {self.version}, which draws the pointer at a "

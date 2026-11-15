@@ -83,9 +83,11 @@ def test_a_build_with_the_command_is_drawn_and_its_answer_kept() -> None:
     shown.close()
 
 
+@pytest.mark.parametrize("version", [dpresence.MIN_VERSION, None])
 def test_a_delivery_that_waited_behind_a_request_the_channel_left_unanswered_is_not_sent(
-) -> None:
-    """The delivery is asked while another request still waits on the silent channel."""
+        version: int | None) -> None:
+    """The delivery is asked while another request still waits on the silent channel; with no
+    version read yet, its bare probe is not sent either."""
     channel = control.ControlChannel(lambda: None)
     emulator = socket.create_connection((control.LOCAL_HOST, channel.port))
     heard: list[bytes] = []
@@ -100,7 +102,7 @@ def test_a_delivery_that_waited_behind_a_request_the_channel_left_unanswered_is_
                  **kw: Any) -> tuple[bool, list[str]]:
             return dbg.exec_lines(cast(Any, self), command, seconds, **kw)
     adapter = dpresence.ChannelAdapter(cast(Any, OverChannel()))
-    adapter.version = dpresence.MIN_VERSION
+    adapter.version = version
     def unanswered() -> None:
         with contextlib.suppress(Invalid):
             channel.request("EXEC RUNSTATE", 0.3)

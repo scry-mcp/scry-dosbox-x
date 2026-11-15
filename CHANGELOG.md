@@ -4,6 +4,8 @@ What a client of the server notices.
 
 ## Unreleased
 
+- On a debugger channel that went silent, the window's presence edge no longer sends its first
+  version request either: a reply waited one bound less for it.
 - A `screen_wait` judged on a watch that never fired, on a dynamic core, no longer says a code
   breakpoint is declared when none is: the caveat about a core passing one over comes only with
   a declared code breakpoint.
