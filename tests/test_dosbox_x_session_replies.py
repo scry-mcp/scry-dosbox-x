@@ -252,7 +252,7 @@ def test_a_link_writes_to_the_input_socket_and_asks_the_session_whether_it_is_pa
     try:
         ses = ds.Session.__new__(ds.Session)
         parked = [True]
-        ses.at_debugger = lambda: parked[0]  # type: ignore[method-assign]
+        ses.at_debugger = lambda **_: parked[0]  # type: ignore[method-assign]
         link = ds.Session._linked(ses, a)
         assert link.sock is a and link.parked() is True
         parked[0] = False

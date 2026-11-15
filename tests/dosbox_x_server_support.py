@@ -220,7 +220,7 @@ class FakeSession(SessionGates):
                  progress: ds.Progress = ds.no_progress) -> dict[str, object]:
         raise ds.Invalid("no_channel", "this session is headless: there is no window")
 
-    def state(self) -> dict[str, object]:
+    def state(self, *, unless_silent: bool = False) -> dict[str, object]:
         # the real shape: a two-key stub let the `altered` guarantee be deleted with the suite green
         return {"pid": 4242, "alive": self._alive,
                 "running": self._alive and bool(getattr(self, "running", False)),
@@ -712,7 +712,7 @@ class NamesFake(SessionGates):
             return False
         return not (self.where_raises or self.running)
 
-    def state(self) -> dict[str, object]:
+    def state(self, *, unless_silent: bool = False) -> dict[str, object]:
         return {"pid": 4242, "alive": self.alive_flag, "running": self._running, "altered": False,
                 "range_widened": None, "program": None, "conf": "/x/g.conf",
                 "conf_digest": "abc123", "conf_changed_on_disk": False, "watched": False,

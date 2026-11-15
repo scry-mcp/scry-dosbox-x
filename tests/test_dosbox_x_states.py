@@ -137,7 +137,7 @@ class StateFake:
         return self.lives
 
 
-    def state(self) -> dict[str, object]:
+    def state(self, *, unless_silent: bool = False) -> dict[str, object]:
         return {"alive": True, "running": not self.parked, "altered": self.altered}
 
     e9_mark = ds.Session.e9_mark

@@ -371,7 +371,7 @@ def session_block(whole: bool = False) -> dict[str, Any]:
     """The `session` block every reply closes with. `whole` changes nothing."""
     if STATE.session is None:
         return dict(NO_SESSION_BLOCK)
-    return {key: value for key, value in STATE.session.state().items()
+    return {key: value for key, value in STATE.session.state(unless_silent=True).items()
             if key in _ALWAYS or (key in _ALARM_WHEN and _ALARM_WHEN[key](value))}
 
 

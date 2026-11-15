@@ -135,9 +135,11 @@ def unknown_after_release(what: str) -> Invalid:
         f"machine. `stop` brings it back to the debugger, wherever it is")
 
 
-def read_run_state(session: ds.Session) -> bool:
-    """One `RUNSTATE`: whether the machine is stopped, with the cycles and the clock it gives."""
-    return take_run_state(session, *dbg.exec_lines(session, dbg.RUNSTATE))
+def read_run_state(session: ds.Session, *, unless_silent: bool = False) -> bool:
+    """One `RUNSTATE`: whether the machine is stopped, with the cycles and the clock it gives;
+    `unless_silent` sends nothing on a channel whose last request went unanswered."""
+    return take_run_state(session, *dbg.exec_lines(session, dbg.RUNSTATE,
+                                                   unless_silent=unless_silent))
 
 
 def _fired_entry(session: ds.Session, number: str | None) -> str | None:

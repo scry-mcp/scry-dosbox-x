@@ -9,16 +9,17 @@ import threading
 import time
 from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pytest
 from channel_double import Machine, SilentChannel, session_over
 from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
-from scry_dosbox_x import control
+from scry_dosbox_x import control, server
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import session as ds
+from scry_dosbox_x import state as dstate
 
 
 def _emulator(port: int, answer: Callable[[str], bytes | Iterable[bytes] | None],
@@ -152,6 +153,27 @@ def test_a_running_guest_whose_channel_is_silent_is_said_silent_through_the_sess
     finally:
         silent.close()
     assert "RUNSTATE" in e.value.silence and e.value.code == "host_failed", e.value.silence
+
+
+def test_a_reply_after_an_unconfirmed_release_waits_one_bound_on_a_silent_channel(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The tool's own question finds the channel silent; the `session` block the reply closes
+    with does not ask again and wait the bound a second time."""
+    monkeypatch.setattr(control, "REPLY_S", 0.3)
+    silent = SilentChannel(0.3)
+    session = session_over(Machine(stopped=False), tmp_path)
+    session.control = silent.channel
+    session._run_unknown = True
+    dstate.STATE.session = session
+    try:
+        began = time.monotonic()
+        got = cast(dict[str, Any], server.declaration_list())
+        took = time.monotonic() - began
+    finally:
+        dstate.STATE.session = None
+        silent.close()
+    assert got["session"]["running"]["available"] is False, got["session"]
+    assert took < 0.55, f"{took:.2f} s: the reply waited the bound more than once"
 
 
 def test_a_channel_is_known_silent_from_a_request_it_left_unanswered_until_one_answers() -> None:

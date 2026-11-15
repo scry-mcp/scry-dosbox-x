@@ -117,7 +117,7 @@ class _Running:
     def at_debugger(self) -> bool:
         return False
 
-    def state(self) -> dict[str, object]:
+    def state(self, *, unless_silent: bool = False) -> dict[str, object]:
         return {"alive": True, "altered": False, "running": True}
 
     def __getattr__(self, name: str) -> Any:

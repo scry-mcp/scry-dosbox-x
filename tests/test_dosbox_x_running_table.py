@@ -52,7 +52,7 @@ class RunningGuest(SessionGates):
     def at_debugger(self) -> bool:
         return self.stopped
 
-    def state(self) -> dict[str, object]:
+    def state(self, *, unless_silent: bool = False) -> dict[str, object]:
         return {"pid": 1, "alive": True, "running": not self.stopped, "altered": self.altered}
 
     def log(self, pattern: str, limit: int, channel: str,

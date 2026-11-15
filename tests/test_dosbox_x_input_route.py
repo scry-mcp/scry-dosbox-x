@@ -294,7 +294,7 @@ def test_a_widened_range_is_in_every_session_block_while_it_holds(
         monkeypatch: pytest.MonkeyPatch) -> None:
     facts: dict[str, Any] = {"alive": True, "running": False, "altered": True, "pid": 1,
                              "range_widened": None}
-    monkeypatch.setattr(dstate.STATE, "session", SimpleNamespace(state=lambda: dict(facts)))
+    monkeypatch.setattr(dstate.STATE, "session", SimpleNamespace(state=lambda **_: dict(facts)))
     assert "range_widened" not in dstate.session_block(), dstate.session_block()
     facts["range_widened"] = {"x": 2050, "y": 767}
     assert dstate.session_block()["range_widened"] == {"x": 2050, "y": 767}

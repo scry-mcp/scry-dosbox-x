@@ -382,13 +382,13 @@ class Session(dprocess.Process):
         """Whether the machine was at the debugger when it was last seen."""
         return self._at_debugger
 
-    def at_debugger(self) -> bool:
+    def at_debugger(self, *, unless_silent: bool = False) -> bool:
         """Whether the machine is parked at the debugger; a running one is asked of `RUNSTATE`."""
         if self._at_debugger:
             return True
         if not self.has(dbg.RUNSTATE):
             return False
-        return run_state.read_run_state(self)
+        return run_state.read_run_state(self, unless_silent=unless_silent)
 
     def require_stopped(self, what: str) -> None:
         """Refuse `what` unless the machine is stopped at the debugger."""
@@ -964,7 +964,7 @@ class Session(dprocess.Process):
     def pid(self) -> int:
         return self.proc.pid
 
-    def state(self) -> dict[str, object]:
+    def state(self, *, unless_silent: bool = False) -> dict[str, object]:
         """Everything the server says about the session."""
         changed: bool | dict[str, Any]
         try:
@@ -993,7 +993,7 @@ class Session(dprocess.Process):
                     "it stopped, so whether it runs is unknown: `stop` brings it back")
             else:
                 try:
-                    running = not self.at_debugger()
+                    running = not self.at_debugger(unless_silent=unless_silent)
                 except Invalid as e:
                     running = contract.unavailable(
                         f"the machine was released and its state could not be read back ({e}), "

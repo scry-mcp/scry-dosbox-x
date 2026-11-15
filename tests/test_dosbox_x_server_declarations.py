@@ -41,12 +41,12 @@ def test_the_block_carries_each_alarm_while_it_holds_and_the_process_facts_ride_
     quiet = fake.state()
     loud = {**quiet, "conf_changed_on_disk": True, "output_bytes_dropped": 4096}
     alarms = ("conf_changed_on_disk", "output_bytes_dropped")
-    fake.state = lambda: loud  # type: ignore[method-assign]
+    fake.state = lambda **_: loud  # type: ignore[method-assign]
     short = cast(dict[str, Any], server.registers())["session"]
     assert all(short[k] == loud[k] for k in alarms) and "pid" not in short, short
     status = cast(dict[str, Any], server.status())
     assert status["pid"] == 4242 and status["output_bytes_dropped"] == 4096, status
-    fake.state = lambda: quiet  # type: ignore[method-assign]
+    fake.state = lambda **_: quiet  # type: ignore[method-assign]
     short = cast(dict[str, Any], server.registers())["session"]
     assert set(short) == {"alive", "running", "altered"}, short
     closed = cast(dict[str, Any], server.close())

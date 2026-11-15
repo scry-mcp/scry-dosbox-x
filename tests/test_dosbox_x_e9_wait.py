@@ -51,7 +51,7 @@ class LogSession:
     def at_debugger(self) -> bool:
         return False
 
-    def state(self) -> dict[str, object]:
+    def state(self, *, unless_silent: bool = False) -> dict[str, object]:
         return {"alive": self._alive, "running": False, "altered": False}
 
     def e9_text(self) -> str:

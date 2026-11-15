@@ -22,7 +22,7 @@ class _ClosesWithoutEnding:
         self.ended_how = "none"
         self.launch = SimpleNamespace(logfile=None)
 
-    def state(self) -> dict[str, object]:
+    def state(self, *, unless_silent: bool = False) -> dict[str, object]:
         return {"alive": True, "pid": self.proc.pid}
 
     def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
