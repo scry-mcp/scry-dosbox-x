@@ -8,6 +8,8 @@
   "background": true,
   "display": "<host>",
   "profile": "<host>",
+  "symbols": "<host>",
+  "flags": ["-set", "cpu core=normal"],
   "captures_dir": "<host>",
   "cwd": "<host>"
 }
@@ -40,7 +42,11 @@
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
-  "note": "this session runs the dynamic core, which checks breakpoints only between compiled blocks, so a code breakpoint inside one can be passed over and a run that never reaches it proves nothing. Start on the normal core: `start(flags=[\"-set\", \"cpu core=normal\"])`",
+  "symbols": {
+    "held": "<volatile>",
+    "base_from": "program",
+    "checked": {"against": "<volatile>", "agree": 3207}
+  },
   "kept": "kept 1 (promote to review)",
   "profile": {
     "name": "<volatile>",
@@ -178,12 +184,119 @@
 
 </details>
 
-**6. `stop`**: OK hold: the machine stopped
+**6. `send_keys`**: OK rewind: home put the song back at its first row
 
 <details><summary>call and reply</summary>
 
 ```json
-{}
+{
+  "keys": ["home"],
+  "expect": "ACT   \\. rewind",
+  "seconds": 10
+}
+```
+
+```json
+{
+  "summary": "send_keys (guest): effect seen",
+  "status": "ok",
+  "keys": ["home"],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 1,
+  "bytes": 4,
+  "frames": 4,
+  "verify": {
+    "checked": true,
+    "seen": true,
+    "expected": "ACT   \\. rewind",
+    "verdict": "TARGET",
+    "line": "<volatile>",
+    "seen_before_waiting": "<volatile>",
+    "lines_before": "<volatile>",
+    "waited_s": "<volatile>",
+    "lines_total": "<volatile>"
+  },
+  "session": {"alive": true, "running": true, "altered": false}
+}
+```
+
+</details>
+
+**7. `log_wait`**: OK report: the program reported after the rewind
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "pattern": "PERF  \\. fps=",
+  "channel": "guest",
+  "seconds": 10,
+  "since_mark": "<host>"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "TARGET",
+  "pattern": "PERF  \\. fps=",
+  "channel": "guest",
+  "line": "<volatile>",
+  "already": "<volatile>",
+  "lines_total": "<volatile>",
+  "lines_before": "<volatile>",
+  "arrived_during": "<volatile>",
+  "waited_s": "<volatile>",
+  "lines_examined": "<volatile>",
+  "session": {"alive": true, "running": true, "altered": false}
+}
+```
+
+</details>
+
+**8. `log_wait`**: OK settled: a second report: the playhead is at the first row
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "pattern": "PERF  \\. fps=",
+  "channel": "guest",
+  "seconds": 10,
+  "since_mark": "<host>"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "TARGET",
+  "pattern": "PERF  \\. fps=",
+  "channel": "guest",
+  "line": "<volatile>",
+  "already": "<volatile>",
+  "lines_total": "<volatile>",
+  "lines_before": "<volatile>",
+  "arrived_during": "<volatile>",
+  "waited_s": "<volatile>",
+  "lines_examined": "<volatile>",
+  "session": {"alive": true, "running": true, "altered": false}
+}
+```
+
+</details>
+
+**9. `stop`**: OK hold: the machine stopped in the program, its symbols placed
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "until": "protected"
+}
 ```
 
 ```json
@@ -191,8 +304,8 @@
   "summary": "<volatile>",
   "status": "ok",
   "interrupted": true,
+  "runs_to_protected": "<volatile>",
   "via": "break",
-  "note": "<volatile>",
   "pc": "<volatile>",
   "cpu_mode": "<volatile>",
   "frame": "<volatile>",
@@ -202,13 +315,165 @@
   "e9": "<volatile>",
   "stop_seq": 2,
   "instruction": "<volatile>",
+  "symbols_placed": {"placed": true, "path": "<volatile>", "base": "0x00400000", "loaded": 7923},
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**7. `screen_view`**: OK screen: mode M_LIN8, 1024x768 by palette index
+**10. `read_memory`**: OK ticks: the program's own counter, which sets the pulse
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "_g_ticks",
+  "length": 4
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "ref": "_g_ticks",
+  "seg_off": "<volatile>",
+  "length": 4,
+  "hex": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**11. `run_for`**: OK into lit: to the middle of the next lit half of the pulse
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "milliseconds": "<host>",
+  "seconds": 10
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "note": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**12. `screen_map_write`**: OK map: 2 looks of the warning button
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "method": "load",
+  "path": "./demos/rechip/rechip-screen-map.json"
+}
+```
+
+```json
+{
+  "summary": "screen_map_write load: 2 screens, 0 controls of rechip",
+  "status": "ok",
+  "path": "./demos/rechip/rechip-screen-map.json",
+  "application": "rechip",
+  "mode": "verified",
+  "screens": 2,
+  "controls": 0,
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**13. `screen_map_find`**: OK lit: the warning button shows warning_lit
+
+<details><summary>call and reply</summary>
+
+```json
+{}
+```
+
+```json
+{
+  "summary": "screen_map_find: warning_lit (file), 0 controls",
+  "status": "ok",
+  "matched": true,
+  "screen": "warning_lit",
+  "layer": "file",
+  "kind": "pixel",
+  "size": [1024, 768],
+  "controls": [],
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**14. `screen_wait`**: OK dark: the first frame it went dark
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "screen": "warning_dark",
+  "seconds": 10
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "TARGET",
+  "predicate": "screen",
+  "already": false,
+  "waited_s": "<volatile>",
+  "polls": "<volatile>",
+  "sampled_every": 0,
+  "screen": {"name": "warning_dark", "layer": "file"},
+  "note": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**15. `screen_view`**: OK screen: mode M_LIN8, 1024x768 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -249,7 +514,7 @@ Also attached: image/png.
 
 </details>
 
-**8. `record`**: OK loop: recording 240 frames in ./tmp/demos/rechip/loop.avi
+**16. `record`**: OK loop: recording 240 frames in ./tmp/demos/rechip/loop.avi
 
 <details><summary>call and reply</summary>
 
@@ -294,7 +559,7 @@ Also attached: image/png.
 
 </details>
 
-**9. `resume`**: OK go on: the program runs on
+**17. `resume`**: OK go on: the program runs on
 
 <details><summary>call and reply</summary>
 
@@ -316,7 +581,7 @@ Also attached: image/png.
 
 </details>
 
-**10. `send_keys`**: OK quit: File, Quit: the song is dirty, so the confirm opened
+**18. `send_keys`**: OK quit: File, Quit: the song is dirty, so the confirm opened
 
 <details><summary>call and reply</summary>
 
@@ -356,7 +621,7 @@ Also attached: image/png.
 
 </details>
 
-**11. `send_keys`**: OK confirm: Quit without saving
+**19. `send_keys`**: OK confirm: Quit without saving
 
 <details><summary>call and reply</summary>
 
@@ -395,7 +660,7 @@ Also attached: image/png.
 
 </details>
 
-**12. `close`**: OK close: closed: DOSBox-X quit on its own
+**20. `close`**: OK close: closed: DOSBox-X quit on its own
 
 <details><summary>call and reply</summary>
 

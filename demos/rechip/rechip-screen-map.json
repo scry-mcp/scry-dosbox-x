@@ -1,0 +1,47 @@
+{
+ "format": "scry-screen-map/1",
+ "application": "rechip",
+ "mode": "verified",
+ "screens": [
+  {
+   "name": "warning_lit",
+   "kind": "pixel",
+   "size": [
+    1024,
+    768
+   ],
+   "match": [
+    {
+     "crop": [
+      916,
+      671,
+      22,
+      18
+     ],
+     "signature": "9acd02dc92f2d671"
+    }
+   ],
+   "controls": []
+  },
+  {
+   "name": "warning_dark",
+   "kind": "pixel",
+   "size": [
+    1024,
+    768
+   ],
+   "match": [
+    {
+     "crop": [
+      916,
+      671,
+      22,
+      18
+     ],
+     "signature": "ecfc6bcf2447d517"
+    }
+   ],
+   "controls": []
+  }
+ ]
+}

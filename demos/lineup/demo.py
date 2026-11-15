@@ -17,6 +17,7 @@ from scry_core.games import lineup
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
+    NORMAL_CORE,
     RETRACE_STOP,
     VOLATILE,
     checkout,
@@ -50,9 +51,6 @@ SOUND = Path("win32", "music.wav") if sys.platform == "win32" else Path("music.w
 #: `_lineup_run` (MAIN.ASM). Neither DOS's boot nor the input stub asks it, so the first stop there
 #: is inside the loaded game, and that stop places its map.
 GAME_LOADED = {"number": "0x21", "ah": "0x62"}
-#: The normal core: the dynamic one the game's conf keeps can pass a code breakpoint over, and
-#: the script's waits judge the screen at the game's own tick.
-NORMAL_CORE = ["-set", "cpu core=normal"]
 #: The reader's copy of the game is where this host keeps things; the replies that name it are
 #: hidden in the transcript.
 VOLATILE_GAME = {**VOLATILE,

@@ -12,6 +12,7 @@ import pytest
 from scry_core.demo import Reply, Run, StepFailed
 from scry_core.games import lineup
 
+from demos.host import NORMAL_CORE
 from demos.lineup import demo
 
 
@@ -51,7 +52,7 @@ def test_the_game_s_own_script_derives_the_conf_the_profile_names(tmp_path: Path
     game = _game(tmp_path / "game")
     args = demo.boot(Run(dir=tmp_path, options={"cwd": str(game)}))
     assert args == {"profile": str(game / demo.PROFILE), "shared": True, "background": True,
-                    "display": 0, "flags": demo.NORMAL_CORE,
+                    "display": 0, "flags": NORMAL_CORE,
                     "captures_dir": str(tmp_path / "lineup-captures")}
     assert (game / "TMP" / "dosbox-x-mcp.conf").is_file()
 

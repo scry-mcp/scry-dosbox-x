@@ -9,13 +9,17 @@ the conf with its boot line removed, and the E9 log the build writes. The call g
 the run's own, and the reply says which keys the recipe filled.
 
 It then reads the program's own log for the line that says the song sounds, pauses it with a key
-the program logs by name, stops the machine for a picture, and leaves the program by its own
-keys, the confirm's answer read off the log, before closing the session.
+the program logs by name, rewinds the paused song to its first row, and waits for two of the
+reports the program writes each second, so the playhead has caught up with the rewind. It stops
+the machine inside the program, where its symbols are placed, and takes its picture on the first
+dark frame of the warning button's pulse. It then leaves the program by its own keys, the
+confirm's answer read off the log, before closing the session.
 
 ## The program
 
-ReChip! is not distributed with this repository. The demo needs a checkout of it after `make mcp-conf`, which builds `RECHIPD.EXE` and derives the conf; that
-checkout is what `--cwd` names.
+ReChip! is not distributed with this repository. The demo needs a checkout of it after `make
+mcp-conf`, which builds `RECHIPD.EXE` with its symbol table `RECHIPD.SYM` and derives the conf;
+that checkout is what `--cwd` names.
 
 ## Run it
 
@@ -40,27 +44,34 @@ relative path, a server that did not start, a loop that could not be converted).
 
 Give this to an MCP client with this server connected:
 
-> Start from the recipe `.scry/start/dev.json` in the `--cwd` checkout, with a window, and let
-> it run. Wait on the guest log for `PERF  . audio play=1`, press space and show me that the
-> program logged `key down SPACE`, wait for `ACT   . play=0`, stop, save a picture of the screen,
-> resume, press alt+x and wait for `ask opens`, press right then enter and wait for `ask res=1`,
-> and close.
+> Start from the recipe `.scry/start/dev.json` in the `--cwd` checkout, with a window, on the
+> normal core, with the symbols `build/RECHIPD.SYM`, and let it run. Wait on the guest log for
+> `PERF  . audio play=1`, press space and show me that the program logged `key down SPACE`,
+> wait for `ACT   . play=0`, press home and wait for `ACT   . rewind`. Then, twice, wait for the
+> next `PERF  . fps=` line written after the log's current end (its size, as `since_mark`).
+> Stop inside the program and read the 4 bytes of `_g_ticks` (the program's counter in 10 ms
+> ticks: the warning button is lit through each odd 400 ms of it), run to the middle of the next
+> lit 400 ms, load this repository's screen map `demos/rechip/rechip-screen-map.json` by its
+> absolute path, check the screen is `warning_lit`, wait for `warning_dark`, and save a picture
+> of the screen. Resume, press alt+x and wait for `ask opens`, press right then enter and wait
+> for `ask res=1`, and close.
 
 ## What it walks
 
 | Family | Calls |
 |---|---|
 | Session | `start` from the program's profile (windowed), `close` over a guest that quit |
-| Advance | `resume` to let the program run, `stop` to hold it for the picture |
+| Advance | `resume` to let the program run, `stop` inside the program, `run_for` into the pulse's lit half, `screen_wait` on its edge |
 | Log | `log_wait` on the program's own E9 lines |
 | Input | `send_keys` with `expect` on the line each key makes the program write |
+| Read | `read_memory` of the program's counter, `screen_map_write` (the warning button's two looks), `screen_map_find` |
 | Screen | `screen_view` |
 | Captures | `record` (the loop) |
 
 ## The transcript
 
 <!-- demo-transcript:begin -->
-The run is 12 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+The run is 20 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
 
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
@@ -74,6 +85,8 @@ The run is 12 calls; these are the ones that show how it is done, and every call
   "background": true,
   "display": "<host>",
   "profile": "<host>",
+  "symbols": "<host>",
+  "flags": ["-set", "cpu core=normal"],
   "captures_dir": "<host>",
   "cwd": "<host>"
 }
@@ -106,7 +119,11 @@ The run is 12 calls; these are the ones that show how it is done, and every call
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
-  "note": "this session runs the dynamic core, which checks breakpoints only between compiled blocks, so a code breakpoint inside one can be passed over and a run that never reaches it proves nothing. Start on the normal core: `start(flags=[\"-set\", \"cpu core=normal\"])`",
+  "symbols": {
+    "held": "<volatile>",
+    "base_from": "program",
+    "checked": {"against": "<volatile>", "agree": 3207}
+  },
   "kept": "kept 1 (promote to review)",
   "profile": {
     "name": "<volatile>",
@@ -194,7 +211,88 @@ The program's own log says when it is up and when the song sounds, two different
 
 </details>
 
-**11. `send_keys`**: OK confirm: Quit without saving
+**6. `send_keys`**: OK rewind: home put the song back at its first row
+
+Where the pause lands is the host's, so the still is not taken there: home rewinds the paused song to its first row and the program logs it.
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "keys": ["home"],
+  "expect": "ACT   \\. rewind",
+  "seconds": 10
+}
+```
+
+```json
+{
+  "summary": "send_keys (guest): effect seen",
+  "status": "ok",
+  "keys": ["home"],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 1,
+  "bytes": 4,
+  "frames": 4,
+  "verify": {
+    "checked": true,
+    "seen": true,
+    "expected": "ACT   \\. rewind",
+    "verdict": "TARGET",
+    "line": "<volatile>",
+    "seen_before_waiting": "<volatile>",
+    "lines_before": "<volatile>",
+    "waited_s": "<volatile>",
+    "lines_total": "<volatile>"
+  },
+  "session": {"alive": true, "running": true, "altered": false}
+}
+```
+
+</details>
+
+**14. `screen_wait`**: OK dark: the first frame it went dark
+
+The warning button pulses on the program's own counter, so the picture is taken on its edge: `read_memory` reads the counter, `run_for` goes to the middle of the next lit half, and `screen_wait` on the mapped dark look stops on its first frame.
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "screen": "warning_dark",
+  "seconds": 10
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "TARGET",
+  "predicate": "screen",
+  "already": false,
+  "waited_s": "<volatile>",
+  "polls": "<volatile>",
+  "sampled_every": 0,
+  "screen": {"name": "warning_dark", "layer": "file"},
+  "note": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**19. `send_keys`**: OK confirm: Quit without saving
 
 The program is left by its own keys, and its log says which button the confirm took, so the session closes over a guest that has quit rather than one killed under a running program.
 

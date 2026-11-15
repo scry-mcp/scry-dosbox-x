@@ -65,6 +65,10 @@ def isolated_store(demo: str) -> None:
     os.environ["XDG_STATE_HOME"] = store
 
 
+#: The normal core: the dynamic one can pass a code breakpoint over.
+NORMAL_CORE = ["-set", "cpu core=normal"]
+
+
 #: Counts an input step reports that depend on when the host delivered the input, not on what
 #: the game did with it.
 INPUT_TIMING = {key: "it depends on when the host delivered the input"
