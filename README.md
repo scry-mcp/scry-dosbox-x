@@ -246,7 +246,8 @@ at the logo's bar, the recording held to the reader's own disc. It needs the dis
 distributed here.
 
 [`demos/speedf/`](demos/speedf/) boots the PC *Speed Fight* from the run recipe its own repository
-declares in `.scry/start/dos.json`, lets its title and attract run and reads the credits by name.
+declares in `.scry/start/dos.json`, runs to the routine its title calls once drawn and reads the
+credits by name.
 
 [`demos/rechip/`](demos/rechip/) boots *ReChip!*'s DEV build from its own recipe and
 reads the program's log for what each key did, leaving it by its own keys. Each of the two needs a
@@ -256,9 +257,9 @@ checkout of its program, which is not distributed here.
 
 The tools by family, each with its arguments, its reply and a real example, are in the index
 at the top of [REFERENCE.md](REFERENCE.md). A tool's own description, delivered to your client
-at connection, is its contract. A file a tool writes, at a path you name or at one it picks, is
-named by [one rule](https://github.com/scry-mcp/scry-core/blob/main/docs/file-names.md), and a
-reply that carries its path names the file as written.
+at connection, is its contract. A file a tool writes at a path it picks is named by
+[one rule](https://github.com/scry-mcp/scry-core/blob/main/docs/file-names.md), one at a path you
+name keeps the name you gave, and a reply that carries its path names the file as written.
 
 ## Going further
 
