@@ -129,7 +129,7 @@ The breakpoint it created is removed on every outcome, because `BP` is persisten
 would silently stop the next `resume` at a place no declaration names; it looks the index up again,
 because `BPDEL` renumbers.
 
-**A dynamic core is said, not waited out in silence.** Its recompiled blocks run past a code breakpoint without checking it, so a `run_to` there could arrive at nothing and read as "never reached". `start` carries a `note` saying so when the conf's `[cpu] core=` or a `-set "cpu core=..."` flag selects it, and so do the replies of `run_to` and `breakpoint_at`, naming `start(flags=["-set", "cpu core=normal"])`. `auto` and `normal` are not noted.
+**A dynamic core is said, not waited out in silence.** Its recompiled blocks run past a code breakpoint without checking it, so a `run_to` there could arrive at nothing and read as "never reached". `start` carries a `note` saying so when the conf's `[cpu] core=` or a `-set "cpu core=..."` flag selects it, and so do the replies of `run_to` and `breakpoint_at`, naming `start(flags=["-set", "cpu core=normal"])`; `run_to` and `breakpoint_at` also note `auto`, whose protected-mode code runs on the dynamic core. `normal` is not noted.
 
 **A control turns a silence into a measurement.** A `TIMEOUT` with zero control hits is
 `control_silent`, not "it did not arrive": nothing was proved about the target, the shape of the
