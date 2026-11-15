@@ -12,6 +12,7 @@ from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import _names, clean_session  # noqa: F401
+from scry_core.reply_contract import unavailable
 
 from scry_dosbox_x import inputs, retrace, run_state, server, summaries, taps
 from scry_dosbox_x import session as ds
@@ -195,6 +196,23 @@ def test_a_mouse_summary_says_when_the_move_widened_the_drivers_range() -> None:
     assert "driver range widened to 2050 x 767" in summaries.send_mouse(args, reply)
     program.pop("range_widened")
     assert "widened" not in summaries.send_mouse(args, reply)
+
+
+@pytest.mark.parametrize(("program", "arrived", "line"), [
+    ({"x": 271, "y": 105, "corrections": 1}, True,
+     "send_mouse: program's pointer at 271,105, driver at 270,105;"),
+    ({"x": 271, "y": 105, "corrections": 1}, False,
+     "send_mouse: program's pointer at 271,105, NOT where asked, driver at 270,105;"),
+    ({"x": 270, "y": 105, "corrections": 0}, True, "send_mouse: program's pointer at 270,105;"),
+    (unavailable("the guest runs"), True, "send_mouse: pointer at 270,105;"),
+])
+def test_a_steered_mouse_summary_names_the_pointer_arrived_judged(
+        program: dict[str, Any], arrived: bool, line: str) -> None:
+    """`arrived` of a steered move is the program's pointer, so that is the place said first."""
+    reply: dict[str, Any] = {"pointer": {"screen": {"x": 270, "y": 105}, "program": program},
+                             "arrived": arrived, "verify": {"checked": False}}
+    got = summaries.send_mouse({"x": 271, "y": 105, "button": "left"}, reply)
+    assert got.startswith(line), got
 
 
 @pytest.mark.parametrize(("args", "said"), [

@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A steered `send_mouse` summary, inside `perform(summaries=true)` too, says "program's pointer
+  at" with the place `arrived` judged, and the driver's place beside it when the two differ,
+  where it said "pointer at" with the driver's place alone.
 - A steered `send_mouse` whose move leaves the guest in a mode this server does not map says
   so in `pointer.program` (unavailable, no ratio to nudge by), where the block was missing.
 - A steered `send_mouse` after a pointer move the steering did not send (`units="mouse"`, a

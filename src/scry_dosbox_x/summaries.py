@@ -469,16 +469,23 @@ def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:
     screen, mouse = pointer.get("screen"), pointer.get("mouse")
     at = (f"{screen['x']},{screen['y']}" if isinstance(screen, dict) and "x" in screen else
           f"{mouse['x']},{mouse['y']} (driver)" if isinstance(mouse, dict) else "unread")
+    program = pointer.get("program")
+    steered = isinstance(program, dict) and "x" in program
     arrived = ("" if reply.get("arrived", reply.get("driver_arrived", True))
                else ", NOT where asked")
+    if isinstance(program, dict) and steered:
+        # A steered move's `arrived` judges the program's pointer, so that is the place said.
+        seen = f"{program['x']},{program['y']}"
+        arrived += "" if seen == at else f", driver at {at}"
+        at = seen
     if "driver_arrived" in reply:
         arrived += ", program's own pointer not read"
     pressed = "" if args.get("button") or reply.get("button") else "; no button pressed"
-    program = pointer.get("program")
     widened = program.get("range_widened") if isinstance(program, dict) else None
     if isinstance(widened, dict):
         arrived += f", driver range widened to {widened['x']} x {widened['y']}"
-    return (f"send_mouse: pointer at {at}{arrived}{pressed}; "
+    whose = "program's pointer" if steered else "pointer"
+    return (f"send_mouse: {whose} at {at}{arrived}{pressed}; "
             f"{_effect(_block(reply, 'verify'), 'posted, unverified')}{_parked(reply)}")
 
 
