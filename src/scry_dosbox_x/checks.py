@@ -543,7 +543,6 @@ def _drive_arguments(act: list[dict[str, Any]], expect: str, seconds: float | No
 
 def _capture_frame(frame: int, dest: str, capture_path: str = "", **_: Any) -> None:
     ds.check_frame_args(frame, paths.absolute("dest", dest))
-    paths.named_dest("dest", dest)
     if capture_path:
         paths.absolute("capture_path", capture_path)
 
