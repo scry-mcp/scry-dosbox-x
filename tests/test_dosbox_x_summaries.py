@@ -84,3 +84,13 @@ def test_a_checked_table_says_what_it_was_checked_against() -> None:
     line = one_line.symbols_load({}, {"loaded": 3, "parsed": 3, "base": 0,
                                       "checked": {"against": "/a/b/prod.exe", "agree": 3}})
     assert line.endswith("checked against prod.exe"), line
+
+
+@pytest.mark.parametrize("running, said", [
+    (True, "running from 0008:1000"),
+    (False, "at 0008:1000, its survey cut"),
+    ({"available": False, "why": "unknown"}, "at 0008:1000, its survey cut")])
+def test_a_step_with_no_stop_says_running_only_when_the_session_knows_it(
+        running: object, said: str) -> None:
+    reply = {"after": "0008:1000", "instructions_completed": 3, "session": {"running": running}}
+    assert one_line.step({"count": 3}, reply).endswith(said)

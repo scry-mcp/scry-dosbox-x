@@ -231,7 +231,7 @@ def stop(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def step(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if "pc" in reply:
         where = f"at {_at(reply['pc'])}"
-    elif _block(reply, "session").get("running"):
+    elif _block(reply, "session").get("running") is True:
         where = f"running from {_at(reply.get('after'))}"
     else:
         where = f"at {_at(reply.get('after'))}, its survey cut"
