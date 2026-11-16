@@ -22,6 +22,7 @@ from dosbox_x_server_support import (  # noqa: F401
     install,
 )
 from scry_core import host_program
+from scry_core.file_names import written_as
 from scry_core.host_program import MODE_BITS
 from test_dosbox_x_code import pr32_machine
 from test_dosbox_x_running_table import _running
@@ -414,6 +415,7 @@ def test_save_writes_the_comment_file_sorted_whole(tmp_path: Path) -> None:
     got = ok(server.comment_write("save", dest=str(dest)))
     assert (got["path"], got["comments_total"], got["dropped_comments"], got["dropped_total"],
             got["truncated"]) == (str(dest), 2, [], 0, False)
+    assert "note" not in got, got
     lines = dest.read_text(encoding="utf-8").split("\n")
     assert lines[0] == cf.HEADER and lines[-1] == ""
     assert [ln.split("\t")[0] for ln in lines[1:-1]] == ["0814:0106", "start"]
@@ -421,13 +423,14 @@ def test_save_writes_the_comment_file_sorted_whole(tmp_path: Path) -> None:
     assert stat.S_IMODE(dest.stat().st_mode) == 0o644
 
 
-def test_save_writes_a_mixed_case_dest_under_the_name_given_and_says_so(
+def test_save_writes_a_mixed_case_dest_by_the_file_name_rule_and_says_so(
         tmp_path: Path) -> None:
     install()
     ok(server.comment_write("add", ref="0814:010B", text="x"))
     got = ok(server.comment_write("save", dest=str(tmp_path / "Probe.Comments.TSV")))
-    assert got["path"] == str(tmp_path / "Probe.Comments.TSV")
-    assert [p.name for p in tmp_path.iterdir()] == ["Probe.Comments.TSV"]
+    assert got["path"] == str(tmp_path / "probe-comments.tsv")
+    assert got["note"] == written_as("dest", str(tmp_path / "Probe.Comments.TSV")), got
+    assert [p.name for p in tmp_path.iterdir()] == ["probe-comments.tsv"]
 
 
 def test_an_empty_store_saves_the_header_alone(tmp_path: Path) -> None:

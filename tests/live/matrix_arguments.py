@@ -133,7 +133,7 @@ NO_MACHINE_NEEDED: tuple[tuple[str, dict[str, Any]], ...] = (
                                                                            "operator": "?"}),
     ("scan", {"method": "start", "ref": "0000:0400", "length": 3, "cell_bytes": 2}),
     ("set_register", {"name": "ax", "value": 0x10000}), ("resume", {"seconds": -1}),
-    ("capture_frame", {"frame": 0, "dest": absolute("x", "s%03d.png")}),
+    ("capture_frame", {"frame": 0, "dest": absolute("x%03d", "s.png")}),
     ("run_to", {"ref": "0000:0100", "control": ""}),
     ("breakpoint_at", {"ref": "[g_p]", "by": "pointer"}),
     ("perform", {"steps": [{"op": "nope"}]}), ("drive", {"act": [], "limit": 0}))

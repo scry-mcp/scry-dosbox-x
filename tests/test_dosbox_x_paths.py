@@ -14,12 +14,13 @@ import fold_calls
 import pytest
 from dosbox_x_server_support import clean_session, install, stub_build  # noqa: F401
 from scry_core import judges
+from scry_core.file_names import written_as
 from scry_core.host_program import MODE_BITS
 from scry_core.host_program import absolute as _abs
 from test_dosbox_x_dump import debugger
 
+from scry_dosbox_x import checks, paths, placement, server
 from scry_dosbox_x import launch as dlaunch
-from scry_dosbox_x import paths, placement, server
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
 
@@ -105,20 +106,9 @@ def test_a_fresh_dest_has_its_directory_and_nothing_at_it(tmp_path: Path) -> Non
     assert there.read_bytes() == b"mine" and dangling.is_symlink()
 
 
-def test_a_named_dest_keeps_the_name_the_caller_gave_and_still_refuses_a_taken_one(
-        tmp_path: Path) -> None:
-    """`named_dest` is the path as the caller wrote it, not the file-name rule's: `Shot_1.PNG`
-    stays `Shot_1.PNG`; the fresh check still refuses a taken or unplaceable path."""
-    assert paths.named_dest("dest", str(tmp_path / "Shot_1.PNG")) == tmp_path / "Shot_1.PNG"
-    assert paths.fresh_named_dest("dest", str(tmp_path / "Shot_1.PNG")) == tmp_path / "Shot_1.PNG"
-    there = tmp_path / "there.bin"
-    there.write_bytes(b"mine")
-    for dest, words in ((there, "already exists"),
-                        (tmp_path / "missing" / "x.bin", "is not a directory")):
-        with pytest.raises(ds.Invalid, match=words) as e:
-            paths.fresh_named_dest("dest", str(dest))
-        assert e.value.code == "bad_argument"
-    assert there.read_bytes() == b"mine"
+def test_a_dest_is_written_by_the_file_name_rule(tmp_path: Path) -> None:
+    assert paths.dest_file("dest", str(tmp_path / "Shot_1.PNG")) == tmp_path / "shot-1.png"
+    assert paths.fresh_dest("dest", str(tmp_path / "Shot_1.PNG")) == tmp_path / "shot-1.png"
 
 
 def test_an_input_file_is_a_regular_file_there(tmp_path: Path) -> None:
@@ -249,6 +239,26 @@ def test_a_conf_that_is_not_there_is_refused_naming_it(tmp_path: Path) -> None:
     kw = _base("start", tmp_path)
     _refused(_start_stubbed(**{**kw, "conf": str(tmp_path / "absent.conf")}), "bad_argument",
              "conf")
+
+
+def test_start_answers_the_logfile_it_writes_and_notes_a_changed_name(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from dosbox_x_server_support import _start_on_a_booted_fake
+    renamed = _start_on_a_booted_fake(tmp_path, monkeypatch, logfile=str(tmp_path / "E9_Log.TXT"))
+    assert renamed["status"] == "ok" and renamed["logfile"] == str(tmp_path / "e9-log.txt"), renamed
+    assert written_as("logfile", str(tmp_path / "E9_Log.TXT")) in renamed["note"], renamed
+    server.close()
+    kept = _start_on_a_booted_fake(tmp_path, monkeypatch, logfile=str(tmp_path / "e9.log"))
+    assert kept["logfile"] == str(tmp_path / "e9.log") and "note" not in kept, kept
+    server.close()
+    assert "logfile" not in _start_on_a_booted_fake(tmp_path, monkeypatch)
+
+
+def test_capture_frames_check_refuses_a_dest_the_file_name_rule_cannot_hold() -> None:
+    with pytest.raises(ds.Invalid, match="no extension") as e:
+        checks.BY_OP["capture_frame"](frame=1, dest=_abs("out", "frame"))
+    assert e.value.code == "bad_argument"
+    checks.BY_OP["capture_frame"](frame=1, dest=_abs("out", "Frame_1.PNG"))
 
 
 def test_a_logfile_whose_directory_is_missing_or_that_is_a_directory_is_refused(

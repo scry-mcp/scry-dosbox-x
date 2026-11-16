@@ -228,7 +228,7 @@ BOUNDARY = boundary.Boundary(
 def tool(
     title: str, *, summary: one_line.Summary, read_only: bool = False, idempotent: bool = False,
     body_session: bool = False, on_cancel: cancel.OnCancel | None = None,
-    replay: recording.Replay | None = None,
+    replay: recording.Replay | None = None, names_file: str | None = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Register an MCP tool on this server's boundary (`scry_core.boundary.Boundary.tool`).
 
@@ -238,4 +238,5 @@ def tool(
     """
 
     return BOUNDARY.tool(title, summary=summary, read_only=read_only, idempotent=idempotent,
-                         body_session=body_session, on_cancel=on_cancel, replay=replay)
+                         body_session=body_session, on_cancel=on_cancel, replay=replay,
+                         names_file=names_file)

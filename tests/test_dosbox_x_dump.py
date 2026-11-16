@@ -21,6 +21,7 @@ from dosbox_x_server_support import (  # noqa: F401
     clean_session,
     install,
 )
+from scry_core.file_names import written_as
 from scry_core.host_program import MODE_BITS, POSIX_NAMES
 from test_dosbox_x_machine import Bench
 
@@ -341,18 +342,21 @@ def test_a_dest_whose_written_name_is_the_debuggers_own_file_is_refused(
 
 
 @pytest.mark.parametrize("length", [0x20, 0x20000], ids=["one command", "windowed"])
-def test_a_mixed_case_dest_is_written_under_the_name_given_and_the_reply_says_so(
+def test_a_mixed_case_dest_is_written_by_the_file_name_rule_and_the_note_says_so(
         tmp_path: Path, length: int) -> None:
     s = debugger(tmp_path)
     out = tmp_path / "out"
     out.mkdir()
-    got = dumped("0000:0000", length, out / "Dump_1.BIN")
-    assert got["status"] == "ok" and got["path"] == str(out / "Dump_1.BIN"), got
-    assert [p.name for p in out.iterdir()] == ["Dump_1.BIN"]
+    got = dumped("0000:0000", length, out / "Shot_1.PNG")
+    assert got["status"] == "ok" and got["path"] == str(out / "shot-1.png"), got
+    assert got["note"] == written_as("dest", str(out / "Shot_1.PNG")), got
+    assert [p.name for p in out.iterdir()] == ["shot-1.png"]
     typed = len(s.typed)
-    taken = dumped("0000:0000", length, out / "Dump_1.BIN")
+    taken = dumped("0000:0000", length, out / "Shot_1.PNG")
     assert taken["code"] == "bad_argument" and "already exists" in taken["message"], taken
-    assert len(s.typed) == typed and [p.name for p in out.iterdir()] == ["Dump_1.BIN"]
+    assert len(s.typed) == typed and [p.name for p in out.iterdir()] == ["shot-1.png"]
+    kept = dumped("0000:0000", length, out / "dump-2.bin")
+    assert kept["path"] == str(out / "dump-2.bin") and "note" not in kept, kept
 
 
 def test_a_range_past_ffff_ffff_is_refused_before_anything_is_typed(tmp_path: Path) -> None:

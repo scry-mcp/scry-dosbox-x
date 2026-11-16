@@ -25,6 +25,7 @@ import pytest
 from channel_double import REAL_STOP, Machine, Stop, session_over
 from dosbox_x_server_support import NO_SUCH_HOME, clean_session, documented, install  # noqa: F401
 from scry_core import png, screen_map
+from scry_core.file_names import written_as
 from scry_core.host_program import MODE_BITS
 from test_dosbox_x_machine import Bench, listing
 from test_dosbox_x_run_for import FRAME_MS
@@ -976,38 +977,41 @@ def test_a_snapshot_at_a_stop_writes_the_graphics_screen_from_video_memory(
 
 
 @pytest.mark.parametrize("tool", ["screen_view", "snapshot"])
-def test_a_dest_is_written_under_the_name_the_caller_gave(tmp_path: Path, tool: str) -> None:
-    """`dest` is honoured as the caller wrote it: `a_b.png` stays `a_b.png`,
-    and nothing of the name is rewritten; the reply's `path` is the name asked for."""
+def test_a_dest_is_written_by_the_file_name_rule_and_the_note_says_so(
+        tmp_path: Path, tool: str) -> None:
     screen_bench("screen-13h", tmp_path)
     out = tmp_path / "out"
     out.mkdir()
 
     def write(name: str) -> dict[str, Any]:
         return cast(dict[str, Any], getattr(server, tool)(dest=str(out / name)))
-    r = write("a_b.png")
-    assert r["status"] == "ok", r
-    assert (r["path"] if tool == "snapshot" else r["image"]["path"]) == str(out / "a_b.png")
-    kept = write("Shot_1.PNG")
-    assert kept["status"] == "ok", kept
-    assert (kept["path"] if tool == "snapshot" else kept["image"]["path"]) == str(
-        out / "Shot_1.PNG")
+
+    def path(r: dict[str, Any]) -> str:
+        return str(r["path"] if tool == "snapshot" else r["image"]["path"])
+    renamed = write("Shot_1.PNG")
+    assert renamed["status"] == "ok" and path(renamed) == str(out / "shot-1.png"), renamed
+    assert renamed["note"] == written_as("dest", str(out / "Shot_1.PNG")), renamed
+    kept = write("a-b.png")
+    assert path(kept) == str(out / "a-b.png") and "note" not in kept, kept
     bare = write("shot")
-    assert bare["status"] == "ok", bare
-    assert (bare["path"] if tool == "snapshot" else bare["image"]["path"]) == str(out / "shot")
-    again = write("a_b.png")
+    assert bare["code"] == "bad_argument" and "no extension" in bare["message"], bare
+    again = write("shot-1.png")
     assert again["code"] == "bad_argument" and "already exists" in again["message"], again
-    assert sorted(p.name for p in out.iterdir()) == ["Shot_1.PNG", "a_b.png", "shot"]
+    assert sorted(p.name for p in out.iterdir()) == ["a-b.png", "shot-1.png"]
 
 
-def test_palette_writes_its_dest_under_the_name_the_caller_gave(tmp_path: Path) -> None:
+def test_palette_writes_its_dest_by_the_file_name_rule_and_the_note_says_so(
+        tmp_path: Path) -> None:
     screen_bench("screen-13h", tmp_path)
     out = tmp_path / "out"
     out.mkdir()
     r = cast(dict[str, Any], server.palette(dest=str(out / "Shot_1.PNG")))
     assert r["status"] == "ok", r
-    assert r["image"]["path"] == str(out / "Shot_1.PNG")
-    assert [p.name for p in out.iterdir()] == ["Shot_1.PNG"]
+    assert r["image"]["path"] == str(out / "shot-1.png")
+    assert r["note"] == written_as("dest", str(out / "Shot_1.PNG")), r
+    assert [p.name for p in out.iterdir()] == ["shot-1.png"]
+    kept = cast(dict[str, Any], server.palette(dest=str(out / "dac.png")))
+    assert kept["image"]["path"] == str(out / "dac.png") and "note" not in kept, kept
 
 
 def test_a_snapshot_at_a_stop_in_a_text_mode_is_refused_naming_screen_view(

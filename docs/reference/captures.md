@@ -104,8 +104,8 @@ capture_frame(frame, dest, capture_path="")
 ```
 
 Frame `frame` of a capture written to `dest` as PNG; `capture_path` defaults to the
-largest. Needs `ffmpeg`, `capture_video`. Refused: `%` in or existing `dest`, a frame
-past the end.
+largest. Needs `ffmpeg`, `capture_video`. Refused: `%` in `dest`'s directories, an existing
+`dest`, a frame past the end.
 
 Reply: `path`, `bytes`, `sha256`, `capture_path`, `frame`.
 
@@ -146,7 +146,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end capture_frame -->
 
-**The still is always a PNG, whatever `dest` is called**: inferring the encoder from the extension hands back a frameless video container as a still (ffmpeg exits 0 for a frame past the end of a `.mp4` destination). A `%` anywhere in `dest`, parent directories included, is refused because the image muxer reads the whole path as a numbering template; the refusal is broader than the hazard because that direction fails loudly and the other silently.
+**The still is always a PNG, whatever `dest` is called**: inferring the encoder from the extension hands back a frameless video container as a still (ffmpeg exits 0 for a frame past the end of a `.mp4` destination). A `%` in a directory of `dest` is refused because the image muxer reads the whole path as a numbering template, and the file's own name never carries one, since the rule of file names writes it out; the refusal is broader than the hazard because that direction fails loudly and the other silently.
 
 <!-- scry-reference:begin series_capture -->
 ## `series_capture`
@@ -231,12 +231,11 @@ The frames are the AVI's own, not emulated frames, because the file is what is r
 snapshot(dest="", seconds=10.0)
 ```
 
-A still of the screen as a PNG, at `dest` if given (absolute, new, written under the name
-you gave it). Running: taken in the guest into the captures directory within `seconds`
-(`route` `guest`; `wait_expired` when none appears); refused with no `logfile` or no stub in
-the log. At a stop: written from video memory through `screen_view`'s decoder (`route`
-`video_memory`), unscaled, without running the machine; a text mode is refused
-(`no_channel`), and `seconds` is not used.
+A still of the screen as a PNG, at `dest` if given (absolute, new). Running: taken in the
+guest into the captures directory within `seconds` (`route` `guest`; `wait_expired` when none
+appears); refused with no `logfile` or no stub in the log. At a stop: written from video
+memory through `screen_view`'s decoder (`route` `video_memory`), unscaled, without running
+the machine; a text mode is refused (`no_channel`), and `seconds` is not used.
 
 Reply: `route`, `path`, `bytes`, `sha256`.
 

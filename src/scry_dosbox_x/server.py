@@ -189,7 +189,7 @@ def build_check(binary: str = "") -> dict[str, Any]:
 
 # ---------------------------------------------------------- session: start, status, close
 
-@tool("Start a DOSBox-X session", summary=one_line.start, on_cancel="kill")
+@tool("Start a DOSBox-X session", summary=one_line.start, on_cancel="kill", names_file="logfile")
 def start(conf: str = "", cwd: str = "",
           session_seconds: Annotated[int, vocab.bounds(1, dlaunch.MAX_SECONDS)] | None = None,
           shared: bool = False, display: int | None = None, fullscreen: bool | None = None,
@@ -265,13 +265,13 @@ def start(conf: str = "", cwd: str = "",
     {GUEST_FILES_MAX}, or a session already live (`session_live`).
 
     Reply: `pid`, `stub`, `window` (`display`, `bounds`, `onscreen`, `front`, `fullscreen`, with
-    `shared`), `input_port`, `declarations` (`rearm`), `dos_calls`, `log_categories`,
-    `guest_files` (each when asked for: the trace's path, the categories set, each file as it was
-    before the boot), `symbols` (`held`, `base_from`, `checked`), and with a profile `profile`
-    (`name`, `file`, `supplied`); with `plan`, these facts sit
-    under `start` beside the plan's account. `note` when the conf or `flags` select a dynamic
-    cpu core, which
-    can pass over code breakpoints: start on `flags=["-set", "cpu core=normal"]`.
+    `shared`), `input_port`, `declarations` (`rearm`), `logfile`, `dos_calls`, `log_categories`,
+    `guest_files` (each when asked for: the log's path as written, the trace's path, the
+    categories set, each file as it was before the boot), `symbols` (`held`, `base_from`,
+    `checked`), and with a profile `profile` (`name`, `file`, `supplied`); with `plan`, these
+    facts sit under `start` beside the plan's account. `note` when the conf or `flags` select a
+    dynamic cpu core, which can pass over code breakpoints: start on
+    `flags=["-set", "cpu core=normal"]`.
 
     Reference: REFERENCE.md, The session.
     """
@@ -531,7 +531,7 @@ def call_stack() -> dict[str, Any]:
     return st.reply(**code.call_stack(live()))
 
 
-@tool("Dump memory to a file", summary=one_line.memdump, replay="drop")
+@tool("Dump memory to a file", summary=one_line.memdump, replay="drop", names_file="dest")
 def memdump(ref: str, length: int, dest: str) -> dict[str, Any]:
     """`length` bytes from `ref` (a symbol or `SEG:OFF`) to the new file `dest` (absolute).
 
@@ -542,7 +542,7 @@ def memdump(ref: str, length: int, dest: str) -> dict[str, Any]:
     session = live()
     session.require_stopped("a dump")
     seg, off = placement.read_target(ref, "DS", session)
-    dumped = dumping.dump_range(session, seg, off, length, paths.named_dest("dest", dest))
+    dumped = dumping.dump_range(session, seg, off, length, paths.dest_file("dest", dest))
     return st.reply(ref=ref, seg_off=st.seg_off(seg, off), length=length, path=str(dumped.path),
                     bytes=dumped.path.stat().st_size)
 
@@ -894,7 +894,7 @@ def run_for(milliseconds: int = 0, frames: int = 0,
     return retrace.run_for(session, frames, milliseconds, seconds, bridge(ctx))
 
 
-@tool("Trace what a run executes", summary=one_line.trace, on_cancel="stop")
+@tool("Trace what a run executes", summary=one_line.trace, on_cancel="stop", names_file="dest")
 def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)],
           shape: Annotated[str, vocab.enum(tracing.SHAPE_WORDS)] = "normal", dest: str = "",
           seconds: Annotated[float, vocab.WAIT_BOUNDS] = 60.0,
@@ -916,7 +916,7 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
     """
     session = live()
     return tracing.trace(session, instructions, shape,
-                         paths.named_dest("dest", dest) if dest else None, seconds, bridge(ctx))
+                         paths.dest_file("dest", dest) if dest else None, seconds, bridge(ctx))
 
 
 @tool("Wait for a screen, its text or its palette", summary=one_line.screen_wait,
@@ -969,22 +969,22 @@ def screen_wait(text: str = "", screen: str = "", palette: str = "", changed: bo
 
 
 
-@tool("Snapshot the screen to a PNG", summary=one_line.snapshot, on_cancel="none", replay="drop")
+@tool("Snapshot the screen to a PNG", summary=one_line.snapshot, on_cancel="none", replay="drop",
+      names_file="dest")
 def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.SNAPSHOT_WAIT_S,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """A still of the screen as a PNG, at `dest` if given (absolute, new, written under the name
-    you gave it). Running: taken in the guest into the captures directory within `seconds`
-    (`route` `guest`; `wait_expired` when none appears); refused with no `logfile` or no stub in
-    the log. At a stop: written from video memory through `screen_view`'s decoder (`route`
-    `video_memory`), unscaled, without running the machine; a text mode is refused
-    (`no_channel`), and `seconds` is not used.
+    """A still of the screen as a PNG, at `dest` if given (absolute, new). Running: taken in the
+    guest into the captures directory within `seconds` (`route` `guest`; `wait_expired` when none
+    appears); refused with no `logfile` or no stub in the log. At a stop: written from video
+    memory through `screen_view`'s decoder (`route` `video_memory`), unscaled, without running
+    the machine; a text mode is refused (`no_channel`), and `seconds` is not used.
 
     Reply: `route`, `path`, `bytes`, `sha256`.
     """
     session = live()
     if session.at_debugger():
         vocab.check_wait(seconds)
-        return st.answer(screen.still(session, paths.named_dest("dest", dest) if dest else None))
+        return st.answer(screen.still(session, paths.dest_file("dest", dest) if dest else None))
     if session.launch.logfile is None:
         # `S` IS ALSO THE DELETE KEY'S SCAN CODE: an older stub would press it, and with no log
         # there is no announce to tell the two apart.
@@ -992,11 +992,11 @@ def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.S
             "snapshot needs the guest's E9 log to see which stub is resident (its command is "
             "a scan code to an older one): start the session with logfile=")
     inputs.require_stub(session)
-    return st.answer(session.snapshot(paths.named_dest("dest", dest) if dest else None, seconds,
+    return st.answer(session.snapshot(paths.dest_file("dest", dest) if dest else None, seconds,
                                       bridge(ctx)))
 
 
-@tool("Record frames to an AVI", summary=one_line.record, on_cancel="stop")
+@tool("Record frames to an AVI", summary=one_line.record, on_cancel="stop", names_file="dest")
 def record(frames: int, dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = 60.0,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Record exactly `frames` retraces of the screen to an AVI, then stop. Needs the machine
@@ -1018,11 +1018,12 @@ def record(frames: int, dest: str = "", seconds: Annotated[float, vocab.WAIT_BOU
     """
     session = live()
     return recordings.recording(session, "record", recordings.VIDEO, frames,
-                                paths.named_dest("dest", dest) if dest
+                                paths.dest_file("dest", dest) if dest
                                 else recordings.scratch_dest(), seconds, bridge(ctx))
 
 
-@tool("Record the sound to a file", summary=one_line.audio_record, on_cancel="stop")
+@tool("Record the sound to a file", summary=one_line.audio_record, on_cancel="stop",
+      names_file="dest")
 def audio_record(frames: int, dest: str = "",
                  seconds: Annotated[float, vocab.WAIT_BOUNDS] = 60.0,
                  kind: Annotated[str, vocab.enum(tuple(capture_files.AUDIO_KINDS))] = "wav",
@@ -1052,7 +1053,7 @@ def audio_record(frames: int, dest: str = "",
     """
     session = live()
     return recordings.recording(session, "audio_record", capture_files.AUDIO_KINDS[kind],
-                                frames, paths.named_dest("dest", dest) if dest else None, seconds,
+                                frames, paths.dest_file("dest", dest) if dest else None, seconds,
                                 bridge(ctx))
 
 
@@ -1213,7 +1214,7 @@ def comment_list() -> dict[str, Any]:
 
 
 @tool("Write the comments", summary=methods.fold_line("comment_write", folds.COMMENT),
-      replay="drop")
+      replay="drop", names_file="dest")
 def comment_write(method: Annotated[str, vocab.enum(tuple(folds.COMMENT))], ref: str = "",
                   text: str = "", dest: str = "", path: str = "") -> dict[str, Any]:
     """Change this conf's comments.
@@ -1243,7 +1244,7 @@ def comment_write(method: Annotated[str, vocab.enum(tuple(folds.COMMENT))], ref:
 
 # ---------------------------------------------------------------------- the DOS machine
 
-@tool("Map the machine", summary=one_line.machine_map, replay="drop")
+@tool("Map the machine", summary=one_line.machine_map, replay="drop", names_file="dest")
 def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]] | None = None,
                 dest: str = "") -> dict[str, Any]:
     """What the DOS machine is at this stop: one section per debugger listing. `sections` left
@@ -1307,7 +1308,7 @@ def interrupt_vectors(number: judges.NumberArg | None = None) -> dict[str, Any]:
 
 # ------------------------------------------------------------------------ the screen
 
-@tool("Read the palette", summary=one_line.palette, replay="drop")
+@tool("Read the palette", summary=one_line.palette, replay="drop", names_file="dest")
 def palette(first: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES - 1)] | str = 0,
             count: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES)] = 0, scale: int = 0,
             dest: str = "") -> dict[str, Any]:
@@ -1328,11 +1329,11 @@ def palette(first: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES - 1)] | str
     session = live()
     session.require_stopped("a listing")
     return st.reply(**vgadac.palette(session, checks.number("first", first), count, scale,
-                                     paths.named_dest("dest", dest) if dest else None,
+                                     paths.dest_file("dest", dest) if dest else None,
                                      STATE.session_scratch()))
 
 
-@tool("Read the screen", summary=one_line.screen_view, replay="drop")
+@tool("Read the screen", summary=one_line.screen_view, replay="drop", names_file="dest")
 def screen_view(mode: Annotated[str, vocab.enum(by_pens.MODES)] = "render",
                 pens: list[int] | None = None, point: list[int] | None = None,
                 crop: list[int] | None = None, scale: int = 0,
@@ -1344,8 +1345,7 @@ def screen_view(mode: Annotated[str, vocab.enum(by_pens.MODES)] = "render",
     `[x, y]`); the last three read a palette-indexed graphics mode, where a pen is the DAC entry
     a pixel holds, and no `set_by` is answered. `crop` is `[x, y, width, height]` in characters
     or pixels and narrows all but `pixel`. `scale` 0 fits the largest up to 8x; `dest` a new
-    path (else a scratch), written under the name you gave it; `attach` false leaves it
-    unattached.
+    path (else a scratch); `attach` false leaves it unattached.
 
     Reply: `mode`, `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `text`,
     `cursor`; in graphics `screen_indexed`, `entries` (indexed) and `image` (not for mode
@@ -1364,7 +1364,7 @@ def screen_view(mode: Annotated[str, vocab.enum(by_pens.MODES)] = "render",
     session = live()
     session.require_stopped("a listing")
     return st.reply(**screen.screen_view(session, crop, scale,
-                                         paths.named_dest("dest", dest) if dest else None,
+                                         paths.dest_file("dest", dest) if dest else None,
                                          STATE.session_scratch(), attach, mode, pens, point))
 
 
@@ -1406,7 +1406,8 @@ def screen_map_find() -> dict[str, Any]:
 
 
 @tool("Write the screen map", summary=methods.fold_line("screen_map_write", folds.MAP),
-      replay={"add": "step", "load": "step", "pointer": "step", "save": "drop"})
+      replay={"add": "step", "load": "step", "pointer": "step", "save": "drop"},
+      names_file="dest")
 def screen_map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], screen: str = "",
               match: list[list[int]] | None = None, controls: list[dict[str, Any]] | None = None,
               cells: Annotated[str, vocab.enum(screen_map.CELLS_WORDS)] = "",
@@ -1690,16 +1691,16 @@ def captures() -> dict[str, Any]:
     return caps.captures(live())
 
 
-@tool("Extract a frame to a file", summary=one_line.capture_frame, replay="drop")
+@tool("Extract a frame to a file", summary=one_line.capture_frame, replay="drop", names_file="dest")
 def capture_frame(frame: int, dest: str, capture_path: str = "") -> dict[str, Any]:
     """Frame `frame` of a capture written to `dest` as PNG; `capture_path` defaults to the
-    largest. Needs `ffmpeg`, `capture_video`. Refused: `%` in or existing `dest`, a frame
-    past the end.
+    largest. Needs `ffmpeg`, `capture_video`. Refused: `%` in `dest`'s directories, an existing
+    `dest`, a frame past the end.
 
     Reply: `path`, `bytes`, `sha256`, `capture_path`, `frame`.
     """
     session = live()
-    return caps.capture_frame(session, frame, paths.named_dest("dest", dest),
+    return caps.capture_frame(session, frame, paths.dest_file("dest", dest),
                               judges.existing_file("capture_path", capture_path, "capture")
                               if capture_path else None)
 
@@ -1716,7 +1717,7 @@ def _step_ops() -> dict[str, Callable[..., dict[str, Any]]]:
 checks.take_step_ops(_step_ops)
 
 
-@tool("Export the session as a replay", summary=recording.export_summary)
+@tool("Export the session as a replay", summary=recording.export_summary, names_file="dest")
 def perform_export(dest: str, overwrite: bool = False) -> dict[str, Any]:
     """Write the session's calls since `start` to `dest` as a `perform` document.
 

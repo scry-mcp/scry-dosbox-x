@@ -124,7 +124,7 @@ def number(name: str, value: object) -> int:
 
 
 def check_save_comments(dest: object, **_: Any) -> None:
-    paths.named_dest("dest", dest)
+    paths.dest_file("dest", dest)
 
 
 def check_load_comments(path: object, **_: Any) -> None:
@@ -258,9 +258,9 @@ RUN_FOR_MS_MAX = 2 ** 53
 
 
 def optional_dest(dest: object) -> None:
-    """A file `dest` kept under the name the caller gave; empty means the scratch's."""
+    """A file `dest`, named by the file-name rule; empty means the scratch's."""
     if dest != "":
-        paths.named_dest("dest", dest)
+        paths.dest_file("dest", dest)
 
 
 def _file_and_wait(dest: object, seconds: object) -> None:
@@ -407,7 +407,7 @@ def _disassemble(ref: str, length: int = 16, **_: Any) -> None:
 def _memdump(ref: str, length: int, dest: str, **_: Any) -> None:
     address_shape(ref)
     ds.check_dump_length(length)
-    paths.named_dest("dest", dest)
+    paths.dest_file("dest", dest)
 
 
 def _write(ref: str, data_hex: str, **_: Any) -> None:
@@ -542,7 +542,7 @@ def _drive_arguments(act: list[dict[str, Any]], expect: str, seconds: float | No
 
 
 def _capture_frame(frame: int, dest: str, capture_path: str = "", **_: Any) -> None:
-    ds.check_frame_args(frame, paths.absolute("dest", dest))
+    ds.check_frame_args(frame, paths.dest_file("dest", dest))
     if capture_path:
         paths.absolute("capture_path", capture_path)
 

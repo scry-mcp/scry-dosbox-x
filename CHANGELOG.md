@@ -4,6 +4,13 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A file written at a path you name (`dest` of `memdump`, `trace`, `snapshot`, `record`,
+  `audio_record`, `comment_write`, `palette`, `screen_view` and `capture_frame`) takes the name
+  every file the server writes takes, lowercase words joined by hyphens with one extension:
+  `Shot_1.PNG` is written as `shot-1.png`, and a name with no extension is refused before the
+  machine is asked. The reply's path names the file written, and its `note` says so whenever
+  the name is not the one you gave, on these tools and on `machine_map`, `screen_map_write`,
+  `perform_export` and `start`'s `logfile`. `start` answers `logfile` when given one.
 - scry-core 0.114.0 pinned: it words the one sentence a reply's `note` gives when a file is
   written under another name than the one given.
 - scry-core 0.113.0 pinned: on the Mac a window placed to fit a display's usable area sees a
@@ -30,8 +37,6 @@ What a client of the server notices.
   where it was kept as a new map of the current `start`'s repository.
 - `window`'s `front` is said as it is computed: on screen, with no other application's
   window over its centre.
-- `trace` with a `dest` that has no extension writes its set file beside it, named from the
-  stem, where it refused the call after the gate in words about a name with no letters.
 - After a release no answer confirmed, a reply on a channel silent through a long host call
   waits the channel's bound once, where its `session` block asked `RUNSTATE` again and
   waited a second bound; a `step` with no stop says it is running only when it is.

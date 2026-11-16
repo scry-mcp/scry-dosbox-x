@@ -10,6 +10,7 @@ from collections.abc import Iterator
 
 import pytest
 from scry_core import recording
+from scry_core.file_names import written_as
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
@@ -47,6 +48,10 @@ def test_a_session_on_the_double_is_exported_as_steps_checks_and_named_drops(
     server.comment_write("add", ref="F000:0000", text="the entry")
     out = server.perform_export(dest=str(tmp_path / "s.json"))
     assert out["status"] == "ok" and out["cut"]["available"] is False, out
+    assert "note" not in out, out
+    renamed = server.perform_export(dest=str(tmp_path / "Run_1.JSON"))
+    assert renamed["path"] == str(tmp_path / "run-1.json"), renamed
+    assert renamed["note"] == written_as("dest", str(tmp_path / "Run_1.JSON")), renamed
     doc = json.loads((tmp_path / "s.json").read_text())
     assert doc["server"] == "dosbox-x" and doc["start"] == {"conf": "/x.conf"}
     assert [step["op"] for step in doc["steps"]] == ["write", "registers"]

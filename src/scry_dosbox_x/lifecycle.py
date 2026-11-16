@@ -240,6 +240,8 @@ def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
     commands: dict[str, Any] = ({"debugger_commands": sorted(session.commands)}
                                 if session.commands else {})
     channels: dict[str, Any] = {}
+    if launch.logfile is not None:
+        channels["logfile"] = str(launch.logfile)
     if STATE.dos_calls is not None:
         channels["dos_calls"] = str(STATE.dos_calls.path)
     if launch.log_categories:

@@ -20,6 +20,7 @@ from typing import Any, cast
 import pytest
 from channel_double import NOT_RECOGNIZED, Machine, Stop, protected, session_over
 from dosbox_x_server_support import clean_session, install, runnable  # noqa: F401
+from scry_core.file_names import written_as
 from scry_core.host_program import MODE_BITS
 
 from scry_dosbox_x import (
@@ -342,7 +343,7 @@ def test_sixteen_instructions_ask_seventeen_lines_in_hex_and_come_back_elapsed(
     assert got["summary"].startswith("trace 16 cs_ip: ELAPSED, 16 executed at 1 address")
 
 
-def test_a_mixed_case_dest_is_written_under_the_name_given_with_a_set_file_from_its_whole_name(
+def test_a_mixed_case_dest_is_written_by_the_file_name_rule_with_a_set_file_from_its_whole_name(
         tmp_path: Path) -> None:
     settle(tmp_path)
     out = tmp_path / "out"
@@ -351,14 +352,17 @@ def test_a_mixed_case_dest_is_written_under_the_name_given_with_a_set_file_from_
                                             dest=str(out / "Run_1.LOG")))
     assert got["status"] == "ok", got
     assert (got["trace"]["path"], got["trace"]["set_path"]) == (
-        str(out / "Run_1.LOG"), str(out / "run-1-log-set.jsonl")), got["trace"]
-    assert sorted(p.name for p in out.iterdir()) == ["Run_1.LOG", "run-1-log-set.jsonl"]
+        str(out / "run-1.log"), str(out / "run-1-log-set.jsonl")), got["trace"]
+    assert got["note"] == written_as("dest", str(out / "Run_1.LOG")), got
+    assert sorted(p.name for p in out.iterdir()) == ["run-1-log-set.jsonl", "run-1.log"]
     assert tracing.set_path(out / "run-1.trace") != tracing.set_path(out / "run-1.log")
 
 
-def test_a_dest_with_no_extension_has_a_set_file_from_its_stem(tmp_path: Path) -> None:
-    """A caller's name is honoured as given, so one without an extension is a trace too."""
-    assert tracing.set_path(tmp_path / "My_Trace") == tmp_path / "my-trace-set.jsonl"
+def test_a_dest_already_in_the_rule_is_written_as_given_and_says_nothing(tmp_path: Path) -> None:
+    settle(tmp_path)
+    got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
+                                            dest=str(tmp_path / "run-2.trace")))
+    assert got["trace"]["path"] == str(tmp_path / "run-2.trace") and "note" not in got, got
 
 
 def test_the_default_shape_is_the_familys_bare_command(tmp_path: Path) -> None:

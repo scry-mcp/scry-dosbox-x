@@ -908,7 +908,7 @@ class Session(dprocess.Process):
         """One still of the RUNNING screen, taken INSIDE the guest."""
         vocab.check_wait(seconds)
         folder = frames.folder(self)
-        target = None if dest is None else paths.fresh_named_dest("dest", dest)
+        target = None if dest is None else paths.fresh_dest("dest", dest)
         refuse_parked_snapshot(self)
         before = set(folder.glob("*.png")) if folder.is_dir() else set()
         self.send_commands([SCREENSHOT_COMMAND])
@@ -1036,7 +1036,7 @@ def _dumped(session: Session, command: str, length: int, dest: Path,
     # the next call.
     dcollect.judge_collection(dest, session.launch.cwd, candidates, "dump")
     dcollect.refuse_leftover(candidates, "dump")
-    dest = paths.fresh_named_dest("dest", dest)
+    dest = paths.fresh_dest("dest", dest)
     # EVERY REFUSAL FROM THE COMMAND ON TAKES THIS CALL'S FILE AWAY.
     try:
         out = session.command(command)

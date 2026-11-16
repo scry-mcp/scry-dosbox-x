@@ -14,6 +14,7 @@ from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: F401
+from scry_core.file_names import written_as
 
 from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import machine, server
@@ -452,6 +453,18 @@ def test_without_a_logfile_machine_map_reads_its_listings_all_the_same(tmp_path:
     r = cast(dict[str, Any], server.machine_map())
     assert r["status"] == "ok" and r["mcbs"], r
     assert "logfile" not in r["coverage_note"] and "DOS MCBS" in s.asked
+
+
+@pytest.mark.parametrize(("given", "written"), [("Map_1.JSON", "map-1.json"),
+                                                ("map-2.json", "map-2.json")])
+def test_a_dest_is_written_by_the_file_name_rule_and_a_changed_name_is_noted(
+        tmp_path: Path, given: str, written: str) -> None:
+    s = Bench("probe-booted", None)
+    install()
+    dstate.STATE.session = cast(ds.Session, s)
+    r = cast(dict[str, Any], server.machine_map(sections=["mcbs"], dest=str(tmp_path / given)))
+    assert r["status"] == "ok" and r["path"] == str(tmp_path / written), r
+    assert r.get("note") == written_as("dest", str(tmp_path / given)), r
 
 
 def test_a_running_guest_is_refused_not_stopped(tmp_path: Path) -> None:

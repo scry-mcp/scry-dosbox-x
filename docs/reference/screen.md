@@ -97,8 +97,7 @@ in `isolate_color` over grey), `histogram` (pens used, no picture), `pixel` (`po
 `[x, y]`); the last three read a palette-indexed graphics mode, where a pen is the DAC entry
 a pixel holds, and no `set_by` is answered. `crop` is `[x, y, width, height]` in characters
 or pixels and narrows all but `pixel`. `scale` 0 fits the largest up to 8x; `dest` a new
-path (else a scratch), written under the name you gave it; `attach` false leaves it
-unattached.
+path (else a scratch); `attach` false leaves it unattached.
 
 Reply: `mode`, `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `text`,
 `cursor`; in graphics `screen_indexed`, `entries` (indexed) and `image` (not for mode

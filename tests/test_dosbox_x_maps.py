@@ -11,6 +11,7 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 from scry_core import screen_map
+from scry_core.file_names import written_as
 from test_dosbox_x_screen import screen_bench
 
 from scry_dosbox_x import inputs, server
@@ -79,12 +80,23 @@ def test_saved_screens_become_the_file_layer_and_load_back(tmp_path: Path) -> No
     saved = _ok(server.screen_map_write("save", dest=str(path)))
     assert saved["promoted"] == ["prompt"] and json.loads(path.read_text())["application"] == (
         "probe")
+    assert "note" not in saved, saved
     refused = cast(dict[str, Any], server.screen_map_write("save", dest=str(path)))
     assert refused["code"] == "bad_argument", refused
     dstate.STATE.maps = screen_map.Maps()
     loaded = _ok(server.screen_map_write("load", path=str(path)))
     assert (loaded["application"], loaded["screens"], loaded["controls"]) == ("probe", 1, 1)
     assert _ok(server.screen_map_find())["layer"] == "file"
+
+
+def test_a_mixed_case_map_dest_is_saved_by_the_file_name_rule_and_the_note_says_so(
+        tmp_path: Path) -> None:
+    screen_bench("probe-booted", tmp_path)
+    _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT]))
+    given = tmp_path / "Probe-Screen-Map.JSON"
+    saved = _ok(server.screen_map_write("save", dest=str(given)))
+    assert saved["path"] == str(tmp_path / "probe-screen-map.json"), saved
+    assert saved["note"] == written_as("dest", str(given)), saved
 
 
 def test_the_programs_pointer_is_declared_through_the_tool_and_saved(tmp_path: Path) -> None:

@@ -110,7 +110,7 @@ def palette(session: ds.Session, first: int, count: int, scale: int, dest: Path 
     """The body of `palette`; `count` 0 is every entry from `first`."""
     picture.check_scale(scale)
     if dest is not None:
-        dest = paths.fresh_named_dest("dest", dest)
+        dest = paths.fresh_dest("dest", dest)
     dac, entries = read_dac(session)
     count = count or DAC_ENTRIES - first
     chosen = entries[first:first + count]

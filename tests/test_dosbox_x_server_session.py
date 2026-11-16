@@ -45,6 +45,7 @@ from scry_core import (
     roster,
 )
 from scry_core import window as core_window
+from scry_core.file_names import written_as
 from scry_core.host_program import absolute as _abs
 from scry_core.host_program import temporary as _tmp
 from test_dosbox_x_find import reply
@@ -198,7 +199,7 @@ def test_an_ffmpeg_that_says_why_in_bytes_that_are_not_utf8_is_still_a_refusal(
     assert e.value.code == "host_failed" and "cannot open" in str(e.value), e.value
 
 
-def test_a_frame_is_written_under_the_name_the_caller_gave_and_that_is_the_path_returned(
+def test_a_frame_is_written_by_the_file_name_rule_and_that_is_the_path_returned(
         tmp_path: Path) -> None:
     src = tmp_path / "cap.avi"
     src.write_bytes(b"RIFF")
@@ -213,7 +214,7 @@ def test_a_frame_is_written_under_the_name_the_caller_gave_and_that_is_the_path_
     with (mock.patch("scry_dosbox_x.frames.subprocess.run", writes),
           mock.patch("scry_dosbox_x.frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg"))):
         got = ds.Session.frame(fake, 0, out / "Frame_1.PNG", _src(fake))  # type: ignore[arg-type]
-        assert got == out / "Frame_1.PNG" and [p.name for p in out.iterdir()] == ["Frame_1.PNG"]
+        assert got == out / "frame-1.png" and [p.name for p in out.iterdir()] == ["frame-1.png"]
         with pytest.raises(ds.Invalid, match="already exists"):
             ds.Session.frame(fake, 0, out / "Frame_1.PNG", _src(fake))  # type: ignore[arg-type]
 
@@ -705,6 +706,22 @@ def test_both_halves_of_the_capture_come_back(tmp_path: Path) -> None:
     dest.unlink()
     assert server.captures()["captures"][0] == {"kind": "png", "path": str(dest),
                                                 "present": False}, "gone, and said so"
+
+
+@pytest.mark.parametrize(("given", "written"), [("Shot_1.PNG", "shot-1.png"),
+                                                ("frame.png", "frame.png")])
+def test_capture_frame_writes_by_the_file_name_rule_and_notes_a_changed_name(
+        tmp_path: Path, given: str, written: str) -> None:
+    fake = install()
+    caps_dir = tmp_path / "caps"
+    caps_dir.mkdir()
+    shutil.copyfile(Path(__file__).parent / "fixtures" / "avi" / "dosbox-x-zmbv-12.avi",
+                    caps_dir / "dosbox-x-zmbv-12.avi")
+    fake.launch.capture_video, fake.launch.captures_dir = True, caps_dir
+    shot = server.capture_frame(frame=1, dest=str(tmp_path / given))
+    assert shot["status"] == "ok" and shot["path"] == str(tmp_path / written), shot
+    assert (tmp_path / written).is_file()
+    assert shot.get("note") == written_as("dest", str(tmp_path / given)), shot
 
 
 def test_a_dump_of_the_wrong_size_is_not_the_dump_that_was_asked_for(
@@ -1208,14 +1225,16 @@ def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
     assert named["capture_path"] == str(own)
 
 
-def test_capture_frame_refuses_a_numbering_template_in_the_file_name_it_was_given(
+def test_capture_frame_refuses_a_numbering_template_in_the_directory_it_was_given(
         tmp_path: Path) -> None:
-    """The name's `%` is judged as the caller wrote it, before the file-name rule takes it out,
-    and with no session: a list of steps holding it is refused before any step runs."""
+    """A `%` in a directory reaches ffmpeg, so it is refused with no session: a list of steps
+    holding it is refused before any step runs. One in the name is written out by the rule."""
     dstate.STATE.session = None
-    got = server.capture_frame(frame=3, dest=str(tmp_path / "shot%03d.png"))
+    got = server.capture_frame(frame=3, dest=str(tmp_path / "shots%03d" / "shot.png"))
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
     assert "containing `%` is refused" in got["message"], got
+    named = server.capture_frame(frame=3, dest=str(tmp_path / "shot%03d.png"))
+    assert named["code"] == "no_session", named
     assert list(tmp_path.iterdir()) == []
 
 

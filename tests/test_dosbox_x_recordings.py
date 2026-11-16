@@ -17,6 +17,7 @@ import pytest
 from channel_double import REAL_STOP, Machine, Stop, session_over
 from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 from scry_core import cancel, roster
+from scry_core.file_names import written_as
 
 from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import capture_files, recordings, retrace, server, summaries
@@ -70,6 +71,25 @@ def test_a_wav_over_two_retraces_is_checked_against_the_span_and_moved_to_dest(
     assert got["emulated_s"] == pytest.approx(2 * FRAME_MS / 1000)
     assert got["sample_min"] < got["sample_max"], "the guest's tone is not silence"
     assert got["bytes"] == dest.stat().st_size
+
+
+@pytest.mark.parametrize(("tool", "given", "written"), [
+    ("audio_record", "Tone_1.WAV", "tone-1.wav"), ("record", "Run_1.AVI", "run-1.avi")])
+def test_a_mixed_case_dest_is_written_by_the_file_name_rule_and_the_note_says_so(
+        tmp_path: Path, tool: str, given: str, written: str) -> None:
+    live(tmp_path)
+    got = _ok(getattr(server, tool)(frames=2, dest=str(tmp_path / given)))
+    assert got["path"] == str(tmp_path / written) and (tmp_path / written).is_file(), got
+    assert got["note"].endswith(str(written_as("dest", str(tmp_path / given)))), got
+
+
+@pytest.mark.parametrize(("tool", "name"), [("audio_record", "tone.wav"), ("record", "run.avi")])
+def test_a_dest_already_in_the_rule_says_nothing_of_its_name(
+        tmp_path: Path, tool: str, name: str) -> None:
+    live(tmp_path)
+    got = _ok(getattr(server, tool)(frames=2, dest=str(tmp_path / name)))
+    assert got["path"] == str(tmp_path / name), got
+    assert "written as" not in got.get("note", ""), got
 
 
 def test_with_no_dest_the_file_stays_where_the_emulator_wrote_it(tmp_path: Path) -> None:
@@ -216,6 +236,10 @@ def test_a_run_with_no_event_of_the_kind_has_no_file_and_says_why(
     got = _ok(server.audio_record(frames=2, kind=kind))
     assert got["path"]["available"] is False and "first one" in got["path"]["why"], got
     assert summaries.audio_record({"frames": 2, "kind": kind}, got).endswith("no file")
+    dstate.STATE.session.control.releases = [Stop(ms=FRAME_MS)] * 2  # type: ignore[union-attr]
+    renamed = _ok(server.audio_record(frames=2, kind=kind,
+                                      dest=str(tmp_path / f"Tone_1.{kind.upper()}")))
+    assert "written as" not in renamed.get("note", ""), "no file was written under any name"
 
 
 def test_a_truncated_dro_is_refused(tmp_path: Path) -> None:

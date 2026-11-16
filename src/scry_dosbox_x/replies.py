@@ -558,6 +558,7 @@ class StartReply(WindowRefused, account.SequenceFields, total=False):
     guest_files: list[Any]
     input_port: int | dict[str, Any]
     log_categories: dict[str, Any]
+    logfile: str
     operations: list[Any]
     pid: Annotated[int, When("under `start`")]
     presence: bool | dict[str, Any]

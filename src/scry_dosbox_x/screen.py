@@ -96,7 +96,7 @@ def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, des
                          f"which has no picture to write, scale or attach: leave `dest`, `scale` "
                          f"and `attach` out to read its text")
     if dest is not None:
-        dest = paths.fresh_named_dest("dest", dest)
+        dest = paths.fresh_dest("dest", dest)
     listings = {"mode": mode, **{key: vga.listed(session, vga.COMMAND_OF[key])
                                  for key in vga.SHAPE_KEYS[1:]}}
     shape = vga.geometry(listings)
@@ -141,7 +141,7 @@ def still(session: ds.Session, dest: Path | None) -> dict[str, Any]:
                          f"text mode, which has no picture to snapshot at a stop: `screen_view` "
                          f"reads its text, or `resume` and snapshot the running screen")
     if dest is not None:
-        dest = paths.fresh_named_dest("dest", dest)
+        dest = paths.fresh_dest("dest", dest)
     shape = vga.geometry(listings)
     data = png.encode(pixels(session, shape, vga.read_screen(session, shape)))
     if dest is None:
