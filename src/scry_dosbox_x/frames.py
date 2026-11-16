@@ -69,12 +69,11 @@ def frame(ses: ds.Session, at: int, dest: Path, source: Path) -> Path:
         raise Invalid("host_failed", "a still is extracted from the capture with `ffmpeg`, and "
                       "there is none on PATH. The video itself does not need it; "
                       "only this does")
+    # A `%` anywhere in `dest` is refused: `-f image2` treats the whole path as a printf
+    # template, so the PNG can land at a path the caller never named. Broader than the hazard on
+    # purpose: a false refusal is loud, the other failure is silent.
     ds.check_frame_args(at, dest)
     dest = paths.fresh_dest("dest", dest)
-    # A `%` in a directory of `dest` is refused (the file-name rule leaves none in the name):
-    # `-f image2` treats the whole path as a printf template, so the PNG can land at a path the
-    # caller never named. Broader than the hazard on purpose: a false refusal is loud, the other
-    # failure is silent.
     try:
         got = subprocess.run(
             # Format forced: else a frame past the end with an `.mp4` dest writes a frameless

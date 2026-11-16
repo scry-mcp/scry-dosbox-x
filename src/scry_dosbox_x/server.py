@@ -1694,13 +1694,13 @@ def captures() -> dict[str, Any]:
 @tool("Extract a frame to a file", summary=one_line.capture_frame, replay="drop", names_file="dest")
 def capture_frame(frame: int, dest: str, capture_path: str = "") -> dict[str, Any]:
     """Frame `frame` of a capture written to `dest` as PNG; `capture_path` defaults to the
-    largest. Needs `ffmpeg`, `capture_video`. Refused: `%` in `dest`'s directories, an existing
-    `dest`, a frame past the end.
+    largest. Needs `ffmpeg`, `capture_video`. Refused: `%` anywhere in `dest` (no numbering
+    pattern is expanded: name the one file), an existing `dest`, a frame past the end.
 
     Reply: `path`, `bytes`, `sha256`, `capture_path`, `frame`.
     """
     session = live()
-    return caps.capture_frame(session, frame, paths.dest_file("dest", dest),
+    return caps.capture_frame(session, frame, caps.frame_dest(dest),
                               judges.existing_file("capture_path", capture_path, "capture")
                               if capture_path else None)
 

@@ -1225,16 +1225,15 @@ def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
     assert named["capture_path"] == str(own)
 
 
-def test_capture_frame_refuses_a_numbering_template_in_the_directory_it_was_given(
-        tmp_path: Path) -> None:
-    """A `%` in a directory reaches ffmpeg, so it is refused with no session: a list of steps
-    holding it is refused before any step runs. One in the name is written out by the rule."""
+@pytest.mark.parametrize("dest", [("shots%03d", "shot.png"), ("shot%03d.png",)])
+def test_capture_frame_refuses_a_numbering_pattern_anywhere_in_dest_with_no_session(
+        tmp_path: Path, dest: tuple[str, ...]) -> None:
+    """A `%` is refused before the machine, in the name as in a directory: the still is one
+    file and no pattern is expanded, so the refusal says what to pass instead."""
     dstate.STATE.session = None
-    got = server.capture_frame(frame=3, dest=str(tmp_path / "shots%03d" / "shot.png"))
+    got = server.capture_frame(frame=3, dest=str(tmp_path.joinpath(*dest)))
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
-    assert "containing `%` is refused" in got["message"], got
-    named = server.capture_frame(frame=3, dest=str(tmp_path / "shot%03d.png"))
-    assert named["code"] == "no_session", named
+    assert "is not expanded" in got["message"] and "series_capture" in got["message"], got
     assert list(tmp_path.iterdir()) == []
 
 

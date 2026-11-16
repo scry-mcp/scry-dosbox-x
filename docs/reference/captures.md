@@ -104,8 +104,8 @@ capture_frame(frame, dest, capture_path="")
 ```
 
 Frame `frame` of a capture written to `dest` as PNG; `capture_path` defaults to the
-largest. Needs `ffmpeg`, `capture_video`. Refused: `%` in `dest`'s directories, an existing
-`dest`, a frame past the end.
+largest. Needs `ffmpeg`, `capture_video`. Refused: `%` anywhere in `dest` (no numbering
+pattern is expanded: name the one file), an existing `dest`, a frame past the end.
 
 Reply: `path`, `bytes`, `sha256`, `capture_path`, `frame`.
 
@@ -146,7 +146,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end capture_frame -->
 
-**The still is always a PNG, whatever `dest` is called**: inferring the encoder from the extension hands back a frameless video container as a still (ffmpeg exits 0 for a frame past the end of a `.mp4` destination). A `%` in a directory of `dest` is refused because the image muxer reads the whole path as a numbering template, and the file's own name never carries one, since the rule of file names writes it out; the refusal is broader than the hazard because that direction fails loudly and the other silently.
+**The still is always a PNG, whatever `dest` is called**: inferring the encoder from the extension hands back a frameless video container as a still (ffmpeg exits 0 for a frame past the end of a `.mp4` destination). A `%` anywhere in `dest`, the file's name included, is refused before the machine is asked, because the image muxer reads the whole path as a numbering template and the still is one file: a pattern is never expanded, so the refusal names the file to pass instead, or `series_capture` for several frames.
 
 <!-- scry-reference:begin series_capture -->
 ## `series_capture`

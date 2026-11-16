@@ -8,7 +8,7 @@ from typing import Any
 
 from scry_core import judges
 
-from scry_dosbox_x import capture_files, frames
+from scry_dosbox_x import capture_files, frames, paths
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
 from scry_dosbox_x.state import STATE
@@ -86,6 +86,16 @@ def captures(session: ds.Session) -> dict[str, Any]:
         del _AVI_SEEN[gone]
     rows += [{"kind": "avi", "present": True, **video} for video in frames.videos(session)]
     return st.reply(captures=rows)
+
+
+def frame_dest(dest: str) -> Path:
+    """`capture_frame`'s `dest`, judged before the machine: a `%` anywhere in it is refused, since
+    the still is one file and ffmpeg would read the path as a numbering template."""
+    if "%" in dest:
+        raise ds.Invalid("bad_argument", f"dest: a `%` is refused: {dest!r}. A numbering pattern "
+                         "is not expanded, since the still is one file: name that file "
+                         "(`frame-3.png`), or take several frames with `series_capture`")
+    return paths.dest_file("dest", dest)
 
 
 def capture_frame(session: ds.Session, at: int, dest: Path, source: Path | None) -> dict[str, Any]:

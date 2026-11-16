@@ -35,6 +35,7 @@ from scry_core import vocabulary as vocab
 
 from scry_dosbox_x import (
     capture_files,
+    captures,
     code,
     grammar,
     inputs,
@@ -542,7 +543,7 @@ def _drive_arguments(act: list[dict[str, Any]], expect: str, seconds: float | No
 
 
 def _capture_frame(frame: int, dest: str, capture_path: str = "", **_: Any) -> None:
-    ds.check_frame_args(frame, paths.dest_file("dest", dest))
+    ds.check_frame_args(frame, captures.frame_dest(dest))
     if capture_path:
         paths.absolute("capture_path", capture_path)
 

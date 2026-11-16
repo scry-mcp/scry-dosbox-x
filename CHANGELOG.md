@@ -11,7 +11,8 @@ What a client of the server notices.
   `audio_record`, `comment_write`, `palette`, `screen_view` and `capture_frame`) takes the name
   every file the server writes takes, lowercase words joined by hyphens with one extension:
   `Shot_1.PNG` is written as `shot-1.png`, and a name with no extension is refused before the
-  machine is asked. The reply's path names the file written, and its `note` says so whenever
+  machine is asked, as is a `%` in `capture_frame`'s `dest`, since no numbering pattern is
+  expanded. The reply's path names the file written, and its `note` says so whenever
   the name is not the one you gave, on these tools and on `machine_map`, `screen_map_write`,
   `perform_export` and `start`'s `logfile`. `start` answers `logfile` when given one.
 - scry-core 0.114.0 pinned: it words the one sentence a reply's `note` gives when a file is
