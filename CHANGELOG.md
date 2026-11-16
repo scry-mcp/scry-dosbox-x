@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- scry-core 0.115.0 pinned: the at-stop wait's refusals and note, its reply fields and their
+  sentence, and what a `start` or a map's `add` keeps for `promote` are the same code on both
+  servers.
 - A file written at a path you name (`dest` of `memdump`, `trace`, `snapshot`, `record`,
   `audio_record`, `comment_write`, `palette`, `screen_view` and `capture_frame`) takes the name
   every file the server writes takes, lowercase words joined by hyphens with one extension:
