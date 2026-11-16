@@ -226,15 +226,14 @@ def start(conf: str = "", cwd: str = "",
     keeps `cwd` through DOSBox-X's own `working directory` setting, names the bundle in
     `bundle`, and leaves the exit status to launchd, so `close` answers `unavailable` for it.
     `session_seconds`: the lifetime.
-    `shared`: watched, in a window; false, headless. Only somebody watching through a
-    stream (Moonlight) needs `fullscreen=true` as well: a pointer does not map inside a window
-    there.
+    `shared`: watched, in a window; false, headless.
     `profile`: a repository's run recipe (`.scry/start/<name>.json`) or a path to one. Its keys
     are this tool's arguments and fill only what the call does not give; the reply's `profile`
     block names it and what it filled. The store is looked for from the server's directory, then
     `cwd`.
     `display`: the OS's display index for the window, 0 (the main display) when omitted;
-    `fullscreen`: the window fills it; `size`: `WIDTHxHEIGHT` of the window in the host's unit,
+    `fullscreen`: the window fills it and DOSBox-X captures the mouse, so the guest pointer no
+    longer follows the host cursor; `size`: `WIDTHxHEIGHT` of the window in the host's unit,
     else the largest 4:3 window the display's usable area holds. All three need `shared=true` and
     are refused otherwise; `size` is also refused beside `fullscreen`, beyond the usable area
     (naming it) and under an `sdl output` that ignores it; a `display` past the host's count is

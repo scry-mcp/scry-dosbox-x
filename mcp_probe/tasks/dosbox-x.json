@@ -2447,18 +2447,27 @@
   },
   {
    "id": "d169",
-   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching it over Moonlight, which streams only the main display, with the window filling that display.",
+   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching it on the main display, with the window filling that display.",
    "tool": "start",
    "args": {
-    "conf": "/opt/dosfury/fury.conf",
-    "cwd": "/opt/dosfury",
-    "session_seconds": 900,
-    "shared": true,
-    "fullscreen": true
-   },
-   "allow": [
-    "display"
-   ]
+    "any_of": [
+     {
+      "conf": "/opt/dosfury/fury.conf",
+      "cwd": "/opt/dosfury",
+      "session_seconds": 900,
+      "shared": true,
+      "display": 0,
+      "fullscreen": true
+     },
+     {
+      "conf": "/opt/dosfury/fury.conf",
+      "cwd": "/opt/dosfury",
+      "session_seconds": 900,
+      "shared": true,
+      "fullscreen": true
+     }
+    ]
+   }
   },
   {
    "id": "d173",
@@ -2487,18 +2496,40 @@
   },
   {
    "id": "d172",
-   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for the owner to watch. The owner is on Moonlight.",
+   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody to watch on the main display, who will point at things with their mouse: the game's own pointer has to stay under their mouse cursor.",
    "tool": "start",
    "args": {
-    "conf": "/opt/dosfury/fury.conf",
-    "cwd": "/opt/dosfury",
-    "session_seconds": 900,
-    "shared": true,
-    "fullscreen": true
-   },
-   "allow": [
-    "display"
-   ]
+    "any_of": [
+     {
+      "conf": "/opt/dosfury/fury.conf",
+      "cwd": "/opt/dosfury",
+      "session_seconds": 900,
+      "shared": true,
+      "display": 0,
+      "fullscreen": false
+     },
+     {
+      "conf": "/opt/dosfury/fury.conf",
+      "cwd": "/opt/dosfury",
+      "session_seconds": 900,
+      "shared": true,
+      "display": 0
+     },
+     {
+      "conf": "/opt/dosfury/fury.conf",
+      "cwd": "/opt/dosfury",
+      "session_seconds": 900,
+      "shared": true,
+      "fullscreen": false
+     },
+     {
+      "conf": "/opt/dosfury/fury.conf",
+      "cwd": "/opt/dosfury",
+      "session_seconds": 900,
+      "shared": true
+     }
+    ]
+   }
   },
   {
    "id": "d174",

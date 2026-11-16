@@ -196,7 +196,8 @@ What a client of the server notices.
   file is `<trace name>-<extension>-set.jsonl`, a screen map
   `<application>-screen-map.json`, and a comment file is advised as `<stem>-comments.tsv`.
 
-- The descriptions say that only a watcher on a stream needs `fullscreen` (`start`), that
+- The descriptions say that `fullscreen` captures the mouse, so the guest pointer no longer
+  follows the host cursor (`start`), that
   `detail` adds the debugger's own text while the E9 lines come in the stop reply's `e9`
   (`resume`), what `control` holds and that `gdt` and `ldt` are read by default in protected
   mode (`machine_map`), and that a step's `recorded` is `{field: value}` of its reply
