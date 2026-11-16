@@ -74,8 +74,10 @@ STOP_PLACE = {"pc": "where the program happened to be", "frame": "the frame the 
               "regs": "the registers at that instant", "instruction": "the instruction there",
               "following": "the instructions after it", "e9": "the log's tail at that instant",
               "cpu_mode": "the mode at that instant", "summary": "it names the stop's place",
-              "cause": "it names the address the stop landed at",
-              "note": "it names the address too, when the stop landed in a ROM handler"}
+              "cause": "it names the address the stop landed at"}
+#: What a stop the host placed says only sometimes: the server adds `note` where the place needs
+#: a word (a ROM handler the program called into), and where the stop lands is the host's.
+STOP_NOTE = {"note": "it comes only when the stop landed in a ROM handler, which is the host's"}
 #: What a run from the stop reports that follows where the host stopped it.
 RUN_SPAN = {key: "it counts from the stop, which landed when the host got there"
             for key in ("polls", "emulated_before_s", "emulated_after_s", "frame_before",
@@ -176,7 +178,8 @@ STEPS = [
          volatile={**STOP_PLACE,
                    "path": "where the reader's checkout keeps its symbol table",
                    "runs_to_protected": "how many short runs reached the program, which "
-                                        "follows where the host stopped it"}),
+                                        "follows where the host stopped it"},
+         optional=STOP_NOTE),
     Step("ticks", "read_memory", {"ref": TICKS, "length": 4},
          lambda reply, run: "the program's own counter, which sets the pulse",
          volatile={"hex": "the counter at the stop, which landed when the host got there",
@@ -185,13 +188,13 @@ STEPS = [
                    "summary": "it quotes the counter"}),
     Step("into lit", "run_for", into_lit,
          lambda reply, run: "to the middle of the next lit half of the pulse",
-         volatile={**STOP_PLACE, **RUN_SPAN}),
+         volatile={**STOP_PLACE, **RUN_SPAN}, optional=STOP_NOTE),
     Step("map", "screen_map_write", {"method": "load", "path": SCREEN_MAP},
          lambda reply, run: f"{reply['screens']} looks of the warning button"),
     Step("lit", "screen_map_find", {}, on_look("warning_lit")),
     # The edge logs nothing, so it is sampled retrace by retrace from the middle of a lit half.
     Step("dark", "screen_wait", {"screen": "warning_dark", "seconds": 10},
-         targeted("the first frame it went dark"), volatile=WAIT_PLACE,
+         targeted("the first frame it went dark"), volatile=WAIT_PLACE, optional=STOP_NOTE,
          highlight=("The warning button pulses on the program's own counter, so the picture "
                     "is taken on its edge: `read_memory` reads the counter, `run_for` goes to "
                     "the middle of the next lit half, and `screen_wait` on the mapped dark look "

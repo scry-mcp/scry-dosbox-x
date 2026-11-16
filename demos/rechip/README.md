@@ -276,7 +276,6 @@ The warning button pulses on the program's own counter, so the picture is taken 
   "polls": "<volatile>",
   "sampled_every": 0,
   "screen": {"name": "warning_dark", "layer": "file"},
-  "note": "<volatile>",
   "pc": "<volatile>",
   "cpu_mode": "<volatile>",
   "frame": "<volatile>",
