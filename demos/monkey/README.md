@@ -58,8 +58,8 @@ uv run python demos/monkey/demo.py \
 The demo opens a window, scaled up four times by its conf, so the island can be watched and the
 theme heard; nothing in it needs the window.
 
-- `--cwd PATH` (absolute or `~`-led) is the directory holding the disc image. It is hidden in the
-  transcript as `<host>`.
+- `--cwd PATH` (absolute or `~`-led) is the directory holding the disc image. The emulator runs
+  from the run's own directory, which holds its C:.
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`,
   else the `dosbox-x` on your `PATH`. It needs the debugger commands the transcript's `start`
   lists, and a DOSBox-X that plays a CD image at the volume the program asks for: one that
@@ -79,10 +79,10 @@ not start, a loop that could not be converted).
 
 Give this to an MCP client with this server connected:
 
-> Start DOSBox-X windowed on `demos/monkey/monkey.conf` (with the disc image and a directory for
-> C: written in), running `D:\MONKEY.COM` from `/path/to/your/monkey-cd`, with the log and the
-> saved states in files of the run's own. Load `monkey-screen-map.json`, wait for the language
-> menu and tell me which screen this is; find where DOS loaded `MONKEY.EXE` and double-click
+> Start DOSBox-X windowed on `demos/monkey/monkey.conf` (with `/path/to/your/monkey-cd`'s disc
+> image written in), running `D:\MONKEY.COM` from a directory of the run's own that holds a
+> folder `c`, which the conf mounts as C:, with the log and the saved states in files there. Load `monkey-screen-map.json`, wait for the
+> language menu and tell me which screen this is; find where DOS loaded `MONKEY.EXE` and double-click
 > English. Watch SCUMM's room (variable 4 of its variables in the data segment) and let the
 > intro run to each write of it up to its first scene, room 10; from there count 24 SCUMM ticks,
 > pressing Escape after the first and after every fifth one past it, then check the room is the

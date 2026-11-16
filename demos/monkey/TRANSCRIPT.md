@@ -8,11 +8,11 @@
   "background": true,
   "display": "<host>",
   "conf": "./tmp/demos/monkey/monkey.conf",
+  "cwd": "./tmp/demos/monkey",
   "session_seconds": 1800,
   "program": "D:\\MONKEY.COM",
   "logfile": "./tmp/demos/monkey/monkey-e9.log",
-  "state_dir": "./tmp/demos/monkey/monkey-states",
-  "cwd": "<host>"
+  "state_dir": "./tmp/demos/monkey/monkey-states"
 }
 ```
 
@@ -40,6 +40,7 @@
   "background": true,
   "presence": true,
   "window": "<volatile>",
+  "logfile": "./tmp/demos/monkey/monkey-e9.log",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },

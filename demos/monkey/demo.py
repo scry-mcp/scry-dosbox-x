@@ -127,19 +127,18 @@ def precheck(run: Run) -> str:
 
 
 def boot(run: Run) -> dict[str, Any]:
-    """The conf with the reader's CUE and the run's own C: written in, a fresh log, and the
-    saved states kept in the run's directory too."""
+    """The conf with the reader's CUE written in, the emulator started in the run's directory
+    (where the conf's C: is), a fresh log, and the saved states kept there too."""
     drive_c = run.dir / "c"
     shutil.rmtree(drive_c, ignore_errors=True)
     drive_c.mkdir()
     conf = run.dir / "monkey.conf"
     conf.write_text((HERE / "monkey.conf").read_text(encoding="utf-8")
-                    .replace("@CD@", str(disc(run) / "monkey.cue"))
-                    .replace("@RUN@", str(drive_c)), encoding="utf-8")
+                    .replace("@CD@", str(disc(run) / "monkey.cue")), encoding="utf-8")
     for stale in ("monkey-e9.log", "theme.wav", "theme-disc.wav", "screen.png"):
         (run.dir / stale).unlink(missing_ok=True)
     shutil.rmtree(run.dir / "monkey-states", ignore_errors=True)
-    return {**window_args(run), "conf": conf, "session_seconds": 1800,
+    return {**window_args(run), "conf": conf, "cwd": run.dir, "session_seconds": 1800,
             "program": "D:\\MONKEY.COM",
             "logfile": run.dir / "monkey-e9.log", "state_dir": run.dir / "monkey-states"}
 
@@ -436,9 +435,10 @@ def same_track(reply: Reply, run: Run) -> str:
 
 
 STEPS = [
-    Step("start", "start", boot, started, options=frozenset({"binary", "cwd", "display"}),
+    Step("start", "start", boot, started, options=frozenset({"binary", "display"}),
          volatile={"summary": "it carries how long the debugger took to answer",
-                   **host.KEPT_ELSEWHERE}),
+                   "kept": "it names the run's directory when the run lies in no project with a "
+                           "`.scry/`"}),
     Step("map", "screen_map_write", {"method": "load", "path": HERE / "monkey-screen-map.json"},
          lambda reply, run: f"{reply['screens']} screens, {reply['controls']} controls"),
     Step("menu", "screen_wait", {"screen": "language", "every": JUDGED_EVERY,
@@ -543,8 +543,7 @@ DEMO = Demo(
     readme=HERE / "README.md", steps=STEPS, capture=lambda run: run.dir / "screen.png",
     loop=Loop("screen"),
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=precheck,
-    host_args={"cwd": "the directory holding the reader's disc image",
-               "display": DISPLAY,
+    host_args={"display": DISPLAY,
                "binary": "the host's own DOSBox-X"},
     volatile={**VOLATILE, "saved_at": "the wall-clock time a state was saved at",
               **{key: WAIT_LOOP for key in ("stop_seq", "stops", "polls",

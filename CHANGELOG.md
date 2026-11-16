@@ -4,6 +4,8 @@ What a client of the server notices.
 
 ## Unreleased
 
+- The Monkey Island demo starts DOSBox-X in its run's directory and mounts C: there by a
+  relative name, so its loop and screen are the same wherever the repository is cloned.
 - `screen_wait` refuses a watch that follows a pointer saying its firing "cannot be told from
   another stop", where it said "from a retrace".
 - `start` refused for a `profile` no directory above holds carries `searched`, the directories

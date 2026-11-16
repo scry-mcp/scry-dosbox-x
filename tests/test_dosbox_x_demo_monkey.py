@@ -56,11 +56,26 @@ def test_the_conf_mounts_the_readers_disc_and_a_c_drive_of_the_run(
     args = demo.boot(_run(tmp_path, cd))
     conf = Path(args["conf"]).read_text()
     assert f'imgmount d "{cd / "monkey.cue"}" -t cdrom' in conf
-    assert f'mount c "{tmp_path / "c"}"' in conf and (tmp_path / "c").is_dir()
-    assert "@CD@" not in conf and "@RUN@" not in conf
+    assert 'mount c "c"' in conf and (tmp_path / "c").is_dir()
+    assert "@CD@" not in conf
     assert "core=normal" in conf and "cycles=fixed" in conf and "rate=44100" in conf
     assert args["program"] == "D:\\MONKEY.COM" and args["shared"] is True
     assert Path(args["state_dir"]).parent == tmp_path
+
+
+def test_the_c_drive_is_mounted_by_the_same_line_wherever_the_run_sits(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    cd = _disc(tmp_path / "cd", monkeypatch)
+    lines = []
+    for where in (tmp_path / "r", tmp_path / "a-run-directory-of-a-much-longer-name"):
+        where.mkdir()
+        args = demo.boot(_run(where, cd))
+        assert args["cwd"] == where
+        lines.append([line for line in Path(args["conf"]).read_text().splitlines()
+                      if line.startswith("mount c ")])
+    assert lines[0] == lines[1] and len(lines[0]) == 1
+    start = next(step for step in demo.STEPS if step.tool == "start")
+    assert isinstance(start.options, frozenset) and "cwd" not in start.options
 
 
 def test_the_new_reply_starts_the_theme_and_chains_hole_by_hole_to_the_branchs_tail() -> None:
