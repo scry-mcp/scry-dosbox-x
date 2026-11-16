@@ -16,7 +16,6 @@ from typing import Any, Protocol
 from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
 from scry_core import stop_wait
-from scry_core.prose import counted
 
 from scry_dosbox_x import arming, grammar, placement
 from scry_dosbox_x import declarations as dec
@@ -34,20 +33,13 @@ def declared_row(spec: stop_wait.StopWait) -> dec.Declaration:
     kinds = (spec.kind,)
     held = store.held_ref(spec.ref, kinds)
     if held is None:
-        mine = [d.ref for d in store.declarations() if d.kind == spec.kind]
-        raise ds.Invalid("unknown_ref",
-            f"{spec.ref!r} matches no {spec.kind} declaration: `on_{spec.kind}` names a row "
-            f"`declaration_list` lists. The {spec.kind} declarations held: "
-            + (", ".join(repr(r) for r in mine) if mine else "none at all"))
+        raise stop_wait.no_such_row(spec, [d.ref for d in store.declarations()
+                                           if d.kind == spec.kind])
     decl = next(d for d in store.declarations() if d.kind == spec.kind and d.ref == held)
     if spec.kind == "watch" and decl.watch_mode != "change":
-        raise ds.Invalid("bad_argument",
-            f"the watch {held!r} is a `{decl.watch_mode}` watch, which never stops the machine: "
-            "only a `change` watch fires")
+        raise stop_wait.not_a_change_watch(held, str(decl.watch_mode))
     if spec.kind == "watch" and decl.by == "pointer":
-        raise ds.Invalid("bad_argument",
-            f"the watch {held!r} follows a pointer, and its bytes move between stops, so its "
-            "firing cannot be told from a retrace")
+        raise stop_wait.follows_pointer(held)
     return decl
 
 
@@ -91,17 +83,6 @@ Expire = Callable[[ds.Session, bool], bool]
 Ended = Callable[[ds.Session], dict[str, Any]]
 
 
-def timeout_note(said: str, spec: stop_wait.StopWait, firings: int, examined: int,
-                 seconds: float) -> str:
-    """A `TIMEOUT`'s note under `on_*`, saying when no firing met the condition and so no
-    screen was judged."""
-    if not examined:
-        return (f"none of {counted(firings, 'firing')} of the {spec.kind} {spec.ref!r} within "
-                f"{seconds:g} s met the condition, so no screen was judged")
-    return (f"{said} was not found at the retrace after any of {counted(firings, 'firing')} of "
-            f"the {spec.kind} {spec.ref!r} within {seconds:g} s")
-
-
 def screen_wait_at(session: ds.Session, spec: stop_wait.StopWait, watched: Watched,
                    seconds: float, progress: ds.Progress, advance: Advance, cut: Cut,
                    finish: Finish, expire: Expire, ended: Ended,
@@ -135,7 +116,8 @@ def screen_wait_at(session: ds.Session, spec: stop_wait.StopWait, watched: Watch
                 **stop_wait.fields(spec, firings, examined,
                                    contract.unavailable(NO_LINE_WHY)),
                 **watched.state(), "retrace_pending": pending,
-                "note": timeout_note(watched.said, spec, firings, examined, seconds)
+                "note": stop_wait.timeout_note(watched.said, spec, firings, examined, seconds,
+                                               judged_at="at the retrace")
                         + (watched.why() if examined else "")})
         # Any declared breakpoint's stop is attributed, whatever is waited on: a watch's wait
         # must not take another row's mid-frame stop for a retrace.

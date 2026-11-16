@@ -1,5 +1,4 @@
-"""`promote`: what this session learned, kept as a candidate and written on approval; where it
-may be written is scry-core's to decide."""
+"""`promote`: what this session learned, kept and written by scry-core's `promote`."""
 
 from __future__ import annotations
 
@@ -8,19 +7,18 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
-from scry_core import given, project_store
 from scry_core import promote as core
 
 from scry_dosbox_x import lifecycle
 from scry_dosbox_x.state import STATE
 
-#: `start`'s arguments a recipe leaves to the run: this session's files, port and window.
+#: `start`'s arguments a recipe leaves to the run.
 RUN_OWN = frozenset({"logfile", "state_dir", "input_port", "display", "size", "fullscreen",
                      "background", "plan", "settle_seconds", "captures_dir", "guest_files",
                      "profile"})
 #: What a recipe may hold as a path.
 PROMOTE_PATHS = lifecycle.START_PATHS
-#: What a recipe cannot do without: `start`'s own pre-gate demands them.
+#: What a recipe cannot do without.
 NEEDS = ("conf", "cwd", "session_seconds")
 SERVER = "dosbox-x"
 
@@ -61,31 +59,14 @@ def launching(params: Mapping[str, Any], profile: str = "") -> Iterator[None]:
 
 
 def keep_start(params: Mapping[str, Any], *, defaults: Mapping[str, Any]) -> bool:
-    """This start's recipe, named by the profile it read or the guest."""
-    name = STATE.drafts.loaded_name("start") or STATE.guest
-    if not name:
-        return False
-    if STATE.drafts.loaded_name("start") and core.only_the_run(given.names(), RUN_OWN):
-        return False
-    document: dict[str, Any] = {"format": project_store.FORMAT}
-    document.update({name: value for name, value in params.items()
-                     if name in defaults and name not in RUN_OWN
-                     and value != defaults[name]})
-    return STATE.drafts.keep("start", name, document, needs=NEEDS, path_keys=PROMOTE_PATHS,
-                             own=sorted(RUN_OWN))
+    """The recipe, named by the guest without a profile."""
+    return core.keep_start(STATE.drafts, params, guest=STATE.guest, defaults=defaults,
+                           run_own=RUN_OWN, needs=NEEDS, path_keys=PROMOTE_PATHS)
 
 
 def after_map(method: str, reply: dict[str, Any]) -> dict[str, Any]:
-    """A map's `add` keeps what it learned, named by this session's entry or the guest."""
-    application = STATE.maps.session_application or STATE.guest
-    if method == "load":
-        STATE.drafts.loaded_entry("maps", str(reply.get("application", "")),
-                                  source=str(reply.get("path", "")))
-    if method != "add" or not application:
-        return reply
-    if STATE.drafts.keep("maps", application, STATE.maps.document(application)):
-        return {**reply, "kept": core.kept_line(STATE.drafts)}
-    return reply
+    """A map's `add`, named by the guest without an entry read."""
+    return core.after_map(STATE.drafts, STATE.maps, method, reply, guest=STATE.guest)
 
 
 def promote(dry_run: bool = False, entries: list[str] | None = None,

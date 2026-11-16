@@ -14,9 +14,8 @@ from scry_core.reply_contract import unavailable
 
 from scry_dosbox_x import debugger as dbg
 
-#: Calls during which presence is `acting`; every other tool is `STILL_TOOLS`. Both are written
-#: out so a new tool must be put on one side (the suite checks them against the registry).
-#: `snapshot` is still: its capture trigger changes nothing the guest reads.
+#: The two sides `scry_core.presence.check_classified` holds against the registry. `snapshot`
+#: is still: its capture trigger changes nothing the guest reads.
 DRIVING_TOOLS = frozenset({
     "resume", "stop", "step", "run_to", "run_for", "trace", "screen_wait", "send_keys",
     "send_mouse", "drive", "perform", "state_write", "debug", "write", "set_register", "record",

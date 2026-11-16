@@ -179,6 +179,7 @@ Reference: REFERENCE.md, The session.
 | `stops` | object |
 | `truncated` | boolean |
 | `verdict` | string |
+| `searched` | array |
 | `kept` | string |
 | `failed_at` | integer or object |
 | `held` | integer |

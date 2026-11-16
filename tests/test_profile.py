@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from scry_core import project_store
 
 from scry_dosbox_x import lifecycle, replies, server
 from scry_dosbox_x import session as ds
@@ -82,6 +83,21 @@ def test_a_named_profile_not_found_without_cwd_says_cwd_is_required(
     with pytest.raises(ds.Invalid) as e:
         lifecycle.with_profile("nowhere", keys=KEYS, arguments=call(), given=())
     assert "cwd" in str(e.value), str(e.value)
+
+
+@pytest.mark.parametrize(("refusal", "hinted"), [
+    (ds.Invalid("bad_argument", "nothing found", searched=["/a"]), True),
+    (ds.Invalid("bad_argument", "no .scry/start/x.json above /a, and it is not JSON"), False),
+])
+def test_the_cwd_hint_follows_the_stores_searched_field_not_its_words(
+        monkeypatch: pytest.MonkeyPatch, refusal: ds.Invalid, hinted: bool) -> None:
+    def applied(*_a: object, **_k: object) -> None:
+        raise refusal
+    monkeypatch.setattr(project_store, "applied", applied)
+    with pytest.raises(ds.Invalid) as e:
+        lifecycle.with_profile("guest", keys=KEYS, arguments=call(), given=())
+    assert ("Pass `cwd`" in str(e.value)) is hinted, str(e.value)
+    assert e.value.fields == refusal.fields, "the hint keeps what the store's refusal carried"
 
 
 def test_a_profile_passed_as_a_path_not_found_carries_no_cwd_hint(

@@ -419,10 +419,7 @@ class ScreenViewReply(DosboxEnvelope, total=False):
     y: int
 
 
-UNDER_ON = When("under `on_*`")
-
-
-class ScreenWaitReply(DosboxEnvelope, total=False):
+class ScreenWaitReply(DosboxEnvelope, tool_replies.StopWaitFields, total=False):
     already: bool
     cause: str
     regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
@@ -448,10 +445,6 @@ class ScreenWaitReply(DosboxEnvelope, total=False):
     verdict: Required[str]
     waited_s: float
     watches: list[Any]
-    waited_on: Annotated[dict[str, Any], UNDER_ON]
-    firings: Annotated[int, UNDER_ON]
-    frames_examined: Annotated[int, UNDER_ON]
-    fired_line: Annotated[int | dict[str, Any], UNDER_ON]
 
 
 FROM_A_STOPPED_MACHINE = When("from a stopped machine")
@@ -533,7 +526,8 @@ class SnapshotReply(DosboxEnvelope, total=False):
     sha256: Required[str]
 
 
-class StartReply(WindowRefused, account.SequenceFields, total=False):
+class StartReply(WindowRefused, account.SequenceFields, tool_replies.ProfileRefusedFields,
+                 total=False):
     kept: Annotated[str, OmitEmpty]
     failed_at: int | dict[str, Any]
     held: int

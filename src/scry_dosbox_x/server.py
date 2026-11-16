@@ -949,9 +949,8 @@ def screen_wait(text: str = "", screen: str = "", palette: str = "", changed: bo
     Reply: `verdict` `TARGET` (`predicate`, `already`, `waited_s`, `polls`, `sampled_every`;
     text adds `point` `[column, row]` and `line`, screen adds `screen`, palette adds `entries`) or
     `TIMEOUT` (the same, with `retrace_pending`), `note`, the stop reply of `run_to` with its
-    `frame` (unless the predicate was already true); under `on_*`, `waited_on`, `firings`,
-    `frames_examined` (the frames looked at after a firing) and `fired_line` in place of `polls`
-    and `sampled_every`, and `changed` adds `screen` and `started_on`. Refused: `bad_argument`,
+    `frame` (unless the predicate was already true); {ON_FIELDS}, and `changed` adds `screen` and
+    `started_on`. Refused: `bad_argument`,
     `unknown_ref` (no such mapped screen or declared row), `needs_call` (`changed` with no map
     loaded), `wait_stopped` (another declared breakpoint stopped it), `never_fired` (the row
     never fired within `seconds`), `no_channel` (a screen it cannot read, or a build with no

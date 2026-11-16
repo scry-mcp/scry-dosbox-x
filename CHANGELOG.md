@@ -4,6 +4,10 @@ What a client of the server notices.
 
 ## Unreleased
 
+- `screen_wait` refuses a watch that follows a pointer saying its firing "cannot be told from
+  another stop", where it said "from a retrace".
+- `start` refused for a `profile` no directory above holds carries `searched`, the directories
+  it walked, the `cwd` hint included.
 - scry-core 0.115.0 pinned: the at-stop wait's refusals and note, its reply fields and their
   sentence, and what a `start` or a map's `add` keeps for `promote` are the same code on both
   servers.

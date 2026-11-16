@@ -1872,6 +1872,33 @@ def test_a_firing_whose_condition_fails_arms_no_judgement(tmp_path: Path) -> Non
     assert "met the condition, so no screen was judged" in r["note"], r["note"]
 
 
+def test_a_firing_whose_retrace_never_shows_the_text_times_out_saying_where_it_judged(
+        tmp_path: Path) -> None:
+    at_breakpoint(tmp_path, ["probe-booted"] * 5,
+                  [Stop(BP_STOP, ms=3.0), Stop(FRAME_STOP, ms=FRAME_MS)] * 2)
+    r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", on_breakpoint="0814:0108",
+                                                seconds=0.5))
+    assert r["status"] == "ok" and r["verdict"] == "TIMEOUT" and r["frames_examined"] == 2, r
+    assert ("was not found at the retrace after any of 2 firings of the breakpoint '0814:0108' "
+            "within 0.5 s") in r["note"], r["note"]
+
+
+@pytest.mark.parametrize(("by", "ref", "mode", "said"), [
+    ("address", "0040:006C", "show", "the watch '0040:006C' is a `show` watch"),
+    ("pointer", "[0040:006C]+0x2", "change", "the watch '[0040:006C]+0x2' follows a pointer"),
+])
+def test_a_watch_that_cannot_tell_its_firing_is_refused_before_a_retrace(
+        tmp_path: Path, by: str, ref: str, mode: str, said: str) -> None:
+    machine = at_breakpoint(tmp_path, ["probe-booted"], [Stop(ms=FRAME_MS)])
+    assert dstate.STATE.store is not None
+    dstate.STATE.store.add(arming.declare("watch", by, ref, cpu=grammar.REAL_MODE,
+                                          watch_mode=mode, width=1, fmt="u8"))
+    r = cast(dict[str, Any], server.screen_wait(text="C:", on_watch=ref, seconds=5))
+    assert r["status"] == "INVALID" and r["code"] == "bad_argument", r
+    assert r["message"].startswith(said), r["message"]
+    assert vrts(machine) == []
+
+
 def test_a_breakpoint_that_never_fires_is_refused_not_a_timeout(tmp_path: Path) -> None:
     at_breakpoint(tmp_path, ["probe-booted"] * 3, [Stop(FRAME_STOP, ms=FRAME_MS)] * 2)
     r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", on_breakpoint="0814:0108",
