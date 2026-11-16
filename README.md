@@ -84,7 +84,7 @@ To watch it, `start` takes `shared=true`, `display` (the OS's display index, 0 t
 `fullscreen` and `size`, and proves the window is on the display you asked, refusing by name
 (`window_not_visible`) when it is not, which includes a DOSBox-X that keeps its default window
 until the guest runs: `resume`, then `window`. With `fullscreen` DOSBox-X captures the mouse,
-so the guest pointer no longer follows the host cursor; a window keeps it under the cursor. The
+so the guest pointer no longer follows the host cursor. The
 `presence` indicator draws the orange edge that tells the watcher a session is live. All of it is
 on [`start`'s page](docs/reference/session.md#start).
 
