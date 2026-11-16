@@ -18,7 +18,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from channel_double import NOT_RECOGNIZED, Machine, Stop, protected, session_over
+from channel_double import Machine, Stop, protected, session_over
 from dosbox_x_server_support import clean_session, install, runnable  # noqa: F401
 from scry_core.file_names import written_as
 from scry_core.host_program import MODE_BITS
@@ -68,7 +68,7 @@ class TraceMachine(Machine):
             with self.logfile.open("a", encoding="latin-1") as f:
                 f.write(cap(self.appends))
         if how == "refused":
-            return False, ["DEBUG: Starting log", tracing.NOT_CREATED_LINE, NOT_RECOGNIZED]
+            return False, ["DEBUG: Starting log", tracing.NOT_CREATED_LINE]
         assert self.cwd is not None
         log = self.cwd / tracing.LOG_FILE
         if name is not None:

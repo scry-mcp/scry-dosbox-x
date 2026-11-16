@@ -72,8 +72,7 @@ class Channel:
         if self.refuse:
             if self.partial:
                 Path(path).write_bytes(b"PK half")
-            return False, [*self.logged, f"DEBUG: {verb} {self.refuse}",
-                           "*** Debugger command not recognized"]
+            return False, [*self.logged, f"DEBUG: {verb} {self.refuse}"]
         if verb == "SAVESTATE":
             write_state(Path(path))
             return True, [f"DEBUG: Saved {path}"]

@@ -346,8 +346,9 @@ def test_an_answer_that_is_not_capture_s_line_is_refused(tmp_path: Path) -> None
 
 def test_a_capture_that_cannot_be_turned_off_is_said_and_never_checked(tmp_path: Path) -> None:
     machine = live(tmp_path)
-    machine.hooks["CAPTURE"] = lambda body: ((False, ["*** Debugger command not recognized"])
-                                             if body.endswith(" OFF") else None)
+    machine.hooks["CAPTURE"] = lambda body: (
+        (False, [f"DEBUG: CAPTURE {body.split()[1]} did not turn OFF"])
+        if body.endswith(" OFF") else None)
     got = _ok(server.audio_record(frames=2))
     assert got["ended"] is False and "`close`" in got["note"], got
     assert "path" not in got
@@ -356,8 +357,9 @@ def test_a_capture_that_cannot_be_turned_off_is_said_and_never_checked(tmp_path:
 def test_a_video_capture_that_cannot_be_turned_off_says_why_it_has_no_file(
         tmp_path: Path) -> None:
     machine = live(tmp_path)
-    machine.hooks["CAPTURE"] = lambda body: ((False, ["*** Debugger command not recognized"])
-                                             if body.endswith(" OFF") else None)
+    machine.hooks["CAPTURE"] = lambda body: (
+        (False, [f"DEBUG: CAPTURE {body.split()[1]} did not turn OFF"])
+        if body.endswith(" OFF") else None)
     got = _ok(server.record(frames=2))
     assert got["ended"] is False, got
     for field in ("path", "bytes", "avi_frames"):
@@ -475,8 +477,9 @@ def test_a_recording_is_listed_under_its_own_kind_whatever_dest_is_called(
 
 def test_a_capture_left_on_says_so_in_its_one_line(tmp_path: Path) -> None:
     machine = live(tmp_path)
-    machine.hooks["CAPTURE"] = lambda body: ((False, ["*** Debugger command not recognized"])
-                                             if body.endswith(" OFF") else None)
+    machine.hooks["CAPTURE"] = lambda body: (
+        (False, [f"DEBUG: CAPTURE {body.split()[1]} did not turn OFF"])
+        if body.endswith(" OFF") else None)
     got = _ok(server.audio_record(frames=2))
     assert got["summary"].endswith("still recording until `close`"), got["summary"]
 
@@ -512,8 +515,9 @@ def test_a_cancelled_run_still_turns_the_capture_off_and_reads_it_back(
 def test_a_capture_left_on_keeps_the_run_s_own_note(tmp_path: Path,
                                                    monkeypatch: pytest.MonkeyPatch) -> None:
     machine = live(tmp_path)
-    machine.hooks["CAPTURE"] = lambda body: ((False, ["*** Debugger command not recognized"])
-                                             if body.endswith(" OFF") else None)
+    machine.hooks["CAPTURE"] = lambda body: (
+        (False, [f"DEBUG: CAPTURE {body.split()[1]} did not turn OFF"])
+        if body.endswith(" OFF") else None)
     real = retrace.run_for
     monkeypatch.setattr(retrace, "run_for", lambda *a: {**real(*a), "note": "the run's own"})
     got = _ok(server.audio_record(frames=2))

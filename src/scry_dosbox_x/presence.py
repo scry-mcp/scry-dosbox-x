@@ -99,10 +99,9 @@ class ChannelAdapter:
         ok, lines = self._session.exec(
             f"PRESENCE {state} {self._args} pointer={int(self.pointer)}", unless_silent=True)
         if not ok:
-            # A refused key also ends with the debugger's own line, after its reason.
             if lines == [dbg.NOT_RECOGNIZED]:
                 raise presence.Unavailable(NO_COMMAND)
-            said = " / ".join(ln for ln in lines if ln != dbg.NOT_RECOGNIZED) or "no reason given"
+            said = " / ".join(lines) or "no reason given"
             raise RuntimeError(f"the debugger refused PRESENCE: {said}")
         self.answer = lines[0] if lines else ""
         # `output=none` is not refused: no frame has been drawn yet at the parked start.

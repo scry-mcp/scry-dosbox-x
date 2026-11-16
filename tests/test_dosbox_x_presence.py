@@ -137,12 +137,12 @@ def test_a_build_naming_presence_whose_debugger_does_not_parse_it_is_said_unavai
 
 
 def test_what_the_command_refuses_is_said_in_place_of_true() -> None:
-    """Captured off the build: a refusal names its reason, then the debugger's own line."""
-    shown, _ = _shown((False, ["PRESENCE does not know the argument size", dbg.NOT_RECOGNIZED]))
+    """Captured off the build: a refusal is its reason alone."""
+    shown, _ = _shown((False, ["PRESENCE does not know the argument size"]))
     said = shown.reply()
     assert isinstance(said, dict) and said["available"] is False
-    assert "refused PRESENCE" in said["why"] and "argument size" in said["why"], said
-    assert dbg.NOT_RECOGNIZED not in said["why"], "the command was recognised; only a key was not"
+    assert said["why"] == ("the first delivery failed: RuntimeError: the debugger refused "
+                           "PRESENCE: PRESENCE does not know the argument size"), said
     assert shown.held is None
 
 

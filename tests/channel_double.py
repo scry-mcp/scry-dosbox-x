@@ -183,7 +183,7 @@ class Machine:
 
     def _do_stepin(self, _: list[str]) -> tuple[bool, list[str]]:
         if not self.stopped:
-            return False, ["DEBUG: STEPIN requires the debugger to be stopped", NOT_RECOGNIZED]
+            return False, ["DEBUG: STEPIN requires the debugger to be stopped"]
         if self.steps:
             self.regs.update(self.steps.pop(0))
         r = self.regs
@@ -218,17 +218,16 @@ class Machine:
 
     def _do_tap(self, args: list[str]) -> tuple[bool, list[str]]:
         usage = (False, ["DEBUG: TAP usage: TAP W seg:off [bseg:boff blen] file | TAP R seg:off "
-                         "file | TAP C seg:off len file (hex; len at most 400, blen at most 80)",
-                         NOT_RECOGNIZED])
+                         "file | TAP C seg:off len file (hex; len at most 400, blen at most 80)"])
         if len(args) < 3 or args[0] not in ("W", "R", "C"):
             return usage
         if not self.stopped:
-            return False, ["DEBUG: TAP requires the debugger to be stopped", NOT_RECOGNIZED]
+            return False, ["DEBUG: TAP requires the debugger to be stopped"]
         seg, off = (int(x, 16) for x in args[1].split(":"))
         length = int(args[2], 16) if args[0] == "C" else 1
         path = Path(args[-1])
         if not path.parent.is_dir():
-            return False, [f"DEBUG: TAP cannot write {path}", NOT_RECOGNIZED]
+            return False, [f"DEBUG: TAP cannot write {path}"]
         path.write_text("")
         tap = self.tap_next
         self.tap_next += 1
@@ -256,7 +255,7 @@ class Machine:
         every = args == ["*"]
         gone = list(self.taps) if every else [int(args[0])] if int(args[0]) in self.taps else []
         if not gone and not every:
-            return False, [f"DEBUG: TAPDEL no tap {args[0]}", NOT_RECOGNIZED]
+            return False, [f"DEBUG: TAPDEL no tap {args[0]}"]
         for tap in gone:
             del self.taps[tap]
         return True, [f"DEBUG: TAPDEL {len(gone)} removed"]

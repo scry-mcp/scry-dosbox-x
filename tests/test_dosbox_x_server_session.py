@@ -1554,9 +1554,9 @@ def test_a_raw_dostrace_that_would_move_the_dos_channel_is_refused() -> None:
 
 def test_debug_says_when_the_debugger_did_not_take_the_command() -> None:
     fake = install(answer="*** Debugger command not recognized", took=False)
-    got = cast(dict[str, Any], server.debug(command="VGA"))
+    got = cast(dict[str, Any], server.debug(command="NOSUCH"))
     assert got["status"] == "ok" and "did not take it" in got["note"], got
-    assert got["output"] == "*** Debugger command not recognized" and fake.executed == ["VGA"]
+    assert got["output"] == "*** Debugger command not recognized" and fake.executed == ["NOSUCH"]
     fake.answer, fake.took = "Breakpoint list:", True
     got = cast(dict[str, Any], server.debug(command="BPLIST"))
     assert "note" not in got, got
