@@ -62,3 +62,12 @@ def test_the_servers_own_check_judges_the_call(line: str, refusal: str | None) -
     assert verdict.right is (refusal is None), verdict
     if refusal:
         assert verdict.why.startswith(refusal)
+
+
+@pytest.mark.parametrize("condition", ["AX==3", "ax==3", "ax==0x3"])
+def test_a_condition_names_its_register_in_either_case_as_the_server_reads_it(
+        condition: str) -> None:
+    tasks = json.loads((ROOT / "mcp_probe" / "tasks" / "dosbox-x.json").read_text())["tasks"]
+    line = ('d186: {"tool": "screen_wait", "args": {"screen": "title", "on_breakpoint": '
+            f'"draw_done", "condition": "{condition}"}}}}')
+    assert probe_checks.judge_line(SURFACE, tasks, "d186", line).right
