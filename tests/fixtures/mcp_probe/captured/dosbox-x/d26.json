@@ -1,101 +1,101 @@
 {
  "task": {
   "id": "d26",
-  "prompt": "Take one still of the running screen and move it to /tmp/mcp-probe-dos.png, waiting up to 20 seconds.",
+  "prompt": "Take one still of the running screen and move it to {tmp}/mcp-probe-dos.png, waiting up to 20 seconds.",
   "tool": "snapshot",
   "args": {
-   "dest": "/tmp/mcp-probe-dos.png",
+   "dest": "{tmp}/mcp-probe-dos.png",
    "seconds": 20
   }
  },
  "runs": [
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+    "d26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"{tmp}/mcp-probe-dos.png\", \"seconds\": 20}}"
    ],
    "right": true
   }

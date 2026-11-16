@@ -1,100 +1,100 @@
 {
  "task": {
   "id": "d111",
-  "prompt": "Write what this session has done so far as a replay document to /tmp/bench/bricks.json.",
+  "prompt": "Write what this session has done so far as a replay document to {tmp}/bench/bricks.json.",
   "tool": "perform_export",
   "args": {
-   "dest": "/tmp/bench/bricks.json"
+   "dest": "{tmp}/bench/bricks.json"
   }
  },
  "runs": [
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+    "d111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"{tmp}/bench/bricks.json\"}}"
    ],
    "right": true
   }

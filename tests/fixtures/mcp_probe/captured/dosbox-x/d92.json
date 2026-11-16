@@ -1,13 +1,13 @@
 {
  "task": {
   "id": "d92",
-  "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 1200 seconds, nobody watching, running the emulator I built at /opt/dbx-dev/src/dosbox-x instead of the installed one.",
+  "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 1200 seconds, nobody watching, running the emulator I built at {anchor}opt/dbx-dev/src/dosbox-x instead of the installed one.",
   "tool": "start",
   "args": {
-   "conf": "/opt/dosfury/fury.conf",
-   "cwd": "/opt/dosfury",
+   "conf": "{anchor}opt/dosfury/fury.conf",
+   "cwd": "{anchor}opt/dosfury",
    "session_seconds": 1200,
-   "binary": "/opt/dbx-dev/src/dosbox-x"
+   "binary": "{anchor}opt/dbx-dev/src/dosbox-x"
   },
   "allow": [
    "shared"
@@ -16,91 +16,91 @@
  "runs": [
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "d92: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"{anchor}opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   }

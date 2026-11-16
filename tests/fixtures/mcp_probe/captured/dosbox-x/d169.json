@@ -1,21 +1,21 @@
 {
  "task": {
   "id": "d169",
-  "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching it on the main display, with the window filling that display.",
+  "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 900 seconds, for somebody watching it on the main display, with the window filling that display.",
   "tool": "start",
   "args": {
    "any_of": [
     {
-     "conf": "/opt/dosfury/fury.conf",
-     "cwd": "/opt/dosfury",
+     "conf": "{anchor}opt/dosfury/fury.conf",
+     "cwd": "{anchor}opt/dosfury",
      "session_seconds": 900,
      "shared": true,
      "display": 0,
      "fullscreen": true
     },
     {
-     "conf": "/opt/dosfury/fury.conf",
-     "cwd": "/opt/dosfury",
+     "conf": "{anchor}opt/dosfury/fury.conf",
+     "cwd": "{anchor}opt/dosfury",
      "session_seconds": 900,
      "shared": true,
      "fullscreen": true
@@ -26,91 +26,91 @@
  "runs": [
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true, \"display\": 0}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true, \"display\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
+    "d169: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"fullscreen\": true}}"
    ],
    "right": true
   }

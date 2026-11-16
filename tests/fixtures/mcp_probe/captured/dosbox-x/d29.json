@@ -1,10 +1,10 @@
 {
  "task": {
   "id": "d29",
-  "prompt": "Load the Borland map /opt/dosfury/FURY.MAP of the real-mode program loaded at segment 0x0A00, so at base 0xA000, keeping only the names in which the regex sfx is found, and keeping the section and compiler-label symbols too.",
+  "prompt": "Load the Borland map {anchor}opt/dosfury/FURY.MAP of the real-mode program loaded at segment 0x0A00, so at base 0xA000, keeping only the names in which the regex sfx is found, and keeping the section and compiler-label symbols too.",
   "tool": "symbols_load",
   "args": {
-   "path": "/opt/dosfury/FURY.MAP",
+   "path": "{anchor}opt/dosfury/FURY.MAP",
    "base": {
     "any_of": [
      "A000",
@@ -22,91 +22,91 @@
  "runs": [
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   }

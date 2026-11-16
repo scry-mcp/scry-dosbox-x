@@ -1,11 +1,11 @@
 {
  "task": {
   "id": "d133",
-  "prompt": "The guest is stopped. Record the next 35 display frames of the screen to a video file at /tmp/mcp-probe-frames.avi.",
+  "prompt": "The guest is stopped. Record the next 35 display frames of the screen to a video file at {tmp}/mcp-probe-frames.avi.",
   "tool": "record",
   "args": {
    "frames": 35,
-   "dest": "/tmp/mcp-probe-frames.avi"
+   "dest": "{tmp}/mcp-probe-frames.avi"
   },
   "allow": [
    "seconds"
@@ -14,91 +14,91 @@
  "runs": [
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"/tmp/mcp-probe-frames.avi\"}}"
+    "d133: {\"tool\": \"record\", \"args\": {\"frames\": 35, \"dest\": \"{tmp}/mcp-probe-frames.avi\"}}"
    ],
    "right": true
   }

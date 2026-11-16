@@ -1,16 +1,16 @@
 {
  "task": {
   "id": "d141",
-  "prompt": "Open a DOSBox-X session from /opt/build/tasm.conf in /opt/build, bounded to 600 seconds, headless, writing its log to /opt/build/run.log. Record every DOS INT 21h call the guest makes, and fingerprint /opt/build/OUT.TXT before it boots so I can tell later whether the guest wrote it.",
+  "prompt": "Open a DOSBox-X session from {anchor}opt/build/tasm.conf in {anchor}opt/build, bounded to 600 seconds, headless, writing its log to {anchor}opt/build/run.log. Record every DOS INT 21h call the guest makes, and fingerprint {anchor}opt/build/OUT.TXT before it boots so I can tell later whether the guest wrote it.",
   "tool": "start",
   "args": {
-   "conf": "/opt/build/tasm.conf",
-   "cwd": "/opt/build",
+   "conf": "{anchor}opt/build/tasm.conf",
+   "cwd": "{anchor}opt/build",
    "session_seconds": 600,
-   "logfile": "/opt/build/run.log",
+   "logfile": "{anchor}opt/build/run.log",
    "dos_calls": true,
    "guest_files": [
-    "/opt/build/OUT.TXT"
+    "{anchor}opt/build/OUT.TXT"
    ]
   },
   "allow": [
@@ -20,91 +20,91 @@
  "runs": [
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"headless\": true, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"headless\": true, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": false
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/build/tasm.conf\", \"cwd\": \"/opt/build\", \"session_seconds\": 600, \"logfile\": \"/opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"/opt/build/OUT.TXT\"]}}"
+    "d141: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/build/tasm.conf\", \"cwd\": \"{anchor}opt/build\", \"session_seconds\": 600, \"logfile\": \"{anchor}opt/build/run.log\", \"dos_calls\": true, \"guest_files\": [\"{anchor}opt/build/OUT.TXT\"]}}"
    ],
    "right": true
   }

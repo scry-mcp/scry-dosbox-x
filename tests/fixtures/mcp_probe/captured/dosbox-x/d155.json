@@ -1,11 +1,11 @@
 {
  "task": {
   "id": "d155",
-  "prompt": "Measure the Sound Blaster recording /tmp/rec/fanfare.wav between 0.5 and 2 seconds, only its left channel: did it sound, how loud, and when did it start?",
+  "prompt": "Measure the Sound Blaster recording {tmp}/rec/fanfare.wav between 0.5 and 2 seconds, only its left channel: did it sound, how loud, and when did it start?",
   "tool": "audio_compare",
   "args": {
    "method": "measure",
-   "path": "/tmp/rec/fanfare.wav",
+   "path": "{tmp}/rec/fanfare.wav",
    "window": [
     0.5,
     2
@@ -19,91 +19,91 @@
  "runs": [
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+    "d155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"{tmp}/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
    ],
    "right": true
   }

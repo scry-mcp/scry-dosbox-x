@@ -1,12 +1,12 @@
 {
  "task": {
   "id": "d110",
-  "prompt": "Check the PNGs in the directory /tmp/shots against the goldens listed in /tmp/shots.sha256.",
+  "prompt": "Check the PNGs in the directory {tmp}/shots against the goldens listed in {tmp}/shots.sha256.",
   "tool": "image_compare",
   "args": {
    "method": "golden",
-   "dir": "/tmp/shots",
-   "checksums": "/tmp/shots.sha256"
+   "dir": "{tmp}/shots",
+   "checksums": "{tmp}/shots.sha256"
   },
   "grammar": [
    "golden"
@@ -15,91 +15,91 @@
  "runs": [
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\"}}"
+    "d110: {\"tool\": \"image_compare\", \"args\": {\"method\": \"golden\", \"dir\": \"{tmp}/shots\", \"checksums\": \"{tmp}/shots.sha256\"}}"
    ],
    "right": true
   }

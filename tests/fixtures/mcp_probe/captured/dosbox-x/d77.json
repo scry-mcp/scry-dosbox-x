@@ -1,12 +1,12 @@
 {
  "task": {
   "id": "d77",
-  "prompt": "The guest is stopped. Trace the next 2000 instructions, recording nothing but the address of each one, into /tmp/addrs.trace.",
+  "prompt": "The guest is stopped. Trace the next 2000 instructions, recording nothing but the address of each one, into {tmp}/addrs.trace.",
   "tool": "trace",
   "args": {
    "instructions": 2000,
    "shape": "cs_ip",
-   "dest": "/tmp/addrs.trace"
+   "dest": "{tmp}/addrs.trace"
   },
   "grammar": [
    "cs_ip"
@@ -15,91 +15,91 @@
  "runs": [
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+    "d77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"{tmp}/addrs.trace\"}}"
    ],
    "right": true
   }

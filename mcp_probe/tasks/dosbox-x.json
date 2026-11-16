@@ -7,16 +7,16 @@
   },
   {
    "id": "d02",
-   "prompt": "Open a DOSBox-X session from the conf /opt/dosfury/fury.conf in the working directory /opt/dosfury, bounded to 5400 seconds, with nobody watching. Run the program FURY.EXE after the autoexec and record it to video in /opt/dosfury/caps, write the guest's E9 instrumentation to /opt/dosfury/e9.log, and open the serial input route on TCP port 5823.",
+   "prompt": "Open a DOSBox-X session from the conf {anchor}opt/dosfury/fury.conf in the working directory {anchor}opt/dosfury, bounded to 5400 seconds, with nobody watching. Run the program FURY.EXE after the autoexec and record it to video in {anchor}opt/dosfury/caps, write the guest's E9 instrumentation to {anchor}opt/dosfury/e9.log, and open the serial input route on TCP port 5823.",
    "tool": "start",
    "args": {
-    "conf": "/opt/dosfury/fury.conf",
-    "cwd": "/opt/dosfury",
+    "conf": "{anchor}opt/dosfury/fury.conf",
+    "cwd": "{anchor}opt/dosfury",
     "session_seconds": 5400,
     "program": "FURY.EXE",
     "capture_video": true,
-    "captures_dir": "/opt/dosfury/caps",
-    "logfile": "/opt/dosfury/e9.log",
+    "captures_dir": "{anchor}opt/dosfury/caps",
+    "logfile": "{anchor}opt/dosfury/e9.log",
     "input_port": 5823
    },
    "allow": [
@@ -25,14 +25,14 @@
   },
   {
    "id": "d03",
-   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody who is watching. Keep its savestates in /opt/dosfury/states, and on the fresh session run the plan of one operation, reading the registers, waiting at most 12 seconds for a stop.",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 900 seconds, for somebody who is watching. Keep its savestates in {anchor}opt/dosfury/states, and on the fresh session run the plan of one operation, reading the registers, waiting at most 12 seconds for a stop.",
    "tool": "start",
    "args": {
-    "conf": "/opt/dosfury/fury.conf",
-    "cwd": "/opt/dosfury",
+    "conf": "{anchor}opt/dosfury/fury.conf",
+    "cwd": "{anchor}opt/dosfury",
     "session_seconds": 900,
     "shared": true,
-    "state_dir": "/opt/dosfury/states",
+    "state_dir": "{anchor}opt/dosfury/states",
     "plan": [
      {
       "op": "registers"
@@ -108,12 +108,12 @@
   },
   {
    "id": "d10",
-   "prompt": "Dump 4096 bytes of memory from the symbol _vram_copy to the file /tmp/mcp-probe-dos.bin.",
+   "prompt": "Dump 4096 bytes of memory from the symbol _vram_copy to the file {tmp}/mcp-probe-dos.bin.",
    "tool": "memdump",
    "args": {
     "ref": "_vram_copy",
     "length": 4096,
-    "dest": "/tmp/mcp-probe-dos.bin"
+    "dest": "{tmp}/mcp-probe-dos.bin"
    }
   },
   {
@@ -317,10 +317,10 @@
   },
   {
    "id": "d26",
-   "prompt": "Take one still of the running screen and move it to /tmp/mcp-probe-dos.png, waiting up to 20 seconds.",
+   "prompt": "Take one still of the running screen and move it to {tmp}/mcp-probe-dos.png, waiting up to 20 seconds.",
    "tool": "snapshot",
    "args": {
-    "dest": "/tmp/mcp-probe-dos.png",
+    "dest": "{tmp}/mcp-probe-dos.png",
     "seconds": 20
    }
   },
@@ -364,10 +364,10 @@
   },
   {
    "id": "d29",
-   "prompt": "Load the Borland map /opt/dosfury/FURY.MAP of the real-mode program loaded at segment 0x0A00, so at base 0xA000, keeping only the names in which the regex sfx is found, and keeping the section and compiler-label symbols too.",
+   "prompt": "Load the Borland map {anchor}opt/dosfury/FURY.MAP of the real-mode program loaded at segment 0x0A00, so at base 0xA000, keeping only the names in which the regex sfx is found, and keeping the section and compiler-label symbols too.",
    "tool": "symbols_load",
    "args": {
-    "path": "/opt/dosfury/FURY.MAP",
+    "path": "{anchor}opt/dosfury/FURY.MAP",
     "base": {
      "any_of": [
       "A000",
@@ -384,12 +384,12 @@
   },
   {
    "id": "d30",
-   "prompt": "Load the nm output /opt/game/game.sym of a DJGPP program, measuring its base off the DS selector, and type its symbols with the file /opt/game/game.types.",
+   "prompt": "Load the nm output {anchor}opt/game/game.sym of a DJGPP program, measuring its base off the DS selector, and type its symbols with the file {anchor}opt/game/game.types.",
    "tool": "symbols_load",
    "args": {
-    "path": "/opt/game/game.sym",
+    "path": "{anchor}opt/game/game.sym",
     "base_from": "DS",
-    "types": "/opt/game/game.types"
+    "types": "{anchor}opt/game/game.types"
    },
    "grammar": [
     "DS"
@@ -397,10 +397,10 @@
   },
   {
    "id": "d31",
-   "prompt": "Load the Open Watcom map /opt/game/game.map, whose section 2 is based at 0x501000.",
+   "prompt": "Load the Open Watcom map {anchor}opt/game/game.map, whose section 2 is based at 0x501000.",
    "tool": "symbols_load",
    "args": {
-    "path": "/opt/game/game.map",
+    "path": "{anchor}opt/game/game.map",
     "section_bases": {
      "2": {
       "any_of": [
@@ -675,12 +675,12 @@
   },
   {
    "id": "d49",
-   "prompt": "Extract frame 1440 of the capture /opt/dosfury/caps/fury_001.avi to /tmp/mcp-probe-frame.png.",
+   "prompt": "Extract frame 1440 of the capture {anchor}opt/dosfury/caps/fury_001.avi to {tmp}/mcp-probe-frame.png.",
    "tool": "capture_frame",
    "args": {
     "frame": 1440,
-    "dest": "/tmp/mcp-probe-frame.png",
-    "capture_path": "/opt/dosfury/caps/fury_001.avi"
+    "dest": "{tmp}/mcp-probe-frame.png",
+    "capture_path": "{anchor}opt/dosfury/caps/fury_001.avi"
    }
   },
   {
@@ -781,11 +781,11 @@
   },
   {
    "id": "d55",
-   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 600 seconds, nobody watching, with the emulator's CPU clock forced by the two command-line tokens -set and cpu cycles=fixed 2500, and with the guest's own int 3 instructions stopping it at the debugger.",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 600 seconds, nobody watching, with the emulator's CPU clock forced by the two command-line tokens -set and cpu cycles=fixed 2500, and with the guest's own int 3 instructions stopping it at the debugger.",
    "tool": "start",
    "args": {
-    "conf": "/opt/dosfury/fury.conf",
-    "cwd": "/opt/dosfury",
+    "conf": "{anchor}opt/dosfury/fury.conf",
+    "cwd": "{anchor}opt/dosfury",
     "session_seconds": 600,
     "flags": [
      "-set",
@@ -988,17 +988,17 @@
   },
   {
    "id": "d67",
-   "prompt": "The guest is stopped. Write every colour of the VGA's DAC as a picture to /tmp/dac.png.",
+   "prompt": "The guest is stopped. Write every colour of the VGA's DAC as a picture to {tmp}/dac.png.",
    "tool": "palette",
    "args": {
     "any_of": [
      {
-      "dest": "/tmp/dac.png"
+      "dest": "{tmp}/dac.png"
      },
      {
       "first": 0,
       "count": 256,
-      "dest": "/tmp/dac.png"
+      "dest": "{tmp}/dac.png"
      }
     ]
    },
@@ -1020,10 +1020,10 @@
   },
   {
    "id": "d70",
-   "prompt": "The guest is stopped in mode 13h. Show me what is on the screen, attached to the reply and enlarged as far as fits, and keep the picture at /tmp/frame.png.",
+   "prompt": "The guest is stopped in mode 13h. Show me what is on the screen, attached to the reply and enlarged as far as fits, and keep the picture at {tmp}/frame.png.",
    "tool": "screen_view",
    "args": {
-    "dest": "/tmp/frame.png"
+    "dest": "{tmp}/frame.png"
    },
    "allow": [
     "scale"
@@ -1085,12 +1085,12 @@
   },
   {
    "id": "d77",
-   "prompt": "The guest is stopped. Trace the next 2000 instructions, recording nothing but the address of each one, into /tmp/addrs.trace.",
+   "prompt": "The guest is stopped. Trace the next 2000 instructions, recording nothing but the address of each one, into {tmp}/addrs.trace.",
    "tool": "trace",
    "args": {
     "instructions": 2000,
     "shape": "cs_ip",
-    "dest": "/tmp/addrs.trace"
+    "dest": "{tmp}/addrs.trace"
    },
    "grammar": [
     "cs_ip"
@@ -1098,12 +1098,12 @@
   },
   {
    "id": "d78",
-   "prompt": "The guest is stopped. Trace 800 instructions in the shape that also records each one's emulated time and CR0, into /tmp/full.trace.",
+   "prompt": "The guest is stopped. Trace 800 instructions in the shape that also records each one's emulated time and CR0, into {tmp}/full.trace.",
    "tool": "trace",
    "args": {
     "instructions": 800,
     "shape": "long",
-    "dest": "/tmp/full.trace"
+    "dest": "{tmp}/full.trace"
    },
    "grammar": [
     "long"
@@ -1111,11 +1111,11 @@
   },
   {
    "id": "d79",
-   "prompt": "The guest is stopped. Trace 250000 instructions with their registers into /tmp/big.trace, allowing the call up to 300 seconds of wall time.",
+   "prompt": "The guest is stopped. Trace 250000 instructions with their registers into {tmp}/big.trace, allowing the call up to 300 seconds of wall time.",
    "tool": "trace",
    "args": {
     "instructions": 250000,
-    "dest": "/tmp/big.trace",
+    "dest": "{tmp}/big.trace",
     "seconds": 300
    }
   },
@@ -1127,11 +1127,11 @@
   },
   {
    "id": "d81",
-   "prompt": "The guest is stopped and its symbol table is loaded. Run the next 4000 instructions and tell me which routines ran and how many instructions each executed, keeping the log in /tmp/cov.trace.",
+   "prompt": "The guest is stopped and its symbol table is loaded. Run the next 4000 instructions and tell me which routines ran and how many instructions each executed, keeping the log in {tmp}/cov.trace.",
    "tool": "trace",
    "args": {
     "instructions": 4000,
-    "dest": "/tmp/cov.trace"
+    "dest": "{tmp}/cov.trace"
    },
    "allow": [
     "shape"
@@ -1194,11 +1194,11 @@
   },
   {
    "id": "d88",
-   "prompt": "Write every note I have left on this program to /tmp/game.comments.tsv so I can commit it with the map.",
+   "prompt": "Write every note I have left on this program to {tmp}/game.comments.tsv so I can commit it with the map.",
    "tool": "comment_write",
    "args": {
     "method": "save",
-    "dest": "/tmp/game.comments.tsv"
+    "dest": "{tmp}/game.comments.tsv"
    },
    "grammar": [
     "save"
@@ -1206,11 +1206,11 @@
   },
   {
    "id": "d89",
-   "prompt": "The guest is stopped. Bring in the notes the project keeps in /tmp/game.comments.tsv.",
+   "prompt": "The guest is stopped. Bring in the notes the project keeps in {tmp}/game.comments.tsv.",
    "tool": "comment_write",
    "args": {
     "method": "load",
-    "path": "/tmp/game.comments.tsv"
+    "path": "{tmp}/game.comments.tsv"
    },
    "grammar": [
     "load"
@@ -1229,21 +1229,21 @@
   },
   {
    "id": "d91",
-   "prompt": "Before I start anything: does the DOSBox-X I built at /opt/dbx-dev/src/dosbox-x carry the debugger? Ask about that build, not the installed one.",
+   "prompt": "Before I start anything: does the DOSBox-X I built at {anchor}opt/dbx-dev/src/dosbox-x carry the debugger? Ask about that build, not the installed one.",
    "tool": "build_check",
    "args": {
-    "binary": "/opt/dbx-dev/src/dosbox-x"
+    "binary": "{anchor}opt/dbx-dev/src/dosbox-x"
    }
   },
   {
    "id": "d92",
-   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 1200 seconds, nobody watching, running the emulator I built at /opt/dbx-dev/src/dosbox-x instead of the installed one.",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 1200 seconds, nobody watching, running the emulator I built at {anchor}opt/dbx-dev/src/dosbox-x instead of the installed one.",
    "tool": "start",
    "args": {
-    "conf": "/opt/dosfury/fury.conf",
-    "cwd": "/opt/dosfury",
+    "conf": "{anchor}opt/dosfury/fury.conf",
+    "cwd": "{anchor}opt/dosfury",
     "session_seconds": 1200,
-    "binary": "/opt/dbx-dev/src/dosbox-x"
+    "binary": "{anchor}opt/dbx-dev/src/dosbox-x"
    },
    "allow": [
     "shared"
@@ -1269,11 +1269,11 @@
   },
   {
    "id": "d94",
-   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody who is watching, but launched behind my own windows so it does not take my focus.",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 900 seconds, for somebody who is watching, but launched behind my own windows so it does not take my focus.",
    "tool": "start",
    "args": {
-    "conf": "/opt/dosfury/fury.conf",
-    "cwd": "/opt/dosfury",
+    "conf": "{anchor}opt/dosfury/fury.conf",
+    "cwd": "{anchor}opt/dosfury",
     "session_seconds": 900,
     "shared": true,
     "background": true
@@ -1323,10 +1323,10 @@
   },
   {
    "id": "d97",
-   "prompt": "The guest is stopped. Write the machine map to the file /tmp/mcp-probe-map.json with no row cut.",
+   "prompt": "The guest is stopped. Write the machine map to the file {tmp}/mcp-probe-map.json with no row cut.",
    "tool": "machine_map",
    "args": {
-    "dest": "/tmp/mcp-probe-map.json"
+    "dest": "{tmp}/mcp-probe-map.json"
    }
   },
   {
@@ -1414,7 +1414,7 @@
   },
   {
    "id": "d102",
-   "prompt": "Make a series of frames 100 to 160 of the session's video capture, every 4th frame, only the region at x 0, y 0, 320 by 20, into the new directory /tmp/dx-series.",
+   "prompt": "Make a series of frames 100 to 160 of the session's video capture, every 4th frame, only the region at x 0, y 0, 320 by 20, into the new directory {tmp}/dx-series.",
    "tool": "series_capture",
    "args": {
     "first": 100,
@@ -1426,12 +1426,12 @@
      320,
      20
     ],
-    "dest": "/tmp/dx-series"
+    "dest": "{tmp}/dx-series"
    }
   },
   {
    "id": "d103",
-   "prompt": "Make a series of exactly frames 12, 48 and 96 of the capture /opt/dosfury/caps/fury_001.avi; it can go to the session's scratch.",
+   "prompt": "Make a series of exactly frames 12, 48 and 96 of the capture {anchor}opt/dosfury/caps/fury_001.avi; it can go to the session's scratch.",
    "tool": "series_capture",
    "args": {
     "at_frames": [
@@ -1439,17 +1439,17 @@
      48,
      96
     ],
-    "capture_path": "/opt/dosfury/caps/fury_001.avi"
+    "capture_path": "{anchor}opt/dosfury/caps/fury_001.avi"
    }
   },
   {
    "id": "d104",
-   "prompt": "Compare /tmp/a/f000010.png with /tmp/a/f000011.png, reading the second 2 pixels to the right of the first, and count a channel within 3 as equal.",
+   "prompt": "Compare {tmp}/a/f000010.png with {tmp}/a/f000011.png, reading the second 2 pixels to the right of the first, and count a channel within 3 as equal.",
    "tool": "image_compare",
    "args": {
     "method": "image",
-    "a": "/tmp/a/f000010.png",
-    "b": "/tmp/a/f000011.png",
+    "a": "{tmp}/a/f000010.png",
+    "b": "{tmp}/a/f000011.png",
     "shift": [
      2,
      0
@@ -1462,12 +1462,12 @@
   },
   {
    "id": "d105",
-   "prompt": "Compare the pictures /tmp/a/before.png and /tmp/b/after.png, which are not the same size, over the rectangle at x 0, y 0, 200 by 150 they share.",
+   "prompt": "Compare the pictures {tmp}/a/before.png and {tmp}/b/after.png, which are not the same size, over the rectangle at x 0, y 0, 200 by 150 they share.",
    "tool": "image_compare",
    "args": {
     "method": "image",
-    "a": "/tmp/a/before.png",
-    "b": "/tmp/b/after.png",
+    "a": "{tmp}/a/before.png",
+    "b": "{tmp}/b/after.png",
     "crop": [
      0,
      0,
@@ -1481,12 +1481,12 @@
   },
   {
    "id": "d106",
-   "prompt": "Compare the series /tmp/run1/manifest.json against /tmp/run2/manifest.json, only over the rectangle at x 8, y 8, 32 by 16.",
+   "prompt": "Compare the series {tmp}/run1/manifest.json against {tmp}/run2/manifest.json, only over the rectangle at x 8, y 8, 32 by 16.",
    "tool": "image_compare",
    "args": {
     "method": "series",
-    "a": "/tmp/run1/manifest.json",
-    "b": "/tmp/run2/manifest.json",
+    "a": "{tmp}/run1/manifest.json",
+    "b": "{tmp}/run2/manifest.json",
     "crop": [
      8,
      8,
@@ -1500,11 +1500,11 @@
   },
   {
    "id": "d107",
-   "prompt": "In the series /tmp/run1/manifest.json, when does the rectangle at x 100, y 20, 24 by 8 match the picture /tmp/ref/digit.png in 95% or more of its pixels? List at most 10 changes.",
+   "prompt": "In the series {tmp}/run1/manifest.json, when does the rectangle at x 100, y 20, 24 by 8 match the picture {tmp}/ref/digit.png in 95% or more of its pixels? List at most 10 changes.",
    "tool": "image_compare",
    "args": {
     "method": "region",
-    "manifest": "/tmp/run1/manifest.json",
+    "manifest": "{tmp}/run1/manifest.json",
     "crop": [
      100,
      20,
@@ -1512,7 +1512,7 @@
      8
     ],
     "measure": "match",
-    "ref": "/tmp/ref/digit.png",
+    "ref": "{tmp}/ref/digit.png",
     "threshold": 0.95,
     "limit": 10
    },
@@ -1523,11 +1523,11 @@
   },
   {
    "id": "d108",
-   "prompt": "In the series /tmp/run1/manifest.json, how many pixels of the rectangle at x 0, y 180, 320 by 20 changed from the frame before, on each frame where some did?",
+   "prompt": "In the series {tmp}/run1/manifest.json, how many pixels of the rectangle at x 0, y 180, 320 by 20 changed from the frame before, on each frame where some did?",
    "tool": "image_compare",
    "args": {
     "method": "region",
-    "manifest": "/tmp/run1/manifest.json",
+    "manifest": "{tmp}/run1/manifest.json",
     "crop": [
      0,
      180,
@@ -1543,12 +1543,12 @@
   },
   {
    "id": "d109",
-   "prompt": "Check the frames of the series /tmp/run1/manifest.json against the goldens listed in /tmp/goldens.sha256.",
+   "prompt": "Check the frames of the series {tmp}/run1/manifest.json against the goldens listed in {tmp}/goldens.sha256.",
    "tool": "image_compare",
    "args": {
     "method": "golden",
-    "manifest": "/tmp/run1/manifest.json",
-    "checksums": "/tmp/goldens.sha256"
+    "manifest": "{tmp}/run1/manifest.json",
+    "checksums": "{tmp}/goldens.sha256"
    },
    "grammar": [
     "golden"
@@ -1556,12 +1556,12 @@
   },
   {
    "id": "d110",
-   "prompt": "Check the PNGs in the directory /tmp/shots against the goldens listed in /tmp/shots.sha256.",
+   "prompt": "Check the PNGs in the directory {tmp}/shots against the goldens listed in {tmp}/shots.sha256.",
    "tool": "image_compare",
    "args": {
     "method": "golden",
-    "dir": "/tmp/shots",
-    "checksums": "/tmp/shots.sha256"
+    "dir": "{tmp}/shots",
+    "checksums": "{tmp}/shots.sha256"
    },
    "grammar": [
     "golden"
@@ -1569,18 +1569,18 @@
   },
   {
    "id": "d111",
-   "prompt": "Write what this session has done so far as a replay document to /tmp/bench/bricks.json.",
+   "prompt": "Write what this session has done so far as a replay document to {tmp}/bench/bricks.json.",
    "tool": "perform_export",
    "args": {
-    "dest": "/tmp/bench/bricks.json"
+    "dest": "{tmp}/bench/bricks.json"
    }
   },
   {
    "id": "d112",
-   "prompt": "Export this session as a replay to /tmp/bench/bricks.json, replacing the document already there.",
+   "prompt": "Export this session as a replay to {tmp}/bench/bricks.json, replacing the document already there.",
    "tool": "perform_export",
    "args": {
-    "dest": "/tmp/bench/bricks.json",
+    "dest": "{tmp}/bench/bricks.json",
     "overwrite": true
    }
   },
@@ -1629,21 +1629,21 @@
   },
   {
    "id": "d116",
-   "prompt": "The guest is stopped in mode 13h. Save what is on the screen to /tmp/quiet.png, but do not attach the picture to your reply: I only need the file.",
+   "prompt": "The guest is stopped in mode 13h. Save what is on the screen to {tmp}/quiet.png, but do not attach the picture to your reply: I only need the file.",
    "tool": "screen_view",
    "args": {
-    "dest": "/tmp/quiet.png",
+    "dest": "{tmp}/quiet.png",
     "attach": false
    }
   },
   {
    "id": "d117",
-   "prompt": "Check the PNGs in the directory /tmp/shots against the goldens listed in /tmp/shots.sha256, listing at most 5 names in each list.",
+   "prompt": "Check the PNGs in the directory {tmp}/shots against the goldens listed in {tmp}/shots.sha256, listing at most 5 names in each list.",
    "tool": "image_compare",
    "args": {
     "method": "golden",
-    "dir": "/tmp/shots",
-    "checksums": "/tmp/shots.sha256",
+    "dir": "{tmp}/shots",
+    "checksums": "{tmp}/shots.sha256",
     "limit": 5
    },
    "grammar": [
@@ -1652,11 +1652,11 @@
   },
   {
    "id": "d118",
-   "prompt": "Load the screen map /tmp/maps/bricks.screen-map.json.",
+   "prompt": "Load the screen map {tmp}/maps/bricks.screen-map.json.",
    "tool": "screen_map_write",
    "args": {
     "method": "load",
-    "path": "/tmp/maps/bricks.screen-map.json"
+    "path": "{tmp}/maps/bricks.screen-map.json"
    },
    "grammar": [
     "load"
@@ -1701,11 +1701,11 @@
   },
   {
    "id": "d121",
-   "prompt": "Write this session's screen maps to /tmp/maps/bricks.screen-map.json, replacing the file that is there.",
+   "prompt": "Write this session's screen maps to {tmp}/maps/bricks.screen-map.json, replacing the file that is there.",
    "tool": "screen_map_write",
    "args": {
     "method": "save",
-    "dest": "/tmp/maps/bricks.screen-map.json",
+    "dest": "{tmp}/maps/bricks.screen-map.json",
     "overwrite": true
    },
    "grammar": [
@@ -1740,11 +1740,11 @@
   },
   {
    "id": "d125",
-   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, with nobody watching. Do not mark its window with the edge that shows a session is holding it.",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 900 seconds, with nobody watching. Do not mark its window with the edge that shows a session is holding it.",
    "tool": "start",
    "args": {
-    "conf": "/opt/dosfury/fury.conf",
-    "cwd": "/opt/dosfury",
+    "conf": "{anchor}opt/dosfury/fury.conf",
+    "cwd": "{anchor}opt/dosfury",
     "session_seconds": 900,
     "presence": false
    }
@@ -1851,11 +1851,11 @@
   },
   {
    "id": "d133",
-   "prompt": "The guest is stopped. Record the next 35 display frames of the screen to a video file at /tmp/mcp-probe-frames.avi.",
+   "prompt": "The guest is stopped. Record the next 35 display frames of the screen to a video file at {tmp}/mcp-probe-frames.avi.",
    "tool": "record",
    "args": {
     "frames": 35,
-    "dest": "/tmp/mcp-probe-frames.avi"
+    "dest": "{tmp}/mcp-probe-frames.avi"
    },
    "allow": [
     "seconds"
@@ -1976,16 +1976,16 @@
   },
   {
    "id": "d141",
-   "prompt": "Open a DOSBox-X session from /opt/build/tasm.conf in /opt/build, bounded to 600 seconds, headless, writing its log to /opt/build/run.log. Record every DOS INT 21h call the guest makes, and fingerprint /opt/build/OUT.TXT before it boots so I can tell later whether the guest wrote it.",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/build/tasm.conf in {anchor}opt/build, bounded to 600 seconds, headless, writing its log to {anchor}opt/build/run.log. Record every DOS INT 21h call the guest makes, and fingerprint {anchor}opt/build/OUT.TXT before it boots so I can tell later whether the guest wrote it.",
    "tool": "start",
    "args": {
-    "conf": "/opt/build/tasm.conf",
-    "cwd": "/opt/build",
+    "conf": "{anchor}opt/build/tasm.conf",
+    "cwd": "{anchor}opt/build",
     "session_seconds": 600,
-    "logfile": "/opt/build/run.log",
+    "logfile": "{anchor}opt/build/run.log",
     "dos_calls": true,
     "guest_files": [
-     "/opt/build/OUT.TXT"
+     "{anchor}opt/build/OUT.TXT"
     ]
    },
    "allow": [
@@ -1994,13 +1994,13 @@
   },
   {
    "id": "d142",
-   "prompt": "Open a DOSBox-X session from /opt/game/game.conf in /opt/game for 900 seconds with its log in /opt/game/emu.log, and have the emulator log its file operations at debug level and its PIT at warn level into that log.",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/game/game.conf in {anchor}opt/game for 900 seconds with its log in {anchor}opt/game/emu.log, and have the emulator log its file operations at debug level and its PIT at warn level into that log.",
    "tool": "start",
    "args": {
-    "conf": "/opt/game/game.conf",
-    "cwd": "/opt/game",
+    "conf": "{anchor}opt/game/game.conf",
+    "cwd": "{anchor}opt/game",
     "session_seconds": 900,
-    "logfile": "/opt/game/emu.log",
+    "logfile": "{anchor}opt/game/emu.log",
     "log_categories": {
      "files": "debug",
      "pit": "warn"
@@ -2132,10 +2132,10 @@
   },
   {
    "id": "d150",
-   "prompt": "Did the guest write /opt/build/OUT.TXT during this run, leave it empty, or leave the old one untouched?",
+   "prompt": "Did the guest write {anchor}opt/build/OUT.TXT during this run, leave it empty, or leave the old one untouched?",
    "tool": "guest_file",
    "args": {
-    "path": "/opt/build/OUT.TXT"
+    "path": "{anchor}opt/build/OUT.TXT"
    }
   },
   {
@@ -2219,11 +2219,11 @@
   },
   {
    "id": "d155",
-   "prompt": "Measure the Sound Blaster recording /tmp/rec/fanfare.wav between 0.5 and 2 seconds, only its left channel: did it sound, how loud, and when did it start?",
+   "prompt": "Measure the Sound Blaster recording {tmp}/rec/fanfare.wav between 0.5 and 2 seconds, only its left channel: did it sound, how loud, and when did it start?",
    "tool": "audio_compare",
    "args": {
     "method": "measure",
-    "path": "/tmp/rec/fanfare.wav",
+    "path": "{tmp}/rec/fanfare.wav",
     "window": [
      0.5,
      2
@@ -2236,11 +2236,11 @@
   },
   {
    "id": "d156",
-   "prompt": "Measure the whole recording /tmp/rec/menu.wav, every channel.",
+   "prompt": "Measure the whole recording {tmp}/rec/menu.wav, every channel.",
    "tool": "audio_compare",
    "args": {
     "method": "measure",
-    "path": "/tmp/rec/menu.wav"
+    "path": "{tmp}/rec/menu.wav"
    },
    "grammar": [
     "measure"
@@ -2248,12 +2248,12 @@
   },
   {
    "id": "d157",
-   "prompt": "Compare the recording /tmp/rec/new.wav with the reference /tmp/rec/ref.wav over their first 3 seconds, without lining up their onsets first.",
+   "prompt": "Compare the recording {tmp}/rec/new.wav with the reference {tmp}/rec/ref.wav over their first 3 seconds, without lining up their onsets first.",
    "tool": "audio_compare",
    "args": {
     "method": "diff",
-    "a": "/tmp/rec/new.wav",
-    "b": "/tmp/rec/ref.wav",
+    "a": "{tmp}/rec/new.wav",
+    "b": "{tmp}/rec/ref.wav",
     "window": [
      0,
      3
@@ -2352,11 +2352,11 @@
   },
   {
    "id": "d163",
-   "prompt": "Load the screen map /tmp/maps/speedf.screen-map.json for a machine that shows the game's picture twice as large, with 40 rows of border above and below it.",
+   "prompt": "Load the screen map {tmp}/maps/speedf.screen-map.json for a machine that shows the game's picture twice as large, with 40 rows of border above and below it.",
    "tool": "screen_map_write",
    "args": {
     "method": "load",
-    "path": "/tmp/maps/speedf.screen-map.json",
+    "path": "{tmp}/maps/speedf.screen-map.json",
     "scale": 2,
     "margin": [
      0,
@@ -2369,13 +2369,13 @@
   },
   {
    "id": "d164",
-   "prompt": "Start DOSBox-X on the conf /opt/lineup/lineup.conf with /opt/lineup as the working directory, for at most 900 seconds. Load the linker map /opt/lineup/EXES/LINEUP.MAP with the session, so its names are there as soon as DOS has loaded the game, wherever it puts it.",
+   "prompt": "Start DOSBox-X on the conf {anchor}opt/lineup/lineup.conf with {anchor}opt/lineup as the working directory, for at most 900 seconds. Load the linker map {anchor}opt/lineup/EXES/LINEUP.MAP with the session, so its names are there as soon as DOS has loaded the game, wherever it puts it.",
    "tool": "start",
    "args": {
-    "conf": "/opt/lineup/lineup.conf",
-    "cwd": "/opt/lineup",
+    "conf": "{anchor}opt/lineup/lineup.conf",
+    "cwd": "{anchor}opt/lineup",
     "session_seconds": 900,
-    "symbols": "/opt/lineup/EXES/LINEUP.MAP"
+    "symbols": "{anchor}opt/lineup/EXES/LINEUP.MAP"
    },
    "allow": [
     "base_from"
@@ -2435,11 +2435,11 @@
   },
   {
    "id": "d168",
-   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching on their second display (display 1).",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 900 seconds, for somebody watching on their second display (display 1).",
    "tool": "start",
    "args": {
-    "conf": "/opt/dosfury/fury.conf",
-    "cwd": "/opt/dosfury",
+    "conf": "{anchor}opt/dosfury/fury.conf",
+    "cwd": "{anchor}opt/dosfury",
     "session_seconds": 900,
     "shared": true,
     "display": 1
@@ -2447,21 +2447,21 @@
   },
   {
    "id": "d169",
-   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching it on the main display, with the window filling that display.",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 900 seconds, for somebody watching it on the main display, with the window filling that display.",
    "tool": "start",
    "args": {
     "any_of": [
      {
-      "conf": "/opt/dosfury/fury.conf",
-      "cwd": "/opt/dosfury",
+      "conf": "{anchor}opt/dosfury/fury.conf",
+      "cwd": "{anchor}opt/dosfury",
       "session_seconds": 900,
       "shared": true,
       "display": 0,
       "fullscreen": true
      },
      {
-      "conf": "/opt/dosfury/fury.conf",
-      "cwd": "/opt/dosfury",
+      "conf": "{anchor}opt/dosfury/fury.conf",
+      "cwd": "{anchor}opt/dosfury",
       "session_seconds": 900,
       "shared": true,
       "fullscreen": true
@@ -2471,11 +2471,11 @@
   },
   {
    "id": "d173",
-   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody watching it in a window of exactly 1280 by 960.",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 900 seconds, for somebody watching it in a window of exactly 1280 by 960.",
    "tool": "start",
    "args": {
-    "conf": "/opt/dosfury/fury.conf",
-    "cwd": "/opt/dosfury",
+    "conf": "{anchor}opt/dosfury/fury.conf",
+    "cwd": "{anchor}opt/dosfury",
     "session_seconds": 900,
     "shared": true,
     "size": "1280x960"
@@ -2496,35 +2496,35 @@
   },
   {
    "id": "d172",
-   "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody to watch on the main display, who will point at things with their mouse: the game's own pointer has to stay under their mouse cursor.",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 900 seconds, for somebody to watch on the main display, who will point at things with their mouse: the game's own pointer has to stay under their mouse cursor.",
    "tool": "start",
    "args": {
     "any_of": [
      {
-      "conf": "/opt/dosfury/fury.conf",
-      "cwd": "/opt/dosfury",
+      "conf": "{anchor}opt/dosfury/fury.conf",
+      "cwd": "{anchor}opt/dosfury",
       "session_seconds": 900,
       "shared": true,
       "display": 0,
       "fullscreen": false
      },
      {
-      "conf": "/opt/dosfury/fury.conf",
-      "cwd": "/opt/dosfury",
+      "conf": "{anchor}opt/dosfury/fury.conf",
+      "cwd": "{anchor}opt/dosfury",
       "session_seconds": 900,
       "shared": true,
       "display": 0
      },
      {
-      "conf": "/opt/dosfury/fury.conf",
-      "cwd": "/opt/dosfury",
+      "conf": "{anchor}opt/dosfury/fury.conf",
+      "cwd": "{anchor}opt/dosfury",
       "session_seconds": 900,
       "shared": true,
       "fullscreen": false
      },
      {
-      "conf": "/opt/dosfury/fury.conf",
-      "cwd": "/opt/dosfury",
+      "conf": "{anchor}opt/dosfury/fury.conf",
+      "cwd": "{anchor}opt/dosfury",
       "session_seconds": 900,
       "shared": true
      }
@@ -2603,10 +2603,10 @@
   },
   {
    "id": "d179",
-   "prompt": "Replay the session kept in /tmp/mcp-probe-session.json on this guest, in one call, and do not send the steps yourself.",
+   "prompt": "Replay the session kept in {tmp}/mcp-probe-session.json on this guest, in one call, and do not send the steps yourself.",
    "tool": "perform",
    "args": {
-    "path": "/tmp/mcp-probe-session.json"
+    "path": "{tmp}/mcp-probe-session.json"
    }
   },
   {
@@ -2619,7 +2619,7 @@
   },
   {
    "id": "d181",
-   "prompt": "Promote only the map candidate this session kept under the name probe into the repository at /tmp/probe-repo, writing it there as bench-map, and nothing else.",
+   "prompt": "Promote only the map candidate this session kept under the name probe into the repository at {tmp}/probe-repo, writing it there as bench-map, and nothing else.",
    "tool": "promote",
    "args": {
     "entries": [
@@ -2628,16 +2628,16 @@
     "names": {
      "maps/probe": "bench-map"
     },
-    "root": "/tmp/probe-repo"
+    "root": "{tmp}/probe-repo"
    }
   },
   {
    "id": "d182",
-   "prompt": "Several entries are kept for the store at /tmp/probe-repo. Show which could be written and which could not, and why, without writing any.",
+   "prompt": "Several entries are kept for the store at {tmp}/probe-repo. Show which could be written and which could not, and why, without writing any.",
    "tool": "promote",
    "args": {
     "dry_run": true,
-    "root": "/tmp/probe-repo"
+    "root": "{tmp}/probe-repo"
    }
   },
   {

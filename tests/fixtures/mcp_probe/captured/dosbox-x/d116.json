@@ -1,101 +1,101 @@
 {
  "task": {
   "id": "d116",
-  "prompt": "The guest is stopped in mode 13h. Save what is on the screen to /tmp/quiet.png, but do not attach the picture to your reply: I only need the file.",
+  "prompt": "The guest is stopped in mode 13h. Save what is on the screen to {tmp}/quiet.png, but do not attach the picture to your reply: I only need the file.",
   "tool": "screen_view",
   "args": {
-   "dest": "/tmp/quiet.png",
+   "dest": "{tmp}/quiet.png",
    "attach": false
   }
  },
  "runs": [
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"attach\": false, \"dest\": \"/tmp/quiet.png\"}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"attach\": false, \"dest\": \"{tmp}/quiet.png\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"render\", \"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+    "d116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"{tmp}/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   }

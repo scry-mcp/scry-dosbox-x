@@ -1,11 +1,11 @@
 {
  "task": {
   "id": "d88",
-  "prompt": "Write every note I have left on this program to /tmp/game.comments.tsv so I can commit it with the map.",
+  "prompt": "Write every note I have left on this program to {tmp}/game.comments.tsv so I can commit it with the map.",
   "tool": "comment_write",
   "args": {
    "method": "save",
-   "dest": "/tmp/game.comments.tsv"
+   "dest": "{tmp}/game.comments.tsv"
   },
   "grammar": [
    "save"
@@ -14,91 +14,91 @@
  "runs": [
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/game.comments.tsv\"}}"
+    "d88: {\"tool\": \"comment_write\", \"args\": {\"method\": \"save\", \"dest\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   }

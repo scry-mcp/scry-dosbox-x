@@ -1,11 +1,11 @@
 {
  "task": {
   "id": "d89",
-  "prompt": "The guest is stopped. Bring in the notes the project keeps in /tmp/game.comments.tsv.",
+  "prompt": "The guest is stopped. Bring in the notes the project keeps in {tmp}/game.comments.tsv.",
   "tool": "comment_write",
   "args": {
    "method": "load",
-   "path": "/tmp/game.comments.tsv"
+   "path": "{tmp}/game.comments.tsv"
   },
   "grammar": [
    "load"
@@ -14,91 +14,91 @@
  "runs": [
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"/tmp/game.comments.tsv\"}}"
+    "d89: {\"tool\": \"comment_write\", \"args\": {\"method\": \"load\", \"path\": \"{tmp}/game.comments.tsv\"}}"
    ],
    "right": true
   }
