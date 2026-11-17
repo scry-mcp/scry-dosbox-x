@@ -4,7 +4,7 @@ What a client of the server notices.
 
 ## Unreleased
 
-- Takes scry-core 0.118.2.
+- Takes scry-core 0.118.3.
 - `run_to`'s `cut_by_other_stop` refusal says what to do next, as scry-mame's does: `cause` names
   what stopped the run, and a watch is passed with `disarm_watches=true`.
 - `promote` refuses a `start` profile or a `perform` document holding a `${...}` that is no
