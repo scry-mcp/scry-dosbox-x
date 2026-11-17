@@ -177,7 +177,6 @@ Example, from a live run:
   "status": "ok",
   "command": "BPLIST",
   "output": "Breakpoint list:\n-------------------------------------------------------------------------",
-  "output_chars": 90,
   "clipped": false
 }
 ```

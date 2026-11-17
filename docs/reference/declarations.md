@@ -58,6 +58,7 @@ Example, from a live run:
   "status": "ok",
   "ref": "0000:0002",
   "by": "address",
+  "role": "stop",
   "stored": true,
   "armed": true,
   "state": "armed",
@@ -456,6 +457,7 @@ Example, from a live run:
       "origin": "<volatile>",
       "inherited": false,
       "age_s": 0,
+      "role": "stop",
       "entry": "BP 0000:0002",
       "marked": false,
       "state": "armed"

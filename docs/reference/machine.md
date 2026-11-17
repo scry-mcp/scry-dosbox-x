@@ -69,7 +69,7 @@ Example, from a live run:
       "size_bytes": 10992,
       "psp_seg": "0008",
       "notes": "DOS",
-      "filename": "\u0002"
+      "filename": "\"\u0005"
     },
     {
       "memory": "conventional",
@@ -249,7 +249,7 @@ Example, from a live run:
       "bios_mem": {"start": "000fca00", "end": "000fdfff", "status": "ALLOC DYN", "what": "DOSBox callback area"}
     }
   ],
-  "counts": {"vectors": 256, "held": 113, "named": 0},
+  "counts": {"vectors": 256, "held": 112, "named": 0},
   "sources": {
     "vectors": ["INTVEC"],
     "mcbs": ["DOS MCBS"],
@@ -327,13 +327,13 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "log emulator /./: 40 of 164 lines",
+  "summary": "log emulator /./: 40 of 159 lines",
   "status": "ok",
   "pattern": ".",
   "channel": "emulator",
-  "lines_total": 164,
+  "lines_total": 159,
   "truncated": true,
-  "lines": ["pixratio 1.350, dw false, dh false", "Aspect ratio: 720 x 540  xToY=1.333 yToX=0.750", "surface consider=720x400 final=720x400", "DEBUG: RUNSTATE running cycles=242385 ms=25.000100000 frames=2", "DEBUG: RUNSTATE running cycles=292219 ms=30.000100000 frames=2", "DEBUG: RUNSTATE running cycles=332124 ms=34.000100000 frames=2", "... 34 more"]
+  "lines": ["DEBUG: Set interrupt breakpoint at INT 08", "Breakpoint list:", "-------------------------------------------------------------------------", "00. BPINT 08", "DEBUG: RUNSTATE running cycles=1254 ms=0.825700000 frames=0", "pixratio 1.350, dw false, dh false", "... 34 more"]
 }
 ```
 <!-- scry-reference:end log -->

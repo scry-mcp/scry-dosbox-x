@@ -53,7 +53,7 @@ Example, from a live run:
   "debugger": true,
   "heavy_debug": true,
   "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "... 8 more"],
-  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 55 more"]
+  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 56 more"]
 }
 ```
 <!-- scry-reference:end build_check -->
@@ -227,23 +227,23 @@ Example, from a live run:
   "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
   "cwd": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest",
   "session_seconds": 1200,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1021.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1022-save"
+  "logfile": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1033.log",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save"
 }
 ```
 
 ```json
 {
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.136s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.061s",
   "status": "ok",
   "pid": "<volatile>",
   "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
   "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.5,
+  "elapsed_s": 0.3,
   "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1022-save",
-  "ready_after_s": 0.136,
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save",
+  "ready_after_s": 0.061,
   "argv": ["~/.local/state/dosbox-x-builds/scry/dosbox-x", "-conf", "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
   "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
@@ -253,10 +253,11 @@ Example, from a live run:
   "input_port": "<volatile>",
   "background": true,
   "presence": {"available": false, "why": "a session started without `shared` has no window to draw on"},
+  "logfile": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1033.log",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
-  "kept": "kept 1 (promote to review)"
+  "kept": "kept 1 (promote to review); start/probe: no .scry/ in $TMPDIR/dosbox-x-live-job-<run>/A/tests/guest, the repository it was kept in: promote(dry_run=true, root=$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest) lists what an approval would creat ... (241 characters)"
 }
 ```
 <!-- scry-reference:end start -->
@@ -403,10 +404,15 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "window: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
-  "status": "INVALID",
-  "code": "no_session",
-  "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
+  "summary": "window: display 0, on screen, in front",
+  "status": "ok",
+  "window": {
+    "display": 0,
+    "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
+    "onscreen": true,
+    "front": true,
+    "fullscreen": false
+  }
 }
 ```
 <!-- scry-reference:end window -->

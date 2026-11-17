@@ -45,7 +45,7 @@ Example, from a live run:
   "captures": [
     {
       "kind": "bin",
-      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1143.bin",
+      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1155.bin",
       "present": true,
       "bytes": 16
     },
@@ -57,19 +57,19 @@ Example, from a live run:
     },
     {
       "kind": "json",
-      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1320-stopped-screen-map.json",
+      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1332-stopped-screen-map.json",
       "present": true,
       "bytes": 412
     },
     {
       "kind": "trace",
-      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1420.trace",
+      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1444.trace",
       "present": true,
       "bytes": 238
     },
     {
       "kind": "avi",
-      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1482.avi",
+      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1506.avi",
       "present": true,
       "bytes": 36314,
       "riff_avi": true,
@@ -78,7 +78,7 @@ Example, from a live run:
     },
     {
       "kind": "wav",
-      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1495.wav",
+      "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1519.wav",
       "present": true,
       "bytes": 5420,
       "complete": true,
@@ -340,14 +340,14 @@ Example, from a live run:
 ```json
 {
   "frames": 2,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1482.avi",
+  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1506.avi",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "record 2 frames: ELAPSED, 1 frame at $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1482.avi",
+  "summary": "record 2 frames: ELAPSED, 1 frame at $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1506.avi",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 2,
@@ -357,7 +357,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b8",
-    "ECX": "0x00006a87",
+    "ECX": "0x00006a1b",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -373,7 +373,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 82253},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 46555},
   "stop_seq": 10,
   "instruction": {
     "address": "0814:00000130",
@@ -394,7 +394,7 @@ Example, from a live run:
   "frames": 2,
   "began": true,
   "ended": true,
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1482.avi",
+  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1506.avi",
   "bytes": 36314,
   "avi_frames": 1
 }
@@ -483,14 +483,14 @@ Example, from a live run:
 ```json
 {
   "frames": 2,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1495.wav",
+  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1519.wav",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "audio_record wav 2 frames: ELAPSED, 1344 samples at 48000 Hz, silent at $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1495.wav",
+  "summary": "audio_record wav 2 frames: ELAPSED, 1344 samples at 48000 Hz, silent at $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1519.wav",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 2,
@@ -500,7 +500,7 @@ Example, from a live run:
   "regs": {
     "EAX": "0x00000000",
     "EBX": "0x000002b4",
-    "ECX": "0x00001345",
+    "ECX": "0x000012d9",
     "EDX": "0x00000814",
     "ESI": "0x00000173",
     "EDI": "0x0000015d",
@@ -516,7 +516,7 @@ Example, from a live run:
   },
   "watches": [],
   "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 86037},
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 50074},
   "stop_seq": 11,
   "instruction": {
     "address": "0814:00000130",
@@ -537,7 +537,7 @@ Example, from a live run:
   "frames": 2,
   "began": true,
   "ended": true,
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1495.wav",
+  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1519.wav",
   "bytes": 5420,
   "channels": 2,
   "sample_rate_hz": 48000,

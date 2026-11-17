@@ -71,28 +71,47 @@ Example, from a live run:
 ```json
 {
   "dry_run": true,
-  "root": "$TMPDIR/dosbox-x-promote-example-<run>/game"
+  "root": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote"
 }
 ```
 
 ```json
 {
-  "summary": "promote: 1 candidate in $TMPDIR/dosbox-x-promote-example-<run>/game/.scry; would create .scry/, .scry/about.json, .scry/README.md",
+  "summary": "promote: 3 candidates in $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/.scry; would create .scry/, .scry/about.json, .scry/README.md",
   "status": "ok",
-  "store": "$TMPDIR/dosbox-x-promote-example-<run>/game/.scry",
+  "store": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/.scry",
   "candidates": [
     {
-      "entry": "start/bricks",
+      "entry": "maps/probe",
+      "kind": "maps",
+      "name": "probe",
+      "file": ".scry/maps/probe-screen-map.json",
+      "bytes": 328,
+      "change": "new",
+      "from": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/guest"
+    },
+    {
+      "entry": "start/probe",
       "kind": "start",
-      "name": "bricks",
-      "file": ".scry/start/bricks.json",
-      "bytes": 124,
-      "change": "new"
+      "name": "probe",
+      "file": ".scry/start/probe.json",
+      "bytes": 122,
+      "change": "new",
+      "from": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/guest"
+    },
+    {
+      "entry": "start/probe-profile",
+      "kind": "start",
+      "name": "probe-profile",
+      "file": ".scry/start/probe-profile.json",
+      "bytes": 197,
+      "change": "new",
+      "from": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n30-store"
     }
   ],
   "unchanged": [],
-  "total_bytes": 124,
-  "store_bytes": 1419,
+  "total_bytes": 647,
+  "store_bytes": 2221,
   "would_create": [".scry/", ".scry/about.json", ".scry/README.md"]
 }
 ```
