@@ -4,7 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
-- Takes scry-core 0.118.1.
+- Takes scry-core 0.118.2.
+- `promote` refuses a `start` profile or a `perform` document holding a `${...}` that is no
+  placeholder, typed text included, where it wrote a store file `perform(path=)` refused.
 - A DJGPP program's table given to `start(symbols=)` is placed at the first stop in its own 32-bit
   code, where a stop in the DPMI host's 16-bit code placed it at the host's base, and every
   symbol read through it (`read_memory` of a variable, a stop's `symbol`) answered another
