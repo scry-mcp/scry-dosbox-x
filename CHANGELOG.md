@@ -5,6 +5,10 @@ What a client of the server notices.
 ## Unreleased
 
 - Takes scry-core 0.118.3.
+- `stop(until="protected")` with `start(symbols=)`'s DJGPP table held runs on until a stop in
+  the program's own 32-bit code; a stop in the DPMI host's 16-bit protected code ended it, and
+  the program's symbols were then unknown there. A walk that runs out says it did not reach the
+  program's code, where it said protected mode while `cpu_mode` said protected.
 - `run_to`'s `cut_by_other_stop` refusal says what to do next, as scry-mame's does: `cause` names
   what stopped the run, and a watch is passed with `disarm_watches=true`.
 - `promote` refuses a `start` profile or a `perform` document holding a `${...}` that is no

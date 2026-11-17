@@ -10,7 +10,7 @@ from scry_core import cancel, screen_map, stop_wait
 from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
 
-from scry_dosbox_x import arming, folds, placement, retrace, running
+from scry_dosbox_x import arming, folds, grammar, placement, retrace, running
 from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import session as ds
@@ -32,21 +32,37 @@ PROTECTED_RUN_S = 0.007
 PROTECTED_RUN_STEPS = 11
 
 
+def _djgpp_held() -> bool:
+    return STATE.start_symbols is not None and STATE.start_symbols.dpmi
+
+
+def in_the_program(mode: str) -> bool:
+    """Whether a stop in `mode` ends the walk: protected mode, and with a DJGPP table held, the
+    program's own 32-bit code, never the DPMI host's 16-bit code, where it would be placed by
+    the host's CS."""
+    return mode == grammar.PR32_MODE if _djgpp_held() else mode.startswith("Pr")
+
+
+def _walk_end() -> str:
+    """Where the walk ends, in the words of its progress and its note."""
+    return "the program's 32-bit code" if _djgpp_held() else "protected mode"
+
+
 def to_protected(session: ds.Session,
                  progress: ds.Progress = ds.no_progress) -> tuple[int, bool]:
-    """Run a stopped machine in short slices until a stop lands in protected mode: the runs it
-    took and whether one did. A slice a declared stop ended is that stop, and ends the walk: a
-    `BREAK` there would run past it. A `STEPIN` stays inside a BIOS handler, so only running
-    leaves one. Its own cancel point is between two runs."""
+    """Run a stopped machine in short slices until a stop lands in protected mode
+    (`in_the_program`): the runs it took and whether one did. A slice a declared stop ended is
+    that stop, and ends the walk: a `BREAK` there would run past it. A `STEPIN` stays inside a
+    BIOS handler, so only running leaves one. Its own cancel point is between two runs."""
     # The bound is in runs: `expired` is only the cancel point and the clock read `tick` needs.
     clock = mprogress.Ticker(0.0, progress)
     taken = 0
-    while not session.where()["mode"].startswith("Pr"):
+    while not in_the_program(session.where()["mode"]):
         if taken == PROTECTED_RUNS_MAX:
             return taken, False
         clock.expired()
-        clock.tick("stop until protected: run {run} of at most {runs}, not in protected mode "
-                   "yet, {elapsed:.0f}s", run=taken + 1, runs=PROTECTED_RUNS_MAX)
+        clock.tick("stop until protected: run {run} of at most {runs}, not in {end} yet, "
+                   "{elapsed:.0f}s", run=taken + 1, runs=PROTECTED_RUNS_MAX, end=_walk_end())
         session.release("RUN")
         time.sleep(PROTECTED_RUN_S * (1 + taken % PROTECTED_RUN_STEPS))
         taken += 1
@@ -234,15 +250,15 @@ def stop_in_protected_mode(session: ds.Session, progress: ds.Progress) -> dict[s
     else:
         running.observe_stop(session)
         where = session.where()
-        if where["mode"].startswith("Pr"):
+        if in_the_program(where["mode"]):
             last = STATE.current_or_why(session)
             return st.reply(interrupted=False, runs_to_protected=0, last_stop=last,
                             cpu_mode=running.cpu_mode_of(where["mode"], session.paging),
                             pc=f"{where['cs']}:{where['eip']}",
-                            note="the machine was already stopped in protected mode")
+                            note=f"the machine was already stopped in {_walk_end()}")
     runs, arrived = to_protected(session, progress)
     extra: dict[str, Any] = {} if arrived else {"note": (
-        f"did not reach protected mode in {runs} short runs: `cause` says where it stopped, "
+        f"did not reach {_walk_end()} in {runs} short runs: `cause` says where it stopped, "
         "ask again")}
     if interrupted:
         extra["via"] = "break"

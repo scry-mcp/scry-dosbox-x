@@ -772,10 +772,11 @@ def stop(until: Annotated[str, vocab.enum(advance.STOP_UNTIL)] = "",
 
     `until="protected"` is for a stop that landed in real mode (a DPMI client's interrupt, in
     the BIOS), this call's own or one already held: the guest is let run again in short runs, a
-    `BREAK` ending each, until one stops in protected mode, {PROTECTED_RUNS_MAX} runs at most.
-    The machine has then moved on, so what the earlier stop read (screen, memory, registers) no
-    longer describes it; a stop already in protected mode is answered as it stands. `cpu_mode`
-    says where it ended.
+    `BREAK` ending each, until one stops in protected mode, {PROTECTED_RUNS_MAX} runs at most;
+    with `start(symbols=)`'s DJGPP table held, until one stops in the program's own 32-bit code,
+    never the DPMI host's 16-bit code. The machine has then moved on, so what the earlier stop
+    read (screen, memory, registers) no longer describes it; a stop already where the runs would
+    end is answered as it stands. `cpu_mode` says where it ended.
 
     Reply: `interrupted` (`true` with the stop reply and `via: "break"`; `false` when already
     stopped, with a `note`), `runs_to_protected` (with `until`), a `note` if it did not arrive.

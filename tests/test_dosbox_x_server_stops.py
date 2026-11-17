@@ -35,7 +35,17 @@ from scry_core import progress as mprogress
 from scry_core import vocabulary as vocab
 from window_double import window_if
 
-from scry_dosbox_x import advance, arming, checks, folds, grammar, running, sequence, server
+from scry_dosbox_x import (
+    advance,
+    arming,
+    checks,
+    folds,
+    grammar,
+    running,
+    sequence,
+    server,
+    start_symbols,
+)
 from scry_dosbox_x import declarations as dec
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import mcp as dosbox_mcp
@@ -211,6 +221,20 @@ def test_a_real_mode_stop_runs_on_until_a_stop_lands_in_protected_mode() -> None
     assert walk.at == 3
 
 
+@pytest.mark.parametrize("held, runs", [
+    (start_symbols.Held("RECHIP.sym", start_symbols.PROGRAM, coff=True), 2),
+    (start_symbols.Held("GAME.map", start_symbols.PROGRAM), 1),
+    (None, 1),
+])
+def test_a_held_djgpp_table_walks_past_the_dpmi_hosts_16_bit_code_to_the_program(
+        monkeypatch: pytest.MonkeyPatch, held: start_symbols.Held | None, runs: int) -> None:
+    """The DPMI host's own 16-bit code is protected mode but not the program's: a stop there
+    would place a DJGPP table by the host's CS, so the walk goes on to a 32-bit stop."""
+    monkeypatch.setattr(dstate.STATE, "start_symbols", held)
+    walk = _Walk("Real", "Pr16", "Pr32")
+    assert advance.to_protected(cast(ds.Session, walk)) == (runs, True)
+
+
 def test_a_protected_stop_is_already_there_and_nothing_runs() -> None:
     walk = _Walk("Pr32", "Real")
     assert advance.to_protected(cast(ds.Session, walk)) == (0, True)
@@ -282,6 +306,26 @@ def test_stop_until_protected_from_a_parked_stop_answers_the_stop_it_reached(
     got = cast(dict[str, Any], server.stop(until="protected"))
     assert got["interrupted"] is False and got["runs_to_protected"] == 7, got
     assert "pc" in got and "cpu_mode" in got, got
+
+
+def test_stop_until_protected_at_a_dpmi_hosts_stop_with_a_djgpp_table_held_walks_on(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _names(tmp_path, mode="Pr16")
+    monkeypatch.setattr(dstate.STATE, "start_symbols",
+                        start_symbols.Held("RECHIP.sym", start_symbols.PROGRAM, coff=True))
+    monkeypatch.setattr(advance, "to_protected", lambda _s, _p: (3, True))
+    got = cast(dict[str, Any], server.stop(until="protected"))
+    assert got["runs_to_protected"] == 3 and "note" not in got, got
+
+
+def test_a_walk_that_never_reaches_a_held_djgpp_programs_code_says_that_and_not_protected_mode(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _names(tmp_path, mode="Real")
+    monkeypatch.setattr(dstate.STATE, "start_symbols",
+                        start_symbols.Held("RECHIP.sym", start_symbols.PROGRAM, coff=True))
+    monkeypatch.setattr(advance, "to_protected", lambda _s, _p: (64, False))
+    got = cast(dict[str, Any], server.stop(until="protected"))
+    assert "did not reach the program's 32-bit code in 64" in got["note"], got
 
 
 def test_stop_until_protected_that_never_arrives_says_so(

@@ -34,6 +34,11 @@ class Held:
     #: DOS load segment.
     coff: bool = False
 
+    @property
+    def dpmi(self) -> bool:
+        """A DJGPP program's table, placed only at a stop in the program's own 32-bit code."""
+        return self.coff and self.base_from == PROGRAM
+
 
 def check(symbols: str, base_from: str) -> Held | None:
     """`start`'s `symbols` and `base_from`, judged before the boot."""
@@ -80,7 +85,7 @@ def place_if_due(session: ds.Session) -> dict[str, Any] | None:
         return None                     # caught mid-change: the next stop reads again
     segment = load_segment(rows, Path(held.path).stem, held.com)
     program = held.base_from == PROGRAM
-    dpm = program and held.coff
+    dpm = held.dpmi
     if segment is None:
         return None
     # A selector base needs a descriptor, which real mode lacks, and a DJGPP program's own CS:
