@@ -759,7 +759,6 @@ class WriteReply(DosboxEnvelope, total=False):
     ref: Required[str]
     seg_off: Required[str]
     verified: Required[bool]
-    written: int
 
 
 class CommentWriteReply(DosboxEnvelope, tool_replies.CommentWriteFields, total=False):

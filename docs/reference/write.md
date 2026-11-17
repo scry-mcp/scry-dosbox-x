@@ -104,7 +104,6 @@ Reply: `ref`, `seg_off`, `bytes_written`, `readback`, `verified`.
 | `ref` | string |
 | `seg_off` | string |
 | `verified` | boolean |
-| `written` | integer |
 
 Example, from a live run:
 
