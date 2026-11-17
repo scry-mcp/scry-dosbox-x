@@ -259,6 +259,21 @@ def test_a_release_that_lands_on_the_boot_sector_names_the_guest_os_boot(tmp_pat
     assert elsewhere["cause"].startswith("no declared code breakpoint"), elsewhere["cause"]
 
 
+def test_the_boot_sector_stop_found_at_first_contact_is_named_the_same(tmp_path: Path) -> None:
+    fake = _names(tmp_path, mode="Real")
+    fake.cs, fake.eip = "0000", "00007C00"
+    fake.mem[(0, 0x7C00)] = b"\x33\xC0"
+    fake.rows = []
+    running.observe_stop(fake)  # type: ignore[arg-type]
+    assert "guest OS's boot" in dstate.STATE.found_stop_last["cause"], dstate.STATE.found_stop_last
+
+
+@pytest.mark.parametrize("held", [{"retrace_pending": True}, {"regpoints_holding": ["r1"]}])
+def test_a_likelier_cause_at_the_boot_sector_is_not_called_the_boot(held: dict[str, Any]) -> None:
+    attribution = {"attributed": False, "at": dstate.BOOT_SECTOR, **held}
+    assert dstate.boot_sector_stop(attribution) == attribution
+
+
 def test_a_step_onto_an_int_a_held_row_watches_is_not_blamed_on_the_row(tmp_path: Path) -> None:
     """Only a release can stop on a row: a step that lands there did not fire it."""
     fake = _names(tmp_path)

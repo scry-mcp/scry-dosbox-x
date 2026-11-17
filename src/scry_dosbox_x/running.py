@@ -40,6 +40,7 @@ def observe_stop(session: ds.Session) -> None:
                if any(b["entry"].startswith("BPINT ") for b in held) else None)
     if picture is not None:
         attribution = st.interrupt_stop(attribution, picture["instruction"], registers, held)
+    attribution = st.boot_sector_stop(attribution)
     STATE.remember_stop(session, where, registers, held, attribution)
     if picture is not None:
         STATE.last_stop["picture"] = picture

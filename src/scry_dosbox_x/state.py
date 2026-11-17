@@ -458,6 +458,7 @@ def boot_sector_stop(attribution: dict[str, Any]) -> dict[str, Any]:
     """`attribution` with an `own` cause when no declaration explains a stop at the boot sector:
     `-break-start` breaks at every fresh start of the machine, and a guest OS's boot is one."""
     if (attribution.get("attributed") or attribution.get("own")
+            or attribution.get("retrace_pending") or attribution.get("regpoints_holding")
             or attribution.get("at") != BOOT_SECTOR):
         return attribution
     return {**attribution, "own": "most likely the guest OS's boot: `boot` starts the machine "
