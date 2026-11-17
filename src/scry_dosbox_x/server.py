@@ -374,8 +374,8 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
     `note`; on the DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`,
     `caller`, `psp`, `function`, `name`, `file`, `in`, `out`, `error`, `returned`, `returned_s`,
     `switched`, `line`), and `calls_dropped` (on `dos`, past the calls held). INVALID with `code`:
-    no `logfile`, no log yet, no guest instrumentation, `limit` out of range,
-    a bad pattern, an unknown channel (`process` is refused by name), a `since_mark` naming no
+    no `logfile`, no log yet, no guest instrumentation, `limit` out of range, an empty or bad
+    pattern, an unknown channel (`process` is refused by name), a `since_mark` naming no
     position. To wait for a line use `log_wait`.
 
     Reference: REFERENCE.md, The log.
@@ -516,7 +516,8 @@ def call_stack() -> dict[str, Any]:
 
 @tool("Dump memory to a file", summary=one_line.memdump, replay="drop", names_file="dest")
 def memdump(ref: str, length: int, dest: str) -> dict[str, Any]:
-    """`length` bytes from `ref` (a symbol or `SEG:OFF`) to the new file `dest` (absolute).
+    """`length` bytes from `ref` (a symbol or `SEG:OFF`) to the new file `dest` (absolute or
+    `~`-led).
 
     Reply: `ref`, `seg_off`, `length`, `path`, `bytes`. Refused: a dump file already where the
     debugger writes or at `dest`, a `dest` directly in that directory, an absent or ambiguous
@@ -886,7 +887,7 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
     STOPPED with the log in a file, joined to symbols.
 
     `shape`: `normal` (`LOG`), `short` (`LOGS`), `long` (`LOGL`) or `cs_ip` (`LOGC`). `dest`:
-    absolute, its directory there, the file not; empty is the next `trace-<n>.trace` in
+    absolute or `~`-led, its directory there, the file not; empty is the next `trace-<n>.trace` in
     captures. `seconds` bounds the wait for the log. Needs a stopped machine, a writable working
     directory and `build_check`'s
     `heavy_debug`; a dynamic core needs `start(flags=["-set", "cpu core=normal"])`.
@@ -904,7 +905,9 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
 
 @tool("Wait for a screen, its text or its palette", summary=one_line.screen_wait,
       on_cancel="stop", replay=recording.Counted("run_for", "frames", "polls"))
-def screen_wait(text: str = "", screen: str = "", palette: str = "", changed: bool = False,
+def screen_wait(text: str = "", screen: str = "",
+                palette: Annotated[str, vocab.enum(("", *checks.PALETTES))] = "",
+                changed: bool = False,
                 every: Annotated[int, vocab.bounds(0, checks.SAMPLED_EVERY_MAX)] = 0,
                 on_breakpoint: str = "", on_watch: str = "", condition: str = "",
                 seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
@@ -955,11 +958,11 @@ def screen_wait(text: str = "", screen: str = "", palette: str = "", changed: bo
       names_file="dest")
 def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.SNAPSHOT_WAIT_S,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """A still of the screen as a PNG, at `dest` if given (absolute, new). Running: taken in the
-    guest into the captures directory within `seconds` (`route` `guest`; `wait_expired` when none
-    appears); refused with no `logfile` or no stub in the log. At a stop: written from video
-    memory through `screen_view`'s decoder (`route` `video_memory`), unscaled, without running
-    the machine; a text mode is refused (`no_channel`), and `seconds` is not used.
+    """A still of the screen as a PNG, at `dest` if given (absolute or `~`-led, new). Running: taken
+    in the guest into the captures directory within `seconds` (`route` `guest`; `wait_expired` when
+    none appears); refused with no `logfile` or no stub in the log. At a stop: written from video
+    memory through `screen_view`'s decoder (`route` `video_memory`), unscaled, without running the
+    machine; a text mode is refused (`no_channel`), and `seconds` is not used.
 
     Reply: `route`, `path`, `bytes`, `sha256`.
     """
@@ -1014,13 +1017,13 @@ def audio_record(frames: int, dest: str = "",
     `wav`), the OPL register writes to a DRO (`dro`) or the MIDI bytes to a MIDI file
     (`mid`). Needs the machine STOPPED and a build whose debugger has `CAPTURE`.
 
-    `dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
-    `seconds` bounds the wait for the recording. The file is checked before its path is given
-    (a rolled-over OPL run: the last); a WAV whose
-    samples miss the run's emulated span by more than {SPAN_TICKS} mixer ticks is INVALID.
-    Silence is reported, never refused; a run with no OPL note or MIDI byte has no file (`path`
-    unavailable). A run cut short is checked for what it holds; a capture that could not be turned
-    off is `ended: false`, no `path`, and records until `close`.
+    `dest`: an absolute or `~`-led path not there yet; empty leaves the file where the emulator
+    wrote it. `seconds` bounds the wait for the recording. The file is checked before its path is
+    given (a rolled-over OPL run: the last); a WAV whose samples miss the run's emulated span by
+    more than {SPAN_TICKS} mixer ticks is INVALID. Silence is reported, never refused; a run with no
+    OPL note or MIDI byte has no file (`path` unavailable). A run cut short is checked for what it
+    holds; a capture that could not be turned off is `ended: false`, no `path`, and records until
+    `close`.
 
     Refused: `frames` under 1, that kind already on, a build with no `CAPTURE`, a running
     machine.
@@ -1043,8 +1046,8 @@ def audio_record(frames: int, dest: str = "",
 def state_list() -> dict[str, Any]:
     """List the session's saved states, read off each file without loading it.
 
-    Reply: `state_dir`, `states` (`version`, `program`, `machine`, `memory_mb`, `saved_at`,
-    `bytes`, `note`), `working_slot`.
+    Reply: `state_dir`, `states` (`name`, `path`, `version`, `program`, `machine`, `memory_mb`,
+    `saved_at`, `bytes`, `note`), `working_slot`.
 
     Reference: REFERENCE.md, Saved states.
     """
@@ -1232,8 +1235,8 @@ def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]
     """What the DOS machine is at this stop: one section per debugger listing. `sections` left
     out reads the DOS machine, `control` (the control registers, the flags and the
     descriptor-table and task registers) and, in protected mode, `gdt` and `ldt` (the tables'
-    rows); `bios_mem`, `callbacks`, `vga`, `paging` only when named. `dest` (absolute, new)
-    writes all sections whole as JSON. Writes nothing to the guest.
+    rows); `bios_mem`, `callbacks`, `vga`, `paging` only when named. `dest` (absolute or `~`-led,
+    new) writes all sections whole as JSON. Writes nothing to the guest.
 
     Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
     {LOG_LIMIT_MAX} rows), `sources`, `coverage_note` (why a section is absent), `path` (with

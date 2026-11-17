@@ -246,7 +246,8 @@ Outside a routine's frame (at its `push bp` or `enter`, the `mov bp, sp` after i
 memdump(ref, length, dest)
 ```
 
-`length` bytes from `ref` (a symbol or `SEG:OFF`) to the new file `dest` (absolute).
+`length` bytes from `ref` (a symbol or `SEG:OFF`) to the new file `dest` (absolute or
+`~`-led).
 
 Reply: `ref`, `seg_off`, `length`, `path`, `bytes`. Refused: a dump file already where the
 debugger writes or at `dest`, a `dest` directly in that directory, an absent or ambiguous

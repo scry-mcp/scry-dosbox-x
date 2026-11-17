@@ -12,8 +12,8 @@ machine_map(sections=null, dest="")
 What the DOS machine is at this stop: one section per debugger listing. `sections` left
 out reads the DOS machine, `control` (the control registers, the flags and the
 descriptor-table and task registers) and, in protected mode, `gdt` and `ldt` (the tables'
-rows); `bios_mem`, `callbacks`, `vga`, `paging` only when named. `dest` (absolute, new)
-writes all sections whole as JSON. Writes nothing to the guest.
+rows); `bios_mem`, `callbacks`, `vga`, `paging` only when named. `dest` (absolute or `~`-led,
+new) writes all sections whole as JSON. Writes nothing to the guest.
 
 Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
 400 rows), `sources`, `coverage_note` (why a section is absent), `path` (with
@@ -291,8 +291,8 @@ Reply: `channel`, `lines` (not on `dos`), `lines_total`, `truncated`, `labels`, 
 `note`; on the DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`,
 `caller`, `psp`, `function`, `name`, `file`, `in`, `out`, `error`, `returned`, `returned_s`,
 `switched`, `line`), and `calls_dropped` (on `dos`, past the calls held). INVALID with `code`:
-no `logfile`, no log yet, no guest instrumentation, `limit` out of range,
-a bad pattern, an unknown channel (`process` is refused by name), a `since_mark` naming no
+no `logfile`, no log yet, no guest instrumentation, `limit` out of range, an empty or bad
+pattern, an unknown channel (`process` is refused by name), a `since_mark` naming no
 position. To wait for a line use `log_wait`.
 
 Reference: REFERENCE.md, The log.

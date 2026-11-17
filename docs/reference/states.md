@@ -19,8 +19,8 @@ state_list()
 
 List the session's saved states, read off each file without loading it.
 
-Reply: `state_dir`, `states` (`version`, `program`, `machine`, `memory_mb`, `saved_at`,
-`bytes`, `note`), `working_slot`.
+Reply: `state_dir`, `states` (`name`, `path`, `version`, `program`, `machine`, `memory_mb`,
+`saved_at`, `bytes`, `note`), `working_slot`.
 
 Reference: REFERENCE.md, Saved states.
 

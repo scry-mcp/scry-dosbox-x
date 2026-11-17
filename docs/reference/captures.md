@@ -231,11 +231,11 @@ The frames are the AVI's own, not emulated frames, because the file is what is r
 snapshot(dest="", seconds=10.0)
 ```
 
-A still of the screen as a PNG, at `dest` if given (absolute, new). Running: taken in the
-guest into the captures directory within `seconds` (`route` `guest`; `wait_expired` when none
-appears); refused with no `logfile` or no stub in the log. At a stop: written from video
-memory through `screen_view`'s decoder (`route` `video_memory`), unscaled, without running
-the machine; a text mode is refused (`no_channel`), and `seconds` is not used.
+A still of the screen as a PNG, at `dest` if given (absolute or `~`-led, new). Running: taken
+in the guest into the captures directory within `seconds` (`route` `guest`; `wait_expired` when
+none appears); refused with no `logfile` or no stub in the log. At a stop: written from video
+memory through `screen_view`'s decoder (`route` `video_memory`), unscaled, without running the
+machine; a text mode is refused (`no_channel`), and `seconds` is not used.
 
 Reply: `route`, `path`, `bytes`, `sha256`.
 
@@ -414,13 +414,13 @@ Record exactly `frames` retraces of sound, then stop: the mixer to a WAV (`kind`
 `wav`), the OPL register writes to a DRO (`dro`) or the MIDI bytes to a MIDI file
 (`mid`). Needs the machine STOPPED and a build whose debugger has `CAPTURE`.
 
-`dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
-`seconds` bounds the wait for the recording. The file is checked before its path is given
-(a rolled-over OPL run: the last); a WAV whose
-samples miss the run's emulated span by more than 2 mixer ticks is INVALID.
-Silence is reported, never refused; a run with no OPL note or MIDI byte has no file (`path`
-unavailable). A run cut short is checked for what it holds; a capture that could not be turned
-off is `ended: false`, no `path`, and records until `close`.
+`dest`: an absolute or `~`-led path not there yet; empty leaves the file where the emulator
+wrote it. `seconds` bounds the wait for the recording. The file is checked before its path is
+given (a rolled-over OPL run: the last); a WAV whose samples miss the run's emulated span by
+more than 2 mixer ticks is INVALID. Silence is reported, never refused; a run with no
+OPL note or MIDI byte has no file (`path` unavailable). A run cut short is checked for what it
+holds; a capture that could not be turned off is `ended: false`, no `path`, and records until
+`close`.
 
 Refused: `frames` under 1, that kind already on, a build with no `CAPTURE`, a running
 machine.

@@ -4,6 +4,10 @@ What a client of the server notices.
 
 ## Unreleased
 
+- The descriptions say what the tools already did: `memdump`, `trace`, `snapshot`,
+  `audio_record` and `machine_map` take a `~`-led `dest`, `log` refuses an empty `pattern`,
+  `state_list` rows carry `name` and `path`, and `screen_wait`'s schema lists the `palette` it
+  takes.
 - A stop at the boot sector (0000:7C00) after a conf's `boot` gives the guest OS's boot as its
   `cause`, where it said no declaration could explain it; `resume`'s reference says a second
   `resume` lets the guest OS run.

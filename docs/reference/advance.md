@@ -270,7 +270,7 @@ Run `instructions` (1 to 3000000) with the debugger's CPU log on and come back
 STOPPED with the log in a file, joined to symbols.
 
 `shape`: `normal` (`LOG`), `short` (`LOGS`), `long` (`LOGL`) or `cs_ip` (`LOGC`). `dest`:
-absolute, its directory there, the file not; empty is the next `trace-<n>.trace` in
+absolute or `~`-led, its directory there, the file not; empty is the next `trace-<n>.trace` in
 captures. `seconds` bounds the wait for the log. Needs a stopped machine, a writable working
 directory and `build_check`'s
 `heavy_debug`; a dynamic core needs `start(flags=["-set", "cpu core=normal"])`.
@@ -431,7 +431,7 @@ Reference: REFERENCE.md, Input and the screen.
 |---|---|---|
 | `text` | string | `""` |
 | `screen` | string | `""` |
-| `palette` | string | `""` |
+| `palette` | one of `""`, `"black"` | `""` |
 | `changed` | boolean | `false` |
 | `every` | integer (>= 0, <= 600) | `0` |
 | `on_breakpoint` | string | `""` |
