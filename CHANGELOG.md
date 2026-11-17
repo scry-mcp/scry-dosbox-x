@@ -364,6 +364,9 @@ floor.
 - `symbols_load`'s `base` and `section_bases` and `symbols_find`'s `linear` take an address as
   `0x` text or an integer, as every other address; bare hex digits (`8000`) are refused, since
   they read either way.
+- `debug` writes an output past 4000 characters whole to a file in the session's scratch and
+  answers its first line as a preview, with `output_chars` and `output_path`, as scry-mame does,
+  where it kept only the last 4000 characters.
 
 ## 0.1.0
 

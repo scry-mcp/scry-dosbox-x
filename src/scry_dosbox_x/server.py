@@ -602,8 +602,8 @@ def debug(command: str) -> dict[str, Any]:
     """One raw `command` to the debugger; the last resort. For a value use `registers`,
     `read_memory` or `memdump`; for the log `log`.
 
-    Reply: `output` (the last {DEBUG_TEXT_KEEP} characters of what the debugger printed),
-    `output_chars`, `clipped`, `command`, `note` (when the debugger did not take the command).
+    Reply: `command`, `output`, `clipped`, `note` (when the debugger did not take the command);
+    past {OUTPUT_MAX} characters the text goes to a file (`output_chars`, `output_path`).
 
     Refused `bad_argument`: a command that lets the guest run (`RUN`, `VRT`, `RUNWATCH`, `INT`,
     `STEPIN`, the `LOG` family) and a control character.
@@ -622,7 +622,8 @@ def debug(command: str) -> dict[str, Any]:
     out = "\n".join(lines)
     note = "" if ok else ("the debugger did not take it: an unknown command, or one it refused "
                           "with the reason it printed")
-    return st.reply(command=command, **st.delta(out, st.DEBUG_TEXT_KEEP),
+    return st.reply(command=command,
+                    **narrowing.clip_text(out, STATE.session_scratch(), "debug"),
                     **({"note": note} if note else {}))
 
 

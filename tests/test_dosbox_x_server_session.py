@@ -1407,6 +1407,22 @@ def test_debug_refuses_a_command_carrying_a_control_character(
     assert typed == [], "a refused command reached the terminal"
 
 
+def test_debug_writes_an_output_past_the_ceiling_to_a_file_and_previews_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """As scry-mame's `debug`: the whole text in the session's scratch, never its tail alone."""
+    fake = install()
+    monkeypatch.setattr(dstate.STATE, "session_dir", tmp_path)
+    fake.answer = "MEMDUMP of 0000:0000\n" + "00 " * 2000
+    got = cast(dict[str, Any], server.debug(command="D 0:0"))
+    assert got["clipped"] is True and got["output"] == "MEMDUMP of 0000:0000...", got
+    assert got["output_chars"] == len(fake.answer), got
+    assert Path(got["output_path"]) == tmp_path / "debug-1.txt", got
+    assert Path(got["output_path"]).read_text() == fake.answer, "the whole text, as printed"
+    fake.answer = "short"
+    short = cast(dict[str, Any], server.debug(command="BPLIST"))
+    assert short["output"] == "short" and "output_path" not in short, short
+
+
 def test_debug_refuses_a_command_that_is_not_text() -> None:
     install()
     got = cast(dict[str, Any], server.debug(command=cast(Any, 5)))

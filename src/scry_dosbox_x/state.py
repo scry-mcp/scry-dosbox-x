@@ -399,8 +399,7 @@ def answer(fields: dict[str, object]) -> dict[str, Any]:
     return reply(**cast(dict[str, Any], fields))
 
 
-#: Tail kept of the text `debug` returns, and of the one `detail=True` adds.
-DEBUG_TEXT_KEEP = 4000
+#: Tail kept of the text `detail=True` adds.
 DETAIL_TEXT_KEEP = 2000
 
 

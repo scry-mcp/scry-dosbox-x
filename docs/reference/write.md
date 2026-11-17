@@ -146,8 +146,8 @@ debug(command)
 One raw `command` to the debugger; the last resort. For a value use `registers`,
 `read_memory` or `memdump`; for the log `log`.
 
-Reply: `output` (the last 4000 characters of what the debugger printed),
-`output_chars`, `clipped`, `command`, `note` (when the debugger did not take the command).
+Reply: `command`, `output`, `clipped`, `note` (when the debugger did not take the command);
+past 4000 characters the text goes to a file (`output_chars`, `output_path`).
 
 Refused `bad_argument`: a command that lets the guest run (`RUN`, `VRT`, `RUNWATCH`, `INT`,
 `STEPIN`, the `LOG` family) and a control character.
@@ -162,6 +162,7 @@ Refused `bad_argument`: a command that lets the guest run (`RUN`, `VRT`, `RUNWAT
 | `command` | string |
 | `output` | string |
 | `output_chars` | integer |
+| `output_path` | string |
 
 Example, from a live run:
 

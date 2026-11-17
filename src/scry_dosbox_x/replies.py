@@ -135,7 +135,8 @@ class DebugReply(DosboxEnvelope, total=False):
     clipped: Required[bool]
     command: str
     output: Required[str]
-    output_chars: Required[int]
+    output_chars: int
+    output_path: str
 
 
 class DisassembleReply(DosboxEnvelope, total=False):
