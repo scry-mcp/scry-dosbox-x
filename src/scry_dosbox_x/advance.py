@@ -6,9 +6,9 @@ import time
 from collections.abc import Callable
 from typing import Any, cast
 
+from scry_core import cancel, screen_map
 from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
-from scry_core import screen_map
 
 from scry_dosbox_x import arming, folds, placement, retrace, running
 from scry_dosbox_x import debugger as dbg
@@ -57,7 +57,7 @@ def to_protected(session: ds.Session,
 
 
 def run_to_screen(screen: str, control: str, seconds: float,
-                  progress: ds.Progress) -> dict[str, Any]:
+                  progress: ds.Progress, disarm_watches: bool = False) -> dict[str, Any]:
     """`run_to(screen=)`: a run to the screen's anchor, or a retrace at a time until the map
     names a screen with none, as `run_to` replies."""
     session = live()
@@ -70,7 +70,9 @@ def run_to_screen(screen: str, control: str, seconds: float,
         step=lambda left: retrace.run_for(session, 1, 0, left, progress,
                                           who="a run to a screen"),
         run_to_anchor=lambda anchor: run_to(anchor, control, seconds, progress),
-        read=folds.map_read(session), stop_seq=stop_seq, run_for_only=RUN_FOR_ONLY)
+        read=folds.map_read(session), stop_seq=stop_seq, run_for_only=RUN_FOR_ONLY,
+        frame_run=lambda: screen_map.check_frame_flags(
+            screen, ["disarm_watches"] if disarm_watches else []))
 
 
 def resume(seconds: float, detail: bool,
@@ -251,66 +253,80 @@ def stop_in_protected_mode(session: ds.Session, progress: ds.Progress) -> dict[s
 def with_watches_disarmed(session: ds.Session, disarm: bool,
                           run: Callable[[], dict[str, Any]]) -> dict[str, Any]:
     """`run` with every armed change watch's rows deleted from the debugger when `disarm`, armed
-    again afterwards whatever it answered: the reply names the watches disarmed and those that
-    did not come back, with why."""
+    again afterwards whatever it answered: the reply names the watches disarmed, those that did
+    not come back (queued for the next stop, with why), and any row the debugger kept."""
     if not disarm:
         return run()
-    mode = session.where()["mode"]
-    disarmed = _disarm_change_watches(session)
+    session.where()     # a running machine is refused before any row is touched
+    disarmed, kept = _disarm_change_watches(session)
     back: dict[str, str] = {}
     try:
         reply = run()
     finally:
-        # A machine the run left unreadable, or in the other cpu mode, is not armed blind: the
-        # rows' `SEG:OFF` were placed for this mode; `watch_add` again arms them where they belong.
-        back = _rearm_change_watches(session, disarmed, mode)
+        # Shielded, as a cancelled run's own cleanup is: a watch left disarmed would go silent.
+        with cancel.shielded():
+            back = _rearm_change_watches(session, disarmed)
     for row in reply.get("watches") or []:
-        if row.get("ref") in disarmed and back.get(row["ref"]) == "" and row.get("state") == "gone":
+        if back.get(row.get("ref", "?")) == "" and row.get("state") == "gone":
             row["state"] = "armed"
     reply["disarmed_watches"] = [{"ref": ref} for ref in disarmed]
     lost = [{"ref": ref, "why": why} for ref, why in back.items() if why]
     if lost:
         reply["not_rearmed"] = lost
+    if kept:
+        reply["note"] = " ".join(filter(None, (reply.get("note"), (
+            f"the debugger kept a row of {', '.join(kept)} after `BPDEL`, so that watch could "
+            "still cut this pass"))))
     return reply
 
 
-def _disarm_change_watches(session: ds.Session) -> dict[str, list[dict[str, Any]]]:
-    """Each change watch whose rows the debugger held, with those rows, now deleted."""
+def _disarm_change_watches(session: ds.Session) -> tuple[list[str], list[str]]:
+    """The change watches whose rows are now all deleted, and those the debugger kept a row of."""
     specs = [(ref, spec) for (family, ref), rows in STATE.armed.items() if family == "watch"
              for spec in rows if spec.get("kind") == "watch"]
     if not specs:
-        return {}
+        return [], []
     picks = [arming.watch_row_pick((int(spec["seg"]), int(spec["off"])), spec)
              for _ref, spec in specs]
-    disarmed: dict[str, list[dict[str, Any]]] = {}
-    for (ref, spec), (row, absent) in zip(specs, session.delete_rows(picks), strict=True):
-        if row is not None and absent:
-            disarmed.setdefault(ref, []).append(spec)
-    return disarmed
+    gone: dict[str, bool] = {}
+    for (ref, _spec), (row, absent) in zip(specs, session.delete_rows(picks), strict=True):
+        gone[ref] = gone.get(ref, True) and (row is None or absent)
+    for ref, all_gone in gone.items():
+        if all_gone:
+            # Its rows are no longer the debugger's: the re-arm records the ones it makes.
+            STATE.armed.pop(("watch", ref), None)
+    return [r for r, ok in gone.items() if ok], [r for r, ok in gone.items() if not ok]
 
 
-def _rearm_change_watches(session: ds.Session, disarmed: dict[str, list[dict[str, Any]]],
-                          mode: str) -> dict[str, str]:
-    """Each disarmed watch armed again at the places it held: empty when it came back, else
-    why not."""
+def _rearm_change_watches(session: ds.Session, disarmed: list[str]) -> dict[str, str]:
+    """Each disarmed watch resolved and armed again as a queued declaration is, at this stop and
+    in its mode (a pointer that moved is followed): empty when it came back, else why, and then
+    it stays queued for the next stop."""
     if not disarmed:
         return {}
+    decls = {d.ref: d for d in (STATE.store.declarations() if STATE.store is not None else [])
+             if d.kind == "watch" and d.watch_mode == "change"}
     try:
-        now = session.where()["mode"]
+        where, regs = session.where_and_registers()
+        held = session.breakpoints()
     except ds.Invalid as e:
-        return dict.fromkeys(disarmed, f"the machine could not be read after the pass: {e}")
-    if now.startswith("Pr") != mode.startswith("Pr"):
-        why = (f"the pass ended in {now} mode and the rows were placed in {mode}: `watch_add` "
-               "with the same ref arms it again in this mode")
-        return dict.fromkeys(disarmed, why)
+        return {ref: _queued(ref, f"the machine could not be read after the pass: {e}")
+                for ref in disarmed}
+    places = arming.RawPlaces(session)
     back: dict[str, str] = {}
-    for ref, specs in disarmed.items():
-        try:
-            made = session.watch_places([(int(s["seg"]), int(s["off"])) for s in specs])
-        except ds.Invalid as e:
-            back[ref] = str(e)
+    for ref in disarmed:
+        decl = decls.get(ref)
+        if decl is None:
+            back[ref] = ""          # cleared during the pass: nothing is owed
             continue
-        for spec, armed in zip(specs, made, strict=True):
-            spec["entry"] = str(armed["armed"])
-        back[ref] = ""
+        out: dict[str, Any] = {"still_pending": []}
+        armed = arming.arm_queued(session, decl, (where["mode"], regs), held, places, out)
+        back[ref] = "" if armed else _queued(ref, out["still_pending"][-1])
     return back
+
+
+def _queued(ref: str, why: str) -> str:
+    """`why`, the watch put on the arm queue so the next stop arms it."""
+    if ref not in STATE.pending["arm"]:
+        STATE.pending["arm"].append(ref)
+    return f"{why}; queued: the next stop arms it"

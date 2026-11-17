@@ -189,9 +189,66 @@ def test_disarm_watches_holds_no_change_watch_row_for_the_pass_and_arms_it_again
     got = cast(dict[str, Any], call(disarm_watches=True))
     assert not any(e.startswith(WATCH_ROWS) for e in seen[-1]), seen[-1]
     assert got["disarmed_watches"] == [{"ref": "_g_rate"}] and "not_rearmed" not in got, got
-    assert len([r for r in fake.rows if r["entry"].startswith(WATCH_ROWS)]) == 2, fake.rows
+    assert sorted(r["entry"] for r in fake.rows if r["entry"].startswith(WATCH_ROWS)) == sorted(
+        e for e in seen[0] if e.startswith(WATCH_ROWS)), "armed again where they were"
     if tool == "run_for":
         assert got["watches"][0]["state"] == "armed", "the stop's row says it is back"
+
+
+def test_a_pass_cut_by_a_raise_leaves_its_watches_queued_for_the_next_stop(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A run that raises (a cancel, a refusal) never answers, so what it disarmed must still come
+    back: re-armed when the machine can be read, queued for the next stop when it cannot."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_g_rate", 0x1234, kind="D")])
+    _ok(server.watch_add(ref="_g_rate", mode="change", length=2))
+    before = sorted(r["entry"] for r in fake.rows)
+
+    def raises(*_a: Any, **_k: Any) -> dict[str, Any]:
+        raise ds.Invalid("unexpected_answer", "the VRT answered nothing")
+    monkeypatch.setattr(retrace, "run_for", raises)
+    got = cast(dict[str, Any], server.run_for(frames=1, disarm_watches=True))
+    assert got["code"] == "unexpected_answer", got
+    assert sorted(r["entry"] for r in fake.rows) == before, "re-armed where they were"
+
+    def running(*_a: Any, **_k: Any) -> dict[str, Any]:
+        fake.running = True
+        raise ds.Invalid("unexpected_answer", "the VRT answered nothing")
+    monkeypatch.setattr(retrace, "run_for", running)
+    server.run_for(frames=1, disarm_watches=True)
+    assert "_g_rate" in dstate.STATE.pending["arm"], "a machine left running queues the watch"
+
+
+def test_a_watch_whose_place_moved_during_the_pass_is_armed_where_it_now_is(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The re-arm resolves the declaration again, as a queued one is: a pointer followed, or a
+    base moved, during the pass, never leaves rows at the old place."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_g_rate", 0x1234, kind="D")], base=0x8000,
+                  mode="Real")
+    _ok(server.watch_add(ref="_g_rate", mode="change", length=1))
+    old = [r["entry"] for r in fake.rows if r["entry"].startswith(WATCH_ROWS)]
+
+    def moves(*_a: Any, **_k: Any) -> dict[str, Any]:
+        dstate.STATE.base["base"] += 0x100
+        why = contract.unavailable("a double")
+        return dstate.reply(verdict="ELAPSED", polls=1, cycles=why, emulated_before_s=why,
+                            emulated_after_s=why, frame_before=why, frame_after=why)
+    monkeypatch.setattr(retrace, "run_for", moves)
+    got = cast(dict[str, Any], server.run_for(frames=1, disarm_watches=True))
+    now = [r["entry"] for r in fake.rows if r["entry"].startswith(WATCH_ROWS)]
+    assert "not_rearmed" not in got and len(now) == 1 and now != old, (old, now)
+    assert [s["entry"] for s in dstate.STATE.armed[("watch", "_g_rate")]] == [
+        now[0].split(" (")[0]], dstate.STATE.armed
+
+
+def test_a_watch_whose_row_the_debugger_keeps_is_named_in_the_note(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_g_rate", 0x1234, kind="D")])
+    _ok(server.watch_add(ref="_g_rate", mode="change", length=2))
+    _rows_seen_by(fake, monkeypatch)
+    monkeypatch.setattr(fake, "command", lambda *_a, **_k: "")    # a BPDEL that removes nothing
+    got = cast(dict[str, Any], server.run_for(frames=1, disarm_watches=True))
+    assert got["disarmed_watches"] == [], got
+    assert "kept a row of _g_rate" in got["note"], got
 
 
 def test_a_pass_that_ends_in_the_other_cpu_mode_leaves_its_watches_to_the_next_stop(
@@ -210,7 +267,8 @@ def test_a_pass_that_ends_in_the_other_cpu_mode_leaves_its_watches_to_the_next_s
     got = cast(dict[str, Any], server.run_for(frames=1, disarm_watches=True))
     assert got["disarmed_watches"] == [{"ref": "_g_rate"}], got
     assert [w["ref"] for w in got["not_rearmed"]] == ["_g_rate"], got
-    assert "Real mode" in got["not_rearmed"][0]["why"], got
+    assert got["not_rearmed"][0]["why"].endswith("queued: the next stop arms it"), got
+    assert "_g_rate" in dstate.STATE.pending["arm"], "the next stop arms it"
     assert not any(r["entry"].startswith(WATCH_ROWS) for r in fake.rows), fake.rows
 
 

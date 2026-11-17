@@ -848,9 +848,11 @@ def run_to(ref: str = "", *, control: str = "", screen: str = "",
     """
     session = live()
     if screen:
+        # A screen with no anchor runs a frame at a time and refuses the flag before any row goes.
         reply = advance.with_watches_disarmed(
-            session, disarm_watches,
-            lambda: advance.run_to_screen(screen, control, seconds, bridge(ctx)))
+            session, disarm_watches and STATE.maps.is_anchored(screen),
+            lambda: advance.run_to_screen(screen, control, seconds, bridge(ctx),
+                                          disarm_watches))
         # A run by frames names no breakpoint, so the dynamic core's limit is not its to carry.
         return (dlaunch.with_dynamic_core_note(reply, session.launch)
                 if STATE.maps.is_anchored(screen) else reply)

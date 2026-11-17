@@ -330,6 +330,15 @@ def test_a_control_with_a_screen_that_has_no_anchor_is_refused(tmp_path: Path) -
     assert "no anchor" in got["message"] and "control" in got["message"], got["message"]
 
 
+def test_disarm_watches_with_a_screen_that_has_no_anchor_is_refused(tmp_path: Path) -> None:
+    """A frame-by-frame run arms nothing, so the flag has nothing to apply to (as scry-mame)."""
+    screen_bench("probe-booted", tmp_path)
+    _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT]))
+    got = cast(dict[str, Any], server.run_to(screen="prompt", disarm_watches=True))
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert "disarm_watches has nothing to apply to" in got["message"], got["message"]
+
+
 def _consolidated_prompt(tmp_path: Path) -> None:
     """The prompt screen mapped, saved as a consolidated map that enters it by `DrawPrompt`, and
     loaded back."""
