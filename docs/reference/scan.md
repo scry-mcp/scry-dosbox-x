@@ -48,7 +48,6 @@ Reference: REFERENCE.md, Reading and writing.
 | `length` | integer |
 | `operator` | string |
 | `ref` | string |
-| `rows` | integer |
 | `seg_off` | string |
 | `survivors` | integer |
 | `truncated` | boolean |

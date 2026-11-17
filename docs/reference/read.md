@@ -84,7 +84,6 @@ machine stopped. An absent or ambiguous symbol is refused.
 | `hex` | string |
 | `length` | integer |
 | `ref` | string |
-| `rows` | array |
 | `seg_off` | string |
 
 Example, from a live run:

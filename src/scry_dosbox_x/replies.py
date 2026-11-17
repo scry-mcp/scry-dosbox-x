@@ -266,7 +266,6 @@ class ReadMemoryReply(DosboxEnvelope, total=False):
     hex: Required[str]
     length: int
     ref: str
-    rows: list[Any]
     seg_off: Required[str]
 
 
@@ -795,7 +794,6 @@ class ScanReply(DosboxEnvelope, total=False):
     length: int
     operator: str
     ref: str
-    rows: int
     seg_off: Annotated[str, When("`start`")]
     survivors: int
     truncated: Annotated[bool, When("`filter`")]

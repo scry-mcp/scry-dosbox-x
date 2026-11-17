@@ -4,6 +4,7 @@ What a client of the server notices.
 
 ## Unreleased
 
+- `read_memory` and `scan` no longer list a `rows` reply field: neither tool ever sent one.
 - A `drive` refused before its act ran carries `looked` as `{"guest": ...}`, the shape of
   every other `drive` reply, where it carried a bare `unavailable` block.
 - The descriptions say what the tools already did: `memdump`, `trace`, `snapshot`,
