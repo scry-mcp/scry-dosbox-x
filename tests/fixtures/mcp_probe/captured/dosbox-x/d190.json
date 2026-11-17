@@ -1,0 +1,114 @@
+{
+ "task": {
+  "id": "d190",
+  "prompt": "Declare 0814:0230 as a place that only counts the runs passing it, never halting the machine there.",
+  "tool": "breakpoint_at",
+  "args": {
+   "ref": {
+    "any_of": [
+     "0814:0230",
+     "0814:230"
+    ]
+   },
+   "role": "control"
+  },
+  "allow": [
+   "by"
+  ],
+  "grammar": [
+   "control"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"by\": \"address\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"by\": \"address\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"by\": \"address\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d190: {\"tool\": \"breakpoint_at\", \"args\": {\"ref\": \"0814:0230\", \"role\": \"control\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

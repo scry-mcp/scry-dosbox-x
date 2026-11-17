@@ -7,12 +7,10 @@
    "path": "{anchor}opt/dosfury/FURY.MAP",
    "base": {
     "any_of": [
-     "A000",
      "0xA000",
-     "a000",
      "0xa000",
-     "0A000",
-     "0x0A000"
+     "0x0A000",
+     40960
     ]
    },
    "pattern": "sfx",
@@ -22,91 +20,91 @@
  "runs": [
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": 40960, \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+    "d29: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"{anchor}opt/dosfury/FURY.MAP\", \"base\": \"0xA000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
    ],
    "right": true
   }

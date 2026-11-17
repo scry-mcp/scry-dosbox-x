@@ -7,11 +7,9 @@
    "linear": {
     "any_of": [
      "0x11F000",
-     "11F000",
      "0x11f000",
-     "11f000",
      "0x0011F000",
-     "0011F000"
+     1175552
     ]
    }
   }
@@ -19,25 +17,7 @@
  "runs": [
   {
    "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
    ],
    "right": true
   },
@@ -49,61 +29,79 @@
   },
   {
    "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"11F000\"}}"
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
    ],
    "right": true
   }

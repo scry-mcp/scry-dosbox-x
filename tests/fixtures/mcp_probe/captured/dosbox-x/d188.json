@@ -1,0 +1,105 @@
+{
+ "task": {
+  "id": "d188",
+  "prompt": "Run until the symbol _level_end, with _vsync as the control known to fire often, disarming the change watches for this pass, within 45 seconds.",
+  "tool": "run_to",
+  "args": {
+   "ref": "_level_end",
+   "control": "_vsync",
+   "disarm_watches": true,
+   "seconds": 45
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"disarm_watches\": true, \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"seconds\": 45, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"disarm_watches\": true, \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"disarm_watches\": true, \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"disarm_watches\": true, \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"seconds\": 45, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"disarm_watches\": true, \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"disarm_watches\": true, \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"disarm_watches\": true, \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"disarm_watches\": true, \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"disarm_watches\": true, \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"seconds\": 45, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"disarm_watches\": true, \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"seconds\": 45, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d188: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_level_end\", \"control\": \"_vsync\", \"disarm_watches\": true, \"seconds\": 45}}"
+   ],
+   "right": true
+  }
+ ]
+}

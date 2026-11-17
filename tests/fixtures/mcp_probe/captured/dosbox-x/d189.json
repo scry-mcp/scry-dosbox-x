@@ -1,0 +1,103 @@
+{
+ "task": {
+  "id": "d189",
+  "prompt": "Advance the guest by 30 display frames with every change watch disarmed for the run.",
+  "tool": "run_for",
+  "args": {
+   "frames": 30,
+   "disarm_watches": true
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d189: {\"tool\": \"run_for\", \"args\": {\"frames\": 30, \"disarm_watches\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}
