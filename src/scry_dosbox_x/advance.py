@@ -3,14 +3,15 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from typing import Any, cast
 
 from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
 from scry_core import screen_map
 
+from scry_dosbox_x import arming, folds, placement, retrace, running
 from scry_dosbox_x import debugger as dbg
-from scry_dosbox_x import folds, placement, retrace, running
 from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
@@ -212,3 +213,71 @@ def stop_in_protected_mode(session: ds.Session, progress: ds.Progress) -> dict[s
         extra["via"] = "break"
     return running.stop_reply(session, asked_by="stop", interrupted=interrupted,
                               runs_to_protected=runs, **extra)
+
+
+def with_watches_disarmed(session: ds.Session, disarm: bool,
+                          run: Callable[[], dict[str, Any]]) -> dict[str, Any]:
+    """`run` with every armed change watch's rows deleted from the debugger when `disarm`, armed
+    again afterwards whatever it answered: the reply names the watches disarmed and those that
+    did not come back, with why."""
+    if not disarm:
+        return run()
+    mode = session.where()["mode"]
+    disarmed = _disarm_change_watches(session)
+    back: dict[str, str] = {}
+    try:
+        reply = run()
+    finally:
+        # A machine the run left unreadable, or in the other cpu mode, is not armed blind: the
+        # rows' `SEG:OFF` were placed for this mode; `watch_add` again arms them where they belong.
+        back = _rearm_change_watches(session, disarmed, mode)
+    for row in reply.get("watches") or []:
+        if row.get("ref") in disarmed and back.get(row["ref"]) == "" and row.get("state") == "gone":
+            row["state"] = "armed"
+    reply["disarmed_watches"] = [{"ref": ref} for ref in disarmed]
+    lost = [{"ref": ref, "why": why} for ref, why in back.items() if why]
+    if lost:
+        reply["not_rearmed"] = lost
+    return reply
+
+
+def _disarm_change_watches(session: ds.Session) -> dict[str, list[dict[str, Any]]]:
+    """Each change watch whose rows the debugger held, with those rows, now deleted."""
+    specs = [(ref, spec) for (family, ref), rows in STATE.armed.items() if family == "watch"
+             for spec in rows if spec.get("kind") == "watch"]
+    if not specs:
+        return {}
+    picks = [arming.watch_row_pick((int(spec["seg"]), int(spec["off"])), spec)
+             for _ref, spec in specs]
+    disarmed: dict[str, list[dict[str, Any]]] = {}
+    for (ref, spec), (row, absent) in zip(specs, session.delete_rows(picks), strict=True):
+        if row is not None and absent:
+            disarmed.setdefault(ref, []).append(spec)
+    return disarmed
+
+
+def _rearm_change_watches(session: ds.Session, disarmed: dict[str, list[dict[str, Any]]],
+                          mode: str) -> dict[str, str]:
+    """Each disarmed watch armed again at the places it held: empty when it came back, else
+    why not."""
+    if not disarmed:
+        return {}
+    try:
+        now = session.where()["mode"]
+    except ds.Invalid as e:
+        return dict.fromkeys(disarmed, f"the machine could not be read after the pass: {e}")
+    if now.startswith("Pr") != mode.startswith("Pr"):
+        why = (f"the pass ended in {now} mode and the rows were placed in {mode}: `watch_add` "
+               "with the same ref arms it again in this mode")
+        return dict.fromkeys(disarmed, why)
+    back: dict[str, str] = {}
+    for ref, specs in disarmed.items():
+        try:
+            made = session.watch_places([(int(s["seg"]), int(s["off"])) for s in specs])
+        except ds.Invalid as e:
+            back[ref] = str(e)
+            continue
+        for spec, armed in zip(specs, made, strict=True):
+            spec["entry"] = str(armed["armed"])
+        back[ref] = ""
+    return back

@@ -826,14 +826,15 @@ def step(count: Annotated[int, vocab.bounds(1, stepping.STEP_MAX)] = 1,
 @tool("Run to a place or a mapped screen", summary=one_line.run_to, on_cancel="stop")
 def run_to(ref: str = "", *, control: str = "", screen: str = "",
            seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
+           disarm_watches: bool = False,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run until a symbol or a `SEG:OFF` and say where it stopped.
 
     `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required with a `ref` or an anchored
     screen: a second ref known to be hot, counted when it fires, so a bound that expires with no
-    control hit is INVALID, not "it did not arrive". Needs a stopped machine. Refused: an absent
-    or ambiguous name. On a dynamic cpu core, or `auto` (protected-mode code runs dynamic),
-    which can pass over a breakpoint inside a compiled block, `note` says so.
+    control hit is INVALID, not "it did not arrive". {DISARM_WATCHES}. Needs a stopped machine.
+    Refused: an absent or ambiguous name. On a dynamic cpu core, or `auto` (protected-mode code
+    runs dynamic), which can pass over a breakpoint inside a compiled block, `note` says so.
 
     {MAP_RUN_TO}
 
@@ -846,24 +847,28 @@ def run_to(ref: str = "", *, control: str = "", screen: str = "",
     """
     session = live()
     if screen:
-        reply = advance.run_to_screen(screen, control, seconds, bridge(ctx))
+        reply = advance.with_watches_disarmed(
+            session, disarm_watches,
+            lambda: advance.run_to_screen(screen, control, seconds, bridge(ctx)))
         # A run by frames names no breakpoint, so the dynamic core's limit is not its to carry.
         return (dlaunch.with_dynamic_core_note(reply, session.launch)
                 if STATE.maps.is_anchored(screen) else reply)
     if not control:
         raise screen_map.no_control()
-    return dlaunch.with_dynamic_core_note(
-        advance.run_to(ref, control, seconds, bridge(ctx)), session.launch)
+    return dlaunch.with_dynamic_core_note(advance.with_watches_disarmed(
+        session, disarm_watches, lambda: advance.run_to(ref, control, seconds, bridge(ctx))),
+        session.launch)
 
 
 @tool("Run for frames or emulated time", summary=one_line.run_for, on_cancel="stop")
 def run_for(milliseconds: int = 0, frames: int = 0,
             seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
+            disarm_watches: bool = False,
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run for `frames` display frames (one `VRT` each) or `milliseconds` of emulated time (exactly
     one) and come back STOPPED. `milliseconds` runs whole frames, so it ends at the first
     retrace at or past the time asked, up to one frame later. Reports progress while it waits.
-    Needs the machine stopped.
+    {DISARM_WATCHES}. Needs the machine stopped.
 
     Reply: `verdict` (`ELAPSED`, `OTHER_STOP`, `TIMEOUT`), `polls`, `emulated_before_s`,
     `emulated_after_s`, `frame_before`, `frame_after`, `cycles` (a count on the normal core, else
@@ -874,7 +879,9 @@ def run_for(milliseconds: int = 0, frames: int = 0,
     """
     session = live()
     session.require_stopped("a `VRT`")
-    return retrace.run_for(session, frames, milliseconds, seconds, bridge(ctx))
+    return advance.with_watches_disarmed(
+        session, disarm_watches,
+        lambda: retrace.run_for(session, frames, milliseconds, seconds, bridge(ctx)))
 
 
 @tool("Trace what a run executes", summary=one_line.trace, on_cancel="stop", names_file="dest")

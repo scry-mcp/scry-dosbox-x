@@ -24,7 +24,7 @@ from dosbox_x_server_support import (  # noqa: E402
 from scry_core import declaration_rows
 from scry_core import reply_contract as contract
 
-from scry_dosbox_x import arming, placement, running, server, start_symbols
+from scry_dosbox_x import arming, placement, retrace, running, server, start_symbols
 from scry_dosbox_x import code as dcode
 from scry_dosbox_x import declarations as dec
 from scry_dosbox_x import launch as dlaunch
@@ -145,6 +145,73 @@ def test_re_declaring_a_change_watch_is_a_no_op_and_keeps_the_pr_caveat(
     assert again.get("already_stored", False) is True and again["armed"] is True
     assert "protected-mode watch" in str(again["caveat"])
     assert len([r for r in fake.rows if r["entry"].startswith("BPPM")]) == 4   # a row a byte
+
+
+#: The debugger rows a change watch arms, real mode or protected.
+WATCH_ROWS = ("BPMEM", "BPPM")
+
+
+def _rows_seen_by(fake: Any, monkeypatch: pytest.MonkeyPatch) -> list[list[str]]:
+    """The debugger's rows at each `run_to` and `run_for` the fake is asked to run."""
+    seen: list[list[str]] = []
+    real = fake.run_to
+
+    def run_to(*a: Any, **k: Any) -> dict[str, object]:
+        seen.append([r["entry"] for r in fake.rows])
+        return cast(dict[str, object], real(*a, **k))
+
+    def run_for(*_a: Any, **_k: Any) -> dict[str, Any]:
+        seen.append([r["entry"] for r in fake.rows])
+        why = contract.unavailable("a double")
+        return dstate.reply(verdict="ELAPSED", polls=1, cycles=why, emulated_before_s=why,
+                            emulated_after_s=why, frame_before=why, frame_after=why,
+                            watches=[{"ref": "_g_rate", "mode": "change", "state": "gone"}])
+    monkeypatch.setattr(fake, "run_to", run_to)
+    monkeypatch.setattr(retrace, "run_for", run_for)
+    return seen
+
+
+@pytest.mark.parametrize("tool", ["run_to", "run_for"])
+def test_disarm_watches_holds_no_change_watch_row_for_the_pass_and_arms_it_again(
+        tool: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """scry-mame's `disarm_watches`: a watch on a byte written every frame cannot cut the run."""
+    syms = [dsym.Symbol("_g_rate", 0x1234, kind="D"), dsym.Symbol("foo", 0x1000, kind="T")]
+    fake = _names(tmp_path, symbols=syms)
+    _ok(server.watch_add(ref="_g_rate", mode="change", length=2))
+    seen = _rows_seen_by(fake, monkeypatch)
+    def call(**k: Any) -> Any:
+        if tool == "run_to":
+            return server.run_to(ref="foo", control="0000:0020", seconds=5, **k)
+        return server.run_for(frames=1, **k)
+    kept = cast(dict[str, Any], call())
+    assert any(e.startswith(WATCH_ROWS) for e in seen[-1]), "the control: armed without the flag"
+    assert "disarmed_watches" not in kept, kept
+    got = cast(dict[str, Any], call(disarm_watches=True))
+    assert not any(e.startswith(WATCH_ROWS) for e in seen[-1]), seen[-1]
+    assert got["disarmed_watches"] == [{"ref": "_g_rate"}] and "not_rearmed" not in got, got
+    assert len([r for r in fake.rows if r["entry"].startswith(WATCH_ROWS)]) == 2, fake.rows
+    if tool == "run_for":
+        assert got["watches"][0]["state"] == "armed", "the stop's row says it is back"
+
+
+def test_a_pass_that_ends_in_the_other_cpu_mode_leaves_its_watches_to_the_next_stop(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A row's `SEG:OFF` was placed for the mode it was armed in; re-armed blind in the other
+    it would watch another byte."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_g_rate", 0x1234, kind="D")])
+    _ok(server.watch_add(ref="_g_rate", mode="change", length=2))
+    _rows_seen_by(fake, monkeypatch)
+    def run_for(*_a: Any, **_k: Any) -> dict[str, Any]:
+        fake.mode = "Real"
+        why = contract.unavailable("a double")
+        return dstate.reply(verdict="ELAPSED", polls=1, cycles=why, emulated_before_s=why,
+                            emulated_after_s=why, frame_before=why, frame_after=why)
+    monkeypatch.setattr(retrace, "run_for", run_for)
+    got = cast(dict[str, Any], server.run_for(frames=1, disarm_watches=True))
+    assert got["disarmed_watches"] == [{"ref": "_g_rate"}], got
+    assert [w["ref"] for w in got["not_rearmed"]] == ["_g_rate"], got
+    assert "Real mode" in got["not_rearmed"][0]["why"], got
+    assert not any(r["entry"].startswith(WATCH_ROWS) for r in fake.rows), fake.rows
 
 
 def test_a_by_address_declaration_on_a_running_machine_is_kept_unarmed_not_invalid(

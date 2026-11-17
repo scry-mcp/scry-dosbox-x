@@ -2694,6 +2694,26 @@
    "allow": [
     "seconds"
    ]
+  },
+  {
+   "id": "d188",
+   "prompt": "Run until the symbol _level_end, with _vsync as the control known to fire often, disarming the change watches for this pass, within 45 seconds.",
+   "tool": "run_to",
+   "args": {
+    "ref": "_level_end",
+    "control": "_vsync",
+    "disarm_watches": true,
+    "seconds": 45
+   }
+  },
+  {
+   "id": "d189",
+   "prompt": "Advance the guest by 30 display frames with every change watch disarmed for the run.",
+   "tool": "run_for",
+   "args": {
+    "frames": 30,
+    "disarm_watches": true
+   }
   }
  ]
 }

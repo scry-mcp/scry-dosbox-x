@@ -305,7 +305,7 @@ class WaitReply(DosboxEnvelope, total=False):
     watches: list[Any]
 
 
-class RunForReply(DosboxEnvelope, total=False):
+class RunForStop(DosboxEnvelope, total=False):
     cause: str
     regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
     cpu_mode: str | dict[str, Any]
@@ -327,7 +327,11 @@ class RunForReply(DosboxEnvelope, total=False):
     watches: list[Any]
 
 
-class RecordReply(RunForReply, total=False):
+class RunForReply(RunForStop, tool_replies.DisarmFields, total=False):
+    """`run_for`'s stop, and what `disarm_watches` adds; a recording runs as it does, unflagged."""
+
+
+class RecordReply(RunForStop, total=False):
     avi_frames: Required[int]
     began: Required[bool]
     bytes: Required[int]
@@ -337,7 +341,7 @@ class RecordReply(RunForReply, total=False):
     path: Required[str | dict[str, Any]]
 
 
-class AudioRecordReply(RunForReply, total=False):
+class AudioRecordReply(RunForStop, total=False):
     began: Required[bool]
     bytes: Annotated[int, When("a file was written")]
     channels: Annotated[int, When("a WAV's")]
@@ -356,7 +360,7 @@ class AudioRecordReply(RunForReply, total=False):
     samples: Annotated[int, When("a WAV's")]
 
 
-class RunToReply(DosboxEnvelope, total=False):
+class RunToReply(DosboxEnvelope, tool_replies.DisarmFields, total=False):
     cause: str
     regpoint_hit: Annotated[dict[str, Any], A_REGPOINT_STOPPED_IT]
     control_hits: Annotated[int, When("a run to a ref or an anchor")]

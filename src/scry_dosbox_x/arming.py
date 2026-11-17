@@ -435,6 +435,11 @@ def _watch_row_at(place: tuple[int, int], kind: str | None = None) -> Callable[[
     return pick
 
 
+def watch_row_pick(place: tuple[int, int], spec: dict[str, Any]) -> Callable[[str], bool]:
+    """A pick for `Session.delete_rows`: the row an armed watch's record `spec` holds."""
+    return _watch_row_at(place, _row_kind(spec))
+
+
 def delete_watch_rows(session: ds.Session, places: list[tuple[int, int]],
                       kinds: list[str | None] | None = None,
                       ) -> tuple[list[str], list[tuple[int, int]]]:

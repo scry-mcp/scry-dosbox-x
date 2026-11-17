@@ -6,16 +6,16 @@
 *Run to a place or a mapped screen*
 
 ```text
-run_to(ref="", control="", screen="", seconds=30.0)
+run_to(ref="", control="", screen="", seconds=30.0, disarm_watches=false)
 ```
 
 Run until a symbol or a `SEG:OFF` and say where it stopped.
 
 `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required with a `ref` or an anchored
 screen: a second ref known to be hot, counted when it fires, so a bound that expires with no
-control hit is INVALID, not "it did not arrive". Needs a stopped machine. Refused: an absent
-or ambiguous name. On a dynamic cpu core, or `auto` (protected-mode code runs dynamic),
-which can pass over a breakpoint inside a compiled block, `note` says so.
+control hit is INVALID, not "it did not arrive". `disarm_watches=true` disarms the watches for this pass, so none of them cuts it. Needs a stopped machine.
+Refused: an absent or ambiguous name. On a dynamic cpu core, or `auto` (protected-mode code
+runs dynamic), which can pass over a breakpoint inside a compiled block, `note` says so.
 
 `screen`: a mapped screen's name instead of `ref` (exactly one). If the screen names an `anchor` (set by `screen_map_write`), run to it (`control`
 required): a `verified` map judges it there (`stale_map` when it no longer holds), a
@@ -36,9 +36,12 @@ Reference: REFERENCE.md, Advancing the machine.
 | `control` | string | `""` |
 | `screen` | string | `""` |
 | `seconds` | number (> 0, <= 600.0) | `30.0` |
+| `disarm_watches` | boolean | `false` |
 
 | reply field | type |
 |---|---|
+| `disarmed_watches` | array |
+| `not_rearmed` | array |
 | `cause` | string |
 | `regpoint_hit` | object |
 | `control_hits` | integer |
@@ -138,19 +141,21 @@ control and never the target; with the roles swapped the target arrives.
 
 The server derives the debugger's address from the machine's own mode, arms a `BP`, verifies it by reading the list back, and interrupts at the bound. Pick a control that fires a few times a run: each hit costs a round trip. `OTHER_STOP` means another breakpoint got there first. `control_silent` is a TIMEOUT with no control hit and `cut_by_other_stop` another stop before the control fired, each with the stop surveyed; `not_settled` is an interrupt after which `RUNSTATE` did not say stopped.
 
+**`disarm_watches`** is for a watch on a byte written every frame, which would otherwise stop every later run. A change watch's rows are deleted from the debugger for the pass and armed again at its stop; a pass that ends in the other cpu mode, or on a machine that cannot be read, leaves them disarmed, `not_rearmed` names each with why, and declaring the watch again (`watch_add` with the same `ref`) arms it where it belongs.
+
 <!-- scry-reference:begin run_for -->
 ## `run_for`
 
 *Run for frames or emulated time*
 
 ```text
-run_for(milliseconds=0, frames=0, seconds=30.0)
+run_for(milliseconds=0, frames=0, seconds=30.0, disarm_watches=false)
 ```
 
 Run for `frames` display frames (one `VRT` each) or `milliseconds` of emulated time (exactly
 one) and come back STOPPED. `milliseconds` runs whole frames, so it ends at the first
 retrace at or past the time asked, up to one frame later. Reports progress while it waits.
-Needs the machine stopped.
+`disarm_watches=true` disarms the watches for this pass, so none of them cuts it. Needs the machine stopped.
 
 Reply: `verdict` (`ELAPSED`, `OTHER_STOP`, `TIMEOUT`), `polls`, `emulated_before_s`,
 `emulated_after_s`, `frame_before`, `frame_after`, `cycles` (a count on the normal core, else
@@ -164,6 +169,7 @@ Reference: REFERENCE.md, Advancing the machine.
 | `milliseconds` | integer | `0` |
 | `frames` | integer | `0` |
 | `seconds` | number (> 0, <= 600.0) | `30.0` |
+| `disarm_watches` | boolean | `false` |
 
 | reply field | type |
 |---|---|
@@ -186,6 +192,8 @@ Reference: REFERENCE.md, Advancing the machine.
 | `stop_seq` | integer |
 | `verdict` | string |
 | `watches` | array |
+| `disarmed_watches` | array |
+| `not_rearmed` | array |
 
 Example, from a live run:
 

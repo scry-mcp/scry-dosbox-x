@@ -367,6 +367,9 @@ floor.
 - `debug` writes an output past 4000 characters whole to a file in the session's scratch and
   answers its first line as a preview, with `output_chars` and `output_path`, as scry-mame does,
   where it kept only the last 4000 characters.
+- `run_to` and `run_for` take `disarm_watches`, as on scry-mame: the change watches' rows leave
+  the debugger for the pass and come back at its stop, and the reply names them in
+  `disarmed_watches`, with `not_rearmed` (and why) for one that could not come back.
 
 ## 0.1.0
 
