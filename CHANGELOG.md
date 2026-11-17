@@ -4,7 +4,7 @@ What a client of the server notices.
 
 ## Unreleased
 
-- Takes scry-core 0.118.0.
+- Takes scry-core 0.118.1.
 - A pattern or an `expect` that does not compile is refused naming the argument
   (`pattern='(' does not compile: ...`), where it said only that it was not a usable pattern.
 - `read_memory` and `scan` no longer list a `rows` reply field: neither tool ever sent one.
