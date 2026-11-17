@@ -29,8 +29,8 @@ driven by look, act, verify, and so is this.
   width with targets named from your symbols; `call_stack` guesses the callers, marked
   heuristic; `machine_map` and `interrupt_vectors` say what the DOS machine is right now.
 - **Read the screen without a window.** `screen_view` gives the screen at this stop as text or
-  as a picture in any VGA mode (13h, planar 16 colours, mode X, VESA linear up to 32 bits),
-  read from video memory without touching the card; `screen_signature` answers "is it the same
+  as a picture in every VGA mode with a plain layout (13h, planar 16 colours, mode X, VESA linear
+  up to 32 bits), read from video memory without touching the card; `screen_signature` answers "is it the same
   screen" with one string; `screen_wait` runs until a string appears.
 - **Stop where you mean to.** Run to a symbol and be told whether you arrived, stopped elsewhere
   or ran out of time; break on an interrupt, on the program's own `int 3`, when a variable
@@ -56,13 +56,13 @@ driven by look, act, verify, and so is this.
   block saying whether anything was written to the machine. "No line matched" and "there was no
   log" are different answers here.
 
-## Two minutes to a first answer
+## A first answer
 
-You need git, Python 3.11 or newer, [uv](https://docs.astral.sh/uv/), and a DOSBox-X built with
-the debugger (`build_check` says whether yours is): the `dosbox-x` on your `PATH`, or another
-named by `DOSBOX_X_BINARY` or by `start`'s `binary`. Some tools need debugger commands a
-release does not carry ([Platforms](#platforms)); name a build that carries them with
-`DOSBOX_X_BINARY`. A missing piece is named by the tool that needs it, never worked around.
+You need git, the Python that `requires-python` in `pyproject.toml` names,
+[uv](https://docs.astral.sh/uv/), and a DOSBox-X built with the debugger (`build_check` says
+whether yours is): the `dosbox-x` on your `PATH`, or another named by `DOSBOX_X_BINARY` or by
+`start`'s `binary`. Some tools need debugger commands a build may lack
+([Platforms](#platforms)); name a build that carries them with `DOSBOX_X_BINARY`. A missing piece is named by the tool that needs it, never worked around.
 
 ```sh
 git clone https://github.com/scry-mcp/scry-dosbox-x
@@ -82,8 +82,8 @@ comes from you; the server carries no default that points anywhere.
 
 To watch it, `start` takes `shared=true`, `display` (the OS's display index, 0 the main display),
 `fullscreen` and `size`, and proves the window is on the display you asked, refusing by name
-(`window_not_visible`) when it is not, which includes a DOSBox-X that keeps its default window
-until the guest runs: `resume`, then `window`. With `fullscreen` DOSBox-X captures the mouse,
+(`window_not_visible`) when it is not, which includes a `fullscreen` start that fills its display
+only once the guest runs: `resume`, then `window`. With `fullscreen` DOSBox-X captures the mouse,
 so the guest pointer no longer follows the host cursor. The
 `presence` indicator draws the orange edge that tells the watcher a session is live. All of it is
 on [`start`'s page](docs/reference/session.md#start).
@@ -115,11 +115,22 @@ command is the [debugger commands](REFERENCE.md#debugger-commands) table.
 the program to a breakpoint on the routine every falling brick goes through. The calls and
 replies below are the last run's, written here by the demo itself
 (`uv run python demos/bricks/demo.py --update-readme`), each cut to the fields that make its
-point. The demo opens a window so the game can be watched.
+point. A value the host decides, so that two honest runs differ in it (a process id, a clock, how
+far the guest's log has grown), reads `<volatile>`. The demo opens a window so the game can be
+watched.
 
 ![Bricks in mode 13h, the ball just after it took the second brick](demos/bricks/screen.png)
 
 <!-- demo-flow:begin bricks -->
+```
+start(shared=true, background=true, display="<host>", conf="/path/to/wombat-phase11/demos/bricks/bricks.conf", cwd="/path/to/wombat-phase11/demos/bricks", session_seconds=900, break_on_int3=true, logfile="/path/to/wombat-phase11/tmp/demos/bricks/bricks-e9.log", state_dir="/path/to/wombat-phase11/tmp/demos/bricks/bricks-states")
+-> {
+  "watched": true,
+  "logfile": "/path/to/wombat-phase11/tmp/demos/bricks/bricks-e9.log",
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "... 8 more"]
+}
+```
+
 ```
 resume(seconds=60)
 -> {
@@ -139,7 +150,7 @@ resume(seconds=60)
 ```
 
 ```
-symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="0x8df0")
+symbols_load(path="/path/to/wombat-phase11/demos/bricks/bricks.sym", base="0x8df0")
 -> {
   "summary": "symbols_load: 65 loaded of 65 parsed, base 0x00008df0, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
   "base": "0x00008df0"
@@ -269,7 +280,7 @@ carries, names for addresses) and links each family's page, where every tool's b
 followed by why its contract is shaped that way. [CONTRIBUTING.md](CONTRIBUTING.md) is for
 changing the server: its battery, its live tier and what proves a change.
 
-What this server has in common with its sibling lives in [scry-core](https://github.com/scry-mcp/scry-core),
+What this server shares with the other Scry server lives in [scry-core](https://github.com/scry-mcp/scry-core),
 pinned by tag; its README lists every module.
 
 ## Licence

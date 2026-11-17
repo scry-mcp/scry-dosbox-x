@@ -12,9 +12,9 @@ run_to(ref="", control="", screen="", seconds=30.0, disarm_watches=false)
 Run until a symbol or a `SEG:OFF` and say where it stopped.
 
 `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required with a `ref` or an anchored
-screen: a second ref known to be hot, counted when it fires, so a bound that expires with no
-control hit is INVALID, not "it did not arrive"; each control `breakpoint_at(role="control")`
-declared counts too. `disarm_watches=true` disarms the watches for this pass, so none of them cuts it. Needs a stopped machine.
+screen: a place the program runs often while the target is awaited, counted each time it
+does, so a bound that expires with no control hit is INVALID, not "it did not arrive"; each
+control `breakpoint_at(role="control")` declared counts too. `disarm_watches=true` disarms the watches for this pass, so none of them cuts it. Needs a stopped machine.
 Refused: an absent or ambiguous name. On a dynamic cpu core, or `auto` (protected-mode code
 runs dynamic), which can pass over a breakpoint inside a compiled block, `note` says so.
 
@@ -798,4 +798,4 @@ Example, from a live run:
 ```
 <!-- scry-reference:end stop -->
 
-The session sends `BREAK` down the emulator's own debugger channel (upstream's `mcp_server`), so it needs no window, no menu and nothing taken from whoever is using the screen. The machine stops wherever it is, often outside the program: a DJGPP guest spends part of every frame in real-mode BIOS handlers (`F000:xxxx`), where no protected-mode selector can place a symbol, so every symbol of a protected-mode table answers that the machine stopped outside the program. A breakpoint on the program, armed at a stop inside it before the release, brings the machine back into its code. `unarmable` means the symbol is in the table and its address cannot be worked out at this instant; `unresolved` means the table does not carry the name, a fact about the table and not the stop, since `symbols_load` accumulates its batches. If `stop` fails as well, `close` then `start`. Last stop is reported as `last_stop`.
+The session sends `BREAK` down the emulator's own debugger channel (`[dosbox] mcp_server`), so it needs no window, no menu and nothing taken from whoever is using the screen. The machine stops wherever it is, often outside the program: a DJGPP guest spends part of every frame in real-mode BIOS handlers (`F000:xxxx`), where no protected-mode selector can place a symbol, so every symbol of a protected-mode table answers that the machine stopped outside the program. A breakpoint on the program, armed at a stop inside it before the release, brings the machine back into its code. At such a stop a declared symbol reads `unarmable` (it is in the table, and its address cannot be worked out at this instant) or `unresolved` (the table does not carry the name, a fact about the table and not the stop, since `symbols_load` accumulates its batches). If `stop` fails as well, `close` then `start`. A `stop` on a machine already stopped answers that stop as `last_stop`.

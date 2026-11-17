@@ -831,9 +831,9 @@ def run_to(ref: str = "", *, control: str = "", screen: str = "",
     """Run until a symbol or a `SEG:OFF` and say where it stopped.
 
     `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required with a `ref` or an anchored
-    screen: a second ref known to be hot, counted when it fires, so a bound that expires with no
-    control hit is INVALID, not "it did not arrive"; each control `breakpoint_at(role="control")`
-    declared counts too. {DISARM_WATCHES}. Needs a stopped machine.
+    screen: a place the program runs often while the target is awaited, counted each time it
+    does, so a bound that expires with no control hit is INVALID, not "it did not arrive"; each
+    control `breakpoint_at(role="control")` declared counts too. {DISARM_WATCHES}. Needs a stopped machine.
     Refused: an absent or ambiguous name. On a dynamic cpu core, or `auto` (protected-mode code
     runs dynamic), which can pass over a breakpoint inside a compiled block, `note` says so.
 

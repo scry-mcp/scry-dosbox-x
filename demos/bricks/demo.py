@@ -158,7 +158,8 @@ BREAK_STOP = {key: "the stop lands wherever the game is when the break arrives"
 
 STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary", "display"}),
-         volatile={"summary": "it carries how long the debugger took to answer"}),
+         volatile={"summary": "it carries how long the debugger took to answer"},
+         shown=("watched", "logfile", "debugger_commands")),
     Step("ready", "resume", {"seconds": WAIT_S}, at_ready,
          shown=("summary", "cause", "instruction")),
     Step("symbols", "symbols_load", symbols_at(HERE / "bricks.sym"), loaded,
