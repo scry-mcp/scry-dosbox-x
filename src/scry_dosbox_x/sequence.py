@@ -55,17 +55,6 @@ def answers_running(op: str, args: dict[str, Any]) -> bool:
 _RELEASES = frozenset({"resume", "run_to", "run_for", "step"})
 
 
-#: Waits for something to see: their TIMEOUT fails the list's premise, unlike a run's TIMEOUT,
-#: which hands back a stopped machine and the list goes on.
-_WAITS_TO_SEE = frozenset({"log_wait", "screen_wait"})
-
-
-def _missed(op: str, reply: dict[str, Any]) -> bool:
-    """Whether a step's own wait for what it was to see ran out."""
-    checked = reply.get("verify")
-    return ((op in _WAITS_TO_SEE and reply.get("verdict") == contract.TIMEOUT)
-            or (isinstance(checked, dict) and checked.get("verdict") == contract.TIMEOUT))
-
 
 def _leaves_running(op: str, reply: dict[str, Any]) -> bool:
     """Whether a release came back with no stop, read from its own reply."""
@@ -181,9 +170,6 @@ class _Dosbox(executor.SequenceMachine):
     def account(self, ran: list[dict[str, Any]], keep_last: bool,
                 also: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         return account_of(ran, self.summaries, keep_last, self.since, also)
-
-    def missed(self, op: str, reply: dict[str, Any]) -> bool:
-        return _missed(op, reply)
 
     def rested(self, ran: list[dict[str, Any]]) -> dict[str, Any] | None:
         """The stop that came during the last step, if any.
