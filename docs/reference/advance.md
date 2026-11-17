@@ -21,7 +21,7 @@ runs dynamic), which can pass over a breakpoint inside a compiled block, `note` 
 `screen`: a mapped screen's name instead of `ref` (exactly one). If the screen names an `anchor` (set by `screen_map_write`), run to it (`control`
 required): a `verified` map judges it there (`stale_map` when it no longer holds), a
 `consolidated` one takes it as shown. If it names none, a frame at a time until the map names it,
-within `seconds`; a `control` is refused there (`bad_argument`). Reply: `screen` (`screen`, `layer`,
+within `seconds`; a `control` or `disarm_watches` is refused there (`bad_argument`). Reply: `screen` (`screen`, `layer`,
 `mode`, `judged`), `frames` run. Refused: an unmapped screen (`unknown_ref`).
 
 Reply: `verdict` (`TARGET`, `OTHER_STOP`, `TIMEOUT`), `target_disarmed`, `control_hits`,
@@ -142,7 +142,7 @@ control and never the target; with the roles swapped the target arrives.
 
 The server derives the debugger's address from the machine's own mode, arms a `BP`, verifies it by reading the list back, and interrupts at the bound. Pick a control that fires a few times a run: each hit costs a round trip. `OTHER_STOP` means another breakpoint got there first. `control_silent` is a TIMEOUT with no control hit and `cut_by_other_stop` another stop before the control fired, each with the stop surveyed; `not_settled` is an interrupt after which `RUNSTATE` did not say stopped.
 
-**`disarm_watches`** is for a watch on a byte written every frame, which would otherwise stop every later run. A change watch's rows are deleted from the debugger for the pass and armed again at its stop, resolved afresh as a declaration queued while the guest ran is, so a pointer that moved is followed and a pass that ends in the other cpu mode places it for that mode. One that cannot be armed there (a machine that cannot be read, a run that raised and left it running) stays queued for the next stop, and `not_rearmed` names it with why; a row the debugger kept after `BPDEL` is named in `note`, since that watch could still cut the pass.
+**`disarm_watches`** is for a watch on a byte written every frame, which would otherwise stop every later run. A change watch's rows are deleted from the debugger for the pass and armed again at its stop, resolved afresh as a declaration queued while the guest ran is, so a pointer that moved is followed. One that cannot be placed there (the pass ended in a mode where its place cannot be reached, or on a machine that cannot be read) stays queued for the next stop, and `not_rearmed` names it with why. A run that raises answers no reply: what it disarmed is armed again, or queued, and the next stop's `applied_on_stop` says when it is armed. A row the debugger kept after `BPDEL` is named in `note`, since that watch could still cut the pass.
 
 <!-- scry-reference:begin run_for -->
 ## `run_for`

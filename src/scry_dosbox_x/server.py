@@ -1245,7 +1245,7 @@ def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]
     out reads the DOS machine, `control` (the control registers, the flags and the
     descriptor-table and task registers) and, in protected mode, `gdt` and `ldt` (the tables'
     rows); `bios_mem`, `callbacks`, `vga`, `paging` only when named. `dest` (absolute or `~`-led,
-    new) writes all sections whole as JSON. Writes nothing to the guest.
+    new) writes every row of the sections read as JSON. Writes nothing to the guest.
 
     Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
     {LOG_LIMIT_MAX} rows), `sources`, `coverage_note` (why a section is absent), `path` (with
