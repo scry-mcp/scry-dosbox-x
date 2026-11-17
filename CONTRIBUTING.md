@@ -1,138 +1,180 @@
 # Contributing to scry-dosbox-x
 
-This is the guide for changing the server. What the tools promise is in `REFERENCE.md`; this
-file says where the code lives, how to run the battery and the live tiers, and what proves a
-change.
+This page is for changing the server: where the code lives, which checks a change must pass,
+and what proves it. What the tools promise is in [REFERENCE.md](REFERENCE.md).
 
 ## Where the code lives
 
-`src/scry_dosbox_x/server.py` holds the tools and `src/scry_dosbox_x/mcp.py` the MCP boundary (the
-server object, its `instructions`, the roster of tools by family). Every other module in
-`src/scry_dosbox_x/` holds one concern, and its docstring opens with what it holds and why: read that
-before changing it. What both Scry servers share (the reply contract, the reference generator, the
-demo runner, the probe, the live bench) is the scry-core package, pinned by tag in `pyproject.toml`; its README lists every module, among them `scry_core.process_tree` (ending a launched
-process with everything it started), `scry_core.regpoint` (the `regpoint_hit` of a registerpoint
-stop) and `scry_core.tool_replies` (the fields `screen_map_write`, `log_wait` and `comment_write`
-share).
-`src/scry_dosbox_x/guest/` holds the resident input stub the server loads into the guest (`scry.asm`,
-built to `SCRY.COM`), `demos/` the demos, and `tools/` the development scripts below. `tests/` holds the
-contract tests and `tests/live/` the tiers that drive a real emulator.
+- `src/scry_dosbox_x/server.py` holds the tools, and `src/scry_dosbox_x/mcp.py` the MCP server
+  object, its `instructions` and the list of tools by group.
+- Every other module of `src/scry_dosbox_x/` holds one concern. Its docstring opens with what
+  it holds and why: read that before changing it.
+- `src/scry_dosbox_x/guest/` holds the input helper the server loads into DOS (`scry.asm`, built
+  to `SCRY.COM`).
+- What both SCRY servers share is the scry-core package, pinned by tag in `pyproject.toml`.
+  [Its module list](https://github.com/scry-mcp/scry-core/blob/main/docs/modules.md) has one
+  row per module.
+- `demos/` holds the demos and `tools/` the development scripts below.
+- `tests/` holds the unit tests, and `tests/live/` the tests that drive a real emulator.
 
-## The battery
-
-The suite runs with a home and a temp folder of its own (scry-core's `private_run`, on in
-`pyproject.toml`) and fails a run that leaves a file in that home; it stands aside when a `live`
-case is selected. Every name the server writes goes through `scry_core.file_names` and follows
-scry-core's [rule of file names](https://github.com/scry-mcp/scry-core/blob/main/docs/file-names.md);
-`tests/conftest.py` fails a case whose files break it, except the debugger's own names it lists
-(`MCPDUMP.BIN` and the like), which a new debugger-named file joins.
+## The checks
 
 ```sh
 uv run ruff check .
 uv run mypy --strict .
 uv run mypy --strict --platform win32 .
 uv run pytest -q
-bash .githooks/pre-commit-test.sh   # the hook's own cases
+bash .githooks/pre-commit-test.sh
 ```
 
-Ruff and mypy (strict, over the whole tree) judge the code, the second mypy as Windows sees it, so
-a call Windows lacks goes red on any host until it is guarded by `sys.platform`; pytest runs the
-contract tests and, through `--cov`, the coverage floor in `pyproject.toml`; the last line runs the
-pre-commit hook's own cases. All five green is what a change needs before it is committed.
+All five pass before a change is committed. What each one proves:
 
-On Windows the battery is the same, with `uv run pytest -q --no-cov`: the floor is judged on macOS
-only, because Windows skips by design the cases that need what it lacks (a FIFO, a mode bit, a
-symlink), and the floor counts the whole tree.
+- `ruff` and the first `mypy` check the code, strict, over the whole repository. A new
+  directory is covered without being added anywhere.
+- The second `mypy` reads the code as Windows sees it. A call Windows lacks fails on any
+  computer until it is guarded by `sys.platform`.
+- `pytest` runs the unit tests and checks the coverage floor in `pyproject.toml`. None of them
+  starts an emulator; the checks of `tools/bench.py` itself are among them.
+- The last line runs the commit hook's own cases.
 
-`.github/workflows/ci.yml` runs this battery on GitHub's Linux runners when started by hand, with
-`--no-cov` since the floor is macOS's, plus the pre-commit's checks (which need `jscpd` on the
-`PATH`, here as on a contributor's machine); the live tier stays on macOS and Windows, where an
-emulator and a display are. Without `nasm` the guest-building cases skip, and without `ffmpeg` the
-media ones; the workflow installs both so that a green run covers them. The committed guest binaries
-are built by the nasm major `tests/test_dosbox_x_guest.py` names, so their byte-identity cases skip
-under the older one Ubuntu ships, and run on macOS and Windows.
+The tests run with a home and a temporary folder of their own, and fail a run that leaves a
+file in that home (scry-core's `private_run`). Every file the server writes follows scry-core's
+[rule of file names](https://github.com/scry-mcp/scry-core/blob/main/docs/file-names.md).
+`tests/conftest.py` fails a case whose files break it, except the names the debugger itself
+picks (`MCPDUMP.BIN` and the like), which it lists.
 
-The dosbox-x server starts DOSBox-X headless (`-set "sdl videodriver=dummy"`), so it can be
-driven over an ssh session on Windows, no display needed. A venv made with a minor
-version has its `home` on a junction an elevated or ssh session cannot traverse (`uv trampoline
-failed to spawn Python child process`); make it with the exact patch version (`uv venv -p
-<patch>`), whose `home` is the real directory.
+On Windows the fourth command is `uv run pytest -q --no-cov`. The coverage floor is checked on
+macOS only, because Windows skips the cases that need what it lacks (a FIFO, a mode bit, a
+symlink).
 
-A tool's reply model is its contract. A number whose natural notation is hex (an address, an offset, an interrupt, a
-port) is answered as `0x` text and taken as `0x` text or an integer. A field every `ok` reply of the tool carries is `Required[...]`
-in the model; one that comes only under a condition is `Annotated[T, When("words")]`, and the
-tool's `Reply:` sentence says those words beside the field; a datum that could not be read is
-`unavailable(why)` and never absent. The battery refuses an `ok` reply that lacks a required field,
-and `tests/test_dosbox_x_reply_models.py` refuses a promised field whose condition the sentence does not say.
+`.github/workflows/ci.yml` runs the same checks on GitHub's Linux runners when started by hand,
+with `--no-cov` and with `jscpd` installed for the hook. Without `nasm` the cases that build
+the DOS test programs skip, and without `ffmpeg` the media ones; the workflow installs both.
 
-A change to a tool's arguments, reply model or description changes its reference page, and
-`tests/test_dosbox_x_reference_pages.py` goes red naming the tool, the page and the line. Regenerate the pages from the
-code, and the examples only from a live run's transcript (each `--mark` spells a directory of
-the run's host, as the committed examples do). A green live run removes its scratch, the
-transcript with it, so hard-link `transcript.jsonl` out of the run directory while the run goes,
-and only one newer than the run's start, since the scratches of earlier failed runs keep their old
-transcripts under the same temp root. Mark the temp root as well as the run directory: a server's
-own scratch lives directly under `$TMPDIR`, so a `--mark` of the run directory alone leaves host
-paths in `examples.json`; add `--mark '<TMPDIR without its trailing slash>=$TMPDIR'` and grep
-`docs/reference` for `/Users/`, `/var/folders` and `/private/var` before the commit:
+The committed DOS test programs are built by the nasm major that
+`tests/test_dosbox_x_guest.py` names. Their byte-identity cases skip under the older one Ubuntu
+ships, and run on macOS and Windows.
+
+### Running part of the tests
+
+Every `pytest` run checks the coverage floor, which belongs to the whole repository, so a
+partial run fails on it. Two traps follow from how `addopts` is written:
+
+- `addopts` ends in a bare `--cov`, which takes the next argument as its source. So
+  `uv run pytest tests/test_x.py` runs every test while looking like a one-file run.
+- Narrow a run with `-o addopts=""` and the test files, or with `-k <module name> --no-cov`.
+  Read it as a run that checked no floor.
+- `-o addopts=` also drops the `not live` and `not window` deselections. Name test files with
+  it, never a directory: `tests` would start a real emulator.
+
+### Over ssh on Windows
+
+The server starts DOSBox-X with no window (`-set "sdl videodriver=dummy"`), so it can be driven
+over an ssh session on Windows. A venv made with a minor version has its `home` on a junction
+that an elevated or ssh session cannot go through (`uv trampoline failed to spawn Python child
+process`). Make it with the exact patch version, `uv venv -p <patch>`.
+
+### A scry-core checkout
+
+`uv run` syncs the environment before its command. So the next plain `uv run` replaces an
+editable install of a scry-core checkout (`uv pip install -e ../scry-core`) with the pinned
+package. The run then checks the pinned package while looking like a run on the checkout.
+
+- Print `scry_core.__file__` from the project's Python before and after a run.
+- Use `uv run --no-sync` (or `UV_NO_SYNC=1`) while the editable install is wanted, and
+  reinstall it after a full run of the checks.
+- Export `PYTHONPATH=<checkout>/src` for a run that must keep the checkout while another
+  command syncs the environment.
+
+## Changing a tool
+
+A tool's reply model is its contract:
+
+- A number whose natural notation is hex (an address, an offset, an interrupt, a port) is
+  answered as `0x` text, and taken as `0x` text or an integer.
+- A field every `ok` reply carries is `Required[...]` in the model.
+- A field that comes only sometimes is `Annotated[T, When("words")]`, and the tool's `Reply:`
+  sentence says those words beside it.
+- A value that could not be read is `unavailable(why)`, never absent.
+
+The tests refuse an `ok` reply that lacks a required field.
+`tests/test_dosbox_x_reply_models.py` refuses a promised field whose condition the sentence does
+not say.
+
+A change to a tool's arguments, reply model or description changes its reference page.
+`tests/test_dosbox_x_reference_pages.py` then fails, naming the tool, the page and the line.
+Rewrite the pages from the code:
 
 ```sh
 uv run python -m scry_core.reference scry_dosbox_x.server:REFERENCE --write
+```
+
+The examples on those pages come only from the transcript of a run against the real emulator.
+Each `--mark` spells one of that computer's directories the way the committed examples do:
+
+```sh
 uv run python -m scry_core.reference scry_dosbox_x.server:REFERENCE --write \
     --examples <transcript.jsonl ...> --mark '/tmp/<the run>=$TMPDIR'
 ```
 
-The commit itself runs scry-core's pre-commit (`python -m scry_core.hook --help` says what it checks): enable it once per clone with
+- A run that passes deletes its temporary folder, transcript included. Hard-link
+  `transcript.jsonl` while it runs, and only one newer than the run's start.
+- Mark the temporary root as well as the run's directory, with
+  `--mark '<TMPDIR without its trailing slash>=$TMPDIR'`. The server's own temporary folder
+  sits directly under `$TMPDIR`.
+- Before the commit, search `docs/reference` for `/Users/`, `/var/folders` and `/private/var`.
+
+### A tool that moves to another page
+
+The reference generator rewrites only the blocks between its markers. The hand-written
+paragraphs after a block belong to that tool by position, so a tool moved to another page
+leaves them behind.
+
+1. Take the text between the tool's end marker and the next begin marker, at `HEAD`.
+2. Remove it from the old page and put it after the same tool's end marker on the new page.
+3. Run `tests/test_dosbox_x_reference_pages.py` again.
+
+The paragraphs of `REFERENCE.md` that name the group, and the demos' tables of tools, need the
+same pass. The group of each tool both servers have is `roster.SHARED_FAMILIES` in scry-core.
+
+## The commit hook
+
+The commit runs scry-core's pre-commit check; `python -m scry_core.hook --help` says what it
+looks at. Turn it on once per clone:
 
 ```sh
 git config core.hooksPath .githooks
 ```
 
-Its prose check is a share of each file's bytes, so a change that only deletes code raises the
-share and can go red with no comment touched: run the hook after a sweep that deletes lines, and
-cut a clause in the file it names, never raise the ceiling.
+One of its checks is the share of comments and docstrings in each file's bytes. A change that
+only deletes code raises that share and can fail with no comment touched. Cut a clause in the
+file it names; never raise the limit.
 
-These are contract tests and none of them launches an emulator: they hold the part that has to
-be true before one is involved. `tools/bench.py`'s own guards are among them, because an instrument
-that can lie needs validation and validation nothing executes is a comment.
+## Tests against a real emulator
 
-Every pytest run judges the coverage floor: `--cov` is in `addopts` and the floor is
-`fail_under` in `pyproject.toml`. A partial run goes red on that floor by construction, because
-the floor is the whole repository's. `addopts` ends in a bare `--cov`, which takes the next
-argument as its source, so `uv run pytest tests/test_x.py` runs the whole suite while looking like
-a one-file run, and a `--no-cov` after the path does not help: the path was already taken. Narrow
-a run with `-o addopts=""` naming the test files, or with `-k <module name> --no-cov`, and read it as a run
-that judged no floor. `-o addopts=` also drops the `not live` and `not window` deselections, so it names
-test files and never a directory: `tests` would start a real emulator. The live tier is deselected by default (`-m 'not live and not window'`).
-
-`uv run` syncs the environment before its command, so an editable install of a core checkout
-(`uv pip install -e ../scry-core`) is replaced by the pinned scry-core on the next plain `uv run`,
-and a battery, probe or live tier then judges the pinned core while looking like a run on the
-checkout. Print `scry_core.__file__` from the project's Python before and after a run, use
-`uv run --no-sync` (or `UV_NO_SYNC=1`) while the editable core is wanted, reinstall it after a
-full battery, and export `PYTHONPATH=<core checkout>/src` for a run that must keep the source
-winning while another command syncs the environment mid-run.
-
-The ruff and mypy configuration in `pyproject.toml` is scry-core's bar; mypy runs strict with no
-path list, so a new directory is covered without being added anywhere.
-
-## The live tier
-
-A second tier under `tests/live/` drives a real emulator.
+A plain `pytest` starts no emulator. The tests under `tests/live/` do:
 
 ```sh
 uv run pytest -o addopts="" -m live tests/live
+uv run python tests/live/run_live_pytest.py
 ```
 
-It runs against a guest this package OWNS, `tests/guest/probe.com`, a few bytes of assembler
-that write one instrumentation line every three seconds and never exit. Half these cases are
-about a machine that is still RUNNING and the other half read what a guest emitted, so a tier
-with no guest of its own would have to borrow one, and a borrowed guest is a dependency on
-somebody else's program.
+The first runs them one after another. The second runs each test that opens no window as a
+process of its own, several at once, and then the ones that open a window one at a time.
 
-To run it against your own program instead, point it at your config and name the two tokens your
-guest logs, one it writes EARLY and one it writes LATER, because one case waits for something
-that has not happened yet and refuses to run if it already has:
+They run on a DOS program this repository owns, `tests/guest/probe.com`: a few bytes of
+assembler that write one log line every three seconds and never exit. Half the cases are about
+a program that is still running, and the other half read what a program logged.
+
+The cases in protected mode run on a second program the repository owns, `tests/guest/dpmi.c`.
+It is a DJGPP program, committed built as `dpmi.exe` with its `nm` table `dpmi.sym`, and runs
+under CWSDPMI, which its own loader brings in.
+
+### On your own program
+
+Point the tests at your conf, and name two words your program logs: one it writes early, and one
+it writes later. One case waits for something that has not happened yet, and refuses to run if
+it already has.
 
 ```sh
 DOSBOX_X_LIVE_CONF=/path/to/your.conf \
@@ -143,198 +185,217 @@ DOSBOX_X_LIVE_LATE=READY \
     uv run pytest -o addopts="" -m live tests/live
 ```
 
-Your config needs `bochs debug port e9 = true`; without it the port is inert and the
-instrumentation goes nowhere, which reads as a broken session rather than a missing line.
-Nothing checks that for you. Three more things the overrides expect:
+- Your conf needs `bochs debug port e9 = true`. Without it the port does nothing, and that
+  reads as a broken session, not as a missing line; nothing checks it for you.
+- `DOSBOX_X_LIVE_PROGRAM` must be at the start of a line of your `[autoexec]`, and that section
+  must also have a bare `exit` line. Two cases build a variant conf by deleting those two lines.
+- `DOSBOX_X_LIVE_MARK` is something your program logs early, within its first few lines.
+- `DOSBOX_X_LIVE_LATE` is something it has not logged yet when the waiting case asks. A word
+  that is already there makes that case INVALID, which is the correct refusal and not a pass.
 
-- `DOSBOX_X_LIVE_PROGRAM` must appear at the START of a line in your `[autoexec]`, and that
-  section must also carry a bare `exit` line. Two cases build a variant config by deleting
-  exactly those two lines, and skip if they cannot find one of each.
-- `DOSBOX_X_LIVE_MARK` has to be something your guest logs EARLY, within the first handful of
-  instrumentation lines.
-- `DOSBOX_X_LIVE_LATE` has to be something it logs LATER and has NOT logged yet when the waiting
-  case asks. A token that is already there makes that case report INVALID, which is the correct
-  refusal and not a pass.
+### What the demos' cases need
 
-The cases that open a watched window open it as `start` does, on the display they ask for
-(`display`, on [`start`'s page](docs/reference/session.md#start)). The cases that move the
-owner's Space carry the `window` marker and are out of every default run: `SCRY_FOCUS_CONTROL=1
-uv run pytest -o addopts="" -m 'live and window' tests/live` runs them (scry-core's README,
-*On-demand tiers*). A demo or a live cell that needs the stop where an input lands takes the
-input's own post as the stop, never a breakpoint the click itself will hit inside a step that
-must answer ok (the read-back follows the button by a BIOS tick, `send_keys`' page says why);
-one that records sound takes a clock the host holds with room to spare (an intermittent
-`readback_refused` is the conf's clock first, `audio_record`'s page says why). The Deluxe Paint demos' cases also need `DELUXE_PAINT_DIR`, the directory holding version 1.0's
-`DP.EXE` (the demos refuse any other build); this repository carries none of the program, and
-without it they skip. The LineUp demo's case needs `LINEUP_MSDOS_DIR`, a copy of the game's PC port
-with its symbol map, and skips the same way. The Monkey Island demo's case needs `MONKEY_ISLAND_CD`,
-the directory holding the 1992 Enhanced CD's `monkey.cue` and its BINs, and skips the same way.
-The Speed Fight demo's case needs `SPEEDF_MSDOS_DIR`, a copy of the game's PC port with its blessed
-`EXES/SPEEDF.EXE` and `EXES/SPEEDF.MAP`, and the ReChip! demo's case `RECHIP_DIR`, a checkout of it
-after `make mcp-conf`; each skips the same way.
+Each demo has a case that runs it, and skips without the program it needs:
 
-**The matrix.** Around those cases sits `tests/live/dosbox_x_live_matrix.py`, run as a script
-rather than collected: every tool in every machine state, at every argument edge, across the
-calls that share state, then on real DOS programs a project points it at. Its cells are declared
-before anything boots, so what was planned and never reached shows at the end. Each cell prints
-OK, FAIL, or BLOCKED with the reason it could not run; every reply lands whole in a transcript
-whose path it prints first and again beside the verdict, and a failed cell keeps the conf and the
-log tail of the session live at the time. It exits 0 with no FAIL, 1 with one, 3 when the run is
-invalid (no cell ran among them). Its docstring holds the command and the variables it reads.
+| Demo | Variable | What it names |
+|---|---|---|
+| Deluxe Paint (both) | `DELUXE_PAINT_DIR` | the directory holding version 1.0's `DP.EXE` |
+| LineUp | `LINEUP_MSDOS_DIR` | a copy of the game's DOS version with its symbol map |
+| Monkey Island | `MONKEY_ISLAND_CD` | the directory holding `monkey.cue` and its BINs |
+| Speed Fight | `SPEEDF_MSDOS_DIR` | a copy of the game with `EXES/SPEEDF.EXE` and `EXES/SPEEDF.MAP` |
+| ReChip! | `RECHIP_DIR` | a checkout of it after `make mcp-conf` |
 
-**Parts run side by side.** The matrix runs each section (a letter; a name of two letters, once the alphabet runs out, is chosen with commas, `AA,` for a lone one), and
-`tests/live/run_live_pytest.py` each windowless live test (the `windowed` ones follow one at a
-time), as a process of its own, as many at once as `DOSBOX_X_LIVE_JOBS` says (unset, half the host's CPUs; `1`, one after another in one process),
-merged from the summaries they declare through `scry_core.live_pool`.
+Two habits keep a demo or a case the same on every computer:
 
-```sh
-uv run python tests/live/run_live_pytest.py
-```
+- One that needs the stop where an input lands takes the stop the input itself ends at, never
+  a breakpoint the click will hit. [`send_keys`' page](docs/reference/input.md) says why.
+- One that records sound fixes the emulator's speed at a value the computer keeps with room to
+  spare. An occasional `readback_refused` is the conf's speed first;
+  [`audio_record`'s page](docs/reference/captures.md) says why.
 
-**What a run behind guarantees.** Every start of the matrix but the focus gate's own start in
-front is behind, and a start behind does not come to the front, so the keyboard stays where it
-was. That is all it promises: its window is still there to be seen, and the host carries the
-load of every emulator the run starts, several at once. So a start behind is never the reason a
-run is safe beside somebody working: the matrix runs in an account or on a machine nobody is
-working at, or at an hour agreed with whoever is, and what says whether a run took the front is
-section O's verdict, read as scry-core's README says (*Focus watch*).
+### The live test script
 
-What opens a window (section G, the focus gate's O, the `windowed` tests) runs alone. Section
-R's watched windows open on the display `DOSBOX_X_LIVE_DISPLAY` names (unset, the main one), so
-a run beside somebody's work puts them on a display nobody is looking at. The cells that capture
-a window as the host shows it (section R's edge and pointer) see it behind other windows too, and
-on Windows they need the display on: with it off Windows composes no new frame of the window,
-so they are BLOCKED, saying so. The focus
-gate's start in front and its Space move take the desk of whoever is working, so they run only
-with `SCRY_FOCUS_CONTROL=1` on an idle machine; unset, those cells are BLOCKED naming the variable
-and the verdict says it is unproven. The full-screen cell runs beside them, before the window the
-verdict judges: on macOS a window filling the display is a Space of its own, which the watch
-would report as a Space nobody moved. Each part
-works on copies of its own of the guests, because the debugger writes its files
+`tests/live/dosbox_x_live_matrix.py` is run as a script. It tries every tool in every state of
+the machine, at every edge of its arguments and across the calls that share state. Then it runs
+on real DOS programs a project points it at.
+
+- The cases are listed before anything starts, so what was planned and never reached shows at
+  the end.
+- Each case prints OK, FAIL, or BLOCKED with the reason it could not run.
+- Every reply lands whole in a transcript whose path is printed first and again beside the
+  verdict. A failed case keeps the conf and the end of the log of its session.
+- It exits 0 with no FAIL, 1 with one, 3 when the run is invalid (no case ran, among others).
+
+Its docstring has the command and the variables it reads. The ones most used:
+
+| Variable | What it sets |
+|---|---|
+| `DOSBOX_X_LIVE_BENCH` | the folder of real DOS programs the program sections run |
+| `DOSBOX_X_LIVE_SECTIONS` | the sections to run, by letter; `AA,` names a lone two-letter one |
+| `DOSBOX_X_LIVE_JOBS` | how many sections run at once; unset, half the CPUs; `1`, one process |
+| `DOSBOX_X_LIVE_DISPLAY` | the display section R's windows open on; unset, the main one |
+| `SCRY_FOCUS_CONTROL` | `1` lets the focus section open a window in front and move a Space |
+
+With `DOSBOX_X_LIVE_BENCH` unset, or a program missing from it, the case is skipped or BLOCKED
+and names what is missing. So a fresh clone runs everything the repository's own programs cover.
+
+Each part works on its own copies of the DOS programs, because the debugger writes its files
 under fixed names into the emulator's working directory (`tests/live/live_private.py`).
 
-## The guests the live tier runs
+A few cases depend on the computer:
 
-The protected-mode cases need no other project: they run on a second guest the package owns,
-`tests/guest/dpmi.c`, a DJGPP program built into the committed `dpmi.exe` and its `nm` table
-`dpmi.sym`, under the DPMI host DOSBox-X provides, CWSDPMI, which the program's stub loads
-resident.
+- What opens a window (section G, the focus section O, the tests marked `windowed`) runs alone.
+- The cases that capture a window as the computer shows it see it behind other windows too. On
+  Windows they need the display on, because Windows draws no new frame of a window while it is
+  off.
+- The focus section's start in front and its Space move take your screen and keyboard: they run
+  only with `SCRY_FOCUS_CONTROL=1`, on a machine nobody is using.
+- The full-screen case runs before the window the focus verdict looks at. On macOS a window that
+  fills the display is a Space of its own, which the watch would report as a Space moved.
+- The cases that move a Space carry the `window` marker and are out of every default run.
+  `SCRY_FOCUS_CONTROL=1 uv run pytest -o addopts="" -m 'live and window' tests/live` runs them.
 
-The real-mode cases and the matrix's program sections run programs this repository does not
-carry, from the bench directory `DOSBOX_X_LIVE_BENCH` names. Where one is not there, or the
-variable is unset, its case is skipped or its cells are BLOCKED naming what is missing, so a fresh
-clone runs everything the package's own guests cover.
+### What a window opened behind promises
 
-## What a live run guards
+A start behind does not come to the front, so the keyboard stays where it was. That is all it
+promises: the window is still there to be seen, and the computer carries the load of every
+emulator the run starts.
 
-Both tiers refuse a host that cannot start DOSBox-X, and prove they left none running. Before its
-first start a run launches the emulator once in a form that ends by itself; one that does not
-return is INVALID naming the host, and nothing else is launched. Every DOSBox-X a session starts
-is recorded where it is spawned, and at the end of the run one still alive is killed and FAILS
-the run by name. A green run removes its scratch, its jobs' with it; a red, INVALID or broken one
-keeps it and prints its path (`scry_core.live_host`).
+So run the live test script in an account or on a machine nobody is working at, or at an hour
+agreed with whoever is. Whether a run took the front is the focus section's verdict, read as
+[scry-core's page on these tests](https://github.com/scry-mcp/scry-core/blob/main/docs/live-tests.md#showing-that-a-run-took-nobodys-focus)
+says.
+
+### What a run checks about the computer
+
+A run refuses a computer that cannot start DOSBox-X, and proves it left none running
+(`scry_core.live_host`):
+
+- Before its first start it launches the emulator once in a form that ends by itself. If that
+  does not return, the run is INVALID and starts nothing else.
+- Every DOSBox-X a session starts is recorded where it is started. One still alive at the end
+  is killed and fails the run by name.
+- A run that passes removes its temporary folder. Any other keeps it and prints its path.
+
+## Demos
+
+`demos/<name>/demo.py` runs one demo end to end. With `--update-readme` it rewrites the demo's
+page from a run where every step passed: the two generated blocks of its README,
+`TRANSCRIPT.md`, `screen.png` and `loop.webp`.
+
+- The steps a demo marks with an `ask` are the examples of its page, and of the README for
+  Bricks.
+- `loop.webp` shows the demo's moments. Each is cut from a `record` step of the run, or from
+  the video of a session started with `capture_video`, by the frame the replies count.
+- ffmpeg decodes the recordings and `img2webp` assembles the file; without either on the `PATH`
+  the update is refused by name.
+- A second run gives the same page. `loop.webp` alone may differ in its bytes.
+
+A recording moves the game's clock on. So a demo that compares a sound sample for sample keeps
+its recordings where its reference sound was made with them, or after the comparison.
+
+The block of the README that adds the server to each client is scry-core's table of clients:
+
+```sh
+uv run python -m scry_core.install scry_dosbox_x --write
+```
+
+### Work from a saved state
+
+A demo or an experiment that spends minutes starting a program is rerun from a state saved at
+the point of interest. Call `state_write(method="save")` once; each later run starts the same
+session and loads it.
+
+Check first that what the run looks at survives a load. A state restores the program's memory
+and not always the emulator's devices: Monkey Island's screen comes back striped, and its
+pointer stops following the mouse driver. Memory reads, scans and anything the program computes
+from its own memory are safe.
+
+### Measuring the border and the arrow
+
+The coloured border and the arrow that show a session is on are drawn after the frame goes to
+capture. So `snapshot`, `screen_view` and the emulator's own recordings never show them; they
+are measured from the computer's own screen.
+
+- Size: `screencapture -x -o -l <window>`, with the window number from
+  `scry_core.window_capture.window_of(pid)`. The title bar adds its own height.
+- Timing: `ffmpeg -f avfoundation -capture_cursor 0 -pixel_format uyvy422 -framerate 60` on the
+  screen, with `-c:v libx264 -crf 0`, cropped to the window's `kCGWindowBounds`.
+- The arrow's fill is found by colour (R>200, 100<G<175, B<90) with the border masked, and a
+  click's effect by a region the arrow never crosses.
+- A look sent through `debug` is overwritten by the server's next delivery. A variant runs the
+  server with `presence.LOOK` replaced before import.
+
+Before trusting a result, run a control that must fail. Two looks that differ can otherwise
+come out identical without anything saying so.
 
 ## Development scripts
 
-`demos/<name>/demo.py` runs one demo end to end; with `--update-readme` it rewrites the demo's
-guide from a run where every step passed: the transcript block in its README, `TRANSCRIPT.md`,
-`screen.png` and `loop.mp4` (the loop is recorded right after the step that takes the still).
-Converting the loop needs `ffmpeg` on the `PATH`; without it a demo that declares a loop ends
-INVALID and writes no loop.
+`tools/bench.py` measures what a program costs to run. It takes `--conf` (the conf to measure)
+and `--cwd` (the directory that conf runs in), with no default, and refuses without them.
+`--json`, `--reps` and `--song` are optional.
 
-`tools/bench.py` measures a program's cost. It takes `--conf` (the config file to measure) and `--cwd`
-(the directory that config runs in) as required flags, with no default, and refuses without them,
-naming the flags. `--json`, `--reps` and `--song` are optional. The song, the boot marker it
-waits for and the make target of its batch cost belong to the program it was written for, so a
-bench of another program names its own.
+The song, the log line it waits for and the make target it calls belong to the program it was
+written for. A measurement of another program names its own.
 
-**Iterate from a saved state, not from the demo's start.** A demo or an experiment that spends
-minutes booting a program before it reaches the thing under work is rerun from a state saved at
-that point: `state_write(method="save")` once, then each run starts the same session and
-`state_write(method="load")`. Check first that what the run judges survives a load, because a
-state restores the guest's memory and not always the emulator's devices: a program whose video
-memory or mouse driver the load leaves wrong (Monkey Island's screen comes back striped and its
-pointer stops following the driver) cannot be judged from one. Memory reads, scans and anything
-the program computes from its own memory can.
-
-**The presence overlay is measured off the host screen.** The edge and the arrow are drawn after
-the frame goes to capture, so `snapshot`, `screen_view` and the emulator's own recordings never
-show them. Their size is read off `screencapture -x -o -l <window>` (the window number from
-`scry_core.window_capture.window_of(pid)`; the title bar adds its own height on top), their timing
-off `ffmpeg -f avfoundation -capture_cursor 0 -pixel_format uyvy422 -framerate 60 -i "<screen>:none"`
-with `-c:v libx264 -crf 0`, cropped to the window's `kCGWindowBounds`. The arrow's fill is found
-by colour (R>200, 100<G<175, B<90) with the edge band masked, and a click's effect by a region the
-arrow never crosses. A look sent through `debug` is overwritten by the server's next delivery, so
-a variant runs the server with `presence.LOOK` replaced before import. Validate the instrument
-with a control that must come out red before reading a green: look variants that differ can
-otherwise come out identical without anything saying so.
-
-## Fixtures and the sweep off the commit path
-
-One artefact per toolchain is BUILT HERE and committed under `tests/fixtures/`: a Borland TLINK
-16-bit map with an overlay in it, an Open Watcom map spanning two sections, and a DJGPP `nm`
-listing beside the GNU `ld` map from the same link. The two Borland residents share their first
-fifteen characters on purpose, so the fixture exercises the collision the disambiguator exists
-for. `tests/test_dosbox_x_fixtures.py` reads them, so the claim "this reads those formats" is
-something a fresh clone can check.
-
-Each ships with its generator, the source it was built from and a `build.sh` that re-makes it: a
-captured artefact whose recipe is lost cannot be re-captured, and a discrepancy in how it was
-transcribed can then never be settled. Neither toolchain is vendored here; `build.sh` takes its
-location in an environment variable and stops loudly rather than quietly building with something
-else.
-
-`tools/mapsweep.py` reads REAL maps where they live, against a manifest that says what each one holds,
-and goes red when the two part company in either direction: a count that ROSE against an
-unchanged file means the reader has begun reading something that is not a symbol.
+`tools/mapsweep.py` reads real symbol maps where they live, against a manifest that says what
+each one holds. It fails when the two disagree in either direction: a count that rose against
+an unchanged file means the reader has begun to read something that is not a symbol.
 
 ```sh
 uv run python tools/mapsweep.py --manifest <manifest>.json --root /where/those/maps/live
 ```
 
-It is manual and declared as such in `tests/gates-manual.txt`, with the reason: the material is
-not in this repository and is not versioned here, nor is the manifest, which names it and so is
-kept with it. On the commit path the sweep would be INVALID in every
-clone but one, and a gate that is almost always invalid is one people learn to ignore. It covers
-the Borland, Open Watcom and `nm` formats on real material; the GNU `ld` map is absent on
-purpose, because the only one is the fixture this package generated, which lives inside the
-repository, and the sweep is for material that does not.
+- It is run by hand, and `tests/gates-manual.txt` says why: the maps and their manifest are not
+  in this repository. In every clone but one it would be INVALID.
+- It covers the Borland, Open Watcom and `nm` formats on real maps. The GNU `ld` format is left
+  out on purpose: the only such map is the fixture this repository builds.
+- A failure means a count moved. It cannot say a count is correct: the first time a project's
+  row is written, a person reads the map once and accepts what the reader says.
 
-What a red means: a count MOVED. What it cannot say is that a count is CORRECT: the first time a
-project's row is written, whatever the reader says becomes the expectation, and closing that is
-reading the map, by a person, once, exactly as blessing any golden is.
+## Test fixtures
 
-## Proving a change
+One file per toolchain is built here and committed under `tests/fixtures/`:
 
-A change to a tool's description, arguments or `instructions` is probed: the probe hands a model
-only what a client delivers and checks that it calls the tool as the contract says. The
-pre-commit runs its `--check`, which asks no model and names a tool or argument with no task in
-`mcp_probe/tasks/`; a real run asks the `claude` CLI and judges each task over several runs:
+- a Borland TLINK 16-bit map with an overlay;
+- an Open Watcom map over two sections;
+- a DJGPP `nm` listing beside the GNU `ld` map of the same link.
+
+`tests/test_dosbox_x_fixtures.py` reads them, so a fresh clone can check that the server reads
+those formats.
+
+The two Borland routines share their first fifteen characters on purpose: the fixture exercises
+the name collision the reader resolves.
+
+Each fixture has its generator, the source it was built from and a `build.sh` that makes it
+again. Neither toolchain is in this repository; `build.sh` takes its location from an
+environment variable and stops loudly without it.
+
+## The description test
+
+A tool's description, its arguments and the server's `instructions` are all a model has to call
+the tool from. The description test gives a model only what a client delivers and checks the
+calls it makes:
 
 ```sh
-uv run python -m scry_core.probe dosbox-x --servers mcp_probe/servers.py --tasks mcp_probe/tasks --check
-uv run python -m scry_core.probe dosbox-x --servers mcp_probe/servers.py --tasks mcp_probe/tasks --runs 3
+uv run python -m scry_core.probe dosbox-x --servers mcp_probe/servers.py \
+    --tasks mcp_probe/tasks --check
+uv run python -m scry_core.probe dosbox-x --servers mcp_probe/servers.py \
+    --tasks mcp_probe/tasks --runs 3
 ```
 
-`python -m scry_core.probe --help` says how a failure is told from the model's noise. A task the
-probe's model keeps getting wrong, where the server refuses the wrong call naming why, is accepted
-residual and reported with its numbers: a client retries on a refusal, and more description text
-for that task spends the cap the others need. Only a wrong call the server accepts with
-`status: ok` is a defect.
+- `--check` asks no model. It names a tool or an argument that has no task in
+  `mcp_probe/tasks/`, and the commit hook runs it.
+- `--runs` asks the `claude` CLI and checks each task over several runs.
+  `python -m scry_core.probe --help` says how a failure is told from the model's noise.
 
-The reference generator rewrites only the blocks between its markers, and the hand-written
-paragraphs after a block belong to that tool by position. A tool moved to another family page
-leaves them on the old page: take the text between its end marker and the next begin marker at
-HEAD, remove it from the old page (it occurs once) and put it after the same tool's end marker on
-the new page, then rerun the drift test. The `REFERENCE.md` prose that names the family and the
-demos' family tables need the same sweep; the family of each shared tool is
-`roster.SHARED_FAMILIES` in scry-core.
+A task the model keeps getting wrong is tolerated when the server refuses the wrong call and
+says why: report it with its numbers. A client retries on a refusal, and more description text
+spends the room the other tools need. Only a wrong call the server accepts with `status: ok`
+is a defect.
 
-Windows stamps a file's mtime from a clock that ticks coarser than `time.time()`, so a file
-created right after a clock read can carry an mtime a few milliseconds before it, and a plain
-`mtime >= began` drops the first file of a run on Windows while never failing on macOS.
-`MTIME_TICK_S` in `src/scry_dosbox_x/recordings.py` is the slack, bounded from the other side by
-the gap between two calls, which is always longer. Prove a change there with a test that adds a
-few milliseconds to the clock, never with a sleep, and give any step that compares file times
-against the process's clock a Windows pass: its first sign is a test that passes and fails with
-no change of code.
+## A file's time on Windows
+
+Windows stamps a file's modification time from a clock that ticks coarser than `time.time()`.
+A file created right after a clock read can carry a time a few milliseconds before it. So a
+plain `mtime >= began` drops the first file of a run on Windows, and never fails on macOS.
