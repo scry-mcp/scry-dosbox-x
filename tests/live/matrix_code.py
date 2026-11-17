@@ -41,7 +41,7 @@ from scry_dosbox_x import state as dstate
 CODE_CONF = GUEST / "code.conf"
 #: Where DOS loads both guests, and the base their `nm` tables are placed at.
 LOAD = "0814"
-GUEST_BASE = "8140"
+GUEST_BASE = "0x8140"
 #: The code guest's code, from `start` to its first data label.
 CODE_GUEST_CODE = 0x75
 #: How many publics the dos-real16 rule tries before it is a FAIL rather than a search.

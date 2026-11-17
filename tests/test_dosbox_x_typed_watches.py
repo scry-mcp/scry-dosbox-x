@@ -54,15 +54,15 @@ def test_symbols_load_takes_a_types_file_and_refuses_a_name_the_table_lacks(
     types = tmp_path / "types.txt"
     types.write_text("# shapes\n_hero: {x:i16,y:i16,hp:u8}\n", encoding="utf-8")
     _names(tmp_path)
-    got = server.symbols_load(path=str(nm), base="400000", types=str(types))
+    got = server.symbols_load(path=str(nm), base="0x400000", types=str(types))
     assert got["status"] == "ok", got
     assert dstate.STATE.symbol_types == {"_HERO": "{x:i16,y:i16,hp:u8}"}
     assert got["symbols_typed"] == 1, "the load reply counts the types it installed"
     types.write_text("_villain: u8\n", encoding="utf-8")
-    got = server.symbols_load(path=str(nm), base="400000", types=str(types))
+    got = server.symbols_load(path=str(nm), base="0x400000", types=str(types))
     assert got["status"] == "INVALID" and "_VILLAIN" in got["message"]
     types.write_text("_hero: u64\n", encoding="utf-8")
-    got = server.symbols_load(path=str(nm), base="400000", types=str(types))
+    got = server.symbols_load(path=str(nm), base="0x400000", types=str(types))
     assert got["status"] == "INVALID" and "types.txt:1" in got["message"]
     dstate.STATE.forget_symbols()
     assert dstate.STATE.symbol_types == {}, "dropped with the table"

@@ -114,7 +114,7 @@ def reach_realmode(into: Path, logfile: str | None = None) -> tuple[int, int, in
     load_seg = prog_cs - frame
     assert load_seg >= 0, f"frame {frame:#x} exceeds the program CS {prog_cs:#x}"
     mapf = bp.DOS_REAL16.root / bp.DOS_REAL16.map
-    load = cast(dict[str, Any], server.symbols_load(path=str(mapf), base=f"{load_seg * 16:X}"))
+    load = cast(dict[str, Any], server.symbols_load(path=str(mapf), base=f"0x{load_seg * 16:X}"))
     assert load["status"] == "ok", load
     return load_seg, prog_cs, prog_eip
 
@@ -123,7 +123,7 @@ def reach_realmode(into: Path, logfile: str | None = None) -> tuple[int, int, in
 def test_realmode_entry_finds_the_load_segment_and_symbols_place(tmp_path: Path) -> None:
     """The derived load segment resolves the stop back to the named loop symbol."""
     load_seg, prog_cs, prog_eip = reach_realmode(tmp_path)
-    here = cast(dict[str, Any], server.symbols_find(linear=f"{prog_cs * 16 + prog_eip:X}"))
+    here = cast(dict[str, Any], server.symbols_find(linear=f"0x{prog_cs * 16 + prog_eip:X}"))
     assert here["status"] == "ok", (
         f"the derived base {load_seg * 16:#x} resolves the running stop to nothing, so it "
         f"is not where the program is: {here.get('message')}")

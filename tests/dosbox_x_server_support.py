@@ -1149,12 +1149,12 @@ def _deferred_load_with(tmp_path: Path, declare: Any) -> tuple[NamesFake, Path]:
     nm = tmp_path / "foo.nm"
     nm.write_text("00001000 T foo\n", encoding="utf-8")
     fake = _names(tmp_path)
-    _ok(server.symbols_load(path=str(nm), base="400000"))
+    _ok(server.symbols_load(path=str(nm), base="0x400000"))
     _ok(server.breakpoint_at(ref="foo"))
     fake.rows.clear()
     fake.running = True
     declare()
-    assert server.symbols_load(path=str(nm), base="400000")["status"] == "ok"
+    assert server.symbols_load(path=str(nm), base="0x400000")["status"] == "ok"
     return fake, nm
 
 

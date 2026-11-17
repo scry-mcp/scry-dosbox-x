@@ -45,13 +45,13 @@ def test_a_load_stamps_the_executable_it_checked_the_table_against(tmp_path: Pat
     shutil.copy(GUEST / "dpmi.exe", tmp_path / "dpmi.exe")
     shutil.copy(GUEST / "dpmi.sym", tmp_path / "dpmi.sym")
     fake = _names(tmp_path)
-    got = _ok(server.symbols_load(path=str(tmp_path / "dpmi.sym"), base="400000"))
+    got = _ok(server.symbols_load(path=str(tmp_path / "dpmi.sym"), base="0x400000"))
     assert str(got["checked"].get("against", "")).endswith("dpmi.exe"), got["checked"]
     exe = tmp_path / "dpmi.exe"
     assert fake.image == {"path": str(exe), "size": exe.stat().st_size,
                           "mtime_ns": exe.stat().st_mtime_ns}, getattr(fake, "image", None)
     # a load its own build cannot be checked against clears it: nothing waits on that file
-    _ok(server.symbols_load(path=_map(tmp_path, "plain.nm", "00001000 T _main\n"), base="400000"))
+    _ok(server.symbols_load(path=_map(tmp_path, "plain.nm", "00001000 T _main\n"), base="0x400000"))
     assert fake.image is None, fake.image
 
 
@@ -60,13 +60,13 @@ def test_a_load_that_refuses_leaves_the_stamp_of_the_table_in_force(tmp_path: Pa
     shutil.copy(GUEST / "dpmi.exe", tmp_path / "dpmi.exe")
     shutil.copy(GUEST / "dpmi.sym", tmp_path / "dpmi.sym")
     fake = _names(tmp_path)
-    _ok(server.symbols_load(path=str(tmp_path / "dpmi.sym"), base="400000"))
+    _ok(server.symbols_load(path=str(tmp_path / "dpmi.sym"), base="0x400000"))
     stamp = fake.image
     assert stamp is not None and str(stamp["path"]).endswith("dpmi.exe"), fake.image
     typed = tmp_path / "types.txt"
     typed.write_text("a_name_the_table_lacks:u8\n", encoding="utf-8")
     refused = server.symbols_load(
-        path=_map(tmp_path, "try.nm", "00001000 T _main\n"), base="400000",
+        path=_map(tmp_path, "try.nm", "00001000 T _main\n"), base="0x400000",
         types=str(typed))
     assert refused["status"] == "INVALID", refused
     assert fake.image == stamp, fake.image
@@ -88,12 +88,12 @@ def test_a_table_where_two_names_fold_to_one_is_refused_and_a_lookup_ignores_cas
     _names(tmp_path)
     clash = _map(tmp_path, "clash.nm",
                  "00001000 T ShowCredits\n00002000 T x\n00003000 T showcredits\n")
-    got = cast(dict[str, Any], server.symbols_load(path=clash, base="400000"))
+    got = cast(dict[str, Any], server.symbols_load(path=clash, base="0x400000"))
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
     assert "line 1" in got["message"] and "line 3" in got["message"], got["message"]
     assert not dstate.STATE.table, "a refused load installs nothing"
     _ok(server.symbols_load(path=_map(tmp_path, "ok.nm", "00001000 T ShowCredits\n"),
-                            base="400000"))
+                            base="0x400000"))
     found = _ok(server.symbols_find(name="showcredits"))
     assert [row["name"] for row in found["symbols"]] == ["ShowCredits"], found
     armed = _ok(server.breakpoint_at(ref="showcredits"))
@@ -112,23 +112,23 @@ def test_a_table_measured_off_another_register_keeps_the_selectors_when_cs_agree
 def test_a_base_the_caller_gave_keeps_no_selectors_where_cs_holds_another(
         tmp_path: Path) -> None:
     _names(tmp_path)
-    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"), base="500000"))
+    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"), base="0x500000"))
     assert _selectors() == {}, dstate.STATE.base
-    _ok(server.symbols_load(path=_map(tmp_path, "b.nm", "00001000 T _main\n"), base="400000"))
+    _ok(server.symbols_load(path=_map(tmp_path, "b.nm", "00001000 T _main\n"), base="0x400000"))
     assert _selectors() == {"selector_CS": 0xA7, "selector_DS": 0xAF}, dstate.STATE.base
 
 
 def test_a_batch_added_where_the_table_sits_carries_the_selectors_it_cannot_read(
         tmp_path: Path) -> None:
     fake = _names(tmp_path)
-    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"), base="400000"))
+    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"), base="0x400000"))
     fake.running = True
     _ok(server.symbols_load(path=_map(tmp_path, "b.nm", "00002000 T _second\n"),
-                            base="400000"))
+                            base="0x400000"))
     assert _selectors() == {"selector_CS": 0xA7, "selector_DS": 0xAF}, dstate.STATE.base
     fake.running = False
     fake.cs, fake.ds = "00B7", "00BF"
-    _ok(server.symbols_load(path=_map(tmp_path, "c.nm", "00003000 T _third\n"), base="400000"))
+    _ok(server.symbols_load(path=_map(tmp_path, "c.nm", "00003000 T _third\n"), base="0x400000"))
     assert _selectors() == {"selector_CS": 0xB7, "selector_DS": 0xBF}, "the stop's own win"
 
 
@@ -137,7 +137,7 @@ def test_a_load_while_the_guest_runs_says_its_re_arm_waits_for_the_stop(
     fake = _names(tmp_path)
     fake.running = True
     got = _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"),
-                                  base="400000"))
+                                  base="0x400000"))
     assert got["declarations"] == {
         "deferred": True,
         "note": "the re-arm runs at the next stop, after the debugger takes the load"}, got
@@ -147,13 +147,13 @@ def test_a_load_while_the_guest_runs_says_its_re_arm_waits_for_the_stop(
 def test_a_load_says_how_many_bytes_it_handed_the_debugger(tmp_path: Path) -> None:
     _names(tmp_path)
     got = _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"),
-                                  base="400000"))
+                                  base="0x400000"))
     assert got["bytes"] == 2 + dsym.RECORD, got
 
 
 # A real ILINK32 map of three sections (tests/fixtures/borland-ilink32/provenance.txt).
 ILINK32_MAP = Path(__file__).parent / "fixtures" / "borland-ilink32" / "sections32.map"
-ILINK32_BASES = {"1": "401000", "2": "423000", "3": "4289B8"}
+ILINK32_BASES = {"1": "0x401000", "2": "0x423000", "3": "0x4289B8"}
 
 
 def test_a_sectioned_table_has_no_descriptor(tmp_path: Path) -> None:
@@ -169,15 +169,15 @@ def test_a_real_mode_stop_with_no_base_names_both_ways_to_give_one(tmp_path: Pat
     got = cast(dict[str, Any], server.symbols_load(
         path=_map(tmp_path, "a.nm", "00001000 T _main\n")))
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
-    for said in ("`base`", "`section_bases`", '"8000"'):
+    for said in ("`base`", "`section_bases`", '"0x8000"'):
         assert said in got["message"], said
 
 
 def test_types_may_name_a_symbol_of_any_batch_the_table_holds(tmp_path: Path) -> None:
     _names(tmp_path)
-    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 D _old\n"), base="400000"))
+    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 D _old\n"), base="0x400000"))
     types = _map(tmp_path, "t.txt", "_old: ptr32\n_new: u16\n")
-    _ok(server.symbols_load(path=_map(tmp_path, "b.nm", "00002000 D _new\n"), base="400000",
+    _ok(server.symbols_load(path=_map(tmp_path, "b.nm", "00002000 D _new\n"), base="0x400000",
                             types=types))
 
 
@@ -185,7 +185,7 @@ def test_types_for_symbols_the_table_lacks_are_named_five_at_most(tmp_path: Path
     _names(tmp_path)
     types = _map(tmp_path, "t.txt", "".join(f"_absent{i}: u16\n" for i in range(6)))
     got = cast(dict[str, Any], server.symbols_load(
-        path=_map(tmp_path, "a.nm", "00001000 D _main\n"), base="400000", types=types))
+        path=_map(tmp_path, "a.nm", "00001000 D _main\n"), base="0x400000", types=types))
     assert got["status"] == "INVALID", got
     listed = got["message"].split("lacks: ", 1)[1]
     assert listed.count("_ABSENT") == 5, listed
@@ -194,7 +194,7 @@ def test_types_for_symbols_the_table_lacks_are_named_five_at_most(tmp_path: Path
 def test_a_types_file_that_is_not_there_is_refused_naming_types(tmp_path: Path) -> None:
     _names(tmp_path)
     got = cast(dict[str, Any], server.symbols_load(
-        path=_map(tmp_path, "a.nm", "00001000 D _main\n"), base="400000",
+        path=_map(tmp_path, "a.nm", "00001000 D _main\n"), base="0x400000",
         types=str(tmp_path / "absent.txt")))
     assert got["status"] == "INVALID" and got["message"].startswith("types:"), got
 
@@ -202,13 +202,13 @@ def test_a_types_file_that_is_not_there_is_refused_naming_types(tmp_path: Path) 
 def test_a_batch_that_would_overfill_the_queued_one_is_refused_and_the_table_kept(
         tmp_path: Path) -> None:
     fake = _names(tmp_path)
-    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"), base="400000"))
+    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"), base="0x400000"))
     fake.running = True
     dstate.STATE.pending["load"] = struct.pack("<H", dsym.COUNT_MAX) + bytes(
         dsym.RECORD * dsym.COUNT_MAX)
     before = list(dstate.STATE.table)
     got = cast(dict[str, Any], server.symbols_load(
-        path=_map(tmp_path, "b.nm", "00002000 T _second\n"), base="400000"))
+        path=_map(tmp_path, "b.nm", "00002000 T _second\n"), base="0x400000"))
     assert got["status"] == "INVALID" and "queued for one load" in got["message"], got
     assert dstate.STATE.table == before
 
@@ -225,14 +225,14 @@ def test_a_linear_address_in_a_section_the_table_does_not_hold_is_refused_by_nam
         tmp_path: Path) -> None:
     _names(tmp_path)
     _ok(server.symbols_load(path=str(ILINK32_MAP), section_bases=ILINK32_BASES))
-    got = cast(dict[str, Any], server.symbols_find(linear="10", section=4))
+    got = cast(dict[str, Any], server.symbols_find(linear="0x10", section=4))
     assert got["status"] == "INVALID" and got["code"] == "unknown_ref", got
     assert "nothing in section 4" in got["message"], got
 
 
 def test_section_bases_that_are_no_mapping_are_refused_naming_them() -> None:
     with pytest.raises(ds.Invalid) as refused:
-        placement.hex_bases("400000")  # type: ignore[arg-type]
+        placement.address_bases("0x400000")  # type: ignore[arg-type]
     assert str(refused.value).startswith("section_bases is a mapping of section index"), refused
 
 

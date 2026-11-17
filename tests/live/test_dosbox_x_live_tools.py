@@ -479,7 +479,7 @@ def test_symbols_load_places_a_real_list_through_the_whole_chain(
                    "0000fff0 T _reset_vector\n"
                    "0000abcd t _somewhere_in_rom\n", encoding="utf-8")
 
-    got = cast(dict[str, Any], server.symbols_load(path=str(src), base="F0000"))
+    got = cast(dict[str, Any], server.symbols_load(path=str(src), base="0xF0000"))
     assert got["status"] == "ok", got
     assert got["parsed"] == 3 and got["kept"] == 3, got
     assert got["loaded"] == 3, (
@@ -490,7 +490,7 @@ def test_symbols_load_places_a_real_list_through_the_whole_chain(
     assert found["status"] == "ok", found
     assert found["symbols"][0]["addr"] == "0x000ffff0", found
 
-    where = cast(dict[str, Any], server.symbols_find(linear="000FFFF2"))
+    where = cast(dict[str, Any], server.symbols_find(linear="0x000FFFF2"))
     assert (where["name"], where["delta"]) == ("_reset_vector", 2), where
 
 
@@ -503,7 +503,7 @@ def test_symbols_load_leaves_no_file_behind_in_the_working_directory(
     src.write_text("00001000 T _x\n", encoding="utf-8")
     try:
         got = cast(dict[str, Any], server.symbols_load(path=str(src),
-                                                       base="F0000"))
+                                                       base="0xF0000"))
         assert got["status"] == "ok", got
     finally:
         src.unlink(missing_ok=True)
@@ -525,7 +525,7 @@ def test_a_file_already_sitting_at_either_name_is_refused_not_overwritten(
     intruder.write_bytes(b"not mine")
     try:
         got = cast(dict[str, Any], server.symbols_load(path=str(src),
-                                                       base="F0000"))
+                                                       base="0xF0000"))
         assert got["status"] == "INVALID", got
         assert "will not overwrite" in got["message"], got
         assert intruder.read_bytes() == b"not mine", "it overwrote the caller's file"
@@ -786,7 +786,7 @@ def test_disassemble_decodes_what_memory_holds_and_names_the_probes_calls(
     parked = cast(dict[str, Any], server.run_for(frames=1))
     assert parked["status"] == "ok" and parked["pc"].endswith(":00000106"), parked
     loaded = cast(dict[str, Any], server.symbols_load(path=str(_OWN / "probe.sym"),
-                                                      base="8140"))
+                                                      base="0x8140"))
     assert loaded["status"] == "ok", loaded
     got = cast(dict[str, Any], server.disassemble(ref="start", length=16))
     assert got["status"] == "ok" and got["code_bits"] == 16, got
@@ -808,7 +808,7 @@ def test_comments_follow_the_symbol_one_per_place_and_round_trip_through_a_file(
     start_ok(session_seconds=120, logfile=str(tmp_path / "guest.log"))
     assert cast(dict[str, Any], server.run_for(frames=1))["status"] == "ok"
     assert cast(dict[str, Any], server.symbols_load(path=str(_OWN / "probe.sym"),
-                                                    base="8140"))["status"] == "ok"
+                                                    base="0x8140"))["status"] == "ok"
     held = {c["ref"] for c in cast(dict[str, Any], server.comment_list())["comments"]}
     assert not held & {"start", "0814:0106"}, f"the store already comments these: {held}"
     counted = cast(dict[str, Any], server.status())["declarations"]

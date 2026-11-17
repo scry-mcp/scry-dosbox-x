@@ -236,8 +236,7 @@ def test_a_signed_or_malformed_offset_is_refused_before_the_session_gate(ref: st
 
 
 def test_a_seg_off_takes_hex_with_or_without_0x_as_every_address_argument_does() -> None:
-    """One hex grammar: `0x` is taken on either half, as `hex_arg` takes it, so a declaration
-    stored in that spelling still arms."""
+    """`0x` is taken on either half, so a declaration stored in that spelling still arms."""
     assert placement.parse_seg_off("0x0814:0x10") == placement.parse_seg_off("0814:10") == (
         0x814, 0x10)
     with pytest.raises(ds.Invalid, match="no sign"):

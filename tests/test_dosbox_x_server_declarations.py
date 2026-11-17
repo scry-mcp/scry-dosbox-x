@@ -438,7 +438,7 @@ def test_symbols_load_rearms_a_declaration_at_its_new_address(tmp_path: Path) ->
     # declare while unresolved (no table yet loaded through symbols_load)
     server.breakpoint_at(ref="_main")
     assert fake.rows == [], "nothing to arm against before a table is loaded"
-    got = server.symbols_load(path=str(nm), base="400000")
+    got = server.symbols_load(path=str(nm), base="0x400000")
     assert got["status"] == "ok"
     assert [r["ref"] for r in got["declarations"]["rearmed"]] == ["_main"]
     assert any(r["entry"] == "BP 00A7:16DD80" for r in fake.rows)
@@ -543,7 +543,7 @@ def test_rearm_counts_unresolved_and_ambiguous(tmp_path: Path) -> None:
     _names(tmp_path)
     server.breakpoint_at(ref="_main")          # will resolve once loaded
     server.breakpoint_at(ref="_gone")          # stays unresolved
-    got = server.symbols_load(path=str(nm), base="400000")
+    got = server.symbols_load(path=str(nm), base="0x400000")
     assert [r["ref"] for r in got["declarations"]["unresolved"]] == ["_gone"]
     assert [r["ref"] for r in got["declarations"]["rearmed"]] == ["_main"]
 
@@ -883,7 +883,7 @@ def test_symbols_load_leaves_another_builds_raw_address_stale_and_names_what_it_
     fake.rows.clear()
     dstate.STATE.session_origin = "s2"
     dstate.STATE.conf_fingerprint = dlaunch.fingerprint(fake.launch.conf)
-    got = server.symbols_load(path=str(nm), base="400000")
+    got = server.symbols_load(path=str(nm), base="0x400000")
     assert [r["ref"] for r in got["declarations"]["rearmed"]] == ["_main"], got["declarations"]
     assert [r["ref"] for r in got["declarations"]["stale"]] == ["00A7:5C6F0"], \
         got["declarations"]
@@ -1307,7 +1307,7 @@ def test_two_loads_queued_while_the_guest_runs_reach_the_debugger_together(
     fake.load_symbols = load  # type: ignore[method-assign]
     fake.running, fake.halted = True, False
     for nm in (one, two):
-        assert server.symbols_load(path=str(nm), base="400000")["pending"] is True
+        assert server.symbols_load(path=str(nm), base="0x400000")["pending"] is True
     assert {s.name for s in dstate.STATE.table} == {"_main", "_second"}
     fake.running, fake.halted = False, True
     assert server.resume()["applied_on_stop"]["symbols_loaded"] is True
@@ -1320,7 +1320,7 @@ def test_a_refused_load_leaves_the_batch_still_queued(tmp_path: Path) -> None:
     two.write_text("00002000 T _second\n", encoding="utf-8")
     fake = _names(tmp_path)
     fake.running, fake.halted = True, False
-    server.symbols_load(path=str(one), base="400000")
+    server.symbols_load(path=str(one), base="0x400000")
     queued = dstate.STATE.pending["load"]
     assert queued, "nothing was queued"
     fake.running, fake.halted = False, True
@@ -1328,7 +1328,7 @@ def test_a_refused_load_leaves_the_batch_still_queued(tmp_path: Path) -> None:
     def refused(data: bytes) -> list[tuple[str, int]]:
         raise ds.Invalid("unexpected_answer", "LV was not acknowledged")
     fake.load_symbols = refused  # type: ignore[method-assign]
-    got = cast(dict[str, Any], server.symbols_load(path=str(two), base="400000"))
+    got = cast(dict[str, Any], server.symbols_load(path=str(two), base="0x400000"))
     assert got["status"] == "INVALID" and dstate.STATE.pending["load"] == queued, got
 
 
@@ -1338,7 +1338,7 @@ def test_a_load_at_a_stop_replaces_a_queued_batch_the_debugger_refused(
     one.write_text("00001000 T _main\n", encoding="utf-8")
     fake = _names(tmp_path)
     fake.running, fake.halted = True, False
-    server.symbols_load(path=str(one), base="500000")
+    server.symbols_load(path=str(one), base="0x500000")
     assert dstate.STATE.pending["load"], "nothing was queued"
     fake.running, fake.halted = False, True
     real = fake.load_symbols
@@ -1349,7 +1349,7 @@ def test_a_load_at_a_stop_replaces_a_queued_batch_the_debugger_refused(
     server.status()                                # the stop's drain: refused, kept queued
     assert dstate.STATE.pending["load"], "the refused batch was not kept"
     monkeypatch.setattr(fake, "load_symbols", real)
-    got = cast(dict[str, Any], server.symbols_load(path=str(one), base="400000"))
+    got = cast(dict[str, Any], server.symbols_load(path=str(one), base="0x400000"))
     assert got["status"] == "ok" and dstate.STATE.pending["load"] is None, got
 
 
@@ -1374,13 +1374,13 @@ def test_a_stored_declaration_follows_its_names_into_a_rebuilt_map(tmp_path: Pat
     new.write_text("0017ee90 T _main\n00210040 D g_rate\n", encoding="utf-8")
     fake = _names(tmp_path)
     dstate.STATE.session_origin = "s1"
-    _ok(server.symbols_load(path=str(old), base="400000"))
+    _ok(server.symbols_load(path=str(old), base="0x400000"))
     _ok(server.breakpoint_at(ref="_main"))
     _ok(server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32"))
     assert "BP 00A7:16DD80" in [r["entry"] for r in fake.rows], fake.rows
     fake.rows.clear()
     dstate.STATE.session_origin = "s2"
-    got = _ok(server.symbols_load(path=str(new), base="400000"))
+    got = _ok(server.symbols_load(path=str(new), base="0x400000"))
     assert [r["ref"] for r in got["declarations"]["rearmed"]] == ["_main"], got["declarations"]
     assert [r["entry"] for r in fake.rows] == ["BP 00A7:17EE90"], fake.rows
     (bp,) = server.declaration_list("breakpoint")["breakpoints"]
@@ -1410,7 +1410,7 @@ def test_a_load_leaves_a_breakpoint_the_debugger_holds_armed_and_out_of_its_acco
     _ok(server.breakpoint_at(ref="0814:0100"))
     rows = list(fake.rows)
     assert rows, "the raw breakpoint was not armed"
-    got = _ok(server.symbols_load(path=str(nm), base="400000"))
+    got = _ok(server.symbols_load(path=str(nm), base="0x400000"))
     assert not any(got["declarations"][b] for b in arming.REARM_BUCKETS), got["declarations"]
     assert fake.rows == rows, "the held row was touched"
 
@@ -1422,7 +1422,7 @@ def test_a_breakpoint_cleared_and_declared_again_while_a_load_waits_is_armed_at_
     server.status()
     assert [r["entry"].split()[0] for r in fake.rows] == ["BP"], fake.rows
     fake.running = True
-    _ok(server.symbols_load(path=str(tmp_path / "foo.nm"), base="400000"))
+    _ok(server.symbols_load(path=str(tmp_path / "foo.nm"), base="0x400000"))
     _ok(server.declaration_clear("breakpoint", ref="foo"))
     _ok(server.breakpoint_at(ref="foo"))
     fake.running = False

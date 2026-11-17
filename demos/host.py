@@ -149,7 +149,7 @@ def symbols_at(table: Path) -> Any:
     the segment the `ready` step stopped in: its base is that segment * 16."""
     def args(run: Run) -> dict[str, Any]:
         cs = int(str(run.replies["ready"]["pc"]).split(":")[0], 16)
-        return {"path": table, "base": f"{cs * 16:x}"}
+        return {"path": table, "base": f"0x{cs * 16:x}"}
     return args
 
 

@@ -233,7 +233,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "record": {"frames": 2, "dest": M.fresh(".avi"), "seconds": 30},
         "audio_record": {"frames": 2, "dest": M.fresh(".wav"), "seconds": 30},
         "breakpoint_interrupt": {"number": 0x21, "ah": 0x4C},
-        "symbols_load": {"path": str(FIXTURE_MAP), "base": "8000"},
+        "symbols_load": {"path": str(FIXTURE_MAP), "base": "0x8000"},
         "symbols_find": {"name": FIXTURE_SYMBOL},
         "breakpoint_at": {"ref": "0000:0002"},
         "declaration_clear breakpoint": {"ref": "0000:0002"},
@@ -1022,7 +1022,7 @@ def section_b() -> None:
            holds=_bad(r) and (r.get("session") or {}).get("alive") is True)
     M.call(server.declaration_clear, kind="breakpoint", ref="BPINT 08")
     M.setup()
-    M.call(server.symbols_load, path=str(FIXTURE_MAP), base="8000")
+    M.call(server.symbols_load, path=str(FIXTURE_MAP), base="0x8000")
     M.setup()
     for n, label, want in ((50, "B symbols_find limit=50", True),
                            (51, "B symbols_find limit=51", False),

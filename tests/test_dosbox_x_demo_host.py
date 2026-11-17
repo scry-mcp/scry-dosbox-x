@@ -9,7 +9,7 @@ import pytest
 from scry_core.demo import Reply, Run, StepFailed
 
 from demos import host
-from scry_dosbox_x import launch
+from scry_dosbox_x import checks, launch
 
 SCRIPT = Path("SCRIPTS/derive.sh")
 
@@ -72,3 +72,12 @@ def test_the_boot_stop_must_have_placed_the_map(tmp_path: Path) -> None:
 def test_a_symbols_load_is_reported_at_the_base_the_reply_writes() -> None:
     reply = Reply({"kept": 3, "parsed": 3, "base": "0x00008df0"})
     assert host.loaded(reply, Run(dir=Path())) == "3 symbols placed at base 0x00008df0"
+
+
+def test_a_table_placed_at_the_ready_stop_is_loaded_as_the_server_takes_it(
+        tmp_path: Path) -> None:
+    """The base is `0x` text: bare hex digits read either way and the server refuses them."""
+    run = Run(dir=tmp_path, replies={"ready": Reply({"pc": "08DF:0010"})})
+    args = host.symbols_at(tmp_path / "game.sym")(run)
+    assert args["base"] == "0x8df0", args
+    checks.check("symbols_load", path=str(args["path"]), base=args["base"])

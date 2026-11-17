@@ -231,7 +231,7 @@ def _start_join() -> None:
     segment: the three routines in the probe's proportions, nothing unplaced."""
     cs = str((must(M.call(server.registers), "CS").get("regs") or {}).get("CS"))
     must(M.call(server.symbols_load, path=str(GUEST / "probe.sym"),
-                base=f"{int(cs, 16) * 16:X}"), "loading probe.sym")
+                base=f"0x{int(cs, 16) * 16:X}"), "loading probe.sym")
     r = _window(f"{cs}:{START:04X}", 200, "normal")
     found = r.get("trace") or {}
     rows = {s.get("symbol"): s.get("instructions") for s in found.get("symbols") or []}

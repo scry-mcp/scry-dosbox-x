@@ -134,7 +134,7 @@ def section_n() -> None:
     boot()
     M.setup()
     advanced(M.call(server.run_for, frames=1), "a retrace into the probe's settle loop")
-    must(M.call(server.symbols_load, path=str(GUEST / "probe.sym"), base="8140"),
+    must(M.call(server.symbols_load, path=str(GUEST / "probe.sym"), base="0x8140"),
          "loading probe.sym")
     taken = _taken({"start", "0814:0106", "emit"}, {0x824B, 0x8246, 0x8277})
     if taken:

@@ -348,7 +348,7 @@ def test_what_is_asked_while_the_guest_runs_is_applied_at_the_next_stop(
     assert [r["entry"] for r in fake.rows] == ["BP 00A7:2000"]
     fake.running = True
     fake.halted = False
-    loaded = server.symbols_load(path=str(nm), base="400000")
+    loaded = server.symbols_load(path=str(nm), base="0x400000")
     assert loaded["status"] == "ok" and loaded["pending"] is True, loaded
     # the table is held at once
     assert server.symbols_find(name="_main")["symbols_total"] == 1
@@ -510,7 +510,7 @@ def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
     server.resume()
     fake.running = True
     fake.halted = False
-    assert server.symbols_load(path=str(nm), base="400000")["pending"] is True
+    assert server.symbols_load(path=str(nm), base="0x400000")["pending"] is True
     assert server.breakpoint_at(ref="00A7:0100")["state"] == "pending"
     assert server.declaration_clear("breakpoint", ref="00A7:0100").get("pending_disarm",
                                                                        []) == []   # never armed
@@ -531,7 +531,7 @@ def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
     assert "BP 00A7:1000" in entries and "BPINT 21" in entries and "BP 00A7:0200" in entries
     # A RELOAD MOVES `_main`: two rows armed for one ref, and a clear takes both.
     nm.write_text("00001200 T _main\n", encoding="utf-8")
-    server.symbols_load(path=str(nm), base="400000")
+    server.symbols_load(path=str(nm), base="0x400000")
     entries = [r["entry"] for r in fake.rows]
     assert "BP 00A7:1000" in entries and "BP 00A7:1200" in entries, entries
     cleared = server.declaration_clear("breakpoint", ref="_main")

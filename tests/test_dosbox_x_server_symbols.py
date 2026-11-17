@@ -64,7 +64,7 @@ def test_an_explicit_base_reports_no_limit_rather_than_inventing_one(
         tmp_path: Path) -> None:
     install()
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
-                                                   base="100000"))
+                                                   base="0x100000"))
     assert got["base"] == "0x00100000", got
     assert got["limit"]["available"] is False, got
     assert got["base_from"] == "caller", got
@@ -163,7 +163,7 @@ def test_an_overlay_symbol_reaches_the_caller_flagged_and_counted(tmp_path: Path
     install()
     src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
-    got = cast(dict[str, Any], server.symbols_load(path=str(src), base="1000"))
+    got = cast(dict[str, Any], server.symbols_load(path=str(src), base="0x1000"))
     assert got["status"] == "ok", got
     assert got["kept"] == 2, got
     assert got["overlay_idle"] == 1, got
@@ -179,7 +179,7 @@ def test_an_overlay_symbol_reaches_the_caller_flagged_and_counted(tmp_path: Path
     plain = cast(dict[str, Any], server.symbols_find(name="ACTIVE_CLS"))
     assert plain["symbols"][0]["idle"] is False, plain
     # AND THE OTHER BRANCH of the same tool, which builds its reply separately.
-    linear = f"{0x1000 + 0x0D74 * 16 + 0x00E21:X}"
+    linear = f"0x{0x1000 + 0x0D74 * 16 + 0x00E21:X}"
     by_addr = cast(dict[str, Any], server.symbols_find(linear=linear))
     assert by_addr["name"] == "ACTIVEIMAN" and by_addr["idle"] is True, by_addr
 
@@ -253,20 +253,23 @@ def test_find_refuses_before_anything_is_loaded() -> None:
 def test_find_by_linear_takes_the_base_back_off(tmp_path: Path) -> None:
     install(mode="Pr32")
     server.symbols_load(path=_source(tmp_path))
-    got = cast(dict[str, Any], server.symbols_find(linear="0056DF24"))
+    got = cast(dict[str, Any], server.symbols_find(linear="0x0056DF24"))
     assert got["name"] == "_main", got
     assert got["delta"] == 4, got
 
 
-def test_find_by_linear_takes_hex_text_and_refuses_a_number(tmp_path: Path) -> None:
+def test_find_by_linear_takes_0x_text_or_an_integer_and_refuses_bare_hex(tmp_path: Path) -> None:
+    """CONTRIBUTING.md: an address is taken as `0x` text or an integer; bare digits read either
+    way, so `56DF24` is refused rather than guessed at."""
     install(mode="Pr32")
     server.symbols_load(path=_source(tmp_path))
-    prefixed = cast(dict[str, Any], server.symbols_find(linear="0x56DF24"))
-    assert prefixed["name"] == "_main" and prefixed["delta"] == 4, prefixed
-    for bad in (0x0056DF24, "56DFZZ", "-56DF24"):
+    for given in ("0x56DF24", 0x0056DF24):
+        found = cast(dict[str, Any], server.symbols_find(linear=given))
+        assert found["name"] == "_main" and found["delta"] == 4, found
+    for bad in ("0056DF24", "56DFZZ", "-56DF24", -1):
         got = cast(dict[str, Any], server.symbols_find(linear=bad))
         assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
-        assert "linear is" in got["message"], got["message"]
+        assert got["message"].startswith("linear"), got["message"]
 
 
 def test_the_table_is_forgotten_when_the_session_goes(tmp_path: Path) -> None:
@@ -286,7 +289,7 @@ def test_a_session_that_died_on_its_bound_takes_the_table_with_it(
     s = install()
     server.symbols_load(path=_source(tmp_path))
     s._alive = False                      # what a bound expiring looks like from here
-    got = cast(dict[str, Any], server.symbols_find(linear="0056DF24"))
+    got = cast(dict[str, Any], server.symbols_find(linear="0x0056DF24"))
     assert got["code"] == "session_broken", got
     server.close()
     assert dstate.STATE.table == [], "the table outlived the process it was measured on"
@@ -390,7 +393,7 @@ def test_an_absent_descriptor_is_refused_rather_than_placed_at_base_zero(
     # AND THE CONTROL: an explicit base still goes through on that same machine, so the
     # refusal is about the DESCRIPTOR and not a helper that refuses everything.
     ok = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
-                                                  base="F0000"))
+                                                  base="0xF0000"))
     assert ok["status"] == "ok", ok
     assert ("_main", 0x000F0000 + 0x0016DF20) in s.loaded, s.loaded
 
@@ -420,7 +423,7 @@ def test_the_descriptor_type_is_reported_so_a_caller_can_see_what_was_read(
     measured = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert measured["descriptor"] == "0x1B", measured
     given = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
-                                                     base="1000"))
+                                                     base="0x1000"))
     assert given["descriptor"]["available"] is False, given
 
 
@@ -458,7 +461,7 @@ def test_a_bad_pattern_is_a_refusal_and_not_a_traceback(tmp_path: Path) -> None:
     install(alive=True)
     src = tmp_path / "s.nm"
     src.write_text("00001000 T _main\n00002000 T _next\n", encoding="utf-8")
-    got = cast(dict[str, Any], server.symbols_load(path=str(src), base="10000",
+    got = cast(dict[str, Any], server.symbols_load(path=str(src), base="0x10000",
                                                    pattern="(unclosed"))
     assert got["status"] == "INVALID", got
     assert "not a usable pattern" in str(got["message"])
@@ -473,7 +476,7 @@ def test_a_bad_pattern_is_a_refusal_and_not_a_traceback(tmp_path: Path) -> None:
         f"{got['message']}")
     # THE GREEN BESIDE IT: a pattern that compiles still works, or this passes over a
     # `plan` that refuses every pattern.
-    ok = cast(dict[str, Any], server.symbols_load(path=str(src), base="10000",
+    ok = cast(dict[str, Any], server.symbols_load(path=str(src), base="0x10000",
                                                   pattern="^_ma"))
     assert ok["status"] == "ok", ok
     # A LIMIT, SAID OUT LOUD: this asks whether the field has a ROW, not whether what is
@@ -515,7 +518,7 @@ def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) 
     src = tmp_path / "prog.sym"
     src.write_text(NM_FRAGMENT, encoding="utf-8")
     reply = cast(dict[str, Any], server.symbols_load(
-        path=str(src), base="0", pattern="^_(keepme|map_demo)"))
+        path=str(src), base="0x0", pattern="^_(keepme|map_demo)"))
     assert reply["status"] == "ok", reply
     plan = dsym.plan(dsym.parse(NM_FRAGMENT)[0], pattern="^_(keepme|map_demo)",
                      unreadable=0)
@@ -568,7 +571,7 @@ def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) 
     # Reading the SAME file twice under different `pattern`s moves the buckets by
     # different amounts, so a fixed swap has to survive BOTH vectors to stay invisible.
     other = cast(dict[str, Any], server.symbols_load(
-        path=str(src), base="0", pattern="^_dropme"))
+        path=str(src), base="0x0", pattern="^_dropme"))
     plan2 = dsym.plan(dsym.parse(NM_FRAGMENT)[0], pattern="^_dropme", unreadable=0)
     for field_name, key in carries.items():
         assert other[key] == getattr(plan2, field_name), (
@@ -592,13 +595,13 @@ def test_a_sectioned_table_answers_a_linear_address_without_being_told_the_secti
     src = ILINK32_MAP
     server.symbols_load(path=str(src), section_bases=ILINK32_BASES)
     # 0x40113C is 12 bytes past `_main`, which is section 1 offset 0x130.
-    got = cast(dict[str, Any], server.symbols_find(linear="40113C"))
+    got = cast(dict[str, Any], server.symbols_find(linear="0x40113C"))
     assert got["name"] == "_main" and got["section"] == 1, got
     assert got["delta"] == 0xC, got
     # AND THE OTHER SECTION, at the SAME distance past its own symbol -- which a table
     # that ignored the section index would answer from section 1, because 0x42509C is
     # also above section 1's base.
-    other = cast(dict[str, Any], server.symbols_find(linear="42509C"))
+    other = cast(dict[str, Any], server.symbols_find(linear="0x42509C"))
     assert other["name"] == "_errno" and other["section"] == 2, other
     assert other["delta"] == 0xC, other
 
@@ -634,7 +637,7 @@ def test_a_flat_table_refuses_a_question_about_a_section_it_does_not_have(
     install()
     src = tmp_path / "prog.sym"
     src.write_text(NM_FRAGMENT, encoding="utf-8")
-    server.symbols_load(path=str(src), base="0")
+    server.symbols_load(path=str(src), base="0x0")
     got = cast(dict[str, Any], server.symbols_find(offset=0x1c350, section=2))
     assert got["status"] != "ok", got
     assert "loaded FLAT" in str(got["message"]), got["message"]
@@ -762,7 +765,7 @@ def test_a_sectioned_table_places_by_base_says_it_has_no_flat_one_and_counts_wha
     got = cast(dict[str, Any], server.symbols_load(
         path=str(src), section_bases={"1": "0x423000", "2": "0x401000", "3": "0x4289B8"}))
     assert got["status"] == "ok" and got["base"]["available"] is False, got
-    found = cast(dict[str, Any], server.symbols_find(linear="00423130"))
+    found = cast(dict[str, Any], server.symbols_find(linear="0x00423130"))
     assert found["name"] == "_main" and found["delta"] == 0, found
     real = NamesFake(mode="Real")
     with pytest.raises(ds.Invalid, match="FLAT base"):
@@ -774,10 +777,10 @@ def test_a_load_somewhere_else_replaces_the_table_and_its_types(tmp_path: Path) 
     one = tmp_path / "one.nm"
     one.write_text("00001000 D _rate\n         U _undefined\n", encoding="utf-8")
     _names(tmp_path)
-    first = cast(dict[str, Any], server.symbols_load(path=str(one), base="400000"))
+    first = cast(dict[str, Any], server.symbols_load(path=str(one), base="0x400000"))
     assert first["status"] == "ok" and first["unreadable"] == 1, first
     dstate.STATE.symbol_types["_RATE"] = "u16"           # as a types file would have set it
-    again = cast(dict[str, Any], server.symbols_load(path=str(one), base="500000"))
+    again = cast(dict[str, Any], server.symbols_load(path=str(one), base="0x500000"))
     assert again["table_mode"] == "replaced" and dstate.STATE.symbol_types == {}, again
 
 
@@ -909,8 +912,9 @@ def test_a_types_name_the_table_lacks_is_refused_before_anything_is_written(
     assert gone["symbols_total"] == 0, "the refused load's symbols landed in the table anyway"
 
 
-@pytest.mark.parametrize("spelled", ["0x1000", "1000", "0X1000"])
-def test_symbols_load_takes_its_base_as_hex_text(tmp_path: Path, spelled: str) -> None:
+@pytest.mark.parametrize("spelled", ["0x1000", "0X1000", 0x1000])
+def test_symbols_load_takes_its_base_as_0x_text_or_an_integer(tmp_path: Path,
+                                                             spelled: object) -> None:
     install()
     src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
@@ -919,8 +923,8 @@ def test_symbols_load_takes_its_base_as_hex_text(tmp_path: Path, spelled: str) -
     assert got["base"] == "0x00001000", got
 
 
-@pytest.mark.parametrize("bad", [4096, "-1000", "10_00", "0xZZ", ""])
-def test_symbols_load_refuses_a_base_that_is_not_hex_text(tmp_path: Path, bad: object) -> None:
+@pytest.mark.parametrize("bad", ["1000", -4096, "-1000", "10_00", "0xZZ", ""])
+def test_symbols_load_refuses_a_base_that_is_neither(tmp_path: Path, bad: object) -> None:
     install()
     src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
@@ -928,14 +932,14 @@ def test_symbols_load_refuses_a_base_that_is_not_hex_text(tmp_path: Path, bad: o
     assert got["code"] == "bad_argument" and "base" in got["message"], got
 
 
-def test_section_bases_are_hex_text_too(tmp_path: Path) -> None:
+def test_section_bases_take_0x_text_or_an_integer_too(tmp_path: Path) -> None:
     install()
     src = ILINK32_MAP
     got = cast(dict[str, Any], server.symbols_load(
-        path=str(src), section_bases={"1": "0x401000", "2": "423000", "3": "4289B8"}))
+        path=str(src), section_bases={"1": "0x401000", "2": 0x423000, "3": "0x4289B8"}))
     assert got["status"] == "ok" and got["kept"] == 4, got
     bad = cast(dict[str, Any], server.symbols_load(
-        path=str(src), section_bases={"1": 0x401000}))
+        path=str(src), section_bases={**ILINK32_BASES, "1": "401000"}))
     assert bad["code"] == "bad_argument" and "section_bases" in bad["message"], bad
 
 
@@ -977,7 +981,7 @@ def test_one_map_loaded_again_is_held_once_and_a_forgotten_table_takes_its_bases
     _names(tmp_path)
     dstate.STATE.conf_fingerprint = "conf"
     for _ in range(3):
-        assert server.symbols_load(path=str(nm), base="400000")["status"] == "ok"
+        assert server.symbols_load(path=str(nm), base="0x400000")["status"] == "ok"
     assert len(dstate.STATE.map_batches) == 1, "one map loaded again is not another batch"
     dstate.STATE.section_bases[1] = 0x1000
     dstate.STATE.forget_symbols()
@@ -1023,9 +1027,9 @@ def test_a_second_batch_at_the_same_base_accumulates_whatever_stop_it_is_loaded_
     first.write_text("0016dd80 T _main\n", encoding="utf-8")
     second.write_text("0017ee90 T _other\n", encoding="utf-8")
     fake = _names(tmp_path)
-    _ok(server.symbols_load(path=str(first), base="400000"))
+    _ok(server.symbols_load(path=str(first), base="0x400000"))
     fake.mode = "Real"
-    got = _ok(server.symbols_load(path=str(second), base="400000"))
+    got = _ok(server.symbols_load(path=str(second), base="0x400000"))
     assert got["table_mode"] == "accumulated", got
     assert {s.name for s in dstate.STATE.table} >= {"_main", "_other"}
 
@@ -1037,7 +1041,7 @@ def test_a_table_loaded_while_the_guest_runs_takes_no_selectors_from_the_last_st
     fake = _names(tmp_path)
     server.status()                                  # a protected-mode stop recorded
     fake.running = True
-    assert server.symbols_load(path=str(nm), base="8000")["status"] == "ok"
+    assert server.symbols_load(path=str(nm), base="0x8000")["status"] == "ok"
     fake.running, fake.mode = False, "Real"
     got = server.breakpoint_at(ref="_start")
     assert got["state"] == "armed", got
@@ -1048,9 +1052,9 @@ def test_symbols_load_hands_keep_noise_on_and_reads_a_map_with_a_byte_no_utf8_re
     nm = tmp_path / "prog.nm"
     nm.write_bytes(b"00001000 t .text\n0016dd80 T _main\n\xb0 not a row\n")
     _names(tmp_path)
-    plain = _ok(server.symbols_load(path=str(nm), base="400000"))
+    plain = _ok(server.symbols_load(path=str(nm), base="0x400000"))
     _names(tmp_path)
-    noisy = _ok(server.symbols_load(path=str(nm), base="400000", keep_noise=True))
+    noisy = _ok(server.symbols_load(path=str(nm), base="0x400000", keep_noise=True))
     assert plain["excluded_sections"] == 1 and noisy["excluded_sections"] == 0, (plain, noisy)
     assert noisy["kept"] == plain["kept"] + 1 and plain["unreadable"] == 1, (plain, noisy)
 
@@ -1161,8 +1165,9 @@ def test_a_base_the_caller_gave_is_never_measured_again(tmp_path: Path) -> None:
     _names(tmp_path)
     mapf = tmp_path / "prog.map"
     mapf.write_text("00001000 T _tick\n", encoding="utf-8")
-    loaded = cast(dict[str, Any], server.symbols_load(path=str(mapf), base="400000"))
+    loaded = cast(dict[str, Any], server.symbols_load(path=str(mapf), base="0x400000"))
     assert loaded["status"] == "ok", loaded
     assert dstate.STATE.base_measured_from is None
     dstate.STATE.machine_replaced()
     assert dstate.STATE.pending["remeasure"] is False
+

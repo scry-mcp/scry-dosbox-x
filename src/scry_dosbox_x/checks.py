@@ -421,20 +421,20 @@ def _set_register(name: str, value: object, **_: Any) -> None:
     ds.check_register_value(key, number("value", value))
 
 
-def _symbols_load(path: str, base: str = "",
-                  section_bases: dict[str, str] | None = None, types: str = "",
+def _symbols_load(path: str, base: judges.NumberArg | None = None,
+                  section_bases: dict[str, judges.NumberArg] | None = None, types: str = "",
                   **_: Any) -> None:
     paths.absolute("path", path)
     if types:
         paths.absolute("types", types)
-    if base and section_bases is not None:
+    if base is not None and section_bases is not None:
         raise ds.Invalid("bad_argument",
             "`base` and `section_bases` are the two kinds of table, flat and "
                          "sectioned; give the one the map is, never both")
-    if base:
-        placement.hex_arg("base", base)
+    if base is not None:
+        placement.address_arg("base", base)
     if section_bases is not None:
-        placement.hex_bases(section_bases)
+        placement.address_bases(section_bases)
 
 
 def _find(ref: str, data_hex: str, length: int, **_: Any) -> None:
@@ -635,9 +635,9 @@ def _screen_wait(text: object = "", screen: object = "", palette: object = "", e
 
 
 def _symbols_find(name: str = "", offset: judges.NumberArg | None = None,
-                  linear: str = "", limit: int = 10, **_: Any) -> None:
+                  linear: judges.NumberArg | None = None, limit: int = 10, **_: Any) -> None:
     placement.check_find_args(name or None, None if offset is None else number("offset", offset),
-                              linear or None, limit)
+                              linear, limit)
 
 
 # Debugger commands that let the guest run, by first word. One sent through `debug` does not clear

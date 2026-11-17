@@ -40,23 +40,26 @@ def address_shape(ref: str, by: str | None = None) -> None:
 
 _HEX_ADDR = re.compile(r"(?:0[xX])?[0-9a-fA-F]+")
 
-
-def hex_arg(name: str, value: object) -> int:
-    """A hex address argument, or a refusal naming it. `int(value, 16)` alone takes a sign and
-    underscores; an integer is refused, not coerced, so no caller converts hex to decimal."""
-    if not isinstance(value, str) or not _HEX_ADDR.fullmatch(value.strip()):
-        raise ds.Invalid("bad_argument",
-            f"{name} is {value!r}, which is not a hex address like `1000` or `0x1000` "
-            f"(text, not a number: a decimal conversion is the mistake this refuses)")
-    return int(value, 16)
+#: A linear address on the machines DOSBox-X emulates.
+LINEAR_BITS = 32
 
 
-def hex_bases(section_bases: dict[str, str]) -> dict[str, int]:
-    """`section_bases` with every value through `hex_arg`, each refusal naming its section."""
+def address_arg(name: str, value: object) -> int:
+    """A linear address argument, `0x` text or an integer as every address is taken, or the
+    refusal naming it; the debugger's bare hex is the server's to spell."""
+    address = judges.number(name, value, LINEAR_BITS, "a linear address")
+    if address < 0:
+        raise ds.Invalid("bad_argument", f"{name} is {value!r}: an address is not negative")
+    return address
+
+
+def address_bases(section_bases: dict[str, judges.NumberArg]) -> dict[str, int]:
+    """`section_bases` with every value through `address_arg`, each refusal naming its
+    section."""
     if not isinstance(section_bases, dict):
-        raise ds.Invalid("bad_argument", f"section_bases is a mapping of section index to hex "
-                         f"base; got {section_bases!r}")
-    return {k: hex_arg(f"section_bases[{k!r}]", v) for k, v in section_bases.items()}
+        raise ds.Invalid("bad_argument", f"section_bases is a mapping of section index to "
+                         f"address; got {section_bases!r}")
+    return {k: address_arg(f"section_bases[{k!r}]", v) for k, v in section_bases.items()}
 
 
 def parse_seg_off(ref: str) -> tuple[int, int]:
@@ -442,8 +445,8 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
             raise ds.Invalid("bad_argument",
                 "the machine is in real mode, where a register holds no descriptor to measure a "
                 "base from: pass `base_from` as a selector number (four hex digits), or `base` "
-                "(a flat map) as hex text, the load segment * 16 (segment "
-                "0x0800 is \"8000\"), or `section_bases` (a sectioned map). Placed at base 0, "
+                "(a flat map), the load segment * 16 (segment 0x0800 is \"0x8000\"), or "
+                "`section_bases` (a sectioned map). Placed at base 0, "
                 "every symbol would sit at its raw offset")
         desc = (session.selector(base_from) if base is None
                 else {"base": base, "limit": -1, "type": -1})
@@ -618,7 +621,7 @@ def waits_why(mode: str, again: str, here: bool = True) -> str:
 SYMBOLS_LIMIT_MAX = 50
 
 
-def check_find_args(name: str | None, offset: int | None, linear: str | None,
+def check_find_args(name: str | None, offset: int | None, linear: judges.NumberArg | None,
                     limit: int) -> None:
     """The refusals `symbols_find` makes on its arguments alone; shared so a list's preflight
     refuses the same step before an earlier one has pressed a key."""
@@ -628,7 +631,7 @@ def check_find_args(name: str | None, offset: int | None, linear: str | None,
                          "questions in one call cannot both be the answer, and none "
                          "is not a question")
     if linear is not None:
-        hex_arg("linear", linear)
+        address_arg("linear", linear)
     if name is None:
         return
     if isinstance(limit, bool) or not isinstance(limit, int):
@@ -650,13 +653,13 @@ def check_find_args(name: str | None, offset: int | None, linear: str | None,
 
 
 def find(name: str | None, offset: int | None, section: int | None,
-         linear_hex: str | None, limit: int) -> dict[str, Any]:
+         linear_given: judges.NumberArg | None, limit: int) -> dict[str, Any]:
     """The body of the `symbols_find` tool, answering off the table held here."""
     if not STATE.table:
         raise ds.Invalid("no_channel", "no symbol table is loaded. `symbols_load` one first; an "
                          "answer from an empty table would be a reading of nothing")
-    check_find_args(name, offset, linear_hex, limit)
-    linear = None if linear_hex is None else hex_arg("linear", linear_hex)
+    check_find_args(name, offset, linear_given, limit)
+    linear = None if linear_given is None else address_arg("linear", linear_given)
     if name is not None:
         hits = sym.find_by_name(STATE.table, name, STATE.name_index)
         return st.reply(query=name, symbols_total=len(hits),

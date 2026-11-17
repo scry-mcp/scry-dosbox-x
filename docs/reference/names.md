@@ -6,13 +6,13 @@
 *Load a symbol table*
 
 ```text
-symbols_load(path, base="", base_from="CS", pattern="", keep_noise=false, section_bases=null, types="")
+symbols_load(path, base=null, base_from="CS", pattern="", keep_noise=false, section_bases=null, types="")
 ```
 
 Load a toolchain's symbol list so other tools take names. Stop inside the program first;
 with an explicit `base` a running guest works too (`pending: true`).
 
-`path`: `nm` output or a GNU `ld`, Borland or Watcom map. Flat lists take `base` (hex text) or
+`path`: `nm` output or a GNU `ld`, Borland or Watcom map. Flat lists take `base` or
 `base_from`, a register or a selector as four hex digits (`00AF`), whose descriptor the
 debugger reads in any CPU mode, so a real-mode stop can load a protected-mode program's table;
 sectioned maps take `section_bases`. `types`, `pattern`, `keep_noise` filter and type rows.
@@ -32,7 +32,7 @@ Reference: REFERENCE.md, Names for addresses.
 | argument | type | default |
 |---|---|---|
 | `path` | string | required |
-| `base` | string | `""` |
+| `base` | integer or string or null | `null` |
 | `base_from` | string (matching `^([cC][sS]\|[dD][sS]\|[eE][sS]\|[sS][sS]\|[fF][sS]\|[gG][sS]\|[0-9A-Fa-f]{4})$`) | `"CS"` |
 | `pattern` | string | `""` |
 | `keep_noise` | boolean | `false` |
@@ -146,7 +146,7 @@ symbols:
 	@mv $@.tmp build/APP.SYM
 ```
 
-The debugger's list stores a `u16` count then 16-byte NUL-padded names with `u32` linear addresses, so long names are cut and collisions get `~n`. Real mode cannot report a selector base, so a flat map without `base` is refused: base 0 would load cleanly at wrong addresses. A 32-bit Borland row is a section index plus an offset, so its bases cannot come from the map, and such a map describes a Win32 program (breakpoints may refuse afterwards). A second load at the same base adds; at another base it replaces the server's table while the debugger keeps every row until `close`. A stale table places names a few bytes off silently, hence the check against the build. Base is measured off `base_from` (default `CS`, right under DPMI); `section_bases` is hex per section index; `pattern` is searched in the full name; the table carries no sizes, so address lookups give the nearest symbol below.
+The debugger's list stores a `u16` count then 16-byte NUL-padded names with `u32` linear addresses, so long names are cut and collisions get `~n`. Real mode cannot report a selector base, so a flat map without `base` is refused: base 0 would load cleanly at wrong addresses. A 32-bit Borland row is a section index plus an offset, so its bases cannot come from the map, and such a map describes a Win32 program (breakpoints may refuse afterwards). A second load at the same base adds; at another base it replaces the server's table while the debugger keeps every row until `close`. A stale table places names a few bytes off silently, hence the check against the build. Base is measured off `base_from` (default `CS`, right under DPMI); `section_bases` is an address per section index; `pattern` is searched in the full name; the table carries no sizes, so address lookups give the nearest symbol below.
 
 <!-- scry-reference:begin symbols_find -->
 ## `symbols_find`
@@ -154,12 +154,12 @@ The debugger's list stores a `u16` count then 16-byte NUL-padded names with `u32
 *Look a symbol up*
 
 ```text
-symbols_find(name="", offset=null, section=null, linear="", limit=10)
+symbols_find(name="", offset=null, section=null, linear=null, limit=10)
 ```
 
 Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefix matches by
 section and offset, case ignored, each in the spelling the map gave, up to `limit`.
-`offset` (`0x` hex or an integer) or `linear` (hex text), with `section`: the nearest symbol
+`offset` or `linear` (each `0x` hex or an integer), with `section`: the nearest symbol
 at or below.
 
 Reply: `query`; by name, `symbols_total`, `symbols` (`name`, `offset` as `0x` hex, `addr`),
@@ -171,7 +171,7 @@ by address, the symbol's fields and `delta`. INVALID: no table.
 | `name` | string | `""` |
 | `offset` | integer or string or null | `null` |
 | `section` | integer or null | `null` |
-| `linear` | string | `""` |
+| `linear` | integer or string or null | `null` |
 | `limit` | integer (>= 1, <= 50) | `10` |
 
 | reply field | type |

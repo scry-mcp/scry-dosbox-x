@@ -87,7 +87,7 @@ def section_e() -> None:
     boot(conf=bp.session_conf(program, Path(M.fresh("-conf"))), cwd=program.root,
          program=bp.DOS_REAL16_ALT.launch, input_port=free_port(), dos_calls=True)
     M.setup()
-    r = M.call(server.symbols_load, path=str(mapf), base="0")
+    r = M.call(server.symbols_load, path=str(mapf), base="0x0")
     judged("E symbols_load refuses a map with no publics", reply=r,
            holds=refused(r, "bad_argument") and "Publics by" in str(r.get("message")))
     exec_of(bp.DOS_REAL16_ALT.process)

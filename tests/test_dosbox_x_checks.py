@@ -39,7 +39,7 @@ def _refused(tool: str, **given: Any) -> str:
     ("set_register", {"name": "eax", "value": "zz"}, "value='zz'"),
     ("screen_signature", {"crop": [1, 2]}, "crop=[1, 2]"),
     ("screen_view", {"crop": [1, 2]}, "crop=[1, 2]"),
-    ("symbols_load", {"path": _abs("abs", "x.map"), "base": "zz"}, "base is 'zz'"),
+    ("symbols_load", {"path": _abs("abs", "x.map"), "base": "zz"}, "base='zz'"),
     ("write", {"ref": "0000:0000", "data_hex": "zz"}, "data_hex='zz'"),
     ("send_mouse", {"target": "t", "x": 1},
      "`target` names where the pointer goes: give it, or `x` and `y`, not both"),

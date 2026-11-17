@@ -396,7 +396,7 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "screen_view": server.screen_view,
         "screen_signature": server.screen_signature,
         "screen_wait": lambda: server.screen_wait(text="C:"),
-        "symbols_load": lambda: server.symbols_load(path=str(nm), base="10000"),
+        "symbols_load": lambda: server.symbols_load(path=str(nm), base="0x10000"),
         "state_write save": lambda: server.state_write("save", name="x"),
         "state_write load": lambda: server.state_write("load", name="x"),
         "state_list": server.state_list,
@@ -889,7 +889,7 @@ def test_find_answers_with_both_addresses(tmp_path: Path) -> None:
 def test_find_wants_exactly_one_question(tmp_path: Path) -> None:
     install()
     server.symbols_load(path=_source(tmp_path))
-    both = cast(dict[str, Any], server.symbols_find(name="_main", linear="1"))
+    both = cast(dict[str, Any], server.symbols_find(name="_main", linear="0x1"))
     assert both["status"] == "INVALID", both
     neither = cast(dict[str, Any], server.symbols_find())
     assert neither["status"] == "INVALID", neither
@@ -1194,11 +1194,11 @@ def test_a_relative_path_is_refused_and_an_absolute_one_names_the_file_it_looked
     nm.write_text("0016dd80 T _main\n", encoding="utf-8")
     fake = _names(tmp_path)
     fake.launch = dataclasses.replace(fake.launch, cwd=tmp_path)
-    rel = server.symbols_load(path="one.nm", base="400000")
+    rel = server.symbols_load(path="one.nm", base="0x400000")
     assert rel["code"] == "bad_argument" and "relative" in rel["message"], rel
-    got = server.symbols_load(path=str(nm), base="400000")
+    got = server.symbols_load(path=str(nm), base="0x400000")
     assert got["status"] == "ok", got
-    missing = server.symbols_load(path=str(tmp_path / "nope.nm"), base="400000")
+    missing = server.symbols_load(path=str(tmp_path / "nope.nm"), base="0x400000")
     assert missing["status"] == "INVALID" and str(tmp_path / "nope.nm") in missing["message"], (
         missing)
     dstate.STATE.session = None

@@ -1122,16 +1122,16 @@ def regpoint_add(condition: str) -> dict[str, Any]:
 # --------------------------------------------------------------- names for addresses
 
 @tool("Load a symbol table", summary=one_line.symbols_load)
-def symbols_load(path: str, base: str = "",
+def symbols_load(path: str, base: judges.NumberArg | None = None,
                  base_from: Annotated[str, Field(json_schema_extra={
                      "pattern": ds.BASE_FROM_PATTERN})] = "CS",
                  pattern: str = "", keep_noise: bool = False,
-                 section_bases: dict[str, str] | None = None, types: str = "",
+                 section_bases: dict[str, judges.NumberArg] | None = None, types: str = "",
                  ) -> dict[str, Any]:
     """Load a toolchain's symbol list so other tools take names. Stop inside the program first;
     with an explicit `base` a running guest works too (`pending: true`).
 
-    `path`: `nm` output or a GNU `ld`, Borland or Watcom map. Flat lists take `base` (hex text) or
+    `path`: `nm` output or a GNU `ld`, Borland or Watcom map. Flat lists take `base` or
     `base_from`, a register or a selector as four hex digits (`00AF`), whose descriptor the
     debugger reads in any CPU mode, so a real-mode stop can load a protected-mode program's table;
     sectioned maps take `section_bases`. `types`, `pattern`, `keep_noise` filter and type rows.
@@ -1153,9 +1153,9 @@ def symbols_load(path: str, base: str = "",
     typed = placement.read_types(types) if types else {}
     STATE.start_symbols = None      # a table loaded by hand is the one the session keeps
     return placement.load(session, path, src,
-                          placement.hex_arg("base", base) if base else None,
+                          None if base is None else placement.address_arg("base", base),
                           base_from, pattern or None, keep_noise,
-                          None if section_bases is None else placement.hex_bases(section_bases),
+                          None if section_bases is None else placement.address_bases(section_bases),
                           rearm_declarations=arming.rearm_declarations,
                           take_the_map=comments.park_rows_take_the_map, types=typed)
 
@@ -1163,12 +1163,12 @@ def symbols_load(path: str, base: str = "",
 @tool("Look a symbol up", summary=one_line.symbols_find, read_only=True)
 def symbols_find(name: str = "", offset: judges.NumberArg | None = None,
                  section: int | None = None,
-                 linear: str = "",
+                 linear: judges.NumberArg | None = None,
                  limit: Annotated[int, vocab.bounds(1, placement.SYMBOLS_LIMIT_MAX)] = 10,
                  ) -> dict[str, Any]:
     """Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefix matches by
     section and offset, case ignored, each in the spelling the map gave, up to `limit`.
-    `offset` (`0x` hex or an integer) or `linear` (hex text), with `section`: the nearest symbol
+    `offset` or `linear` (each `0x` hex or an integer), with `section`: the nearest symbol
     at or below.
 
     Reply: `query`; by name, `symbols_total`, `symbols` (`name`, `offset` as `0x` hex, `addr`),
@@ -1180,7 +1180,7 @@ def symbols_find(name: str = "", offset: judges.NumberArg | None = None,
     # never answers `ok` with a linear address for a process that is gone.
     live()
     return placement.find(name or None, None if offset is None else checks.number("offset", offset),
-                          section, linear or None, limit)
+                          section, linear, limit)
 
 
 # ------------------------------------------------------------------------------- comments

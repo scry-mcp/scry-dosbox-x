@@ -118,7 +118,7 @@ The tools: [Names](docs/reference/names.md).
 | Flat | `nm`, a GNU `ld` map, a REAL-MODE Borland map | `base` |
 | Sectioned | a 32-bit Borland map, an Open Watcom map | `section_bases` |
 
-**Passing both is refused**: a field that is sometimes a number and sometimes a table cannot be declared honestly. `base`, `section_bases` and `symbols_find`'s `linear` are hex text, an integer being refused.
+**Passing both is refused**: a field that is sometimes a number and sometimes a table cannot be declared honestly. `base`, `section_bases` and `symbols_find`'s `linear` are addresses, so each is `0x` text or an integer, as every address is; bare hex digits read either way and are refused, and the server spells the address the way the debugger takes it.
 
 A symbol table lists what *survived* compilation: at `-O3` an inlined `static` has no symbol, so a missing name is a fact about the build.
 

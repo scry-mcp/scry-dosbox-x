@@ -23,7 +23,7 @@ def test_a_symbol_named_like_an_offset_does_not_shadow_the_offset_read(tmp_path:
     assert window["status"] == "ok", window
     table = tmp_path / "shadow.sym"
     table.write_text(f"00000010 T {SHADOW}\n", encoding="utf-8")
-    loaded = cast(dict[str, Any], server.symbols_load(path=str(table), base=f"{load_seg:04X}"))
+    loaded = cast(dict[str, Any], server.symbols_load(path=str(table), base=f"0x{load_seg:04X}"))
     assert loaded["status"] == "ok", loaded
     at_symbol = cast(dict[str, Any], server.read_memory(ref=f"{load_seg:04X}:0010", length=4))
     wanted = window["hex"][2 * 0xD:2 * 0xD + 8]

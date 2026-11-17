@@ -43,7 +43,7 @@ def test_symbols_load_re_arms_a_raw_address_over_the_same_map_and_leaves_it_over
         fake.rows.clear()
         dstate.STATE.forget_symbols()
         dstate.STATE.session_origin = origin
-        got: dict[str, Any] = server.symbols_load(path=str(nm), base="400000")
+        got: dict[str, Any] = server.symbols_load(path=str(nm), base="0x400000")
         return got
 
     a_session("s1")

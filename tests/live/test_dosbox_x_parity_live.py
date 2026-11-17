@@ -21,7 +21,7 @@ def test_a_repeated_name_is_refused_with_its_addresses_and_a_tie_goes_to_the_fir
     table = tmp_path / "parity.sym"
     table.write_text("00000010 T dup\n00000020 T dup\n00000030 T first\n00000030 T second\n",
                      encoding="utf-8")
-    loaded = cast(dict[str, Any], server.symbols_load(path=str(table), base=f"{load_seg:04X}"))
+    loaded = cast(dict[str, Any], server.symbols_load(path=str(table), base=f"0x{load_seg:04X}"))
     assert loaded["status"] == "ok", loaded
     twice = cast(dict[str, Any], server.read_memory(ref="dup", length=2))
     assert twice["status"] == "INVALID" and "(0x10, 0x20)" in twice["message"], twice

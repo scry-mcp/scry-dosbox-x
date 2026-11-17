@@ -474,11 +474,11 @@ def test_a_map_with_a_code_page_byte_loads_and_one_the_host_will_not_read_is_ref
     nm = tmp_path / "cp437.nm"
     nm.write_bytes(b"0016dd80 T _main\n0016dd90 T _caf\x82\n")
     _names(tmp_path)
-    got = cast(dict[str, Any], server.symbols_load(path=str(nm), base="400000"))
+    got = cast(dict[str, Any], server.symbols_load(path=str(nm), base="0x400000"))
     assert got["status"] == "ok" and got["kept"] >= 1, got
     nm.chmod(0)
     try:
-        got = cast(dict[str, Any], server.symbols_load(path=str(nm), base="400000"))
+        got = cast(dict[str, Any], server.symbols_load(path=str(nm), base="0x400000"))
     finally:
         nm.chmod(0o644)
     _refused(got, "bad_argument", "cannot read")

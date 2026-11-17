@@ -177,5 +177,5 @@ def test_a_table_loaded_by_hand_supersedes_the_one_start_holds(
         "declarations": {"rearmed": 0}})
     table = tmp_path / "OTHER.SYM"
     table.write_text("00000100 T start\n")
-    server.symbols_load(path=str(table), base="1000")
+    server.symbols_load(path=str(table), base="0x1000")
     assert STATE.start_symbols is None

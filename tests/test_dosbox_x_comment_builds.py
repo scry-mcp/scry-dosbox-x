@@ -100,7 +100,7 @@ class _Sessions:
         elif verb == "map":
             # `map A`, `map A @500000` at another base, `map AS /_main` with a pattern.
             name, _, extra = arg.partition(" ")
-            base = extra[1:] if extra.startswith("@") else "400000"
+            base = extra[1:] if extra.startswith("@") else "0x400000"
             pattern = extra[1:] if extra.startswith("/") else None
             self.booted.mode = "Pr32"
             ok(server.symbols_load(path=str(self.maps[name]), base=base, pattern=pattern))
@@ -281,9 +281,9 @@ TABLE = [
     ("B18 a relinked first batch over both, same session",
      ["start", "map AS", "map A2S", f"add {Q}", "map BS"], {Q: "resolved"}),
     ("B19 the same map at another base, same session",
-     ["start", "map A", f"add {V}", "map A @500000"], {V: "stale"}),
+     ["start", "map A", f"add {V}", "map A @0x500000"], {V: "stale"}),
     ("B19 the same map at another base, next session",
-     ["start", "map A", f"add {V}", f"bp {V}", "start", "map A @500000"],
+     ["start", "map A", f"add {V}", f"bp {V}", "start", "map A @0x500000"],
      {V: "stale", f"bp {V}": "stale"}),
     ("B20 the same map with a pattern that leaves a name out, next session",
      ["start", "map AS", f"add {Q}", f"bp {Q}", "start", "map AS /_main"],
@@ -317,9 +317,9 @@ TABLE = [
      ["start", "map AS", "map A2T", f"add {R}", f"bp {R}", "start", "map AS", "map A2M"],
      {R: "stale", f"bp {R}": "stale"}),
     ("B27 the same map at a base past the row, same session",
-     ["start", "map A", f"add {V}", "map A @600000"], {V: "stale"}),
+     ["start", "map A", f"add {V}", "map A @0x600000"], {V: "stale"}),
     ("B27 the same map at a base past the row, next session",
-     ["start", "map A", f"add {V}", f"bp {V}", "start", "map A @600000"],
+     ["start", "map A", f"add {V}", f"bp {V}", "start", "map A @0x600000"],
      {V: "stale", f"bp {V}": "stale"}),
     ("B28 the map relinked shorter, its span ending below the row, next session",
      ["start", "map A", f"add {Q}", f"bp {Q}", "start", "map C"],
@@ -453,7 +453,7 @@ def test_a_map_loaded_while_the_guest_runs_places_nothing(
     run = _Sessions(tmp_path, monkeypatch)
     for step in ("start", f"realrunbp {P}"):
         run.step(step)
-    ok(server.symbols_load(path=str(run.maps["A"]), base="400000"))
+    ok(server.symbols_load(path=str(run.maps["A"]), base="0x400000"))
     store = dstate.STATE.store
     assert store is not None
 

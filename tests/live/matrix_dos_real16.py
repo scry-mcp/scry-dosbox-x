@@ -121,7 +121,7 @@ def section_d() -> None:
             "; ".join(said(s, 60) for s in stops))
     must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing COMPOSE_FRAME")
     dos_real16_code()
-    dos_real16_comments(mapf, f"{load * 16:X}")
+    dos_real16_comments(mapf, f"0x{load * 16:X}")
     M.setup()
     _retraces(load)
     judge_program("D", "M_LIN15")
@@ -148,7 +148,7 @@ def dos_real16_main_loop(wait: float = 30, exempt: str = "", **kw: Any) -> dict[
     cs = program_stop()
     psp = mcb_psp(bp.DOS_REAL16.process)
     load = psp + 0x10
-    loaded = M.call(server.symbols_load, path=str(mapf), base=f"{load * 16:X}")
+    loaded = M.call(server.symbols_load, path=str(mapf), base=f"0x{load * 16:X}")
     found = M.call(server.symbols_find, name="COMPOSE_FRAME")
     must(M.call(server.breakpoint_at, ref="ATRCT_RUN"), "arming ATRCT_RUN")
     must(M.call(server.resume, exempt=exempt, seconds=wait), "running to ATRCT_RUN")

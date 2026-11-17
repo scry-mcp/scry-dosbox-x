@@ -746,7 +746,7 @@ def test_a_file_loaded_at_the_real_mode_park_is_placed_after_the_protected_mode_
     loaded = ok(server.comment_write("load", path=str(_file(tmp_path, ("00A7:00045F80", "pm")))))
     assert loaded["added"] == 1 and "00A7:00045F80" in loaded["note"]
     booted.mode = "Pr32"
-    ok(server.symbols_load(path=str(mapf), base="400000"))
+    ok(server.symbols_load(path=str(mapf), base="0x400000"))
     rows = _rows_by_ref()
     assert (rows["00A7:00045F80"]["state"], rows["00A7:00045F80"].get("addr")) == (
         "resolved", "0x00445f80"), rows["00A7:00045F80"]
@@ -784,11 +784,11 @@ def test_a_row_placed_before_the_map_in_an_earlier_session_is_stale_over_a_relin
         ok(server.comment_write("load", path=str(_file(tmp_path, ("00A7:00062310",
                                                                   "at the park")))))
     booted.mode = "Pr32"
-    ok(server.symbols_load(path=str(mapf), base="400000"))
+    ok(server.symbols_load(path=str(mapf), base="0x400000"))
     ok(server.comment_write("add", ref="00A7:2000", text="after the map"))
     booted = _a_new_session(tmp_path, monkeypatch)
     booted.mode = "Pr32"
-    ok(server.symbols_load(path=str(other if relinked else mapf), base="400000"))
+    ok(server.symbols_load(path=str(other if relinked else mapf), base="0x400000"))
     after_map = _rows_by_ref()["00A7:2000"]
     booted.mode = mode
     park = _rows_by_ref()[ref]
@@ -817,12 +817,12 @@ def test_a_row_placed_before_a_map_loaded_while_the_guest_ran_takes_it_at_the_st
     mapf, other, booted = _a_park_row(tmp_path, monkeypatch)
     booted.mode = "Pr32"
     booted.running = True
-    assert ok(server.symbols_load(path=str(mapf), base="400000"))["pending"] is True
+    assert ok(server.symbols_load(path=str(mapf), base="0x400000"))["pending"] is True
     booted.running = False
     assert ok(server.status())["applied_on_stop"]["symbols_loaded"] is True
     booted = _a_new_session(tmp_path, monkeypatch)
     booted.mode = "Pr32"
-    ok(server.symbols_load(path=str(other), base="400000"))
+    ok(server.symbols_load(path=str(other), base="0x400000"))
     assert _rows_by_ref()["00A7:00062310"]["state"] == "stale", _rows_by_ref()
 
 
@@ -833,7 +833,7 @@ def test_a_store_that_cannot_take_a_deferred_maps_build_says_so_at_the_stop(
     before = [d.to_dict() for d in store.comments()]
     booted.mode = "Pr32"
     booted.running = True
-    ok(server.symbols_load(path=str(mapf), base="400000"))
+    ok(server.symbols_load(path=str(mapf), base="0x400000"))
     booted.running = False
 
     def fails() -> None:
@@ -851,8 +851,8 @@ def test_a_row_placed_before_the_map_is_placed_over_a_second_map_of_the_same_ses
     leaves that batch held, and one session runs one program."""
     mapf, other, booted = _a_park_row(tmp_path, monkeypatch)
     booted.mode = "Pr32"
-    ok(server.symbols_load(path=str(mapf), base="400000"))
-    ok(server.symbols_load(path=str(other), base="400000"))
+    ok(server.symbols_load(path=str(mapf), base="0x400000"))
+    ok(server.symbols_load(path=str(other), base="0x400000"))
     assert _rows_by_ref()["00A7:00062310"]["state"] == "resolved"
 
 
@@ -868,7 +868,7 @@ def test_a_row_another_session_left_before_any_map_is_not_taken_into_this_sessio
     booted = _a_new_session(tmp_path, monkeypatch)
     booted.mode = "Pr32"
     assert "no stop has placed it" in _rows_by_ref()["00A7:00062310"]["why"]
-    ok(server.symbols_load(path=str(mapf), base="400000"))
+    ok(server.symbols_load(path=str(mapf), base="0x400000"))
     assert "no stop has placed it" in _rows_by_ref()["00A7:00062310"]["why"]
 
 
@@ -885,7 +885,7 @@ def test_a_store_that_cannot_take_the_maps_build_is_host_failed_and_the_row_as_i
         raise OSError("read-only")
     monkeypatch.setattr(store, "_persist", fails)
     booted.mode = "Pr32"
-    got = server.symbols_load(path=str(mapf), base="400000")
+    got = server.symbols_load(path=str(mapf), base="0x400000")
     assert "symbols are loaded" in refused(got, "host_failed") and "held_in_memory" not in got
     assert dstate.STATE.table
     assert [d.to_dict() for d in store.comments()] == before, "a write that failed took a row"
@@ -899,7 +899,7 @@ def test_a_park_row_this_stop_cannot_place_leaves_the_map_loaded_and_the_row_as_
         raise ds.Invalid("unexpected_answer", "a descriptor this stop cannot read")
     monkeypatch.setattr(comments._Places, "where", unreadable)
     booted.mode = "Pr32"
-    ok(server.symbols_load(path=str(mapf), base="400000"))
+    ok(server.symbols_load(path=str(mapf), base="0x400000"))
     (row,) = cast(dec.DeclarationStore, dstate.STATE.store).comments()
     assert row.fingerprint == dstate.STATE.conf_fingerprint and dstate.STATE.table
 
