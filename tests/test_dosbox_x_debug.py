@@ -414,6 +414,28 @@ def test_run_to_counts_each_declared_control_beside_its_own_and_removes_them_all
     assert machine.breakpoints == []
 
 
+def test_a_declared_control_that_eats_the_whole_bound_is_a_timeout_naming_it(
+        tmp_path: Path) -> None:
+    machine = Machine(then=Stop({"EIP": 0x160}))
+    s = session_over(machine, tmp_path)
+    got = cast(dict[str, Any], s.run_to(0x814, 0x140, 0.05, control=(0x814, 0x150),
+                                        declared=[(0x814, 0x160)]))
+    assert got["verdict"] == "TIMEOUT" and "ON the control 0814:0160" in got["note"], got
+    assert cast(list[dict[str, Any]], got["declared"])[0]["hits"] >= 1, got
+
+
+def test_a_control_the_debugger_did_not_list_leaves_no_row_of_the_run_behind(
+        tmp_path: Path) -> None:
+    """Refused before the release, the run takes away every row it armed: the target and the
+    controls left in would stop the next `resume`."""
+    machine = Machine()
+    machine.hooks["BP"] = lambda c: (True, []) if "0160" in c.upper() else None
+    s = session_over(machine, tmp_path)
+    with pytest.raises(ds.Invalid, match="does not list a breakpoint at 0814:0160"):
+        s.run_to(0x814, 0x140, 1.0, control=(0x814, 0x150), declared=[(0x814, 0x160)])
+    assert machine.breakpoints == [] and "EXEC RUN" not in machine.sent, machine.breakpoints
+
+
 def test_a_control_that_eats_the_whole_bound_is_a_timeout(tmp_path: Path) -> None:
     machine = Machine(then=Stop({"EIP": 0x150}))
     s = session_over(machine, tmp_path)
@@ -475,7 +497,7 @@ def test_a_run_cancelled_in_flight_is_brought_back_and_takes_its_breakpoints_wit
             raise asyncio.CancelledError
     monkeypatch.setattr(cancel, "check", check)
     with pytest.raises(asyncio.CancelledError):
-        s.run_to(0x814, 0x140, 5.0)
+        s.run_to(0x814, 0x140, 5.0, control=(0x814, 0x150), declared=[(0x814, 0x160)])
     assert "BREAK" in machine.sent and machine.breakpoints == [], machine.sent
 
 

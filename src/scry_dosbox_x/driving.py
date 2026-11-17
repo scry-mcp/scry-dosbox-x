@@ -132,6 +132,10 @@ def run_to(session: ds.Session, seg: int, off: int, seconds: float,
     armed = session.breakpoints()
     for one in [target, *spelled]:
         if not any(f"BP {one}" == b["entry"] for b in armed):
+            # Every row the call did arm goes before the refusal: one left would stop the next
+            # `resume`.
+            remove_own(session, [s for s in [target, *spelled]
+                                 if any(f"BP {s}" == b["entry"] for b in armed)])
             raise Invalid("readback_refused",
                 f"the debugger does not list a breakpoint at {one} after being "
                 f"told to set one. What it holds: {[b['entry'] for b in armed]}. "
