@@ -40,6 +40,7 @@
   "background": true,
   "presence": true,
   "window": "<volatile>",
+  "logfile": "./tmp/demos/dpaint/dpaint-e9.log",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },

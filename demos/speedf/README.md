@@ -96,6 +96,7 @@ The run is 9 calls; these are the ones that show how it is done, and every call 
   "background": true,
   "presence": true,
   "window": "<volatile>",
+  "logfile": "<volatile>",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },

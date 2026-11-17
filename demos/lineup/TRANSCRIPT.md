@@ -38,6 +38,7 @@
   "background": true,
   "presence": true,
   "window": "<volatile>",
+  "logfile": "<volatile>",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },

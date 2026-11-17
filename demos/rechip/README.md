@@ -116,13 +116,14 @@ The run is 20 calls; these are the ones that show how it is done, and every call
   "background": true,
   "presence": true,
   "window": "<volatile>",
+  "logfile": "<volatile>",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
   "symbols": {
     "held": "<volatile>",
     "base_from": "program",
-    "checked": {"against": "<volatile>", "agree": 3207}
+    "checked": {"against": "<volatile>", "agree": 3214}
   },
   "kept": "kept 1 (promote to review)",
   "profile": {

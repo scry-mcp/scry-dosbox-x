@@ -145,7 +145,8 @@ STEPS = [
                    "conf": "where the reader's checkout keeps its derived conf",
                    "name": "where the reader's checkout keeps its profile",
                    "held": "where the reader's checkout keeps its symbol table",
-                   "against": "where the reader's checkout keeps its build"},
+                   "against": "where the reader's checkout keeps its build",
+                   "logfile": "where the reader's checkout keeps the program's log"},
          highlight=("`start(profile=...)` boots from the recipe the program's own repository "
                     "declares: the line `make mcp-conf` prints, the DEV build opening the demo "
                     "song unattended, the conf with its boot line removed, the E9 log. The call "

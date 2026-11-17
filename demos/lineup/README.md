@@ -24,8 +24,7 @@ records two seconds of the stage's music off the Sound Blaster and holds it, sam
 LineUp is not distributed with this repository. The demo runs a copy of the PC port: a directory
 holding `EXES/LINEUP.EXE` with the linker's symbol map beside it, `EXES/LINEUP.MAP`, the game's own
 `AUDIO/` and `GFX/`, its `.scry/` store, and the `SCRIPTS/dosbox-x-mcp-conf.sh` that derives a live
-session's conf. The game's own repository builds the executable and its map from source; that
-repository is not public yet, so there is no link to it here.
+session's conf. The game's own repository builds the executable and its map from source.
 
 ## Run it
 

@@ -73,7 +73,8 @@ STEPS = [
          volatile={"summary": "it carries how long the debugger took to answer",
                    "conf": "where the reader's copy of the game keeps its derived conf",
                    "name": "where the reader's copy of the game keeps its profile",
-                   "held": "where the reader's copy of the game keeps its symbol table"},
+                   "held": "where the reader's copy of the game keeps its symbol table",
+                   "logfile": "where the reader's copy of the game keeps the guest's log"},
          highlight=("`start(profile=...)` boots from the recipe the game's own repository "
                     "declares: the conf its script derives, the working directory, the "
                     "program spelled from where the autoexec leaves the guest, and the TLINK "

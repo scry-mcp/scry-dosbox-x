@@ -40,6 +40,7 @@
   "background": true,
   "presence": true,
   "window": "<volatile>",
+  "logfile": "./tmp/demos/dpaint_maps/dpaint-maps-e9.log",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },

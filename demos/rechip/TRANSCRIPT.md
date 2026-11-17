@@ -39,13 +39,14 @@
   "background": true,
   "presence": true,
   "window": "<volatile>",
+  "logfile": "<volatile>",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
   "symbols": {
     "held": "<volatile>",
     "base_from": "program",
-    "checked": {"against": "<volatile>", "agree": 3207}
+    "checked": {"against": "<volatile>", "agree": 3214}
   },
   "kept": "kept 1 (promote to review)",
   "profile": {
@@ -315,7 +316,7 @@
   "e9": "<volatile>",
   "stop_seq": 2,
   "instruction": "<volatile>",
-  "symbols_placed": {"placed": true, "path": "<volatile>", "base": "0x00400000", "loaded": 7923},
+  "symbols_placed": {"placed": true, "path": "<volatile>", "base": "0x00400000", "loaded": 7932},
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
