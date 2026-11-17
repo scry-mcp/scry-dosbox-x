@@ -61,7 +61,6 @@ server serves every DOS project.
 
 from __future__ import annotations
 
-import json
 from collections.abc import Callable
 from pathlib import Path
 from typing import Annotated, Any, cast
@@ -69,7 +68,6 @@ from typing import Annotated, Any, cast
 from mcp.server.mcpserver import Context
 from pydantic import Field
 from scry_core import (  # noqa: E402
-    fresh,
     given,
     judges,
     log_marks,
@@ -1254,16 +1252,12 @@ def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]
         machine.add_section(whole, "vga", *vga.vga_section(session))
     reply = machine.cut_lists(whole)
     if target is not None:
-        text = json.dumps(whole, indent=1).encode()
-        fresh.create(target, text, "the map", named_by_caller=True)
-        reply["path"] = str(target)
+        reply["path"] = narrowing.write_whole(target, whole)
     mode = whole["cpu_mode"]
     left = [n for n in machine.sections_of(mode if isinstance(mode, str) else None)
             if n not in chosen]
-    if left:
-        reply.update(narrowing.omission(left, machine.MAP_HOW))
-    elif reply["truncated"] and target is None:
-        reply["how"] = machine.MAP_CUT_HOW
+    reply.update(narrowing.map_rest(left, truncated=reply["truncated"],
+                                    written=target is not None))
     return st.reply(**reply)
 
 

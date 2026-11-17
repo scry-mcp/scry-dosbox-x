@@ -14,6 +14,7 @@ from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: F401
+from scry_core import narrowing
 from scry_core.file_names import written_as
 
 from scry_dosbox_x import logs as dlogs
@@ -1076,9 +1077,9 @@ def test_a_cut_reply_without_dest_says_how_to_have_it_whole(
     monkeypatch.setattr(dlogs, "LOG_LIMIT_MAX", 5)
     r = asked_for("dos-djgpp32", tmp_path, sections=["paging"])
     # Sections were left out too, so `how` names both ways, `dest` among them.
-    assert r["truncated"] is True and "path" not in r and r["how"] == machine.MAP_HOW
+    assert r["truncated"] is True and "path" not in r and r["how"] == narrowing.MAP_HOW
     whole = asked_for("dos-djgpp32", tmp_path, sections=EVERY)
-    assert "omitted" not in whole and whole["how"] == machine.MAP_CUT_HOW
+    assert "omitted" not in whole and whole["how"] == narrowing.MAP_CUT_HOW
 
 
 def test_the_one_line_says_how_many_sections_a_default_map_left_out(tmp_path: Path) -> None:

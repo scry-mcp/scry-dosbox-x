@@ -464,12 +464,6 @@ DEFAULT_SECTIONS = frozenset({"mcbs", "devs", "kern", "xms", "ems", "ems_pages",
                               "machine", "control", "gdt", "ldt"})
 
 
-#: How a short map asks for the rest: the sections it left out, or every row of a cut list.
-MAP_HOW = ("sections=[...] names the sections to read; dest=<absolute path> writes every section "
-           "read whole")
-MAP_CUT_HOW = "dest=<absolute path> writes every row of every section read"
-
-
 def sections_of(mode: str | None) -> list[str]:
     """The sections `mode` has: no descriptor tables in real or unknown mode."""
     absent = {"gdt", "ldt", "paging"} if mode in (None, "real") else (
