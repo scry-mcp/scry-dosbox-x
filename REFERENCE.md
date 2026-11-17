@@ -115,7 +115,7 @@ The tools: [Names](docs/reference/names.md).
 
 | Kind | Formats | Pass |
 |---|---|---|
-| Flat | `nm`, a GNU `ld` map, a REAL-MODE Borland map | `base` |
+| Flat | `nm`, a GNU `ld` map, a REAL-MODE Borland map | `base` or `base_from` |
 | Sectioned | a 32-bit Borland map, an Open Watcom map | `section_bases` |
 
 **Passing both is refused**: a field that is sometimes a number and sometimes a table cannot be declared honestly. `base`, `section_bases` and `symbols_find`'s `linear` are addresses, so each is `0x` text or an integer, as every address is; bare hex digits read either way and are refused, and the server spells the address the way the debugger takes it.
@@ -384,7 +384,7 @@ A screen map names an application's screens and their controls, so a caller says
 
 ## Saved states
 
-DOSBox-X merged SAVESTATE and LOADSTATE into its `main-ai` branch, joncampbell123/dosbox-x#6682 and #6683, not yet in `master` or a release. A build without them answers an unknown command, and both tools say so as `no_channel`, naming it. The tools: [States](docs/reference/states.md).
+A saved state needs the debugger commands `SAVESTATE` and `LOADSTATE` ([Debugger commands](#debugger-commands)). A build without them answers an unknown command, and both tools say so as `no_channel`, naming it. The tools: [States](docs/reference/states.md).
 
 ## The debugger channel
 
@@ -396,7 +396,7 @@ Some tools need a debugger command a build may lack; `build_check` lists the one
 
 | Command | What it gives | The tools that need it |
 | --- | --- | --- |
-| `RUNSTATE` | whether the debugger holds the machine, its cycle count, its emulated clock, the display frames since power-on (`frames=`) and, for a stop a `BPIF` row made, that row's number (`bpif=`) | `run_to`, `run_for`, `trace`, `screen_wait`, `step` with `mode="over"`, `resume` with a bound, input to a stopped machine, and any reading after a release; `frames=` gives every stop its `frame` and `perform` its `until_frame` |
+| `RUNSTATE` | whether the debugger holds the machine, its cycle count, its emulated clock, the display frames since power-on (`frames=`) and, for a stop a `BPIF` row made, that row's number (`bpif=`) | `run_to`, `run_for`, `trace`, `screen_wait`, `record`, `audio_record`, `step` with `mode="over"`, `resume` with a bound, input to a stopped machine, and any reading after a release; `frames=` gives every stop its `frame` and `perform` its `until_frame` |
 | `STEPIN` | one instruction run, synchronously | `step` |
 | `SAVESTATE`, `LOADSTATE` | a saved state | `state_write` |
 | `PRESENCE` | the orange edge drawn by the emulator | the presence indicator |
@@ -410,6 +410,6 @@ Some tools need a debugger command a build may lack; `build_check` lists the one
 | `A20` | the A20 gate, read or set | `a20` |
 | `MEMDUMPLIN` | memory dumped by linear address, through the page tables | reads by linear address, `send_mouse` steering a protected-mode pointer |
 
-On a build without `RUNSTATE` a session starts, every reading answers at the stop `start` leaves, and input, captures and declarations work; `resume` with no bound releases the machine and says that nothing will tell when it stops again, and `stop` brings it back to the debugger wherever it is. No DOSBox-X release carries `RUNSTATE` yet.
+On a build without `RUNSTATE` a session starts, every reading answers at the stop `start` leaves, and input, declarations and `snapshot` work; `resume` with no bound releases the machine and says that nothing will tell when it stops again, and `stop` brings it back to the debugger wherever it is.
 
 **One input capability is the integration device's, not the debugger's**: relative mouse motion (its inject register's sub-selector 0Ch), which the stub asks for at load and announces as `motion`. A build without it places the pointer and moves nothing a program that reads motion would see ([Input](docs/reference/input.md)).

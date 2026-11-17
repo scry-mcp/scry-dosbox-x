@@ -91,6 +91,12 @@ def test_every_optional_command_says_what_it_disables() -> None:
     assert all(binaries.DISABLES[name] for name in binaries.COMMANDS)
 
 
+def test_the_recordings_need_runstate_since_their_retraces_run_as_run_for_does() -> None:
+    """`record` and `audio_record` run their retraces through `retrace.run_for`, which refuses a
+    build without `RUNSTATE`, so `build_check` names them among what that build cannot serve."""
+    assert {"record", "audio_record"} <= set(binaries.DISABLES["RUNSTATE"])
+
+
 def test_build_check_judges_the_build_by_its_bytes_and_never_waits_on_helpdebug(
         tmp_path: Path) -> None:
     """Windows' GUI build prints `-helpdebug` to no stream and does not exit: a build whose

@@ -37,8 +37,9 @@ COMMANDS = ("RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMD
             "CAPTURE", "TAP", "PORTINFO", "DOSTRACE", "PIC", "A20", "MEMDUMPLIN")
 #: The tools a build without the command cannot serve, as REFERENCE.md's command table says.
 DISABLES = {
-    "RUNSTATE": ("run_to", "run_for", "trace", "screen_wait", "step (mode over)",
-                 "resume (with a bound)", "input to a stopped machine", "readings after a release"),
+    "RUNSTATE": ("run_to", "run_for", "trace", "screen_wait", "record", "audio_record",
+                 "step (mode over)", "resume (with a bound)", "input to a stopped machine",
+                 "readings after a release"),
     "STEPIN": ("step",),
     "SAVESTATE": ("state_write",),
     "LOADSTATE": ("state_write",),
