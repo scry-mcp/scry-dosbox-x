@@ -193,7 +193,10 @@ def clear_scan(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def debug(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"debug {args.get('command', '')!r}: {_said(reply.get('output_chars'), 'char')}"
+    # `output_chars` comes only with a text clipped to a file; a whole one is its own length.
+    chars = reply.get("output_chars", len(str(reply.get("output", ""))))
+    return (f"debug {args.get('command', '')!r}: {_said(chars, 'char')}"
+            f"{', to a file' if reply.get('clipped') else ''}")
 
 
 def set_register(args: dict[str, Any], reply: dict[str, Any]) -> str:

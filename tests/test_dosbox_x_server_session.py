@@ -1418,9 +1418,11 @@ def test_debug_writes_an_output_past_the_ceiling_to_a_file_and_previews_it(
     assert got["output_chars"] == len(fake.answer), got
     assert Path(got["output_path"]) == tmp_path / "debug-1.txt", got
     assert Path(got["output_path"]).read_text() == fake.answer, "the whole text, as printed"
+    assert got["summary"] == f"debug 'D 0:0': {len(fake.answer)} chars, to a file", got
     fake.answer = "short"
     short = cast(dict[str, Any], server.debug(command="BPLIST"))
     assert short["output"] == "short" and "output_path" not in short, short
+    assert short["summary"] == "debug 'BPLIST': 5 chars", short["summary"]
 
 
 def test_debug_refuses_a_command_that_is_not_text() -> None:
