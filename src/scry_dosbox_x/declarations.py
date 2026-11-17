@@ -29,6 +29,8 @@ KINDS = (*COUNTED_KINDS, "comment")
 # A pointer watch (`[base]+0x28`, `base->field`) re-resolves at every stop; code does not move.
 # A registerpoint is declared by its condition (`expr`): it names no place.
 BY = ("symbol", "address", "pointer", "expr")
+#: A breakpoint stops the machine, or is a control that only counts the runs passing it.
+ROLES = ("stop", "control")
 # Its own regex rather than the session's: this module validates its own stored data.
 INTERRUPT_ROW = re.compile(r"^BPINT [0-9A-Fa-f]{2}(?: AH=[0-9A-Fa-f]{2})?$")
 # Raw row declared where its place is unknown while a map is held; not hex, so it equals no
@@ -113,6 +115,8 @@ class Declaration:
     trigger: str | None = field(default=None, kw_only=True)
     #: A capture's access side: `w` a write of `trigger`, `r` a read of `ref` itself.
     trigger_type: str | None = field(default=None, kw_only=True)
+    #: A breakpoint's: `stop`, or `control`, armed only while a `run_to` counts it.
+    role: str = field(default="stop", kw_only=True)
 
     def __post_init__(self) -> None:
         if self.kind not in KINDS:
@@ -147,6 +151,11 @@ class Declaration:
             if canonical != self.ref:
                 raise DeclarationError(f"a registerpoint ref is its condition as `BPIF` prints "
                                        f"it back ({canonical!r}); got {self.ref!r}")
+        if self.role not in ROLES:
+            raise DeclarationError(f"a breakpoint's role is one of {ROLES}; got {self.role!r}")
+        if self.role != "stop" and self.kind != "breakpoint":
+            raise DeclarationError(f"a {self.kind} carries no role; got role={self.role!r}: "
+                                   "only a breakpoint is a control")
         if self.kind == "comment":
             self._check_comment()
         elif self.text:
@@ -246,6 +255,8 @@ class Declaration:
             d["conf_fingerprint"] = self.conf_fingerprint
         if self.cpu_mode is not None:
             d["cpu_mode"] = self.cpu_mode
+        if self.role != "stop":
+            d["role"] = self.role
         return d
 
     def adopted_by(self, origin: str | None, created_at: str | None,
@@ -256,7 +267,7 @@ class Declaration:
                            watch_mode=self.watch_mode, created_at=created_at, origin=origin,
                            fingerprint=self.fingerprint if held else fingerprint,
                            cpu_mode=self.cpu_mode if held else cpu_mode,
-                           trigger=self.trigger, trigger_type=self.trigger_type)
+                           trigger=self.trigger, trigger_type=self.trigger_type, role=self.role)
 
     @staticmethod
     def from_dict(d: dict[str, object]) -> Declaration:
@@ -285,7 +296,8 @@ class Declaration:
                                cpu_mode=cpu_mode)
         if kind != "watch":
             return Declaration(kind=kind, by=by, ref=ref, created_at=created_at,
-                               origin=origin, fingerprint=fingerprint, cpu_mode=cpu_mode)
+                               origin=origin, fingerprint=fingerprint, cpu_mode=cpu_mode,
+                               role=str(d.get("role", "stop")))
         w = d.get("width")
         width: int | None
         if w is None:
@@ -566,6 +578,14 @@ class DeclarationStore:
                 self._commit(mine, [*mine[:i], held.adopted_by(origin, created, build, mode),
                                     *mine[i + 1:]])
             return False
+        if decl.kind == "breakpoint":
+            other = next((d for d in mine if d.kind == "breakpoint" and d.by == decl.by
+                          and canonical_ref(d.ref, d.by) == canonical_ref(decl.ref, decl.by)),
+                         None)
+            if other is not None:
+                raise DeclarationError(
+                    f"{decl.ref!r} is already declared as a {other.role} breakpoint; one ref is "
+                    f"a stop or a control, never both: clear it before declaring it again")
         if decl.kind == "watch":
             for d in mine:
                 if d.kind != "watch" or d.by != decl.by \

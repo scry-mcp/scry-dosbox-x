@@ -214,6 +214,54 @@ def test_a_pass_that_ends_in_the_other_cpu_mode_leaves_its_watches_to_the_next_s
     assert not any(r["entry"].startswith(WATCH_ROWS) for r in fake.rows), fake.rows
 
 
+def test_a_control_is_stored_never_held_and_counted_by_every_run_to(tmp_path: Path) -> None:
+    """scry-mame's `role="control"`: it never stops the machine, and `run_to` counts it. A
+    DOSBox-X breakpoint always halts, so the debugger holds the row only while a run counts it."""
+    syms = [dsym.Symbol("_tick", 0x2000, kind="T"), dsym.Symbol("foo", 0x1000, kind="T")]
+    fake = _names(tmp_path, symbols=syms)
+    got = _ok(server.breakpoint_at(ref="_tick", role="control"))
+    assert (got["role"], got["stored"], got["armed"], got["state"]) == (
+        "control", True, False, "counted"), got
+    assert not any(r["entry"].startswith("BP ") for r in fake.rows), fake.rows
+    assert _ok(server.breakpoint_at(ref="foo"))["role"] == "stop"
+    row = next(r for r in _ok(server.declaration_list("breakpoint"))["breakpoints"]
+               if r["ref"] == "_tick")
+    assert (row["role"], row["state"]) == ("control", "counted"), row
+    again = server.breakpoint_at(ref="_tick")
+    assert again["status"] == "INVALID" and "a stop or a control" in again["message"], again
+    fake.declared_hits = 3
+    ran = _ok(server.run_to(ref="foo", control="0000:0020", seconds=5))
+    assert fake.last_declared == [(0x00A7, 0x2000)], fake.last_declared
+    assert [c["ref"] for c in ran["controls"]] == ["0000:0020", "_tick"], ran["controls"]
+    assert ran["controls"][1]["hits_in_run"] == 3 and ran["control_hits"] == 3, ran
+    stored = dec.DeclarationStore(str(tmp_path / "g.conf"), path=tmp_path / "decl.json")
+    assert [d.role for d in stored.declarations() if d.ref == "_tick"] == ["control"]
+    cleared = _ok(server.declaration_clear(kind="breakpoint", ref="_tick"))
+    assert cleared["declarations_cleared"] == 1 and cleared["disarmed"] == [], cleared
+
+
+def test_no_re_arm_or_queue_arms_a_control_and_it_stops_nothing(tmp_path: Path) -> None:
+    """Between runs a control is nobody's row: a re-arm, the arm queue and the wait for a stop
+    all pass it over."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_tick", 0x2000, kind="T")])
+    _ok(server.breakpoint_at(ref="_tick", role="control"))
+    account = arming.rearm_declarations(fake)  # type: ignore[arg-type]
+    assert not any(r["ref"] == "_tick" for rows in account.values() for r in rows), account
+    assert arming.declares_code_breakpoint() is False
+    assert arming.something_can_stop_it() is False
+    dstate.STATE.pending["arm"].append("_tick")
+    arming.apply_pending(fake)  # type: ignore[arg-type]
+    assert not any(r["entry"].startswith("BP ") for r in fake.rows), fake.rows
+
+
+def test_a_wait_on_a_control_is_refused_since_it_never_stops_the_machine(
+        tmp_path: Path) -> None:
+    _names(tmp_path, symbols=[dsym.Symbol("_tick", 0x2000, kind="T")])
+    _ok(server.breakpoint_at(ref="_tick", role="control"))
+    got = server.screen_wait(changed=True, on_breakpoint="_tick", seconds=1)
+    assert got["status"] == "INVALID" and "never stops the machine" in got["message"], got
+
+
 def test_a_by_address_declaration_on_a_running_machine_is_kept_unarmed_not_invalid(
         tmp_path: Path) -> None:
     fake = _names(tmp_path, arm_fails=True)

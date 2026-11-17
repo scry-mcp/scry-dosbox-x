@@ -370,6 +370,10 @@ floor.
 - `run_to` and `run_for` take `disarm_watches`, as on scry-mame: the change watches' rows leave
   the debugger for the pass and come back at its stop, and the reply names them in
   `disarmed_watches`, with `not_rearmed` (and why) for one that could not come back.
+- `breakpoint_at` takes `role="control"`, as on scry-mame: the place is stored and counted by
+  every `run_to` beside the run's own `control`, held in the debugger only while a run counts it,
+  so it never stops `resume`, `run_for` or a wait (an `on_breakpoint` wait on it is refused). Its
+  reply, and each breakpoint row of `declaration_list`, carry `role`.
 
 ## 0.1.0
 

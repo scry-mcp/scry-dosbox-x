@@ -566,7 +566,7 @@ def rearm_declarations(session: ds.Session) -> dict[str, Any]:
         if decl.kind == "watch" and decl.watch_mode in dec.KEPT_MODES:
             _rearm_kept(session, decl, out)
             continue
-        if decl.kind != "breakpoint":
+        if decl.kind != "breakpoint" or decl.role == "control":
             continue
         row = decl_row(decl)
         res = placement.resolve_ref(decl, "CS", session)
@@ -616,7 +616,7 @@ def arm_at_start(session: ds.Session) -> dict[str, Any]:
     raised."""
     if STATE.store is None or not any(
             d.kind == "regpoint" or (d.kind == "watch" and d.watch_mode in dec.KEPT_MODES)
-            or (d.kind == "breakpoint" and d.by == "address"
+            or (d.kind == "breakpoint" and d.role == "stop" and d.by == "address"
                 and not placement.is_stale(d, _nowhere))
             for d in STATE.store.declarations()):
         return {"declarations": {"rearm": _unarmed_at_start()}}
@@ -634,7 +634,7 @@ def _unarmed_at_start(refused: str = "") -> dict[str, Any]:
     for decl in STATE.store.declarations() if STATE.store is not None else []:
         if decl.kind == "regpoint" and refused:
             out["unarmable"].append({**decl_row(decl), "why": refused})
-        if decl.kind != "breakpoint":
+        if decl.kind != "breakpoint" or decl.role == "control":
             continue
         row = decl_row(decl)
         if decl.by != "address":
@@ -745,7 +745,8 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
             # Every declaration under the ref: the queue holds a ref once, and a breakpoint and a
             # watch may share it. Each arm checks the list first, so nothing is doubled.
             for decl in [d for d in STATE.store.declarations()
-                         if d.ref == ref and not (d.kind == "watch" and d.watch_mode != "change")]:
+                         if d.ref == ref and d.role != "control"
+                         and not (d.kind == "watch" and d.watch_mode != "change")]:
                 if rearmed and decl.kind == "breakpoint":
                     continue
                 if _arm_queued(session, decl, machine, held, places, out):
@@ -1024,7 +1025,9 @@ def _armable_declarations() -> list[dec.Declaration]:
     if STATE.store is None:
         return []
     return [d for d in STATE.store.declarations()
-            if not placement.is_stale(d, _nowhere)
+            # A control is armed by `run_to` alone, for its run.
+            if d.role != "control"
+            and not placement.is_stale(d, _nowhere)
             # A raw watch no stop placed is placed by the first stop that reads it; a raw breakpoint
             # no stop placed is armed nowhere until declared again.
             and placement.waits(d, _last_cpu) in ((None, dec.UNPLACED) if d.kind == "watch"
@@ -1093,14 +1096,15 @@ def breakpoint_interrupt(session: ds.Session, number: int, ah: int | None,
                     **delta)
 
 
-def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
+def breakpoint_at(session: ds.Session, ref: str, by: str, role: str = "stop") -> dict[str, Any]:
     """The body of the `breakpoint_at` tool."""
     # `by` was judged before the session gate (`checks.by_choice`), its family's words.
     chosen = placement.decide_by(ref) if by == "auto" else by
     placement.address_shape(ref, chosen)
     places = RawPlaces(session)
     decl = declare("breakpoint", chosen, ref, places.linear(chosen, ref),
-                   cpu=places.mode_here(chosen, ref) if chosen == "address" else None)
+                   cpu=places.mode_here(chosen, ref) if chosen == "address" else None,
+                   role=role)
     stored = current_store().held_ref(ref, ("breakpoint",))
     if stored is not None and stored != ref:
         # An address declared again in another spelling is the same declaration, handled under its
@@ -1132,14 +1136,23 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
     # A re-declaration is a no-op, not a refusal; the arming below still runs, so a lost debugger
     # entry is re-armed.
     already = not is_new
+    if role == "control":
+        # A DOSBox-X breakpoint always halts, so a control's row is armed by `run_to` alone, for
+        # the run that counts it; between runs the debugger holds nothing of it.
+        said = ({"why": res["why"]} if "why" in res else
+                {"note": f"{ref} {placement.NOT_IN_TABLE}; kept, counted once a table defines it"}
+                if res["state"] == "unresolved" else {})
+        return st.reply(ref=ref, by=chosen, role=role, stored=True, already_stored=already,
+                        armed=False,
+                        state="counted" if res["state"] == "armable" else res["state"], **said)
 
     def pending() -> dict[str, Any]:
         # Stored, armed at the next stop: the guest runs.
-        return st.reply(ref=ref, by=chosen, stored=True, already_stored=already,
+        return st.reply(ref=ref, by=chosen, role=role, stored=True, already_stored=already,
                         armed=False, state="pending", **STATE.queue_arm(ref))
 
     if res["state"] == "unresolved":
-        return st.reply(ref=ref, by=chosen, stored=True, already_stored=already,
+        return st.reply(ref=ref, by=chosen, role=role, stored=True, already_stored=already,
                       armed=False, state="unresolved",
                       note=f"{ref} {placement.NOT_IN_TABLE}; the declaration is kept and "
                            f"arms nothing until a table defines it")
@@ -1148,7 +1161,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
         # has no base yet.
         if not session.at_debugger():
             return pending()
-        return st.reply(ref=ref, by=chosen, stored=True, already_stored=already,
+        return st.reply(ref=ref, by=chosen, role=role, stored=True, already_stored=already,
                       armed=False, state="unarmable", why=res["why"])
     # The row as stored waits at this stop when no stop placed it, or one of the other mode did and
     # this one cannot place it again.
@@ -1156,7 +1169,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
         stored_row = next(d for d in current_store().declarations()
                           if d.kind == "breakpoint" and d.ref == ref)
         if (mode := placement.waits(stored_row, places.cpu)) is not None:
-            return st.reply(ref=ref, by=chosen, stored=True, already_stored=already,
+            return st.reply(ref=ref, by=chosen, role=role, stored=True, already_stored=already,
                             armed=False, state="unarmable",
                             why=placement.waits_why(
                                 mode, "Declare it again",
@@ -1179,7 +1192,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
         # stopped: the stop came between, and the next contact drains the queue.
         if isinstance(e, ds.NotStopped) or not session.at_debugger():
             return pending()
-        return st.reply(ref=ref, by=chosen, stored=True, already_stored=already,
+        return st.reply(ref=ref, by=chosen, role=role, stored=True, already_stored=already,
                       armed=False, state="unarmable", why=str(e))
     note = None
     if res["marked"]:
@@ -1187,7 +1200,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
                 f"whose firing is an open question, so this is said rather than assumed")
     STATE.note_armed(ref, {"kind": "bp", "seg": res["seg"], "off": res["off"],
                       "entry": str(held["entry"])})
-    return st.reply(ref=ref, by=chosen, stored=True, already_stored=already, armed=True,
+    return st.reply(ref=ref, by=chosen, role=role, stored=True, already_stored=already, armed=True,
                   state="armed", entry=held["entry"], marked=res["marked"], note=note)
 
 
@@ -1219,9 +1232,16 @@ def list_breakpoints(session: ds.Session) -> dict[str, Any]:
             continue
         if decl.kind != "breakpoint":
             continue
-        item = decl_row(decl)
+        item = {**decl_row(decl), "role": decl.role}
         res = placement.resolve_ref(decl, "CS", session, machine=machine)
         state = res["state"]
+        if decl.role == "control":
+            # No row is the control's between runs: `run_to` arms and removes it.
+            item["state"] = "counted" if state == "armable" else state
+            if "why" in res:
+                item["why"] = res["why"]
+            out.append(item)
+            continue
         # A stale raw address is listed as such unless this session has it armed anyway. An orphan
         # takes `orphan` as its state only where it would otherwise be `gone` or `stale`: facts that
         # decide what a caller does next (armed, unresolved) are not replaced.
@@ -1328,7 +1348,8 @@ def clear_breakpoints(session: ds.Session, ref: str | None) -> dict[str, Any]:
             continue
         rows = list(STATE.armed.get(("bp", decl.ref), []))
         if decl.kind == "breakpoint":
-            if not rows and not running:
+            # A control holds no row between runs: clearing it is the store's alone.
+            if not rows and not running and decl.role == "stop":
                 res = placement.resolve_ref(decl, "CS", session)
                 if res["state"] == "armable":
                     rows = [{"kind": "bp", "seg": res["seg"], "off": res["off"],

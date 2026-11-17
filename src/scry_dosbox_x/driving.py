@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import contextlib
 import time
+from collections.abc import Sequence
+from typing import cast
 
 from scry_core import cancel
 from scry_core import reply_contract as contract
@@ -93,8 +95,10 @@ def resume(session: ds.Session, look: bool = True) -> dict[str, object]:
 
 def run_to(session: ds.Session, seg: int, off: int, seconds: float,
            control: tuple[int, int] | None = None,
-           progress: Progress = no_progress) -> dict[str, object]:
-    """Run until the machine reaches an address, and say where it really stopped."""
+           progress: Progress = no_progress,
+           declared: Sequence[tuple[int, int]] = ()) -> dict[str, object]:
+    """Run until the machine reaches an address, and say where it really stopped; `control` and
+    each `declared` control count their hits on the way."""
     # THE ARGUMENT CHECKS THAT NEED NOTHING FROM THE MACHINE GO FIRST.
     ds.check_segment(seg)
     vocab.check_wait(seconds)
@@ -103,9 +107,10 @@ def run_to(session: ds.Session, seg: int, off: int, seconds: float,
     # THE OFFSET'S WIDTH IS THE CPU MODE'S.
     top = grammar.check_offset(off, stopped["mode"])
     target = f"{seg:04X}:{off:04X}"
-    ctl = None
-    if control is not None:
-        cseg, coff = control
+    # The run's own control first, then the declared ones: one count each, in that order.
+    places = ([control] if control is not None else []) + list(declared)
+    spelled: list[str] = []
+    for cseg, coff in places:
         if not 0 <= cseg <= 0xFFFF or not 0 <= coff <= top:
             raise Invalid("bad_argument", f"the control {cseg:04X}:{coff:X} is outside what "
                           f"{stopped['mode']} mode can address")
@@ -119,24 +124,29 @@ def run_to(session: ds.Session, seg: int, off: int, seconds: float,
                 f"the control {ctl} is the same address as the target {target}: "
                           "a control proves the target COULD have fired, and the target "
                           "cannot prove that about itself")
+        spelled.append(ctl)
     session.altered |= session.arming_writes()
     session.command(f"BP {dbg.typed_addr(seg, off)}")
-    if control is not None:
-        session.command(f"BP {dbg.typed_addr(*control)}")
+    for place in places:
+        session.command(f"BP {dbg.typed_addr(*place)}")
     armed = session.breakpoints()
-    for spelled in [target] + ([ctl] if ctl is not None else []):
-        if not any(f"BP {spelled}" == b["entry"] for b in armed):
+    for one in [target, *spelled]:
+        if not any(f"BP {one}" == b["entry"] for b in armed):
             raise Invalid("readback_refused",
-                f"the debugger does not list a breakpoint at {spelled} after being "
+                f"the debugger does not list a breakpoint at {one} after being "
                 f"told to set one. What it holds: {[b['entry'] for b in armed]}. "
                 f"Resuming now would run the machine with nothing to stop it, and the "
                 f"reply would blame the address rather than the arming")
     began = time.monotonic()
     deadline = began + seconds
-    control_hits = 0
+    hits = [0] * len(places)
     at: dict[str, str] | None = None
     expired, interrupted = True, False
-    # THE CONTROL LOOP: released, waited for, read; a stop AT the control is counted and the
+    first = spelled[0] if spelled else None
+
+    def on_a_control(where: dict[str, str]) -> int | None:
+        return next((i for i, p in enumerate(places) if stopped_at(where, *p)), None)
+    # THE CONTROL LOOP: released, waited for, read; a stop AT a control is counted and the
     # machine let go again.
     try:
         while True:
@@ -147,15 +157,16 @@ def run_to(session: ds.Session, seg: int, off: int, seconds: float,
             try:
                 at = session.where()
             except Invalid as exc:
-                raise still_armed(exc, target, began, ctl) from None
+                raise still_armed(exc, target, began, first) from None
             # THE TARGET IS ASKED FIRST.
-            if control is None or stopped_at(at, seg, off):
+            if not places or stopped_at(at, seg, off):
                 break
-            if not stopped_at(at, control[0], control[1]):
+            which = on_a_control(at)
+            if which is None:
                 break
-            control_hits += 1
+            hits[which] += 1
             if time.monotonic() >= deadline:
-                # AT REST ON THE CONTROL WITH NO BOUND LEFT: reported as a stop elsewhere, and
+                # AT REST ON A CONTROL WITH NO BOUND LEFT: reported as a stop elsewhere, and
                 # the bound DID run out, whatever the last wait saw.
                 expired = True
                 break
@@ -168,33 +179,34 @@ def run_to(session: ds.Session, seg: int, off: int, seconds: float,
                 interrupted = ds.Session.stop_at_bound(session)
                 at = session.where()
             except Invalid as exc:
-                raise still_armed(exc, target, began, ctl) from None
+                raise still_armed(exc, target, began, first) from None
     except BaseException as e:
         if cancel.is_cancellation(e):
-            abandon_run(session, [target] + ([ctl] if ctl is not None else []))
+            abandon_run(session, [target, *spelled])
         raise
     # ARRIVAL IS THE SAME PLACE, NOT THE SAME SPELLING.
     arrived = stopped_at(at, seg, off)
-    on_control = control is not None and stopped_at(at, control[0], control[1])
-    if on_control and read_after_bound and not interrupted:
-        control_hits += 1          # found resting on the control after the bound: it fired
-    # THE TARGET AND THE CONTROL ARE OURS ON EVERY STOPPED OUTCOME: a `BP` is persistent, and
-    # nobody asked to keep either.
-    removals = remove_own(session, [target] + ([ctl] if ctl is not None else []))
+    resting = None if arrived else on_a_control(at)
+    if resting is not None and read_after_bound and not interrupted:
+        hits[resting] += 1         # found resting on a control after the bound: it fired
+    # THE TARGET AND THE CONTROLS ARE OURS ON EVERY STOPPED OUTCOME: a `BP` is persistent, and
+    # nobody asked to keep any.
+    removals = remove_own(session, [target, *spelled])
     removed, cleanup = removals[0]
-    control_removed = False
-    if ctl is not None:
-        control_removed, control_cleanup = removals[1]
-        cleanup += control_cleanup
+    for _gone, said in removals[1:]:
+        cleanup += said
+    blocks = [{"at": one, "hits": n, "removed": gone}
+              for one, n, (gone, _said) in zip(spelled, hits, removals[1:], strict=True)]
+    own = blocks[0] if control is not None else contract.unavailable("no control was named")
     # THE VERDICT IS WHAT ENDED THE RUN, read off the stop and not off the wait.
     if arrived:
         verdict, why = contract.TARGET, ""
-    elif interrupted or (expired and on_control):
+    elif interrupted or (expired and resting is not None):
         verdict = contract.TIMEOUT
         why = (f"the {seconds:g} s bound ran out and the run was interrupted at "
                f"{at['cs']}:{at['eip']}" if interrupted else
-               f"it came to rest ON the control {ctl} (its hit number {control_hits}) when "
-               f"the bound ran out")
+               f"it came to rest ON the control {spelled[cast(int, resting)]} (its hit number "
+               f"{hits[cast(int, resting)]}) when the bound ran out")
     else:
         verdict = contract.OTHER_STOP
         why = f"it stopped at {at['cs']}:{at['eip']}: something else got there first"
@@ -204,8 +216,7 @@ def run_to(session: ds.Session, seg: int, off: int, seconds: float,
     return {"verdict": verdict, "target": target,
             "stopped_at": at, "waited_s": round(time.monotonic() - began, 3),
             "breakpoint_removed": removed,
-            "control": control_block(ctl, control_hits,
-                                              removed=control_removed),
+            "control": own, "declared": blocks[1 if control is not None else 0:],
             "note": cleanup.strip() if arrived else
                     f"{why}, and not at {target}{rom}." + (
                         cleanup if not removed else
@@ -217,13 +228,6 @@ def stopped_at(at: dict[str, str], seg: int, off: int) -> bool:
     if str(at["mode"]).startswith("Pr"):
         return at["cs"] == f"{seg:04X}" and int(at["eip"], 16) == off
     return int(at["cs"], 16) * 16 + int(at["eip"], 16) == seg * 16 + off
-
-
-def control_block(ctl: str | None, hits: int, *, removed: bool) -> dict[str, object]:
-    """The `control` field of a `run_to` reply."""
-    if ctl is None:
-        return contract.unavailable("no control was named")
-    return {"at": ctl, "hits": hits, "removed": removed}
 
 
 def abandon_run(session: ds.Session, own: list[str]) -> None:

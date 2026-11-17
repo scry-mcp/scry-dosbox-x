@@ -13,6 +13,7 @@ import shutil
 import sys
 import tempfile
 import textwrap
+from collections.abc import Sequence
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -332,14 +333,17 @@ class FakeSession(SessionGates):
 
     def run_to(self, seg: int, off: int, seconds: float,
                control: tuple[int, int] | None = None,
-               progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+               progress: ds.Progress = ds.no_progress,
+               declared: Sequence[tuple[int, int]] = ()) -> dict[str, object]:
         # a constant, not the echoed bound: an echoed `seconds` would pass as a measurement
         return {"verdict": "TARGET", "target": f"{seg:04X}:{off:04X}",
                 "stopped_at": {"cs": f"{seg:04X}", "eip": f"{off:08X}",
                                "mode": "Real"},
                 "waited_s": 0.25, "breakpoint_removed": True, "note": "",
                 "control": contract.unavailable("no control was named") if control is None else
-                {"at": f"{control[0]:04X}:{control[1]:04X}", "hits": 0, "removed": True}}
+                {"at": f"{control[0]:04X}:{control[1]:04X}", "hits": 0, "removed": True},
+                "declared": [{"at": f"{s:04X}:{o:04X}", "hits": 0, "removed": True}
+                             for s, o in declared]}
 
     def watch_places(self, places: list[tuple[int, int]]) -> list[dict[str, object]]:
         return [self.watch(seg, off) for seg, off in places]
@@ -662,6 +666,8 @@ class NamesFake(SessionGates):
         self.runto_running = False
         self.runto_elsewhere = False
         self.control_hits = 0
+        self.declared_hits = 0
+        self.last_declared: list[tuple[int, int]] = []
         self.rows: list[dict[str, str]] = []
         self.bp_calls = 0
         self.survey_calls = 0
@@ -913,18 +919,23 @@ class NamesFake(SessionGates):
 
     def run_to(self, segment: int, offset: int, seconds: float,
                control: tuple[int, int] | None = None,
-               progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+               progress: ds.Progress = ds.no_progress,
+               declared: Sequence[tuple[int, int]] = ()) -> dict[str, object]:
         self.runto_calls.append((segment, offset, seconds))
         self.last_control = control
+        self.last_declared = list(declared)
         ctl = (contract.unavailable("no control was named") if control is None else
                {"at": f"{control[0]:04X}:{control[1]:04X}", "hits": self.control_hits,
                 "removed": True})
+        counted = [{"at": f"{s:04X}:{o:04X}", "hits": self.declared_hits, "removed": True}
+                   for s, o in declared]
         # `runto_running`: the bound ran out (TIMEOUT); `runto_elsewhere`: another's stop
         verdict = ("TIMEOUT" if self.runto_running else
                    "OTHER_STOP" if self.runto_elsewhere else "TARGET")
         return {"verdict": verdict, "target": f"{segment:04X}:{offset:04X}",
                 "stopped_at": {"cs": self.cs, "eip": self.eip, "mode": self.mode},
                 "waited_s": 0.0, "breakpoint_removed": True, "control": ctl,
+                "declared": counted,
                 "note": "" if verdict == "TARGET" else f"{verdict.lower()}: not at the target"}
 
     def command(self, text: str, **_k: object) -> str:

@@ -13,7 +13,8 @@ Run until a symbol or a `SEG:OFF` and say where it stopped.
 
 `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required with a `ref` or an anchored
 screen: a second ref known to be hot, counted when it fires, so a bound that expires with no
-control hit is INVALID, not "it did not arrive". `disarm_watches=true` disarms the watches for this pass, so none of them cuts it. Needs a stopped machine.
+control hit is INVALID, not "it did not arrive"; each control `breakpoint_at(role="control")`
+declared counts too. `disarm_watches=true` disarms the watches for this pass, so none of them cuts it. Needs a stopped machine.
 Refused: an absent or ambiguous name. On a dynamic cpu core, or `auto` (protected-mode code
 runs dynamic), which can pass over a breakpoint inside a compiled block, `note` says so.
 

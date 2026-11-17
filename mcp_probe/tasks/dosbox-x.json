@@ -2714,6 +2714,26 @@
     "frames": 30,
     "disarm_watches": true
    }
+  },
+  {
+   "id": "d190",
+   "prompt": "Declare 0814:0230 as a place that only counts the runs passing it, never halting the machine there.",
+   "tool": "breakpoint_at",
+   "args": {
+    "ref": {
+     "any_of": [
+      "0814:0230",
+      "0814:230"
+     ]
+    },
+    "role": "control"
+   },
+   "allow": [
+    "by"
+   ],
+   "grammar": [
+    "control"
+   ]
   }
  ]
 }

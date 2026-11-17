@@ -36,6 +36,8 @@ def declared_row(spec: stop_wait.StopWait) -> dec.Declaration:
         raise stop_wait.no_such_row(spec, [d.ref for d in store.declarations()
                                            if d.kind == spec.kind])
     decl = next(d for d in store.declarations() if d.kind == spec.kind and d.ref == held)
+    if spec.kind == "breakpoint" and decl.role != "stop":
+        raise stop_wait.not_a_stop(held, decl.role)
     if spec.kind == "watch" and decl.watch_mode != "change":
         raise stop_wait.not_a_change_watch(held, str(decl.watch_mode))
     if spec.kind == "watch" and decl.by == "pointer":

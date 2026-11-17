@@ -401,6 +401,19 @@ def test_run_to_with_a_control_counts_its_hits_and_lets_the_machine_go_again(
     assert machine.breakpoints == []
 
 
+def test_run_to_counts_each_declared_control_beside_its_own_and_removes_them_all(
+        tmp_path: Path) -> None:
+    """A control `breakpoint_at(role="control")` declared counts in every run, as scry-mame's."""
+    machine = Machine(releases=[Stop({"EIP": 0x160}), Stop({"EIP": 0x150}), Stop({"EIP": 0x160}),
+                                Stop({"EIP": 0x140})])
+    s = session_over(machine, tmp_path)
+    got = s.run_to(0x814, 0x140, 1.0, control=(0x814, 0x150), declared=[(0x814, 0x160)])
+    assert got["verdict"] == "TARGET", got
+    assert got["control"] == {"at": "0814:0150", "hits": 1, "removed": True}, got
+    assert got["declared"] == [{"at": "0814:0160", "hits": 2, "removed": True}], got
+    assert machine.breakpoints == []
+
+
 def test_a_control_that_eats_the_whole_bound_is_a_timeout(tmp_path: Path) -> None:
     machine = Machine(then=Stop({"EIP": 0x150}))
     s = session_over(machine, tmp_path)

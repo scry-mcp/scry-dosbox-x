@@ -40,6 +40,7 @@ class BreakpointAtReply(DosboxEnvelope, total=False):
     entry: Annotated[str, When("once armed")]
     marked: Annotated[bool, OmitEmpty]
     ref: str
+    role: Required[str]
     state: Required[str]
     stored: Required[bool]
     why: Annotated[str, When("`unarmable`")]

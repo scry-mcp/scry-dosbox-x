@@ -12,7 +12,7 @@ import re
 import socket
 import tempfile
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -608,9 +608,10 @@ class Session(dprocess.Process):
 
     def run_to(self, seg: int, off: int, seconds: float,
                control: tuple[int, int] | None = None,
-               progress: Progress = no_progress) -> dict[str, object]:
-        """Run to an address and say where it stopped."""
-        return driving.run_to(self, seg, off, seconds, control, progress)
+               progress: Progress = no_progress,
+               declared: Sequence[tuple[int, int]] = ()) -> dict[str, object]:
+        """Run to an address and say where it stopped, counting the controls on the way."""
+        return driving.run_to(self, seg, off, seconds, control, progress, declared)
 
     def await_stop(self, began: float, deadline: float, target: str,
                    progress: Progress = no_progress, label: str = "",

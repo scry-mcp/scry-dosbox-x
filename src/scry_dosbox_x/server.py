@@ -832,7 +832,8 @@ def run_to(ref: str = "", *, control: str = "", screen: str = "",
 
     `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required with a `ref` or an anchored
     screen: a second ref known to be hot, counted when it fires, so a bound that expires with no
-    control hit is INVALID, not "it did not arrive". {DISARM_WATCHES}. Needs a stopped machine.
+    control hit is INVALID, not "it did not arrive"; each control `breakpoint_at(role="control")`
+    declared counts too. {DISARM_WATCHES}. Needs a stopped machine.
     Refused: an absent or ambiguous name. On a dynamic cpu core, or `auto` (protected-mode code
     runs dynamic), which can pass over a breakpoint inside a compiled block, `note` says so.
 
@@ -1458,24 +1459,27 @@ audio_compare = _MEDIA["audio_compare"]
 
 @tool("Declare a breakpoint", summary=one_line.breakpoint_at)
 def breakpoint_at(ref: str, by: Annotated[str, vocab.enum(checks.BREAKPOINT_BY)] = "auto",
+                  role: Annotated[str, vocab.enum(dec.ROLES)] = "stop",
                   ) -> dict[str, Any]:
-    """Declare a code breakpoint at a symbol or `SEG:OFF`, and arm it if it can be. Stored, and
-    re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build. `by`: `auto`
-    (this server's choice), `symbol` or `address`, which is how the ref is read.
+    """Declare a code breakpoint at a symbol or `SEG:OFF`, as a `stop` (armed if it can be) or a
+    `control` (never halts; armed only while a `run_to` counts its hits). Stored, and re-armed on
+    `symbols_load`; a raw `SEG:OFF` goes `stale` over another build. `by`: `auto` (this server's
+    choice), `symbol` or `address`, which is how the ref is read.
 
-    Refused: a name matching several symbols; an address another declaration holds, naming it. On
-    a dynamic cpu core, or `auto` (protected-mode code runs dynamic), which can pass over it
-    inside a compiled block, `note` says so. A symbol
-    absent from this build is stored `unresolved`.
+    Refused: a name matching several symbols; an address another declaration holds, naming it; one
+    ref under the other role. On a dynamic cpu core, or `auto` (protected-mode code runs dynamic),
+    which can pass over it inside a compiled block, `note` says so. A symbol absent from this
+    build is stored `unresolved`.
 
-    Reply: `ref`, `stored`, `already_stored`, `armed`, `entry` (once armed), `state` (`armed`,
-    `unresolved`, `unarmable`, `pending` while the guest runs), `why`, `marked` and `note` for
-    a linker-marked symbol.
+    Reply: `ref`, `role`, `stored`, `already_stored`, `armed`, `entry` (once armed), `state`
+    (`armed`, `counted` for a control, `unresolved`, `unarmable`, `pending` while the guest runs),
+    `why`, `marked` and `note` for a linker-marked symbol.
 
     Reference: REFERENCE.md, Declarations.
     """
     session = live()
-    return dlaunch.with_dynamic_core_note(arming.breakpoint_at(session, ref, by), session.launch)
+    return dlaunch.with_dynamic_core_note(arming.breakpoint_at(session, ref, by, role),
+                                          session.launch)
 
 
 @tool("List the declarations", summary=one_line.declaration_list, read_only=True)

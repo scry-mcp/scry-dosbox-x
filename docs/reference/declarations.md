@@ -6,21 +6,22 @@
 *Declare a breakpoint*
 
 ```text
-breakpoint_at(ref, by="auto")
+breakpoint_at(ref, by="auto", role="stop")
 ```
 
-Declare a code breakpoint at a symbol or `SEG:OFF`, and arm it if it can be. Stored, and
-re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build. `by`: `auto`
-(this server's choice), `symbol` or `address`, which is how the ref is read.
+Declare a code breakpoint at a symbol or `SEG:OFF`, as a `stop` (armed if it can be) or a
+`control` (never halts; armed only while a `run_to` counts its hits). Stored, and re-armed on
+`symbols_load`; a raw `SEG:OFF` goes `stale` over another build. `by`: `auto` (this server's
+choice), `symbol` or `address`, which is how the ref is read.
 
-Refused: a name matching several symbols; an address another declaration holds, naming it. On
-a dynamic cpu core, or `auto` (protected-mode code runs dynamic), which can pass over it
-inside a compiled block, `note` says so. A symbol
-absent from this build is stored `unresolved`.
+Refused: a name matching several symbols; an address another declaration holds, naming it; one
+ref under the other role. On a dynamic cpu core, or `auto` (protected-mode code runs dynamic),
+which can pass over it inside a compiled block, `note` says so. A symbol absent from this
+build is stored `unresolved`.
 
-Reply: `ref`, `stored`, `already_stored`, `armed`, `entry` (once armed), `state` (`armed`,
-`unresolved`, `unarmable`, `pending` while the guest runs), `why`, `marked` and `note` for
-a linker-marked symbol.
+Reply: `ref`, `role`, `stored`, `already_stored`, `armed`, `entry` (once armed), `state`
+(`armed`, `counted` for a control, `unresolved`, `unarmable`, `pending` while the guest runs),
+`why`, `marked` and `note` for a linker-marked symbol.
 
 Reference: REFERENCE.md, Declarations.
 
@@ -28,6 +29,7 @@ Reference: REFERENCE.md, Declarations.
 |---|---|---|
 | `ref` | string | required |
 | `by` | one of `"auto"`, `"symbol"`, `"address"` | `"auto"` |
+| `role` | one of `"stop"`, `"control"` | `"stop"` |
 
 | reply field | type |
 |---|---|
@@ -37,6 +39,7 @@ Reference: REFERENCE.md, Declarations.
 | `entry` | string |
 | `marked` | boolean |
 | `ref` | string |
+| `role` | string |
 | `state` | string |
 | `stored` | boolean |
 | `why` | string |
@@ -68,6 +71,8 @@ fires first time. It is neither the dynamic core nor a missing feature. Arming h
 machine is released, so it cannot be detected in advance; `run_to`'s non-arrival note names it.
 
 The declaration is stored on disk keyed by the conf and the program run under it, and stamped with this session as its `origin`, so it survives a rebuild; a raw `SEG:OFF` re-arms per build, whoever declared it: at `start` when declared before any map was loaded, after a `symbols_load` of the same map when declared over that map, and `stale` over another build (declaring it again adopts it). A symbol is stored `unresolved` rather than refused because it may be inlined this time. `by` is `auto` unless a symbol or address must be forced. Arming needs the machine stopped and the debugger to take the `BP`, and the entry is read back from its list. `pending` rows are armed at the next stop, said in `applied_on_stop`. `marked` is a fact about the linker's mark, not a refusal: whether such an address fires is open. `already_stored` is a no-op re-declaration adopted by this session.
+
+**A control counts and never stops.** `role="control"` declares a place known to run, counted by every `run_to` beside the run's own `control` (the same meaning a control has on scry-mame). A DOSBox-X breakpoint always halts, so the debugger holds a control's row only while a `run_to` counts it: each hit stops the machine, is counted and let go, and the row is removed with the run's own. Between runs nothing is armed (`state: counted`), so `resume`, `run_for` and a wait never stop there, and an `on_breakpoint` wait on a control is refused. `run_to`'s own `control` counts for its run alone: stored as a control, it would cost every later run a round trip per hit.
 
 <!-- scry-reference:begin breakpoint_interrupt -->
 ## `breakpoint_interrupt`

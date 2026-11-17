@@ -312,8 +312,9 @@ def _audio_record(frames: int, dest: str = "", seconds: float = 60.0, kind: str 
     _file_and_wait(dest, seconds)
 
 
-def _breakpoint_at(ref: str, by: str = "auto", **_: Any) -> None:
+def _breakpoint_at(ref: str, by: str = "auto", role: str = "stop", **_: Any) -> None:
     by_choice(by, BREAKPOINT_BY)
+    vocab.one_of("role", role, dec.ROLES)
     declared("breakpoint", ref, by)
 
 
