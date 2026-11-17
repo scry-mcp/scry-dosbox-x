@@ -122,7 +122,7 @@ Decode `length` bytes from `ref` (a symbol or `SEG:OFF`) as x86, one instruction
 last is completed unless the segment ends first. A line a comment is placed on ends
 ` // <text>`.
 
-Reply: `seg_off`, `length`, `code_bits`, `code_bits_from`, `lines`, `flow` (per line:
+Reply: `ref`, `seg_off`, `length`, `code_bits`, `code_bits_from`, `lines`, `flow` (per line:
 `call`, `branch`, `return`, `sequential`, `unknown`), `flow_source`, and with symbols loaded
 `resolved` (direct call/branch targets and memory operands: `line`, `operand`, `seg_off`,
 `addr`, `symbol`, `delta`).
@@ -307,7 +307,7 @@ find(data_hex, ref, length)
 Every address holding `data_hex` (whole hex bytes) in `length` bytes from `ref`; both
 required. `memdump`'s refusals apply. For a value narrowed over time use `scan`.
 
-Reply: `seg_off`, `length`, `span`, `hits` (`SEG:OFF`, at most 400, highest kept),
+Reply: `ref`, `seg_off`, `length`, `span`, `hits` (`SEG:OFF`, at most 400, highest kept),
 `hits_total`, `truncated`.
 
 | argument | type | default |

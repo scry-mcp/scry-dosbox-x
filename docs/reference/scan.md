@@ -12,7 +12,7 @@ scan(method, ref="", length=null, cell_bytes=null, operator=null, value=null, li
 Value scan: find a variable no map names (the debugger's `MEMFIND`). One scan at a time.
 
 `start`: every cell of `cell_bytes` (little-endian) over `length` bytes from `ref` is a
-candidate. Reply: `seg_off`, `length`, `cell_bytes`, `addr`, `hits_total`.
+candidate. Reply: `ref`, `seg_off`, `length`, `cell_bytes`, `addr`, `hits_total`.
 
 `filter`: keep the cells whose content satisfies `operator` (`=` default) against `value`
 (an integer or a `0x` string), or with no `value` against what each held at `start`; none

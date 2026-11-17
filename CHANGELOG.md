@@ -361,6 +361,9 @@ floor.
   every path resolved against the directory holding `.scry/`; the reply's `profile` block names
   the file and what it filled. `conf`, `cwd` and `session_seconds` are optional now, so a
   profile can carry them, and one neither the call nor a profile gives is refused by name.
+- `symbols_load`'s `base` and `section_bases` and `symbols_find`'s `linear` take an address as
+  `0x` text or an integer, as every other address; bare hex digits (`8000`) are refused, since
+  they read either way.
 
 ## 0.1.0
 

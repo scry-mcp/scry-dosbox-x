@@ -484,7 +484,7 @@ def disassemble(ref: str, length: Annotated[int, vocab.bounds(1, code.LENGTH_MAX
     last is completed unless the segment ends first. A line a comment is placed on ends
     ` // <text>`.
 
-    Reply: `seg_off`, `length`, `code_bits`, `code_bits_from`, `lines`, `flow` (per line:
+    Reply: `ref`, `seg_off`, `length`, `code_bits`, `code_bits_from`, `lines`, `flow` (per line:
     `call`, `branch`, `return`, `sequential`, `unknown`), `flow_source`, and with symbols loaded
     `resolved` (direct call/branch targets and memory operands: `line`, `operand`, `seg_off`,
     `addr`, `symbol`, `delta`).
@@ -534,7 +534,7 @@ def find(data_hex: str, ref: str, length: int) -> dict[str, Any]:
     """Every address holding `data_hex` (whole hex bytes) in `length` bytes from `ref`; both
     required. `memdump`'s refusals apply. For a value narrowed over time use `scan`.
 
-    Reply: `seg_off`, `length`, `span`, `hits` (`SEG:OFF`, at most {HITS_MAX}, highest kept),
+    Reply: `ref`, `seg_off`, `length`, `span`, `hits` (`SEG:OFF`, at most {HITS_MAX}, highest kept),
     `hits_total`, `truncated`.
     """
     # THE HEX BEFORE THE MACHINE, which is where `write` already asked it and where this did
@@ -559,7 +559,7 @@ def scan(method: Annotated[str, vocab.enum(tuple(folds.SCAN))], ref: str = "",
     """Value scan: find a variable no map names (the debugger's `MEMFIND`). One scan at a time.
 
     `start`: every cell of `cell_bytes` (little-endian) over `length` bytes from `ref` is a
-    candidate. Reply: `seg_off`, `length`, `cell_bytes`, `addr`, `hits_total`.
+    candidate. Reply: `ref`, `seg_off`, `length`, `cell_bytes`, `addr`, `hits_total`.
 
     `filter`: keep the cells whose content satisfies `operator` (`=` default) against `value`
     (an integer or a `0x` string), or with no `value` against what each held at `start`; none

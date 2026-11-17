@@ -64,3 +64,14 @@ def test_record_speaks_the_words_scry_core_declares() -> None:
     doc = next(t for t in tools if t.name == "record").description or ""
     for words in (roster.RECORD_ARGS, roster.RECORD_CUT, roster.RECORD_REPLY):
         assert words in doc, words
+
+
+@pytest.mark.parametrize("tool", ["disassemble", "find", "memdump", "read_memory", "scan",
+                                  "write"])
+def test_a_tool_that_reads_or_writes_at_a_ref_echoes_it_and_says_so(tool: str) -> None:
+    """Each answers the `ref` it was given beside `seg_off`, as scry-mame beside `addr`; every
+    tool but `scan` always does, so its model requires it (CONTRIBUTING.md)."""
+    model = replies.MODELS[tool]
+    assert ("ref" in reply_schema.own_required(model)) is (tool != "scan"), tool
+    doc = next(t for t in asyncio.run(server.mcp.list_tools()) if t.name == tool).description
+    assert "ref" in reply_schema.reply_sentence_names(doc or ""), doc

@@ -145,7 +145,7 @@ class DisassembleReply(DosboxEnvelope, total=False):
     flow_source: Required[str]
     length: int
     lines: Required[list[Any]]
-    ref: str
+    ref: Required[str]
     resolved: Annotated[list[Any], When("with symbols loaded")]
     seg_off: Required[str]
 
@@ -161,7 +161,7 @@ class FindReply(DosboxEnvelope, total=False):
     hits: Required[list[Any]]
     hits_total: Required[int]
     length: int
-    ref: str
+    ref: Required[str]
     seg_off: Required[str]
     span: Required[dict[str, Any]]
     truncated: Required[bool]
@@ -232,7 +232,7 @@ class MemdumpReply(DosboxEnvelope, total=False):
     bytes: Required[int]
     length: int
     path: Required[str]
-    ref: str
+    ref: Required[str]
     seg_off: Required[str]
 
 
@@ -260,7 +260,7 @@ class PerformExportReply(DosboxEnvelope, media_replies.PerformExportFields, tota
 class ReadMemoryReply(DosboxEnvelope, total=False):
     hex: Required[str]
     length: int
-    ref: str
+    ref: Required[str]
     seg_off: Required[str]
 
 
@@ -750,7 +750,7 @@ class GuestFileReply(DosboxEnvelope, total=False):
 class WriteReply(DosboxEnvelope, total=False):
     bytes_written: Required[int]
     readback: Required[str]
-    ref: str
+    ref: Required[str]
     seg_off: Required[str]
     verified: Required[bool]
     written: int
@@ -788,7 +788,7 @@ class ScanReply(DosboxEnvelope, total=False):
     iterations: Annotated[int | dict[str, Any], When("`filter`")]
     length: int
     operator: str
-    ref: str
+    ref: Annotated[str, When("`start`")]
     seg_off: Annotated[str, When("`start`")]
     survivors: int
     truncated: Annotated[bool, When("`filter`")]
