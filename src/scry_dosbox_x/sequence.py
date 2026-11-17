@@ -224,24 +224,7 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
     if ended.code is not None:
         return st.reply(status="INVALID", code=ended.code, message=ended.message,
                         **ended.fields, held=ended.held)
-    return st.reply(**_missed_step_speaks(ended.fields), held=ended.held)
-
-
-_MISSED = "waited for what it was to see"
-
-
-def _missed_step_speaks(fields: dict[str, Any]) -> dict[str, Any]:
-    """A list that ended because a step's `expect` missed carries that step's own words in its
-    note: the cause (no button pressed, not where asked) is in the step's reply, which the note
-    alone would leave to be found in `ran`."""
-    note, ran = str(fields.get("note", "")), fields.get("ran")
-    if fields.get("verdict") != contract.TIMEOUT or _MISSED not in note or not ran:
-        return fields
-    reply = ran[-1].get("reply") or {}
-    verify = reply.get("verify")
-    cause = verify.get("note") if isinstance(verify, dict) else None
-    said = "; ".join(str(x) for x in (reply.get("summary"), cause) if x)
-    return {**fields, "note": f"{note}; its own reply: {said}"} if said else fields
+    return st.reply(**ended.fields, held=ended.held)
 
 
 _ENRICHED = ("regs", "watches", "e9", "instruction")

@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 from channel_double import Machine, protected, session_over
+from scry_core import log_wait
 
 from scry_dosbox_x import program
 from scry_dosbox_x import session as ds
@@ -213,7 +214,7 @@ def test_a_wait_that_expired_with_the_guest_silent_leads_with_that_fact() -> Non
 
 
 def test_a_note_that_already_says_the_guest_wrote_nothing_is_not_given_it_twice() -> None:
-    note = "nothing matched. The guest wrote NOTHING at all in this window, so ..."
+    note = f"nothing matched. The guest {log_wait.SILENT}, so ..."
     wait = {"verdict": "TIMEOUT", "arrived_during": 0, "waited_s": 10.0, "note": note}
     assert program.lead(wait, None) == ""
 

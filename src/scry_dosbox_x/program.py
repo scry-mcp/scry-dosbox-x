@@ -7,6 +7,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, cast
 
+from scry_core import log_wait
+
 #: A line of the resident stub, not the program's. Spelled without a space and under its own flags,
 #: so a caller's verbose or case-blind pattern cannot change what it excludes.
 STUB_LINE = r"(?-i:STUB[ ]{2}\.[ ])"
@@ -121,7 +123,7 @@ def lead(wait: dict[str, Any], gone: dict[str, Any] | None) -> str:
         return f"{gone['name']} has {how} ({gone['seen_by']}), so nothing in the guest can react. "
     waited = wait.get("waited_s")
     if (wait.get("arrived_during") == 0 and isinstance(waited, int | float)
-            and "wrote nothing" not in str(wait.get("note", "")).lower()):
+            and log_wait.SILENT not in str(wait.get("note", ""))):
         return f"the guest wrote no line in the {waited:g} s waited. "
     return ""
 
