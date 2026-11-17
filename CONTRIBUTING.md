@@ -221,8 +221,9 @@ The protected-mode cases need no other project: they run on a second guest the p
 resident.
 
 The real-mode cases and the matrix's program sections run programs this repository does not
-carry. Where one is not there, its case is skipped or its cells are BLOCKED naming what is
-missing, so a fresh clone runs everything the package's own guests cover.
+carry, from the bench directory `DOSBOX_X_LIVE_BENCH` names. Where one is not there, or the
+variable is unset, its case is skipped or its cells are BLOCKED naming what is missing, so a fresh
+clone runs everything the package's own guests cover.
 
 ## What a live run guards
 

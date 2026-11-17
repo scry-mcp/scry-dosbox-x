@@ -12,15 +12,18 @@ from pathlib import Path
 from scry_core import live_bench as bench
 from scry_core import verdict
 
-
-def _root() -> Path:
-    held = os.environ.get("DOSBOX_X_LIVE_BENCH", "")
-    if held:
-        return Path(held).expanduser().absolute()
-    return Path.home() / ".local" / "share" / "scry-bench" / "dosbox-x"
+BENCH_VAR = "DOSBOX_X_LIVE_BENCH"
+UNSET = f"{BENCH_VAR} is not set: name the bench directory with it"
 
 
-BENCH = bench.Bench(_root())
+def _root() -> Path | None:
+    held = os.environ.get(BENCH_VAR, "")
+    return Path(held).expanduser().absolute() if held else None
+
+
+ROOT = _root()
+#: Unset: a path named after the variable, which no file is at.
+BENCH = bench.Bench(ROOT or Path(BENCH_VAR))
 IDENTITY = BENCH.root / "identity.json"
 LABELS = ("dos-real16", "dos-real16-alt")
 IDENTITY_KEYS = ("dir", "exe", "map", "launch", "process", "e9_line")
@@ -36,6 +39,8 @@ def _known(label: str, key: str = "dir") -> None:
 
 def _identity() -> tuple[dict[str, dict[str, str]], str]:
     """Every label's values, and why the file cannot be read."""
+    if ROOT is None:
+        return {}, UNSET
     remedy = (f"write {IDENTITY} beside bench.json: one object per label ({', '.join(LABELS)}), "
               f"each with {', '.join(IDENTITY_KEYS)} as strings")
     try:

@@ -273,17 +273,17 @@ def test_a_clock_conf_without_one_fixed_cycles_line_is_refused(
         bp.session_conf(bp.DOS_REAL16_ALT, tmp_path / "scratch")
 
 
-def test_the_bench_root_is_the_variable_or_the_users_data_and_the_manifest_lives_in_it(
+def test_the_bench_root_is_the_variable_only_and_the_manifest_lives_in_it(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
     """This repository resolves its own bench and hands the directory to `scry_core.live_bench`,
-    which knows no server: `DOSBOX_X_LIVE_BENCH` (a `~` expanded, a relative path made absolute)
-    or `~/.local/share/scry-bench/dosbox-x`."""
+    which knows no server: `DOSBOX_X_LIVE_BENCH` (a `~` expanded, a relative path made absolute),
+    and no path of its own when the variable is unset."""
     bp = _programs(monkeypatch, tmp_path)
     assert bp.BENCH.root == tmp_path / "bench"
     assert tmp_path / "bench" / "bench.json" == bp.BENCH.manifest
     monkeypatch.delenv("DOSBOX_X_LIVE_BENCH")
-    assert bp._root() == Path.home() / ".local/share/scry-bench/dosbox-x"
+    assert bp._root() is None
     monkeypatch.setenv("DOSBOX_X_LIVE_BENCH", "~/b")
     assert bp._root() == Path.home() / "b"
     monkeypatch.setenv("DOSBOX_X_LIVE_BENCH", "relative")
@@ -291,3 +291,19 @@ def test_the_bench_root_is_the_variable_or_the_users_data_and_the_manifest_lives
     assert bp.missing(bp.DOS_REAL16).endswith(
         f"`python -m scry_core.live_bench check --bench {tmp_path / 'bench'}`"), (
         "the remedy names --bench")
+
+
+def test_with_no_bench_named_every_program_is_refused_naming_the_variable(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """Unset, no program resolves to a directory of the developer's: each says to set it."""
+    _programs(monkeypatch, tmp_path)
+    monkeypatch.delenv("DOSBOX_X_LIVE_BENCH")
+    spec = importlib.util.spec_from_file_location("bench_programs", LIVE / "bench_programs.py")
+    assert spec is not None and spec.loader is not None
+    bp = importlib.util.module_from_spec(spec)
+    monkeypatch.setitem(sys.modules, "bench_programs", bp)
+    spec.loader.exec_module(bp)
+    for program in (bp.DOS_REAL16, bp.DOS_REAL16_ALT):
+        assert bp.missing(program) == ("DOSBOX_X_LIVE_BENCH is not set: name the bench "
+                                       "directory with it")

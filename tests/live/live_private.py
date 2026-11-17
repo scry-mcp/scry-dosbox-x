@@ -19,7 +19,6 @@ BRICKS_VAR = "DOSBOX_X_LIVE_BRICKS_DIR"
 BENCH_VAR = "DOSBOX_X_LIVE_BENCH"
 DEBUGGER_FILES = ("SYMS.BIN", "SYMSBK.BIN", "MEMDUMP.BIN", "MCPDUMP.BIN")
 REPO = Path(__file__).resolve().parents[2]
-DEFAULT_BENCH = Path.home() / ".local" / "share" / "scry-bench" / "dosbox-x"
 
 
 def guest_dir() -> Path:
@@ -73,8 +72,9 @@ def take_private_copies() -> None:
                     ignore=shutil.ignore_patterns("__pycache__", *DEBUGGER_FILES))
     os.environ[GUEST_VAR] = str(root / "tests" / "guest")
     os.environ[BRICKS_VAR] = str(root / "demos" / "bricks")
-    bench = Path(os.environ.get(BENCH_VAR, "") or DEFAULT_BENCH).expanduser()
-    if bench.is_dir():
+    named = os.environ.get(BENCH_VAR, "")
+    bench = Path(named).expanduser()
+    if named and bench.is_dir():
         shutil.copytree(bench, root / "bench", symlinks=True)
         os.environ[BENCH_VAR] = str(root / "bench")
 

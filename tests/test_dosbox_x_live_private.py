@@ -100,6 +100,41 @@ def test_a_job_directory_that_is_not_absolute_is_refused(tmp_path: Path) -> None
     assert not (LIVE / "1").exists()
 
 
+def test_a_job_with_no_bench_named_copies_none_and_names_none(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Unset, a job takes no bench from the home, so the programs refuse naming the variable."""
+    monkeypatch.syspath_prepend(str(LIVE))
+    import live_private
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    home = tmp_path / "home"
+    (home / ".local" / "share" / "scry-bench" / "dosbox-x").mkdir(parents=True)
+    env = {k: v for k, v in _env(tmp_path).items() if k != "DOSBOX_X_LIVE_BENCH"}
+    with live_private.copies_of_jobs() as copies:
+        done = subprocess.run(
+            [sys.executable, "-c",
+             "import os, live_private; print(os.environ.get('DOSBOX_X_LIVE_BENCH', 'unset'))"],
+            cwd=LIVE, env={**env, "HOME": str(home), **copies.env("N")}, capture_output=True,
+            text=True, check=True)
+        assert done.stdout.split() == ["unset"]
+        assert not (copies.place / "N" / "bench").exists()
+
+
+def test_a_job_with_a_bench_named_works_in_its_own_copy_of_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.syspath_prepend(str(LIVE))
+    import live_private
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    with live_private.copies_of_jobs() as copies:
+        env = _env(tmp_path)
+        (Path(env["DOSBOX_X_LIVE_BENCH"]) / "bench.json").write_text("{}")
+        done = subprocess.run(
+            [sys.executable, "-c",
+             "import os, live_private; print(os.environ['DOSBOX_X_LIVE_BENCH'])"],
+            cwd=LIVE, env={**env, **copies.env("B")}, capture_output=True, text=True, check=True)
+        named = Path(done.stdout.strip())
+        assert named == copies.place / "B" / "bench" and (named / "bench.json").is_file(), named
+
+
 def test_outside_the_pool_the_tests_start_in_the_repository(tmp_path: Path) -> None:
     alone = _job(tmp_path)
     assert alone[:2] == [str(REPO / "tests" / "guest"), str(REPO / "demos" / "bricks")]
