@@ -123,10 +123,10 @@ watched.
 
 <!-- demo-flow:begin bricks -->
 ```
-start(shared=true, background=true, display="<host>", conf="/path/to/wombat-phase11/demos/bricks/bricks.conf", cwd="/path/to/wombat-phase11/demos/bricks", session_seconds=900, break_on_int3=true, logfile="/path/to/wombat-phase11/tmp/demos/bricks/bricks-e9.log", state_dir="/path/to/wombat-phase11/tmp/demos/bricks/bricks-states")
+start(shared=true, background=true, display="<host>", conf="/path/to/scry-dosbox-x/demos/bricks/bricks.conf", cwd="/path/to/scry-dosbox-x/demos/bricks", session_seconds=900, break_on_int3=true, logfile="/path/to/scry-dosbox-x/tmp/demos/bricks/bricks-e9.log", state_dir="/path/to/scry-dosbox-x/tmp/demos/bricks/bricks-states")
 -> {
   "watched": true,
-  "logfile": "/path/to/wombat-phase11/tmp/demos/bricks/bricks-e9.log",
+  "logfile": "/path/to/scry-dosbox-x/tmp/demos/bricks/bricks-e9.log",
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "... 8 more"]
 }
 ```
@@ -150,7 +150,7 @@ resume(seconds=60)
 ```
 
 ```
-symbols_load(path="/path/to/wombat-phase11/demos/bricks/bricks.sym", base="0x8df0")
+symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="0x8df0")
 -> {
   "summary": "symbols_load: 65 loaded of 65 parsed, base 0x00008df0, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
   "base": "0x00008df0"
