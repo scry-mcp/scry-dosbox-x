@@ -662,6 +662,8 @@ Example, from a live run:
 
 It asks `RUNSTATE` as `run_to` does and reports progress. A running guest is refused because a `RUN` there does nothing and an `ok` would read like a release. Nothing has to be declared first: `stop` brings a running guest back, headless or windowed. A release that stopped at once is a stop too, but only for a call with a bound: `seconds` 0 returns straight after the release with no look for a stop, and a stop after it is what the next call finds.
 
+A conf whose autoexec runs `boot` stops once more on its own: `boot` starts the machine afresh at the guest OS's boot sector, 0000:7C00, and the debugger's break at every start, which `start` asks for to park the session, fires there too. The stop's `cause` names it, and a second `resume` lets the guest OS run. On a build without `RUNSTATE` no reply can see that stop: `stop` brings the machine back from wherever it is, and its position says it is still at the boot sector.
+
 <!-- scry-reference:begin wait -->
 ## `wait`
 

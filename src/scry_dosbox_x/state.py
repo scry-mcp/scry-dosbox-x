@@ -450,6 +450,21 @@ def interrupt_stop(attribution: dict[str, Any], instruction: dict[str, Any],
                                   f"{number:02X}`"}
 
 
+#: Where `boot` hands the machine to a guest OS's boot sector.
+BOOT_SECTOR = seg_off(0, 0x7C00)
+
+
+def boot_sector_stop(attribution: dict[str, Any]) -> dict[str, Any]:
+    """`attribution` with an `own` cause when no declaration explains a stop at the boot sector:
+    `-break-start` breaks at every fresh start of the machine, and a guest OS's boot is one."""
+    if (attribution.get("attributed") or attribution.get("own")
+            or attribution.get("at") != BOOT_SECTOR):
+        return attribution
+    return {**attribution, "own": "most likely the guest OS's boot: `boot` starts the machine "
+                                  "afresh at the boot sector, and the debugger's break at every "
+                                  "start fires there once"}
+
+
 _CAUSE_AT = re.compile(r" at [0-9A-Fa-f]{4}:[0-9A-Fa-f]{4,8}")
 
 

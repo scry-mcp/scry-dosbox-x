@@ -244,6 +244,21 @@ def test_a_stop_at_the_guests_own_int3_names_the_row_that_stops_it(tmp_path: Pat
     assert "BPINT 03" in twin["cause"], twin["cause"]
 
 
+def test_a_release_that_lands_on_the_boot_sector_names_the_guest_os_boot(tmp_path: Path) -> None:
+    """`boot` hands the machine to the boot sector at 0000:7C00, and DOSBox-X's start break,
+    which the server asks for, fires again at that fresh start: no declaration explains it."""
+    fake = _names(tmp_path, mode="Real")
+    fake.cs, fake.eip = "0000", "00007C00"
+    got = _stopped_on(fake, b"\x33\xC0")
+    assert "boot sector" in got["cause"] and "`boot`" in got["cause"], got["cause"]
+    assert "no declared code breakpoint" not in got["cause"], got["cause"]
+    stepped = _stopped_on(fake, b"\x33\xC0", release=False)
+    assert stepped["cause"].startswith("no declared code breakpoint"), stepped["cause"]
+    fake.cs = "0814"
+    elsewhere = _stopped_on(fake, b"\x33\xC0")
+    assert elsewhere["cause"].startswith("no declared code breakpoint"), elsewhere["cause"]
+
+
 def test_a_step_onto_an_int_a_held_row_watches_is_not_blamed_on_the_row(tmp_path: Path) -> None:
     """Only a release can stop on a row: a step that lands there did not fire it."""
     fake = _names(tmp_path)

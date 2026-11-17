@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A stop at the boot sector (0000:7C00) after a conf's `boot` gives the guest OS's boot as its
+  `cause`, where it said no declaration could explain it; `resume`'s reference says a second
+  `resume` lets the guest OS run.
 - The Monkey Island demo starts DOSBox-X in its run's directory and mounts C: there by a
   relative name, so its loop and screen are the same wherever the repository is cloned.
 - `screen_wait` refuses a watch that follows a pointer saying its firing "cannot be told from

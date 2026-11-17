@@ -144,8 +144,8 @@ def _surveyed_stop(session: ds.Session, placed: dict[str, Any] | None, retrace_m
     picture = STATE.last_stop["picture"] = code.stop_instruction(session, where, registers,
                                                                  comments.notes)
     if retrace_may_stop and made_by is None:
-        attribution = STATE.last_stop["attribution"] = st.interrupt_stop(
-            attribution, picture["instruction"], registers, held)
+        attribution = STATE.last_stop["attribution"] = st.boot_sector_stop(st.interrupt_stop(
+            attribution, picture["instruction"], registers, held))
     e9 = e9_block(session)
     frame = STATE.last_stop["frame"] = rs.frame_at_stop(session)
     # THE POSITION IS HONEST AND NOT THE ONE ASKED FOR: a break into the BIOS says so and says
