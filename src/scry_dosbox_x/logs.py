@@ -17,14 +17,6 @@ FILE_CHANNELS = ("guest", "emulator", "all")
 LOG_CHANNELS = (*FILE_CHANNELS, "dos")
 
 
-def compiled(pattern: str, name: str = "pattern") -> re.Pattern[str]:
-    """A caller's pattern, or a refusal naming the argument it came in."""
-    try:
-        return re.compile(pattern)
-    except re.error as e:
-        raise Invalid("bad_argument", f"{name}={pattern!r} does not compile: {e}") from None
-
-
 def check_pattern(pattern: object) -> None:
     """A caller's log pattern: a non-empty string that compiles."""
     judges.regex("pattern", pattern)
@@ -66,7 +58,7 @@ def label_counts(lines: list[str]) -> dict[str, int]:
 
 def log_hits(text: str, pattern: str, channel: str) -> list[str]:
     """Every matching line of `channel`, with no limit."""
-    rx = compiled(pattern)
+    rx = judges.regex("pattern", pattern)
     check_channel(channel)
     return [ln for ln in channel_lines(text.splitlines(), channel) if rx.search(ln)]
 

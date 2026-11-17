@@ -8,10 +8,10 @@ from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import install
+from scry_core import judges
 from scry_core.reply_contract import Invalid
 
 from scry_dosbox_x import dos_calls as dos
-from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import server
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
@@ -306,7 +306,7 @@ def test_a_repeated_pattern_searches_only_the_calls_that_can_still_change(
             searched.append(line)
             return None
 
-    monkeypatch.setattr(dlogs, "compiled", lambda _pattern: Counting())
+    monkeypatch.setattr(judges, "regex", lambda _name, _pattern: Counting())
     dos._matching(trace, "ANY")
     first = len(searched)
     dos._matching(trace, "ANY")

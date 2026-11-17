@@ -10,8 +10,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from scry_core import judges, prose
 from scry_core import log_wait as core_wait
-from scry_core import prose
 from scry_core.progress import Ticker
 from scry_core.reply_contract import Invalid
 
@@ -238,7 +238,7 @@ def _trace() -> Trace:
 def _matching(trace: Trace, pattern: str) -> list[dict[str, Any]]:
     """The calls whose line `pattern` matches. A returned call's line no longer changes, so the
     matches among the calls before the first unreturned one are kept per pattern."""
-    rx = dlogs.compiled(pattern)
+    rx = judges.regex("pattern", pattern)
     settled, kept = trace.matched.pop(pattern, (0, []))
     stable: list[dict[str, Any]] = list(kept)
     tail: list[dict[str, Any]] = []

@@ -17,12 +17,12 @@ from typing import Any, cast
 import pytest
 from channel_double import SilentChannel
 from dosbox_x_server_support import _guest, _names
+from scry_core import judges
 from scry_core.reply_contract import unavailable
 from scry_core.screen_map import Pointer
 
 from scry_dosbox_x import inputs, running, server, stub_link
 from scry_dosbox_x import launch as dlaunch
-from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
@@ -712,7 +712,7 @@ STUB_ON_E9 = "Bochs port E9h: STUB  . scry cue MENU open aa UI x mouse down # th
 ])
 def test_the_reaction_keeps_the_caller_s_pattern_and_never_takes_the_stub_s_line(
         pattern: str, program: str, hit: bool) -> None:
-    rx = dlogs.compiled(inputs.program_reaction(pattern))
+    rx = judges.regex("pattern", inputs.program_reaction(pattern))
     assert bool(rx.search(program)) is hit, (pattern, program)
     assert rx.search(STUB_ON_E9) is None, pattern
 

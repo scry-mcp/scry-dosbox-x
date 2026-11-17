@@ -7,7 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from scry_core import frame_window, roster
+from scry_core import frame_window, judges, roster
 from scry_core import reply_contract as contract
 from scry_core import sequence as executor
 from scry_core import sequence_account as account
@@ -16,7 +16,6 @@ from scry_core import vocabulary as vocab
 
 from scry_dosbox_x import arming, checks, inputs, media
 from scry_dosbox_x import debugger as dbg
-from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import run_state as rs
 from scry_dosbox_x import running as guest
 from scry_dosbox_x import session as ds
@@ -274,7 +273,7 @@ def _verify_at_a_stop(session: ds.Session, expect: str, mark: int) -> dict[str, 
         since = session.e9_since_mark(mark)
     except ds.Invalid as e:
         return {"checked": False, "expected": expect, "why": str(e), "code": e.code}
-    reaction = dlogs.compiled(inputs.program_reaction(expect))
+    reaction = judges.regex("pattern", inputs.program_reaction(expect))
     hits = [ln for ln in since if reaction.search(ln)]
     if not hits:
         return {"checked": True, "seen": False, "expected": expect,
@@ -294,7 +293,7 @@ def _look(session: ds.Session, mark: int, pattern: str, limit: int) -> dict[str,
         since = session.e9_since_mark(mark)
     except ds.Invalid as e:
         return {"guest": {"available": False, "why": str(e)}}
-    return account.looked("guest", since, mark, dlogs.compiled(pattern), limit)
+    return account.looked("guest", since, mark, judges.regex("pattern", pattern), limit)
 
 
 def drive_refused(e: ds.Invalid) -> ds.Invalid:

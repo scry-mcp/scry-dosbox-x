@@ -5,7 +5,7 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
-from scry_core import cancel, log_marks
+from scry_core import cancel, judges, log_marks
 from scry_core import log_wait as core_wait
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
@@ -195,7 +195,7 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
     "already" mean "written since the mark".
     """
     vocab.check_wait(seconds)
-    rx = dlogs.compiled(pattern)
+    rx = judges.regex("pattern", pattern)
     dlogs.check_channel(channel)
     # A log absent or empty of instrumentation is normal for a just-resumed guest.
     require_logfile(ses, "instrumentation channel to wait on, and waiting cannot "

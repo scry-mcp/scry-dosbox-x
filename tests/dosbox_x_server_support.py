@@ -20,11 +20,12 @@ from typing import Any, cast
 from unittest import mock
 
 import pytest
-from scry_core import log_wait as core_wait
-from scry_core import reply_contract as contract
 from scry_core import (
+    judges,
     screen_map,
 )
+from scry_core import log_wait as core_wait
+from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 from window_double import window_if
 
@@ -802,7 +803,7 @@ class NamesFake(SessionGates):
             self.running = False
             raise ds.wait_stopped(pattern, 0, 0.4, parked=False, at_bound=False)
         # the real method's answers: bad pattern or bound is `Invalid`, expiry the `TIMEOUT` verdict
-        rx = dlogs.compiled(pattern)
+        rx = judges.regex("pattern", pattern)
         if not 0 < seconds <= vocab.WAIT_MAX_S:
             raise ds.Invalid("bad_argument", f"a wait of {seconds} is not a bound")
         if self.log is None:

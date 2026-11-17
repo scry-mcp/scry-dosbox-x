@@ -19,7 +19,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, TypeVar, cast
 
-from scry_core import cancel
+from scry_core import cancel, judges
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 from scry_core.reply_contract import unavailable
@@ -27,7 +27,6 @@ from scry_core.screen_map import Pointer
 
 from scry_dosbox_x import control, placement, retrace, running, stub_link, taps
 from scry_dosbox_x import launch as dlaunch
-from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import program as dprogram
 from scry_dosbox_x import run_state as rs
@@ -609,8 +608,8 @@ def check_expectation(expect: str | None, seconds: float | None) -> None:
                              "`expect` there is no reaction to wait for: it would be "
                              "silently ignored. Give an `expect` pattern, or drop `seconds`")
         return
-    dlogs.compiled(expect, "expect")
-    dlogs.compiled(program_reaction(expect), "expect")
+    judges.regex("expect", expect)
+    judges.regex("expect", program_reaction(expect))
     if seconds is not None:
         vocab.check_wait(seconds)
 
