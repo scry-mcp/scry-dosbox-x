@@ -749,7 +749,7 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
                          and not (d.kind == "watch" and d.watch_mode != "change")]:
                 if rearmed and decl.kind == "breakpoint":
                     continue
-                if _arm_queued(session, decl, machine, held, places, out):
+                if arm_queued(session, decl, machine, held, places, out):
                     continue
                 if ref not in kept_arm:
                     kept_arm.append(ref)
@@ -768,7 +768,7 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
     return out
 
 
-def _arm_queued(session: ds.Session, decl: dec.Declaration,
+def arm_queued(session: ds.Session, decl: dec.Declaration,
                 machine: tuple[str, dict[str, str]] | None, held: list[dict[str, Any]],
                 places: RawPlaces, out: dict[str, Any]) -> bool:
     """Arm one queued declaration at the stop, noting the row; False, with why in
@@ -1204,6 +1204,21 @@ def breakpoint_at(session: ds.Session, ref: str, by: str, role: str = "stop") ->
                   state="armed", entry=held["entry"], marked=res["marked"], note=note)
 
 
+def control_state(session: ds.Session, decl: dec.Declaration, places: RawPlaces,
+                  machine: tuple[str, dict[str, str]] | None = None
+                  ) -> tuple[str, str | None, dict[str, Any]]:
+    """A control's state, why it is not `counted`, and its resolution: judged as a stop row is
+    re-armed (a raw address placed in the other mode, or over another build, is not counted)."""
+    res = placement.resolve_ref(decl, "CS", session, machine=machine)
+    if res["state"] != "armable":
+        return res["state"], res.get("why"), res
+    if (mode := placement.waits(decl, places.cpu)) is not None:
+        return "unarmable", placement.waits_why(mode, "Declare it again"), res
+    if placement.is_stale(decl, places.judged(decl)):
+        return "stale", _STALE_WHY, res
+    return "counted", None, res
+
+
 def list_breakpoints(session: ds.Session) -> dict[str, Any]:
     """The body of the `declaration_list(kind="breakpoint")` tool."""
     store = current_store()
@@ -1233,15 +1248,15 @@ def list_breakpoints(session: ds.Session) -> dict[str, Any]:
         if decl.kind != "breakpoint":
             continue
         item = {**decl_row(decl), "role": decl.role}
-        res = placement.resolve_ref(decl, "CS", session, machine=machine)
-        state = res["state"]
         if decl.role == "control":
             # No row is the control's between runs: `run_to` arms and removes it.
-            item["state"] = "counted" if state == "armable" else state
-            if "why" in res:
-                item["why"] = res["why"]
+            item["state"], why, _res = control_state(session, decl, places, machine)
+            if why is not None:
+                item["why"] = why
             out.append(item)
             continue
+        res = placement.resolve_ref(decl, "CS", session, machine=machine)
+        state = res["state"]
         # A stale raw address is listed as such unless this session has it armed anyway. An orphan
         # takes `orphan` as its state only where it would otherwise be `gone` or `stale`: facts that
         # decide what a caller does next (armed, unresolved) are not replaced.

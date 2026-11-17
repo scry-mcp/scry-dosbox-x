@@ -161,7 +161,7 @@ def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dic
     mode_regs = None if machine is None else (machine[0]["mode"], machine[1])
     seg, off = placement.read_target(ref, "CS", session, machine=mode_regs)
     ctl = placement.read_target(control, "CS", session, machine=mode_regs)
-    counted = _declared_controls(session, (seg, off), ctl, mode_regs)
+    counted, left = _declared_controls(session, (seg, off), ctl, mode_regs)
     out = cast(dict[str, Any], session.run_to(seg, off, seconds, ctl, progress,
                                               declared=[place for _, place in counted]))
     armed = [out.pop("control"), *out.pop("declared")]
@@ -175,7 +175,8 @@ def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dic
         "controls": [{"ref": name, "at": block["at"], "hits_in_run": block["hits"],
                       "removed": block["removed"]}
                      for name, block in zip(refs, armed, strict=True)],
-        "note": out["note"]}
+        "note": " ".join(filter(None, (out["note"], (
+            f"declared controls not counted in this run: {'; '.join(left)}" if left else ""))))}
     # A run that never saw its control proves nothing about its target.
     if verdict != contract.TARGET and not hits:
         code: contract.Code = ("control_silent" if verdict == contract.TIMEOUT
@@ -197,26 +198,30 @@ def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dic
 
 def _declared_controls(session: ds.Session, target: tuple[int, int], own: tuple[int, int],
                        machine: tuple[str, dict[str, str]] | None
-                       ) -> list[tuple[str, tuple[int, int]]]:
-    """Each control `breakpoint_at(role="control")` declared that resolves here, by ref and
-    place, but one at the target or at the run's own control, which already counts."""
+                       ) -> tuple[list[tuple[str, tuple[int, int]]], list[str]]:
+    """Each control `breakpoint_at(role="control")` declared that is `counted` here, by ref and
+    place, but one at the target or at the run's own control, which already counts; and each
+    left out, with why."""
     if STATE.store is None:
-        return []
+        return [], []
     mode = machine[0] if machine is not None else session.where()["mode"]
+    places = arming.RawPlaces(session)
 
     def same(a: tuple[int, int], b: tuple[int, int]) -> bool:
         return a == b if mode.startswith("Pr") else a[0] * 16 + a[1] == b[0] * 16 + b[1]
     out: list[tuple[str, tuple[int, int]]] = []
+    left: list[str] = []
     for decl in STATE.store.declarations():
         if decl.kind != "breakpoint" or decl.role != "control":
             continue
-        res = placement.resolve_ref(decl, "CS", session, machine=machine)
-        if res["state"] != "armable":
+        state, why, res = arming.control_state(session, decl, places, machine)
+        if state != "counted":
+            left.append(f"{decl.ref} ({state}{f': {why}' if why else ''})")
             continue
         place = (int(res["seg"]), int(res["off"]))
         if not any(same(place, p) for p in (target, own, *(q for _, q in out))):
             out.append((decl.ref, place))
-    return out
+    return out, left
 
 
 def stop_in_protected_mode(session: ds.Session, progress: ds.Progress) -> dict[str, Any]:

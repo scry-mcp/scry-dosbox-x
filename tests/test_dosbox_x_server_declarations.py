@@ -238,6 +238,22 @@ def test_a_control_is_stored_never_held_and_counted_by_every_run_to(tmp_path: Pa
     assert [d.role for d in stored.declarations() if d.ref == "_tick"] == ["control"]
     cleared = _ok(server.declaration_clear(kind="breakpoint", ref="_tick"))
     assert cleared["declarations_cleared"] == 1 and cleared["disarmed"] == [], cleared
+    assert not cleared.get("pending_disarm"), "no row was the control's to remove"
+
+
+def test_a_raw_control_placed_in_the_other_mode_is_not_counted_and_the_run_says_why(
+        tmp_path: Path) -> None:
+    """A control is judged as a stop row is re-armed: its `SEG:OFF` names another byte in the
+    other cpu mode, so a run counts it nowhere and says which it left out."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("foo", 0x1000, kind="T")], mode="Pr32")
+    _ok(server.breakpoint_at(ref="00A7:00123456", role="control"))
+    fake.mode = "Real"
+    server.status()
+    row = _ok(server.declaration_list("breakpoint"))["breakpoints"][0]
+    assert (row["role"], row["state"]) == ("control", "unarmable"), row
+    ran = _ok(server.run_to(ref="0000:0010", control="0000:0020", seconds=5))
+    assert fake.last_declared == [], fake.last_declared
+    assert "not counted in this run: 00A7:00123456 (unarmable" in ran["note"], ran
 
 
 def test_no_re_arm_or_queue_arms_a_control_and_it_stops_nothing(tmp_path: Path) -> None:
@@ -251,6 +267,25 @@ def test_no_re_arm_or_queue_arms_a_control_and_it_stops_nothing(tmp_path: Path) 
     assert arming.something_can_stop_it() is False
     dstate.STATE.pending["arm"].append("_tick")
     arming.apply_pending(fake)  # type: ignore[arg-type]
+    assert not any(r["entry"].startswith("BP ") for r in fake.rows), fake.rows
+
+
+def test_a_control_keeps_its_role_when_another_session_declares_it_again_and_at_start(
+        tmp_path: Path) -> None:
+    """Adopted by a later session it stays a control; a park arms no row of it."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_tick", 0x2000, kind="T")])
+    _ok(server.breakpoint_at(ref="0814:0230", role="control"))
+    dstate.STATE.session_origin = "a later session"
+    again = _ok(server.breakpoint_at(ref="0814:0230", role="control"))
+    assert again["already_stored"] is True and again["role"] == "control", again
+    stored = dec.DeclarationStore(str(tmp_path / "g.conf"), path=tmp_path / "decl.json")
+    assert [(d.origin, d.role) for d in stored.declarations()] == [
+        ("a later session", "control")]
+    reads = fake.bp_calls
+    account = arming.arm_at_start(fake)  # type: ignore[arg-type]
+    assert fake.bp_calls == reads, "with nothing to arm, the debugger's list is not read"
+    rows = account["declarations"]["rearm"]
+    assert not any(r["ref"] == "0814:0230" for bucket in rows.values() for r in bucket), rows
     assert not any(r["entry"].startswith("BP ") for r in fake.rows), fake.rows
 
 
