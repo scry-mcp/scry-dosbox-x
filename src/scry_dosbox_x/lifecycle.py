@@ -192,52 +192,55 @@ def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
     binary_facts = dlaunch.binary_facts(resolved, binaries.VERSION_TIMEOUT_S)
     # Taken before the emulator boots: a file the guest writes later is then never "before".
     STATE.guest_files = guest.take(guest_paths)
-    session = ds.Session(launch)
-    STATE.starting = session
-    try:
-        ready = session.wait_ready(
-            timeout=max(run_state.READY_TIMEOUT_S - (time.monotonic() - asked), 0.0),
-            progress=progress)
-    except ds.Invalid as e:
-        # Closed before the refusal goes out, or an emulator keeps running behind an INVALID.
-        # `wait_ready` raising with the child alive is where a stray emulator is most likely.
-        session.close(progress=progress)
-        _refuse_unreaped(session, e)
-        raise
-    except BaseException:
-        session.close(progress=progress)
-        raise
-    finally:
-        STATE.starting = None
-    STATE.session = session
-    STATE.maps.started()
-    STATE.store = store
-    STATE.session_origin = STATE.origin()
-    STATE.conf_fingerprint = dlaunch.fingerprint(launch.conf)
-    # Cleared first, or the clearing takes the first stop record with it.
-    STATE.clear_running_state()
-    if dos_calls:
+    # Windows: a start behind keeps the foreground where it is until its window is proved.
+    with core_window.foreground_kept(launch.background and wanted is not None):
+        session = ds.Session(launch)
+        STATE.starting = session
         try:
-            STATE.dos_calls = dos_calls_trace.begin(session)
-        except BaseException as e:
+            ready = session.wait_ready(
+                timeout=max(run_state.READY_TIMEOUT_S - (time.monotonic() - asked), 0.0),
+                progress=progress)
+        except ds.Invalid as e:
+            # Closed before the refusal goes out, or an emulator keeps running behind an INVALID.
+            # `wait_ready` raising with the child alive is where a stray emulator is most likely.
             session.close(progress=progress)
-            STATE.session = None
-            STATE.store = None
-            STATE.clear_running_state()
-            if isinstance(e, ds.Invalid):
-                _refuse_unreaped(session, e)
+            _refuse_unreaped(session, e)
             raise
-    STATE.start_symbols = held
-    rearm = arming.arm_at_start(session)   # before the park's survey, so the first stop lists them
-    running.observe_stop(session)     # the park at the debugger is the session's first stop
-    STATE.found_stop_last = {}        # ...its own, and never a stop "on its own" beside it
-    # A refusal here leaves the session live, as its message says: `window` and `close` still act.
-    seen: dict[str, Any] = {}
-    try:
-        if wanted is not None:
-            seen = {"window": core_window.prove(session.pid, wanted).block()}
-    finally:    # the live session a refusal leaves carries the presence it was asked for
-        session.presence = dpresence.open_shown(session, presence, shared)
+        except BaseException:
+            session.close(progress=progress)
+            raise
+        finally:
+            STATE.starting = None
+        STATE.session = session
+        STATE.maps.started()
+        STATE.store = store
+        STATE.session_origin = STATE.origin()
+        STATE.conf_fingerprint = dlaunch.fingerprint(launch.conf)
+        # Cleared first, or the clearing takes the first stop record with it.
+        STATE.clear_running_state()
+        if dos_calls:
+            try:
+                STATE.dos_calls = dos_calls_trace.begin(session)
+            except BaseException as e:
+                session.close(progress=progress)
+                STATE.session = None
+                STATE.store = None
+                STATE.clear_running_state()
+                if isinstance(e, ds.Invalid):
+                    _refuse_unreaped(session, e)
+                raise
+        STATE.start_symbols = held
+        # Before the park's survey, so the first stop lists them.
+        rearm = arming.arm_at_start(session)
+        running.observe_stop(session)     # the park at the debugger is the session's first stop
+        STATE.found_stop_last = {}        # ...its own, and never a stop "on its own" beside it
+        # A refusal here leaves the session live (its message says so): `window` and `close` act.
+        seen: dict[str, Any] = {}
+        try:
+            if wanted is not None:
+                seen = {"window": core_window.prove(session.pid, wanted).block()}
+        finally:    # the live session a refusal leaves carries the presence it was asked for
+            session.presence = dpresence.open_shown(session, presence, shared)
     commands: dict[str, Any] = ({"debugger_commands": sorted(session.commands)}
                                 if session.commands else {})
     channels: dict[str, Any] = {}

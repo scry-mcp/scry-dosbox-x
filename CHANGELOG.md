@@ -5,6 +5,9 @@ What a client of the server notices.
 ## Unreleased
 
 - Takes scry-core 0.118.3.
+- On Windows a watched `start` with `background=true` leaves the foreground where it was: no
+  program may take it while the start launches, until the window is proved. The flag did
+  nothing there.
 - `stop(until="protected")` with `start(symbols=)`'s DJGPP table held runs on until a stop in
   the program's own 32-bit code; a stop in the DPMI host's 16-bit protected code ended it, and
   the program's symbols were then unknown there. A walk that runs out says it did not reach the

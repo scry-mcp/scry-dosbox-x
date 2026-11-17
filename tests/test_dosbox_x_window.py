@@ -3,7 +3,9 @@ cannot retune it, and the `surface` output; the contract every server meets is c
 
 from __future__ import annotations
 
+import contextlib
 import sys
+from collections.abc import Iterator
 from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
@@ -287,6 +289,33 @@ def _started(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, conf_text: str = "
     monkeypatch.setattr(core_window, "host", lambda _platform="": _WithUsable(session_window))
     return _start_on_a_booted_fake(tmp_path, monkeypatch, conf_text=conf_text, shared=True,
                                    **arguments)
+
+
+@pytest.mark.parametrize(("background", "kept"), [(True, True), (False, False), (None, False)])
+def test_a_start_behind_keeps_the_foreground_until_its_window_is_proved(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, background: bool | None,
+        kept: bool) -> None:
+    seen: list[object] = []
+    proved = core_window.prove
+
+    @contextlib.contextmanager
+    def held(behind: bool) -> Iterator[None]:
+        seen.append(("held", behind))
+        yield
+        seen.append("lifted")
+
+    def prove(pid: int, wanted: core_window.WindowRequest,
+              *args: Any, **kwargs: Any) -> core_window.WindowState:
+        seen.append("proved")
+        return proved(pid, wanted, *args, **kwargs)
+    monkeypatch.setattr(core_window, "foreground_kept", held)
+    monkeypatch.setattr(core_window, "prove", prove)
+    got = _started(tmp_path, monkeypatch, background=background)
+    try:
+        assert got["status"] == "ok", got
+        assert seen == [("held", kept), "proved", "lifted"], seen
+    finally:
+        server.close()
 
 
 def test_a_stated_size_is_the_windowresolution_the_emulator_is_told(
