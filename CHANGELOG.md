@@ -5,9 +5,44 @@ What a client of the server notices.
 ## Unreleased
 
 - Takes scry-core 0.118.1.
+- A DJGPP program's table given to `start(symbols=)` is placed at the first stop in its own 32-bit
+  code, where a stop in the DPMI host's 16-bit code placed it at the host's base, and every
+  symbol read through it (`read_memory` of a variable, a stop's `symbol`) answered another
+  place.
+- `build_check` lists `record` and `audio_record` among what a build without `RUNSTATE` cannot
+  serve: their retraces run as `run_for` runs them.
+- `scan` no longer lists a `survivors` reply field: it never sent one.
+- The live tier reads its bench only from `DOSBOX_X_LIVE_BENCH`: unset, every program on the bench
+  is BLOCKED naming the variable, where it fell back to a directory of the developer's home.
+- `symbols_load`'s `base` and `section_bases` and `symbols_find`'s `linear` take an address as
+  `0x` text or an integer, as every other address; bare hex digits (`8000`) are refused, since
+  they read either way.
+- `debug` writes an output past 4000 characters whole to a file in the session's scratch and
+  answers its first line as a preview, with `output_chars` and `output_path`, where it kept only
+  the last 4000 characters.
+- `run_to` and `run_for` take `disarm_watches`: the change watches' rows leave the debugger for
+  the pass and come back at its stop, and the reply names them in `disarmed_watches`, with
+  `not_rearmed` (and why) for one that could not come back.
+- `breakpoint_at` takes `role="control"`: the place is stored and counted by every `run_to`
+  beside the run's own `control`, held in the debugger only while a run counts it, so it never
+  stops `resume`, `run_for` or a wait (an `on_breakpoint` wait on it is refused). Its
+  reply, and each breakpoint row of `declaration_list`, carry `role`.
+- `role` is on every `breakpoint_at` reply and every breakpoint row, so a demo transcript that
+  declares a stop shows `role: "stop"`; the bricks and mines demos pass their table's `base` as
+  `0x` text.
 - A pattern or an `expect` that does not compile is refused naming the argument
   (`pattern='(' does not compile: ...`), where it said only that it was not a usable pattern.
-- `read_memory` and `scan` no longer list a `rows` reply field: neither tool ever sent one.
+- `read_memory` and `scan` no longer list a `rows` reply field, nor `write` a `written` one: no
+  tool ever sent them. `read_memory`, `disassemble`, `find`, `memdump` and `write` declare the
+  `ref` every `ok` reply of theirs echoes, and `scan` on `start`.
+- `debug`'s summary counts the characters of a short output too, where it read "None chars".
+- `run_to` refused before the release because the debugger did not list one of its breakpoints
+  takes out every row it armed, where they stayed and stopped the next `resume`.
+- A control declared with `breakpoint_at(role="control")` is counted by `run_to` only where a stop
+  row would be armed (placed in this mode, not stale over another build), where it counted hits
+  at another byte or refused the run.
+- A `perform` document a store holds is replayed with its placeholders resolved, `${state}`
+  naming the session's scratch: its steps ran with `${root}` in their paths and were refused.
 - A `drive` refused before its act ran carries `looked` as `{"guest": ...}`, the shape of
   every other `drive` reply, where it carried a bare `unavailable` block.
 - The descriptions say what the tools already did: `memdump`, `trace`, `snapshot`,
@@ -361,22 +396,6 @@ floor.
   every path resolved against the directory holding `.scry/`; the reply's `profile` block names
   the file and what it filled. `conf`, `cwd` and `session_seconds` are optional now, so a
   profile can carry them, and one neither the call nor a profile gives is refused by name.
-- `symbols_load`'s `base` and `section_bases` and `symbols_find`'s `linear` take an address as
-  `0x` text or an integer, as every other address; bare hex digits (`8000`) are refused, since
-  they read either way.
-- `debug` writes an output past 4000 characters whole to a file in the session's scratch and
-  answers its first line as a preview, with `output_chars` and `output_path`, as scry-mame does,
-  where it kept only the last 4000 characters.
-- `run_to` and `run_for` take `disarm_watches`, as on scry-mame: the change watches' rows leave
-  the debugger for the pass and come back at its stop, and the reply names them in
-  `disarmed_watches`, with `not_rearmed` (and why) for one that could not come back.
-- `breakpoint_at` takes `role="control"`, as on scry-mame: the place is stored and counted by
-  every `run_to` beside the run's own `control`, held in the debugger only while a run counts it,
-  so it never stops `resume`, `run_for` or a wait (an `on_breakpoint` wait on it is refused). Its
-  reply, and each breakpoint row of `declaration_list`, carry `role`.
-- `role` is on every `breakpoint_at` reply and every breakpoint row, so a demo transcript that
-  declares a stop shows `role: "stop"`; the bricks and mines demos pass their table's `base` as
-  `0x` text.
 
 ## 0.1.0
 
