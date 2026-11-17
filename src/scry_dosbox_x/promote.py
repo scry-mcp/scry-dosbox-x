@@ -58,10 +58,12 @@ def launching(params: Mapping[str, Any], profile: str = "") -> Iterator[None]:
         raise
 
 
-def keep_start(params: Mapping[str, Any], *, defaults: Mapping[str, Any]) -> bool:
-    """The recipe, named by the guest without a profile."""
-    return core.keep_start(STATE.drafts, params, guest=STATE.guest, defaults=defaults,
-                           run_own=RUN_OWN, needs=NEEDS, path_keys=PROMOTE_PATHS)
+def after_start(reply: dict[str, Any], params: Mapping[str, Any], *,
+                block: Mapping[str, Any] | None, defaults: Mapping[str, Any]) -> dict[str, Any]:
+    """`start`'s reply with the recipe kept, named by the guest without a profile."""
+    return core.after_start(STATE.drafts, reply, params, block=block, guest=STATE.guest,
+                            defaults=defaults, run_own=RUN_OWN, needs=NEEDS,
+                            path_keys=PROMOTE_PATHS)
 
 
 def after_map(method: str, reply: dict[str, Any]) -> dict[str, Any]:

@@ -28,6 +28,11 @@ START: dict[str, Any] = {
 }
 
 
+
+def kept_recipe(params: dict[str, Any]) -> bool:
+    """Whether `start`'s reply for `params` says the recipe was kept."""
+    return "kept" in mpromote.after_start({}, params, block=None, defaults=server._START_DEFAULTS)
+
 def noted(params: dict[str, Any]) -> None:
     """What a start that ran leaves noted: `launching` once its launch returned."""
     with mpromote.launching(params):
@@ -104,7 +109,7 @@ def test_the_guest_is_noted_before_the_launch_so_a_plan_s_add_knows_it() -> None
 
 def test_a_start_keeps_its_recipe_without_the_run_s_own_arguments() -> None:
     noted(START)
-    mpromote.keep_start(START, defaults=server._START_DEFAULTS)
+    kept_recipe(START)
     kept = STATE.drafts.held("start", "probe")[0].document
     assert kept == {"format": "scry-start/1", "conf": "/x/probe.conf", "cwd": "/x",
                     "session_seconds": 900, "shared": True, "presence": False,
@@ -114,14 +119,13 @@ def test_a_start_keeps_its_recipe_without_the_run_s_own_arguments() -> None:
 def test_a_start_from_a_profile_is_named_by_the_profile_it_read() -> None:
     noted({**START, "program": "LINEUP.EXE"})
     STATE.drafts.loaded_entry("start", "dos")
-    mpromote.keep_start({**START, "program": "LINEUP.EXE"}, defaults=server._START_DEFAULTS)
+    kept_recipe({**START, "program": "LINEUP.EXE"})
     assert STATE.drafts.entries() == ["start/dos"]
 
 
 def test_a_start_with_no_program_and_no_conf_proposes_nothing() -> None:
     noted({**START, "conf": ""})
-    assert mpromote.keep_start({**START, "conf": ""},
-                               defaults=server._START_DEFAULTS) is False
+    assert not kept_recipe({**START, "conf": ""})
     assert STATE.drafts.entries() == []
 
 
@@ -213,7 +217,7 @@ def test_a_replay_the_reader_refuses_marks_no_entry(tmp_path: Path) -> None:
 
 def test_close_reports_what_was_left_unkept() -> None:
     noted(START)
-    mpromote.keep_start(START, defaults=server._START_DEFAULTS)
+    kept_recipe(START)
     reply = server.close()
     assert reply["draft"] == ["start/probe"]
     assert reply["closed"] is False
@@ -224,17 +228,16 @@ def test_close_leaves_out_what_the_store_already_holds(
     monkeypatch.chdir(tmp_path)
     recipe = {**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)}
     noted(recipe)
-    mpromote.keep_start(recipe, defaults=server._START_DEFAULTS)
+    kept_recipe(recipe)
     server.promote(entries=["start/probe"], root=str(tmp_path))
-    mpromote.keep_start(recipe, defaults=server._START_DEFAULTS)
+    kept_recipe(recipe)
     assert STATE.drafts.entries() == ["start/probe"]
     assert "draft" not in server.close()
 
 
 def test_a_promotion_empties_the_draft_and_close_then_says_nothing(tmp_path: Path) -> None:
     noted({**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)})
-    mpromote.keep_start({**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)},
-                        defaults=server._START_DEFAULTS)
+    kept_recipe({**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)})
     server.promote(entries=["start/probe"], root=str(tmp_path))
     assert STATE.drafts.entries() == []
     assert "draft" not in server.close()
@@ -245,7 +248,7 @@ def test_promote_reviews_and_writes_in_a_store_of_its_own(
     monkeypatch.chdir(tmp_path)
     params = {**START, "conf": str(tmp_path / "probe.conf"), "cwd": str(tmp_path)}
     noted(params)
-    mpromote.keep_start(params, defaults=server._START_DEFAULTS)
+    kept_recipe(params)
     review = server.promote(dry_run=True, root=str(tmp_path))
     assert [c["entry"] for c in review["candidates"]] == ["start/probe"]
     written = server.promote(entries=["start/probe"], root=str(tmp_path))
@@ -258,7 +261,7 @@ def test_a_promotion_with_no_store_names_root(tmp_path: Path,
                                               monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     noted(START)
-    mpromote.keep_start(START, defaults=server._START_DEFAULTS)
+    kept_recipe(START)
     reply = server.promote(dry_run=True)
     assert reply["code"] == "bad_argument" and "root" in reply["message"]
 
@@ -268,7 +271,7 @@ def test_a_root_creates_the_store_only_on_the_approved_call(tmp_path: Path) -> N
     repo.mkdir()
     params = {**START, "conf": str(repo / "probe.conf"), "cwd": str(repo)}
     noted(params)
-    mpromote.keep_start(params, defaults=server._START_DEFAULTS)
+    kept_recipe(params)
     assert server.promote(dry_run=True, root=str(repo))["candidates"][0]["change"] == "new"
     assert not (repo / ".scry").exists()
     server.promote(entries=["start/probe"], root=str(repo))
@@ -278,17 +281,15 @@ def test_a_root_creates_the_store_only_on_the_approved_call(tmp_path: Path) -> N
 def test_a_start_that_only_loads_its_profile_learned_nothing() -> None:
     STATE.drafts.loaded_entry("start", "dos")
     with given.remembered({"profile", "state_dir"}):
-        assert mpromote.keep_start({**START, "program": "LINEUP.EXE"},
-                                   defaults=server._START_DEFAULTS) is False
+        assert not kept_recipe({**START, "program": "LINEUP.EXE"})
     assert STATE.drafts.entries() == []
     with given.remembered({"profile", "session_seconds"}):
-        assert mpromote.keep_start({**START, "program": "LINEUP.EXE"},
-                                   defaults=server._START_DEFAULTS) is True
+        assert kept_recipe({**START, "program": "LINEUP.EXE"})
 
 
 def test_a_kept_start_leaves_the_run_s_own_keys_to_the_store() -> None:
     noted(START)
-    mpromote.keep_start(START, defaults=server._START_DEFAULTS)
+    kept_recipe(START)
     assert set(STATE.drafts.held("start", "probe")[0].own) == set(mpromote.RUN_OWN)
 
 
@@ -317,7 +318,7 @@ def test_a_recipe_read_from_a_profile_belongs_to_the_profile_s_store(tmp_path: P
     with mpromote.launching(params, str(profile)):
         pass
     with given.remembered({"profile", "session_seconds"}):
-        mpromote.keep_start(params, defaults=server._START_DEFAULTS)
+        kept_recipe(params)
     assert STATE.drafts.held("start", "dos")[0].project == str(tmp_path / "game")
 
 
@@ -391,7 +392,7 @@ SETUP = [".scry/", ".scry/about.json", ".scry/README.md"]
 def kept_probe(repo: Path, **more: Any) -> None:
     params = {**START, "conf": str(repo / "probe.conf"), "cwd": str(repo), **more}
     noted(params)
-    mpromote.keep_start(params, defaults=server._START_DEFAULTS)
+    kept_recipe(params)
 
 
 def test_an_approved_promotion_into_a_bare_repository_sets_up_the_store(tmp_path: Path) -> None:

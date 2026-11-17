@@ -61,7 +61,6 @@ server serves every DOS project.
 
 from __future__ import annotations
 
-import inspect
 import json
 from collections.abc import Callable
 from pathlib import Path
@@ -78,6 +77,7 @@ from scry_core import (  # noqa: E402
     methods,
     narrowing,
     process_name,
+    project_store,
     recording,
     reference,
     reply_schema,
@@ -286,21 +286,10 @@ def start(conf: str = "", cwd: str = "",
     # guest this call starts and keeps it in the project that guest runs in.
     with mpromote.launching(params, str(block["file"]) if block is not None else ""):
         reply = lifecycle.start(**params, progress=bridge(ctx), ops=_step_ops)
-    if mpromote.keep_start(params, defaults=_START_DEFAULTS):
-        reply["kept"] = core_promote.kept_line(STATE.drafts)
-    if block is not None:
-        reply["profile"] = block
-    return reply
+    return mpromote.after_start(reply, params, block=block, defaults=_START_DEFAULTS)
 
 
-#: What a profile may set: `start`'s own arguments, read off its signature so the two cannot
-#: drift apart. `profile` is not one of them, and `ctx` is the protocol's.
-_PROFILE_KEYS = tuple(name for name in inspect.signature(start).parameters
-                      if name not in ("ctx", "profile"))
-#: The same, with each argument's default: a recipe keeps what the call decided, not what the
-#: tool would have answered on its own.
-_START_DEFAULTS = {name: parameter.default
-                   for name, parameter in inspect.signature(start).parameters.items()}
+_PROFILE_KEYS, _START_DEFAULTS = project_store.start_arguments(start)
 
 
 @tool("The session's window", summary=core_window.summary)
@@ -308,15 +297,9 @@ def window(front: bool = False) -> dict[str, Any]:
     """Where the watched window is on the host, at any time, a running guest included. `front`
     brings it in front of whatever covers it and reads that back.
 
-    Reply: `window` (`display`, the OS's index; `bounds`; `onscreen`; `front`, on screen with no
-    other application's window covering its centre; `fullscreen`); `size` when the session was
-    started with a stated `size`: `asked`, `seen`, which rectangle was `compared` (`client` or
-    `outer`), `tolerance_px`, `height_free` and `matches`.
+    Reply: {WINDOW_REPLY}.
 
-    Refused: no session (`no_session`), a session started without `shared` (`no_channel`), a
-    window that never appears or, with `front`, is still covered after the activation
-    (`window_not_visible`, naming what was seen; on a `background=true` session it names that as
-    what may keep it behind). Without `front` the window is answered wherever the owner put it.
+    Refused: {WINDOW_REFUSED}.
 
     Reference: REFERENCE.md, The session.
     """
@@ -1771,11 +1754,10 @@ def perform(steps: list[dict[str, Any]] | None = None, path: str = "",
     Reference: REFERENCE.md, Sequences in one call.
     """
     from_document = bool(path)
-    steps = recording.steps_to_replay(steps, path)
+    steps = recording.steps_to_replay(steps, path, state=mpromote.scratch())
     if from_document:      # the pre-gate judges a caller's own list; a document's is read here
         checks.steps_whole("steps", steps)
-        STATE.drafts.loaded_entry("perform", Path(path).expanduser().stem,
-                                  source=str(Path(path).expanduser()))
+        STATE.drafts.loaded_file("perform", path)
     return sequence.run_steps(live(), steps, settle_seconds, _step_ops(), bridge(ctx), summaries,
                               until_frame=until_frame)
 

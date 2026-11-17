@@ -24,6 +24,9 @@ from scry_core import (
     scan_vocabulary as words,
 )
 from scry_core import vocabulary as vocab
+from scry_core import (
+    window as core_window,
+)
 
 from scry_dosbox_x import (
     advance,
@@ -53,7 +56,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               **core_comments.DOC_VALUES,
               **frame_window.DOC_VALUES,
               **recording.DOC_VALUES,
-              **roster.DOC_VALUES,
+              **roster.DOC_VALUES, **core_window.DOC_VALUES,
               "STOP_FIELDS": STOP_FIELDS,
               "DOS_CALLS_KEPT": str(dos_calls.CALLS_KEPT),
               "ADD_READ": "read", "ADD_PLACES": "in the screen's own units",
