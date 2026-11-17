@@ -64,6 +64,7 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("audio_record", "kind", tuple(capture_files.AUDIO_KINDS)),
     ("port", "method", tuple(folds.PORT)), ("port", "bits", tuple(hardware.BITS)),
     ("pic", "method", tuple(folds.PIC)), ("a20", "method", tuple(folds.A20)),
+    ("screen_wait", "palette", ("", *checks.PALETTES)),
 ]
 #: The two taken in any case: a pattern of their words, never an `enum` that would refuse one.
 FOLDED: list[tuple[str, str, tuple[str, ...]]] = [
