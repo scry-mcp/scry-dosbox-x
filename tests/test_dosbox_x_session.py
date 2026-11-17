@@ -309,7 +309,7 @@ def test_a_limit_of_zero_or_less_is_refused() -> None:
 
 def test_an_unusable_pattern_is_invalid_and_does_not_escape() -> None:
     """`pattern` is the caller's regular expression."""
-    with pytest.raises(ds.Invalid, match="not a usable pattern"):
+    with pytest.raises(ds.Invalid, match=r"^pattern='\[' does not compile"):
         dlogs.filter_e9(LIVE, "[", 10)
 
 

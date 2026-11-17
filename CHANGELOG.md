@@ -4,6 +4,8 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A pattern or an `expect` that does not compile is refused naming the argument
+  (`pattern='(' does not compile: ...`), where it said only that it was not a usable pattern.
 - `read_memory` and `scan` no longer list a `rows` reply field: neither tool ever sent one.
 - A `drive` refused before its act ran carries `looked` as `{"guest": ...}`, the shape of
   every other `drive` reply, where it carried a bare `unavailable` block.

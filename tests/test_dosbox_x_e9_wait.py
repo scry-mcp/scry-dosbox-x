@@ -311,7 +311,7 @@ def test_e9_wait_refuses_a_wait_that_is_not_a_bound(tmp_path: Path) -> None:
 def test_e9_wait_refuses_a_pattern_that_is_not_a_pattern(tmp_path: Path) -> None:
     log = tmp_path / "guest.log"
     log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
-    with pytest.raises(ds.Invalid, match="not a usable pattern"):
+    with pytest.raises(ds.Invalid, match=r"^pattern='\(unclosed' does not compile"):
         LogSession(log).e9_wait("(unclosed", seconds=1)
 
 

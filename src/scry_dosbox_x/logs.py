@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 
+from scry_core import judges
 from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
@@ -16,20 +17,17 @@ FILE_CHANNELS = ("guest", "emulator", "all")
 LOG_CHANNELS = (*FILE_CHANNELS, "dos")
 
 
-def compiled(pattern: str) -> re.Pattern[str]:
-    """A caller's pattern, or a refusal naming it as theirs."""
+def compiled(pattern: str, name: str = "pattern") -> re.Pattern[str]:
+    """A caller's pattern, or a refusal naming the argument it came in."""
     try:
         return re.compile(pattern)
     except re.error as e:
-        raise Invalid("bad_argument", f"that is not a usable pattern: {e}") from None
+        raise Invalid("bad_argument", f"{name}={pattern!r} does not compile: {e}") from None
 
 
 def check_pattern(pattern: object) -> None:
     """A caller's log pattern: a non-empty string that compiles."""
-    if not isinstance(pattern, str) or not pattern:
-        raise Invalid("bad_argument",
-                      "pattern is a non-empty regular expression ('.' for every line)")
-    compiled(pattern)
+    judges.regex("pattern", pattern)
 
 
 def count_e9(text: str) -> int:

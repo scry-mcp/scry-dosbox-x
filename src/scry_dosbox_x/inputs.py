@@ -609,8 +609,8 @@ def check_expectation(expect: str | None, seconds: float | None) -> None:
                              "`expect` there is no reaction to wait for: it would be "
                              "silently ignored. Give an `expect` pattern, or drop `seconds`")
         return
-    dlogs.compiled(expect)
-    dlogs.compiled(program_reaction(expect))
+    dlogs.compiled(expect, "expect")
+    dlogs.compiled(program_reaction(expect), "expect")
     if seconds is not None:
         vocab.check_wait(seconds)
 
