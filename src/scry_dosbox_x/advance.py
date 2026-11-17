@@ -6,7 +6,7 @@ import time
 from collections.abc import Callable
 from typing import Any, cast
 
-from scry_core import cancel, screen_map
+from scry_core import cancel, screen_map, stop_wait
 from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
 
@@ -187,7 +187,7 @@ def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dic
                    f"firing means nothing. Check that the control really is hot on this "
                    f"screen" if code == "control_silent" else
                    f"another stop ended the run before the control {control} fired, so "
-                   f"nothing was measured about {ref}")
+                   f"nothing was measured about {ref}. {stop_wait.CUT_WAY_OUT}")
         refused = {k: v for k, v in fields.items() if k != "verdict"}
         return running.stop_or_base(session, True,
                                     {"status": "INVALID", "code": code, "message": message,

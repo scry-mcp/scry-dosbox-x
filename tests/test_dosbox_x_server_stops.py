@@ -75,6 +75,8 @@ def test_run_to_with_a_cold_control_and_an_expired_bound_is_invalid(tmp_path: Pa
     fake.runto_running, fake.runto_elsewhere, fake.control_hits = False, True, 0
     cut = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020", seconds=1))
     assert cut["status"] == "INVALID" and cut["code"] == "cut_by_other_stop", cut
+    assert "`disarm_watches=true`" in cut["message"] and "cause" in cut, (
+        "the refusal names its way out, as scry-mame's does", cut)
     fake.control_hits = 2
     elsewhere = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020"))
     assert elsewhere["status"] == "ok" and elsewhere["verdict"] == "OTHER_STOP", elsewhere

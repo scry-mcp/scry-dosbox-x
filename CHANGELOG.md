@@ -5,6 +5,8 @@ What a client of the server notices.
 ## Unreleased
 
 - Takes scry-core 0.118.2.
+- `run_to`'s `cut_by_other_stop` refusal says what to do next, as scry-mame's does: `cause` names
+  what stopped the run, and a watch is passed with `disarm_watches=true`.
 - `promote` refuses a `start` profile or a `perform` document holding a `${...}` that is no
   placeholder, typed text included, where it wrote a store file `perform(path=)` refused.
 - A DJGPP program's table given to `start(symbols=)` is placed at the first stop in its own 32-bit
