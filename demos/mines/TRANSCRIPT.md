@@ -1,3 +1,5 @@
+Every call of the run with its reply, in order: 38 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
 <details><summary>call and reply</summary>
@@ -1575,14 +1577,15 @@ Also attached: image/png.
 
 </details>
 
-**26. `record`**: OK loop: recording 240 frames in ./tmp/demos/mines/loop.avi
+**26. `record`**: OK win: recorded 240 frames in ./tmp/demos/mines/win.avi
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "frames": 240,
-  "dest": "./tmp/demos/mines/loop.avi"
+  "dest": "./tmp/demos/mines/win.avi",
+  "seconds": 300
 }
 ```
 
@@ -1610,7 +1613,7 @@ Also attached: image/png.
   "frames": 240,
   "began": true,
   "ended": true,
-  "path": "./tmp/demos/mines/loop.avi",
+  "path": "./tmp/demos/mines/win.avi",
   "bytes": "<volatile>",
   "avi_frames": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
@@ -2173,7 +2176,52 @@ Also attached: image/png.
 
 </details>
 
-**37. `close`**: OK close: closed: quit
+**37. `record`**: OK lost: recorded 100 frames in ./tmp/demos/mines/lost.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 100,
+  "dest": "./tmp/demos/mines/lost.avi",
+  "seconds": 300
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 100,
+  "began": true,
+  "ended": true,
+  "path": "./tmp/demos/mines/lost.avi",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**38. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 

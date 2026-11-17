@@ -1,30 +1,24 @@
-# LineUp: the game's own script, replayed on the PC port
+# LineUp: the game's own list of steps, replayed on its DOS version
 
-![LineUp in play on the PC port](screen.png)
+<!-- demo-motion:begin -->
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="LineUp in play on its DOS version, a shot in flight"></picture>
 
-*LineUp* (Eco-Games / GAMART, 1994) was an arcade game on an NEC V30 board, and its team later
-ported the same source to MS-DOS: VGA mode 13h and a Sound Blaster 16. This demo boots the PC port
-from the run recipe its repository declares, `.scry/start/dos.json`, and replays the script that
-repository declares too, `.scry/perform/dos.json`, in one call: the game's own symbols, its screens
-and its inputs, written once by the game and replayed here. The arcade board's version plays the
-same script, `scry_core.games.lineup`, whose symbols and screens this one shares.
+1. The player moved, raised the colour and fired: `record` films the game going on.
 
-The script runs to the routine that draws the high scores by name, drops a coin and reads the
-credits the game counted, starts a game, runs to the routine that writes its level, and plays: one
-column right, the next colour, a shot, each read back off the player's own variables once the
-frame that took the move has run (`Gest_Scores`, by name). Every arrival is the game's own code,
-never a time: each screen is waited for at the frame after the game's tick (`Check_Money100`), and
-recognised off the game's map, signed in palette indices, because the VGA's 6-bit DAC
-and the arcade's 5-bit palette show the same pixels in slightly different colours. Then the demo
-records two seconds of the stage's music off the Sound Blaster and holds it, sample for sample, to
-[`music.wav`](music.wav) beside this file.
+<!-- moments-ms: 2511 -->
+<!-- demo-motion:end -->
 
-## The game
+*LineUp* (Eco-Games / GAMART, 1994) was an arcade game, and its team ported the same source to
+MS-DOS. This demo starts the DOS version from a file in the game's own repository. Then it
+replays the list of steps that repository keeps: a coin, a game started, a move, a colour, a
+shot.
 
-LineUp is not distributed with this repository. The demo runs a copy of the PC port: a directory
-holding `EXES/LINEUP.EXE` with the linker's symbol map beside it, `EXES/LINEUP.MAP`, the game's own
-`AUDIO/` and `GFX/`, its `.scry/` store, and the `SCRIPTS/dosbox-x-mcp-conf.sh` that derives a live
-session's conf. The game's own repository builds the executable and its map from source.
+## The program
+
+LineUp is not distributed with this repository. The demo runs a copy of the DOS version: a
+directory with `EXES/LINEUP.EXE`, the linker's symbol map `EXES/LINEUP.MAP`, the game's `AUDIO/`
+and `GFX/`, its `.scry/` folder and its `SCRIPTS/dosbox-x-mcp-conf.sh`. The game's own repository
+builds the program and its map from source.
 
 ## Run it
 
@@ -32,69 +26,58 @@ session's conf. The game's own repository builds the executable and its map from
 uv run python demos/lineup/demo.py --cwd /path/to/game
 ```
 
-The demo opens a window sized by the conf its game derives, so the game can be watched;
-nothing in it needs the window.
+Each line it prints is one call and its check. The window opens behind the others, so the run
+does not take your keyboard.
 
-- `--cwd PATH` (absolute or `~`-led) is the copy of the game DOSBox-X runs from, with its `.scry/`
-  and its `SCRIPTS/`.
-- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`,
-  else the `dosbox-x` on your `PATH`.
-- `--display N` opens the window on that display; left out, on the host's main one. The
-  window opens behind, so the run takes nobody's focus.
+- `--cwd PATH` (absolute or `~`-led) is the copy of the game DOSBox-X runs from.
+- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
+  `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
+- `--display N` opens the window on that display. Left out, it opens on the main one.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where every step passed.
+- `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
+  `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
+  `PATH`.
 
-Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
-line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2 a
-usage error, 3 nothing was demonstrated (no copy of the game, a server that did not start, a loop that could not be converted).
+Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
+That last one is no copy of the game or a server that did not start.
 
-## The prompt
+Nothing in the run waits a fixed time. The steps run to the game's own routines by name, and
+each screen is waited for at a breakpoint on the game's own tick.
 
-Give this to an MCP client with this server connected:
+The two seconds of music it records must equal [`music.wav`](music.wav) sample for sample
+(`win32/music.wav` on Windows, where the sound is mixed differently).
 
-> Derive the live session's conf with the game's own `SCRIPTS/dosbox-x-mcp-conf.sh`, its
-> `DOSBOX_GUEST` set to this server's guest directory. Start the session from the profile `dos`,
-> the game's own `.scry/start/dos.json`, on the normal core and with this run's captures directory.
-> Stop at the game's first DOS call of its own (`INT 21h AH=62h`) so its map is placed, and clear
-> that stop. Load the game's map
-> from its `.scry/maps/`. Replay the script its `.scry/perform/dos.json` declares with `perform`.
-> Record two seconds of sound, measure it and compare it with `music.wav`, take a picture of the
-> screen and close the session.
+## Try it yourself
 
-## What it walks
-
-| Family | Calls |
-|---|---|
-| Session | `start` from the game's profile (windowed, parked at the debugger before DOS boots), `close` |
-| Script | `perform`, replaying the game's own `.scry/perform/dos.json` |
-| Read | `screen_map_write(method="load")` of the game's map, `screen_map_find` and `read_memory` by symbol, inside the document |
-| Captures | `record` (the loop), `audio_record` of the Sound Blaster's output |
-| Files | `audio_compare` (`measure`, then `diff` against `music.wav`) |
-| Screen | `screen_view` |
-
-## The transcript
-
-Generated by `demo.py --update-readme` from a run where every step passed. What differs between two
-honest runs (process ids, ports, wall-clock times, temporary paths, the host's own DOSBox-X and its
-own arguments, the reader's copy of the game) is `<volatile>` or `<host>`; the files a call names,
-such as `./tmp/demos/lineup/music.wav` or `./demos/lineup/music.wav`, are shown relative to the
-repository root, and the tools themselves take absolute paths.
+[Add the server to your client](../../README.md#install) and open it in your copy of the game. Each of these is a step of
+the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-The run is 12 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+**1. Replay a saved list of steps**
 
-**6. `perform`**: OK script: 34 steps of the game's own document, 21 holding to it
+Ask:
 
-`perform` replays the script the game's own `.scry/perform/` declares, in one call: the same symbols, screens and inputs, each step held to what the document records.
+> Replay the list of steps the game's repository keeps in `.scry/perform/`.
 
-<details><summary>call and reply</summary>
+Call:
+
+```text
+perform(path="<host>", summaries=true)
+```
+
+Reply, 3 of 12 fields:
 
 ```json
 {
-  "path": "<host>",
-  "summaries": true
+  "summary": "perform: 34 of 34 steps",
+  "steps_completed": 34,
+  "held": 21
 }
 ```
+
+One call runs the whole game script: a coin, a start, a move, a colour and a shot. `held` counts the steps whose values matched the ones the file recorded.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -301,20 +284,30 @@ The run is 12 calls; these are the ones that show how it is done, and every call
 
 </details>
 
-**9. `audio_compare`**: OK exact: the recording is music.wav, sample for sample
+**2. Compare a recording with its reference**
 
-The recording is compared with the platform's reference with alignment off: `exact` is true only when every sample is equal, so a changed sound, a different mixer or a drifted start fails the run.
+Ask:
 
-<details><summary>call and reply</summary>
+> Compare the music you just recorded with the reference recording, sample by sample.
+
+Call:
+
+```text
+audio_compare(method="diff", a="./tmp/demos/lineup/music.wav", b="<host>", align=false)
+```
+
+Reply, 2 of 12 fields:
 
 ```json
 {
-  "method": "diff",
-  "a": "./tmp/demos/lineup/music.wav",
-  "b": "<host>",
-  "align": false
+  "summary": "audio_compare diff: exact, equal, envelope 1.0",
+  "exact": true
 }
 ```
+
+`exact` is true only when every sample is equal, so a changed sound, a different mixer or a late start fails the run.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -338,3 +331,40 @@ The recording is compared with the platform's reference with alignment off: `exa
 
 </details>
 <!-- demo-transcript:end -->
+
+<details><summary>The whole demo as one prompt</summary>
+
+1. Start DOSBox-X from the start profile `.scry/start/dos.json` of the game's copy, with a
+   window, on the normal core.
+2. Put a breakpoint on the game's first DOS call of its own, `INT 21h AH=62h`, let it run there
+   and clear it.
+3. Load the game's screen map, `.scry/maps/lineup-screen-map.json`.
+4. Replay the list of steps in `.scry/perform/dos.json` in one call.
+5. Record two seconds of sound, measure it and compare it with `music.wav` without aligning.
+6. Record two and a half seconds of video, take a picture of the screen and close.
+
+</details>
+
+## Tools this demo uses
+
+| Group | Tools |
+|---|---|
+| [Session](../../docs/reference/session.md) | `start`, `close` |
+| [Declarations](../../docs/reference/declarations.md) | `breakpoint_interrupt`, `declaration_clear` |
+| [Advance](../../docs/reference/advance.md) | `resume` |
+| [Read](../../docs/reference/read.md) | `screen_map_write` |
+| [Lists](../../docs/reference/lists.md) | `perform` |
+| [Captures](../../docs/reference/captures.md) | `record`, `audio_record` |
+| [Files](../../docs/reference/files.md) | `audio_compare` |
+| [Screen](../../docs/reference/screen.md) | `screen_view` |
+
+Each group is a page of the reference. Some of the names need a word:
+
+- Advance: the tools that let the program run and stop it again.
+- Declarations: breakpoints and watches.
+- Lists: the tools that run several calls as one.
+
+## The transcript
+
+[TRANSCRIPT.md](TRANSCRIPT.md) has every call of the run with its reply. The paths of your copy
+of the game read `<host>` there, because they are your computer's.

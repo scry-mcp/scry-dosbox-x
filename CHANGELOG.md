@@ -4,6 +4,13 @@ What a client of the server notices.
 
 ## Unreleased
 
+- Every demo is shown moving: a `loop.webp` beside its README replaces `loop.mp4`. It holds up
+  to three moments of the demo's own run. A moment is cut from a `record` call or, in the two
+  Deluxe Paint demos, from the video of a session started with `capture_video`.
+- Each demo's page offers the steps to try, each with what to ask, the call and the reply it
+  got. The whole run is in `TRANSCRIPT.md`.
+- The README opens with what the server is for. Its `## Install` section has the lines to paste
+  for ten MCP clients and a first question to ask.
 - Takes scry-core 0.119.0.
 - On Windows a watched `start` with `background=false` brings its window to the front once it
   is up, as the session page says; while another application held the foreground the window
@@ -223,19 +230,8 @@ What a client of the server notices.
   reply's `path` is that name: `screen_view`, `snapshot`, `palette`, `record`, `audio_record`,
   `memdump`, `trace`, `capture_frame` and `comment_write`; the file-name rule is of the names a
   server makes up, not of a caller's own path.
-- The demos ship a loop: each demo's `loop.mp4` sits beside its `screen.png`, recorded by the
-  runner after the step that takes the still.
 - On the pinned scry-core (`pyproject.toml`), which carries the window every demo asks of
   its `start`.
-
-- On the pinned scry-core (`pyproject.toml`), whose demo runner fails a loop a bound or a
-  stop cut.
-
-- On the pinned scry-core (`pyproject.toml`), whose demo runner reports the stop that ends
-  a loop as the host's too.
-
-- On the pinned scry-core (`pyproject.toml`), whose demo runner reports a loop's own timing
-  as the host's, so a demo's two runs give one transcript.
 
 - On the pinned scry-core (`pyproject.toml`), whose demo runner takes `--display`, so a
   demo can be recorded on one of the host's own displays.
@@ -245,8 +241,6 @@ What a client of the server notices.
 - On the pinned scry-core (`pyproject.toml`), whose `record` words say what a bound does when its
   release answers, so a server that answers `ended: false` over a capture it could not turn off
   is not contradicted.
-- On the pinned scry-core (`pyproject.toml`), whose demo runner records a demo's loop and
-  converts it to its `loop.mp4` beside the capture.
 - `record` with an empty `dest` writes into the session's scratch and answers its `path`;
   `frames` under 2 and a `dest` whose suffix is not `.avi` are refused.
 - A `promote` that names `root` no longer fails when the working directory is gone.

@@ -6,6 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from scry_core import demo as demo_core
 from scry_core.demo import Reply, Run, StepFailed
 
 from demos import host
@@ -81,3 +82,17 @@ def test_a_table_placed_at_the_ready_stop_is_loaded_as_the_server_takes_it(
     args = host.symbols_at(tmp_path / "game.sym")(run)
     assert args["base"] == "0x8df0", args
     checks.check("symbols_load", path=str(args["path"]), base=args["base"])
+
+
+DEMOS = sorted(d.name for d in (Path(__file__).resolve().parents[1] / "demos").iterdir()
+               if (d / "demo.py").is_file())
+
+
+@pytest.mark.parametrize("name", DEMOS)
+def test_a_demo_declares_only_what_the_runner_takes_before_any_emulator_runs(name: str) -> None:
+    """Its moments name its own steps, and its examples are within a page's limits."""
+    declared = demo_core.load(Path(__file__).resolve().parents[1] / "demos" / name / "demo.py")
+    demo_core.declared(declared)
+    tried = [step for step in declared.steps if step.ask]
+    assert demo_core.TRY_STEPS[0] <= len(tried) <= demo_core.TRY_STEPS[1], len(tried)
+    assert declared.moments and declared.readme is not None, "a demo is shown moving"

@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import DISPLAY, Demo, Loop, Run, Step, main, window_args
+from scry_core.demo import DISPLAY, Demo, Moment, Run, Step, main, recording, window_args
 from scry_core.game_demo import arrived, word_is
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
@@ -43,6 +43,8 @@ GAME_LOADED = {"number": "0x10", "ah": "0x4F"}
 #: runs many times on the way, so it is the run's control.
 TITLE_DRAWN, DRAWING = "titulo_dibuja_cred", "draw_block"
 WAIT_S = 120
+#: The retraces recorded after the title is drawn, for the loop.
+TITLE_FRAMES = 200
 #: The reader's copy of the game is where this host keeps things; the replies that name it are
 #: hidden in the transcript.
 VOLATILE_GAME = {**VOLATILE,
@@ -75,11 +77,12 @@ STEPS = [
                    "name": "where the reader's copy of the game keeps its profile",
                    "held": "where the reader's copy of the game keeps its symbol table",
                    "logfile": "where the reader's copy of the game keeps the guest's log"},
-         highlight=("`start(profile=...)` boots from the recipe the game's own repository "
-                    "declares: the conf its script derives, the working directory, the "
-                    "program spelled from where the autoexec leaves the guest, and the TLINK "
-                    "map. The call gives only what is the run's own, and the reply says which "
-                    "keys the recipe filled.")),
+         title="Start from the game's own start profile",
+         ask="Start Speed Fight from the start profile its repository keeps in `.scry/start/`.",
+         shown=("status", "kept"),
+         reads=("A start profile is a saved set of `start` arguments: the call adds only what is "
+                "this run's own. `kept` says a candidate was saved for `promote`; the whole reply "
+                "lists what the file filled in `profile.supplied`.")),
     Step("loaded", "breakpoint_interrupt", GAME_LOADED,
          lambda reply, run: f"a stop on {reply['ref']}"),
     Step("boot", "resume", {"seconds": WAIT_S}, map_placed,
@@ -88,21 +91,31 @@ STEPS = [
          lambda reply, run: "the boot's stop cleared"),
     Step("title", "run_to", {"ref": TITLE_DRAWN, "control": DRAWING, "seconds": WAIT_S},
          arrived(TITLE_DRAWN),
-         highlight=("The run arrives by the game's own routine, not by time: `run_to` stops "
-                    "where the title calls its credits line, once both planes are drawn, so "
-                    "the picture that follows is the same on any host.")),
+         title="Run until the title is drawn",
+         ask="Run the game to `titulo_dibuja_cred`, counting `draw_block` on the way.",
+         shown=("summary", "verdict", "control_hits"),
+         reads=("`TARGET` means the run stopped where the title calls its credits line, once "
+                "both planes are drawn. `control_hits` counts a routine that ran many times "
+                "meanwhile.")),
     Step("no credits", "read_memory", {"ref": "creditos", "length": 2}, word_is("creditos", 0),
-         highlight=("`creditos` is read by name: the map `start` placed names the game's own "
-                    "variables at the segment DOS loaded it at, the same name the arcade "
-                    "build's map gives.")),
+         title="Read a variable by its name",
+         ask="Read the game's `creditos` variable.",
+         shown=("summary", "hex"),
+         reads=("`creditos` is a name from the game's symbol map, resolved at the segment DOS "
+                "loaded the program at. The arcade build's map gives the same name.")),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
+    recording("title shown", TITLE_FRAMES),
     Step("close", "close", {}, quit_cleanly),
 ]
 
 DEMO = Demo(
     name="speedf", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
-    capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+    capture=lambda run: run.dir / "screen.png",
+    moments=(Moment("screen", "title shown",
+                    "`run_to` stopped once the title was drawn; `record` films it asking for "
+                    "coins."),),
+    alt="Speed Fight's title on the DOS version",
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_GAME,
     host_args={"cwd": "the reader's copy of the game, wherever it was cloned",

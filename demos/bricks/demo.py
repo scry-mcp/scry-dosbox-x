@@ -16,7 +16,17 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import DISPLAY, Demo, Loop, Reply, Run, Step, main, window_args
+from scry_core.demo import (
+    DISPLAY,
+    Demo,
+    Moment,
+    Reply,
+    Run,
+    Step,
+    main,
+    recording,
+    window_args,
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
@@ -43,6 +53,8 @@ BALL_AFTER = (188, 82, -2, 2)
 PADDLE_HOME, PADDLE_STEP, RIGHTS, PADDLE_W = 140, 8, 3, 40
 #: Where the demo puts the pointer, in screen pixels: the paddle centres itself under it.
 MOUSE_AT = (240, 100)
+#: The retraces recorded for the loop, which shows less than three seconds of them.
+PLAY_FRAMES = 240
 WAIT_S = 60
 
 
@@ -158,35 +170,30 @@ BREAK_STOP = {key: "the stop lands wherever the game is when the break arrives"
 
 STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary", "display"}),
-         volatile={"summary": "it carries how long the debugger took to answer"},
-         shown=("watched", "logfile", "debugger_commands")),
-    Step("ready", "resume", {"seconds": WAIT_S}, at_ready,
-         shown=("summary", "cause", "instruction")),
-    Step("symbols", "symbols_load", symbols_at(HERE / "bricks.sym"), loaded,
-         shown=("summary", "base")),
+         volatile={"summary": "it carries how long the debugger took to answer"}),
+    Step("ready", "resume", {"seconds": WAIT_S}, at_ready),
+    Step("symbols", "symbols_load", symbols_at(HERE / "bricks.sym"), loaded),
     Step("look", "disassemble", {"ref": "brick_hit", "length": 32}, listing),
     Step("break", "breakpoint_at", {"ref": "brick_hit"},
          lambda reply, run: f"breakpoint {reply['entry']}",
-         shown=("summary", "entry"),
-         highlight=("A breakpoint asked for by name. `brick_hit` is a label in the symbol table "
-                    "the build generated, so the server turns it into the address the program "
-                    "actually loaded at and arms the debugger there; the reply says it was "
-                    "resolved `by: symbol`.")),
+         title="Set a breakpoint by a name",
+         ask="Put a breakpoint on `brick_hit`.",
+         shown=("summary", "entry", "by"),
+         reads=("`brick_hit` is a label of the symbol table the build wrote, so `by` says "
+                "`symbol`. `armed` means the breakpoint is set in the debugger, at the address "
+                "`entry` gives.")),
     Step("watch", "watch_add", {"ref": "score", "mode": "show", "fmt": "u16"},
          lambda reply, run: "score shown at every stop"),
     Step("first brick", "resume", {"seconds": WAIT_S},
          at_brick(FIRST_ROW, FIRST_COL, 0, "first"),
-         shown=("summary", "cause", "watches"),
-         highlight=("`resume` hands the machine back and returns when the debugger stops it again. "
-                    "The stop carries what a person would otherwise type commands for: the "
-                    "registers, the instruction under the program counter with its symbol, the "
-                    "cause, and the value of the watch armed a step earlier, the score, read by "
-                    "name. The line the game itself wrote to the debugger's port E9 comes in the "
-                    "same reply: the game says which brick fell, the registers say where.")),
+         title="Run until the program stops itself",
+         ask="Let the game run until that breakpoint stops it, and tell me the score.",
+         shown=("summary", "verdict", "cause"),
+         reads=("`OTHER_STOP` means the breakpoint stopped the run, not a time limit. `cause` "
+                "names it; the whole reply also holds `watches`, the score read by its name.")),
     Step("second brick", "resume", {"seconds": WAIT_S},
          at_brick(*SECOND_BRICK, FIRST_POINTS, "second")),
-    Step("score", "read_memory", {"ref": "score", "length": 2}, score_is(FIRST_POINTS),
-         shown=("summary", "hex")),
+    Step("score", "read_memory", {"ref": "score", "length": 2}, score_is(FIRST_POINTS)),
     Step("unbreak", "declaration_clear", {"kind": "breakpoint", "all": True}, lambda reply,
          run: "breakpoint cleared"),
     Step("frames", "run_for", {"frames": 3, "seconds": WAIT_S}, frames,
@@ -195,14 +202,14 @@ STEPS = [
                                "emulated_before_s", "emulated_after_s")}),
     Step("ball", "read_memory", {"ref": "ball_x", "length": 8}, ball),
     # The picture is taken here, before any input: the game's border breathes a shade a frame, so
-    # a capture after a key lands on a colour the host decided. The loop recorded after it has no
+    # a capture after a key lands on a colour the host decided. The recording after it has no
     # breakpoint left to stop it, and the game plays on from where the recording left it.
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
+    recording("ball in play", PLAY_FRAMES),
     Step("play", "resume", {}, lambda reply, run: "the game runs"),
     Step("keys", "drive", {"act": [{"op": "send_keys", "keys": ["right"], "expect": "KEY R",
                                     "seconds": 10}] * RIGHTS,
-                           "pattern": "KEY|PLAYER"}, keys_taken, volatile=INPUT_TIMING,
-         shown=("looked",)),
+                           "pattern": "KEY|PLAYER"}, keys_taken, volatile=INPUT_TIMING),
     Step("pause", "stop", {}, stopped, volatile=BREAK_STOP),
     Step("paddle", "read_memory", {"ref": "paddle_x", "length": 2}, paddle),
     Step("again", "resume", {}, lambda reply, run: "the game runs"),
@@ -221,22 +228,21 @@ STEPS = [
     Step("save", "state_write", {"method": "save", "name": "bricks"},
          lambda reply, run: f"state saved as {Path(str(reply['path'])).name}",
          volatile={"summary": "it carries the state's size and time", "bytes": "the state is "
-                   "compressed, so its size follows the frame it was taken at"},
-         shown=("name",)),
+                   "compressed, so its size follows the frame it was taken at"}),
     Step("left", "send_keys", {"keys": ["left"], "expect": "KEY L$", "seconds": 10},
          seen("the left arrow moved the paddle after the save"), volatile=INPUT_TIMING),
     Step("load", "state_write", {"method": "load", "name": "bricks"},
          lambda reply, run: f"state loaded from {Path(str(reply['path'])).name}",
          volatile={"summary": "it carries how long the load took",
                    "mark": "the game ran until the load, so where its log ended then follows "
-                   "the frame it was sent at"},
-         shown=("name",)),
+                   "the frame it was sent at"}),
     Step("halt", "stop", {}, stopped, volatile=BREAK_STOP),
     Step("restored", "read_memory", {"ref": "paddle_x", "length": 2}, restored,
+         title="Read a value after a saved state is loaded",
+         ask="Now that the state saved before the left arrow is loaded, read `paddle_x` again.",
          shown=("summary", "hex"),
-         highlight=("A saved state is the whole machine, not the game's own save. After the save "
-                    "the left arrow moves the paddle, the load puts the machine back, and the "
-                    "paddle read back is where it was before the arrow.")),
+         reads=("A saved state is the whole machine, not the game's own save. So the paddle "
+                "reads where it was before the arrow moved it.")),
     Step("play on", "resume", {}, lambda reply, run: "the game runs"),
     Step("serve", "send_keys", {"keys": ["space"], "expect": "SERVE$", "seconds": 10},
          seen("SPACE served the ball that was waiting on the paddle"), volatile=INPUT_TIMING),
@@ -249,7 +255,11 @@ STEPS = [
 DEMO = Demo(
     name="bricks", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", front=ROOT / "README.md", steps=STEPS,
-    capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+    capture=lambda run: run.dir / "screen.png",
+    moments=(Moment("screen", "ball in play",
+                    "With the breakpoint cleared the game plays on, and `record` films it.",
+                    frames=200),),
+    alt="Bricks, the game this repository builds, with its ball in play",
     precheck=precheck, offers=frozenset({"display"}),
     host_args={"display": DISPLAY},
     volatile={**VOLATILE, "saved_at": "the wall-clock time a state was saved at"})

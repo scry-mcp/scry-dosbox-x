@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import recording
-from scry_core.demo import DISPLAY, Demo, Loop, Reply, Run, Step, expect, main, window_args
+from scry_core.demo import DISPLAY, Demo, Reply, Run, Step, expect, main, window_args
 from scry_core.game_demo import Binding, Press, map_load
 from scry_core.games import lineup
 
@@ -110,9 +110,12 @@ def steps() -> list[Step]:
             map_load("map", at),
             Step("script", "perform",
                  lambda run: {"path": str(game(run) / SCRIPT), "summaries": True}, played,
-                 highlight=("`perform` replays the script the game's own `.scry/perform/` "
-                            "declares, in one call: the same symbols, screens and inputs, each "
-                            "step held to what the document records.")),
+                 title="Replay a saved list of steps",
+                 ask="Replay the list of steps the game's repository keeps in `.scry/perform/`.",
+                 shown=("summary", "steps_completed", "held"),
+                 reads=("One call runs the whole game script: a coin, a start, a move, a colour "
+                        "and a shot. `held` counts the steps whose values matched the ones the "
+                        "file recorded.")),
             *lineup.epilogue(BINDING)]
 
 
@@ -135,7 +138,8 @@ BINDING = Binding(
 DEMO = Demo(
     name="lineup", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=steps(),
-    capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+    capture=lambda run: run.dir / "screen.png",
+    moments=(lineup.PLAYING,), alt="LineUp in play on its DOS version, a shot in flight",
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_GAME,
     host_args={"b": "the platform's own reference recording", "display": DISPLAY,

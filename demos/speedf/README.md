@@ -1,23 +1,22 @@
-# Speed Fight: the PC game boots from its own recipe
+# Speed Fight: the DOS game starts from a file in its own repository
 
-![Speed Fight's title on the PC](screen.png)
+<!-- demo-motion:begin -->
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Speed Fight&#x27;s title on the DOS version"></picture>
 
-*Speed Fight* (Eco-Games / GAMART, 1994) ran on an NEC V30 arcade board, and its team ported the
-same source to MS-DOS. This demo boots the PC game from the run recipe its own repository
-declares in `.scry/start/dos.json`: the conf the game's script derives, the working directory,
-the program spelled from where the autoexec leaves the guest, and the TLINK map that names its
-variables. The call gives only what is the run's own, and the reply says which keys the recipe
-filled.
+1. `run_to` stopped once the title was drawn; `record` films it asking for coins.
 
-It then runs to the routine the title calls once both its planes are drawn, reads the credits
-by name, and saves a picture of the screen. Every arrival is a place in the game's code, on the
-normal core and a fixed clock: the dynamic core the game's conf keeps can pass a code breakpoint
-over, and its `cycles=max` would hand the game as many cycles a second as the host can.
+<!-- moments-ms: 2857 -->
+<!-- demo-motion:end -->
 
-## The game
+*Speed Fight* (Eco-Games / GAMART, 1994) was an arcade game, and its team ported the same
+source to MS-DOS. This demo starts the DOS version from a start profile, a saved set of `start`
+arguments the game's own repository keeps in `.scry/start/dos.json`. Then it runs to the routine
+that finishes drawing the title and reads a variable by name.
 
-Speed Fight is not distributed with this repository. The demo needs a copy of it with its blessed `EXES/SPEEDF.EXE` and `EXES/SPEEDF.MAP`, its `.scry/` and
-its `SCRIPTS/`; a checkout of it is what `--cwd` names.
+## The program
+
+Speed Fight is not distributed with this repository. The demo needs a checkout of the game with
+its `EXES/SPEEDF.EXE` and `EXES/SPEEDF.MAP`, its `.scry/` folder and its `SCRIPTS/`.
 
 ## Run it
 
@@ -25,52 +24,58 @@ its `SCRIPTS/`; a checkout of it is what `--cwd` names.
 uv run python demos/speedf/demo.py --cwd /path/to/speedf-msdos
 ```
 
-- `--cwd PATH` (absolute or `~`-led) is the game's own repository checkout.
-- `--binary PATH` picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`, else the `dosbox-x`
-  on your `PATH`.
-- `--display N` opens the window on that display; left out, on the host's main one. The
-  window opens behind, so the run takes nobody's focus.
+Each line it prints is one call and its check. The window opens behind the others, so the run
+does not take your keyboard.
+
+- `--cwd PATH` (absolute or `~`-led) is the checkout of the game's repository.
+- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
+  `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
+- `--display N` opens the window on that display. Left out, it opens on the main one.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where
-  every step passed.
+- `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
+  `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
+  `PATH`.
 
-Each line it prints is one call and its check. Exit codes: 0 every step passed, 1 a step failed,
-2 a usage error, 3 nothing was demonstrated (a copy without its store or its program, a relative
-path, a server that did not start, a loop that could not be converted).
+Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
+That last one is a checkout without its `.scry/` folder or its program, a relative path or a server that
+did not start.
 
-## The prompt
+The run passes two settings of its own to `start`: the normal core and a fixed speed. The
+game's conf keeps the dynamic core, which can run past a code breakpoint, and `cycles=max`,
+which gives the game as much speed as your computer has.
 
-Give this to an MCP client with this server connected:
+## Try it yourself
 
-> Derive the game's live-session conf with `SCRIPTS/dosbox-mcp-conf.sh`, then start from the
-> recipe `.scry/start/dos.json` in the `--cwd` checkout, with a window, the normal core and
-> `cycles=fixed 50000`. Stop
-> at the game's first VESA call (`INT 10h AH=4Fh`) so its map is placed, run to
-> `titulo_dibuja_cred` counting `draw_block` on the way, read `creditos`, save a picture of the
-> screen and close.
-
-## The transcript
+[Add the server to your client](../../README.md#install) and open it in your checkout of the game. Each of these is a step of
+the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-The run is 9 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+**1. Start from the game's own start profile**
 
-**1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
+Ask:
 
-`start(profile=...)` boots from the recipe the game's own repository declares: the conf its script derives, the working directory, the program spelled from where the autoexec leaves the guest, and the TLINK map. The call gives only what is the run's own, and the reply says which keys the recipe filled.
+> Start Speed Fight from the start profile its repository keeps in `.scry/start/`.
 
-<details><summary>call and reply</summary>
+Call:
+
+```text
+start(shared=true, background=true, display="<host>", profile="<host>",
+    flags=["-set", "cpu core=normal", "-set", "cpu cycles=fixed 50000"], captures_dir="<host>",
+    cwd="<host>")
+```
+
+Reply, 2 of 28 fields:
 
 ```json
 {
-  "shared": true,
-  "background": true,
-  "display": "<host>",
-  "profile": "<host>",
-  "flags": ["-set", "cpu core=normal", "-set", "cpu cycles=fixed 50000"],
-  "captures_dir": "<host>",
-  "cwd": "<host>"
+  "status": "ok",
+  "kept": "kept 1 (promote to review)"
 }
 ```
+
+A start profile is a saved set of `start` arguments: the call adds only what is this run's own. `kept` says a candidate was saved for `promote`; the whole reply lists what the file filled in `profile.supplied`.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -120,19 +125,31 @@ The run is 9 calls; these are the ones that show how it is done, and every call 
 
 </details>
 
-**5. `run_to`**: OK title: stopped at titulo_dibuja_cred
+**2. Run until the title is drawn**
 
-The run arrives by the game's own routine, not by time: `run_to` stops where the title calls its credits line, once both planes are drawn, so the picture that follows is the same on any host.
+Ask:
 
-<details><summary>call and reply</summary>
+> Run the game to `titulo_dibuja_cred`, counting `draw_block` on the way.
+
+Call:
+
+```text
+run_to(ref="titulo_dibuja_cred", control="draw_block", seconds=120)
+```
+
+Reply, 3 of 18 fields:
 
 ```json
 {
-  "ref": "titulo_dibuja_cred",
-  "control": "draw_block",
-  "seconds": 120
+  "summary": "run_to titulo_dibuja_cred: TARGET at 0951:00000819, control counted 35",
+  "verdict": "TARGET",
+  "control_hits": 35
 }
 ```
+
+`TARGET` means the run stopped where the title calls its credits line, once both planes are drawn. `control_hits` counts a routine that ran many times meanwhile.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -186,18 +203,30 @@ The run arrives by the game's own routine, not by time: `run_to` stops where the
 
 </details>
 
-**6. `read_memory`**: OK no credits: creditos holds 0
+**3. Read a variable by its name**
 
-`creditos` is read by name: the map `start` placed names the game's own variables at the segment DOS loaded it at, the same name the arcade build's map gives.
+Ask:
 
-<details><summary>call and reply</summary>
+> Read the game's `creditos` variable.
+
+Call:
+
+```text
+read_memory(ref="creditos", length=2)
+```
+
+Reply, 2 of 7 fields:
 
 ```json
 {
-  "ref": "creditos",
-  "length": 2
+  "summary": "read_memory creditos: 2 bytes at 26AB:00000006: 0000",
+  "hex": "0000"
 }
 ```
+
+`creditos` is a name from the game's symbol map, resolved at the segment DOS loaded the program at. The arcade build's map gives the same name.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -213,3 +242,35 @@ The run arrives by the game's own routine, not by time: `run_to` stops where the
 
 </details>
 <!-- demo-transcript:end -->
+
+<details><summary>The whole demo as one prompt</summary>
+
+1. Start DOSBox-X from the start profile `.scry/start/dos.json` of the checkout, with a window,
+   on the normal core and a fixed speed.
+2. Put a breakpoint on the game's first VESA call, `INT 10h AH=4Fh`, let it run there and clear
+   it.
+3. Run to `titulo_dibuja_cred` counting `draw_block`, and read `creditos`.
+4. Take a picture of the screen, record 200 frames of video and close.
+
+</details>
+
+## Tools this demo uses
+
+| Group | Tools |
+|---|---|
+| [Session](../../docs/reference/session.md) | `start`, `close` |
+| [Declarations](../../docs/reference/declarations.md) | `breakpoint_interrupt`, `declaration_clear` |
+| [Advance](../../docs/reference/advance.md) | `resume`, `run_to` |
+| [Read](../../docs/reference/read.md) | `read_memory` |
+| [Captures](../../docs/reference/captures.md) | `record` |
+| [Screen](../../docs/reference/screen.md) | `screen_view` |
+
+Each group is a page of the reference. Some of the names need a word:
+
+- Advance: the tools that let the program run and stop it again.
+- Declarations: breakpoints and watches.
+
+## The transcript
+
+[TRANSCRIPT.md](TRANSCRIPT.md) has every call of the run with its reply. The paths of your
+checkout read `<host>` there, because they are your computer's.

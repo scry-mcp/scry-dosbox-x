@@ -1,3 +1,5 @@
+Every call of the run with its reply, in order: 23 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+
 **1. `start`**: OK start: DOSBox-X in a window, parked at the debugger before DOS boots
 
 <details><summary>call and reply</summary>
@@ -7,6 +9,8 @@
   "shared": true,
   "background": true,
   "display": "<host>",
+  "capture_video": true,
+  "captures_dir": "<host>",
   "conf": "./demos/dpaint/dpaint.conf",
   "session_seconds": 900,
   "program": "DP.EXE f",
@@ -26,7 +30,7 @@
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
-  "captures": "off",
+  "captures": "./tmp/demos/dpaint/video",
   "state_dir": "./tmp/demos/dpaint/dpaint-states",
   "shared": true,
   "ready_after_s": "<volatile>",
@@ -1405,52 +1409,7 @@ Also attached: image/png.
 
 </details>
 
-**22. `record`**: OK loop: recording 240 frames in ./tmp/demos/dpaint/loop.avi
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "frames": 240,
-  "dest": "./tmp/demos/dpaint/loop.avi"
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": "<volatile>",
-  "note": "<volatile>",
-  "pc": "<volatile>",
-  "cpu_mode": "<volatile>",
-  "frame": "<volatile>",
-  "regs": "<volatile>",
-  "watches": "<volatile>",
-  "cause": "<volatile>",
-  "e9": "<volatile>",
-  "stop_seq": "<volatile>",
-  "instruction": "<volatile>",
-  "emulated_before_s": "<volatile>",
-  "emulated_after_s": "<volatile>",
-  "frame_before": "<volatile>",
-  "frame_after": "<volatile>",
-  "cycles": "<volatile>",
-  "kind": "avi",
-  "frames": 240,
-  "began": true,
-  "ended": true,
-  "path": "./tmp/demos/dpaint/loop.avi",
-  "bytes": "<volatile>",
-  "avi_frames": "<volatile>",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**23. `declaration_clear`**: OK unwatch: watch cleared
+**22. `declaration_clear`**: OK unwatch: watch cleared
 
 <details><summary>call and reply</summary>
 
@@ -1473,7 +1432,7 @@ Also attached: image/png.
 
 </details>
 
-**24. `close`**: OK close: closed: quit
+**23. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
@@ -1492,7 +1451,7 @@ Also attached: image/png.
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
-  "captures": "off",
+  "captures": "./tmp/demos/dpaint/video",
   "state_dir": "./tmp/demos/dpaint/dpaint-states",
   "ended_by": "quit",
   "exit_code": 0,

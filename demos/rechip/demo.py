@@ -10,7 +10,18 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import DISPLAY, Demo, Loop, Reply, Run, Step, expect, main, window_args
+from scry_core.demo import (
+    DISPLAY,
+    Demo,
+    Moment,
+    Reply,
+    Run,
+    Step,
+    expect,
+    main,
+    recording,
+    window_args,
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
@@ -51,6 +62,8 @@ REPORT = r"PERF  \. fps="
 ASKED = r"ask opens"
 CONFIRMED = r"ask res=1"
 WAIT_S = 120
+#: The retraces recorded for the loop while the paused song's warning button pulses.
+PULSE_FRAMES = 240
 VOLATILE_PROGRAM = {**VOLATILE,
                     "conf": "where the reader's checkout keeps its derived conf",
                     "state_dir": "a directory in the session's own temporary directory",
@@ -146,30 +159,28 @@ STEPS = [
                    "name": "where the reader's checkout keeps its profile",
                    "held": "where the reader's checkout keeps its symbol table",
                    "against": "where the reader's checkout keeps its build",
-                   "logfile": "where the reader's checkout keeps the program's log"},
-         highlight=("`start(profile=...)` boots from the recipe the program's own repository "
-                    "declares: the line `make mcp-conf` prints, the DEV build opening the demo "
-                    "song unattended, the conf with its boot line removed, the E9 log. The call "
-                    "gives only what is the run's own, and the reply says which keys the recipe "
-                    "filled.")),
+                   "logfile": "where the reader's checkout keeps the program's log"}),
     Step("run", "resume", {"seconds": 0},
          released("DOS boots and the autoexec hands over to the program")),
     Step("sounding", "log_wait", {"pattern": SOUNDING, "channel": "guest", "seconds": WAIT_S},
          targeted("the app is up and the song sounds"), volatile=LOG_TIMING,
-         highlight=("The program's own log says when it is up and when the song sounds, two "
-                    "different lines: `log_wait` on the guest channel waits for the second, on "
-                    "a running machine.")),
+         title="Wait for a line of the program's log",
+         ask="Wait until the program logs that the song is sounding.",
+         shown=("verdict", "pattern"),
+         reads=("`TARGET` means a line matching `pattern` arrived in the program's log. The "
+                "program keeps running meanwhile: `log_wait` is one of the tools that answer "
+                "while it runs.")),
     Step("pause", "send_keys", {"keys": ["space"], "expect": "key down SPACE", "seconds": 10},
          seen("space reached the app"), volatile=KEY_TIMING,
-         highlight=("`send_keys` with `expect` proves the key reached the application, not "
-                    "only that the host sent one: the program logs every key it takes, by "
-                    "name.")),
+         title="Press a key and check the program took it",
+         ask="Press space and check that the program logged the key.",
+         shown=("summary", "keys"),
+         reads=("The program logs every key it takes, by name. \"effect seen\" means that line "
+                "arrived: the key reached the program, not only the emulator.")),
     Step("paused", "log_wait", {"pattern": PAUSED, "channel": "guest", "seconds": 10},
          targeted("the transport stopped"), volatile=LOG_TIMING),
     Step("rewind", "send_keys", {"keys": ["home"], "expect": REWOUND, "seconds": 10},
-         seen("home put the song back at its first row"), volatile=KEY_TIMING,
-         highlight=("Where the pause lands is the host's, so the still is not taken there: "
-                    "home rewinds the paused song to its first row and the program logs it.")),
+         seen("home put the song back at its first row"), volatile=KEY_TIMING),
     Step("report", "log_wait", next_report, targeted("the program reported after the rewind"),
          volatile=LOG_TIMING),
     Step("settled", "log_wait", next_report,
@@ -196,11 +207,14 @@ STEPS = [
     # The edge logs nothing, so it is sampled retrace by retrace from the middle of a lit half.
     Step("dark", "screen_wait", {"screen": "warning_dark", "seconds": 10},
          targeted("the first frame it went dark"), volatile=WAIT_PLACE, optional=STOP_NOTE,
-         highlight=("The warning button pulses on the program's own counter, so the picture "
-                    "is taken on its edge: `read_memory` reads the counter, `run_for` goes to "
-                    "the middle of the next lit half, and `screen_wait` on the mapped dark look "
-                    "stops on its first frame.")),
+         title="Stop on the frame a button goes dark",
+         ask="Wait until the screen map names `warning_dark`.",
+         shown=("verdict", "screen"),
+         reads=("The warning button pulses on the program's own counter. `TARGET` means the "
+                "wait stopped on the first frame the screen map, the file that names the "
+                "program's screens, called `warning_dark`.")),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
+    recording("pulse", PULSE_FRAMES),
     Step("go on", "resume", {"seconds": 0}, released("the program runs on")),
     Step("quit", "send_keys", {"keys": ["x"], "modifiers": ["alt"], "expect": ASKED,
                                "seconds": 10},
@@ -208,16 +222,22 @@ STEPS = [
     Step("confirm", "send_keys", {"keys": ["right", "enter"], "expect": CONFIRMED,
                                   "seconds": 10},
          seen("Quit without saving"), volatile=KEY_TIMING,
-         highlight=("The program is left by its own keys, and its log says which button the "
-                    "confirm took, so the session closes over a guest that has quit rather "
-                    "than one killed under a running program.")),
+         title="Leave the program by its own keys",
+         ask="Answer the quit dialog: right arrow, then Enter.",
+         shown=("summary", "keys"),
+         reads=("\"effect seen\" means the program logged which button the dialog took. So the "
+                "session closes over a program that quit by itself.")),
     Step("close", "close", {}, quit_cleanly),
 ]
 
 DEMO = Demo(
     name="rechip", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
-    capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+    capture=lambda run: run.dir / "screen.png",
+    moments=(Moment("screen", "pulse",
+                    "The song is paused at its first row; `record` films the warning button "
+                    "pulsing.", frames=200),),
+    alt="ReChip! paused at the first row of a song, its warning button pulsing",
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_PROGRAM,
     host_args={"cwd": "the reader's checkout of the program, wherever it was cloned",

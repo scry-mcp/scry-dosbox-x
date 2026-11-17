@@ -4,12 +4,13 @@ run, their first steps, a drag, and their declaration."""
 from __future__ import annotations
 
 import hashlib
+import shutil
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import DISPLAY, Demo, Loop, Reply, Run, Step
+from scry_core.demo import DISPLAY, Demo, Moment, Reply, Run, Step
 from scry_core.verdict import Invalid
 
 from demos import host
@@ -111,13 +112,37 @@ def opening(boot: Callable[[Run], dict[str, Any]], screen_map: Path, first: str)
             Step("placed", "machine_map", {}, placed)]
 
 
-def declared(name: str, here: Path, steps: list[Step]) -> Demo:
-    """A Deluxe Paint demo: run from the directory `--cwd` names, refused on any other build,
-    its loop recorded after `screen`."""
+def video(run: Run) -> Path:
+    """Where the session records itself: Deluxe Paint draws inside the calls that drag, so its
+    moments are stretches of the whole session's video."""
+    return run.dir / "video"
+
+
+def recorded(run: Run) -> dict[str, Any]:
+    """`start`'s arguments for a session that records itself, into a folder emptied first."""
+    shutil.rmtree(video(run), ignore_errors=True)
+    return {"capture_video": True, "captures_dir": video(run)}
+
+
+def counted(name: str) -> Step:
+    """One retrace, whose reply counts the frame: where a moment of the loop begins or ends when
+    the calls around it answer with summaries, which count none."""
+    return Step(name, "run_for", {"frames": 1, "seconds": WAIT_S},
+                lambda reply, run: f"frame {reply['frame']}",
+                volatile={**host.RETRACE_STOP,
+                          **{key: "it names the instruction or the clock a retrace stop lands "
+                                  "on, which drift with the host's cycles"
+                             for key in ("summary", "emulated_before_s", "emulated_after_s")}})
+
+
+def declared(name: str, here: Path, steps: list[Step], moments: Sequence[Moment],
+             alt: str) -> Demo:
+    """A Deluxe Paint demo: run from the directory `--cwd` names, refused on any other build."""
     return Demo(
         name=name, root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
         readme=here / "README.md", steps=steps,
-        capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+        capture=lambda run: run.dir / "screen.png", moments=moments, alt=alt, video=video,
         offers=frozenset({"cwd", "display"}), precheck=precheck,
-        host_args={"cwd": "the directory holding the program", "display": DISPLAY},
+        host_args={"cwd": "the directory holding the program", "display": DISPLAY,
+                   "captures_dir": "the run's own directory"},
         volatile={**VOLATILE, **host.RETRACE_STOP})

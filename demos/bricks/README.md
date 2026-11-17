@@ -1,17 +1,25 @@
-# Bricks: a game, stopped where every brick falls
+# Bricks: a breakout game stopped at every brick it loses
 
-![Bricks in mode 13h, the ball just after it took the second brick](screen.png)
+<!-- demo-motion:begin -->
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Bricks, the game this repository builds, with its ball in play"></picture>
 
-`BRICKS.COM` is a wall, a ball and a paddle in mode 13h, written in this directory to be
-debugged as much as played. It keeps its score in a variable with a name, sends every falling
-brick through one routine, answers the arrow keys and the mouse, and has no random number in
-it: the serve is fixed and the game is paced by the retrace of a machine whose clock its conf
-pins, so two runs from cold knock down the same bricks on the same frames. Until the first arrow
-key (or mouse motion, once M has handed it the mouse) it plays itself.
+1. With the breakpoint cleared the game plays on, and `record` films it.
 
-Everything it needs is here: the source (`bricks.asm`, MIT like the rest of the repository), the
-program built from it, the symbol table the build generates from NASM's own map, and the conf
-that boots it. The build recipe is in the header of `bricks.asm`.
+<!-- moments-ms: 2854 -->
+<!-- demo-motion:end -->
+
+`BRICKS.COM` is a wall, a ball and a paddle, written in this folder to be debugged as much as
+played. This demo stops it by name where each brick falls, reads the score, takes the paddle
+with keys and with the mouse, and undoes a move with a saved state.
+
+## The program
+
+Everything it needs is here: the source (`bricks.asm`, MIT like the rest of the repository),
+the program built from it, its symbol table and the conf that starts it. The header of
+`bricks.asm` says how to build it.
+
+The game has no random number in it, and its conf fixes the emulator's speed. So two runs
+knock down the same bricks on the same frames.
 
 ## Run it
 
@@ -19,80 +27,57 @@ that boots it. The build recipe is in the header of `bricks.asm`.
 uv run python demos/bricks/demo.py
 ```
 
-The demo opens a window so the game can be watched; nothing in it needs the window: `stop` and
-the saved states go down the debugger channel, and the keys and the mouse go in inside the
-guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE (the repository's
-REFERENCE.md, *Saved states*), named with `DOSBOX_X_BINARY`.
+Each line it prints is one call and its check. The window opens behind the others, so the run
+does not take your keyboard.
 
-- `--binary PATH` (absolute) picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`, else the
-  `dosbox-x` on your `PATH`.
-- `--display N` opens the window on that display; left out, on the host's main one. The
-  window opens behind, so the run takes nobody's focus.
+- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
+  `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
+- `--display N` opens the window on that display. Left out, it opens on the main one.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png`, `loop.mp4` and the front door's
-  flow from a run where every step
-  passed.
+- `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png`,
+  `loop.webp` and the README's example calls, from a run where every step passed. It needs ffmpeg and `img2webp` on your
+  `PATH`.
 
-Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
-line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2
-a usage error, 3 nothing was demonstrated (a relative path, a server that did not
-start, a loop that could not be converted).
+Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
+That last one is a relative path or a server that did not start.
 
-To play it yourself, run it from this directory: `cd demos/bricks && dosbox-x -conf
-bricks.conf`. The arrows move the paddle and SPACE serves the ball; press M to hand the paddle to
-the mouse, which then centres it under the pointer. ESC returns to DOS.
+The saved states need a DOSBox-X that has the SAVESTATE and LOADSTATE debugger commands
+([REFERENCE.md](../../REFERENCE.md), *Saved states*).
 
-## The prompt
+To play it yourself: `cd demos/bricks && dosbox-x -conf bricks.conf`. The arrows move the
+paddle and SPACE serves the ball. M hands the paddle to the mouse, and ESC returns to DOS.
 
-Give this to an MCP client with this server connected:
+## Try it yourself
 
-> Start DOSBox-X windowed on `demos/bricks/bricks.conf` from that directory, stopping at the guest's own
-> `int 3`, with the log in a file. Let it run to that first stop and tell me where DOS loaded the program.
-> Load `bricks.sym` with its base set to that segment times 16, show me the start of `brick_hit`, put a
-> breakpoint on it and keep `score` in view at every stop. Run to the first brick and the second: which row
-> and column, and what is the score? Read `score` by name, then clear the breakpoint, run three frames, tell
-> me where the ball is and show me the screen. Let the game run, press the right arrow three times and show me
-> the game took them, stop it and read `paddle_x`. Let it run again, press M to hand the paddle to the mouse,
-> put the pointer on pixel 240, 100 and show me the game saw it, then press M again to take the paddle back.
-> Stop and read `paddle_x`: the paddle should be centred under the pointer. Let it run, save a state, press
-> the left arrow, load the state back, stop, and show me `paddle_x` is where it was saved. Let it run, press
-> SPACE to serve the ball waiting on the paddle, clear the watch and close.
-
-## What it walks
-
-| Family | Calls |
-|---|---|
-| Session | `start` (windowed, stopping at the guest's `int 3`), `close` |
-| Advance | `resume` to a stop, `run_for` by retraces on the conf's fixed clock, `stop` |
-| Names | `symbols_load` at the measured segment |
-| Read | `disassemble`, `read_memory` by symbol |
-| Captures | `record` (the loop) |
-| Screen | `screen_view` |
-| Declarations | `breakpoint_at` by name, `declaration_clear(kind="breakpoint")`, `watch_add` (`score` in view at every stop), `declaration_clear(kind="watch")` |
-| Input | `send_keys`, `send_mouse` |
-| Lists | `drive` (three keys and their proof in one call) |
-| States | `state_write(method="save")`, `state_write(method="load")` |
-
-## The transcript
-
-Generated by `demo.py --update-readme` from a run where every step passed. What differs between
-two honest runs (process ids, ports, wall-clock times, temporary paths, the host's own DOSBox-X
-and its own arguments) is `<volatile>`.
+[Add the server to your client](../../README.md#install) and ask it to start DOSBox-X on `demos/bricks/bricks.conf`. Each of these is a step of
+the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-The run is 34 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+**1. Set a breakpoint by a name**
 
-**5. `breakpoint_at`**: OK break: breakpoint BP 08DF:02C8
+Ask:
 
-A breakpoint asked for by name. `brick_hit` is a label in the symbol table the build generated, so the server turns it into the address the program actually loaded at and arms the debugger there; the reply says it was resolved `by: symbol`.
+> Put a breakpoint on `brick_hit`.
 
-<details><summary>call and reply</summary>
+Call:
+
+```text
+breakpoint_at(ref="brick_hit")
+```
+
+Reply, 3 of 10 fields:
 
 ```json
 {
-  "ref": "brick_hit"
+  "summary": "breakpoint_at brick_hit: armed",
+  "entry": "BP 08DF:02C8",
+  "by": "symbol"
 }
 ```
+
+`brick_hit` is a label of the symbol table the build wrote, so `by` says `symbol`. `armed` means the breakpoint is set in the debugger, at the address `entry` gives.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -111,17 +96,31 @@ A breakpoint asked for by name. `brick_hit` is a label in the symbol table the b
 
 </details>
 
-**7. `resume`**: OK first brick: brick_hit for the first brick, row 5 column 7, score 0
+**2. Run until the program stops itself**
 
-`resume` hands the machine back and returns when the debugger stops it again. The stop carries what a person would otherwise type commands for: the registers, the instruction under the program counter with its symbol, the cause, and the value of the watch armed a step earlier, the score, read by name. The line the game itself wrote to the debugger's port E9 comes in the same reply: the game says which brick fell, the registers say where.
+Ask:
 
-<details><summary>call and reply</summary>
+> Let the game run until that breakpoint stops it, and tell me the score.
+
+Call:
+
+```text
+resume(seconds=60)
+```
+
+Reply, 3 of 16 fields:
 
 ```json
 {
-  "seconds": 60
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
+  "verdict": "OTHER_STOP",
+  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8"
 }
 ```
+
+`OTHER_STOP` means the breakpoint stopped the run, not a time limit. `cause` names it; the whole reply also holds `watches`, the score read by its name.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -182,18 +181,30 @@ A breakpoint asked for by name. `brick_hit` is a label in the symbol table the b
 
 </details>
 
-**30. `read_memory`**: OK restored: the paddle is back where the state was saved: the load undid the left arrow
+**3. Read a value after a saved state is loaded**
 
-A saved state is the whole machine, not the game's own save. After the save the left arrow moves the paddle, the load puts the machine back, and the paddle read back is where it was before the arrow.
+Ask:
 
-<details><summary>call and reply</summary>
+> Now that the state saved before the left arrow is loaded, read `paddle_x` again.
+
+Call:
+
+```text
+read_memory(ref="paddle_x", length=2)
+```
+
+Reply, 2 of 7 fields:
 
 ```json
 {
-  "ref": "paddle_x",
-  "length": 2
+  "summary": "read_memory paddle_x: 2 bytes at 08DF:0000061F: dc00",
+  "hex": "dc00"
 }
 ```
+
+A saved state is the whole machine, not the game's own save. So the paddle reads where it was before the arrow moved it.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -209,3 +220,51 @@ A saved state is the whole machine, not the game's own save. After the save the 
 
 </details>
 <!-- demo-transcript:end -->
+
+<details><summary>The whole demo as one prompt</summary>
+
+1. Start DOSBox-X windowed on `demos/bricks/bricks.conf` from that directory, stopping at the
+   program's own `int 3`, with the log in a file.
+2. Let it run to that first stop and tell me where DOS loaded the program.
+3. Load `bricks.sym` with its base at that segment, show me the start of `brick_hit`, put a
+   breakpoint on it and keep `score` in view at every stop.
+4. Run to the first brick and to the second: which row and column, and what is the score?
+5. Read `score` by name, clear the breakpoint, run three frames, tell me where the ball is and
+   show me the screen.
+6. Record 240 frames to an AVI, let the game run, press the right arrow three times and show me
+   the game took them.
+7. Stop it and read `paddle_x`. Let it run, press M, put the pointer on pixel 240, 100, and
+   press M again.
+8. Stop and read `paddle_x`. Let it run, save a state, press the left arrow, load the state,
+   stop, and read `paddle_x` again.
+9. Let it run, press SPACE to serve the ball, clear the watch and close.
+
+</details>
+
+## Tools this demo uses
+
+| Group | Tools |
+|---|---|
+| [Session](../../docs/reference/session.md) | `start`, `close` |
+| [Advance](../../docs/reference/advance.md) | `resume`, `run_for`, `stop` |
+| [Names](../../docs/reference/names.md) | `symbols_load` |
+| [Read](../../docs/reference/read.md) | `disassemble`, `read_memory` |
+| [Declarations](../../docs/reference/declarations.md) | `breakpoint_at`, `watch_add`, `declaration_clear` |
+| [Input](../../docs/reference/input.md) | `send_keys`, `send_mouse` |
+| [Lists](../../docs/reference/lists.md) | `drive` |
+| [States](../../docs/reference/states.md) | `state_write` |
+| [Screen](../../docs/reference/screen.md) | `screen_view` |
+| [Captures](../../docs/reference/captures.md) | `record` |
+
+Each group is a page of the reference. Some of the names need a word:
+
+- Advance: the tools that let the program run and stop it again.
+- Declarations: breakpoints and watches.
+- Lists: the tools that run several calls as one.
+- Names: the tool that loads a symbol table.
+
+## The transcript
+
+[TRANSCRIPT.md](TRANSCRIPT.md) has every call of the run with its reply. Process ids, ports,
+wall-clock times and temporary paths read `<volatile>` there, because they change from run to
+run.

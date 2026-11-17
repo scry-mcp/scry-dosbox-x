@@ -20,11 +20,18 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Reply, Run, Step, main, window_args
+from scry_core.demo import Moment, Reply, Run, Step, main, window_args
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos import host  # noqa: E402
-from demos.dpaint.program import click, declared, drag, ds_segment, opening  # noqa: E402
+from demos.dpaint.program import (  # noqa: E402
+    click,
+    declared,
+    drag,
+    ds_segment,
+    opening,
+    recorded,
+)
 from demos.host import expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -49,8 +56,8 @@ def boot(run: Run) -> dict[str, Any]:
     """A fresh log of this demo's own under the run's, so nothing an earlier run left is read,
     and the saved states there too: left out, they would go into the program's directory."""
     (run.dir / "dpaint-e9.log").unlink(missing_ok=True)
-    return {**window_args(run), "conf": HERE / "dpaint.conf", "session_seconds": 900,
-            "program": "DP.EXE f",
+    return {**window_args(run), **recorded(run), "conf": HERE / "dpaint.conf",
+            "session_seconds": 900, "program": "DP.EXE f",
             "logfile": run.dir / "dpaint-e9.log", "state_dir": run.dir / "dpaint-states"}
 
 
@@ -137,20 +144,23 @@ STEPS = [
     Step("find", "screen_map_find", {}, found),
     Step("blue", "send_mouse", {"target": "blue", "button": "left"},
          picked("blue picked off the palette"),
-         highlight=("Tools and colours are picked by name: the screen map says where `blue` sits "
-                    "on the palette, and `send_mouse` with a `target` moves the guest's own mouse "
-                    "driver there and presses. The script holds no coordinates.")),
+         title="Click a control by its name",
+         ask="Pick blue on Deluxe Paint's palette.",
+         shown=("summary", "target", "driver_arrived"),
+         reads=("The screen map says where `blue` sits, so the call holds no coordinates. "
+                "`driver_arrived` is true when the program's own mouse driver reports the "
+                "pointer there.")),
     Step("scan", "scan", scan_start, candidates),
     Step("is blue", "scan", {"method": "filter", "value": COLOURS["blue"], "limit": 8},
          narrowed),
     Step("orange", "send_mouse", {"target": "orange", "button": "left"},
          picked("orange picked off the palette")),
     Step("is orange", "scan", {"method": "filter", "value": COLOURS["orange"]}, colour_found,
-         highlight=("A value scan, the cheat finder's trick done through a debugger. The first "
-                    "scan kept every byte of the data segment, the filter after picking blue kept "
-                    "those holding blue's index, and this one, after orange, keeps those that held "
-                    "each in turn. The survivors are of two kinds, told apart by where they live: "
-                    "copies in the stack's frames, and static bytes in the data segment.")),
+         title="Find the byte that holds the colour",
+         ask="Orange is picked now. Keep only the bytes of the scan that hold orange's number.",
+         shown=("summary", "hits_total"),
+         reads=("`hits_total` counts the bytes still in the scan: they held blue's number, then "
+                "orange's. The ones below the stack pointer are the program's own variables.")),
     Step("unscan", "scan", {"method": "clear"}, lambda reply, run: "scan closed"),
     Step("watch", "watch_add", lambda run: {"ref": colour_ref(run), "mode": "show",
                                             "fmt": "u8"},
@@ -167,9 +177,11 @@ STEPS = [
         click("line")], "summaries": True}, typed),
     Step("sun row", "read_memory", lambda run: row(100, 160, 128),
          crossing(("peach", 25), ("yellow", 51), ("peach", 52)),
-         highlight=("The picture is checked by reading it back: a row of the screen comes out of "
-                    "video memory as colours and run lengths, in the order the strokes were "
-                    "painted.")),
+         title="Read the picture back out of video memory",
+         ask="Read 128 bytes of video memory from row 100, column 160.",
+         shown=("summary", "length"),
+         reads=("In this video mode each byte is one pixel's colour number. The row holds 25 "
+                "pixels of sky, 51 of sun and 52 of sky, as painted.")),
     Step("boat row", "read_memory", lambda run: row(154, 30, 112),
          crossing(("navy", 30), ("brown", 53), ("navy", 29))),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
@@ -179,7 +191,14 @@ STEPS = [
 ]
 
 
-DEMO = declared("dpaint", HERE, STEPS)
+MOMENTS = (
+    Moment("watch", "sun", "Each `perform` picks a tool and a colour by name and drags: the sky, "
+                           "then the sun."),
+    Moment("sun", "hull", "Two more `perform` calls paint the sea and the boat's hull."),
+    Moment("sail", "word", "The text tool, a click and `send_keys`: SCRY, typed into the picture."),
+)
+
+DEMO = declared("dpaint", HERE, STEPS, MOMENTS, "Deluxe Paint painting a sunset by itself")
 
 
 if __name__ == "__main__":

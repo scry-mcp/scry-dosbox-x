@@ -1,15 +1,23 @@
-# Minesweeper: five screens, a board read out of memory, and an explosion held to the sample
+# Minesweeper: the board read out of memory and cleared without a miss
 
-![Minesweeper at 800 x 600, the beginner's board cleared and the dialog saying so](screen.png)
+<!-- demo-motion:begin -->
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Minesweeper cleared without a miss, then a mine stepped on"></picture>
 
-`MINES.COM` is a Minesweeper this repository builds, at VESA 800 x 600 in 256 colours: a title,
-a board, a menu that drops over it and two dialogs, all played with the mouse. The demo plays it
-the way a model would through the server. Every screen is recognised off a screen map before a
-click lands on it, and the menu and the dialogs are clicked by name. Then the demo does what no
-player can: it reads where the mines are out of the game's memory, by symbol, and clears the
-board without a miss. Last, it steps on a mine on purpose and records the explosion off the
-Sound Blaster's digital output, which has to come out sample for sample as the recording beside
-this file.
+1. `perform` opened every cell the game's memory says is safe: the board is cleared.
+2. On the next board `send_mouse` clicks a cell the memory says holds a mine.
+
+<!-- moments-ms: 1425,1425 -->
+<!-- demo-motion:end -->
+
+`MINES.COM` is a Minesweeper this repository builds, at 800 x 600 in 256 colours. The demo
+plays it with the mouse, by the names its screen map gives its buttons: a file that names the
+game's controls. Then it reads where the mines are out of the game's memory, clears the board,
+and steps on a mine on purpose.
+
+## The program
+
+The game is `mines.asm`, in this folder with the program built from it, its symbol table, its
+conf and its screen map. Its header says how to build it and what it logs for a debugger.
 
 ## Run it
 
@@ -17,84 +25,54 @@ this file.
 uv run python demos/mines/demo.py
 ```
 
-The demo opens a window, its 800 x 600 screen drawn at seven quarters by its conf, so the game can
-be watched; nothing in it needs the window.
+Each line it prints is one call and its check. The window opens behind the others, so the run
+does not take your keyboard.
 
-- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`,
-  else the `dosbox-x` on your `PATH`.
-- `--display N` opens the window on that display; left out, on the host's main one. The
-  window opens behind, so the run takes nobody's focus.
+- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
+  `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
+- `--display N` opens the window on that display. Left out, it opens on the main one.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where every step
-  passed.
+- `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
+  `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
+  `PATH`.
 
-Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
-line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2
-a usage error, 3 nothing was demonstrated (a server that did not start, a loop that could not be converted).
+Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
+That last one is a server that did not start.
 
-The explosion is held against [`boom.wav`](boom.wav) here. The recording starts where the click's
-post leaves the machine, a few retraces after the game took the click, so it holds the explosion
-from there on, and a change to the game's sound or timing or to the input route's pacing makes it stale:
-the run's own `boom.wav`, beside its transcript, is then the one to copy over it.
+The explosion is recorded from the emulated Sound Blaster and must equal [`boom.wav`](boom.wav)
+sample for sample. A change to the game's sound or timing makes that file out of date: the
+run's own `boom.wav`, beside its transcript, is then the one to copy over it.
 
-The game itself is `mines.asm`, whose header says how to build it and what it tells a debugger.
+## Try it yourself
 
-## The prompt
-
-Give this to an MCP client with this server connected:
-
-> Start DOSBox-X windowed on `demos/mines/mines.conf`,
-> stopping at the program's own `int 3`, with the log in a file and the captures in my run's
-> directory. Load `mines.sym` at the segment it stopped in, and the screen map
-> `mines-screen-map.json` beside the conf. Run to `main_loop`, where the game goes once its title
-> is drawn, and tell me which screen this is; click its start, run to `main_loop` again and tell me
-> again. Open the Game menu by name, run to the loop, check it is the menu, pick Beginner and run
-> to the loop. Read the board's size, where its mines are and the pixel of its top-left corner, all
-> by symbol. Flag two of the mines with the right button, then open every safe cell with as few
-> left clicks as the game's flood fill allows, run to the loop, and show me it says WIN. Park the pointer off the
-> screen's signed regions, tell me which screen this is and show it to me. Click OK and run to the
-> loop, read the new board's mines, click on the first one until the game logs BOOM, and record
-> 45 retraces of sound from there. Show me the
-> game said BOOM, measure the recording, and compare it with `boom.wav` beside the conf without
-> aligning them. Park the pointer, tell me which screen this is, and close.
-
-## What it walks
-
-| Family | Calls |
-|---|---|
-| Session | `start` (windowed, stopping at the program's `int 3`), `close` |
-| Advance | `resume` to the `int 3`, `run_to` the game's loop by its symbol |
-| Names | `symbols_load` at the load segment |
-| Files | `audio_compare` (`measure`, `diff`) |
-| Input | `send_mouse` by control name off the map and at pixels, both buttons |
-| Lists | `perform` (the flags in one call, the clicks that clear the board in another) |
-| Read | `screen_map_write(method="load")`, `screen_map_find` on every screen, `read_memory` by symbol |
-| Machine | `log` |
-| Screen | `screen_view` |
-| Captures | `record` (the loop), `audio_record` of the Sound Blaster's output |
-
-## The transcript
-
-Generated by `demo.py --update-readme` from a run where every step passed. What differs between
-two honest runs (process ids, ports, wall-clock times, temporary paths, the host's own DOSBox-X
-and its own arguments) is `<volatile>`.
+[Add the server to your client](../../README.md#install) and ask it to start DOSBox-X on `demos/mines/mines.conf`. Each of these is a step of
+the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-The run is 37 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+**1. Run to a routine by its name**
 
-**5. `run_to`**: OK title: the game's loop reached: the title drawn and the pointer up
+Ask:
 
-The run arrives by a symbol, not by time: `main_loop` is where the game goes once the title is drawn, so the screen read next is whole on any host.
+> Run the game until it reaches `main_loop`.
 
-<details><summary>call and reply</summary>
+Call:
+
+```text
+run_to(ref="main_loop", control="retrace", seconds=60)
+```
+
+Reply, 2 of 18 fields:
 
 ```json
 {
-  "ref": "main_loop",
-  "control": "retrace",
-  "seconds": 60
+  "summary": "run_to main_loop: TARGET at 08DF:00000131, control counted 0",
+  "verdict": "TARGET"
 }
 ```
+
+`TARGET` means the run stopped at `main_loop`, where the game goes once its title is drawn. So the screen read next is whole on any computer.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -148,18 +126,30 @@ The run arrives by a symbol, not by time: `main_loop` is where the game goes onc
 
 </details>
 
-**17. `read_memory`**: OK mines: mines at 0,3, 1,2, 1,4, 2,0, 5,4, 6,5, 6,8, 7,2, 8,0, 8,3
+**2. Read the board out of memory**
 
-The board is read out of the game's memory by name: `mines` is a symbol of the build, one byte per cell. Where the mines are is data, and what the server can read, a player cannot.
+Ask:
 
-<details><summary>call and reply</summary>
+> Read the 81 bytes at `mines`, the game's own table of where the mines are.
+
+Call:
+
+```text
+read_memory(ref="mines", length=81)
+```
+
+Reply, 2 of 7 fields:
 
 ```json
 {
-  "ref": "mines",
+  "summary": "read_memory mines: 81 bytes at 08DF:00001030: 00000001000000 ... (202 characters)",
   "length": 81
 }
 ```
+
+`mines` is a symbol of the build, one byte per cell. Where the mines are is data the server can read and a player cannot.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -175,38 +165,30 @@ The board is read out of the game's memory by name: `mines` is a symbol of the b
 
 </details>
 
-**20. `perform`**: OK clear: 19 clicks opened every safe cell, none on a mine
+**3. Clear the board in one call**
 
-Each click is a `send_mouse` with an `expect`: the call returns only when the game's own log shows the reveal the click was meant to cause (`REVEAL row col`), so a click that missed fails at once instead of three clicks later. `perform` sends them all as one call.
+Ask:
 
-<details><summary>call and reply</summary>
+> Open every safe cell with as few clicks as the game's flood fill allows, waiting for the game to log each reveal.
+
+Call:
+
+```text
+perform(steps=[… 19 items], summaries=…)
+```
+
+Reply, 2 of 12 fields:
 
 ```json
 {
-  "steps": [
-    {"op": "send_mouse", "x": 304, "y": 204, "button": "left", "expect": "REVEAL 0 0 ", "seconds": 10},
-    {"op": "send_mouse", "x": 352, "y": 204, "button": "left", "expect": "REVEAL 0 2 ", "seconds": 10},
-    {"op": "send_mouse", "x": 400, "y": 204, "button": "left", "expect": "REVEAL 0 4 ", "seconds": 10},
-    {"op": "send_mouse", "x": 424, "y": 204, "button": "left", "expect": "REVEAL 0 5 ", "seconds": 10},
-    {"op": "send_mouse", "x": 448, "y": 204, "button": "left", "expect": "REVEAL 0 6 ", "seconds": 10},
-    {"op": "send_mouse", "x": 376, "y": 228, "button": "left", "expect": "REVEAL 1 3 ", "seconds": 10},
-    {"op": "send_mouse", "x": 400, "y": 348, "button": "left", "expect": "REVEAL 6 4 ", "seconds": 10},
-    {"op": "send_mouse", "x": 448, "y": 348, "button": "left", "expect": "REVEAL 6 6 ", "seconds": 10},
-    {"op": "send_mouse", "x": 472, "y": 348, "button": "left", "expect": "REVEAL 6 7 ", "seconds": 10},
-    {"op": "send_mouse", "x": 376, "y": 372, "button": "left", "expect": "REVEAL 7 3 ", "seconds": 10},
-    {"op": "send_mouse", "x": 400, "y": 372, "button": "left", "expect": "REVEAL 7 4 ", "seconds": 10},
-    {"op": "send_mouse", "x": 424, "y": 372, "button": "left", "expect": "REVEAL 7 5 ", "seconds": 10},
-    {"op": "send_mouse", "x": 448, "y": 372, "button": "left", "expect": "REVEAL 7 6 ", "seconds": 10},
-    {"op": "send_mouse", "x": 472, "y": 372, "button": "left", "expect": "REVEAL 7 7 ", "seconds": 10},
-    {"op": "send_mouse", "x": 496, "y": 372, "button": "left", "expect": "REVEAL 7 8 ", "seconds": 10},
-    {"op": "send_mouse", "x": 328, "y": 396, "button": "left", "expect": "REVEAL 8 1 ", "seconds": 10},
-    {"op": "send_mouse", "x": 352, "y": 396, "button": "left", "expect": "REVEAL 8 2 ", "seconds": 10},
-    {"op": "send_mouse", "x": 400, "y": 396, "button": "left", "expect": "REVEAL 8 4 ", "seconds": 10},
-    {"op": "send_mouse", "x": 424, "y": 396, "button": "left", "expect": "REVEAL 8 5 ", "seconds": 10}
-  ],
-  "summaries": true
+  "summary": "perform: 19 of 19 steps",
+  "steps_completed": 19
 }
 ```
+
+Each click waits for the line the game logs when it reveals that cell, so a click that missed fails at once. `perform` sends them all as one call.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -491,20 +473,31 @@ Each click is a `send_mouse` with an `expect`: the call returns only when the ga
 
 </details>
 
-**34. `audio_compare`**: OK exact: the explosion is boom.wav, sample for sample
+**4. Compare a sound with its reference**
 
-The explosion was recorded off the emulated Sound Blaster's digital output, not off the speakers, and the comparison is a `diff` with alignment off: the two recordings are equal sample for sample, which is what `exact` says.
+Ask:
 
-<details><summary>call and reply</summary>
+> Compare the explosion you recorded with `boom.wav`, sample by sample.
+
+Call:
+
+```text
+audio_compare(method="diff", a="./tmp/demos/mines/boom.wav", b="./demos/mines/boom.wav",
+    align=false)
+```
+
+Reply, 2 of 12 fields:
 
 ```json
 {
-  "method": "diff",
-  "a": "./tmp/demos/mines/boom.wav",
-  "b": "./demos/mines/boom.wav",
-  "align": false
+  "summary": "audio_compare diff: exact, equal, envelope 1.0",
+  "exact": true
 }
 ```
+
+`exact` is true only when every sample is equal. The recording comes from the emulated Sound Blaster's digital output, not from the speakers.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -528,3 +521,55 @@ The explosion was recorded off the emulated Sound Blaster's digital output, not 
 
 </details>
 <!-- demo-transcript:end -->
+
+<details><summary>The whole demo as one prompt</summary>
+
+1. Start DOSBox-X windowed on `demos/mines/mines.conf`, stopping at the program's own `int 3`,
+   with the log in a file.
+2. Load `mines.sym` at the segment it stopped in, and the screen map `mines-screen-map.json`
+   beside the conf.
+3. Run to `main_loop` and tell me which screen this is; click its start, run to `main_loop`
+   again and tell me again.
+4. Open the Game menu by name, run to the loop, check it is the menu, pick Beginner and run to
+   the loop.
+5. Read the board's size, where its mines are and the pixel of its top-left corner, all by
+   symbol.
+6. Flag two of the mines with the right button, then open every safe cell and show me the game
+   says WIN.
+7. Move the pointer off the board, tell me which screen this is, show it to me and record 240
+   frames.
+8. Click OK, run to the loop, read the new board's mines and click on the first one until the
+   game logs BOOM.
+9. Record 45 frames of sound from there, measure them and compare them with `boom.wav` without
+   aligning.
+10. Move the pointer away, tell me which screen this is, record 100 frames and close.
+
+</details>
+
+## Tools this demo uses
+
+| Group | Tools |
+|---|---|
+| [Session](../../docs/reference/session.md) | `start`, `close` |
+| [Advance](../../docs/reference/advance.md) | `resume`, `run_to` |
+| [Names](../../docs/reference/names.md) | `symbols_load` |
+| [Read](../../docs/reference/read.md) | `screen_map_write`, `screen_map_find`, `read_memory` |
+| [Input](../../docs/reference/input.md) | `send_mouse` |
+| [Lists](../../docs/reference/lists.md) | `perform` |
+| [Machine](../../docs/reference/machine.md) | `log` |
+| [Files](../../docs/reference/files.md) | `audio_compare` |
+| [Screen](../../docs/reference/screen.md) | `screen_view` |
+| [Captures](../../docs/reference/captures.md) | `record`, `audio_record` |
+
+Each group is a page of the reference. Some of the names need a word:
+
+- Advance: the tools that let the program run and stop it again.
+- Lists: the tools that run several calls as one.
+- Machine: the program's log and the map of what DOS loaded.
+- Names: the tool that loads a symbol table.
+
+## The transcript
+
+[TRANSCRIPT.md](TRANSCRIPT.md) has every call of the run with its reply. Process ids, ports,
+wall-clock times and temporary paths read `<volatile>` there, because they change from run to
+run.

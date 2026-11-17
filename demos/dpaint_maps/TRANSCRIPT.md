@@ -1,3 +1,5 @@
+Every call of the run with its reply, in order: 27 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+
 **1. `start`**: OK start: DOSBox-X in a window, parked at the debugger before DOS boots
 
 <details><summary>call and reply</summary>
@@ -7,6 +9,8 @@
   "shared": true,
   "background": true,
   "display": "<host>",
+  "capture_video": true,
+  "captures_dir": "<host>",
   "conf": "./demos/dpaint_maps/dpaint-maps.conf",
   "session_seconds": 900,
   "program": "DP.EXE k",
@@ -26,7 +30,7 @@
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
-  "captures": "off",
+  "captures": "./tmp/demos/dpaint_maps/video",
   "state_dir": "./tmp/demos/dpaint_maps/dpaint-maps-states",
   "shared": true,
   "ready_after_s": "<volatile>",
@@ -524,7 +528,44 @@
 
 </details>
 
-**8. `perform`**: OK mix: the brown slot picked, and red's arrow held until brown's red reached the top
+**8. `run_for`**: OK dialog open: frame 51
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 1,
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": 1,
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": 51,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 40,
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": 50,
+  "frame_after": 51,
+  "cycles": 137610,
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**9. `perform`**: OK mix: the brown slot picked, and red's arrow held until brown's red reached the top
 
 <details><summary>call and reply</summary>
 
@@ -557,7 +598,7 @@
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; posted, unverified, 24 retraces to frame 74",
+        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; posted, unverified, 23 retraces to frame 74",
         "status": "ok",
         "stop_seq": 63,
         "cause": "<volatile>"
@@ -592,9 +633,9 @@
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 7,39; posted, unverified, 75 retraces to frame 115",
+        "summary": "send_mouse: pointer at 7,39; posted, unverified, 76 retraces to frame 115",
         "status": "ok",
-        "stop_seq": 161,
+        "stop_seq": 162,
         "cause": "<volatile>"
       }
     },
@@ -615,8 +656,8 @@
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 40,
-    "stop_seq_last": 161,
+    "stop_seq_first": 41,
+    "stop_seq_last": 162,
     "surveyed": 4,
     "by_cause": {
       "the retrace the input's post ran to,": 1,
@@ -633,7 +674,45 @@
 
 </details>
 
-**9. `palette`**: OK orange: the brown slot now holds #ff5500, orange
+**10. `run_for`**: OK mixed: frame 116
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 1,
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": 1,
+  "note": "the stop landed in F000:0000CFC5 (linear 0xFCFC5), inside a ROM handler the program called into rather than in the program: `run_for` or `resume` leaves it, and a DPMI guest reaches a protected-mode stop with `stop(until=\"protected\")`",
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": 116,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 163,
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": 115,
+  "frame_after": 116,
+  "cycles": 166377,
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**11. `palette`**: OK orange: the brown slot now holds #ff5500, orange
 
 <details><summary>call and reply</summary>
 
@@ -674,7 +753,7 @@ Also attached: image/png.
 
 </details>
 
-**10. `perform`**: OK sky, sun and sea: the map named paint: freehand, then paint: rectangle, then paint: circle, then paint: rectangle
+**12. `perform`**: OK sky, sun and sea: the map named paint: freehand, then paint: rectangle, then paint: circle, then paint: rectangle
 
 <details><summary>call and reply</summary>
 
@@ -724,9 +803,9 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 37,149, program's own pointer not read; posted, unverified, 25 retraces to frame 140",
+        "summary": "send_mouse: pointer at 37,149, program's own pointer not read; posted, unverified, 24 retraces to frame 140",
         "status": "ok",
-        "stop_seq": 186,
+        "stop_seq": 187,
         "cause": "<volatile>"
       }
     },
@@ -736,7 +815,7 @@ Also attached: image/png.
       "reply": {
         "summary": "screen_wait screen 'paint: freehand': found after 2 retraces",
         "status": "ok",
-        "stop_seq": 187,
+        "stop_seq": 188,
         "cause": "<volatile>"
       }
     },
@@ -751,7 +830,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 23 retraces to frame 165",
         "status": "ok",
-        "stop_seq": 210,
+        "stop_seq": 211,
         "cause": "<volatile>"
       }
     },
@@ -761,7 +840,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 604,448, program's own pointer not read; posted, unverified, 25 retraces to frame 190",
         "status": "ok",
-        "stop_seq": 235,
+        "stop_seq": 236,
         "cause": "<volatile>"
       }
     },
@@ -771,7 +850,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 587,259, program's own pointer not read; posted, unverified, 30 retraces to frame 220",
         "status": "ok",
-        "stop_seq": 265,
+        "stop_seq": 266,
         "cause": "<volatile>"
       }
     },
@@ -781,7 +860,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 235",
         "status": "ok",
-        "stop_seq": 280,
+        "stop_seq": 281,
         "cause": "<volatile>"
       }
     },
@@ -801,7 +880,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 634,142, program's own pointer not read; posted, unverified, 25 retraces to frame 260",
         "status": "ok",
-        "stop_seq": 305,
+        "stop_seq": 306,
         "cause": "<volatile>"
       }
     },
@@ -811,7 +890,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 285",
         "status": "ok",
-        "stop_seq": 330,
+        "stop_seq": 331,
         "cause": "<volatile>"
       }
     },
@@ -821,7 +900,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 356,259, program's own pointer not read; posted, unverified, 30 retraces to frame 315",
         "status": "ok",
-        "stop_seq": 360,
+        "stop_seq": 361,
         "cause": "<volatile>"
       }
     },
@@ -831,7 +910,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 330",
         "status": "ok",
-        "stop_seq": 375,
+        "stop_seq": 376,
         "cause": "<volatile>"
       }
     },
@@ -851,7 +930,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 25 retraces to frame 355",
         "status": "ok",
-        "stop_seq": 400,
+        "stop_seq": 401,
         "cause": "<volatile>"
       }
     },
@@ -861,7 +940,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 604,344, program's own pointer not read; posted, unverified, 25 retraces to frame 380",
         "status": "ok",
-        "stop_seq": 425,
+        "stop_seq": 426,
         "cause": "<volatile>"
       }
     },
@@ -871,7 +950,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 587,475, program's own pointer not read; posted, unverified, 30 retraces to frame 410",
         "status": "ok",
-        "stop_seq": 455,
+        "stop_seq": 456,
         "cause": "<volatile>"
       }
     },
@@ -881,7 +960,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 425",
         "status": "ok",
-        "stop_seq": 470,
+        "stop_seq": 471,
         "cause": "<volatile>"
       }
     },
@@ -926,14 +1005,14 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 162,
-    "stop_seq_last": 470,
+    "stop_seq_first": 164,
+    "stop_seq_last": 471,
     "surveyed": 14,
     "by_cause": {
       "the retrace the input's post ran to,": 13,
       "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 1
     },
-    "unaccounted": 295
+    "unaccounted": 294
   },
   "steps_completed": 21,
   "failed_at": {"available": false, "why": "no step failed"},
@@ -944,7 +1023,7 @@ Also attached: image/png.
 
 </details>
 
-**11. `perform`**: OK glints and hull: the map named paint: line, then paint: rectangle
+**13. `perform`**: OK glints and hull: the map named paint: line, then paint: rectangle
 
 <details><summary>call and reply</summary>
 
@@ -1013,7 +1092,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 605,89, program's own pointer not read; posted, unverified, 25 retraces to frame 450",
         "status": "ok",
-        "stop_seq": 495,
+        "stop_seq": 496,
         "cause": "<volatile>"
       }
     },
@@ -1023,7 +1102,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 475",
         "status": "ok",
-        "stop_seq": 520,
+        "stop_seq": 521,
         "cause": "<volatile>"
       }
     },
@@ -1033,7 +1112,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 336,272, program's own pointer not read; posted, unverified, 30 retraces to frame 505",
         "status": "ok",
-        "stop_seq": 550,
+        "stop_seq": 551,
         "cause": "<volatile>"
       }
     },
@@ -1043,7 +1122,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 322,284, program's own pointer not read; posted, unverified, 30 retraces to frame 535",
         "status": "ok",
-        "stop_seq": 580,
+        "stop_seq": 581,
         "cause": "<volatile>"
       }
     },
@@ -1053,7 +1132,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 308,296, program's own pointer not read; posted, unverified, 30 retraces to frame 565",
         "status": "ok",
-        "stop_seq": 610,
+        "stop_seq": 611,
         "cause": "<volatile>"
       }
     },
@@ -1063,7 +1142,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 580",
         "status": "ok",
-        "stop_seq": 625,
+        "stop_seq": 626,
         "cause": "<volatile>"
       }
     },
@@ -1083,7 +1162,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 25 retraces to frame 605",
         "status": "ok",
-        "stop_seq": 650,
+        "stop_seq": 651,
         "cause": "<volatile>"
       }
     },
@@ -1093,7 +1172,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 630",
         "status": "ok",
-        "stop_seq": 675,
+        "stop_seq": 676,
         "cause": "<volatile>"
       }
     },
@@ -1103,7 +1182,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 180,395, program's own pointer not read; posted, unverified, 30 retraces to frame 660",
         "status": "ok",
-        "stop_seq": 705,
+        "stop_seq": 706,
         "cause": "<volatile>"
       }
     },
@@ -1113,7 +1192,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 675",
         "status": "ok",
-        "stop_seq": 720,
+        "stop_seq": 721,
         "cause": "<volatile>"
       }
     },
@@ -1158,8 +1237,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 471,
-    "stop_seq_last": 720,
+    "stop_seq_first": 472,
+    "stop_seq_last": 721,
     "surveyed": 10,
     "by_cause": {"the retrace the input's post ran to,": 10},
     "unaccounted": 240
@@ -1173,7 +1252,7 @@ Also attached: image/png.
 
 </details>
 
-**12. `perform`**: OK mast and sail: the map named paint: line, then paint: line
+**14. `perform`**: OK mast and sail: the map named paint: line, then paint: line
 
 <details><summary>call and reply</summary>
 
@@ -1232,7 +1311,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 605,89, program's own pointer not read; posted, unverified, 25 retraces to frame 700",
         "status": "ok",
-        "stop_seq": 745,
+        "stop_seq": 746,
         "cause": "<volatile>"
       }
     },
@@ -1242,7 +1321,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 725",
         "status": "ok",
-        "stop_seq": 770,
+        "stop_seq": 771,
         "cause": "<volatile>"
       }
     },
@@ -1252,7 +1331,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 140,320, program's own pointer not read; posted, unverified, 30 retraces to frame 755",
         "status": "ok",
-        "stop_seq": 800,
+        "stop_seq": 801,
         "cause": "<volatile>"
       }
     },
@@ -1262,7 +1341,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 770",
         "status": "ok",
-        "stop_seq": 815,
+        "stop_seq": 816,
         "cause": "<volatile>"
       }
     },
@@ -1282,7 +1361,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 795",
         "status": "ok",
-        "stop_seq": 840,
+        "stop_seq": 841,
         "cause": "<volatile>"
       }
     },
@@ -1292,7 +1371,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 176,374, program's own pointer not read; posted, unverified, 30 retraces to frame 825",
         "status": "ok",
-        "stop_seq": 870,
+        "stop_seq": 871,
         "cause": "<volatile>"
       }
     },
@@ -1302,7 +1381,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 142,374, program's own pointer not read; posted, unverified, 30 retraces to frame 855",
         "status": "ok",
-        "stop_seq": 900,
+        "stop_seq": 901,
         "cause": "<volatile>"
       }
     },
@@ -1312,7 +1391,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 870",
         "status": "ok",
-        "stop_seq": 915,
+        "stop_seq": 916,
         "cause": "<volatile>"
       }
     },
@@ -1357,8 +1436,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 721,
-    "stop_seq_last": 915,
+    "stop_seq_first": 722,
+    "stop_seq_last": 916,
     "surveyed": 8,
     "by_cause": {"the retrace the input's post ran to,": 8},
     "unaccounted": 187
@@ -1372,7 +1451,7 @@ Also attached: image/png.
 
 </details>
 
-**13. `perform`**: OK SCRY: the map named paint: text, then paint: freehand
+**15. `perform`**: OK SCRY: the map named paint: text, then paint: freehand
 
 <details><summary>call and reply</summary>
 
@@ -1406,7 +1485,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 895",
         "status": "ok",
-        "stop_seq": 940,
+        "stop_seq": 941,
         "cause": "<volatile>"
       }
     },
@@ -1416,7 +1495,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 629,185, program's own pointer not read; posted, unverified, 25 retraces to frame 920",
         "status": "ok",
-        "stop_seq": 965,
+        "stop_seq": 966,
         "cause": "<volatile>"
       }
     },
@@ -1426,7 +1505,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 935",
         "status": "ok",
-        "stop_seq": 980,
+        "stop_seq": 981,
         "cause": "<volatile>"
       }
     },
@@ -1446,7 +1525,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 40,60, program's own pointer not read; posted, unverified, 25 retraces to frame 960",
         "status": "ok",
-        "stop_seq": 1005,
+        "stop_seq": 1006,
         "cause": "<volatile>"
       }
     },
@@ -1456,7 +1535,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 1010",
         "status": "ok",
-        "stop_seq": 1055,
+        "stop_seq": 1056,
         "cause": "<volatile>"
       }
     },
@@ -1466,7 +1545,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 629,65, program's own pointer not read; posted, unverified, 25 retraces to frame 1035",
         "status": "ok",
-        "stop_seq": 1080,
+        "stop_seq": 1081,
         "cause": "<volatile>"
       }
     },
@@ -1476,7 +1555,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1050",
         "status": "ok",
-        "stop_seq": 1095,
+        "stop_seq": 1096,
         "cause": "<volatile>"
       }
     },
@@ -1521,8 +1600,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 916,
-    "stop_seq_last": 1095,
+    "stop_seq_first": 917,
+    "stop_seq_last": 1096,
     "surveyed": 7,
     "by_cause": {"the retrace the input's post ran to,": 7},
     "unaccounted": 173
@@ -1536,7 +1615,45 @@ Also attached: image/png.
 
 </details>
 
-**14. `perform`**: OK flip the boat: the map named paint: grab, then paint: custom brush, then brush menu, then paint: custom brush, then paint: custom brush
+**16. `run_for`**: OK boat drawn: frame 1051
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 1,
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": 1,
+  "note": "the stop landed in F000:0000CFC5 (linear 0xFCFC5), inside a ROM handler the program called into rather than in the program: `run_for` or `resume` leaves it, and a DPMI guest reaches a protected-mode stop with `stop(until=\"protected\")`",
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": 1051,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 1097,
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": 1050,
+  "frame_after": 1051,
+  "cycles": 166253,
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**17. `perform`**: OK flip the boat: the map named paint: grab, then paint: custom brush, then brush menu, then paint: custom brush, then paint: custom brush
 
 <details><summary>call and reply</summary>
 
@@ -1584,9 +1701,9 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; posted, unverified, 25 retraces to frame 1075",
+        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; posted, unverified, 24 retraces to frame 1075",
         "status": "ok",
-        "stop_seq": 1120,
+        "stop_seq": 1121,
         "cause": "<volatile>"
       }
     },
@@ -1596,7 +1713,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1090",
         "status": "ok",
-        "stop_seq": 1135,
+        "stop_seq": 1136,
         "cause": "<volatile>"
       }
     },
@@ -1616,7 +1733,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 184,399, program's own pointer not read; posted, unverified, 30 retraces to frame 1120",
         "status": "ok",
-        "stop_seq": 1165,
+        "stop_seq": 1166,
         "cause": "<volatile>"
       }
     },
@@ -1626,7 +1743,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1135",
         "status": "ok",
-        "stop_seq": 1180,
+        "stop_seq": 1181,
         "cause": "<volatile>"
       }
     },
@@ -1646,7 +1763,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 203,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1155",
         "status": "ok",
-        "stop_seq": 1200,
+        "stop_seq": 1201,
         "cause": "<volatile>"
       }
     },
@@ -1666,7 +1783,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 269,18, program's own pointer not read; posted, unverified, 20 retraces to frame 1175",
         "status": "ok",
-        "stop_seq": 1220,
+        "stop_seq": 1221,
         "cause": "<volatile>"
       }
     },
@@ -1676,7 +1793,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1190",
         "status": "ok",
-        "stop_seq": 1235,
+        "stop_seq": 1236,
         "cause": "<volatile>"
       }
     },
@@ -1686,7 +1803,7 @@ Also attached: image/png.
       "reply": {
         "summary": "screen_wait screen 'paint: custom brush': found after 10 retraces",
         "status": "ok",
-        "stop_seq": 1236,
+        "stop_seq": 1237,
         "cause": "<volatile>"
       }
     },
@@ -1701,7 +1818,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 440,357, program's own pointer not read; posted, unverified, 21 retraces to frame 1221",
         "status": "ok",
-        "stop_seq": 1257,
+        "stop_seq": 1258,
         "cause": "<volatile>"
       }
     },
@@ -1711,7 +1828,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1236",
         "status": "ok",
-        "stop_seq": 1272,
+        "stop_seq": 1273,
         "cause": "<volatile>"
       }
     },
@@ -1756,14 +1873,14 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 1096,
-    "stop_seq_last": 1272,
+    "stop_seq_first": 1098,
+    "stop_seq_last": 1273,
     "surveyed": 10,
     "by_cause": {
       "the retrace the input's post ran to,": 9,
       "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 1
     },
-    "unaccounted": 167
+    "unaccounted": 166
   },
   "steps_completed": 19,
   "failed_at": {"available": false, "why": "no step failed"},
@@ -1774,7 +1891,45 @@ Also attached: image/png.
 
 </details>
 
-**15. `perform`**: OK Pict, and the brush put down: the map named pict menu, then paint: custom brush, then paint: freehand
+**18. `run_for`**: OK boat flipped: frame 1237
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 1,
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": 1,
+  "note": "the stop landed in F000:0000CFC1 (linear 0xFCFC1), inside a ROM handler the program called into rather than in the program: `run_for` or `resume` leaves it, and a DPMI guest reaches a protected-mode stop with `stop(until=\"protected\")`",
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": 1237,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 1274,
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": 1236,
+  "frame_after": 1237,
+  "cycles": 166296,
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**19. `perform`**: OK Pict, and the brush put down: the map named pict menu, then paint: custom brush, then paint: freehand
 
 <details><summary>call and reply</summary>
 
@@ -1807,9 +1962,9 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 119,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1256",
+        "summary": "send_mouse: pointer at 119,5, program's own pointer not read; posted, unverified, 19 retraces to frame 1256",
         "status": "ok",
-        "stop_seq": 1292,
+        "stop_seq": 1293,
         "cause": "<volatile>"
       }
     },
@@ -1829,7 +1984,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 119,5; posted, unverified, 15 retraces to frame 1271",
         "status": "ok",
-        "stop_seq": 1307,
+        "stop_seq": 1308,
         "cause": "<volatile>"
       }
     },
@@ -1839,7 +1994,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1286",
         "status": "ok",
-        "stop_seq": 1322,
+        "stop_seq": 1323,
         "cause": "<volatile>"
       }
     },
@@ -1859,7 +2014,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 599,21, program's own pointer not read; posted, unverified, 25 retraces to frame 1311",
         "status": "ok",
-        "stop_seq": 1347,
+        "stop_seq": 1348,
         "cause": "<volatile>"
       }
     },
@@ -1869,7 +2024,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 629,65, program's own pointer not read; posted, unverified, 25 retraces to frame 1336",
         "status": "ok",
-        "stop_seq": 1372,
+        "stop_seq": 1373,
         "cause": "<volatile>"
       }
     },
@@ -1879,7 +2034,7 @@ Also attached: image/png.
       "reply": {
         "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1351",
         "status": "ok",
-        "stop_seq": 1387,
+        "stop_seq": 1388,
         "cause": "<volatile>"
       }
     },
@@ -1924,11 +2079,11 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 1273,
-    "stop_seq_last": 1387,
+    "stop_seq_first": 1275,
+    "stop_seq_last": 1388,
     "surveyed": 6,
     "by_cause": {"the retrace the input's post ran to,": 6},
-    "unaccounted": 109
+    "unaccounted": 108
   },
   "steps_completed": 12,
   "failed_at": {"available": false, "why": "no step failed"},
@@ -1939,7 +2094,45 @@ Also attached: image/png.
 
 </details>
 
-**16. `screen_view`**: OK word row: the row reads frame x 4, then orange x 37, then black x 4, then orange x 3, then black x 2, then orange x 6, then black x 5, then orange x 4, then black x 5, then orange x 518, then frame x 4
+**20. `run_for`**: OK last frame: frame 1352
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 1,
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": 1,
+  "note": "the stop landed in F000:0000CFC5 (linear 0xFCFC5), inside a ROM handler the program called into rather than in the program: `run_for` or `resume` leaves it, and a DPMI guest reaches a protected-mode stop with `stop(until=\"protected\")`",
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": 1352,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 1389,
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": 1351,
+  "frame_after": 1352,
+  "cycles": 166296,
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**21. `screen_view`**: OK word row: the row reads frame x 4, then orange x 37, then black x 4, then orange x 3, then black x 2, then orange x 6, then black x 5, then orange x 4, then black x 5, then orange x 518, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -1982,7 +2175,7 @@ Also attached: image/png.
 
 </details>
 
-**17. `screen_view`**: OK sun row: the row reads frame x 4, then orange x 239, then yellow x 107, then orange x 238, then frame x 4
+**22. `screen_view`**: OK sun row: the row reads frame x 4, then orange x 239, then yellow x 107, then orange x 238, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -2025,7 +2218,7 @@ Also attached: image/png.
 
 </details>
 
-**18. `screen_view`**: OK glint row: the row reads frame x 4, then blue x 252, then yellow x 81, then blue x 251, then frame x 4
+**23. `screen_view`**: OK glint row: the row reads frame x 4, then blue x 252, then yellow x 81, then blue x 251, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -2068,7 +2261,7 @@ Also attached: image/png.
 
 </details>
 
-**19. `screen_view`**: OK sail row: the row reads frame x 4, then blue x 136, then black x 1, then blue x 19, then yellow x 1, then blue x 258, then yellow x 1, then blue x 20, then black x 1, then blue x 147, then frame x 4
+**24. `screen_view`**: OK sail row: the row reads frame x 4, then blue x 136, then black x 1, then blue x 19, then yellow x 1, then blue x 258, then yellow x 1, then blue x 20, then black x 1, then blue x 147, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -2111,7 +2304,7 @@ Also attached: image/png.
 
 </details>
 
-**20. `screen_view`**: OK hull row: the row reads frame x 4, then blue x 96, then black x 81, then blue x 219, then black x 81, then blue x 107, then frame x 4
+**25. `screen_view`**: OK hull row: the row reads frame x 4, then blue x 96, then black x 81, then blue x 219, then black x 81, then blue x 107, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -2154,7 +2347,7 @@ Also attached: image/png.
 
 </details>
 
-**21. `screen_view`**: OK screen: mode M_EGA, 640x480 by palette index
+**26. `screen_view`**: OK screen: mode M_EGA, 640x480 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -2195,52 +2388,7 @@ Also attached: image/png.
 
 </details>
 
-**22. `record`**: OK loop: recording 240 frames in ./tmp/demos/dpaint_maps/loop.avi
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "frames": 240,
-  "dest": "./tmp/demos/dpaint_maps/loop.avi"
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": "<volatile>",
-  "note": "<volatile>",
-  "pc": "<volatile>",
-  "cpu_mode": "<volatile>",
-  "frame": "<volatile>",
-  "regs": "<volatile>",
-  "watches": "<volatile>",
-  "cause": "<volatile>",
-  "e9": "<volatile>",
-  "stop_seq": "<volatile>",
-  "instruction": "<volatile>",
-  "emulated_before_s": "<volatile>",
-  "emulated_after_s": "<volatile>",
-  "frame_before": "<volatile>",
-  "frame_after": "<volatile>",
-  "cycles": "<volatile>",
-  "kind": "avi",
-  "frames": 240,
-  "began": true,
-  "ended": true,
-  "path": "./tmp/demos/dpaint_maps/loop.avi",
-  "bytes": "<volatile>",
-  "avi_frames": "<volatile>",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**23. `close`**: OK close: closed: quit
+**27. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
@@ -2259,7 +2407,7 @@ Also attached: image/png.
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
-  "captures": "off",
+  "captures": "./tmp/demos/dpaint_maps/video",
   "state_dir": "./tmp/demos/dpaint_maps/dpaint-maps-states",
   "ended_by": "quit",
   "exit_code": 0,

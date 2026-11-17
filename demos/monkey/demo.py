@@ -19,7 +19,17 @@ import wave
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import DISPLAY, Demo, Loop, Reply, Run, Step, main, window_args
+from scry_core.demo import (
+    DISPLAY,
+    Demo,
+    Moment,
+    Reply,
+    Run,
+    Step,
+    main,
+    recording,
+    window_args,
+)
 from scry_core.verdict import Invalid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
@@ -434,6 +444,9 @@ def same_track(reply: Reply, run: Run) -> str:
             f"no realigning, SNR {reply['snr_db']} dB")
 
 
+#: The retraces recorded while the lookout says his own line, and his new one, for the loop.
+LINE_FRAMES, NEW_LINE_FRAMES = 150, 240
+
 STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary", "display"}),
          volatile={"summary": "it carries how long the debugger took to answer",
@@ -451,10 +464,12 @@ STEPS = [
                              "host's cycles"}),
     act("english", [click("english", "double")], "a double click on English"),
     Step("intro", "perform", intro, roomed, volatile=STOP_IN_LOOP,
-         highlight=("The intro is followed by the game's own variable: a change watch on "
-                    "SCUMM's room stops the machine at each room the intro enters, and the "
-                    "Escapes that skip it go in at SCUMM's own ticks, so the run arrives at its "
-                    "title card by what the game does, at any host's speed.")),
+         title="Follow the intro by the game's own variable",
+         ask="Skip the intro, stopping at each room the game enters, until its title card.",
+         shown=("steps_completed", "steps_total", "failed_at"),
+         reads=("A change watch on the game's room number stops it at each room the intro "
+                "enters. The Escapes that skip it go in at the game's own ticks, so the run "
+                "arrives at any speed.")),
     Step("title", "perform", lambda run: {"steps": at_tick("part one", ARRIVE_S, run),
                                           "summaries": True},
          performed("the title card, judged at SCUMM's tick"), volatile=STOP_IN_LOOP),
@@ -481,6 +496,7 @@ STEPS = [
          volatile={"summary": "it carries the state's size and time",
                    "bytes": "the state is compressed, and its size follows what the guest holds"}),
     go("before", [click("whats_wrong_with_my_name")], "lookout: sell shoes"),
+    recording("own line", LINE_FRAMES),
     go("said", [], "name choices left"),
     Step("restore", "state_write", {"method": "load", "name": "comeback"},
          lambda reply, run: "the machine back to before the click"),
@@ -492,11 +508,11 @@ STEPS = [
          volatile={"ran": "the game's own bytes, which this repository does not carry: the "
                           "step's line gives their sha256 verdict"}),
     Step("rewrite", "perform", rewrite, rewritten,
-         highlight=("The game's own script is data in memory, so the demo rewrites it. It found "
-                    "the lookout's line with `find` and read the original bytes back, and this "
-                    "`perform` writes a new conversation of SCUMM bytecode over three stretches of "
-                    "the script the game no longer needs, chained by jumps, reading each write "
-                    "back. The lookout then says what the demo wrote, in the game's own voice.")),
+         title="Write a new conversation into the game",
+         ask="Write the new lines over the lookout's script, and read each write back.",
+         shown=("summary", "steps_completed"),
+         reads=("The game's script is data in memory. This call writes new bytecode over three "
+                "stretches the game no longer needs, and reads each `write` back.")),
     Step("arm", "breakpoint_interrupt", {"number": "0x2F", "ah": "0x15"},
          lambda reply, run: "a stop on every request to the CD driver"),
     act("pick", [click("whats_wrong_with_my_name")], "the same comeback, picked again"),
@@ -508,12 +524,11 @@ STEPS = [
     act("pass 2", [{"op": "step", "mode": "over"}], "the request answered"),
     Step("third", "resume", {"seconds": 30}, at_mscdex),
     Step("request 3", "read_memory", request_ref("third"), play_request,
-         highlight=("The game asks the CD driver for audio through interrupt 2Fh. "
-                    "`breakpoint_interrupt` stops the machine on every such request, and "
-                    "`read_memory` reads the request block the call points at: this one is PLAY "
-                    "AUDIO, with the sector the theme starts at. The next step writes a different "
-                    "start sector into that block, so the same game call plays the theme from the "
-                    "bar where the logo enters.")),
+         title="Read what the game asks the CD drive",
+         ask="The game stopped on a request to the CD driver. Read the request block.",
+         shown=("summary", "length"),
+         reads=("`breakpoint_interrupt` stops the game on every call to the CD driver. This "
+                "block is its PLAY AUDIO request, with the sector the theme starts at.")),
     Step("to the logo", "write", to_the_logo, moved),
     Step("disarm", "declaration_clear", {"kind": "breakpoint", "all": True},
          lambda reply, run: "the stop on the CD driver cleared"),
@@ -521,11 +536,11 @@ STEPS = [
                                                "dest": run.dir / "theme.wav"}, recorded,
          volatile=STOP_PLACE),
     Step("the disc", "audio_compare", reference, same_track,
-         highlight=("The theme the game played is recorded off the emulated mixer and compared "
-                    "with the same track read off the disc image. The reply says whether the two "
-                    "are equal (`exact`) and, when they are not, how far apart (`snr_db`, "
-                    "`class`), so what the demo claims about the music is a measurement, not a "
-                    "listening test.")),
+         title="Check the music against the disc",
+         ask="Compare the theme you recorded with the same track read from the disc image.",
+         shown=("summary", "exact"),
+         reads=("The reply says whether the two recordings are equal (`exact`) and, if not, how "
+                "far apart (`class`). What the demo says about the music is a measurement.")),
     find("music?", "guybrush: a debugger that plays music"),
     line("talk 1", "lookout: the orange tycoon"),
     line("talk 2", "lookout: those files"),
@@ -533,6 +548,7 @@ STEPS = [
     line("talk 4", "lookout: humor first"),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png", "scale": 2},
          host.pictured),
+    recording("new line", NEW_LINE_FRAMES),
     go("goodbye", [SKY], "cliff"),
     go("walk off", [click("way_out")], "dark"),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
@@ -541,7 +557,12 @@ STEPS = [
 DEMO = Demo(
     name="monkey", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS, capture=lambda run: run.dir / "screen.png",
-    loop=Loop("screen"),
+    moments=(Moment("before", "own line",
+                    "`record` films the lookout answering a comeback as the game wrote him.",
+                    frames=LINE_FRAMES),
+             Moment("screen", "new line", "After `write` puts new bytecode over his script, he "
+                                          "says a line the game never had.", frames=180)),
+    alt="Monkey Island's lookout answering as written, then with a line written into memory",
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=precheck,
     host_args={"display": DISPLAY,
                "binary": "the host's own DOSBox-X"},

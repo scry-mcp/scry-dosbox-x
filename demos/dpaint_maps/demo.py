@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import png
-from scry_core.demo import Reply, Run, Step, main, window_args
+from scry_core.demo import Moment, Reply, Run, Step, main, window_args
 from scry_core.verdict import Invalid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
@@ -24,10 +24,12 @@ from demos import host  # noqa: E402
 from demos.dpaint.program import (  # noqa: E402
     WAIT_S,
     click,
+    counted,
     declared,
     drag,
     ds_segment,
     opening,
+    recorded,
 )
 from demos.host import expect, isolated_store, pictured  # noqa: E402
 
@@ -62,8 +64,8 @@ PARKED = {"op": "send_mouse", "x": PARK[0], "y": PARK[1]}
 def boot(run: Run) -> dict[str, Any]:
     """A fresh log, and the saved states kept out of the program's directory."""
     (run.dir / "dpaint-maps-e9.log").unlink(missing_ok=True)
-    return {**window_args(run), "conf": HERE / "dpaint-maps.conf", "session_seconds": 900,
-            "program": "DP.EXE k",
+    return {**window_args(run), **recorded(run), "conf": HERE / "dpaint-maps.conf",
+            "session_seconds": 900, "program": "DP.EXE k",
             "logfile": run.dir / "dpaint-maps-e9.log",
             "state_dir": run.dir / "dpaint-maps-states"}
 
@@ -137,14 +139,13 @@ FIND = {"op": "screen_map_find"}
 Move = tuple[list[dict[str, Any]], str]
 
 
-def moves(name: str, *made: Move, highlight: str = "",
-          volatile: dict[str, str] | None = None) -> Step:
+def moves(name: str, *made: Move, volatile: dict[str, str] | None = None,
+          **example: Any) -> Step:
     """Moves between screens in one call, each followed by the map's word on where it landed."""
     steps = [op for ops, screen in made
              for op in (*ops, {"op": "screen_wait", "screen": screen, "seconds": WAIT_S}, FIND)]
     return Step(name, "perform", {"steps": steps, "summaries": True},
-                landed(*(screen for _, screen in made)), highlight=highlight,
-                volatile=volatile or {})
+                landed(*(screen for _, screen in made)), volatile=volatile or {}, **example)
 
 
 def shape(picks: list[str], strokes: list[tuple[tuple[int, int], tuple[int, int]]],
@@ -194,19 +195,25 @@ STEPS = [
                              "palette"),
           volatile={"summary": "a row's summary names the instruction its retrace stop lands "
                                "on, which drifts with the host's cycles"}),
+    counted("dialog open"),
     # The arrow is held until the program's own copy of brown's red reaches the top: a change
     # watch on that byte, and the wait judged only at its firings, filtered by the value.
     Step("mix", "perform", mix, held,
-         highlight=("Deluxe Paint's menus and arrows act only while the button is held. "
-                    "`send_mouse` takes `action: down` and `action: up` as the two halves of a "
-                    "click, and between them a `screen_wait` judged only when a watch on the "
-                    "program's copy of brown's red fires, filtered by `condition`, holds the "
-                    "arrow until the value reaches the top, whatever the program's pace.")),
+         title="Hold a button until a value is reached",
+         ask=("Pick brown, hold the red arrow of the Palette dialog until brown's red reaches "
+              "the top, then release."),
+         shown=("summary", "steps_completed"),
+         reads=("`send_mouse` presses and releases as two steps. Between them `screen_wait` looks "
+                "only when a watch on the program's copy of brown's red fires, so the arrow is "
+                "held exactly long enough.")),
+    counted("mixed"),
     Step("orange", "palette", orange_swatch, mixed,
-         highlight=("`palette` reads the VGA DAC back: the entry the dialog's arrows mixed, as the "
-                    "colour the screen will show. The DAC holds six bits per channel; the reply "
-                    "gives both its raw values and the eight-bit colour. Nothing but the program's "
-                    "own dialog touched it.")),
+         title="Read a colour back from the video card",
+         ask="Read the palette entry the dialog just mixed, and save a swatch of it.",
+         shown=("summary", "rgb", "colors"),
+         reads=("`palette` reads the video card's own colour table: `rgb` as its six-bit values, "
+                "`colors` as the colour the screen shows. Only the program's dialog changed "
+                "it.")),
     moves("sky, sun and sea", ([click("ok")], "paint: freehand"),
           shape(["rect_filled", "brown"], [SKY], "paint: rectangle"),
           shape(["circle_filled", "yellow"], [SUN], "paint: circle"),
@@ -219,6 +226,7 @@ STEPS = [
           ([{"op": "send_mouse", "x": TEXT_AT[0], "y": TEXT_AT[1], "button": "left"},
             {"op": "send_keys", "keys": list(WORD), "modifiers": ["shift"]},
             click("freehand"), PARKED], "paint: freehand")),
+    counted("boat drawn"),
     moves("flip the boat", ([click("brush_grab"), PARKED], "paint: grab"),
           ([*drag(*LIFT), PARKED], "paint: custom brush"),
           ([click("brush", "down")], "brush menu"),
@@ -226,19 +234,36 @@ STEPS = [
            "paint: custom brush"),
           ([{"op": "send_mouse", "x": STAMP[0], "y": STAMP[1], "button": "left"},
             PARKED], "paint: custom brush"),
-         highlight=("The longest chain of map names in the run: lift the boat as a brush, flip it "
-                    "from the Brush menu, stamp the mirror image. After each move the map is asked "
-                    "where it landed, because the same pixels mean a different tool in hand.")),
+         title="Chain menus, drags and clicks in one call",
+         ask="Lift the boat as a brush, flip it from the Brush menu and stamp the mirror image.",
+         shown=("summary", "steps_completed"),
+         reads=("After each move the screen map is asked which screen is showing, because the "
+                "same pixels mean another tool in hand. The whole reply lists the screens it "
+                "named.")),
+    counted("boat flipped"),
     moves("Pict, and the brush put down", ([click("pict", "down")], "pict menu"),
           ([{"op": "send_mouse", "button": "left", "action": "up"}, PARKED],
            "paint: custom brush"),
           ([click("brush_dot"), click("freehand"), PARKED], "paint: freehand")),
+    # The last step that moves the machine counts its frame: the loop's moments are found in the
+    # session's video counting back from it.
+    counted("last frame"),
     *(Step(name, "screen_view", row(y), check) for name, (y, check) in ROWS.items()),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
 ]
 
-DEMO = declared("dpaint_maps", HERE, STEPS)
+MOMENTS = (
+    Moment("dialog open", "mixed",
+           "`send_mouse` holds the red arrow of the Palette dialog until the brown slot is "
+           "orange."),
+    Moment("boat drawn", "boat flipped",
+           "One `perform` lifts the boat as a brush, flips it from the Brush menu and stamps it.",
+           skip=16, frames=170),
+)
+
+DEMO = declared("dpaint_maps", HERE, STEPS, MOMENTS,
+                "Deluxe Paint mixing a colour in its Palette dialog, then flipping a boat")
 
 
 if __name__ == "__main__":

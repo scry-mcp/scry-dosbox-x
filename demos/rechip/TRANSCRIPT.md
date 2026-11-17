@@ -1,3 +1,5 @@
+Every call of the run with its reply, in order: 20 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
 <details><summary>call and reply</summary>
@@ -513,14 +515,15 @@ Also attached: image/png.
 
 </details>
 
-**16. `record`**: OK loop: recording 240 frames in ./tmp/demos/rechip/loop.avi
+**16. `record`**: OK pulse: recorded 240 frames in ./tmp/demos/rechip/pulse.avi
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "frames": 240,
-  "dest": "./tmp/demos/rechip/loop.avi"
+  "dest": "./tmp/demos/rechip/pulse.avi",
+  "seconds": 300
 }
 ```
 
@@ -549,7 +552,7 @@ Also attached: image/png.
   "frames": 240,
   "began": true,
   "ended": true,
-  "path": "./tmp/demos/rechip/loop.avi",
+  "path": "./tmp/demos/rechip/pulse.avi",
   "bytes": "<volatile>",
   "avi_frames": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}

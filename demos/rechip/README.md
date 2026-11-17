@@ -1,25 +1,22 @@
-# ReChip!: a program boots from its own recipe and says what the keys did
+# ReChip!: a tracker driven by its keys and read by its own log
 
-![ReChip!'s tracker with the demo song paused](screen.png)
+<!-- demo-motion:begin -->
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="ReChip! paused at the first row of a song, its warning button pulsing"></picture>
 
-*ReChip!* is a converter of music to vintage sound chips with a live tracker, a 32-bit DOS
-program. This demo boots its DEV build from the run recipe its own repository declares in
-`.scry/start/dev.json`: the line `make mcp-conf` prints there, the demo song opened unattended,
-the conf with its boot line removed, and the E9 log the build writes. The call gives only what is
-the run's own, and the reply says which keys the recipe filled.
+1. The song is paused at its first row; `record` films the warning button pulsing.
 
-It then reads the program's own log for the line that says the song sounds, pauses it with a key
-the program logs by name, rewinds the paused song to its first row, and waits for two of the
-reports the program writes each second, so the playhead has caught up with the rewind. It stops
-the machine inside the program, where its symbols are placed, and takes its picture on the first
-dark frame of the warning button's pulse. It then leaves the program by its own keys, the
-confirm's answer read off the log, before closing the session.
+<!-- moments-ms: 2855 -->
+<!-- demo-motion:end -->
+
+*ReChip!*, a 32-bit DOS program, converts music for vintage sound chips and plays it in a live
+tracker. This demo starts it from a file in its own repository and waits for its log to say
+the song is sounding. It pauses and rewinds the song with keys the program logs, and quits by
+the program's own dialog.
 
 ## The program
 
-ReChip! is not distributed with this repository. The demo needs a checkout of it after `make
-mcp-conf`, which builds `RECHIPD.EXE` with its symbol table `RECHIPD.SYM` and derives the conf;
-that checkout is what `--cwd` names.
+ReChip! is not distributed with this repository. The demo needs a checkout of it after
+`make mcp-conf`, which builds `RECHIPD.EXE` with its symbol table and writes the conf.
 
 ## Run it
 
@@ -27,129 +24,56 @@ that checkout is what `--cwd` names.
 uv run python demos/rechip/demo.py --cwd /path/to/rechip
 ```
 
-- `--cwd PATH` (absolute or `~`-led) is the program's own repository checkout.
-- `--binary PATH` picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`, else the `dosbox-x`
-  on your `PATH`.
-- `--display N` opens the window on that display; left out, on the host's main one. The
-  window opens behind, so the run takes nobody's focus.
+Each line it prints is one call and its check. The window opens behind the others, so the run
+does not take your keyboard.
+
+- `--cwd PATH` (absolute or `~`-led) is the checkout of the program's repository.
+- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
+  `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
+- `--display N` opens the window on that display. Left out, it opens on the main one.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where
-  every step passed.
+- `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
+  `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
+  `PATH`.
 
-Each line it prints is one call and its check. Exit codes: 0 every step passed, 1 a step failed,
-2 a usage error, 3 nothing was demonstrated (a checkout without its recipe or its build, a
-relative path, a server that did not start, a loop that could not be converted).
+Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
+That last one is a checkout without its start profile or its build, a relative path or a server that did
+not start.
 
-## The prompt
+The picture is taken on an exact frame. The warning button pulses on the program's own counter,
+so the demo reads that counter and runs to the middle of the next lit half. It then stops on
+the first frame the button goes dark.
 
-Give this to an MCP client with this server connected:
+## Try it yourself
 
-> Start from the recipe `.scry/start/dev.json` in the `--cwd` checkout, with a window, on the
-> normal core, with the symbols `build/RECHIPD.SYM`, and let it run. Wait on the guest log for
-> `PERF  . audio play=1`, press space and show me that the program logged `key down SPACE`,
-> wait for `ACT   . play=0`, press home and wait for `ACT   . rewind`. Then, twice, wait for the
-> next `PERF  . fps=` line written after the log's current end (its size, as `since_mark`).
-> Stop inside the program and read the 4 bytes of `_g_ticks` (the program's counter in 10 ms
-> ticks: the warning button is lit through each odd 400 ms of it), run to the middle of the next
-> lit 400 ms, load this repository's screen map `demos/rechip/rechip-screen-map.json` by its
-> absolute path, check the screen is `warning_lit`, wait for `warning_dark`, and save a picture
-> of the screen. Resume, press alt+x and wait for `ask opens`, press right then enter and wait
-> for `ask res=1`, and close.
-
-## What it walks
-
-| Family | Calls |
-|---|---|
-| Session | `start` from the program's profile (windowed), `close` over a guest that quit |
-| Advance | `resume` to let the program run, `stop` inside the program, `run_for` into the pulse's lit half, `screen_wait` on its edge |
-| Log | `log_wait` on the program's own E9 lines |
-| Input | `send_keys` with `expect` on the line each key makes the program write |
-| Read | `read_memory` of the program's counter, `screen_map_write` (the warning button's two looks), `screen_map_find` |
-| Screen | `screen_view` |
-| Captures | `record` (the loop) |
-
-## The transcript
+[Add the server to your client](../../README.md#install) and open it in your checkout of the program. Each of these is a step of
+the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-The run is 20 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+**1. Wait for a line of the program's log**
 
-**1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
+Ask:
 
-`start(profile=...)` boots from the recipe the program's own repository declares: the line `make mcp-conf` prints, the DEV build opening the demo song unattended, the conf with its boot line removed, the E9 log. The call gives only what is the run's own, and the reply says which keys the recipe filled.
+> Wait until the program logs that the song is sounding.
 
-<details><summary>call and reply</summary>
+Call:
+
+```text
+log_wait(pattern="PERF  \\. audio play=1", channel="guest", seconds=120)
+```
+
+Reply, 2 of 13 fields:
 
 ```json
 {
-  "shared": true,
-  "background": true,
-  "display": "<host>",
-  "profile": "<host>",
-  "symbols": "<host>",
-  "flags": ["-set", "cpu core=normal"],
-  "captures_dir": "<host>",
-  "cwd": "<host>"
+  "verdict": "TARGET",
+  "pattern": "PERF  \\. audio play=1"
 }
 ```
 
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "pid": "<volatile>",
-  "conf": "<volatile>",
-  "conf_digest": "<volatile>",
-  "watched": true,
-  "bound_s": 14400,
-  "elapsed_s": "<volatile>",
-  "captures": "off",
-  "state_dir": "<volatile>",
-  "shared": true,
-  "ready_after_s": "<volatile>",
-  "argv": "<volatile>",
-  "binary": "<volatile>",
-  "binary_origin": "<volatile>",
-  "version": "<volatile>",
-  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
-  "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
-  "input_port": "<volatile>",
-  "background": true,
-  "presence": true,
-  "window": "<volatile>",
-  "logfile": "<volatile>",
-  "declarations": {
-    "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
-  },
-  "symbols": {
-    "held": "<volatile>",
-    "base_from": "program",
-    "checked": {"against": "<volatile>", "agree": 3214}
-  },
-  "kept": "kept 1 (promote to review)",
-  "profile": {
-    "name": "<volatile>",
-    "file": "<volatile>",
-    "supplied": ["conf", "logfile", "program", "session_seconds"]
-  },
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
+`TARGET` means a line matching `pattern` arrived in the program's log. The program keeps running meanwhile: `log_wait` is one of the tools that answer while it runs.
 
-</details>
-
-**3. `log_wait`**: OK sounding: the app is up and the song sounds
-
-The program's own log says when it is up and when the song sounds, two different lines: `log_wait` on the guest channel waits for the second, on a running machine.
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "pattern": "PERF  \\. audio play=1",
-  "channel": "guest",
-  "seconds": 120
-}
-```
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -171,19 +95,30 @@ The program's own log says when it is up and when the song sounds, two different
 
 </details>
 
-**4. `send_keys`**: OK pause: space reached the app
+**2. Press a key and check the program took it**
 
-`send_keys` with `expect` proves the key reached the application, not only that the host sent one: the program logs every key it takes, by name.
+Ask:
 
-<details><summary>call and reply</summary>
+> Press space and check that the program logged the key.
+
+Call:
+
+```text
+send_keys(keys=["space"], expect="key down SPACE", seconds=10)
+```
+
+Reply, 2 of 10 fields:
 
 ```json
 {
-  "keys": ["space"],
-  "expect": "key down SPACE",
-  "seconds": 10
+  "summary": "send_keys (guest): effect seen",
+  "keys": ["space"]
 }
 ```
+
+The program logs every key it takes, by name. "effect seen" means that line arrived: the key reached the program, not only the emulator.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -212,59 +147,30 @@ The program's own log says when it is up and when the song sounds, two different
 
 </details>
 
-**6. `send_keys`**: OK rewind: home put the song back at its first row
+**3. Stop on the frame a button goes dark**
 
-Where the pause lands is the host's, so the still is not taken there: home rewinds the paused song to its first row and the program logs it.
+Ask:
 
-<details><summary>call and reply</summary>
+> Wait until the screen map names `warning_dark`.
+
+Call:
+
+```text
+screen_wait(screen="warning_dark", seconds=10)
+```
+
+Reply, 2 of 19 fields:
 
 ```json
 {
-  "keys": ["home"],
-  "expect": "ACT   \\. rewind",
-  "seconds": 10
+  "verdict": "TARGET",
+  "screen": {"name": "warning_dark", "layer": "file"}
 }
 ```
 
-```json
-{
-  "summary": "send_keys (guest): effect seen",
-  "status": "ok",
-  "keys": ["home"],
-  "modifiers": [],
-  "route": "guest",
-  "posted": 1,
-  "bytes": 4,
-  "frames": 4,
-  "verify": {
-    "checked": true,
-    "seen": true,
-    "expected": "ACT   \\. rewind",
-    "verdict": "TARGET",
-    "line": "<volatile>",
-    "seen_before_waiting": "<volatile>",
-    "lines_before": "<volatile>",
-    "waited_s": "<volatile>",
-    "lines_total": "<volatile>"
-  },
-  "session": {"alive": true, "running": true, "altered": false}
-}
-```
+The warning button pulses on the program's own counter. `TARGET` means the wait stopped on the first frame the screen map, the file that names the program's screens, called `warning_dark`.
 
-</details>
-
-**14. `screen_wait`**: OK dark: the first frame it went dark
-
-The warning button pulses on the program's own counter, so the picture is taken on its edge: `read_memory` reads the counter, `run_for` goes to the middle of the next lit half, and `screen_wait` on the mapped dark look stops on its first frame.
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "screen": "warning_dark",
-  "seconds": 10
-}
-```
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -292,19 +198,30 @@ The warning button pulses on the program's own counter, so the picture is taken 
 
 </details>
 
-**19. `send_keys`**: OK confirm: Quit without saving
+**4. Leave the program by its own keys**
 
-The program is left by its own keys, and its log says which button the confirm took, so the session closes over a guest that has quit rather than one killed under a running program.
+Ask:
 
-<details><summary>call and reply</summary>
+> Answer the quit dialog: right arrow, then Enter.
+
+Call:
+
+```text
+send_keys(keys=["right", "enter"], expect="ask res=1", seconds=10)
+```
+
+Reply, 2 of 10 fields:
 
 ```json
 {
-  "keys": ["right", "enter"],
-  "expect": "ask res=1",
-  "seconds": 10
+  "summary": "send_keys (guest): effect seen",
+  "keys": ["right", "enter"]
 }
 ```
+
+"effect seen" means the program logged which button the dialog took. So the session closes over a program that quit by itself.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -333,3 +250,42 @@ The program is left by its own keys, and its log says which button the confirm t
 
 </details>
 <!-- demo-transcript:end -->
+
+<details><summary>The whole demo as one prompt</summary>
+
+1. Start from the start profile `.scry/start/dev.json` of the checkout, with a window, on the
+   normal core, with the symbols `build/RECHIPD.SYM`, and let it run.
+2. Wait on the program's log for `PERF . audio play=1`, press space and show me the program
+   logged `key down SPACE`.
+3. Wait for `ACT . play=0`, press home and wait for `ACT . rewind`.
+4. Twice, wait for the next `PERF . fps=` line written after the log's current end.
+5. Stop inside the program and read the 4 bytes of `_g_ticks`, its counter in 10 ms ticks.
+6. Run to the middle of the next lit 400 ms, load `demos/rechip/rechip-screen-map.json`, check
+   the screen is `warning_lit` and wait for `warning_dark`.
+7. Save a picture of the screen and record 240 frames of video.
+8. Resume, press alt+x and wait for `ask opens`, press right then enter and wait for `ask
+   res=1`, and close.
+
+</details>
+
+## Tools this demo uses
+
+| Group | Tools |
+|---|---|
+| [Session](../../docs/reference/session.md) | `start`, `close` |
+| [Advance](../../docs/reference/advance.md) | `resume`, `stop`, `run_for`, `screen_wait` |
+| [Machine](../../docs/reference/machine.md) | `log_wait` |
+| [Input](../../docs/reference/input.md) | `send_keys` |
+| [Read](../../docs/reference/read.md) | `read_memory`, `screen_map_write`, `screen_map_find` |
+| [Captures](../../docs/reference/captures.md) | `record` |
+| [Screen](../../docs/reference/screen.md) | `screen_view` |
+
+Each group is a page of the reference. Some of the names need a word:
+
+- Advance: the tools that let the program run and stop it again.
+- Machine: the program's log and the map of what DOS loaded.
+
+## The transcript
+
+[TRANSCRIPT.md](TRANSCRIPT.md) has every call of the run with its reply. The paths of your
+checkout read `<host>` there, because they are your computer's.

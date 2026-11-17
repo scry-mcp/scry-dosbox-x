@@ -1,3 +1,5 @@
+Every call of the run with its reply, in order: 12 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
 <details><summary>call and reply</summary>
@@ -532,7 +534,52 @@
 
 </details>
 
-**10. `screen_view`**: OK screen: the board, 320x200
+**10. `record`**: OK playing: recorded 176 frames in ./tmp/demos/lineup/playing.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 176,
+  "dest": "./tmp/demos/lineup/playing.avi",
+  "seconds": 300
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 176,
+  "began": true,
+  "ended": true,
+  "path": "<volatile>",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**11. `screen_view`**: OK screen: the board, 320x200
 
 <details><summary>call and reply</summary>
 
@@ -567,50 +614,6 @@
     "not_inlined": "attach=false"
   },
   "display_start": "0h",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**11. `record`**: OK loop: recording 240 frames in ./tmp/demos/lineup/loop.avi
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "frames": 240,
-  "dest": "./tmp/demos/lineup/loop.avi"
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": "<volatile>",
-  "pc": "<volatile>",
-  "cpu_mode": "<volatile>",
-  "frame": "<volatile>",
-  "regs": "<volatile>",
-  "watches": "<volatile>",
-  "cause": "<volatile>",
-  "e9": "<volatile>",
-  "stop_seq": "<volatile>",
-  "instruction": "<volatile>",
-  "emulated_before_s": "<volatile>",
-  "emulated_after_s": "<volatile>",
-  "frame_before": "<volatile>",
-  "frame_after": "<volatile>",
-  "cycles": "<volatile>",
-  "kind": "avi",
-  "frames": 240,
-  "began": true,
-  "ended": true,
-  "path": "<volatile>",
-  "bytes": "<volatile>",
-  "avi_frames": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```

@@ -1,3 +1,5 @@
+Every call of the run with its reply, in order: 58 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
 <details><summary>call and reply</summary>
@@ -2178,7 +2180,52 @@
 
 </details>
 
-**28. `perform`**: OK said: the map says: name choices left
+**28. `record`**: OK own line: recorded 150 frames in ./tmp/demos/monkey/own-line.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 150,
+  "dest": "./tmp/demos/monkey/own-line.avi",
+  "seconds": 300
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 150,
+  "began": true,
+  "ended": true,
+  "path": "./tmp/demos/monkey/own-line.avi",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**29. `perform`**: OK said: the map says: name choices left
 
 <details><summary>call and reply</summary>
 
@@ -2250,7 +2297,7 @@
 
 </details>
 
-**29. `state_write`**: OK restore: the machine back to before the click
+**30. `state_write`**: OK restore: the machine back to before the click
 
 <details><summary>call and reply</summary>
 
@@ -2280,7 +2327,7 @@
 
 </details>
 
-**30. `screen_map_find`**: OK heck again?: the map says: name: whats wrong with my name
+**31. `screen_map_find`**: OK heck again?: the map says: name: whats wrong with my name
 
 <details><summary>call and reply</summary>
 
@@ -2307,7 +2354,7 @@
 
 </details>
 
-**31. `find`**: OK needle: the lookout's line, once, at 82DD:0000000F
+**32. `find`**: OK needle: the lookout's line, once, at 82DD:0000000F
 
 <details><summary>call and reply</summary>
 
@@ -2336,7 +2383,7 @@
 
 </details>
 
-**32. `perform`**: OK script: 1371 bytes around the line are the disc's own script, hole by hole
+**33. `perform`**: OK script: 1371 bytes around the line are the disc's own script, hole by hole
 
 <details><summary>call and reply</summary>
 
@@ -2379,7 +2426,7 @@
 
 </details>
 
-**33. `perform`**: OK rewrite: 22 speeches, 1259 bytes of bytecode over 3 holes, each read back
+**34. `perform`**: OK rewrite: 22 speeches, 1259 bytes of bytecode over 3 holes, each read back
 
 <details><summary>call and reply</summary>
 
@@ -2530,7 +2577,7 @@
 
 </details>
 
-**34. `breakpoint_interrupt`**: OK arm: a stop on every request to the CD driver
+**35. `breakpoint_interrupt`**: OK arm: a stop on every request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -2557,7 +2604,7 @@
 
 </details>
 
-**35. `perform`**: OK pick: the same comeback, picked again
+**36. `perform`**: OK pick: the same comeback, picked again
 
 <details><summary>call and reply</summary>
 
@@ -2630,7 +2677,7 @@
 
 </details>
 
-**36. `resume`**: OK first: stopped on INT 2Fh AX=1510h, a request to the CD driver
+**37. `resume`**: OK first: stopped on INT 2Fh AX=1510h, a request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -2688,7 +2735,7 @@
 
 </details>
 
-**37. `read_memory`**: OK request 1: STOP AUDIO (85h), let through
+**38. `read_memory`**: OK request 1: STOP AUDIO (85h), let through
 
 <details><summary>call and reply</summary>
 
@@ -2713,7 +2760,7 @@
 
 </details>
 
-**38. `perform`**: OK pass 1: the request answered
+**39. `perform`**: OK pass 1: the request answered
 
 <details><summary>call and reply</summary>
 
@@ -2771,7 +2818,7 @@
 
 </details>
 
-**39. `resume`**: OK second: stopped on INT 2Fh AX=1510h, a request to the CD driver
+**40. `resume`**: OK second: stopped on INT 2Fh AX=1510h, a request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -2829,7 +2876,7 @@
 
 </details>
 
-**40. `read_memory`**: OK request 2: STOP AUDIO (85h), let through
+**41. `read_memory`**: OK request 2: STOP AUDIO (85h), let through
 
 <details><summary>call and reply</summary>
 
@@ -2854,7 +2901,7 @@
 
 </details>
 
-**41. `perform`**: OK pass 2: the request answered
+**42. `perform`**: OK pass 2: the request answered
 
 <details><summary>call and reply</summary>
 
@@ -2912,7 +2959,7 @@
 
 </details>
 
-**42. `resume`**: OK third: stopped on INT 2Fh AX=1510h, a request to the CD driver
+**43. `resume`**: OK third: stopped on INT 2Fh AX=1510h, a request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -2970,7 +3017,7 @@
 
 </details>
 
-**43. `read_memory`**: OK request 3: PLAY AUDIO (84h) from 36:45:00, the theme's first sector, for 12200 sectors
+**44. `read_memory`**: OK request 3: PLAY AUDIO (84h) from 36:45:00, the theme's first sector, for 12200 sectors
 
 <details><summary>call and reply</summary>
 
@@ -2995,7 +3042,7 @@
 
 </details>
 
-**44. `write`**: OK to the logo: the drive will start at 37:05:67, the logo's bar
+**45. `write`**: OK to the logo: the drive will start at 37:05:67, the logo's bar
 
 <details><summary>call and reply</summary>
 
@@ -3021,7 +3068,7 @@
 
 </details>
 
-**45. `declaration_clear`**: OK disarm: the stop on the CD driver cleared
+**46. `declaration_clear`**: OK disarm: the stop on the CD driver cleared
 
 <details><summary>call and reply</summary>
 
@@ -3044,7 +3091,7 @@
 
 </details>
 
-**46. `audio_record`**: OK theme: 8.0 s of the mixer at 44100 Hz
+**47. `audio_record`**: OK theme: 8.0 s of the mixer at 44100 Hz
 
 <details><summary>call and reply</summary>
 
@@ -3093,7 +3140,7 @@
 
 </details>
 
-**47. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
+**48. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
 
 <details><summary>call and reply</summary>
 
@@ -3125,7 +3172,7 @@
 
 </details>
 
-**48. `screen_map_find`**: OK music?: the map says: guybrush: a debugger that plays music
+**49. `screen_map_find`**: OK music?: the map says: guybrush: a debugger that plays music
 
 <details><summary>call and reply</summary>
 
@@ -3149,7 +3196,7 @@
 
 </details>
 
-**49. `perform`**: OK talk 1: the map says: lookout: the orange tycoon
+**50. `perform`**: OK talk 1: the map says: lookout: the orange tycoon
 
 <details><summary>call and reply</summary>
 
@@ -3209,7 +3256,7 @@
 
 </details>
 
-**50. `perform`**: OK talk 2: the map says: lookout: those files
+**51. `perform`**: OK talk 2: the map says: lookout: those files
 
 <details><summary>call and reply</summary>
 
@@ -3269,7 +3316,7 @@
 
 </details>
 
-**51. `perform`**: OK talk 3: the map says: lookout: still not a wave
+**52. `perform`**: OK talk 3: the map says: lookout: still not a wave
 
 <details><summary>call and reply</summary>
 
@@ -3329,7 +3376,7 @@
 
 </details>
 
-**52. `perform`**: OK talk 4: the map says: lookout: humor first
+**53. `perform`**: OK talk 4: the map says: lookout: humor first
 
 <details><summary>call and reply</summary>
 
@@ -3389,7 +3436,7 @@
 
 </details>
 
-**53. `screen_view`**: OK screen: mode M_VGA, 320x200 by palette index
+**54. `screen_view`**: OK screen: mode M_VGA, 320x200 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -3431,14 +3478,15 @@ Also attached: image/png.
 
 </details>
 
-**54. `record`**: OK loop: recording 240 frames in ./tmp/demos/monkey/loop.avi
+**55. `record`**: OK new line: recorded 240 frames in ./tmp/demos/monkey/new-line.avi
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "frames": 240,
-  "dest": "./tmp/demos/monkey/loop.avi"
+  "dest": "./tmp/demos/monkey/new-line.avi",
+  "seconds": 300
 }
 ```
 
@@ -3466,7 +3514,7 @@ Also attached: image/png.
   "frames": 240,
   "began": true,
   "ended": true,
-  "path": "./tmp/demos/monkey/loop.avi",
+  "path": "./tmp/demos/monkey/new-line.avi",
   "bytes": "<volatile>",
   "avi_frames": "<volatile>",
   "session": "<volatile>"
@@ -3475,7 +3523,7 @@ Also attached: image/png.
 
 </details>
 
-**55. `perform`**: OK goodbye: the map says: cliff
+**56. `perform`**: OK goodbye: the map says: cliff
 
 <details><summary>call and reply</summary>
 
@@ -3565,7 +3613,7 @@ Also attached: image/png.
 
 </details>
 
-**56. `perform`**: OK walk off: the map says: dark
+**57. `perform`**: OK walk off: the map says: dark
 
 <details><summary>call and reply</summary>
 
@@ -3643,7 +3691,7 @@ Also attached: image/png.
 
 </details>
 
-**57. `close`**: OK close: closed: quit
+**58. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 

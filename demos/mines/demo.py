@@ -21,7 +21,17 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import DISPLAY, Demo, Loop, Reply, Run, Step, main, window_args
+from scry_core.demo import (
+    DISPLAY,
+    Demo,
+    Moment,
+    Reply,
+    Run,
+    Step,
+    main,
+    recording,
+    window_args,
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
@@ -48,6 +58,9 @@ FLAGGED = 2
 #: Retraces recorded from where the click's post leaves the machine: the explosion lasts 0.6 s,
 #: the screen retraces 70 times a second, and the post has already run a few of them.
 BOOM_FRAMES = 45
+#: The retraces recorded at the win, which the explosion's reference sound was made with, and
+#: how many of them the loop shows; then those recorded at the loss.
+WIN_FRAMES, WIN_SHOWN, LOST_FRAMES = 240, 100, 100
 WAIT_S = 60
 
 
@@ -250,9 +263,11 @@ STEPS = [
                             "loaded"),
     Step("title", "run_to", {"ref": "main_loop", "control": "retrace", "seconds": WAIT_S},
          drawn("the game's loop reached: the title drawn and the pointer up"),
-         highlight=("The run arrives by a symbol, not by time: `main_loop` is where the game "
-                    "goes once the title is drawn, so the screen read next is whole on any "
-                    "host.")),
+         title="Run to a routine by its name",
+         ask="Run the game until it reaches `main_loop`.",
+         shown=("summary", "verdict"),
+         reads=("`TARGET` means the run stopped at `main_loop`, where the game goes once its "
+                "title is drawn. So the screen read next is whole on any computer.")),
     Step("is title", "screen_map_find", {}, found("title")),
     Step("play", "send_mouse", {"target": "start", "button": "left", "expect": "NEW 9 9 10$",
                                 "seconds": 10},
@@ -271,21 +286,28 @@ STEPS = [
     Step("is board again", "screen_map_find", {}, found("board")),
     Step("size", "read_memory", {"ref": "rows", "length": 2}, size),
     Step("mines", "read_memory", {"ref": "mines", "length": ROWS * COLS}, mines_read,
-         highlight=("The board is read out of the game's memory by name: `mines` is a symbol of "
-                    "the build, one byte per cell. Where the mines are is data, and what the "
-                    "server can read, a player cannot.")),
+         title="Read the board out of memory",
+         ask="Read the 81 bytes at `mines`, the game's own table of where the mines are.",
+         shown=("summary", "length"),
+         reads=("`mines` is a symbol of the build, one byte per cell. Where the mines are is "
+                "data the server can read and a player cannot.")),
     Step("origin", "read_memory", {"ref": "board_x", "length": 4}, origin_read),
     Step("flags", "perform", flags, flagged),
     Step("clear", "perform", clear, cleared,
-         highlight=("Each click is a `send_mouse` with an `expect`: the call returns only when the "
-                    "game's own log shows the reveal the click was meant to cause (`REVEAL row "
-                    "col`), so a click that missed fails at once instead of three clicks later. "
-                    "`perform` sends them all as one call.")),
+         title="Clear the board in one call",
+         ask=("Open every safe cell with as few clicks as the game's flood fill allows, waiting "
+              "for the game to log each reveal."),
+         shown=("summary", "steps_completed"),
+         reads=("Each click waits for the line the game logs when it reveals that cell, so a "
+                "click that missed fails at once. `perform` sends them all as one call.")),
     back_in_loop("cleared drawn", "the last reveal and the win dialog drawn"),
     Step("won", "log", {"channel": "guest", "pattern": "WIN$"}, won),
     Step("park", "send_mouse", {"x": PARK[0], "y": PARK[1]}, parked),
     Step("is win", "screen_map_find", {}, found("win")),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
+    # These retraces are part of what the explosion is compared from, sample for sample: the
+    # reference was recorded with as many between the win and the click that follows.
+    recording("win", WIN_FRAMES),
     Step("again", "send_mouse", {"target": "ok", "button": "left", "expect": "NEW 9 9 10$",
                                  "seconds": 10},
          seen("OK started the next game"), volatile=INPUT_TIMING),
@@ -302,11 +324,14 @@ STEPS = [
     Step("exact", "audio_compare", lambda run: {"method": "diff", "a": run.dir / "boom.wav",
                                                 "b": HERE / "boom.wav", "align": False},
          exact, volatile={"a": "the run's own directory"},
-         highlight=("The explosion was recorded off the emulated Sound Blaster's digital output, "
-                    "not off the speakers, and the comparison is a `diff` with alignment off: the "
-                    "two recordings are equal sample for sample, which is what `exact` says.")),
+         title="Compare a sound with its reference",
+         ask="Compare the explosion you recorded with `boom.wav`, sample by sample.",
+         shown=("summary", "exact"),
+         reads=("`exact` is true only when every sample is equal. The recording comes from the "
+                "emulated Sound Blaster's digital output, not from the speakers.")),
     Step("park again", "send_mouse", {"x": PARK[0], "y": PARK[1]}, parked),
     Step("is lose", "screen_map_find", {}, found("lose")),
+    recording("lost", LOST_FRAMES),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
 ]
 
@@ -314,7 +339,12 @@ STEPS = [
 DEMO = Demo(
     name="mines", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
-    capture=lambda run: run.dir / "screen.png", loop=Loop("screen"),
+    capture=lambda run: run.dir / "screen.png",
+    moments=(Moment("screen", "win", "`perform` opened every cell the game's memory says is "
+                                     "safe: the board is cleared.", frames=WIN_SHOWN),
+             Moment("is lose", "lost", "On the next board `send_mouse` clicks a cell the memory "
+                                       "says holds a mine.")),
+    alt="Minesweeper cleared without a miss, then a mine stepped on",
     precheck=precheck, offers=frozenset({"display"}),
     host_args={"display": DISPLAY}, volatile=VOLATILE)
 

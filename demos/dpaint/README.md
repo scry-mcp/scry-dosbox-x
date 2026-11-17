@@ -1,110 +1,86 @@
-# Deluxe Paint: a sunset painted through the debugger, and the byte that holds the colour
+# Deluxe Paint: a sunset painted through the debugger
 
-![A sunset painted in Deluxe Paint II through the server: the sun sinking into the sea, a boat and the word SCRY](screen.png)
+<!-- demo-motion:begin -->
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Deluxe Paint painting a sunset by itself"></picture>
 
-Electronic Arts' Deluxe Paint II, the 1988 PC version, paints a sunset here with every stroke
-sent by the server: tools and colours are picked by name off a screen map, each shape is a drag
-of the guest's own mouse, and the picture is checked by reading its pixels back out of video
-memory. Halfway through, the demo does what no mouse macro can: it picks two colours off the
-palette with a value scan between the clicks, finds the bytes where the program keeps its
-current colour, tells the four static ones from the copies in the stack's frames, and watches
-the first, so every later pick shows its colour at the stop it lands on.
+1. Each `perform` picks a tool and a colour by name and drags: the sky, then the sun.
+2. Two more `perform` calls paint the sea and the boat's hull.
+3. The text tool, a click and `send_keys`: SCRY, typed into the picture.
 
-[`demos/dpaint_maps/`](../dpaint_maps/README.md) drives the same program at 640 x 480 through
-its menus and a dialog, every screen found off a map of eleven.
+<!-- moments-ms: 2283,1926,1784 -->
+<!-- demo-motion:end -->
+
+Electronic Arts' Deluxe Paint II, the 1988 PC version, paints a sunset here, every stroke sent
+by the server. Tools and colours are picked by the names of a screen map, a file that names
+the program's controls. The picture is checked by reading video memory back, and a value scan
+finds the byte that holds the current colour.
 
 ## The program
 
-Deluxe Paint II is Electronic Arts' commercial software, and nothing of it is in this
-repository: the demo carries its prompt, its script, its conf and its screen map, and runs the
-program from a directory you name. It needs version 1.0, the 1988 release on one 720k disk,
-copied off the disk into a directory of its own (the disk's files, `DP.EXE` among them; its
-installer is not needed). The demo checks `DP.EXE` before anything starts and refuses another
-build, naming its digest, because the address of the colour and the picture are that release's.
-The session's log and saved states go under this repository's `tmp/`, and nothing the run writes
+Deluxe Paint II is commercial software, and nothing of it is in this repository. The demo runs
+it from a directory you name: version 1.0, the 1988 release on one 720k disk.
+
+It checks `DP.EXE` first and refuses another build, naming its digest. Nothing the run writes
 stays in your directory.
 
 ## Run it
 
 ```sh
-uv run python demos/dpaint/demo.py \
-  --cwd /path/to/your/dpaint2
+uv run python demos/dpaint/demo.py --cwd /path/to/your/dpaint2
 ```
 
-The demo opens a window, scaled up four times by its conf, so the painting can be watched; nothing
-in it needs the window. Deluxe Paint takes the mouse as movement events, so it needs a DOSBox-X
-whose input device carries relative motion (the repository's REFERENCE.md, *Debugger commands*),
-named with `--binary` or `DOSBOX_X_BINARY`; on a build without it the demo stops at its
-third step, saying so, because a drag would paint nothing between its button events.
+Each line it prints is one call and its check. The window opens behind the others, so the run
+does not take your keyboard.
 
-- `--cwd PATH` (absolute or `~`-led) is the directory holding `DP.EXE`, which the session runs
-  from and mounts as C:. It is hidden in the transcript as `<host>`.
-- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out,
+- `--cwd PATH` (absolute or `~`-led) is the directory holding `DP.EXE`. The session runs from
+  it, and it reads `<host>` in the transcript.
+- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
   `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
-- `--display N` opens the window on that display; left out, on the host's main one. The
-  window opens behind, so the run takes nobody's focus.
+- `--display N` opens the window on that display. Left out, it opens on the main one.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
-- `--update-readme` rewrites the block below, `TRANSCRIPT.md`, `screen.png` and `loop.mp4` from a run where every step
-  passed.
+- `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
+  `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
+  `PATH`.
 
-Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
-line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2
-a usage error, 3 nothing was demonstrated (no program directory, another build of it, a
-DOSBox-X without relative motion, a server that did not start, a loop that could not be converted).
+Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
+That last one is no program directory, another build of it, a DOSBox-X without relative motion or a
+server that did not start.
 
-## The prompt
+Deluxe Paint takes the mouse as movement, so it needs a DOSBox-X whose input device carries
+relative motion ([REFERENCE.md](../../REFERENCE.md), *Debugger commands*). On a build without
+it the demo stops at its third step and says so.
 
-Give this to an MCP client with this server connected:
+## Try it yourself
 
-> Start DOSBox-X windowed on `demos/dpaint/dpaint.conf`,
-> running from `/path/to/your/dpaint2`, with `DP.EXE f` as the
-> program and the log in a file. Load the screen map
-> `dpaint-screen-map.json` beside the conf, run until it names the painting screen, and tell me
-> where DOS loaded the program and so where its data segment is. Pick blue off the
-> palette, start a value scan of the data segment, keep what holds 9; pick orange, keep what
-> holds 55, and tell me which survivors are static data and which are in the stack's frames.
-> Close the scan and watch the first static one, then paint a sunset, one call a shape: a peach
-> sky as a filled rectangle, a yellow sun as a filled circle on the horizon, a navy sea over its
-> lower half, a brown hull with the rectangle tool still in hand, a white sail drawn with lines,
-> and SCRY typed with the text tool. After
-> every colour, tell me what the watched byte shows. Read a row across the sun and one across
-> the boat to prove the colours landed, show me the screen, clear the watch and close.
-
-## What it walks
-
-| Family | Calls |
-|---|---|
-| Session | `start` (windowed, running the program from `cwd`), `close` |
-| Advance | `screen_wait` until the map names the painting screen: the program has no symbols, no log and no place that runs once per change |
-| Input | `send_mouse` by control name off the map, at screen pixels, and as drags; `send_keys` for the word |
-| Scan | `scan` (`start`, `filter` twice, `clear`) |
-| Declarations | `watch_add` (the colour byte in view at every stop), `declaration_clear(kind="watch")` |
-| Lists | `perform` (one shape a call: its tool, its colour, its drags) |
-| Read | `screen_map_write(method="load")`, `screen_map_find`, `read_memory` of rows of video memory |
-| Screen | `screen_view` |
-| Captures | `record` (the loop) |
-
-## The transcript
-
-Generated by `demo.py --update-readme` from a run where every step passed. What differs between
-two honest runs (process ids, ports, wall-clock times, temporary paths, the host's own DOSBox-X
-and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
+[Add the server to your client](../../README.md#install) and ask it to start DOSBox-X on `demos/dpaint/dpaint.conf` from your copy of the program. Each of these is a step of
+the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-The run is 24 calls; these are the ones that show how it is done, and every call with its reply is in [TRANSCRIPT.md](TRANSCRIPT.md).
+**1. Click a control by its name**
 
-**6. `send_mouse`**: OK blue: blue picked off the palette
+Ask:
 
-Tools and colours are picked by name: the screen map says where `blue` sits on the palette, and `send_mouse` with a `target` moves the guest's own mouse driver there and presses. The script holds no coordinates.
+> Pick blue on Deluxe Paint's palette.
 
-<details><summary>call and reply</summary>
+Call:
+
+```text
+send_mouse(target="blue", button="left")
+```
+
+Reply, 3 of 26 fields:
 
 ```json
 {
+  "summary": "send_mouse: pointer at 300,179, program's own pointer not re ... (107 characters)",
   "target": "blue",
-  "button": "left"
+  "driver_arrived": true
 }
 ```
+
+The screen map says where `blue` sits, so the call holds no coordinates. `driver_arrived` is true when the program's own mouse driver reports the pointer there.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -147,18 +123,30 @@ Tools and colours are picked by name: the screen map says where `blue` sits on t
 
 </details>
 
-**10. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above the stack pointer, and 4 static ones from 31B2:017C
+**2. Find the byte that holds the colour**
 
-A value scan, the cheat finder's trick done through a debugger. The first scan kept every byte of the data segment, the filter after picking blue kept those holding blue's index, and this one, after orange, keeps those that held each in turn. The survivors are of two kinds, told apart by where they live: copies in the stack's frames, and static bytes in the data segment.
+Ask:
 
-<details><summary>call and reply</summary>
+> Orange is picked now. Keep only the bytes of the scan that hold orange's number.
+
+Call:
+
+```text
+scan(method="filter", value=55)
+```
+
+Reply, 2 of 10 fields:
 
 ```json
 {
-  "method": "filter",
-  "value": 55
+  "summary": "scan filter: = 55, 7 survivors",
+  "hits_total": 7
 }
 ```
+
+`hits_total` counts the bytes still in the scan: they held blue's number, then orange's. The ones below the stack pointer are the program's own variables.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -185,18 +173,30 @@ A value scan, the cheat finder's trick done through a debugger. The first scan k
 
 </details>
 
-**19. `read_memory`**: OK sun row: the row reads peach x 25, then yellow x 51, then peach x 52
+**3. Read the picture back out of video memory**
 
-The picture is checked by reading it back: a row of the screen comes out of video memory as colours and run lengths, in the order the strokes were painted.
+Ask:
 
-<details><summary>call and reply</summary>
+> Read 128 bytes of video memory from row 100, column 160.
+
+Call:
+
+```text
+read_memory(ref="A000:7DA0", length=128)
+```
+
+Reply, 2 of 7 fields:
 
 ```json
 {
-  "ref": "A000:7DA0",
+  "summary": "read_memory A000:7DA0: 128 bytes at A000:00007DA0: 343434343 ... (207 characters)",
   "length": 128
 }
 ```
+
+In this video mode each byte is one pixel's colour number. The row holds 25 pixels of sky, 51 of sun and 52 of sky, as painted.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -212,3 +212,57 @@ The picture is checked by reading it back: a row of the screen comes out of vide
 
 </details>
 <!-- demo-transcript:end -->
+
+<details><summary>The whole demo as one prompt</summary>
+
+1. Start DOSBox-X windowed on `demos/dpaint/dpaint.conf`, running from your copy of the
+   program, with `DP.EXE f` as the program, recording its video, and the log in a file.
+2. Load the screen map `dpaint-screen-map.json` beside the conf and run until it names the
+   painting screen.
+3. Tell me where DOS loaded the program, and so where its data segment is.
+4. Pick blue on the palette, start a value scan of the data segment and keep what holds 9.
+5. Pick orange, keep what holds 55, and tell me which of the bytes left are below the stack
+   pointer.
+6. Close the scan and watch the first of those. Then paint a sunset, one call a shape, and tell
+   me what the watched byte shows after each colour.
+7. A peach sky as a filled rectangle, a yellow sun as a filled circle on the horizon, a navy
+   sea over its lower half.
+8. A brown hull with the rectangle tool still in hand, a white sail drawn with lines, and SCRY
+   typed with the text tool.
+9. Read a row across the sun and one across the boat, show me the screen, clear the watch and
+   close.
+
+</details>
+
+## Tools this demo uses
+
+| Group | Tools |
+|---|---|
+| [Session](../../docs/reference/session.md) | `start`, `close` |
+| [Advance](../../docs/reference/advance.md) | `screen_wait` |
+| [Machine](../../docs/reference/machine.md) | `machine_map` |
+| [Read](../../docs/reference/read.md) | `screen_map_write`, `screen_map_find`, `read_memory` |
+| [Input](../../docs/reference/input.md) | `send_mouse`, `send_keys` |
+| [Scan](../../docs/reference/scan.md) | `scan` |
+| [Declarations](../../docs/reference/declarations.md) | `watch_add`, `declaration_clear` |
+| [Lists](../../docs/reference/lists.md) | `perform` |
+| [Screen](../../docs/reference/screen.md) | `screen_view` |
+
+Each group is a page of the reference. Some of the names need a word:
+
+- Advance: the tools that let the program run and stop it again.
+- Declarations: breakpoints and watches.
+- Lists: the tools that run several calls as one.
+- Machine: the program's log and the map of what DOS loaded.
+
+## The transcript
+
+[TRANSCRIPT.md](TRANSCRIPT.md) has every call of the run with its reply. Process ids, ports,
+wall-clock times and temporary paths read `<volatile>` there, because they change from run to
+run.
+
+The moving picture is cut from the video the session records of itself
+(`start(capture_video=true)`), because Deluxe Paint draws while each call is still running.
+
+[`demos/dpaint_maps/`](../dpaint_maps/README.md) drives the same program through its menus and
+a dialog.

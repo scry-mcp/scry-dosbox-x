@@ -1,3 +1,5 @@
+Every call of the run with its reply, in order: 9 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
 <details><summary>call and reply</summary>
@@ -305,14 +307,15 @@ Also attached: image/png.
 
 </details>
 
-**8. `record`**: OK loop: recording 240 frames in ./tmp/demos/speedf/loop.avi
+**8. `record`**: OK title shown: recorded 200 frames in ./tmp/demos/speedf/title-shown.avi
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "frames": 240,
-  "dest": "./tmp/demos/speedf/loop.avi"
+  "frames": 200,
+  "dest": "./tmp/demos/speedf/title-shown.avi",
+  "seconds": 300
 }
 ```
 
@@ -337,7 +340,7 @@ Also attached: image/png.
   "frame_after": "<volatile>",
   "cycles": "<volatile>",
   "kind": "avi",
-  "frames": 240,
+  "frames": 200,
   "began": true,
   "ended": true,
   "path": "<volatile>",

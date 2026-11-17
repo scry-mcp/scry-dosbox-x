@@ -1,3 +1,5 @@
+Every call of the run with its reply, in order: 34 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
 <details><summary>call and reply</summary>
@@ -594,14 +596,15 @@ Also attached: image/png.
 
 </details>
 
-**14. `record`**: OK loop: recording 240 frames in ./tmp/demos/bricks/loop.avi
+**14. `record`**: OK ball in play: recorded 240 frames in ./tmp/demos/bricks/ball-in-play.avi
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "frames": 240,
-  "dest": "./tmp/demos/bricks/loop.avi"
+  "dest": "./tmp/demos/bricks/ball-in-play.avi",
+  "seconds": 300
 }
 ```
 
@@ -629,7 +632,7 @@ Also attached: image/png.
   "frames": 240,
   "began": true,
   "ended": true,
-  "path": "./tmp/demos/bricks/loop.avi",
+  "path": "./tmp/demos/bricks/ball-in-play.avi",
   "bytes": "<volatile>",
   "avi_frames": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
