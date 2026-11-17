@@ -318,6 +318,38 @@ def test_a_start_behind_keeps_the_foreground_until_its_window_is_proved(
         server.close()
 
 
+class _Behind(hosts.Obeying):
+    """A window that opens under another application's until it is activated."""
+
+    def __init__(self, asked: hosts.Asked) -> None:
+        super().__init__(asked)
+        self.activations = 0
+
+    def above(self, window: core_window.Seen) -> list[core_window.Seen]:
+        return [] if self.activations else [replace(window, pid=1)]
+
+    def activate(self, window: core_window.Seen) -> str:
+        self.activations += 1
+        return ""
+
+
+@pytest.mark.parametrize(("platform", "background", "front"), [
+    ("win32", False, True), ("win32", True, False), ("darwin", False, False)])
+def test_a_start_in_front_on_windows_brings_its_window_forward_once_proved(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, platform: str, background: bool,
+        front: bool) -> None:
+    behind = _Behind(session_window)
+    monkeypatch.setattr(sys, "platform", platform)
+    monkeypatch.setattr(core_window, "host", lambda _platform="": behind)
+    monkeypatch.setattr(core_window, "_lock_foreground", lambda _code: False)
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True, background=background)
+    try:
+        assert got["status"] == "ok", got
+        assert (got["window"]["front"], behind.activations) == (front, int(front)), got["window"]
+    finally:
+        server.close()
+
+
 def test_a_stated_size_is_the_windowresolution_the_emulator_is_told(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     got = _started(tmp_path, monkeypatch, size="1280x960")

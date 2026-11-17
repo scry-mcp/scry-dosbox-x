@@ -5,6 +5,9 @@ What a client of the server notices.
 ## Unreleased
 
 - Takes scry-core 0.118.3.
+- On Windows a watched `start` with `background=false` brings its window to the front once it
+  is up, as the session page says; while another application held the foreground the window
+  opened behind it.
 - On Windows a watched `start` with `background=true` leaves the foreground where it was: no
   program may take it while the start launches, until the window is proved. The flag did
   nothing there.
