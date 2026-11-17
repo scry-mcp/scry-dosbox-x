@@ -360,6 +360,18 @@ def test_stop_until_protected_at_a_held_protected_stop_does_not_number_it_again(
     assert server.status()["last_stop"]["stop_seq"] == held
 
 
+@pytest.mark.parametrize("until", ["", "protected"])
+def test_a_stop_already_held_places_the_table_start_holds(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, until: str) -> None:
+    """A guest that stopped by itself, with no tool reading that stop yet: `stop` is the first
+    reply of it, so it places the held table as any stop reply does."""
+    _names(tmp_path, mode="Pr32")
+    said = {"placed": True, "path": "/x/RECHIP.sym", "base": "0x00400000", "loaded": 3}
+    monkeypatch.setattr(start_symbols, "place_if_due", lambda _session: said)
+    got = cast(dict[str, Any], server.stop(until=until))
+    assert got["interrupted"] is False and got["symbols_placed"] == said, got
+
+
 def test_stop_until_protected_on_a_running_guest_breaks_in_first(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     fake = _names(tmp_path)

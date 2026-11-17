@@ -790,10 +790,11 @@ def stop(until: Annotated[str, vocab.enum(advance.STOP_UNTIL)] = "",
         return advance.stop_in_protected_mode(session, bridge(ctx))
     if session.at_debugger():
         running.observe_stop(session)
+        placed = running.placed_at_held_stop(session)
         # THE STOP IT IS IN, or none: after a survey that could not be read the record is the
         # previous stop's, and naming it would be a confident wrong answer.
         current = STATE.as_of_current(session)
-        return st.reply(interrupted=False, last_stop=STATE.current_or_why(session),
+        return st.reply(interrupted=False, last_stop=STATE.current_or_why(session), **placed,
                         note="the machine was already stopped" + (
                             "" if current is not None else ", its position not readable yet "
                             "(its survey failed; the next contact retries)"))

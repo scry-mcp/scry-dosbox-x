@@ -103,6 +103,13 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
         raise
 
 
+def placed_at_held_stop(session: ds.Session) -> dict[str, Any]:
+    """`stop` on a machine already stopped answers that stop as the first reply of it, so it
+    places the table `start` holds as any stop reply does; the field, or nothing."""
+    placed = start_symbols.place_if_due(session)
+    return {} if placed is None else {"symbols_placed": placed}
+
+
 def placement_of(exc: ds.Invalid) -> dict[str, Any]:
     """The placement a cut `stop_reply` carried out before it failed, as a reply field."""
     return {k: v for k, v in exc.fields.items() if k == "symbols_placed"}

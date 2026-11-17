@@ -9,6 +9,8 @@ What a client of the server notices.
   the program's own 32-bit code; a stop in the DPMI host's 16-bit protected code ended it, and
   the program's symbols were then unknown there. A walk that runs out says it did not reach the
   program's code, where it said protected mode while `cpu_mode` said protected.
+- `stop` on a machine that stopped by itself places `start(symbols=)`'s held table there, as any
+  stop reply does, and says `symbols_placed`; the table stayed held until the next stop.
 - `run_to`'s `cut_by_other_stop` refusal says what to do next, as scry-mame's does: `cause` names
   what stopped the run, and a watch is passed with `disarm_watches=true`.
 - `promote` refuses a `start` profile or a `perform` document holding a `${...}` that is no

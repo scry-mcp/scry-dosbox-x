@@ -251,10 +251,11 @@ def stop_in_protected_mode(session: ds.Session, progress: ds.Progress) -> dict[s
         running.observe_stop(session)
         where = session.where()
         if in_the_program(where["mode"]):
+            placed = running.placed_at_held_stop(session)
             last = STATE.current_or_why(session)
             return st.reply(interrupted=False, runs_to_protected=0, last_stop=last,
                             cpu_mode=running.cpu_mode_of(where["mode"], session.paging),
-                            pc=f"{where['cs']}:{where['eip']}",
+                            pc=f"{where['cs']}:{where['eip']}", **placed,
                             note=f"the machine was already stopped in {_walk_end()}")
     runs, arrived = to_protected(session, progress)
     extra: dict[str, Any] = {} if arrived else {"note": (
