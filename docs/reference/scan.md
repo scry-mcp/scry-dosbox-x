@@ -49,7 +49,6 @@ Reference: REFERENCE.md, Reading and writing.
 | `operator` | string |
 | `ref` | string |
 | `seg_off` | string |
-| `survivors` | integer |
 | `truncated` | boolean |
 | `value` | string or object |
 
@@ -76,3 +75,5 @@ Example, from a live run:
 }
 ```
 <!-- scry-reference:end scan -->
+
+**A scan finds a variable by how its value behaves, when no map names it.** Start it over the range the variable may live in, change the value in the program (lose a life, score a point), then filter by what the cell now holds or, with no `value`, against what it held at the start (`!` keeps the cells that changed, `>` those that grew); a few rounds leave the one cell. The candidates live in the debugger's own value scanner (`MEMFIND`), not in the reply, so a scan over a large range costs one command and only the survivors come back, listed once few enough remain. That scanner holds one search at a time: a second `start` is refused `needs_call` naming `clear`, and a filter with none open says there is nothing to filter.

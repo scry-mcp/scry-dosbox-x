@@ -795,7 +795,6 @@ class ScanReply(DosboxEnvelope, total=False):
     operator: str
     ref: Annotated[str, When("`start`")]
     seg_off: Annotated[str, When("`start`")]
-    survivors: int
     truncated: Annotated[bool, When("`filter`")]
     value: str | dict[str, Any]
 

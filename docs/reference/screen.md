@@ -2,7 +2,7 @@
 
 ## The picture attached
 
-A view's PNG goes to the session's scratch (`close` deletes it; `dest` keeps one) and is attached after the JSON. Past 1568 px a side, or 1568 tiles of 28 px, the API resamples, and a resampled picture of pixel art is a plausible wrong one: it is written and not attached, `not_inlined` says why, and the caller asks for a `crop` or a smaller `scale`. A picture inside a sequence's step is never attached, since only a reply's own picture crosses. The default `scale` is the largest integer factor that fits, so each pixel stays a square of one colour.
+A view's PNG goes to the session's scratch (`close` deletes it; `dest` keeps one) and is attached after the JSON. Past 1568 px a side, or 1568 tiles of 28 px, the client model's image input resamples, and a resampled picture of pixel art is a plausible wrong one: it is written and not attached, `not_inlined` says why, and the caller asks for a `crop` or a smaller `scale`. A picture inside a sequence's step is never attached, since only a reply's own picture crosses. The default `scale` is the largest integer factor that fits, so each pixel stays a square of one colour.
 
 <!-- scry-reference:begin palette -->
 ## `palette`
@@ -173,7 +173,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end screen_view -->
 
-**Every VGA mode is read, and none is read by touching the card.** Text and 13h's chained bytes come through the CPU's window; a planar 16-colour mode, an unchained 256-colour one (mode X) and an 8-, 15-, 16- or 32-bit linear mode come from the video RAM itself through the debugger's `VGAMEMDUMP`, since the window answers one plane per read in the first two and is smaller than the frame in the others. A build without that command refuses those modes naming it. A 16-colour pixel goes through the Attribute Controller to its DAC entry; a 15- or 16-bit one is widened to eight bits a channel by repeating its high bits. The 256-colour PNG's pixels are the bytes the guest wrote and its PLTE the DAC, so each pixel, doubled each way as the emulator renders 13h, equals the emulator's own capture.
+**Every VGA mode with a plain layout is read, and none is read by touching the card.** Text and 13h's chained bytes come through the CPU's window; a planar 16-colour mode, an unchained 256-colour one (mode X) and an 8-, 15-, 16- or 32-bit linear mode come from the video RAM itself through the debugger's `VGAMEMDUMP`, since the window answers one plane per read in the first two and is smaller than the frame in the others. A build without that command refuses those modes naming it. A 16-colour pixel goes through the Attribute Controller to its DAC entry; a 15- or 16-bit one is widened to eight bits a channel by repeating its high bits. The 256-colour PNG's pixels are the bytes the guest wrote and its PLTE the DAC, so each pixel, doubled each way as the emulator renders 13h, equals the emulator's own capture.
 
 **In protected mode the screen is read through a data segment that covers it** (the lowest present one of the GDT, then of the LDT), with paging on only when every page maps to the same physical address; none qualifying is `no_channel`.
 
@@ -229,3 +229,5 @@ Example, from a live run:
 }
 ```
 <!-- scry-reference:end screen_signature -->
+
+**A signature answers "is it the same screen" with two strings, never two pictures.** A caller that waits for a screen, compares two moments or keeps a reference holds 16 characters instead of a PNG, and an unchanged screen signs the same on any host, because the signature is made of what the guest put in video memory and the DAC, not of what the window drew. A text cell signs by its byte and the two colours its attribute resolves to and a pixel by its colour, so a palette fade or a recoloured character is a new signature while the cursor's blink is not. The format is [Media files](../../REFERENCE.md#media-files).
