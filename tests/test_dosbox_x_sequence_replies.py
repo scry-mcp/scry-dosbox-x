@@ -69,7 +69,7 @@ def test_a_drive_refused_before_its_act_has_drives_whole_shape(tmp_path: Path) -
                                      "failed_at": executor.none_failed()}, refused.fields
     assert refused.fields["verify"] == {"checked": False,
                                         "why": "the act was refused before anything ran"}
-    assert refused.fields["looked"]["available"] is False, refused.fields
+    assert refused.fields["looked"]["guest"]["available"] is False, refused.fields
 
 
 def test_a_drive_whose_wait_met_a_stop_carries_its_act_and_its_look(tmp_path: Path) -> None:

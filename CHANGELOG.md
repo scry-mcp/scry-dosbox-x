@@ -4,6 +4,8 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A `drive` refused before its act ran carries `looked` as `{"guest": ...}`, the shape of
+  every other `drive` reply, where it carried a bare `unavailable` block.
 - The descriptions say what the tools already did: `memdump`, `trace`, `snapshot`,
   `audio_record` and `machine_map` take a `~`-led `dest`, `log` refuses an empty `pattern`,
   `state_list` rows carry `name` and `path`, and `screen_wait`'s schema lists the `palette` it

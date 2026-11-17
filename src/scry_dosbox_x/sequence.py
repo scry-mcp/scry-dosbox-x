@@ -305,8 +305,8 @@ def drive_refused(e: ds.Invalid) -> ds.Invalid:
                       "failed_at": executor.none_failed()}
     return ds.Invalid(e.code, str(e), **e.fields, act=act,
                       verify={"checked": False, "why": "the act was refused before anything ran"},
-                      looked=contract.unavailable("the act was refused before anything ran, so "
-                                                  "nothing was looked at"))
+                      looked={"guest": contract.unavailable(
+                          "the act was refused before anything ran, so nothing was looked at")})
 
 
 def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str | None,
