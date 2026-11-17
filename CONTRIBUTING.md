@@ -199,7 +199,11 @@ run is safe beside somebody working: the matrix runs in an account or on a machi
 working at, or at an hour agreed with whoever is, and what says whether a run took the front is
 section O's verdict, read as scry-core's README says (*Focus watch*).
 
-What opens a window (section G, the focus gate's O, the `windowed` tests) runs alone. The focus
+What opens a window (section G, the focus gate's O, the `windowed` tests) runs alone. Section
+R's watched windows open on the display `DOSBOX_X_LIVE_DISPLAY` names (unset, the main one), so
+a run beside somebody's work puts them on a display nobody is looking at. The cells that capture
+a window as the host shows it (section R's edge and pointer) run on macOS only: scry-core's
+window capture has no Windows half, so on Windows they are BLOCKED, saying so. The focus
 gate's start in front and its Space move take the desk of whoever is working, so they run only
 with `SCRY_FOCUS_CONTROL=1` on an idle machine; unset, those cells are BLOCKED naming the variable
 and the verdict says it is unproven. The full-screen cell runs beside them, before the window the

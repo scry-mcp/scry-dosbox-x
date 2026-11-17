@@ -4,9 +4,9 @@
 
 Exit 0 no FAIL, 1 FAIL, 3 invalid, 2 argument. Env:
 DOSBOX_X_BINARY, DOSBOX_X_LIVE_BENCH, DOSBOX_X_LEAK_BINARY, DOSBOX_X_STOCK_BINARY,
-RECHIP_DIR (a ReChip build, section P's private VESA case), DOSBOX_X_LIVE_SECTIONS
-(letters, `AA,B` for two-letter ones, `AA,` for one alone), DOSBOX_X_LIVE_JOBS (default half
-the CPUs), SCRY_FOCUS_CONTROL=1.
+RECHIP_DIR (section P's VESA case), DOSBOX_X_LIVE_DISPLAY, DOSBOX_X_LIVE_SECTIONS (letters,
+`AA,B` for two-letter ones, `AA,` for one alone), DOSBOX_X_LIVE_JOBS (default half the CPUs),
+SCRY_FOCUS_CONTROL=1.
 """
 from __future__ import annotations
 

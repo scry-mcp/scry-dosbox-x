@@ -9,6 +9,7 @@ have no red, since they read guest memory.
 from __future__ import annotations
 
 import hashlib
+import sys
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -31,6 +32,7 @@ from matrix_common import (
     server,
     videos,
 )
+from matrix_ledger import EXIT_INVALID
 from scry_core import avi, presence, window_capture
 
 from scry_dosbox_x import presence as dpresence  # isort: skip -- found through the path the matrix sets
@@ -38,6 +40,23 @@ from scry_dosbox_x.state import STATE  # isort: skip
 
 LEAK_VAR = "DOSBOX_X_LEAK_BINARY"
 STOCK_VAR = "DOSBOX_X_STOCK_BINARY"
+DISPLAY_VAR = "DOSBOX_X_LIVE_DISPLAY"
+
+
+def watched_display(held: str) -> dict[str, Any]:
+    """`start`'s `display` for this section's watched windows, as `DISPLAY_VAR` holds it: unset,
+    `start`'s own default."""
+    held = held.strip()
+    if not held:
+        return {}
+    if not (held.isascii() and held.isdigit()):
+        print(f"INVALID: {DISPLAY_VAR}={held!r}: the OS's index of the display section R's "
+              f"windows open on, a whole number, or unset for the main display", file=sys.stderr)
+        raise SystemExit(EXIT_INVALID)
+    return {"display": int(held)}
+
+
+DISPLAY = watched_display(ENV.get(DISPLAY_VAR, ""))
 SCREEN_CONF = GUEST / "screen.conf"
 SCREEN_PROGRAM = "SCREEN.COM"
 TO_13H, TO_LAST = 4, 2
@@ -206,7 +225,7 @@ def _spin_record(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
 def _start(**kw: Any) -> dict[str, Any]:
     # The screen guest's conf leaves port e9 shut; `snapshot` needs the stub's announcement.
     return boot(conf=SCREEN_CONF, program=SCREEN_PROGRAM, break_on_int3=True, shared=True,
-                background=True, capture_video=True,
+                background=True, capture_video=True, **DISPLAY,
                 captures_dir=M.fresh("-cap"), flags=E9_OPEN, **kw)
 
 
@@ -288,7 +307,8 @@ def _pointer_difference(mode_key: str | None, x: int, y: int
                       ) -> tuple[dict[str, Any], str, window_capture.Difference | str]:
     """Captures after a mouse move and again with the pointer off: what differs is the pointer, or
     the reason it cannot be judged. `mode_key` first switches the mouse guest's BIOS mode."""
-    boot(profile="mouse", conf=MOUSE_CONF, shared=True, background=True, presence=True)
+    boot(profile="mouse", conf=MOUSE_CONF, shared=True, background=True, presence=True,
+         **DISPLAY)
     must(M.call(server.resume), "releasing the mouse guest")
     time.sleep(QUIET_S)
     if mode_key is not None:
