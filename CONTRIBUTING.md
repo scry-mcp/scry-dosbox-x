@@ -202,8 +202,9 @@ section O's verdict, read as scry-core's README says (*Focus watch*).
 What opens a window (section G, the focus gate's O, the `windowed` tests) runs alone. Section
 R's watched windows open on the display `DOSBOX_X_LIVE_DISPLAY` names (unset, the main one), so
 a run beside somebody's work puts them on a display nobody is looking at. The cells that capture
-a window as the host shows it (section R's edge and pointer) run on macOS only: scry-core's
-window capture has no Windows half, so on Windows they are BLOCKED, saying so. The focus
+a window as the host shows it (section R's edge and pointer) see it behind other windows too, and
+on Windows they need the display on: with it off Windows composes no new frame of the window,
+so they are BLOCKED, saying so. The focus
 gate's start in front and its Space move take the desk of whoever is working, so they run only
 with `SCRY_FOCUS_CONTROL=1` on an idle machine; unset, those cells are BLOCKED naming the variable
 and the verdict says it is unproven. The full-screen cell runs beside them, before the window the
