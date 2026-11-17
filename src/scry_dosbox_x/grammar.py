@@ -27,9 +27,10 @@ SETTABLE = frozenset(n.lower() for n in REGISTER_NAMES) | LOW_HALVES
 # A positive token, never the absence of `Pr`: a stale reading would pass for real mode.
 REAL_MODE = "Real"
 V86_MODE = "VM86"
+PR32_MODE = "Pr32"
 
 
-CPU_MODES = (REAL_MODE, "Pr16", "Pr32", V86_MODE)
+CPU_MODES = (REAL_MODE, "Pr16", PR32_MODE, V86_MODE)
 
 
 def watch_kind(mode: str) -> str:

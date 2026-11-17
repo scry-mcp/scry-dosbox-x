@@ -147,6 +147,9 @@ def test_a_coff_program_waits_for_a_protected_mode_stop_and_places_by_cs(
     assert ss.place_if_due(_Session("listing", "Real")) is None  # type: ignore[arg-type]
     held_through = STATE.start_symbols is not None and loads == []
     assert held_through, "held through the stub's real-mode stops"
+    # A stop in the DPMI host's own 16-bit code (CWSDPMI at 0018:2AD9) has a CS of the host's.
+    assert ss.place_if_due(_Session("listing", "Pr16")) is None  # type: ignore[arg-type]
+    assert STATE.start_symbols is not None and loads == [], "held through the host's 16-bit stops"
     got = ss.place_if_due(_Session("listing", "Pr32"))  # type: ignore[arg-type]
     assert got == {"placed": True, "path": "/x/DPMI.MAP", "base": "0x400000", "loaded": 1}
     assert loads == [(None, "CS")], "placed by CS, no load-segment base"

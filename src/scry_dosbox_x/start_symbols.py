@@ -83,10 +83,12 @@ def place_if_due(session: ds.Session) -> dict[str, Any] | None:
     dpm = program and held.coff
     if segment is None:
         return None
-    # A selector/register base needs a descriptor, which real mode lacks: a DJGPP program's
-    # go32 stub runs its real-mode stops before it switches, and the table is held through them
-    # until a protected-mode stop has CS's DPMI selector to measure.
-    if (dpm or not program) and grammar.real_segments(session.where()["mode"]):
+    # A selector base needs a descriptor, which real mode lacks, and a DJGPP program's own CS:
+    # its stub's real-mode stops and the DPMI host's 16-bit ones hold the table.
+    mode = session.where()["mode"]
+    if (dpm or not program) and grammar.real_segments(mode):
+        return None
+    if dpm and mode != grammar.PR32_MODE:
         return None
     STATE.start_symbols = None
     try:
