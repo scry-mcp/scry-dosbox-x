@@ -41,6 +41,7 @@
   "background": true,
   "presence": true,
   "window": "<volatile>",
+  "logfile": "./tmp/demos/mines/mines-e9.log",
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
@@ -121,7 +122,7 @@
 ```json
 {
   "path": "./demos/mines/mines.sym",
-  "base": "8df0"
+  "base": "0x8df0"
 }
 ```
 

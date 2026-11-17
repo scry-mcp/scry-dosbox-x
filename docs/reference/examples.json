@@ -2074,7 +2074,7 @@
   "from": "[A] every tool in every machine state, on the probe guest: A stopped symbols_load",
   "call": {
    "path": "/path/to/scry-dosbox-x/tests/fixtures/borland-tlink16/MAPDEMO.MAP",
-   "base": "8000"
+   "base": "0x8000"
   },
   "reply": {
    "summary": "symbols_load: 5 loaded of 5 parsed, base 0x00008000, not checked against a build: no executable named MAPDEMO.exe beside the table, so it could not be checked against its build",

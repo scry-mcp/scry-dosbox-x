@@ -72,7 +72,7 @@ Example, from a live run:
 ```json
 {
   "path": "/path/to/scry-dosbox-x/tests/fixtures/borland-tlink16/MAPDEMO.MAP",
-  "base": "8000"
+  "base": "0x8000"
 }
 ```
 

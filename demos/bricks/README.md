@@ -100,6 +100,7 @@ A breakpoint asked for by name. `brick_hit` is a label in the symbol table the b
   "status": "ok",
   "ref": "brick_hit",
   "by": "symbol",
+  "role": "stop",
   "stored": true,
   "armed": true,
   "state": "armed",

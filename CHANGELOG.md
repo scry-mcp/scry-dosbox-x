@@ -374,6 +374,9 @@ floor.
   every `run_to` beside the run's own `control`, held in the debugger only while a run counts it,
   so it never stops `resume`, `run_for` or a wait (an `on_breakpoint` wait on it is refused). Its
   reply, and each breakpoint row of `declaration_list`, carry `role`.
+- `role` is on every `breakpoint_at` reply and every breakpoint row, so a demo transcript that
+  declares a stop shows `role: "stop"`; the bricks and mines demos pass their table's `base` as
+  `0x` text.
 
 ## 0.1.0
 
