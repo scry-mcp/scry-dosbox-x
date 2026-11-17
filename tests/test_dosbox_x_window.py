@@ -350,6 +350,24 @@ def test_a_start_in_front_on_windows_brings_its_window_forward_once_proved(
         server.close()
 
 
+def test_a_start_in_front_whose_window_stays_covered_answers_it_and_does_not_refuse(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    class Kept(_Behind):
+        def above(self, window: core_window.Seen) -> list[core_window.Seen]:
+            return [replace(window, pid=1)]
+
+    kept = Kept(session_window)
+    monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setattr(core_window, "host", lambda _platform="": kept)
+    monkeypatch.setattr(core_window, "WAIT_S", 0.0)
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True, background=False)
+    try:
+        assert got["status"] == "ok", got
+        assert (got["window"]["front"], kept.activations) == (False, 1), got["window"]
+    finally:
+        server.close()
+
+
 def test_a_stated_size_is_the_windowresolution_the_emulator_is_told(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     got = _started(tmp_path, monkeypatch, size="1280x960")

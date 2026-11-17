@@ -240,9 +240,14 @@ def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
             if wanted is not None:
                 proved = core_window.prove(session.pid, wanted)
                 if not launch.background and sys.platform == "win32":
-                    # DOSBox-X's SDL1 window opens without asking Windows for the foreground.
-                    proved = core_window.bring_front(session.pid, core_window.host(),
-                                                     core_window.WAIT_S, launched_behind=False)
+                    # DOSBox-X's SDL1 window opens without asking Windows for the foreground;
+                    # one Windows keeps covered is answered as it is (`front` false).
+                    where = core_window.host()
+                    try:
+                        proved = core_window.bring_front(session.pid, where, core_window.WAIT_S,
+                                                         launched_behind=False)
+                    except contract.Invalid:
+                        proved = core_window.observe(session.pid, where)
                 seen = {"window": proved.block()}
         finally:    # the live session a refusal leaves carries the presence it was asked for
             session.presence = dpresence.open_shown(session, presence, shared)
