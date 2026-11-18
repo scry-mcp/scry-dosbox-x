@@ -11,7 +11,8 @@ leaves the machine, a few retraces after the game took the click, so it holds th
 there on: what it holds is decided by the game's sound and timing and by the input route's own
 pacing, and a change to any of them makes that check fail. The run's own `boom.wav`, beside its
 transcript, is then the new reference to copy over it. The session is windowed so the game can be
-watched; nothing in it needs the window.
+watched; nothing in it needs the window. It records itself, because the board changes inside
+the calls that click it: the loop's moments are stretches of that video.
 """
 
 from __future__ import annotations
@@ -29,13 +30,13 @@ from scry_core.demo import (
     Run,
     Step,
     main,
-    recording,
     window_args,
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
+    RETRACE_STOP,
     VOLATILE,
     expect,
     isolated_store,
@@ -58,10 +59,17 @@ FLAGGED = 2
 #: Retraces recorded from where the click's post leaves the machine: the explosion lasts 0.6 s,
 #: the screen retraces 70 times a second, and the post has already run a few of them.
 BOOM_FRAMES = 45
-#: The retraces recorded at the win, which the explosion's reference sound was made with, and
-#: how many of them the loop shows; then those recorded at the loss.
-WIN_FRAMES, WIN_SHOWN, LOST_FRAMES = 240, 100, 100
+#: The retraces run at the win, which the explosion's reference sound was made with.
+WIN_FRAMES = 240
+#: The first three seconds of the clicks that clear the board, where the widest regions open,
+#: counted in retraces from the call that flagged the mines.
+CLEAR_SHOWN = 210
 WAIT_S = 60
+
+
+def video(run: Run) -> Path:
+    """Where the session records itself."""
+    return run.dir / "video"
 
 
 def boot(run: Run) -> dict[str, Any]:
@@ -71,10 +79,11 @@ def boot(run: Run) -> dict[str, Any]:
     (run.dir / "boom.wav").unlink(missing_ok=True)
     states = run.dir / "mines-states"
     shutil.rmtree(states, ignore_errors=True)
+    shutil.rmtree(video(run), ignore_errors=True)
     return {**window_args(run), "conf": HERE / "mines.conf", "cwd": HERE, "session_seconds": 900,
-            "break_on_int3": True,
+            "program": "MINES.COM", "break_on_int3": True,
             "logfile": run.dir / "mines-e9.log", "state_dir": states,
-            "captures_dir": run.dir / "mines-captures"}
+            "capture_video": True, "captures_dir": video(run)}
 
 
 def at_ready(reply: Reply, run: Run) -> str:
@@ -307,7 +316,15 @@ STEPS = [
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
     # These retraces are part of what the explosion is compared from, sample for sample: the
     # reference was recorded with as many between the win and the click that follows.
-    recording("win", WIN_FRAMES),
+    Step("win", "run_for", {"frames": WIN_FRAMES, "seconds": WAIT_S},
+         lambda reply, run: f"{WIN_FRAMES} retraces with the win dialog up",
+         volatile={**RETRACE_STOP,
+                   **{key: "it names the instruction or the clock a retrace stop lands on, "
+                           "which drift with the host's cycles"
+                      for key in ("summary", "emulated_before_s", "emulated_after_s")},
+                   "cycles": "the emulator's own count, a few cycles apart from run to run"},
+         optional={"note": "it comes only when the stop landed in a ROM handler, which is the "
+                           "host's"}),
     Step("again", "send_mouse", {"target": "ok", "button": "left", "expect": "NEW 9 9 10$",
                                  "seconds": 10},
          seen("OK started the next game"), volatile=INPUT_TIMING),
@@ -331,7 +348,6 @@ STEPS = [
                 "emulated Sound Blaster's digital output, not from the speakers.")),
     Step("park again", "send_mouse", {"x": PARK[0], "y": PARK[1]}, parked),
     Step("is lose", "screen_map_find", {}, found("lose")),
-    recording("lost", LOST_FRAMES),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
 ]
 
@@ -340,13 +356,15 @@ DEMO = Demo(
     name="mines", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
     capture=lambda run: run.dir / "screen.png",
-    moments=(Moment("screen", "win", "`perform` opened every cell the game's memory says is "
-                                     "safe: the board is cleared.", frames=WIN_SHOWN),
-             Moment("is lose", "lost", "On the next board `send_mouse` clicks a cell the memory "
-                                       "says holds a mine.")),
-    alt="Minesweeper cleared without a miss, then a mine stepped on",
-    precheck=precheck, offers=frozenset({"display"}),
-    host_args={"display": DISPLAY}, volatile=VOLATILE)
+    moments=(Moment("flags", "clear", "One `perform` sends the clicks the game's memory says "
+                                      "are safe, and the board opens.",
+                    frames=CLEAR_SHOWN),
+             Moment("next board drawn", "park again",
+                    "On the next board `send_mouse` clicks a cell the memory says holds a mine.")),
+    alt="Minesweeper cleared click by click without a miss, then a mine stepped on",
+    video=video, precheck=precheck, offers=frozenset({"display"}),
+    host_args={"display": DISPLAY, "captures_dir": "the run's own directory"},
+    volatile=VOLATILE)
 
 
 if __name__ == "__main__":

@@ -1,11 +1,13 @@
 # LineUp: the game's own list of steps, replayed on its DOS version
 
 <!-- demo-motion:begin -->
-<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="LineUp in play on its DOS version, a shot in flight"></picture>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="LineUp played on its DOS version: three shots, each from another column or colour"></picture></p>
 
-1. The player moved, raised the colour and fired: `record` films the game going on.
+1. `send_keys` presses fire, and `record` films the shot.
+2. `send_keys` moves the player one column right and fires again.
+3. `send_keys` raises the next colour and fires a third time.
 
-<!-- moments-ms: 2511 -->
+<!-- moments-ms: 1013,1013,1013 -->
 <!-- demo-motion:end -->
 
 *LineUp* (Eco-Games / GAMART, 1994) was an arcade game, and its team ported the same source to
@@ -16,9 +18,12 @@ shot.
 ## The program
 
 LineUp is not distributed with this repository. The demo runs a copy of the DOS version: a
-directory with `EXES/LINEUP.EXE`, the linker's symbol map `EXES/LINEUP.MAP`, the game's `AUDIO/`
-and `GFX/`, its `.scry/` folder and its `SCRIPTS/dosbox-x-mcp-conf.sh`. The game's own repository
-builds the program and its map from source.
+directory with `EXES/LINEUP.EXE`, its symbol map `EXES/LINEUP.MAP`, `AUDIO/`, `GFX/`, `.scry/`
+and `SCRIPTS/dosbox-x-mcp-conf.sh`.
+[The game's own repository](https://github.com/MS-DOS-Club/lineup-msdos) builds them.
+
+Its `.scry/` folder holds what the game keeps for SCRY: a start profile (saved `start`
+arguments), a screen map (a file naming its screens) and the list of steps.
 
 ## Run it
 
@@ -53,7 +58,7 @@ The two seconds of music it records must equal [`music.wav`](music.wav) sample f
 the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-**1. Replay a saved list of steps**
+### 1. Replay a saved list of steps
 
 Ask:
 
@@ -284,7 +289,7 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
 
 </details>
 
-**2. Compare a recording with its reference**
+### 2. Compare a recording with its reference
 
 Ask:
 
@@ -341,7 +346,9 @@ Reply, 2 of 12 fields:
 3. Load the game's screen map, `.scry/maps/lineup-screen-map.json`.
 4. Replay the list of steps in `.scry/perform/dos.json` in one call.
 5. Record two seconds of sound, measure it and compare it with `music.wav` without aligning.
-6. Record two and a half seconds of video, take a picture of the screen and close.
+6. Fire three more shots: where the player stands, one column to the right, and with the next
+   colour. Record a second of video from each key going down.
+7. Take a picture of the screen and close.
 
 </details>
 
@@ -351,9 +358,10 @@ Reply, 2 of 12 fields:
 |---|---|
 | [Session](../../docs/reference/session.md) | `start`, `close` |
 | [Declarations](../../docs/reference/declarations.md) | `breakpoint_interrupt`, `declaration_clear` |
-| [Advance](../../docs/reference/advance.md) | `resume` |
+| [Advance](../../docs/reference/advance.md) | `resume`, `run_to` |
 | [Read](../../docs/reference/read.md) | `screen_map_write` |
 | [Lists](../../docs/reference/lists.md) | `perform` |
+| [Input](../../docs/reference/input.md) | `send_keys` |
 | [Captures](../../docs/reference/captures.md) | `record`, `audio_record` |
 | [Files](../../docs/reference/files.md) | `audio_compare` |
 | [Screen](../../docs/reference/screen.md) | `screen_view` |

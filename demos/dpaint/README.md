@@ -1,7 +1,7 @@
 # Deluxe Paint: a sunset painted through the debugger
 
 <!-- demo-motion:begin -->
-<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Deluxe Paint painting a sunset by itself"></picture>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Deluxe Paint painting a sunset by itself"></picture></p>
 
 1. Each `perform` picks a tool and a colour by name and drags: the sky, then the sun.
 2. Two more `perform` calls paint the sea and the boat's hull.
@@ -56,7 +56,7 @@ it the demo stops at its third step and says so.
 the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-**1. Click a control by its name**
+### 1. Click a control by its name
 
 Ask:
 
@@ -123,7 +123,7 @@ The screen map says where `blue` sits, so the call holds no coordinates. `driver
 
 </details>
 
-**2. Find the byte that holds the colour**
+### 2. Find the byte that holds the colour
 
 Ask:
 
@@ -173,7 +173,7 @@ Reply, 2 of 10 fields:
 
 </details>
 
-**3. Read the picture back out of video memory**
+### 3. Read the picture back out of video memory
 
 Ask:
 

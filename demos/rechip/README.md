@@ -1,22 +1,25 @@
 # ReChip!: a tracker driven by its keys and read by its own log
 
 <!-- demo-motion:begin -->
-<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="ReChip! paused at the first row of a song, its warning button pulsing"></picture>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="ReChip! playing a song, its pattern scrolling under the playhead"></picture></p>
 
-1. The song is paused at its first row; `record` films the warning button pulsing.
+1. `send_keys` sets the song playing; `stop` holds the tracker and `record` films it playing on.
 
-<!-- moments-ms: 2855 -->
+<!-- moments-ms: 2998 -->
 <!-- demo-motion:end -->
 
 *ReChip!*, a 32-bit DOS program, converts music for vintage sound chips and plays it in a live
 tracker. This demo starts it from a file in its own repository and waits for its log to say
-the song is sounding. It pauses and rewinds the song with keys the program logs, and quits by
-the program's own dialog.
+the song is sounding. It pauses and rewinds the song with keys the program logs, films it
+playing, and quits by its own dialog.
 
 ## The program
 
-ReChip! is not distributed with this repository. The demo needs a checkout of it after
-`make mcp-conf`, which builds `RECHIPD.EXE` with its symbol table and writes the conf.
+ReChip! is not distributed with this repository. The demo needs a checkout of
+[its repository](https://github.com/MS-DOS-Club/rechip) after `make mcp-conf`, which builds
+`RECHIPD.EXE` with its symbol table and writes the conf.
+
+Its `.scry/start/dev.json` is a start profile: a saved set of `start` arguments.
 
 ## Run it
 
@@ -50,7 +53,7 @@ the first frame the button goes dark.
 the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-**1. Wait for a line of the program's log**
+### 1. Wait for a line of the program's log
 
 Ask:
 
@@ -95,7 +98,7 @@ Reply, 2 of 13 fields:
 
 </details>
 
-**2. Press a key and check the program took it**
+### 2. Press a key and check the program took it
 
 Ask:
 
@@ -147,7 +150,7 @@ The program logs every key it takes, by name. "effect seen" means that line arri
 
 </details>
 
-**3. Stop on the frame a button goes dark**
+### 3. Stop on the frame a button goes dark
 
 Ask:
 
@@ -198,7 +201,7 @@ The warning button pulses on the program's own counter. `TARGET` means the wait 
 
 </details>
 
-**4. Leave the program by its own keys**
+### 4. Leave the program by its own keys
 
 Ask:
 
@@ -262,9 +265,11 @@ Reply, 2 of 10 fields:
 5. Stop inside the program and read the 4 bytes of `_g_ticks`, its counter in 10 ms ticks.
 6. Run to the middle of the next lit 400 ms, load `demos/rechip/rechip-screen-map.json`, check
    the screen is `warning_lit` and wait for `warning_dark`.
-7. Save a picture of the screen and record 240 frames of video.
-8. Resume, press alt+x and wait for `ask opens`, press right then enter and wait for `ask
-   res=1`, and close.
+7. Save a picture of the screen and resume.
+8. Press space and wait for `ACT . play=1`, stop inside the program, record 1050 frames of
+   video and resume.
+9. Press alt+x and wait for `ask opens`, press right then enter and wait for `ask res=1`, and
+   close.
 
 </details>
 

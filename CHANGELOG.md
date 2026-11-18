@@ -5,12 +5,19 @@ What a client of the server notices.
 ## Unreleased
 
 - Every demo is shown moving: a `loop.webp` beside its README replaces `loop.mp4`. It holds up
-  to three moments of the demo's own run. A moment is cut from a `record` call or, in the two
-  Deluxe Paint demos, from the video of a session started with `capture_video`.
+  to three moments of the demo's own run, scaled up so its pixels stay sharp. A moment is cut
+  from a `record` call or, in Minesweeper and the two Deluxe Paint demos, from the video of a
+  session started with `capture_video`.
+- The Minesweeper demo's conf no longer starts the game: `start` takes it as `program`, which
+  is what lets the session record itself. By hand, type `MINES` at the prompt.
+- The Speed Fight demo runs on to the match the game plays by itself, at a fixed speed the
+  game keeps pace on. The LineUp demo fires three more shots, and the ReChip! demo films the
+  song playing.
 - Each demo's page offers the steps to try, each with what to ask, the call and the reply it
   got. The whole run is in `TRANSCRIPT.md`.
-- The README opens with what the server is for. Its `## Install` section has the lines to paste
-  for ten MCP clients and a first question to ask.
+- The README opens with what the server lets you ask, its lead demo moving at the page's width
+  and one exchange of that demo's run. Its `## Install` section has the lines to paste for ten
+  MCP clients and a first question to ask.
 - Takes scry-core 0.119.0.
 - On Windows a watched `start` with `background=false` brings its window to the front once it
   is up, as the session page says; while another application held the foreground the window

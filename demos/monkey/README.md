@@ -1,7 +1,7 @@
 # Monkey Island: the lookout's lines, rewritten while the game runs
 
 <!-- demo-motion:begin -->
-<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Monkey Island&#x27;s lookout answering as written, then with a line written into memory"></picture>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Monkey Island&#x27;s lookout answering as written, then with a line written into memory"></picture></p>
 
 1. `record` films the lookout answering a comeback as the game wrote him.
 2. After `write` puts new bytecode over his script, he says a line the game never had.
@@ -65,7 +65,7 @@ recording says so.
 the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-**1. Follow the intro by the game's own variable**
+### 1. Follow the intro by the game's own variable
 
 Ask:
 
@@ -244,7 +244,7 @@ A change watch on the game's room number stops it at each room the intro enters.
 
 </details>
 
-**2. Write a new conversation into the game**
+### 2. Write a new conversation into the game
 
 Ask:
 
@@ -353,7 +353,7 @@ The game's script is data in memory. This call writes new bytecode over three st
 
 </details>
 
-**3. Read what the game asks the CD drive**
+### 3. Read what the game asks the CD drive
 
 Ask:
 
@@ -392,7 +392,7 @@ Reply, 2 of 7 fields:
 
 </details>
 
-**4. Check the music against the disc**
+### 4. Check the music against the disc
 
 Ask:
 

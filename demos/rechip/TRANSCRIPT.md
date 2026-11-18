@@ -1,4 +1,4 @@
-Every call of the run with its reply, in order: 20 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+Every call of the run with its reply, in order: 23 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
 
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
@@ -515,53 +515,7 @@ Also attached: image/png.
 
 </details>
 
-**16. `record`**: OK pulse: recorded 240 frames in ./tmp/demos/rechip/pulse.avi
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "frames": 240,
-  "dest": "./tmp/demos/rechip/pulse.avi",
-  "seconds": 300
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": "<volatile>",
-  "note": "<volatile>",
-  "pc": "<volatile>",
-  "cpu_mode": "<volatile>",
-  "frame": "<volatile>",
-  "regs": "<volatile>",
-  "watches": "<volatile>",
-  "cause": "<volatile>",
-  "e9": "<volatile>",
-  "stop_seq": "<volatile>",
-  "instruction": "<volatile>",
-  "emulated_before_s": "<volatile>",
-  "emulated_after_s": "<volatile>",
-  "frame_before": "<volatile>",
-  "frame_after": "<volatile>",
-  "cycles": "<volatile>",
-  "kind": "avi",
-  "frames": 240,
-  "began": true,
-  "ended": true,
-  "path": "./tmp/demos/rechip/pulse.avi",
-  "bytes": "<volatile>",
-  "avi_frames": "<volatile>",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**17. `resume`**: OK go on: the program runs on
+**16. `resume`**: OK go on: the program runs on
 
 <details><summary>call and reply</summary>
 
@@ -583,7 +537,145 @@ Also attached: image/png.
 
 </details>
 
-**18. `send_keys`**: OK quit: File, Quit: the song is dirty, so the confirm opened
+**17. `send_keys`**: OK play: space set the song playing from its first row
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "keys": ["space"],
+  "expect": "ACT   \\. play=1",
+  "seconds": 10
+}
+```
+
+```json
+{
+  "summary": "send_keys (guest): effect seen",
+  "status": "ok",
+  "keys": ["space"],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 1,
+  "bytes": 2,
+  "frames": 2,
+  "verify": {
+    "checked": true,
+    "seen": true,
+    "expected": "ACT   \\. play=1",
+    "verdict": "TARGET",
+    "line": "<volatile>",
+    "seen_before_waiting": "<volatile>",
+    "lines_before": "<volatile>",
+    "waited_s": "<volatile>",
+    "lines_total": "<volatile>"
+  },
+  "session": {"alive": true, "running": true, "altered": false}
+}
+```
+
+</details>
+
+**18. `stop`**: OK hold playing: the machine stopped in the program while the song plays
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "until": "protected"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "interrupted": true,
+  "runs_to_protected": "<volatile>",
+  "via": "break",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": 5,
+  "instruction": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**19. `record`**: OK playing: recorded 1050 frames in ./tmp/demos/rechip/playing.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 1050,
+  "dest": "./tmp/demos/rechip/playing.avi",
+  "seconds": 300
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 1050,
+  "began": true,
+  "ended": true,
+  "path": "./tmp/demos/rechip/playing.avi",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**20. `resume`**: OK play on: the song plays on
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "seconds": 0
+}
+```
+
+```json
+{
+  "summary": "resume: running",
+  "status": "ok",
+  "omitted": ["output", "output_chars", "clipped"],
+  "how": "detail=True adds what the debugger printed for this command",
+  "session": {"alive": true, "running": true, "altered": false}
+}
+```
+
+</details>
+
+**21. `send_keys`**: OK quit: File, Quit: the song is dirty, so the confirm opened
 
 <details><summary>call and reply</summary>
 
@@ -623,7 +715,7 @@ Also attached: image/png.
 
 </details>
 
-**19. `send_keys`**: OK confirm: Quit without saving
+**22. `send_keys`**: OK confirm: Quit without saving
 
 <details><summary>call and reply</summary>
 
@@ -662,7 +754,7 @@ Also attached: image/png.
 
 </details>
 
-**20. `close`**: OK close: closed: DOSBox-X quit on its own
+**23. `close`**: OK close: closed: DOSBox-X quit on its own
 
 <details><summary>call and reply</summary>
 

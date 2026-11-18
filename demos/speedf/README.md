@@ -1,22 +1,24 @@
 # Speed Fight: the DOS game starts from a file in its own repository
 
 <!-- demo-motion:begin -->
-<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Speed Fight&#x27;s title on the DOS version"></picture>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Speed Fight playing its own demo match on the DOS version"></picture></p>
 
-1. `run_to` stopped once the title was drawn; `record` films it asking for coins.
+1. `run_to` stops where the game starts playing itself, and `record` films the match.
 
-<!-- moments-ms: 2857 -->
+<!-- moments-ms: 3000 -->
 <!-- demo-motion:end -->
 
 *Speed Fight* (Eco-Games / GAMART, 1994) was an arcade game, and its team ported the same
 source to MS-DOS. This demo starts the DOS version from a start profile, a saved set of `start`
-arguments the game's own repository keeps in `.scry/start/dos.json`. Then it runs to the routine
-that finishes drawing the title and reads a variable by name.
+arguments the game's own repository keeps. Then it runs to routines by their names, reads a
+variable, and films the match the game plays by itself.
 
 ## The program
 
-Speed Fight is not distributed with this repository. The demo needs a checkout of the game with
-its `EXES/SPEEDF.EXE` and `EXES/SPEEDF.MAP`, its `.scry/` folder and its `SCRIPTS/`.
+Speed Fight is not distributed with this repository. The demo needs a checkout of
+[the game's repository](https://github.com/MS-DOS-Club/speedf-msdos) with its
+`EXES/SPEEDF.EXE` and `EXES/SPEEDF.MAP`, its `.scry/` folder, where the game keeps that start
+profile, and its `SCRIPTS/`.
 
 ## Run it
 
@@ -42,7 +44,8 @@ did not start.
 
 The run passes two settings of its own to `start`: the normal core and a fixed speed. The
 game's conf keeps the dynamic core, which can run past a code breakpoint, and `cycles=max`,
-which gives the game as much speed as your computer has.
+which gives the game as much speed as your computer has. The fixed speed is one the game
+plays its match at pace on.
 
 ## Try it yourself
 
@@ -50,7 +53,7 @@ which gives the game as much speed as your computer has.
 the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-**1. Start from the game's own start profile**
+### 1. Start from the game's own start profile
 
 Ask:
 
@@ -60,7 +63,7 @@ Call:
 
 ```text
 start(shared=true, background=true, display="<host>", profile="<host>",
-    flags=["-set", "cpu core=normal", "-set", "cpu cycles=fixed 50000"], captures_dir="<host>",
+    flags=["-set", "cpu core=normal", "-set", "cpu cycles=fixed 300000"], captures_dir="<host>",
     cwd="<host>")
 ```
 
@@ -125,7 +128,7 @@ A start profile is a saved set of `start` arguments: the call adds only what is 
 
 </details>
 
-**2. Run until the title is drawn**
+### 2. Run until the title is drawn
 
 Ask:
 
@@ -165,7 +168,7 @@ Reply, 3 of 18 fields:
   "controls": [
     {"ref": "draw_block", "at": "08EB:46F4", "hits_in_run": 35, "removed": true}
   ],
-  "frame": 125,
+  "frame": 78,
   "regs": {
     "EAX": "0x0000491e",
     "EBX": "0x00007fff",
@@ -203,7 +206,7 @@ Reply, 3 of 18 fields:
 
 </details>
 
-**3. Read a variable by its name**
+### 3. Read a variable by its name
 
 Ask:
 
@@ -250,7 +253,8 @@ Reply, 2 of 7 fields:
 2. Put a breakpoint on the game's first VESA call, `INT 10h AH=4Fh`, let it run there and clear
    it.
 3. Run to `titulo_dibuja_cred` counting `draw_block`, and read `creditos`.
-4. Take a picture of the screen, record 200 frames of video and close.
+4. Run to `startdemo`, where the game starts a match by itself, counting `new_irq_video`.
+5. Record 380 frames of video, take a picture of the screen and close.
 
 </details>
 

@@ -1,7 +1,7 @@
 # Deluxe Paint by its menus: a dialog, a colour mixed, a boat flipped
 
 <!-- demo-motion:begin -->
-<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Deluxe Paint mixing a colour in its Palette dialog, then flipping a boat"></picture>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Deluxe Paint mixing a colour in its Palette dialog, then flipping a boat"></picture></p>
 
 1. `send_mouse` holds the red arrow of the Palette dialog until the brown slot is orange.
 2. One `perform` lifts the boat as a brush, flips it from the Brush menu and stamps it.
@@ -56,7 +56,7 @@ program. Each of these is a step of
 the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-**1. Hold a button until a value is reached**
+### 1. Hold a button until a value is reached
 
 Ask:
 
@@ -167,7 +167,7 @@ Reply, 2 of 12 fields:
 
 </details>
 
-**2. Read a colour back from the video card**
+### 2. Read a colour back from the video card
 
 Ask:
 
@@ -220,7 +220,7 @@ Reply, 3 of 11 fields:
 
 </details>
 
-**3. Chain menus, drags and clicks in one call**
+### 3. Chain menus, drags and clicks in one call
 
 Ask:
 

@@ -1,7 +1,7 @@
 # Bricks: a breakout game stopped at every brick it loses
 
 <!-- demo-motion:begin -->
-<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Bricks, the game this repository builds, with its ball in play"></picture>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Bricks, the game this repository builds, with its ball in play"></picture></p>
 
 1. With the breakpoint cleared the game plays on, and `record` films it.
 
@@ -53,7 +53,7 @@ paddle and SPACE serves the ball. M hands the paddle to the mouse, and ESC retur
 the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-**1. Set a breakpoint by a name**
+### 1. Set a breakpoint by a name
 
 Ask:
 
@@ -96,7 +96,7 @@ Reply, 3 of 10 fields:
 
 </details>
 
-**2. Run until the program stops itself**
+### 2. Run until the program stops itself
 
 Ask:
 
@@ -181,7 +181,7 @@ Reply, 3 of 16 fields:
 
 </details>
 
-**3. Read a value after a saved state is loaded**
+### 3. Read a value after a saved state is loaded
 
 Ask:
 

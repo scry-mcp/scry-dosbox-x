@@ -39,7 +39,8 @@
 ; player sees (0 hidden, 1 revealed, 2 flagged), and `board_x`, `board_y` the words holding the
 ; pixel of its top-left corner, each cell CELL pixels square.
 ;
-; ITS CONF, `mines.conf`, boots straight into MINES.COM from this directory with the port on.
+; ITS CONF, `mines.conf`, mounts this directory with the port on; MINES.COM is started from
+; there, by a session's `program` or by hand.
 ;
 ; BUILD, from this directory, with NASM, the symbol table generated from NASM's own map as the
 ; bricks demo does (its source says why the chain is written this way):

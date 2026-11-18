@@ -22,6 +22,7 @@ from typing import Any
 from scry_core.demo import (
     DISPLAY,
     Demo,
+    Lead,
     Moment,
     Reply,
     Run,
@@ -563,6 +564,11 @@ DEMO = Demo(
              Moment("screen", "new line", "After `write` puts new bytecode over his script, he "
                                           "says a line the game never had.", frames=180)),
     alt="Monkey Island's lookout answering as written, then with a line written into memory",
+    lead=Lead(front=ROOT / "README.md", step="needle",
+              ask='Find where the game keeps the line "Nothing, if you want to sell shoes."',
+              caption="The Secret of Monkey Island under this server: the lookout answers as "
+                      "written, then with a line written over his script in memory.",
+              answer=("hits", "hits_total")),
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=precheck,
     host_args={"display": DISPLAY,
                "binary": "the host's own DOSBox-X"},

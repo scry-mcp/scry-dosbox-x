@@ -44,6 +44,10 @@ RATE_HZ = 25_175_000 / (800 * 449)
 INPUTS = {action: Press("send_keys", {"keys": [key]})
           for action, key in (("COIN", "tab"), ("START", "1"), ("RIGHT", "right"),
                               ("FIRE1", "space"), ("UP", "up"))}
+#: A shot the loop shows is fired by the key going down, filmed, and let go after: a tap takes
+#: more retraces to go in than the shot takes to land.
+HELD = {"UP": (Press("send_keys", {"keys": ["up"], "action": "down"}),
+               Press("send_keys", {"keys": ["up"], "action": "up"}))}
 #: The reference the recording must equal: the same build mixes other samples on Windows, the
 #: same ones run after run.
 SOUND = Path("win32", "music.wav") if sys.platform == "win32" else Path("music.wav")
@@ -133,13 +137,15 @@ BINDING = Binding(
                volatile={"waited_s": "wall-clock time the boot took"}),
           Step("unloaded", "declaration_clear", {"kind": "breakpoint", "all": True},
                lambda reply, run: "the boot's stop cleared")],
-    inputs=INPUTS, rate_hz=RATE_HZ, sound=HERE / SOUND, map=at, volatile=INPUT_TIMING)
+    inputs=INPUTS, rate_hz=RATE_HZ, sound=HERE / SOUND, map=at, volatile=INPUT_TIMING,
+    held=HELD)
 
 DEMO = Demo(
     name="lineup", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=steps(),
     capture=lambda run: run.dir / "screen.png",
-    moments=(lineup.PLAYING,), alt="LineUp in play on its DOS version, a shot in flight",
+    moments=lineup.filmed(BINDING),
+    alt="LineUp played on its DOS version: three shots, each from another column or colour",
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_GAME,
     host_args={"b": "the platform's own reference recording", "display": DISPLAY,

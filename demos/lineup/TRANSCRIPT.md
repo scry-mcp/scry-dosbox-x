@@ -1,4 +1,4 @@
-Every call of the run with its reply, in order: 12 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+Every call of the run with its reply, in order: 24 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
 
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
@@ -534,14 +534,55 @@ Every call of the run with its reply, in order: 12 calls. `<volatile>` stands fo
 
 </details>
 
-**10. `record`**: OK playing: recorded 176 frames in ./tmp/demos/lineup/playing.avi
+**10. `send_keys`**: OK fire again: UP pressed
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "frames": 176,
-  "dest": "./tmp/demos/lineup/playing.avi",
+  "keys": ["up"],
+  "action": "down"
+}
+```
+
+```json
+{
+  "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 786",
+  "status": "ok",
+  "keys": ["up"],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 1,
+  "bytes": 2,
+  "frames": 2,
+  "polls": 6,
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "stop_seq": 79,
+  "frame": 786,
+  "instruction": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": "<volatile>", "truncated": false, "lines": [], "mark": "<volatile>"},
+  "verify": {
+    "checked": false,
+    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**11. `record`**: OK second shot: recorded 71 frames in ./tmp/demos/lineup/second-shot.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 71,
+  "dest": "./tmp/demos/lineup/second-shot.avi",
   "seconds": 300
 }
 ```
@@ -567,7 +608,7 @@ Every call of the run with its reply, in order: 12 calls. `<volatile>` stands fo
   "frame_after": "<volatile>",
   "cycles": "<volatile>",
   "kind": "avi",
-  "frames": 176,
+  "frames": 71,
   "began": true,
   "ended": true,
   "path": "<volatile>",
@@ -579,7 +620,460 @@ Every call of the run with its reply, in order: 12 calls. `<volatile>` stands fo
 
 </details>
 
-**11. `screen_view`**: OK screen: the board, 320x200
+**12. `send_keys`**: OK fire again: let go: the key let go
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "keys": ["up"],
+  "action": "up"
+}
+```
+
+```json
+{
+  "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 863",
+  "status": "ok",
+  "keys": ["up"],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 1,
+  "bytes": 2,
+  "frames": 2,
+  "polls": 6,
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "stop_seq": 86,
+  "frame": 863,
+  "instruction": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": "<volatile>", "truncated": false, "lines": [], "mark": "<volatile>"},
+  "verify": {
+    "checked": false,
+    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**13. `send_keys`**: OK right again: RIGHT pressed
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "keys": ["right"]
+}
+```
+
+```json
+{
+  "summary": "send_keys (guest): posted, unverified, 20 retraces to frame 883",
+  "status": "ok",
+  "keys": ["right"],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 1,
+  "bytes": 4,
+  "frames": 4,
+  "polls": 20,
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "stop_seq": 106,
+  "frame": 883,
+  "instruction": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": "<volatile>", "truncated": false, "lines": [], "mark": "<volatile>"},
+  "verify": {
+    "checked": false,
+    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**14. `run_to`**: OK moved again: the move taken
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "Gest_Scores",
+  "control": "Check_Money25",
+  "seconds": 120
+}
+```
+
+```json
+{
+  "summary": "run_to Gest_Scores: TARGET at 08EB:00000E42, control counted 0",
+  "status": "ok",
+  "verdict": "TARGET",
+  "target": "08EB:0E42",
+  "ref": "Gest_Scores",
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "target_disarmed": true,
+  "control_hits": 0,
+  "controls": [
+    {"ref": "Check_Money25", "at": "08EB:19DC", "hits_in_run": 0, "removed": true}
+  ],
+  "frame": 883,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 107,
+  "instruction": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**15. `send_keys`**: OK fire from there: UP pressed
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "keys": ["up"],
+  "action": "down"
+}
+```
+
+```json
+{
+  "summary": "send_keys (guest): posted, unverified, 10 retraces to frame 893",
+  "status": "ok",
+  "keys": ["up"],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 1,
+  "bytes": 2,
+  "frames": 2,
+  "polls": 10,
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "stop_seq": 117,
+  "frame": 893,
+  "instruction": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": "<volatile>", "truncated": false, "lines": [], "mark": "<volatile>"},
+  "verify": {
+    "checked": false,
+    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**16. `record`**: OK third shot: recorded 71 frames in ./tmp/demos/lineup/third-shot.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 71,
+  "dest": "./tmp/demos/lineup/third-shot.avi",
+  "seconds": 300
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 71,
+  "began": true,
+  "ended": true,
+  "path": "<volatile>",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**17. `send_keys`**: OK fire from there: let go: the key let go
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "keys": ["up"],
+  "action": "up"
+}
+```
+
+```json
+{
+  "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 970",
+  "status": "ok",
+  "keys": ["up"],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 1,
+  "bytes": 2,
+  "frames": 2,
+  "polls": 6,
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "stop_seq": 124,
+  "frame": 970,
+  "instruction": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": "<volatile>", "truncated": false, "lines": [], "mark": "<volatile>"},
+  "verify": {
+    "checked": false,
+    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**18. `send_keys`**: OK colour again: FIRE1 pressed
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "keys": ["space"]
+}
+```
+
+```json
+{
+  "summary": "send_keys (guest): posted, unverified, 10 retraces to frame 980",
+  "status": "ok",
+  "keys": ["space"],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 1,
+  "bytes": 2,
+  "frames": 2,
+  "polls": 10,
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "stop_seq": 134,
+  "frame": 980,
+  "instruction": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": "<volatile>", "truncated": false, "lines": [], "mark": "<volatile>"},
+  "verify": {
+    "checked": false,
+    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**19. `run_to`**: OK raised again: the colour taken
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "Gest_Scores",
+  "control": "Check_Money25",
+  "seconds": 120
+}
+```
+
+```json
+{
+  "summary": "run_to Gest_Scores: TARGET at 08EB:00000E42, control counted 1",
+  "status": "ok",
+  "verdict": "TARGET",
+  "target": "08EB:0E42",
+  "ref": "Gest_Scores",
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "target_disarmed": true,
+  "control_hits": 1,
+  "controls": [
+    {"ref": "Check_Money25", "at": "08EB:19DC", "hits_in_run": 1, "removed": true}
+  ],
+  "frame": 981,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 135,
+  "instruction": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**20. `send_keys`**: OK fire that colour: UP pressed
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "keys": ["up"],
+  "action": "down"
+}
+```
+
+```json
+{
+  "summary": "send_keys (guest): posted, unverified, 9 retraces to frame 990",
+  "status": "ok",
+  "keys": ["up"],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 1,
+  "bytes": 2,
+  "frames": 2,
+  "polls": 9,
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "stop_seq": 144,
+  "frame": 990,
+  "instruction": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": "<volatile>", "truncated": false, "lines": [], "mark": "<volatile>"},
+  "verify": {
+    "checked": false,
+    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**21. `record`**: OK fourth shot: recorded 71 frames in ./tmp/demos/lineup/fourth-shot.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 71,
+  "dest": "./tmp/demos/lineup/fourth-shot.avi",
+  "seconds": 300
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 71,
+  "began": true,
+  "ended": true,
+  "path": "<volatile>",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**22. `send_keys`**: OK fire that colour: let go: the key let go
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "keys": ["up"],
+  "action": "up"
+}
+```
+
+```json
+{
+  "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 1067",
+  "status": "ok",
+  "keys": ["up"],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 1,
+  "bytes": 2,
+  "frames": 2,
+  "polls": 6,
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "stop_seq": 151,
+  "frame": 1067,
+  "instruction": "<volatile>",
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": "<volatile>", "truncated": false, "lines": [], "mark": "<volatile>"},
+  "verify": {
+    "checked": false,
+    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**23. `screen_view`**: OK screen: the board, 320x200
 
 <details><summary>call and reply</summary>
 
@@ -620,7 +1114,7 @@ Every call of the run with its reply, in order: 12 calls. `<volatile>` stands fo
 
 </details>
 
-**12. `close`**: OK close: closed: quit
+**24. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 

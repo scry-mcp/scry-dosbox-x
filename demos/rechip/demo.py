@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -56,14 +57,16 @@ PULSE_MS = 400
 #: app is up and the song sounds; a key reached the app; the transport toggled; the quit confirm.
 SOUNDING = r"PERF  \. audio play=1"
 PAUSED = r"ACT   \. play=0"
+PLAYING = r"ACT   \. play=1"
 REWOUND = r"ACT   \. rewind"
 #: The report the program writes once a second of its own time.
 REPORT = r"PERF  \. fps="
 ASKED = r"ask opens"
 CONFIRMED = r"ask res=1"
 WAIT_S = 120
-#: The retraces recorded for the loop while the paused song's warning button pulses.
-PULSE_FRAMES = 240
+#: The retraces recorded while the song plays, and the three seconds of them the loop shows: the
+#: song opens on a few bare rows, and by then its channels are sounding.
+PLAYING_FRAMES, PLAYING_SKIP, PLAYING_SHOWN = 1050, 840, 210
 VOLATILE_PROGRAM = {**VOLATILE,
                     "conf": "where the reader's checkout keeps its derived conf",
                     "state_dir": "a directory in the session's own temporary directory",
@@ -214,8 +217,20 @@ STEPS = [
                 "wait stopped on the first frame the screen map, the file that names the "
                 "program's screens, called `warning_dark`.")),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
-    recording("pulse", PULSE_FRAMES),
     Step("go on", "resume", {"seconds": 0}, released("the program runs on")),
+    # The song is filmed here, after the picture: a song that has played leaves its meters where
+    # the pause landed, which is the host's, and the picture above is of one that never played.
+    Step("play", "send_keys", {"keys": ["space"], "expect": PLAYING, "seconds": 10},
+         seen("space set the song playing from its first row"), volatile=KEY_TIMING),
+    Step("hold playing", "stop", {"until": "protected"},
+         lambda reply, run: "the machine stopped in the program while the song plays",
+         volatile={**STOP_PLACE,
+                   "path": "where the reader's checkout keeps its symbol table",
+                   "runs_to_protected": "how many short runs reached the program, which "
+                                        "follows where the host stopped it"},
+         optional=STOP_NOTE),
+    replace(recording("playing", PLAYING_FRAMES), optional=STOP_NOTE),
+    Step("play on", "resume", {"seconds": 0}, released("the song plays on")),
     Step("quit", "send_keys", {"keys": ["x"], "modifiers": ["alt"], "expect": ASKED,
                                "seconds": 10},
          seen("File, Quit: the song is dirty, so the confirm opened"), volatile=KEY_TIMING),
@@ -234,10 +249,10 @@ DEMO = Demo(
     name="rechip", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
     capture=lambda run: run.dir / "screen.png",
-    moments=(Moment("screen", "pulse",
-                    "The song is paused at its first row; `record` films the warning button "
-                    "pulsing.", frames=200),),
-    alt="ReChip! paused at the first row of a song, its warning button pulsing",
+    moments=(Moment("hold playing", "playing",
+                    "`send_keys` sets the song playing; `stop` holds the tracker and `record` "
+                    "films it playing on.", skip=PLAYING_SKIP, frames=PLAYING_SHOWN),),
+    alt="ReChip! playing a song, its pattern scrolling under the playhead",
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_PROGRAM,
     host_args={"cwd": "the reader's checkout of the program, wherever it was cloned",

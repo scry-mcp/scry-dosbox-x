@@ -289,6 +289,8 @@ page from a run where every step passed: the two generated blocks of its README,
   the video of a session started with `capture_video`, by the frame the replies count.
 - ffmpeg decodes the recordings and `img2webp` assembles the file; without either on the `PATH`
   the update is refused by name.
+- The Monkey Island demo also writes what the README opens with: its clip, a caption and one
+  step of the run as an exchange, all named in its `Lead`.
 - A second run gives the same page. `loop.webp` alone may differ in its bytes.
 
 A recording moves the game's clock on. So a demo that compares a sound sample for sample keeps

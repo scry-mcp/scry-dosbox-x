@@ -2,6 +2,7 @@
   "format": "scry-start/1",
   "conf": "demos/mines/mines.conf",
   "cwd": "demos/mines",
+  "program": "MINES.COM",
   "session_seconds": 900,
   "shared": true,
   "break_on_int3": true

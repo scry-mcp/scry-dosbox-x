@@ -38,6 +38,15 @@ def test_every_entry_of_the_store_is_found_by_its_own_name() -> None:
     assert project_store.misnamed(ROOT / ".scry") == []
 
 
+def test_the_mines_recipe_runs_the_game_its_conf_leaves_at_the_prompt() -> None:
+    """`mines.conf` stops at the prompt so that a session can record the game it starts; a
+    recipe on that conf names the program, or its session boots to an empty prompt."""
+    recipe = json.loads((STORE / "mines.json").read_text(encoding="utf-8"))
+    autoexec = (ROOT / recipe["conf"]).read_text(encoding="utf-8").split("[autoexec]", 1)[1]
+    assert "MINES.COM" not in autoexec, "the conf runs the game, and so would `program`"
+    assert recipe.get("program") == "MINES.COM", recipe
+
+
 @pytest.mark.parametrize("name", RECIPES)
 def test_every_path_inside_the_repository_it_names_exists(name: str) -> None:
     values = project_store.read(STORE / f"{name}.json", KEYS, lifecycle.START_PATHS,

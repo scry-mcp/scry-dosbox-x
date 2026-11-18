@@ -1,4 +1,4 @@
-Every call of the run with its reply, in order: 9 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+Every call of the run with its reply, in order: 10 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
 
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
@@ -10,7 +10,7 @@ Every call of the run with its reply, in order: 9 calls. `<volatile>` stands for
   "background": true,
   "display": "<host>",
   "profile": "<host>",
-  "flags": ["-set", "cpu core=normal", "-set", "cpu cycles=fixed 50000"],
+  "flags": ["-set", "cpu core=normal", "-set", "cpu cycles=fixed 300000"],
   "captures_dir": "<host>",
   "cwd": "<host>"
 }
@@ -111,7 +111,7 @@ Every call of the run with its reply, in order: 9 calls. `<volatile>` stands for
   "waited_s": "<volatile>",
   "pc": "08EE:00000022",
   "cpu_mode": "real",
-  "frame": 1,
+  "frame": 0,
   "regs": {
     "EAX": "0x00004f01",
     "EBX": "0x00000000",
@@ -204,7 +204,7 @@ Every call of the run with its reply, in order: 9 calls. `<volatile>` stands for
   "controls": [
     {"ref": "draw_block", "at": "08EB:46F4", "hits_in_run": 35, "removed": true}
   ],
-  "frame": 125,
+  "frame": 78,
   "regs": {
     "EAX": "0x0000491e",
     "EBX": "0x00007fff",
@@ -267,7 +267,116 @@ Every call of the run with its reply, in order: 9 calls. `<volatile>` stands for
 
 </details>
 
-**7. `screen_view`**: OK screen: mode M_LIN15, 640x480 by palette index
+**7. `run_to`**: OK to the demo: stopped at startdemo
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "startdemo",
+  "control": "new_irq_video",
+  "seconds": 120
+}
+```
+
+```json
+{
+  "summary": "run_to startdemo: TARGET at 0C8B:00000004, control counted 265",
+  "status": "ok",
+  "verdict": "TARGET",
+  "target": "08EB:3A04",
+  "ref": "startdemo",
+  "pc": "0C8B:00000004",
+  "cpu_mode": "real",
+  "target_disarmed": true,
+  "control_hits": 265,
+  "controls": [
+    {"ref": "new_irq_video", "at": "08EB:372B", "hits_in_run": 265, "removed": true}
+  ],
+  "frame": 449,
+  "regs": {
+    "EAX": "0x00000000",
+    "EBX": "0x00000421",
+    "ECX": "0x005b0000",
+    "EDX": "0x00000000",
+    "ESI": "0x000047cb",
+    "EDI": "0x0000c7cb",
+    "EBP": "0x0000b1aa",
+    "ESP": "0x0000b19e",
+    "EIP": "0x00000004",
+    "CS": "0x0c8b",
+    "DS": "0x1b73",
+    "ES": "0x491e",
+    "FS": "0x0008",
+    "GS": "0x0000",
+    "SS": "0x1b73"
+  },
+  "watches": [],
+  "cause": "run_to's target startdemo at 0C8B:00000004",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 4,
+  "instruction": {
+    "address": "0C8B:00000004",
+    "bytes": "06",
+    "text": "push es",
+    "flow": "sequential",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "startdemo",
+    "delta": 0
+  },
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**8. `record`**: OK plays: recorded 380 frames in ./tmp/demos/speedf/plays.avi
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 380,
+  "dest": "./tmp/demos/speedf/plays.avi",
+  "seconds": 300
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "<volatile>",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": "<volatile>",
+  "frame_after": "<volatile>",
+  "cycles": "<volatile>",
+  "kind": "avi",
+  "frames": 380,
+  "began": true,
+  "ended": true,
+  "path": "<volatile>",
+  "bytes": "<volatile>",
+  "avi_frames": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**9. `screen_view`**: OK screen: mode M_LIN15, 640x480 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -307,52 +416,7 @@ Also attached: image/png.
 
 </details>
 
-**8. `record`**: OK title shown: recorded 200 frames in ./tmp/demos/speedf/title-shown.avi
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "frames": 200,
-  "dest": "./tmp/demos/speedf/title-shown.avi",
-  "seconds": 300
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": "<volatile>",
-  "pc": "<volatile>",
-  "cpu_mode": "<volatile>",
-  "frame": "<volatile>",
-  "regs": "<volatile>",
-  "watches": "<volatile>",
-  "cause": "<volatile>",
-  "e9": "<volatile>",
-  "stop_seq": "<volatile>",
-  "instruction": "<volatile>",
-  "emulated_before_s": "<volatile>",
-  "emulated_after_s": "<volatile>",
-  "frame_before": "<volatile>",
-  "frame_after": "<volatile>",
-  "cycles": "<volatile>",
-  "kind": "avi",
-  "frames": 200,
-  "began": true,
-  "ended": true,
-  "path": "<volatile>",
-  "bytes": "<volatile>",
-  "avi_frames": "<volatile>",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**9. `close`**: OK close: closed: DOSBox-X quit on its own
+**10. `close`**: OK close: closed: DOSBox-X quit on its own
 
 <details><summary>call and reply</summary>
 

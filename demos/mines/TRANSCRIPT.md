@@ -1,4 +1,4 @@
-Every call of the run with its reply, in order: 38 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+Every call of the run with its reply, in order: 37 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
 
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
@@ -12,10 +12,12 @@ Every call of the run with its reply, in order: 38 calls. `<volatile>` stands fo
   "conf": "./demos/mines/mines.conf",
   "cwd": "./demos/mines",
   "session_seconds": 900,
+  "program": "MINES.COM",
   "break_on_int3": true,
   "logfile": "./tmp/demos/mines/mines-e9.log",
   "state_dir": "./tmp/demos/mines/mines-states",
-  "captures_dir": "./tmp/demos/mines/mines-captures"
+  "capture_video": true,
+  "captures_dir": "<host>"
 }
 ```
 
@@ -25,11 +27,11 @@ Every call of the run with its reply, in order: 38 calls. `<volatile>` stands fo
   "status": "ok",
   "pid": "<volatile>",
   "conf": "./demos/mines/mines.conf",
-  "conf_digest": "598de503a693bba5",
+  "conf_digest": "d7ad5cdd0a4642de",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
-  "captures": "off",
+  "captures": "./tmp/demos/mines/video",
   "state_dir": "./tmp/demos/mines/mines-states",
   "shared": true,
   "ready_after_s": "<volatile>",
@@ -1577,15 +1579,14 @@ Also attached: image/png.
 
 </details>
 
-**26. `record`**: OK win: recorded 240 frames in ./tmp/demos/mines/win.avi
+**26. `run_for`**: OK win: 240 retraces with the win dialog up
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "frames": 240,
-  "dest": "./tmp/demos/mines/win.avi",
-  "seconds": 300
+  "seconds": 60
 }
 ```
 
@@ -1594,28 +1595,21 @@ Also attached: image/png.
   "summary": "<volatile>",
   "status": "ok",
   "verdict": "ELAPSED",
-  "polls": "<volatile>",
+  "polls": 240,
   "pc": "<volatile>",
-  "cpu_mode": "<volatile>",
-  "frame": "<volatile>",
+  "cpu_mode": "real",
+  "frame": 854,
   "regs": "<volatile>",
-  "watches": "<volatile>",
+  "watches": [],
   "cause": "<volatile>",
-  "e9": "<volatile>",
-  "stop_seq": "<volatile>",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 620,
   "instruction": "<volatile>",
   "emulated_before_s": "<volatile>",
   "emulated_after_s": "<volatile>",
-  "frame_before": "<volatile>",
-  "frame_after": "<volatile>",
+  "frame_before": 614,
+  "frame_after": 854,
   "cycles": "<volatile>",
-  "kind": "avi",
-  "frames": 240,
-  "began": true,
-  "ended": true,
-  "path": "./tmp/demos/mines/win.avi",
-  "bytes": "<volatile>",
-  "avi_frames": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -2176,52 +2170,7 @@ Also attached: image/png.
 
 </details>
 
-**37. `record`**: OK lost: recorded 100 frames in ./tmp/demos/mines/lost.avi
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "frames": 100,
-  "dest": "./tmp/demos/mines/lost.avi",
-  "seconds": 300
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": "<volatile>",
-  "pc": "<volatile>",
-  "cpu_mode": "<volatile>",
-  "frame": "<volatile>",
-  "regs": "<volatile>",
-  "watches": "<volatile>",
-  "cause": "<volatile>",
-  "e9": "<volatile>",
-  "stop_seq": "<volatile>",
-  "instruction": "<volatile>",
-  "emulated_before_s": "<volatile>",
-  "emulated_after_s": "<volatile>",
-  "frame_before": "<volatile>",
-  "frame_after": "<volatile>",
-  "cycles": "<volatile>",
-  "kind": "avi",
-  "frames": 100,
-  "began": true,
-  "ended": true,
-  "path": "./tmp/demos/mines/lost.avi",
-  "bytes": "<volatile>",
-  "avi_frames": "<volatile>",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**38. `close`**: OK close: closed: quit
+**37. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
@@ -2236,16 +2185,17 @@ Also attached: image/png.
   "closed": true,
   "pid": "<volatile>",
   "conf": "./demos/mines/mines.conf",
-  "conf_digest": "598de503a693bba5",
+  "conf_digest": "d7ad5cdd0a4642de",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
-  "captures": "off",
+  "captures": "./tmp/demos/mines/video",
   "state_dir": "./tmp/demos/mines/mines-states",
   "ended_by": "quit",
   "exit_code": 0,
   "omitted": ["stdout_tail", "errorlog_tail"],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
+  "draft": "<volatile>",
   "session": {"alive": false, "running": false, "altered": false}
 }
 ```

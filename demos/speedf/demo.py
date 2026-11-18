@@ -34,17 +34,22 @@ PROFILE = Path(".scry/start/dos.json")
 CONF_SCRIPT = Path("SCRIPTS/dosbox-mcp-conf.sh")
 #: The normal core and a fixed clock: the dynamic core the game's conf keeps can pass a code
 #: breakpoint over, and its `cycles=max` runs the guest as fast as the host can, so a slow or busy
-#: host gives the game fewer cycles a second and it reaches each place later.
-NORMAL_CORE_FIXED_CLOCK = ["-set", "cpu core=normal", "-set", "cpu cycles=fixed 50000"]
+#: host gives the game fewer cycles a second and it reaches each place later. The clock is one
+#: the game plays its match at speed on: on a slower one the puck crawls.
+NORMAL_CORE_FIXED_CLOCK = ["-set", "cpu core=normal", "-set", "cpu cycles=fixed 300000"]
 #: The game's first VESA call (`INT 10h AH=4Fh`), which neither DOS's boot nor the input stub
 #: makes: the first stop there is inside the loaded game, and that stop places its map.
 GAME_LOADED = {"number": "0x10", "ah": "0x4F"}
 #: Called by `titulo_pantalla` once both planes of the title are drawn (SFTITLE.ASM); `draw_block`
 #: runs many times on the way, so it is the run's control.
 TITLE_DRAWN, DRAWING = "titulo_dibuja_cred", "draw_block"
+#: The attract's demo entry, where the game starts playing itself (SFDEMO.ASM), and the video
+#: interrupt that runs every frame on the way there.
+DEMO_STARTS, EVERY_FRAME = "startdemo", "new_irq_video"
 WAIT_S = 120
-#: The retraces recorded after the title is drawn, for the loop.
-TITLE_FRAMES = 200
+#: The retraces recorded of the game playing itself, and the three seconds of them the loop
+#: shows: the match once its first serve is hit.
+PLAYS_FRAMES, PLAYS_SKIP, PLAYS_SHOWN = 380, 160, 210
 #: The reader's copy of the game is where this host keeps things; the replies that name it are
 #: hidden in the transcript.
 VOLATILE_GAME = {**VOLATILE,
@@ -103,8 +108,10 @@ STEPS = [
          shown=("summary", "hex"),
          reads=("`creditos` is a name from the game's symbol map, resolved at the segment DOS "
                 "loaded the program at. The arcade build's map gives the same name.")),
+    Step("to the demo", "run_to", {"ref": DEMO_STARTS, "control": EVERY_FRAME,
+                                   "seconds": WAIT_S}, arrived(DEMO_STARTS)),
+    recording("plays", PLAYS_FRAMES),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
-    recording("title shown", TITLE_FRAMES),
     Step("close", "close", {}, quit_cleanly),
 ]
 
@@ -112,10 +119,10 @@ DEMO = Demo(
     name="speedf", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
     capture=lambda run: run.dir / "screen.png",
-    moments=(Moment("screen", "title shown",
-                    "`run_to` stopped once the title was drawn; `record` films it asking for "
-                    "coins."),),
-    alt="Speed Fight's title on the DOS version",
+    moments=(Moment("to the demo", "plays",
+                    "`run_to` stops where the game starts playing itself, and `record` films "
+                    "the match.", skip=PLAYS_SKIP, frames=PLAYS_SHOWN),),
+    alt="Speed Fight playing its own demo match on the DOS version",
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_GAME,
     host_args={"cwd": "the reader's copy of the game, wherever it was cloned",

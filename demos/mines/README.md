@@ -1,12 +1,12 @@
 # Minesweeper: the board read out of memory and cleared without a miss
 
 <!-- demo-motion:begin -->
-<picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Minesweeper cleared without a miss, then a mine stepped on"></picture>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Minesweeper cleared click by click without a miss, then a mine stepped on"></picture></p>
 
-1. `perform` opened every cell the game's memory says is safe: the board is cleared.
+1. One `perform` sends the clicks the game's memory says are safe, and the board opens.
 2. On the next board `send_mouse` clicks a cell the memory says holds a mine.
 
-<!-- moments-ms: 1425,1425 -->
+<!-- moments-ms: 2993,1154 -->
 <!-- demo-motion:end -->
 
 `MINES.COM` is a Minesweeper this repository builds, at 800 x 600 in 256 colours. The demo
@@ -18,6 +18,8 @@ and steps on a mine on purpose.
 
 The game is `mines.asm`, in this folder with the program built from it, its symbol table, its
 conf and its screen map. Its header says how to build it and what it logs for a debugger.
+
+To play it yourself: `cd demos/mines && dosbox-x -conf mines.conf`, then type `MINES`.
 
 ## Run it
 
@@ -43,13 +45,17 @@ The explosion is recorded from the emulated Sound Blaster and must equal [`boom.
 sample for sample. A change to the game's sound or timing makes that file out of date: the
 run's own `boom.wav`, beside its transcript, is then the one to copy over it.
 
+The session records its own video (`capture_video`), because the board changes inside the
+calls that click it. The clip above is two stretches of that video.
+
 ## Try it yourself
 
-[Add the server to your client](../../README.md#install) and ask it to start DOSBox-X on `demos/mines/mines.conf`. Each of these is a step of
+[Add the server to your client](../../README.md#install) and ask it to start DOSBox-X on `demos/mines/mines.conf` with `MINES.COM` as its program, run to
+the program's own `int 3` and load `mines.sym` there. Each of these is a step of
 the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
-**1. Run to a routine by its name**
+### 1. Run to a routine by its name
 
 Ask:
 
@@ -126,7 +132,7 @@ Reply, 2 of 18 fields:
 
 </details>
 
-**2. Read the board out of memory**
+### 2. Read the board out of memory
 
 Ask:
 
@@ -165,7 +171,7 @@ Reply, 2 of 7 fields:
 
 </details>
 
-**3. Clear the board in one call**
+### 3. Clear the board in one call
 
 Ask:
 
@@ -473,7 +479,7 @@ Each click waits for the line the game logs when it reveals that cell, so a clic
 
 </details>
 
-**4. Compare a sound with its reference**
+### 4. Compare a sound with its reference
 
 Ask:
 
@@ -524,25 +530,25 @@ Reply, 2 of 12 fields:
 
 <details><summary>The whole demo as one prompt</summary>
 
-1. Start DOSBox-X windowed on `demos/mines/mines.conf`, stopping at the program's own `int 3`,
-   with the log in a file.
-2. Load `mines.sym` at the segment it stopped in, and the screen map `mines-screen-map.json`
-   beside the conf.
+1. Start DOSBox-X windowed on `demos/mines/mines.conf` with `MINES.COM` as its program,
+   recording its own video, stopping at the program's own `int 3`, with the log in a file.
+2. Run to that `int 3`, load `mines.sym` at the segment it stopped in, and load the screen map
+   `mines-screen-map.json` beside the conf.
 3. Run to `main_loop` and tell me which screen this is; click its start, run to `main_loop`
    again and tell me again.
-4. Open the Game menu by name, run to the loop, check it is the menu, pick Beginner and run to
-   the loop.
+4. Open the Game menu by name, run to `main_loop`, check it is the menu, pick Beginner and run
+   to `main_loop`.
 5. Read the board's size, where its mines are and the pixel of its top-left corner, all by
    symbol.
 6. Flag two of the mines with the right button, then open every safe cell and show me the game
    says WIN.
-7. Move the pointer off the board, tell me which screen this is, show it to me and record 240
+7. Move the pointer off the board, tell me which screen this is, show it to me and run 240
    frames.
-8. Click OK, run to the loop, read the new board's mines and click on the first one until the
-   game logs BOOM.
+8. Click OK, run to `main_loop`, read the new board's mines and click on the first one until
+   the game logs BOOM.
 9. Record 45 frames of sound from there, measure them and compare them with `boom.wav` without
    aligning.
-10. Move the pointer away, tell me which screen this is, record 100 frames and close.
+10. Move the pointer away, tell me which screen this is, and close.
 
 </details>
 
@@ -551,7 +557,7 @@ Reply, 2 of 12 fields:
 | Group | Tools |
 |---|---|
 | [Session](../../docs/reference/session.md) | `start`, `close` |
-| [Advance](../../docs/reference/advance.md) | `resume`, `run_to` |
+| [Advance](../../docs/reference/advance.md) | `resume`, `run_to`, `run_for` |
 | [Names](../../docs/reference/names.md) | `symbols_load` |
 | [Read](../../docs/reference/read.md) | `screen_map_write`, `screen_map_find`, `read_memory` |
 | [Input](../../docs/reference/input.md) | `send_mouse` |
@@ -559,7 +565,7 @@ Reply, 2 of 12 fields:
 | [Machine](../../docs/reference/machine.md) | `log` |
 | [Files](../../docs/reference/files.md) | `audio_compare` |
 | [Screen](../../docs/reference/screen.md) | `screen_view` |
-| [Captures](../../docs/reference/captures.md) | `record`, `audio_record` |
+| [Captures](../../docs/reference/captures.md) | `audio_record` |
 
 Each group is a page of the reference. Some of the names need a word:
 
