@@ -1,4 +1,4 @@
-# Monkey Island: the lookout's lines, rewritten while the game runs
+# Monkey Island: the lookout's lines, written into the game's memory
 
 <!-- demo-motion:begin -->
 <p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Monkey Island&#x27;s lookout answering as written, then with a line written into memory"></picture></p>

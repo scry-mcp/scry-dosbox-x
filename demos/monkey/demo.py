@@ -1,7 +1,7 @@
 """The Monkey Island demo: LucasArts' The Secret of Monkey Island, the 1992 Enhanced CD, driven by
-name off a screen map with the guest's own mouse, then rewritten while it runs: the lookout on
-the opening cliff answers with a conversation of ours, and the CD plays the opening theme from
-the bar where the logo enters, every answer checked. `--help` says how to run it.
+name off a screen map with the guest's own mouse, then written into while it is stopped: the
+lookout on the opening cliff answers with a conversation of ours, and the CD plays the opening
+theme from the bar where the logo enters, every answer checked. `--help` says how to run it.
 
 Nothing of the game is in this repository: `--cwd` names the directory holding the reader's
 disc image (`monkey.cue` and its BINs), mounted as the CD drive with its audio tracks, and the

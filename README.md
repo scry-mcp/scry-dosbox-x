@@ -230,7 +230,7 @@ picture is the screen that run ended on, linked to its guide, where it moves.
 - [`demos/dpaint_maps/`](demos/dpaint_maps/): Deluxe Paint II driven through its menus and a
   dialog, each picked by name; it needs the program.
 - [`demos/monkey/`](demos/monkey/): The Secret of Monkey Island, with the lookout's lines
-  rewritten while the game runs; it needs the disc.
+  written into the game's memory while it is stopped; it needs the disc.
 - [`demos/lineup/`](demos/lineup/): *LineUp*, replayed from the list of steps in its `.scry/`
   folder; it needs a copy of the game.
 - [`demos/speedf/`](demos/speedf/): *Speed Fight*, started from a file in its `.scry/` folder;
