@@ -1,0 +1,121 @@
+{
+  "format": "scry-screen-map/1",
+  "application": "xcom",
+  "mode": "verified",
+  "screens": [
+    {
+      "name": "main_menu",
+      "kind": "pixel",
+      "size": [
+        640,
+        480
+      ],
+      "match": [
+        {
+          "crop": [
+            240,
+            215,
+            160,
+            16
+          ],
+          "signature": "28ec657ff7c2df72"
+        }
+      ],
+      "controls": [
+        {
+          "name": "start_campaign",
+          "rect": [
+            190,
+            175,
+            256,
+            22
+          ]
+        },
+        {
+          "name": "load_saved_game",
+          "rect": [
+            190,
+            213,
+            256,
+            22
+          ]
+        },
+        {
+          "name": "quit",
+          "rect": [
+            190,
+            251,
+            256,
+            22
+          ]
+        }
+      ]
+    },
+    {
+      "name": "difficulty",
+      "kind": "pixel",
+      "size": [
+        640,
+        480
+      ],
+      "match": [
+        {
+          "crop": [
+            250,
+            330,
+            140,
+            16
+          ],
+          "signature": "d46920e2835230cc"
+        }
+      ],
+      "controls": [
+        {
+          "name": "novice",
+          "rect": [
+            190,
+            175,
+            256,
+            22
+          ]
+        },
+        {
+          "name": "easy",
+          "rect": [
+            190,
+            213,
+            256,
+            22
+          ]
+        },
+        {
+          "name": "medium",
+          "rect": [
+            190,
+            251,
+            256,
+            22
+          ]
+        },
+        {
+          "name": "hard",
+          "rect": [
+            190,
+            289,
+            256,
+            22
+          ]
+        },
+        {
+          "name": "superhuman",
+          "rect": [
+            190,
+            327,
+            256,
+            22
+          ]
+        }
+      ]
+    }
+  ]
+}
