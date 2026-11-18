@@ -287,7 +287,7 @@ Reply, 2 of 10 fields:
 
 Each group is a page of the reference. Some of the names need a word:
 
-- Advance: the tools that let the program run and stop it again.
+- Run: the tools that let the program run and stop it again.
 - Machine: the program's log and the map of what DOS loaded.
 
 ## The transcript

@@ -258,9 +258,9 @@ A saved state is the whole machine, not the game's own save. So the paddle reads
 
 Each group is a page of the reference. Some of the names need a word:
 
-- Advance: the tools that let the program run and stop it again.
-- Declarations: breakpoints and watches.
-- Lists: the tools that run several calls as one.
+- Run: the tools that let the program run and stop it again.
+- Breakpoints: breakpoints and watches.
+- Sequences: the tools that run several calls as one.
 - Names: the tool that loads a symbol table.
 
 ## The transcript

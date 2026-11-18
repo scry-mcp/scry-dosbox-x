@@ -482,9 +482,9 @@ After each move the screen map is asked which screen is showing, because the sam
 
 Each group is a page of the reference. Some of the names need a word:
 
-- Advance: the tools that let the program run and stop it again.
-- Declarations: breakpoints and watches.
-- Lists: the tools that run several calls as one.
+- Run: the tools that let the program run and stop it again.
+- Breakpoints: breakpoints and watches.
+- Sequences: the tools that run several calls as one.
 - Machine: the program's log and the map of what DOS loaded.
 
 ## The screen map

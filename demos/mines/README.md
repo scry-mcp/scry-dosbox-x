@@ -569,8 +569,8 @@ Reply, 2 of 12 fields:
 
 Each group is a page of the reference. Some of the names need a word:
 
-- Advance: the tools that let the program run and stop it again.
-- Lists: the tools that run several calls as one.
+- Run: the tools that let the program run and stop it again.
+- Sequences: the tools that run several calls as one.
 - Machine: the program's log and the map of what DOS loaded.
 - Names: the tool that loads a symbol table.
 
