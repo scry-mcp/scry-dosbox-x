@@ -144,7 +144,7 @@ def _surveyed_stop(session: ds.Session, placed: dict[str, Any] | None, retrace_m
     elif asked_by is not None and not attribution.get("attributed"):
         attribution = {"attributed": True, "ref": asked_by, "by": asked_by,
                        "at": attribution["at"]}
-    elif own and not attribution.get("attributed"):
+    elif own and not attribution.get("attributed") and not attribution.get("row_here"):
         attribution = {"attributed": False, "own": own, "at": attribution["at"]}
     STATE.remember_stop(session, where, registers, held, attribution)
     # Marked under the new number, or the next contact drains this stop again.

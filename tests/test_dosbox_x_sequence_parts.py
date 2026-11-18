@@ -24,8 +24,8 @@ from scry_dosbox_x import state as st
     ({"attributed": True, "ref": "stop", "by": "stop", "at": "0814:00000106"},
      "the `stop` call"),
     ({"attributed": False, "at": "0814:0000010A", "why": "none"},
-     "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at "
-     "the instruction that wrote, so which declaration fired cannot be told"),
+     "no declared code breakpoint, and the debugger does not say which row stopped the "
+     "machine, so what made this stop cannot be told"),
     ({"attributed": False, "at": "0814:0106", "retrace_pending": True},
      "most likely the retrace stop a `run_for` left armed: no declared code breakpoint"),
 ], ids=["declared", "run_to", "asked", "unattributed", "retrace"])

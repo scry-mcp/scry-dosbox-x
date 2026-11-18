@@ -337,6 +337,29 @@ def test_a_declared_code_breakpoint_carries_the_dynamic_core_limit(tmp_path: Pat
     assert "dynamic core" not in str(plain.get("note")), plain
 
 
+def test_a_frame_that_moved_is_the_run_s_own_retrace_with_a_code_breakpoint_declared_elsewhere(
+        tmp_path: Path) -> None:
+    """A code breakpoint's stop is told by its address, so one declared elsewhere leaves the
+    retrace's cause known; and no memory watch is named where none is declared."""
+    machine = frames(1)
+    machine.frames = 100
+    live(machine, tmp_path)
+    _real_bp("0000:0002")
+    got = cast(dict[str, Any], server.run_for(frames=1))
+    assert got["cause"] == "the retrace run_for ran to, at 0814:00000106", got["cause"]
+
+
+def test_a_stop_nothing_explains_names_no_memory_watch(tmp_path: Path) -> None:
+    """With nothing declared and a frame that did not move, the cause says it cannot be told
+    and blames no watch: none exists."""
+    machine = frames(0)
+    machine.releases = [Stop(ms=FRAME_MS, frames=0)]
+    machine.frames = 100
+    live(machine, tmp_path)
+    got = cast(dict[str, Any], server.run_for(frames=1))
+    assert "cannot be told" in got["cause"] and "watch" not in got["cause"], got["cause"]
+
+
 def test_a_resume_that_stops_where_nothing_is_declared_names_the_pending_retrace(
         tmp_path: Path) -> None:
     """The release that ran on is the one the pending retrace stops: `resume`'s own stop."""
@@ -397,7 +420,7 @@ def test_an_interrupt_breakpoint_says_its_stop_counts_as_a_frame(tmp_path: Path)
         arming.declare("interrupt", "address", grammar.interrupt_row(0x21, None)))
     got = cast(dict[str, Any], server.run_for(frames=3, seconds=2))
     assert retrace.UNTOLD_NOTE in got["note"], got
-    assert "which declaration fired cannot be told" in got["cause"], "something could stop it"
+    assert "what made this stop cannot be told" in got["cause"], "something could stop it"
 
 
 def test_perform_refuses_a_bad_run_for_step_before_anything_is_sent(tmp_path: Path) -> None:

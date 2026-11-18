@@ -346,7 +346,8 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
     holders = _bp_holders(session, mode, stop, machine=machine)
     rows = [t[1:] for t in map(grammar.bp_row_target, (b["entry"] for b in held))
             if t is not None and t[0] == "BP"]
-    if not any(_same_code_addr(mode, stop, row) for row in rows):
+    row_here = any(_same_code_addr(mode, stop, row) for row in rows)
+    if not row_here:
         holders = []
     if holders:
         out: dict[str, Any] = {"attributed": True, "ref": holders[0].ref, "by": holders[0].by,
@@ -358,7 +359,9 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
     # A build whose `RUNSTATE` does not name the row, or a row it names that is no longer listed:
     # a condition that holds is named as the likely maker, never taken for it.
     met = _conditions_met(machine[1], held) if machine is not None else []
-    holding = {"regpoints_holding": met} if met else {}
+    holding = {**({"regpoints_holding": met} if met else {}),
+               # a code row nobody declared sits here: it, not the caller's own run, made the stop
+               **({"row_here": True} if row_here else {})}
     if retrace_may_stop and STATE.retrace_pending:
         STATE.retrace_pending = False
         return {"attributed": False, "retrace_pending": True, **holding,
@@ -368,10 +371,9 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
                        "retrace: most likely this stop"}
     return {"attributed": False, **holding,
             "at": st.seg_off(*stop),
-            "why": "the stop address matches no declared code breakpoint. The debugger "
-                   "keeps no hit flag, and a memory watch stops at the WRITING instruction "
-                   "rather than the watched address, so which declaration fired cannot be "
-                   "derived from the stop"}
+            "why": "the stop address matches no declared code breakpoint, and the debugger "
+                   "does not say which row stopped the machine, so what made this stop "
+                   "cannot be derived from it"}
 
 
 #: A pointer watch's `moved.why` when only the CPU mode changed: the debugger compares a row in
@@ -1051,14 +1053,25 @@ def declares_untold_stopper() -> bool:
                for d in _armable_declarations())
 
 
+#: The rows of the debugger's list whose stop no address names: an interrupt breakpoint, a
+#: memory watch in each mode, a condition on registers.
+_UNTOLD_ROWS = ("BPINT ", "BPMEM ", "BPPM ", "BPLM ", grammar.CONDITION_ROW)
+
+
+def untold_stop_possible() -> bool:
+    """Whether a stop could come that no address names: such a row in the debugger's list at
+    the last stop, or such a declaration. A code breakpoint's stop is told by where it is."""
+    held = STATE.last_stop.get("held") or []
+    return declares_untold_stopper() or any(
+        str(r.get("entry", "")).startswith(_UNTOLD_ROWS) for r in held)
+
+
 def something_can_stop_it() -> bool:
     """Whether anything can bring the running machine back to the debugger, without asking it:
     the debugger's list at the last stop (it holds a row whoever armed it) and the store minus
     what is known not to be armed. Doubt errs on the side of waiting."""
     held = STATE.last_stop.get("held") or []
-    if any(str(r.get("entry", "")).startswith(("BP ", "BPINT ", "BPMEM ", "BPPM ", "BPLM ",
-                                                grammar.CONDITION_ROW))
-           for r in held):
+    if any(str(r.get("entry", "")).startswith(("BP ", *_UNTOLD_ROWS)) for r in held):
         return True
     # A declaration still on the arm queue is armed only AT a stop, so it cannot produce one.
     queued = set(STATE.pending["arm"])

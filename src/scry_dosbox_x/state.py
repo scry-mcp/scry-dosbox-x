@@ -493,9 +493,8 @@ def cause(attribution: dict[str, Any]) -> str:
             return (f"most likely registerpoint {', '.join(holding)}, whose condition holds at "
                     f"{at}: `BPIF` stops as it comes true, and this build's `RUNSTATE` did not "
                     f"name the row that stopped the machine, so it cannot be proved")
-        return (f"no declared code breakpoint at {at}: the debugger keeps no hit flag and a memory "
-                f"watch stops at the instruction that wrote, so which declaration fired cannot "
-                f"be told")
+        return (f"no declared code breakpoint at {at}, and the debugger does not say which row "
+                f"stopped the machine, so what made this stop cannot be told")
     if attribution.get("by") == "regpoint":
         return f"registerpoint {attribution['ref']}, whose condition came true at {at}"
     if attribution.get("by") == "stop":

@@ -138,10 +138,11 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
     # through `debug`, stops it too and is nothing declared.
     crossed = (session.frames is not None and frame_at_release is not None
                and session.frames > frame_at_release)
-    own = "" if not alone else (
-        (f"the retrace {who} ran to" if crossed else "")
-        if verdict == contract.ELAPSED
-        else f"{who}'s {seconds:g} s bound ran out where the machine stood")
+    if verdict == contract.ELAPSED:
+        own = (f"the retrace {who} ran to"
+               if crossed and not arming.untold_stop_possible() else "")
+    else:
+        own = f"{who}'s {seconds:g} s bound ran out where the machine stood" if alone else ""
     try:
         reply = running.stop_reply(session, own=own, **fields)
         stopped_at: dict[str, str] | None = dict(STATE.last_stop["where"])

@@ -985,7 +985,7 @@ def test_attribution_names_a_breakpoint_at_the_stop_or_says_it_cannot(tmp_path: 
     assert hit["attributed"] is True and hit["ref"] == "00A7:00001A27"
     fake.eip = "00005555"
     miss = arming.attribute_stop(fake, where=fake.where(), held=held)  # type: ignore[arg-type]
-    assert miss["attributed"] is False and "no hit flag" in miss["why"]
+    assert miss["attributed"] is False and "does not say which row" in miss["why"]
 
 
 def test_a_stop_names_no_declaration_the_debugger_holds_no_row_for(tmp_path: Path) -> None:
