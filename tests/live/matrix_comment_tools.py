@@ -46,7 +46,8 @@ N_CELLS = cells(
     ("N comment_write add by start lands at 0000824B, resolved", "known: probe.sym at 8140"),
     ("N 0824:000B, the same byte, replaces the text and keeps the ref start",
      "comment_write add: docstring at one comment per place"),
-    ("N a raw 0814:0106 comment lands at 00008246", "REFERENCE.md, Breakpoints and watches: real mode"),
+    ("N a raw 0814:0106 comment lands at 00008246",
+     "REFERENCE.md, Breakpoints and watches: real mode"),
     ("N comment_list holds the two, each resolved", "comment_list docstring"),
     ("N disassemble ends each commented line with its text, and only those",
      "disassemble docstring: a line a comment is placed on ends ` // <text>`"),
@@ -78,8 +79,8 @@ DOS_REAL16_COMMENT_CELLS = (
      "REFERENCE.md, Breakpoints and watches: a symbol follows a rebuild; known: the map copy moves "
      "COMPOSE_FRAME by 10h"),
     ("D a raw comment stays resolved over the rebuilt map loaded in the same session",
-     "REFERENCE.md, Breakpoints and watches: a raw address is judged by the batch that describes it, "
-     "still held"),
+     "REFERENCE.md, Breakpoints and watches: a raw address is judged by the batch that "
+     "describes it, still held"),
 )
 DPMI_COMMENT_CELLS = (
     ("F a comment by _tick and CS:offset are one place, the ref kept",
