@@ -15,9 +15,8 @@ playing, and quits by its own dialog.
 
 ## The program
 
-ReChip! is not distributed with this repository. The demo needs a checkout of
-[its repository](https://github.com/MS-DOS-Club/rechip) after `make mcp-conf`, which builds
-`RECHIPD.EXE` with its symbol table and writes the conf.
+ReChip! is not distributed with this repository. The demo needs a directory with the build
+`build/RECHIPD.EXE`, its symbol table `build/RECHIPD.SYM` and the DOSBox-X conf `build/mcp.conf`.
 
 Its `.scry/start/dev.json` is a start profile: a saved set of `start` arguments.
 
@@ -30,7 +29,7 @@ uv run python demos/rechip/demo.py --cwd /path/to/rechip
 Each line it prints is one call and its check. The window opens behind the others, so the run
 does not take your keyboard.
 
-- `--cwd PATH` (absolute or `~`-led) is the checkout of the program's repository.
+- `--cwd PATH` (absolute or `~`-led) is the directory holding the program's build.
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
   `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
 - `--display N` opens the window on that display. Left out, it opens on the main one.

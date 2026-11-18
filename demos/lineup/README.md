@@ -20,7 +20,6 @@ shot.
 LineUp is not distributed with this repository. The demo runs a copy of the DOS version: a
 directory with `EXES/LINEUP.EXE`, its symbol map `EXES/LINEUP.MAP`, `AUDIO/`, `GFX/`, `.scry/`
 and `SCRIPTS/dosbox-x-mcp-conf.sh`.
-[The game's own repository](https://github.com/MS-DOS-Club/lineup-msdos) builds them.
 
 Its `.scry/` folder holds what the game keeps for SCRY: a start profile (saved `start`
 arguments), a screen map (a file naming its screens) and the list of steps.

@@ -15,10 +15,9 @@ variable, and films the match the game plays by itself.
 
 ## The program
 
-Speed Fight is not distributed with this repository. The demo needs a checkout of
-[the game's repository](https://github.com/MS-DOS-Club/speedf-msdos) with its
+Speed Fight is not distributed with this repository. The demo needs a directory with
 `EXES/SPEEDF.EXE` and `EXES/SPEEDF.MAP`, its `.scry/` folder, where the game keeps that start
-profile, and its `SCRIPTS/`.
+profile, and its `SCRIPTS/dosbox-mcp-conf.sh`.
 
 ## Run it
 
@@ -29,7 +28,7 @@ uv run python demos/speedf/demo.py --cwd /path/to/speedf-msdos
 Each line it prints is one call and its check. The window opens behind the others, so the run
 does not take your keyboard.
 
-- `--cwd PATH` (absolute or `~`-led) is the checkout of the game's repository.
+- `--cwd PATH` (absolute or `~`-led) is the directory holding the game.
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
   `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
 - `--display N` opens the window on that display. Left out, it opens on the main one.
