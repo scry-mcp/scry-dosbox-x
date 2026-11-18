@@ -1,65 +1,50 @@
 # The Machine tools
 
+These tools describe the DOS machine a session runs and read what it logs. `machine_map` and `interrupt_vectors` read the debugger's own listings, so they need the program stopped at the debugger. `log` and `log_wait` answer while it runs.
+
+The log is the file `start` writes when given `logfile`. It holds the emulator's own lines and the program's: what a DOS program writes to port 0xE9, a debug port, is its log. `log` reads those lines when asked for `guest`, and a stop's reply shows the new ones as `e9`.
+
 <!-- scry-reference:begin machine_map -->
 ## `machine_map`
 
-*Map the machine*
+Get the layout of the DOS machine at this stop: its memory blocks, device drivers, extended memory handles and the cpu's control registers.
 
 ```text
 machine_map(sections=null, dest="")
 ```
 
-What the DOS machine is at this stop: one section per debugger listing. `sections` left
-out reads the DOS machine, `control` (the control registers, the flags and the
-descriptor-table and task registers) and, in protected mode, `gdt` and `ldt` (the tables'
-rows); `bios_mem`, `callbacks`, `vga`, `paging` only when named. `dest` (absolute or `~`-led,
-new) writes every row of the sections read as JSON. Writes nothing to the guest.
+### Try it
 
-Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
-400 rows), `sources`, `coverage_note` (why a section is absent), `path` (with
-`dest`). Refused: bad `sections` or an existing `dest` (`bad_argument`); a running guest
-(`not_stopped`).
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, stopped at its play screen.
 
-Reference: REFERENCE.md, Reading and writing.
+Ask:
 
-| argument | type | default |
-|---|---|---|
-| `sections` | array of one of `"mcbs"`, `"devs"`, `"kern"`, `"xms"`, `"ems"`, `"ems_pages"`, `"bios_mem"`, `"callbacks"`, `"emu_mem"`, `"machine"`, `"control"`, `"gdt"`, `"ldt"`, `"paging"`, `"vga"` or null | `null` |
-| `dest` | string | `""` |
+> List the blocks of memory DOS holds right now.
 
-| reply field | type |
-|---|---|
-| `bios_mem` | array |
-| `callbacks` | array |
-| `control` | object |
-| `counts` | object |
-| `coverage_note` | string |
-| `cpu_mode` | string or object |
-| `devs` | array |
-| `ems` | array |
-| `ems_pages` | array |
-| `emu_mem` | object |
-| `gdt` | array |
-| `kern` | array |
-| `ldt` | array |
-| `machine` | string |
-| `mcbs` | array |
-| `paging` | array |
-| `path` | string |
-| `sources` | object |
-| `truncated` | boolean |
-| `vga` | object |
-| `xms` | array |
+Call:
 
-Example, from a live run:
-
-```json
-{}
+```text
+machine_map(sections=["mcbs"])
 ```
+
+Reply, 4 of 10 fields:
 
 ```json
 {
-  "summary": "machine_map (real): 7 mcbs, 2 devs, 20 kern, 1 ems, 4 ems_pages, left out: bios_mem, callbacks, vga (see `omitted`)",
+  "cpu_mode": "real",
+  "counts": {"mcbs": 9},
+  "sources": {"mcbs": ["DOS MCBS"]},
+  "truncated": false
+}
+```
+
+In real mode the debugger's `DOS MCBS` listing gave 9 memory blocks, and none was cut from the reply. Their rows are too long to show here: the whole reply, below, has them.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "machine_map (real): 9 mcbs, left out: devs, kern, xms, ems, ems_pages, bios_mem, callbacks, emu_mem, machine, control, vga (see `omitted`)",
   "status": "ok",
   "cpu_mode": "real",
   "mcbs": [
@@ -90,116 +75,261 @@ Example, from a live run:
       "mcb_seg": "07C9",
       "size_bytes": 1168,
       "psp_seg": "0814",
-      "filename": "PROBE"
+      "filename": "SCRY"
     },
     {
       "memory": "conventional",
       "mcb_seg": "0813",
-      "size_bytes": 622256,
+      "size_bytes": 2048,
       "psp_seg": "0814",
-      "filename": "PROBE"
+      "filename": "SCRY"
     },
     {
-      "memory": "upper",
-      "mcb_seg": "9FFF",
-      "size_bytes": 180224,
-      "psp_seg": "0008",
-      "notes": "DOS",
-      "filename": "SC"
+      "memory": "conventional",
+      "mcb_seg": "0894",
+      "size_bytes": 1168,
+      "psp_seg": "08DF",
+      "filename": "BRICKS"
     },
-    "... 1 more"
+    "... 3 more"
   ],
-  "devs": [
-    {"header": "0071:0048", "attr": "8004", "strat": "0000", "intr": "0000", "name": "NUL"},
-    {"header": "00F9:0000", "attr": "8013", "strat": "FFFF", "intr": "FFFF", "name": "CON"}
-  ],
-  "kern": [
-    {"seg": "0070", "size_bytes": 16, "what": "DOS_IHSEG"},
-    {"seg": "0071", "size_bytes": 800, "what": "DOS_INFOBLOCK_SEG"},
-    {"seg": "00a3", "size_bytes": 1376, "what": "DOS_SDA_SEG"},
-    {"seg": "00f9", "size_bytes": 64, "what": "DOS_CONDRV_SEG"},
-    {"seg": "00fd", "size_bytes": 256, "what": "DOS_CDA_SEG"},
-    {"seg": "010d", "size_bytes": 64, "what": "dos.tables.tempdta"},
-    "... 14 more"
-  ],
-  "xms": [],
-  "ems": [
-    {"handle": 0, "addr": "0x00110000", "size_bytes": 393216, "name": ""}
-  ],
-  "ems_pages": [
-    {"handle": "--", "page": "0/", "start": "000e0000", "end": "000e3fff"},
-    {"handle": "--", "page": "1/", "start": "000e4000", "end": "000e7fff"},
-    {"handle": "--", "page": "2/", "start": "000e8000", "end": "000ebfff"},
-    {"handle": "--", "page": "3/", "start": "000ec000", "end": "000effff"}
-  ],
-  "emu_mem": {
-    "a20_gate": "ON",
-    "cpu_address_bits": 32,
-    "cpu_address_mask": "0xffffffff",
-    "cpu_address_mask_current": "0xffffffff",
-    "memory_reported_size_bytes": 16777216
-  },
-  "machine": "VGA S3 Trio",
-  "control": {
-    "cr0": "00000010",
-    "cr2": "00000000",
-    "cr3": "00000000",
-    "cpl": 0,
-    "eflags": "00007006",
-    "vm": 0,
-    "iopl": 3,
-    "nt": 1,
-    "gdtr": {"base": "00000000", "limit": "0000FFFF"},
-    "idt": {"base": "00000000", "limit": "000003FF"},
-    "tr": {"selector": "0000", "base": "000EF000", "limit": "0000CA60*1"},
-    "ldtr": {"selector": "0000", "base": "000EF000", "limit": "0000CA60*1"}
-  },
-  "counts": {"mcbs": 7, "devs": 2, "kern": 20, "xms": 0, "ems": 1, "ems_pages": 4},
-  "sources": {
-    "mcbs": ["DOS MCBS"],
-    "devs": ["DOS DEVS"],
-    "kern": ["DOS KERN"],
-    "xms": ["DOS XMS"],
-    "ems": ["DOS EMS"],
-    "ems_pages": ["DOS EMS"],
-    "emu_mem": ["EMU MEM"],
-    "machine": ["EMU MACHINE"],
-    "control": ["CPU"]
-  },
+  "counts": {"mcbs": 9},
+  "sources": {"mcbs": ["DOS MCBS"]},
   "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off",
   "truncated": false,
-  "omitted": ["bios_mem", "callbacks", "vga"],
+  "omitted": ["devs", "kern", "xms", "ems", "ems_pages", "bios_mem", "... 5 more"],
   "how": "sections=[...] names the sections to read; dest=<absolute path> writes every section read whole"
 }
 ```
+
+</details>
+
+### Arguments
+
+- `sections` (array of one of `"mcbs"`, `"devs"`, `"kern"`, `"xms"`, `"ems"`, `"ems_pages"`, `"bios_mem"`, `"callbacks"`, `"emu_mem"`, `"machine"`, `"control"`, `"gdt"`, `"ldt"`, `"paging"`, `"vga"`, optional): Which sections to read. Left out, all of them but `bios_mem`, `callbacks`, `paging` and `vga`.
+- `dest` (string, default `""`): A file to write every row of the sections read, as JSON: an absolute or `~` path that does not exist yet. Left empty, no file is written.
+
+### What comes back
+
+- `cpu_mode`: `real`, `protected` or `paged`, read from the control register `cr0`. It decides which sections exist.
+- `mcbs`: DOS's chain of memory blocks, one row each: `memory`, `mcb_seg`, `size_bytes`, `psp_seg`, `notes`, `filename`.
+- `coverage_note`: Why each absent section is absent: the mode has none, or the debugger's listing could not be read.
+- `sources`: For each section, the debugger command its rows came from.
+- `counts`: How many rows each section has in full, so a list cut short shows.
+- `truncated`: `true` when a section had more than 400 rows and its list was cut; `dest` gets them all.
+
+<details><summary>All 21 reply fields</summary>
+
+- `bios_mem` (array)
+- `callbacks` (array)
+- `control` (object)
+- `counts` (object)
+- `coverage_note` (string)
+- `cpu_mode` (string or object)
+- `devs` (array)
+- `ems` (array)
+- `ems_pages` (array)
+- `emu_mem` (object)
+- `gdt` (array)
+- `kern` (array)
+- `ldt` (array)
+- `machine` (string)
+- `mcbs` (array)
+- `paging` (array)
+- `path` (string)
+- `sources` (object)
+- `truncated` (boolean)
+- `vga` (object)
+- `xms` (array)
+
+</details>
+
+### What it refuses
+
+- An empty `sections`, a name that is no section, or a `dest` that already exists (`bad_argument`).
+- A program that is running: the listings are read at a stop (`not_stopped`).
+- A listing longer than the debugger hands back in one reply: it would come back cut (`unexpected_answer`).
+
+### Why it works this way
+
+Each section is one listing of the debugger, read whole. A section the debugger refused, or printed in a form the server does not know, is absent, never partial. A chain of memory blocks with one block skipped would read as the whole chain.
+
+Which sections exist depends on the cpu mode. In real mode `gdt` and `ldt` are absent, because there the debugger reads the interrupt vector table as descriptors; `paging` exists only with paging on.
+
+`cpu_mode` comes from `cr0`, which cannot tell virtual 8086 mode from protected mode. At such a stop it says `protected` where the stop's own reply and `status` say `VM86`.
+
+<details><summary>More on why</summary>
+
+- `mcbs`: a free block has a `psp_seg` of `0000` and keeps in `filename` the old name DOS left there.
+- The chain in `mcbs` is checked by its sizes, each block right after the one before; a chain that fails is absent.
+- `devs`: `header`, `attr`, `strat`, `intr`, `name`.
+- `kern`: `seg`, `size_bytes`, `what`.
+- `xms`: `handle`, `status`, `location`, `size_bytes`.
+- `ems`: `handle`, `addr`, `size_bytes`, `name`. `ems_pages`: `handle`, `page`, `start`, `end`.
+- `bios_mem`: `start`, `end`, `status`, `what`. `callbacks`: `number`, `desc`.
+- `control`: `cr0`, `cr2`, `cr3`, `cpl`, `eflags`, `vm`, `iopl`, `nt`, `gdtr`, `idt`, `tr`, `ldtr`.
+- `gdt` and `ldt`: `selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`.
+- `paging`: runs of pages next to each other in linear and physical memory with the same flags: `start`, `end`, `phy`, `flags`, `d`, `a`.
+- `vga`: `mode`, `crtc`, `seq`, `gc`, `ac`, `dac`, `draw`.
+- `emu_mem` holds the emulator's memory listing, a key per line; `machine` is the emulated machine's name.
+- Each listing is one exchange with the debugger. `omitted` and `how` name the sections of this mode that were not read.
+- When the listing behind `control` cannot be read, `cpu_mode` is unavailable and `gdt`, `ldt` and `paging` are absent.
+
+</details>
+
+### Related tools
+
+- [`interrupt_vectors`](#interrupt_vectors)
+- [`registers`](read.md#registers)
+- [`read_memory`](read.md#read_memory)
+- [`status`](session.md#status)
+- [`a20`](hardware.md#a20)
+
+<details><summary>The contract your client receives</summary>
+
+```text
+What the DOS machine is at this stop: one section per debugger listing. `sections` left
+out reads the DOS machine, `control` (the control registers, the flags and the
+descriptor-table and task registers) and, in protected mode, `gdt` and `ldt` (the tables'
+rows); `bios_mem`, `callbacks`, `vga`, `paging` only when named. `dest` (absolute or `~`-led,
+new) writes every row of the sections read as JSON. Writes nothing to the guest.
+
+Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
+400 rows), `sources`, `coverage_note` (why a section is absent), `path` (with
+`dest`). Refused: bad `sections` or an existing `dest` (`bad_argument`); a running guest
+(`not_stopped`).
+
+Reference: REFERENCE.md, Reading and writing.
+```
+
+</details>
 <!-- scry-reference:end machine_map -->
-
-The rows come from the lines the debugger printed for each listing, whole; a listing longer than
-the channel keeps of one reply is refused, never read as complete.
-
-**Which sections exist depends on the mode, and an absent one says why.** `cpu_mode` is read off the
-`CPU` listing's cr0, which cannot tell VM86 from protected mode: at a VM86 stop it says `protected`
-where the stop and `status` say `VM86`. In real mode `gdt` and `ldt` are absent, because there the
-debugger reads the interrupt vector table as descriptors. `paging` comes back as runs of pages
-contiguous in linear and physical memory with the same flags.
-
-A section the debugger refused or printed in no known shape is ABSENT rather than partial, because
-a chain with one block skipped would read as the whole chain. A free block keeps the stale name DOS
-leaves in it, and its `psp_seg` of `0000` says it is free. The MCB chain is checked by its sizes
-(each block starts right past the one above, `END OF CHAIN` right past the last); a chain that
-breaks that walk is cut, and `mcbs` is absent.
-
-Each listing costs one round trip. `cpu_mode` is `real`, `protected` or `paged`, unavailable when the `CPU` listing is unreadable. `gdt` and `ldt` exist in protected mode. Row fields per section: `mcbs` (`memory`, `mcb_seg`, `size_bytes`, `psp_seg`, `notes`, `filename`), `devs` (`header`, `attr`, `strat`, `intr`, `name`), `kern` (`seg`, `size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems` (`handle`, `addr`, `size_bytes`, `name`), `ems_pages` (`handle`, `page`, `start`, `end`), `bios_mem` (`start`, `end`, `status`, `what`), `callbacks` (`number`, `desc`), `control` (control registers, flags, `gdtr`, `idt`, `tr`, `ldtr`), `gdt`/`ldt` (`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`), `paging` runs (`start`, `end`, `phy`, `flags`, `d`, `a`), `vga` (`mode`, `crtc`, `seq`, `gc`, `ac`, `dac`, `draw`). `omitted` and `how` name the sections of this mode that were not read.
 
 <!-- scry-reference:begin interrupt_vectors -->
 ## `interrupt_vectors`
 
-*Read the interrupt vectors*
+See which handler each interrupt vector points at, and which program, DOS block or BIOS block holds that handler.
 
 ```text
 interrupt_vectors(number=null)
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, stopped at its play screen.
+
+Ask:
+
+> Who handles the mouse interrupt, INT 33h?
+
+Call:
+
+```text
+interrupt_vectors(number="0x33")
+```
+
+Reply, 3 of 7 fields:
+
+```json
+{
+  "summary": "interrupt_vectors INT 33: C402:00000010, mcbs 9FFF SC (DOS)",
+  "cpu_mode": "real",
+  "counts": {"vectors": 256, "held": 112, "named": 0}
+}
+```
+
+INT 33h points at `C402:0010`, inside the memory block at segment 9FFF, which is marked as DOS's. Of the 256 vectors, 112 sit in a known block (`held`) and none has a symbol (`named`).
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "interrupt_vectors INT 33: C402:00000010, mcbs 9FFF SC (DOS)",
+  "status": "ok",
+  "cpu_mode": "real",
+  "vectors": [
+    {
+      "number": "0x33",
+      "seg_off": "C402:00000010",
+      "addr": "0x000c4030",
+      "mcbs": {
+        "memory": "upper",
+        "mcb_seg": "9FFF",
+        "size_bytes": 180224,
+        "psp_seg": "0008",
+        "notes": "DOS",
+        "filename": "SC"
+      }
+    }
+  ],
+  "counts": {"vectors": 256, "held": 112, "named": 0},
+  "sources": {
+    "vectors": ["INTVEC"],
+    "mcbs": ["DOS MCBS"],
+    "kern": ["DOS KERN"],
+    "bios_mem": ["BIOS MEM"],
+    "control": ["CPU"]
+  },
+  "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off"
+}
+```
+
+</details>
+
+### Arguments
+
+- `number` (integer or string, optional): One vector to return, `0x00` to `0xFF`, as an integer or `0x` text. Left out, all 256 come back.
+
+### What comes back
+
+- `vectors`: One row per vector: `number`, the handler's `seg_off` and linear `addr`, the block that holds it under `mcbs`, `kern` or `bios_mem`, and the nearest `symbol`.
+- `counts`: `vectors`, how many the table has; `held`, how many sit in a known block; `named`, how many have a symbol.
+- `cpu_mode`: The mode at this stop: `real`, `VM86`, `protected` or `paged`. In protected mode the table read is the IDT.
+- `coverage_note`: What could not be worked out, and why: a vector with no `addr`, a handler no block holds, a table still empty.
+- `sources`: The debugger command behind the vectors and behind each listing the blocks came from.
+
+<details><summary>All 5 reply fields</summary>
+
+- `counts` (object)
+- `coverage_note` (string)
+- `cpu_mode` (string or object)
+- `sources` (object)
+- `vectors` (array)
+
+</details>
+
+### What it refuses
+
+- A `number` outside `0x00` to `0xFF` (`bad_argument`).
+- A file named `MCPIVT.TXT` already in the emulator's working directory: move it aside, it is never deleted (`bad_argument`).
+- A program that is running (`not_stopped`).
+- A table the debugger did not write whole, or a listing too long for one reply (`unexpected_answer`).
+
+### Why it works this way
+
+Each handler is matched to the block of memory that holds it, so the reply says which program hooked a vector with no earlier table to compare. The first block holding the address wins: `mcbs`, then `kern`, then `bios_mem`.
+
+Right after `start` every vector reads `0000:0000`: DOS has not filled the table yet.
+
+`symbol` is what `symbols_find(linear=...)` answers for the handler, given only between the table's lowest and highest symbol.
+
+<details><summary>More on why</summary>
+
+The debugger writes the table to a file, `MCPIVT.TXT`, which the server reads and removes. The whole table is read even for one `number`, with the listings `machine_map` reads, one exchange with the debugger each.
+
+</details>
+
+### Related tools
+
+- [`machine_map`](#machine_map)
+- [`breakpoint_interrupt`](breakpoints.md#breakpoint_interrupt)
+- [`symbols_find`](names.md#symbols_find)
+- [`disassemble`](read.md#disassemble)
+- [`symbols_load`](names.md#symbols_load)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Which handler every interrupt vector points at and what holds it, from the debugger's
 `INTVEC` table: a handler is placed in the MCB, kernel or BIOS block holding it and named by
 loaded symbols. `number` (`0x` hex or an integer, 0x00 to 0xFF) narrows the reply to one
@@ -215,68 +345,136 @@ guest (`not_stopped`); an incomplete table (`unexpected_answer`); `machine_map`'
 refusals.
 
 Reference: REFERENCE.md, Reading and writing.
-
-| argument | type | default |
-|---|---|---|
-| `number` | integer or string or null | `null` |
-
-| reply field | type |
-|---|---|
-| `counts` | object |
-| `coverage_note` | string |
-| `cpu_mode` | string or object |
-| `sources` | object |
-| `vectors` | array |
-
-Example, from a live run:
-
-```json
-{
-  "number": 33
-}
 ```
 
-```json
-{
-  "summary": "interrupt_vectors INT 21: F000:0000D100, bios_mem DOSBox callback area",
-  "status": "ok",
-  "cpu_mode": "real",
-  "vectors": [
-    {
-      "number": "0x21",
-      "seg_off": "F000:0000D100",
-      "addr": "0x000fd100",
-      "bios_mem": {"start": "000fca00", "end": "000fdfff", "status": "ALLOC DYN", "what": "DOSBox callback area"}
-    }
-  ],
-  "counts": {"vectors": 256, "held": 112, "named": 0},
-  "sources": {
-    "vectors": ["INTVEC"],
-    "mcbs": ["DOS MCBS"],
-    "kern": ["DOS KERN"],
-    "bios_mem": ["BIOS MEM"],
-    "control": ["CPU"]
-  },
-  "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off"
-}
-```
+</details>
 <!-- scry-reference:end interrupt_vectors -->
-
-The holder row says which program
-hooked a vector without comparing against an earlier table; a table taken at `start` is all zeros,
-since the park comes before DOS fills it.
-
-The debugger writes `MCPIVT.TXT` into the emulator's working directory, which this reads and removes; it then reads the listings `machine_map` reads, a round trip each. The whole table is read either way. The holder is the first match in the order mcbs, kern, bios_mem; `symbol` is given only between the table's lowest and highest symbol, as `symbols_find(linear=)` answers it. Before DOS fills the table every vector is 0000:0000, as read. `cpu_mode` has `VM86` among its words.
 
 <!-- scry-reference:begin log -->
 ## `log`
 
-*Read the log*
+Read the newest log lines that match a pattern: the program's, the emulator's, both, or the DOS calls the program made.
 
 ```text
 log(pattern, channel, limit=40, labels=false, since_mark=0)
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, started with `logfile`, after a ball was served and lost.
+
+Ask:
+
+> What did the game log about serves, hits and lost balls?
+
+Call:
+
+```text
+log(pattern="SERVE|HIT|LOST", channel="guest")
+```
+
+Reply, 2 of 7 fields:
+
+```json
+{
+  "summary": "log guest /SERVE|HIT|LOST/: 6 of 6 lines",
+  "lines": [
+    "Bochs port E9h: HIT 0 7",
+    "Bochs port E9h: HIT 5 6",
+    "Bochs port E9h: HIT 5 0",
+    "Bochs port E9h: SERVE",
+    "Bochs port E9h: HIT 5 9",
+    "Bochs port E9h: LOST"
+  ]
+}
+```
+
+Six lines of the game's own log match, oldest first. Each opens with `Bochs port E9h:`, the emulator's mark on a line the program wrote to port 0xE9.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "log guest /SERVE|HIT|LOST/: 6 of 6 lines",
+  "status": "ok",
+  "pattern": "SERVE|HIT|LOST",
+  "channel": "guest",
+  "lines_total": 6,
+  "truncated": false,
+  "lines": ["Bochs port E9h: HIT 0 7", "Bochs port E9h: HIT 5 6", "Bochs port E9h: HIT 5 0", "Bochs port E9h: SERVE", "Bochs port E9h: HIT 5 9", "Bochs port E9h: LOST"]
+}
+```
+
+</details>
+
+### Arguments
+
+- `pattern` (string, required): A regular expression each line is searched for. It is never empty: `.` matches every line.
+- `channel` (one of `"guest"`, `"emulator"`, `"all"`, `"dos"`, required): Which log to read. `guest` is the program's port 0xE9 lines, `emulator` DOSBox-X's own, `all` both with each line tagged, `dos` the program's INT 21h calls.
+- `limit` (integer (>= 1, <= 400), default `40`): How many of the newest matching lines to return: 1 to 400. Left out, 40.
+- `labels` (boolean, default `false`): `true` adds `labels`: the lines returned, counted by their first word. Left out, no count.
+- `since_mark` (integer (>= 0), default `0`): A byte position in the log: only lines written after it are read. Left out or 0, the whole log is read.
+
+### What comes back
+
+- `lines`: The newest `limit` matching lines, oldest first. Not on `dos`.
+- `lines_total`: How many lines matched in all, not how many came back.
+- `truncated`: `true` when more matched than came back.
+- `labels`: With `labels=true`, the returned lines counted by their first word: a quick view of who is writing.
+- `calls`: On `dos`, the matching calls in place of `lines`, each with the registers DOS took, the ones it handed back and its result.
+- `calls_dropped`: On `dos`, how many of the oldest calls the server no longer holds.
+
+<details><summary>All 8 reply fields</summary>
+
+- `calls` (array)
+- `calls_dropped` (integer)
+- `channel` (string)
+- `labels` (object)
+- `lines` (array)
+- `lines_total` (integer)
+- `pattern` (string)
+- `truncated` (boolean)
+
+</details>
+
+### What it refuses
+
+- An empty pattern, or one that is not a regular expression (`bad_argument`).
+- A `limit` outside 1 to 400 (`bad_argument`).
+- A session started without `logfile`, a log not written yet, or `guest` on a log with no line from the program (`no_channel`).
+- `dos` on a session not started with `dos_calls` (`no_channel`).
+- `dos` with `labels` or `since_mark`: the calls are not lines of the log file (`bad_argument`).
+- `channel` `process`: the emulator's own output is not a log; `close(detail=true)` returns its last lines (`bad_argument`).
+- A `since_mark` past the end of the log (`bad_argument`).
+
+### Why it works this way
+
+`guest`, `emulator` and `all` are three views of one file, so one `since_mark` position serves all three. `all` is the file in order, each line tagged `[guest] ` or `[emulator] `.
+
+`dos` is another record: every INT 21h call the program made, with its result, on a session started with `dos_calls`. There `pattern` is matched against each call's `line` and `lines_total` counts calls.
+
+An empty `lines` is an answer: nothing matched. A log with no line from the program at all is refused, so that silence is never read as no match. While the program runs a line it has only now written may not be in the file yet, and `note` says so.
+
+<details><summary>More on why</summary>
+
+- On `dos`, each call of `calls` holds `in` and `out`, the registers DOS took and handed back; `out.cf` is the carry flag.
+- `error` is the code and its name, for the calls that report failure by the carry: AH 38h and up. An older call answers in AL and gets none.
+- `returned` is `false` for a call DOS has not handed back yet, as at a stop inside it.
+- `time_s` and `returned_s` are seconds of emulated time since power-on, the clock `run_for` reports.
+
+</details>
+
+### Related tools
+
+- [`log_wait`](#log_wait)
+- [`start`](session.md#start)
+- [`state_write`](states.md#state_write)
+- [`drive`](sequences.md#drive)
+- [`close`](session.md#close)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 The session's log, one `channel` (`guest`, `emulator`, `all`, `dos`) filtered by the
 Python regex `pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`, the
 matching lines counted by first word.
@@ -296,66 +494,138 @@ pattern, an unknown channel (`process` is refused by name), a `since_mark` namin
 position. To wait for a line use `log_wait`.
 
 Reference: REFERENCE.md, The log.
-
-| argument | type | default |
-|---|---|---|
-| `pattern` | string | required |
-| `channel` | one of `"guest"`, `"emulator"`, `"all"`, `"dos"` | required |
-| `limit` | integer (>= 1, <= 400) | `40` |
-| `labels` | boolean | `false` |
-| `since_mark` | integer (>= 0) | `0` |
-
-| reply field | type |
-|---|---|
-| `calls` | array |
-| `calls_dropped` | integer |
-| `channel` | string |
-| `labels` | object |
-| `lines` | array |
-| `lines_total` | integer |
-| `pattern` | string |
-| `truncated` | boolean |
-
-Example, from a live run:
-
-```json
-{
-  "pattern": ".",
-  "channel": "emulator"
-}
 ```
 
-```json
-{
-  "summary": "log emulator /./: 40 of 159 lines",
-  "status": "ok",
-  "pattern": ".",
-  "channel": "emulator",
-  "lines_total": 159,
-  "truncated": true,
-  "lines": ["DEBUG: Set interrupt breakpoint at INT 08", "Breakpoint list:", "-------------------------------------------------------------------------", "00. BPINT 08", "DEBUG: RUNSTATE running cycles=1254 ms=0.825700000 frames=0", "pixratio 1.350, dw false, dh false", "... 34 more"]
-}
-```
+</details>
 <!-- scry-reference:end log -->
-
-**On the `dos` channel a call is a row, not a line.** `in` and `out` hold the registers DOS took
-and handed back, `out.cf` the carry, and `error` the code with its name for the calls that report
-by the carry (AH 38h and up); an older call answers in AL and gets no `error`. `returned` is false
-for a call DOS has not handed back yet, as at a stop inside it. `time_s` and `returned_s` are
-seconds of emulated time since power-on, the clock `run_for`'s `emulated_before_s` and
-`emulated_after_s` read.
-
-`guest` is the program's own 0xE9 instrumentation, one line per write; `emulator` is DOSBox-X's own lines; `all` is the file in order, each line tagged `[guest] ` or `[emulator] `. `labels` counts returned lines by first word (BOOT, PERF, UI...), one glance at who is talking. `lines_total` counts all matches, not those returned, and an empty `lines` is an answer. One file holds those three channels, so one mark position serves each; `dos` reads the DOS call trace instead and takes no mark. There is no `process` channel: the emulator's own stdout is `close(detail=True)`'s. Queued work applies on a stop, saying so in `applied_on_stop`.
 
 <!-- scry-reference:begin log_wait -->
 ## `log_wait`
 
-*Wait for a log line*
+Wait until a log line matches a pattern, or get the line at once when the log already has it.
 
 ```text
 log_wait(pattern, channel, seconds=30.0, since_mark=0)
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, started with `logfile` and running, a ball served and nobody at the paddle.
+
+Ask:
+
+> Wait up to a minute for the game to log that the ball was lost.
+
+Call:
+
+```text
+log_wait(pattern="LOST$", channel="guest", seconds=60)
+```
+
+Reply, 4 of 12 fields:
+
+```json
+{
+  "verdict": "TARGET",
+  "pattern": "LOST$",
+  "channel": "guest",
+  "line": "Bochs port E9h: LOST"
+}
+```
+
+`TARGET` means a line matched within the minute: the game logged `LOST`, a line of its own, written to port 0xE9.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "TARGET",
+  "pattern": "LOST$",
+  "channel": "guest",
+  "line": "Bochs port E9h: LOST",
+  "already": "<volatile>",
+  "lines_total": "<volatile>",
+  "lines_before": "<volatile>",
+  "arrived_during": "<volatile>",
+  "waited_s": "<volatile>",
+  "lines_examined": "<volatile>"
+}
+```
+
+</details>
+
+### Arguments
+
+- `pattern` (string, required): A regular expression each line is searched for. It is never empty: `.` matches every line.
+- `channel` (one of `"guest"`, `"emulator"`, `"all"`, `"dos"`, required): Which log to wait on: `guest`, `emulator`, `all` or `dos`, as in [`log`](#log).
+- `seconds` (number (> 0, <= 600.0), default `30.0`): How long to wait at most, in seconds, up to 600. Left out, 30.
+- `since_mark` (integer (>= 0), default `0`): A byte position in the log: only lines written after it count, the ones already there included. Left out or 0, the whole log counts.
+
+### What comes back
+
+- `verdict`: `TARGET` when a line matched, `TIMEOUT` when the time ran out with none; `note` then says what was read.
+- `line`: The first line that matched; for the newest one, use `log`. On `dos`, `call` holds the matching call in its place.
+- `already`: `true` when the log held the line before the call, so nothing was waited for.
+- `waited_s`: Seconds spent waiting; 0 when the line was already there.
+- `arrived_during`: How many lines were written during the wait, whether or not they matched.
+- `lines_examined`: How many lines were read in all: those the log held and those that came during the wait. On `dos`, the calls the server holds.
+
+<details><summary>All 12 reply fields</summary>
+
+- `already` (boolean)
+- `arrived_during` (integer)
+- `channel` (string)
+- `line` (string)
+- `lines_before` (integer)
+- `lines_examined` (integer)
+- `lines_total` (integer)
+- `pattern` (string)
+- `verdict` (string)
+- `waited_s` (number)
+- `call` (object)
+- `calls_dropped` (integer)
+
+</details>
+
+### What it refuses
+
+- A machine stopped at the debugger, or one that stops during the wait, while the log lacks the line: a stopped machine logs nothing (`wait_stopped`).
+- An emulator that exits during the wait (`session_broken`).
+- `seconds` out of range, an empty or malformed pattern, or a `since_mark` past the end of the log (`bad_argument`).
+- A session started without `logfile` (`no_channel`).
+- `dos` on a session not started with `dos_calls` (`no_channel`).
+- `dos` with a `since_mark` (`bad_argument`).
+
+### Why it works this way
+
+The log is read before any waiting, so a line written before the call is found at once, where a tool that only waited would report that it never came. `already` marks such a line.
+
+A `TIMEOUT` says what it read. `arrived_during` counts the lines written during the wait and `lines_examined` every line read, so a program that wrote nothing is told apart from one whose lines did not match.
+
+A log that does not exist yet is not refused: that is the state right after `resume`. When the wait returns the program is usually still running: use the line to choose an address for `run_to` or `watch_add` on the next run.
+
+<details><summary>More on why</summary>
+
+- `lines_before` counts the lines read before the match and `lines_total` the matches in that read. On `dos` both count calls, and `calls_dropped` the oldest ones the server let go.
+- No breakpoint can be set on a log line; the nearest is a watch for changes on the variable whose change produces it.
+- `expect` on `send_keys` and `drive` is this wait on `guest`, from a position taken before the keys are sent.
+
+</details>
+
+### Related tools
+
+- [`log`](#log)
+- [`resume`](run.md#resume)
+- [`drive`](sequences.md#drive)
+- [`run_to`](run.md#run_to)
+- [`watch_add`](breakpoints.md#watch_add)
+- [`send_keys`](input.md#send_keys)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 When a line of `channel` matching `pattern` was logged: at once if the log already holds it,
 else wait up to `seconds`. `channel` and `since_mark` as in `log`. Works on a running guest.
 
@@ -369,61 +639,7 @@ log lacks the line, `session_broken` when the emulator went away; no `logfile`, 
 `seconds`, regex, channel or `since_mark` are refused.
 
 Reference: REFERENCE.md, The log.
-
-| argument | type | default |
-|---|---|---|
-| `pattern` | string | required |
-| `channel` | one of `"guest"`, `"emulator"`, `"all"`, `"dos"` | required |
-| `seconds` | number (> 0, <= 600.0) | `30.0` |
-| `since_mark` | integer (>= 0) | `0` |
-
-| reply field | type |
-|---|---|
-| `already` | boolean |
-| `arrived_during` | integer |
-| `channel` | string |
-| `line` | string |
-| `lines_before` | integer |
-| `lines_examined` | integer |
-| `lines_total` | integer |
-| `pattern` | string |
-| `verdict` | string |
-| `waited_s` | number |
-| `call` | object |
-| `calls_dropped` | integer |
-
-Example, from a live run:
-
-```json
-{
-  "pattern": "PROBE",
-  "channel": "guest",
-  "seconds": 10
-}
 ```
 
-```json
-{
-  "summary": "log_wait guest /PROBE/: matched already in the log",
-  "status": "ok",
-  "verdict": "TARGET",
-  "pattern": "PROBE",
-  "channel": "guest",
-  "line": "Bochs port E9h: [+ 00000.000] PROBE . tick",
-  "already": true,
-  "lines_total": 1,
-  "lines_before": 0,
-  "arrived_during": 0,
-  "waited_s": 0.0,
-  "lines_examined": 1
-}
-```
+</details>
 <!-- scry-reference:end log_wait -->
-
-A tool that only waited would sit out its bound for a line that went past before the call and report it never happened; hence the log is read first.
-
-**A `TIMEOUT` is never an empty answer.** `arrived_during` and `lines_examined` are different facts: the second under the first's name makes a silent guest on a log of old traces look like a live channel.
-
-No breakpoint can be armed on a log line: the guest is usually still running then. The nearest is a change watch on the variable whose change produces the line.
-
-It reads what the log already holds first, so a line that went past before the call is found. A log that does not exist yet is not refused: that is the state right after `resume`. The moment it returns is for choosing an address to `run_to` or `watch_add` on the next run; the guest is usually still running then, and console tools refuse. `expect` on `send_keys`/`drive` is this wait on the guest channel, from a mark taken before the act. `already` marks history rather than something you were present for.

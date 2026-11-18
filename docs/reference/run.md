@@ -1,14 +1,217 @@
-# The Advance tools
+# The Run tools
+
+These tools let the program run and stop it again: to an address, for a number of frames, one instruction at a time, or with no deadline. Most other tools read the machine only while it is stopped, and [REFERENCE.md](../../REFERENCE.md#running-and-stopping) says which ones answer while it runs.
+
+A frame is counted here at the vertical retrace: the moment the display finishes drawing a frame and goes back to the top of the screen. DOS programs wait for it before they draw. The debugger's `VRT` command runs to the next one.
+
+## What every stop returns
+
+A reply that ends at a stop carries the same readings whatever the call was about: `stop_seq`, `pc`, `cpu_mode`, `frame`, `instruction`, `regs`, `watches`, `cause` and `e9`. [REFERENCE.md](../../REFERENCE.md#what-a-stop-returns) describes each.
+
+`frame` counts the frames the emulator's vertical timer has started since power-on, so a frame number names one instant of a run, and `perform(until_frame=F)` relies on it. It belongs to this run, not to a saved state: after a load it goes on counting.
+
+The count is read from `RUNSTATE`, the debugger command that says whether the machine is stopped. A build whose `RUNSTATE` prints no `frames=` leaves `frame` unavailable, saying so.
+
+When the machine stopped and the stop could not be read, the reply keeps the tool's own fields. In place of the stop's readings it carries `enrichment`, as `available: false` with `why`.
+
+A stop inside the BIOS ROM is where the machine stood, not where your program is: a program that called the BIOS is inside a handler there. The `note` gives the address and the calls that leave it, because `step` there stays inside the handler, one instruction at a time.
 
 <!-- scry-reference:begin run_to -->
 ## `run_to`
 
-*Run to a place or a mapped screen*
+Run until the program reaches an address, or a screen of the screen map, and stop there.
 
 ```text
 run_to(ref="", control="", screen="", seconds=30.0, disarm_watches=false)
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, stopped on its play screen with its symbols loaded.
+
+Ask:
+
+> Run until the ball hits a brick, and check that the game's retrace wait keeps running meanwhile.
+
+Call:
+
+```text
+run_to(ref="brick_hit", control="retrace", seconds=60)
+```
+
+Reply, 5 of 17 fields:
+
+```json
+{
+  "summary": "run_to brick_hit: TARGET at 08DF:000002C8, control counted 34",
+  "verdict": "TARGET",
+  "target_disarmed": true,
+  "control_hits": 34,
+  "controls": [
+    {"ref": "retrace", "at": "08DF:0580", "hits_in_run": 34, "removed": true}
+  ]
+}
+```
+
+The run reached `brick_hit`, which is what `TARGET` says. The control `retrace` ran 34 times on the way, so breakpoints were firing, and both breakpoints of the run are removed.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "run_to brick_hit: TARGET at 08DF:000002C8, control counted 34",
+  "status": "ok",
+  "verdict": "TARGET",
+  "target": "08DF:02C8",
+  "ref": "brick_hit",
+  "pc": "08DF:000002C8",
+  "cpu_mode": "real",
+  "target_disarmed": true,
+  "control_hits": 34,
+  "controls": [
+    {"ref": "retrace", "at": "08DF:0580", "hits_in_run": 34, "removed": true}
+  ],
+  "frame": 36,
+  "regs": {
+    "EAX": "0x00000005",
+    "EBX": "0x00000707",
+    "ECX": "0x005b0020",
+    "EDX": "0x00000000",
+    "ESI": "0x00000039",
+    "EDI": "0x000064e4",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffa",
+    "EIP": "0x000002c8",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0xa000",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08df"
+  },
+  "watches": [
+    {
+      "ref": "ball_x",
+      "by": "symbol",
+      "mode": "show",
+      "length": 8,
+      "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+      "state": "evaluated",
+      "value": {"x": 230, "y": 78, "dx": 2, "dy": -2},
+      "bytes": "e6004e000200feff"
+    }
+  ],
+  "cause": "run_to's target brick_hit at 08DF:000002C8",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 3,
+  "instruction": {
+    "address": "08DF:000002C8",
+    "bytes": "88DF",
+    "text": "mov bh, bl",
+    "flow": "sequential",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "comment": "AL = row, BL = column of the brick that falls",
+    "symbol": "brick_hit",
+    "delta": 0
+  }
+}
+```
+
+</details>
+
+### Arguments
+
+- `ref` (string, default `""`): The address to stop at: a loaded symbol or a hex `SEG:OFF`. Give this or `screen`, never both.
+- `control` (string, default `""`): An address known to run often, counted beside the target, so that "the target never ran" can be told from "nothing ran". Required with `ref` or an anchored `screen`.
+- `screen` (string, default `""`): A screen of the loaded screen map, the file naming a program's screens. With an `anchor`, an address the map gives it, the run goes there; without, frame by frame.
+- `seconds` (number (> 0, <= 600.0), default `30.0`): How long to wait for the stop, in real seconds, before the server interrupts the machine. Left out, 30.
+- `disarm_watches` (boolean, default `false`): `true` takes your watches off for this run, so none of them stops it, and sets them again at the end.
+
+### What comes back
+
+- `verdict`: How the run ended: `TARGET`, the target was reached; `TIMEOUT`, the wait gave up; `OTHER_STOP`, a breakpoint or a watch nobody targeted stopped it first.
+- `control_hits`: How many times the controls ran during the run. A `TARGET` is `ok` even with none.
+- `controls`: One row per control counted: its `ref`, `at` (where the debugger set it), `hits_in_run` and `removed`. It comes with a run to a `ref` or an anchor.
+- `target_disarmed`: Whether the run's own breakpoint at the target was removed.
+- `frames`: How many frames a run to a screen with no `anchor` took.
+- `screen`: After a run to a screen: its `screen`, `layer` and `mode`, and `judged`, whether the map checked the screen there.
+
+<details><summary>All 21 reply fields</summary>
+
+- `disarmed_watches` (array)
+- `not_rearmed` (array)
+- `cause` (string)
+- `regpoint_hit` (object)
+- `control_hits` (integer)
+- `controls` (array)
+- `cpu_mode` (string or object)
+- `e9` (object)
+- `enrichment` (object)
+- `frame` (integer or object)
+- `instruction` (DosboxInstruction)
+- `pc` (string)
+- `ref` (string)
+- `regs` (object)
+- `screen` (object)
+- `frames` (integer)
+- `stop_seq` (integer)
+- `target` (string)
+- `target_disarmed` (boolean)
+- `verdict` (string)
+- `watches` (array)
+
+</details>
+
+### What it refuses
+
+- A `ref` or a `control` that no loaded symbol table holds, or a `screen` the map does not name (`unknown_ref`).
+- A name that several symbols share (`ambiguous_ref`).
+- No `control` with a `ref` or an anchored screen, or a `control` or `disarm_watches` with a screen that has no anchor (`bad_argument`).
+- A control at the target's address (`bad_argument`).
+- A breakpoint the debugger does not list after being told to set it, found before the machine moves (`readback_refused`).
+- A `TIMEOUT` during which no control ran: nothing was learned about the target (`control_silent`).
+- Another stop before any control ran (`cut_by_other_stop`).
+- A machine that did not report stopped after the interrupt at the time limit (`not_settled`).
+- A screen map that no longer matches the screen at its anchor (`stale_map`).
+- A machine that is running (`not_stopped`).
+
+### Why it works this way
+
+A breakpoint can stay silent for reasons that have nothing to do with the program, as one set in ROM does. That looks exactly like "that routine is never called". The control counting beside the target tells them apart, so a `TIMEOUT` with no control hit is refused: it proves nothing about the target.
+
+The target is a temporary breakpoint of the run's own, removed however the run ends. The debugger's breakpoints are persistent, so one left behind would stop the next `resume` at an address none of your breakpoints names. `target` is that breakpoint as the debugger lists it.
+
+`disarm_watches` is for a watch on a byte written every frame, which would otherwise stop every later run.
+
+<details><summary>More on why</summary>
+
+A dynamic cpu core runs its recompiled blocks past a code breakpoint without checking it, so a run there could miss its target and read as "never reached". `start`, `run_to` and `breakpoint_at` say so in `note` when the conf's `[cpu] core=` or a `-set "cpu core=..."` flag selects it.
+
+That `note` names the way out, `start(flags=["-set", "cpu core=normal"])`. `auto` is noted by `run_to` and `breakpoint_at` too, because its protected-mode code runs on the dynamic core. `normal` is not noted.
+
+A control stops the machine at each hit, and the server counts it and resumes. Pick a control that runs a few times during the run: each hit costs a stop and a resume. `control_silent` and `cut_by_other_stop` still carry the stop's readings.
+
+With `disarm_watches` the watches are removed from the debugger for the run and set again at its stop. Their addresses are worked out afresh, so a watch on a pointer that moved follows it. One that cannot be set there waits for the next stop, and `not_rearmed` names it with `why`.
+
+- `disarmed_watches` lists, by `ref`, the watches taken off for the run.
+- If the call fails with no reply, what it took off is set again or left waiting. The next stop's `applied_on_stop` says when.
+- A watch the debugger kept in spite of the removal is named in `note`, since it could still stop the run.
+
+</details>
+
+### Related tools
+
+- [`breakpoint_at`](breakpoints.md#breakpoint_at)
+- [`run_for`](#run_for)
+- [`stop`](#stop)
+- [`screen_map_write`](read.md#screen_map_write)
+- [`screen_wait`](#screen_wait)
+- [`declaration_clear`](breakpoints.md#declaration_clear)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Run until a symbol or a `SEG:OFF` and say where it stopped.
 
 `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required with a `ref` or an anchored
@@ -30,130 +233,156 @@ Reply: `verdict` (`TARGET`, `OTHER_STOP`, `TIMEOUT`), `target_disarmed`, `contro
 no anchor), `note`, the stop (`pc`, `frame`, `regs`, `cause`). INVALID: `control_silent`,
 `cut_by_other_stop`, `not_settled`, `stale_map`.
 
-Reference: REFERENCE.md, Advancing the machine.
-
-| argument | type | default |
-|---|---|---|
-| `ref` | string | `""` |
-| `control` | string | `""` |
-| `screen` | string | `""` |
-| `seconds` | number (> 0, <= 600.0) | `30.0` |
-| `disarm_watches` | boolean | `false` |
-
-| reply field | type |
-|---|---|
-| `disarmed_watches` | array |
-| `not_rearmed` | array |
-| `cause` | string |
-| `regpoint_hit` | object |
-| `control_hits` | integer |
-| `controls` | array |
-| `cpu_mode` | string or object |
-| `e9` | object |
-| `enrichment` | object |
-| `frame` | integer or object |
-| `instruction` | DosboxInstruction |
-| `pc` | string |
-| `ref` | string |
-| `regs` | object |
-| `screen` | object |
-| `frames` | integer |
-| `stop_seq` | integer |
-| `target` | string |
-| `target_disarmed` | boolean |
-| `verdict` | string |
-| `watches` | array |
-
-Example, from a live run:
-
-```json
-{
-  "ref": "0000:0003",
-  "seconds": 3,
-  "control": "0814:0130"
-}
+Reference: REFERENCE.md, Running and stopping.
 ```
 
-```json
-{
-  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 17",
-  "status": "ok",
-  "verdict": "TIMEOUT",
-  "target": "0000:0003",
-  "ref": "0000:0003",
-  "pc": "0814:00000130",
-  "cpu_mode": "real",
-  "target_disarmed": true,
-  "control_hits": 17,
-  "controls": [
-    {"ref": "0814:0130", "at": "0814:0130", "hits_in_run": 17, "removed": true}
-  ],
-  "note": "it came to rest ON the control 0814:0130 (its hit number 17) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
-  "frame": 138,
-  "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x000002bc",
-    "ECX": "0x0000fff0",
-    "EDX": "0x00000814",
-    "ESI": "0x00000173",
-    "EDI": "0x0000015d",
-    "EBP": "0x0000091c",
-    "ESP": "0x0000fffe",
-    "EIP": "0x00000130",
-    "CS": "0x0814",
-    "DS": "0x0814",
-    "ES": "0x0814",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x0814"
-  },
-  "watches": [],
-  "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {
-    "lines_total": 1,
-    "truncated": false,
-    "lines": ["Bochs port E9h: [+ 00000.000] PROBE . tick"],
-    "mark": 32564
-  },
-  "stop_seq": 6,
-  "instruction": {
-    "address": "0814:00000130",
-    "bytes": "E2FE",
-    "text": "loop 0x130",
-    "flow": "branch",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {"available": false, "why": "no symbol table is loaded"},
-    "delta": {"available": false, "why": "no symbol table is loaded"}
-  }
-}
-```
+</details>
 <!-- scry-reference:end run_to -->
-
-The breakpoint it created is removed on every outcome, because `BP` is persistent and a leftover
-would silently stop the next `resume` at a place no declaration names; it looks the index up again,
-because `BPDEL` renumbers.
-
-**A dynamic core is said, not waited out in silence.** Its recompiled blocks run past a code breakpoint without checking it, so a `run_to` there could arrive at nothing and read as "never reached". `start` carries a `note` saying so when the conf's `[cpu] core=` or a `-set "cpu core=..."` flag selects it, and so do the replies of `run_to` and `breakpoint_at`, naming `start(flags=["-set", "cpu core=normal"])`; `run_to` and `breakpoint_at` also note `auto`, whose protected-mode code runs on the dynamic core. `normal` is not noted.
-
-**A control turns a silence into a measurement.** A `TIMEOUT` with zero control hits is
-`control_silent`, not "it did not arrive": nothing was proved about the target, the shape of the
-ROM breakpoint that never fires (`breakpoint_at`). A cold target beside a hot control fires the
-control and never the target; with the roles swapped the target arrives.
-
-The server derives the debugger's address from the machine's own mode, arms a `BP`, verifies it by reading the list back, and interrupts at the bound. Pick a control that fires a few times a run: each hit costs a round trip. `OTHER_STOP` means another breakpoint got there first. `control_silent` is a TIMEOUT with no control hit and `cut_by_other_stop` another stop before the control fired, each with the stop surveyed; `not_settled` is an interrupt after which `RUNSTATE` did not say stopped.
-
-**`disarm_watches`** is for a watch on a byte written every frame, which would otherwise stop every later run. A change watch's rows are deleted from the debugger for the pass and armed again at its stop, resolved afresh as a declaration queued while the guest ran is, so a pointer that moved is followed. One that cannot be placed there (the pass ended in a mode where its place cannot be reached, or on a machine that cannot be read) stays queued for the next stop, and `not_rearmed` names it with why. A run that raises answers no reply: what it disarmed is armed again, or queued, and the next stop's `applied_on_stop` says when it is armed. A row the debugger kept after `BPDEL` is named in `note`, since that watch could still cut the pass.
 
 <!-- scry-reference:begin run_for -->
 ## `run_for`
 
-*Run for frames or emulated time*
+Run for a number of frames or milliseconds of emulated time and come back stopped.
 
 ```text
 run_for(milliseconds=0, frames=0, seconds=30.0, disarm_watches=false)
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, stopped at `brick_hit` in the middle of a game.
+
+Ask:
+
+> Run three frames, then stop.
+
+Call:
+
+```text
+run_for(frames=3)
+```
+
+Reply, 5 of 18 fields:
+
+```json
+{
+  "verdict": "ELAPSED",
+  "polls": 3,
+  "frame_before": 244,
+  "frame_after": 247,
+  "cycles": 68499
+}
+```
+
+`ELAPSED` says the three frames ran out as asked. The frame counter went from 244 to 247 in three stops at the retrace, and the cpu spent 68499 cycles.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": 3,
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": 247,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: HIT 5 0"], "mark": "<volatile>"},
+  "stop_seq": 11,
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": 244,
+  "frame_after": 247,
+  "cycles": 68499
+}
+```
+
+</details>
+
+### Arguments
+
+- `milliseconds` (integer, default `0`): How much emulated time to run, in milliseconds. Give this or `frames`, never both.
+- `frames` (integer, default `0`): How many frames to run, each counted at the screen's vertical retrace. Give this or `milliseconds`, never both.
+- `seconds` (number (> 0, <= 600.0), default `30.0`): How long to wait for the run to end, in real seconds. Left out, 30.
+- `disarm_watches` (boolean, default `false`): `true` takes your watches off for this run, so none of them stops it, and sets them again at the end.
+
+### What comes back
+
+- `verdict`: How the run ended: `ELAPSED`, the frames or time asked for ran out, as asked; `TIMEOUT`, the wait gave up; `OTHER_STOP`, a breakpoint or a watch stopped it first.
+- `frame_after`: The frame counter after the run; `frame_before` is the one before. Unavailable, with why, when `RUNSTATE` prints no frame count.
+- `emulated_after_s`: The emulated clock after the run, in seconds; `emulated_before_s` is the one before.
+- `cycles`: The cpu cycles the run took. A count only on a session started on the `normal` cpu core; otherwise unavailable, with why.
+- `polls`: How many retraces the run stopped at.
+- `retrace_pending`: `true` when a stop at the next retrace is still armed in the debugger, so the next resume stops there.
+
+<details><summary>All 21 reply fields</summary>
+
+- `cause` (string)
+- `regpoint_hit` (object)
+- `cpu_mode` (string or object)
+- `cycles` (integer or object)
+- `e9` (object)
+- `emulated_after_s` (number or object)
+- `emulated_before_s` (number)
+- `enrichment` (object)
+- `frame` (integer or object)
+- `frame_after` (integer or object)
+- `frame_before` (integer or object)
+- `instruction` (DosboxInstruction)
+- `pc` (string or object)
+- `polls` (integer)
+- `regs` (object)
+- `retrace_pending` (boolean)
+- `stop_seq` (integer)
+- `verdict` (string)
+- `watches` (array)
+- `disarmed_watches` (array)
+- `not_rearmed` (array)
+
+</details>
+
+### What it refuses
+
+- Both `milliseconds` and `frames`, or neither (`bad_argument`).
+- A run during which the emulated clock did not move (`no_progress`).
+- `milliseconds` when `RUNSTATE` gave no clock to count from; nothing ran (`unexpected_answer`).
+- A DOSBox-X whose debugger has no `RUNSTATE` command (`no_channel`).
+- A machine that is running (`not_stopped`).
+
+### Why it works this way
+
+The run is the debugger's `VRT` command, once per frame. By `milliseconds` it still ends on a retrace, the first at or past the time asked, so it can run over by up to one frame. A stop between two retraces is not one a replay could reach again.
+
+A breakpoint that stops the run in the middle of a frame leaves that frame's retrace stop armed in the debugger. The reply is `OTHER_STOP` with `retrace_pending: true`, and the next resume stops at the next retrace. The first later stop that none of your breakpoints explains names that retrace as the likeliest cause.
+
+An `ELAPSED` run of N frames, with nothing else able to stop the machine, moves `frame` by exactly N. On a dynamic cpu core a code breakpoint set after its code already ran can fail to stop the frames after it. So `ELAPSED` there does not prove its address was not reached, which `note` says.
+
+<details><summary>More on why</summary>
+
+- The stop of a change watch or an interrupt breakpoint cannot be told from a retrace, so it counts as a frame. `note` says when one is set.
+- A `TIMEOUT` whose `VRT` is still running is interrupted where it stands, with its retrace left pending.
+- `note` states what the reply cannot prove: a breakpoint or a watch that is set, a clock that could not be read.
+- A run does not mark the session `altered`.
+- The call reports progress to the client while it waits.
+
+</details>
+
+### Related tools
+
+- [`run_to`](#run_to)
+- [`resume`](#resume)
+- [`stop`](#stop)
+- [`trace`](#trace)
+- [`screen_wait`](#screen_wait)
+- [`perform`](sequences.md#perform)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Run for `frames` display frames (one `VRT` each) or `milliseconds` of emulated time (exactly
 one) and come back STOPPED. `milliseconds` runs whole frames, so it ends at the first
 retrace at or past the time asked, up to one frame later. Reports progress while it waits.
@@ -164,118 +393,234 @@ Reply: `verdict` (`ELAPSED`, `OTHER_STOP`, `TIMEOUT`), `polls`, `emulated_before
 unavailable with why), `retrace_pending` (a retrace stop is left armed), `note`,
 the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause`, `regpoint_hit` (a registerpoint stopped it) and `e9`. INVALID: `no_progress`, `unexpected_answer`.
 
-Reference: REFERENCE.md, Advancing the machine.
-
-| argument | type | default |
-|---|---|---|
-| `milliseconds` | integer | `0` |
-| `frames` | integer | `0` |
-| `seconds` | number (> 0, <= 600.0) | `30.0` |
-| `disarm_watches` | boolean | `false` |
-
-| reply field | type |
-|---|---|
-| `cause` | string |
-| `regpoint_hit` | object |
-| `cpu_mode` | string or object |
-| `cycles` | integer or object |
-| `e9` | object |
-| `emulated_after_s` | number or object |
-| `emulated_before_s` | number |
-| `enrichment` | object |
-| `frame` | integer or object |
-| `frame_after` | integer or object |
-| `frame_before` | integer or object |
-| `instruction` | DosboxInstruction |
-| `pc` | string or object |
-| `polls` | integer |
-| `regs` | object |
-| `retrace_pending` | boolean |
-| `stop_seq` | integer |
-| `verdict` | string |
-| `watches` | array |
-| `disarmed_watches` | array |
-| `not_rearmed` | array |
-
-Example, from a live run:
-
-```json
-{
-  "frames": 1
-}
+Reference: REFERENCE.md, Running and stopping.
 ```
 
-```json
-{
-  "summary": "run_for 1 frame: ELAPSED, 1 poll, at 0814:00000130",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": 1,
-  "pc": "0814:00000130",
-  "cpu_mode": "real",
-  "frame": 139,
-  "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x000002bc",
-    "ECX": "0x0000c14a",
-    "EDX": "0x00000814",
-    "ESI": "0x00000173",
-    "EDI": "0x0000015d",
-    "EBP": "0x0000091c",
-    "ESP": "0x0000fffe",
-    "EIP": "0x00000130",
-    "CS": "0x0814",
-    "DS": "0x0814",
-    "ES": "0x0814",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x0814"
-  },
-  "watches": [],
-  "cause": "the retrace run_for ran to, at 0814:00000130",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 45438},
-  "stop_seq": 7,
-  "instruction": {
-    "address": "0814:00000130",
-    "bytes": "E2FE",
-    "text": "loop 0x130",
-    "flow": "branch",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {"available": false, "why": "no symbol table is loaded"},
-    "delta": {"available": false, "why": "no symbol table is loaded"}
-  },
-  "emulated_before_s": 1.9730953,
-  "emulated_after_s": 1.9747000000000001,
-  "frame_before": 138,
-  "frame_after": 139,
-  "cycles": 16038
-}
-```
+</details>
 <!-- scry-reference:end run_for -->
-
-**A `VRT` a breakpoint cuts stays armed**, so the next release stops at the next retrace: an
-`OTHER_STOP` says `retrace_pending: true`, and the first later stop no declaration explains names
-that retrace as the likeliest cause. Two limits the `note` states: on a dynamic core a code
-breakpoint armed after its code already ran can fail to cut the frames after it, so an `ELAPSED`
-does not prove its address was not reached; and a change-watch or interrupt breakpoint cannot be
-told from a retrace, so its stop counts as a frame.
-
-**A stop inside the ROM is the position, not the program's.** Breaking into a running guest lands wherever it stood, and a program that called the BIOS is inside a handler there: a real-mode stop whose linear address is in the ROM says so in its `note`, with the address and the call that leaves it, because `step` walks one instruction at a time inside the handler and a caller reading only `pc` loops there.
-
-**Every stop says which display frame it is in** (`frame`): the frames the emulator's vertical timer has started since power-on, read off `RUNSTATE` at the stop, so a `run_for(frames=N)` that ends `ELAPSED` with nothing else able to stop the machine moves it by exactly N (a change-watch's stop counted as a frame moves it less), and a frame number names one instant of a run. `perform(until_frame=F)` stands on it. It belongs to this run, not to a saved state: after a load it goes on counting. A build whose `RUNSTATE` prints no `frames=` leaves it unavailable, saying so.
-
-By milliseconds it reads the emulated clock off each retrace stop's `RUNSTATE` and stops at the first retrace at or past the time asked, since a stop between retraces is not one a replay can reach again: it runs over by up to one frame. A `TIMEOUT` with a `VRT` still out is interrupted where it stands, its retrace left pending. `retrace_pending: true` means the debugger still holds a retrace stop, which the next release meets. The `note` states what the reply cannot prove (a declared breakpoint or watch, an unread clock). Advancing is not altering.
 
 <!-- scry-reference:begin trace -->
 ## `trace`
 
-*Trace what a run executes*
+Run a number of instructions with the debugger's CPU log on and get every address executed, grouped by symbol.
 
 ```text
 trace(instructions, shape="normal", dest="", seconds=60.0)
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, stopped inside `brick_hit`. It needs a DOSBox-X built with heavy debugging, started on the `normal` cpu core.
+
+Ask:
+
+> Trace the next 40 instructions and tell me which routines they run through.
+
+Call:
+
+```text
+trace(instructions=40)
+```
+
+Reply, 4 of 13 fields:
+
+```json
+{
+  "summary": "trace 40 normal: ELAPSED, 40 executed at 34 addresses, at 08 ... (121 characters)",
+  "verdict": "ELAPSED",
+  "pc": "08DF:00000221",
+  "frame": 36
+}
+```
+
+All 40 instructions ran, which is what `ELAPSED` says, at 34 distinct addresses. `trace`, in the whole reply, lists the routines they ran through.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "trace 40 normal: ELAPSED, 40 executed at 34 addresses, at 08DF:00000221, to ./tmp/demos/tour/files/captures/trace-1.trace",
+  "status": "ok",
+  "pc": "08DF:00000221",
+  "cpu_mode": "real",
+  "frame": 36,
+  "regs": {
+    "EAX": "0x00000000",
+    "EBX": "0x00000700",
+    "ECX": "0x005b0002",
+    "EDX": "0x00000008",
+    "ESI": "0x00000007",
+    "EDI": "0x00001efd",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fff0",
+    "EIP": "0x00000221",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0xa000",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08df"
+  },
+  "watches": [
+    {
+      "ref": "ball_x",
+      "by": "symbol",
+      "mode": "show",
+      "length": 8,
+      "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+      "state": "evaluated",
+      "value": {"x": 230, "y": 78, "dx": 2, "dy": -2},
+      "bytes": "e6004e000200feff"
+    }
+  ],
+  "cause": "the end of the trace's count, at 08DF:00000221",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 5,
+  "instruction": {
+    "address": "08DF:00000221",
+    "bytes": "F3AA",
+    "text": "rep stosb byte ptr es:[di], al",
+    "flow": "sequential",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "fill_rect",
+    "delta": 3
+  },
+  "verdict": "ELAPSED",
+  "trace": {
+    "path": "./tmp/demos/tour/files/captures/trace-1.trace",
+    "bytes": 10209,
+    "shape": "normal",
+    "instructions": 40,
+    "addresses": 34,
+    "unplaced": 0,
+    "set_path": "./tmp/demos/tour/files/captures/trace-1-trace-set.jsonl",
+    "symbols": [
+      {
+        "symbol": "brick_index",
+        "addr": "0x00008fde",
+        "addresses": 6,
+        "instructions": 6,
+        "first": "0x00008fde",
+        "last": "0x00008fe8"
+      },
+      {
+        "symbol": "brick_rect",
+        "addr": "0x00008fe9",
+        "addresses": 18,
+        "instructions": 18,
+        "first": "0x00008fe9",
+        "last": "0x0000900c"
+      },
+      {
+        "symbol": "fill_rect",
+        "addr": "0x0000900e",
+        "addresses": 4,
+        "instructions": 10,
+        "first": "0x0000900e",
+        "last": "0x00009011"
+      },
+      {
+        "symbol": "brick_hit",
+        "addr": "0x000090b8",
+        "addresses": 6,
+        "instructions": 6,
+        "first": "0x000090bc",
+        "last": "0x000090cb"
+      }
+    ],
+    "symbols_total": 4,
+    "truncated": false
+  }
+}
+```
+
+</details>
+
+### The four shapes
+
+| shape | the debugger command it uses |
+|---|---|
+| `normal` | `LOG` |
+| `short` | `LOGS` |
+| `long` | `LOGL`, whose lines say their own cpu mode. |
+| `cs_ip` | `LOGC` |
+
+### Arguments
+
+- `instructions` (integer (>= 1, <= 3000000), required): How many instructions to run and log.
+- `shape` (one of `"normal"`, `"short"`, `"long"`, `"cs_ip"`, default `"normal"`): Which of the debugger's log formats to write, as above. Left out, `normal`.
+- `dest` (string, default `""`): Where the log ends up: an absolute or `~` path to a new file in a folder that exists. Left empty, the next `trace-<n>.trace` among the captures.
+- `seconds` (number (> 0, <= 600.0), default `60.0`): How long to wait for the log to finish, in real seconds. Left out, 60.
+
+### What comes back
+
+- `verdict`: `ELAPSED`, every instruction ran; `OTHER_STOP`, a breakpoint or a pending retrace stopped it first; `TIMEOUT`, the wait gave up and the run was interrupted where it stood.
+- `trace`: The result: `path` to the log, `set_path` to the list of addresses, `instructions` executed, distinct `addresses`, `unplaced` (addresses no symbol covers) and `symbols`.
+
+<details><summary>All 12 reply fields</summary>
+
+- `cause` (string)
+- `regpoint_hit` (object)
+- `cpu_mode` (string or object)
+- `e9` (object)
+- `frame` (integer or object)
+- `instruction` (DosboxInstruction)
+- `pc` (string)
+- `regs` (object)
+- `stop_seq` (integer)
+- `trace` (object)
+- `verdict` (string)
+- `watches` (array)
+
+</details>
+
+### What it refuses
+
+- A DOSBox-X built without heavy debugging, which `build_check` reports as `heavy_debug` (`no_channel`).
+- A working directory the emulator cannot write, since the debugger opens its log there (`no_channel`).
+- A cpu core whose cycle count does not move one per instruction: `start(flags=["-set", "cpu core=normal"])` (`no_channel`).
+- A log the machine closed before the trace stopped, an empty log, or one that would not close (`readback_refused`).
+- A log file the debugger could not create; nothing ran (`host_failed`).
+- A machine that is running (`not_stopped`).
+
+### Why it works this way
+
+The debugger's log ends with the instruction it stops at, logged and not executed, so a complete file holds one line more than `instructions`. A trace runs forward only. The debugger writes its history of what ran before a stop only when the emulator exits, so that question is a trace from an earlier stop.
+
+A trace checks its own count. A line is one executed instruction only on the `normal` cpu core, so the cycle count `RUNSTATE` gives must have moved by the lines the file holds. That is why any other core is refused.
+
+The debugger writes its log only in the emulator's working directory, so the file passes through there on its way to `dest`.
+
+<details><summary>More on why</summary>
+
+| in `trace` | what it holds |
+|---|---|
+| `path`, `bytes`, `shape` | the log, its size and its format |
+| `set_path` | a file with one JSON line per executed address: `seg_off`, `addr` and `symbol` with `delta` where they can be worked out, `count`. Unavailable when it could not be written, which `note` says |
+| `instructions`, `addresses`, `unplaced` | instructions executed, distinct addresses, addresses no symbol covers |
+| `symbols` | the first rows, by address: `symbol`, `addr`, `addresses`, `instructions`, `first`, `last` |
+| `symbols_total`, `truncated` | how many symbols ran, and whether `symbols` leaves some out |
+| `closed` | on a refusal: whether the log was closed |
+
+An interrupt breakpoint stops inside its `INT`, after the counter took it and before it ran, so a run it stops may count one more than it executed. The log writes each line before breakpoints are checked, so a trace started on a breakpoint's address stops there again with nothing executed.
+
+The machine can close the log itself: the BIOS's power-on self test does, so a trace started right after a reset meets it. How each address gets its symbol is in [REFERENCE.md](../../REFERENCE.md#a-trace-says-which-routines-ran).
+
+</details>
+
+### Related tools
+
+- [`run_for`](#run_for)
+- [`symbols_load`](names.md#symbols_load)
+- [`symbols_find`](names.md#symbols_find)
+- [`build_check`](session.md#build_check)
+- [`captures`](captures.md#captures)
+- [`disassemble`](read.md#disassemble)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Run `instructions` (1 to 3000000) with the debugger's CPU log on and come back
 STOPPED with the log in a file, joined to symbols.
 
@@ -289,122 +634,181 @@ Reply: `verdict`, the stop reply of `run_to`, `trace` (`path`, `instructions`, `
 `unplaced`, `set_path`, `symbols` (first 64)). Refused: `no_channel`,
 `readback_refused`, `host_failed`.
 
-Reference: REFERENCE.md, Advancing the machine.
-
-| argument | type | default |
-|---|---|---|
-| `instructions` | integer (>= 1, <= 3000000) | required |
-| `shape` | one of `"normal"`, `"short"`, `"long"`, `"cs_ip"` | `"normal"` |
-| `dest` | string | `""` |
-| `seconds` | number (> 0, <= 600.0) | `60.0` |
-
-| reply field | type |
-|---|---|
-| `cause` | string |
-| `regpoint_hit` | object |
-| `cpu_mode` | string or object |
-| `e9` | object |
-| `frame` | integer or object |
-| `instruction` | DosboxInstruction |
-| `pc` | string |
-| `regs` | object |
-| `stop_seq` | integer |
-| `trace` | object |
-| `verdict` | string |
-| `watches` | array |
-
-Example, from a live run:
-
-```json
-{
-  "instructions": 16,
-  "shape": "cs_ip",
-  "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1444.trace",
-  "seconds": 30
-}
+Reference: REFERENCE.md, Running and stopping.
 ```
 
-```json
-{
-  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1444.trace",
-  "status": "ok",
-  "pc": "0814:00000130",
-  "cpu_mode": "real",
-  "frame": 139,
-  "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x000002bc",
-    "ECX": "0x0000c13a",
-    "EDX": "0x00000814",
-    "ESI": "0x00000173",
-    "EDI": "0x0000015d",
-    "EBP": "0x0000091c",
-    "ESP": "0x0000fffe",
-    "EIP": "0x00000130",
-    "CS": "0x0814",
-    "DS": "0x0814",
-    "ES": "0x0814",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x0814"
-  },
-  "watches": [],
-  "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 46004},
-  "stop_seq": 8,
-  "instruction": {
-    "address": "0814:00000130",
-    "bytes": "E2FE",
-    "text": "loop 0x130",
-    "flow": "branch",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {"available": false, "why": "no symbol table is loaded"},
-    "delta": {"available": false, "why": "no symbol table is loaded"}
-  },
-  "verdict": "ELAPSED",
-  "trace": {
-    "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1444.trace",
-    "bytes": 238,
-    "shape": "cs_ip",
-    "instructions": 16,
-    "addresses": 1,
-    "unplaced": 1,
-    "set_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1444-trace-set.jsonl",
-    "symbols": [],
-    "symbols_total": 0,
-    "truncated": false,
-    "note": "no symbol table is loaded: `symbols_load` names the routines"
-  }
-}
-```
+</details>
 <!-- scry-reference:end trace -->
-
-**The log is the instrument.** The debugger writes as its last line the instruction it stops at,
-logged and not executed, so the call sends `N + 1` in hex and an `ELAPSED` file holds `N + 1`
-lines. What ran before a stop is not read back: `HEAVYLOG` writes its ring only when the emulator
-exits, so that question is answered by a trace forward from an earlier stop.
-
-The working directory is only the file's passing place, because the debugger writes nowhere else.
-
-**A trace proves its own count**: the line count is an instruction count only on the normal core,
-so the cycle count `RUNSTATE` gives must have moved by the entries the file holds. An interrupt breakpoint stops
-inside its INT, after the counter took it and before it ran, so a cut run may count one more than
-it executed; and the log writes each line before breakpoints are checked, so a trace started on a
-breakpoint's address stops there again with nothing executed. The machine can close the log itself
-(the BIOS's power-on self test does, so a trace from the reset park meets it).
-
-`verdict`: `ELAPSED` means all ran and the file holds one line more, the stop; `OTHER_STOP` a declared stopper or pending retrace first (`cause`); `TIMEOUT` the run was interrupted where it stood and what ran up to there collected. `instructions` is executed, `addresses` distinct, `unplaced` those no symbol places; `set_path` is a JSON line per address, unavailable when it could not be written (said in `note`). `no_channel`: the count is proved against `RUNSTATE`'s cycle count, which moves one per instruction on the normal core only. `readback_refused`: the log closed early (the machine closed it before the trace stopped, so its lines are not what ran), is empty, or would not close. `host_failed`: the debugger was refused its file, and nothing ran.
 
 <!-- scry-reference:begin screen_wait -->
 ## `screen_wait`
 
-*Wait for a screen, its text or its palette*
+Run until the screen shows a text, a mapped screen, a black palette or a change of screen, and stop there.
 
 ```text
-screen_wait(text="", screen="", palette="", changed=false, every=0, on_breakpoint="", on_watch="", condition="", seconds=30.0)
+screen_wait(text="", screen="", palette="", changed=false, every=0, on_breakpoint="", on_watch="",
+    condition="", seconds=30.0)
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, right after `start`, with the game's screen map loaded.
+
+Ask:
+
+> Run until the game's play screen is up.
+
+Call:
+
+```text
+screen_wait(screen="play", seconds=60)
+```
+
+Reply, 6 of 18 fields:
+
+```json
+{
+  "summary": "screen_wait screen 'play': found after 2 frames",
+  "verdict": "TARGET",
+  "predicate": "screen",
+  "already": false,
+  "polls": 2,
+  "screen": {"name": "play", "layer": "file"}
+}
+```
+
+The map's `play` screen was not up at the call, which is `already: false`. It came up 2 frames later, and the machine stopped there.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "screen_wait screen 'play': found after 2 frames",
+  "status": "ok",
+  "verdict": "TARGET",
+  "predicate": "screen",
+  "already": false,
+  "waited_s": "<volatile>",
+  "polls": 2,
+  "sampled_every": 0,
+  "screen": {"name": "play", "layer": "file"},
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": 2,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {
+    "lines_total": 2,
+    "truncated": false,
+    "lines": ["Bochs port E9h: STUB  . scry device=present proto=7 motion=1", "Bochs port E9h: BRICKS ready"],
+    "mark": "<volatile>"
+  },
+  "stop_seq": 2,
+  "instruction": "<volatile>"
+}
+```
+
+</details>
+
+### Arguments
+
+- `text` (string, default `""`): Wait until this text is on the text screen: 1 to 132 characters of code page 437, matched exactly, case included, inside one row.
+- `screen` (string, default `""`): Wait until this screen of the loaded screen map, the file naming a program's screens, is the one shown.
+- `palette` (one of `""`, `"black"`, default `""`): `black` waits until every palette entry is black, which is how a fade ends.
+- `changed` (boolean, default `false`): `true` waits until the screen map names a different screen from the one it named at the start. A frame it cannot name counts as in between.
+- `every` (integer (>= 0, <= 600), default `0`): How many frames to run between two looks at the screen. Left at 0, every frame; a screen shown for fewer frames than this can be missed.
+- `on_breakpoint` (string, default `""`): Look at the screen only at the end of a frame in which this breakpoint fired: its `ref`, as `declaration_list` lists it.
+- `on_watch` (string, default `""`): The same for a watch: the `ref` of a `change` watch you set.
+- `condition` (string, default `""`): Counts only the firings where this holds. Up to four terms joined by `&&`, each a register or a memory read (`b@ref`, `w@ref`, `d@ref`) compared with a hex value.
+- `seconds` (number (> 0, <= 600.0), default `30.0`): How long to keep looking, in real seconds, counted from the first look. Left out, 30.
+
+### What comes back
+
+- `verdict`: `TARGET` when what you waited for is on screen. `TIMEOUT` when the wait gave up, with a `note` and the machine stopped.
+- `already`: `true` when it was on screen at the call, so the machine did not move.
+- `predicate`: Which of `text`, `screen`, `palette` or `changed` was waited on.
+- `polls`: How many frames ran; `sampled_every` repeats `every`.
+- `point`: With `text`: where it was found, as `[column, row]`. `line` is that row's whole text.
+- `screen`: The screen found, as `name` and `layer`. With `changed`, `started_on` is the screen it replaced.
+
+<details><summary>All 29 reply fields</summary>
+
+- `waited_on` (object)
+- `firings` (integer)
+- `frames_examined` (integer)
+- `fired_line` (integer or object)
+- `already` (boolean)
+- `cause` (string)
+- `regpoint_hit` (object)
+- `cpu_mode` (string)
+- `e9` (object)
+- `enrichment` (object)
+- `entries` (integer)
+- `frame` (integer or object)
+- `instruction` (DosboxInstruction)
+- `line` (string)
+- `palette` (string)
+- `pc` (string)
+- `point` (array)
+- `polls` (integer)
+- `predicate` (string)
+- `regs` (object)
+- `retrace_pending` (boolean)
+- `sampled_every` (integer)
+- `screen` (object)
+- `started_on` (string or object)
+- `stop_seq` (integer)
+- `text` (array)
+- `verdict` (string)
+- `waited_s` (number)
+- `watches` (array)
+
+</details>
+
+### What it refuses
+
+- None or several of `text`, `screen`, `palette` and `changed` (`bad_argument`).
+- A screen the map does not name, or a breakpoint or watch you did not set (`unknown_ref`).
+- `changed` with no screen map loaded (`needs_call`).
+- A breakpoint or watch that never fired within `seconds`: no screen was looked at (`never_fired`).
+- A stop nobody asked for that ends the wait early; its `cause` comes with it (`wait_stopped`).
+- A screen that cannot be read, or a DOSBox-X whose debugger has no `RUNSTATE` command (`no_channel`).
+- A machine that is running (`not_stopped`).
+
+### Why it works this way
+
+The wait runs the machine one frame at a time, to each vertical retrace, and looks at the screen there. Each look costs a stop and a read, so for a screen that is far away use `run_for` first.
+
+`seconds` is counted from after the first read so that a short one still reaches the first frame; a frame read under way when it passes is finished. A wait that gives up never leaves the machine running: a `VRT` still running is interrupted where it stands.
+
+If what you wait for is already on screen the reply comes at once and the machine does not move. Under `on_breakpoint` or `on_watch` the first firing is awaited even so. With `text`, a frame that is not in a text mode is no match.
+
+<details><summary>More on why</summary>
+
+- `waited_on` repeats what was waited on: its `kind`, its `ref`, and the `condition` if any.
+- Under `on_breakpoint` or `on_watch`, `firings` and `frames_examined` (the frames looked at after a firing) replace `polls` and `sampled_every`, in refusals too.
+- `fired_line` is unavailable here, with why: the debugger reports no screen line at a stop.
+- `palette` and `entries` come with a black palette: the value asked for, and how many palette entries were read.
+- On a `TIMEOUT`, `text` holds the rows of the last text screen read, and `retrace_pending` says whether a retrace stop is still armed.
+- A `note` on a `TARGET` means a watch or an interrupt breakpoint is set whose stop the wait could have taken for a retrace.
+- A refusal after the machine ran carries `polls` and `stop_seq`. `wait_stopped` adds `retrace_pending` and `text`.
+- `enrichment` comes where `stop_seq` was due and the stop could not be read.
+
+</details>
+
+### Related tools
+
+- [`screen_map_write`](read.md#screen_map_write)
+- [`screen_view`](screen.md#screen_view)
+- [`run_to`](#run_to)
+- [`run_for`](#run_for)
+- [`palette`](screen.md#palette)
+- [`breakpoint_at`](breakpoints.md#breakpoint_at)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Run the machine retrace by retrace until ONE predicate holds, and stop there.
 
 Exactly one of: `text` (1 to 132 code page 437 characters, matched literally and
@@ -436,88 +840,180 @@ never fired within `seconds`), `no_channel` (a screen it cannot read, or a build
 `RUNSTATE`).
 
 Reference: REFERENCE.md, Input and the screen.
-
-| argument | type | default |
-|---|---|---|
-| `text` | string | `""` |
-| `screen` | string | `""` |
-| `palette` | one of `""`, `"black"` | `""` |
-| `changed` | boolean | `false` |
-| `every` | integer (>= 0, <= 600) | `0` |
-| `on_breakpoint` | string | `""` |
-| `on_watch` | string | `""` |
-| `condition` | string | `""` |
-| `seconds` | number (> 0, <= 600.0) | `30.0` |
-
-| reply field | type |
-|---|---|
-| `waited_on` | object |
-| `firings` | integer |
-| `frames_examined` | integer |
-| `fired_line` | integer or object |
-| `already` | boolean |
-| `cause` | string |
-| `regpoint_hit` | object |
-| `cpu_mode` | string |
-| `e9` | object |
-| `enrichment` | object |
-| `entries` | integer |
-| `frame` | integer or object |
-| `instruction` | DosboxInstruction |
-| `line` | string |
-| `palette` | string |
-| `pc` | string |
-| `point` | array |
-| `polls` | integer |
-| `predicate` | string |
-| `regs` | object |
-| `retrace_pending` | boolean |
-| `sampled_every` | integer |
-| `screen` | object |
-| `started_on` | string or object |
-| `stop_seq` | integer |
-| `text` | array |
-| `verdict` | string |
-| `waited_s` | number |
-| `watches` | array |
-
-Example, from a live run:
-
-```json
-{
-  "text": "C:\\>PROBE.COM",
-  "seconds": 10
-}
 ```
 
-```json
-{
-  "summary": "screen_wait 'C:\\\\>PROBE.COM': already on screen at 0,3",
-  "status": "ok",
-  "verdict": "TARGET",
-  "predicate": "text",
-  "already": true,
-  "waited_s": 0.0,
-  "polls": 0,
-  "sampled_every": 0,
-  "text": ["Z:\\>mount c \".\"", "Drive C is mounted as local directory ./", "Z:\\>c:", "C:\\>PROBE.COM", "", "", "... 19 more"],
-  "point": [0, 3],
-  "line": "C:\\>PROBE.COM"
-}
-```
+</details>
 <!-- scry-reference:end screen_wait -->
-
-`seconds` is counted from after the first read so that a short one still reaches the first frame; a frame read under way when it passes is finished. A frame not in a text mode is no match. `note` on a TARGET appears when a declared watch or interrupt breakpoint could have made a stop it took for a retrace. On a TIMEOUT `text` holds the rows of the last text page read, absent when none was, and a `VRT` still out is interrupted where it stands. Refusals that ran a retrace carry `polls` and `stop_seq`; `wait_stopped` also carries `stop_seq`, `polls`, `retrace_pending` and `text`. Under `on_*` they carry `firings` and `frames_examined` in place of `polls`. Where `stop_seq` is due and the stop's survey came back cut, `enrichment` is unavailable instead.
 
 <!-- scry-reference:begin step -->
 ## `step`
 
-*Step instructions*
+Execute a few instructions, going into calls or over them.
 
 ```text
 step(count=1, mode="into")
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, stopped at `brick_hit`, where the `run_to` example above ends.
+
+Ask:
+
+> Execute two instructions and show me where the program is now.
+
+Call:
+
+```text
+step(count=2)
+```
+
+Reply, 7 of 18 fields:
+
+```json
+{
+  "summary": "step 2: 2 done, at 08DF:000002CC",
+  "mode": "into",
+  "instructions_completed": 2,
+  "before": "08DF:000002C8",
+  "after": "08DF:000002CC",
+  "moved": true,
+  "stalled": 0
+}
+```
+
+Both instructions ran, from `08DF:000002C8` to `08DF:000002CC`. `stalled: 0` says neither of them left the address unchanged.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "step 2: 2 done, at 08DF:000002CC",
+  "status": "ok",
+  "mode": "into",
+  "asked": 2,
+  "moved": true,
+  "stalled": 0,
+  "before": "08DF:000002C8",
+  "after": "08DF:000002CC",
+  "instructions_completed": 2,
+  "pc": "08DF:000002CC",
+  "cpu_mode": "real",
+  "frame": 36,
+  "regs": {
+    "EAX": "0x00000000",
+    "EBX": "0x00000700",
+    "ECX": "0x005b0020",
+    "EDX": "0x00000000",
+    "ESI": "0x00000039",
+    "EDI": "0x000064e4",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffa",
+    "EIP": "0x000002cc",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0xa000",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08df"
+  },
+  "watches": [
+    {
+      "ref": "ball_x",
+      "by": "symbol",
+      "mode": "show",
+      "length": 8,
+      "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+      "state": "evaluated",
+      "value": {"x": 230, "y": 78, "dx": 2, "dy": -2},
+      "bytes": "e6004e000200feff"
+    }
+  ],
+  "cause": "the stop `step` made after 2 steps, at 08DF:000002CC",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 4,
+  "instruction": {
+    "address": "08DF:000002CC",
+    "bytes": "E81FFF",
+    "text": "call 0x1ee",
+    "flow": "call",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "brick_hit",
+    "delta": 4
+  }
+}
+```
+
+</details>
+
+### The two modes
+
+| mode | what it does |
+|---|---|
+| `into` | Executes one instruction, and enters a call. |
+| `over` | Runs a `CALL`, an `INT`, a `LOOP` or a `REP` to the next instruction as one step. |
+
+### Arguments
+
+- `count` (integer (>= 1, <= 64), default `1`): How many instructions to execute. Left out, one.
+- `mode` (one of `"over"`, `"into"`, default `"into"`): `into` or `over`, as above.
+
+### What comes back
+
+- `instructions_completed`: How many instructions ran. Fewer than `asked` when an `over` did not come back and the remaining steps were not sent.
+- `mode`: The `mode` the steps ran in.
+- `before`: Where the machine was before the steps, as `SEG:OFF`; `after` is where it is now.
+- `moved`: `false` when no step changed the address.
+- `stalled`: How many steps left the address unchanged: an iteration of a `rep`, a jump to itself or a halt.
+
+<details><summary>All 18 reply fields</summary>
+
+- `after` (string)
+- `asked` (integer)
+- `cause` (string)
+- `regpoint_hit` (object)
+- `before` (string)
+- `cpu_mode` (string or object)
+- `e9` (object)
+- `enrichment` (object)
+- `frame` (integer or object)
+- `instruction` (DosboxInstruction)
+- `instructions_completed` (integer)
+- `mode` (string)
+- `moved` (boolean)
+- `pc` (string)
+- `regs` (object)
+- `stalled` (integer)
+- `stop_seq` (integer)
+- `watches` (array)
+
+</details>
+
+### What it refuses
+
+- `over` on a DOSBox-X whose debugger has no `RUNSTATE` command (`no_channel`).
+- A machine that is running (`not_stopped`).
+
+### Why it works this way
+
+`into` is the debugger's own `STEPIN`. `over` is built from several commands: a breakpoint on the next instruction, a run, a wait for the stop, and the breakpoint removed. That wait is why `over` needs `RUNSTATE`.
+
+An `over` that has not come back within its time limit is interrupted where it stands, and the remaining steps are not sent. A machine that could not be stopped is left running, which `session.running` says. `note` appears when the step's own breakpoint could not be confirmed removed.
+
+`stalled` is counted step by step, because comparing only the two ends would read a two-instruction loop as a step that went nowhere. The largest `count` limits cost, not risk: past it the tool to use is `run_to`.
+
+### Related tools
+
+- [`run_to`](#run_to)
+- [`run_for`](#run_for)
+- [`stop`](#stop)
+- [`disassemble`](read.md#disassemble)
+- [`registers`](read.md#registers)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 `count` instructions, each read back; `mode` `into` (the debugger's `STEPIN`) or `over` (a
 CALL, INT, LOOP or REP run to the next instruction, which needs `RUNSTATE`). Needs the machine
 stopped.
@@ -526,100 +1022,182 @@ Reply: `mode`, `asked`, `before`, `after`, `instructions_completed`, `moved`, `s
 (CS:EIP unchanged after a step), `note` (a step over's own breakpoint not confirmed removed),
 and the stop reply; an `over` that does not come back within its bound is stopped where it
 stands, and no later step is sent. For longer runs `run_to`.
-
-| argument | type | default |
-|---|---|---|
-| `count` | integer (>= 1, <= 64) | `1` |
-| `mode` | one of `"over"`, `"into"` | `"into"` |
-
-| reply field | type |
-|---|---|
-| `after` | string |
-| `asked` | integer |
-| `cause` | string |
-| `regpoint_hit` | object |
-| `before` | string |
-| `cpu_mode` | string or object |
-| `e9` | object |
-| `enrichment` | object |
-| `frame` | integer or object |
-| `instruction` | DosboxInstruction |
-| `instructions_completed` | integer |
-| `mode` | string |
-| `moved` | boolean |
-| `pc` | string |
-| `regs` | object |
-| `stalled` | integer |
-| `stop_seq` | integer |
-| `watches` | array |
-
-Example, from a live run:
-
-```json
-{
-  "count": 1
-}
 ```
 
-```json
-{
-  "summary": "step 1: 1 done, at F000:0000FEA6",
-  "status": "ok",
-  "mode": "into",
-  "asked": 1,
-  "moved": true,
-  "stalled": 0,
-  "before": "F000:0000FEA5",
-  "after": "F000:0000FEA6",
-  "instructions_completed": 1,
-  "note": "the stop landed in F000:0000FEA6 (linear 0xFFEA6), inside a ROM handler the program called into rather than in the program: `run_for` or `resume` leaves it, and a DPMI guest reaches a protected-mode stop with `stop(until=\"protected\")`",
-  "pc": "F000:0000FEA6",
-  "cpu_mode": "real",
-  "frame": 4,
-  "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x00000124",
-    "ECX": "0x0000a97e",
-    "EDX": "0x00000814",
-    "ESI": "0x00000100",
-    "EDI": "0x0000fffe",
-    "EBP": "0x0000091c",
-    "ESP": "0x0000fff8",
-    "EIP": "0x0000fea6",
-    "CS": "0xf000",
-    "DS": "0x0814",
-    "ES": "0x0814",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x0814"
-  },
-  "watches": [],
-  "cause": "no declared code breakpoint at F000:0000FEA6: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": 6561},
-  "stop_seq": 5,
-  "instruction": {"available": false, "why": "the bytes at F000:0000FEA6 (FE...) start no instruction"}
-}
-```
+</details>
 <!-- scry-reference:end step -->
-
-Stepping into is the debugger's `STEPIN`. Stepping OVER a `CALL`, an `INT`, a `LOOP` or a `REP` is
-composed: a breakpoint on the next instruction, `RUN`, the wait for the stop (`RUNSTATE`), the
-breakpoint removed; so a call that never returns leaves the machine running and the remaining
-steps are not sent. `stalled` is counted per step because comparing only the endpoints misreads a
-two-instruction loop (`L: nop` / `jmp L`) as a step that went nowhere. `count` is a cost bound, not
-a safety one: past it the question is `run_to`.
-
-`instructions_completed` can be fewer than asked when the machine left the debugger (an `over` across a call that never returns, which `session.running` says), so the remaining steps were not sent. `stalled` is a `rep` iteration, a jump to itself or a halt.
 
 <!-- scry-reference:begin resume -->
 ## `resume`
 
-*Resume the machine*
+Let the machine run, either with no deadline or waiting a while for it to stop.
 
 ```text
 resume(seconds=0.0, detail=false)
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, stopped inside `brick_hit`, with a `change` watch set on `score`.
+
+Ask:
+
+> Let the game run until the score changes, for a minute at most.
+
+Call:
+
+```text
+resume(seconds=60)
+```
+
+Reply, 5 of 15 fields:
+
+```json
+{
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002EB",
+  "verdict": "OTHER_STOP",
+  "pc": "08DF:000002EB",
+  "cpu_mode": "real",
+  "frame": 36
+}
+```
+
+`OTHER_STOP` says something stopped the machine before the minute ran out: here the watch on the score, at `08DF:000002EB` in frame 36.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002EB",
+  "status": "ok",
+  "verdict": "OTHER_STOP",
+  "omitted": ["output", "output_chars", "clipped"],
+  "how": "detail=True adds what the debugger printed for this command",
+  "waited_s": "<volatile>",
+  "pc": "08DF:000002EB",
+  "cpu_mode": "real",
+  "frame": 36,
+  "regs": {
+    "EAX": "0x0000003c",
+    "EBX": "0x00000700",
+    "ECX": "0x005b001e",
+    "EDX": "0x00000000",
+    "ESI": "0x00000007",
+    "EDI": "0x00001ee1",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffa",
+    "EIP": "0x000002eb",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0xa000",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08df"
+  },
+  "watches": [
+    {
+      "ref": "ball_x",
+      "by": "symbol",
+      "mode": "show",
+      "length": 8,
+      "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+      "state": "evaluated",
+      "value": {"x": 230, "y": 78, "dx": 2, "dy": -2},
+      "bytes": "e6004e000200feff"
+    },
+    {
+      "ref": "score",
+      "by": "symbol",
+      "mode": "change",
+      "length": 2,
+      "fmt": "u16",
+      "state": "armed",
+      "value": 60,
+      "bytes": "3c00"
+    }
+  ],
+  "cause": "no declared code breakpoint at 08DF:000002EB, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 6,
+  "instruction": {
+    "address": "08DF:000002EB",
+    "bytes": "F71E2706",
+    "text": "neg word ptr [0x627]",
+    "flow": "sequential",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "brick_hit",
+    "delta": 35
+  }
+}
+```
+
+</details>
+
+### Arguments
+
+- `seconds` (number (>= 0, <= 600.0), default `0.0`): How long to wait for a stop, in real seconds. Left at 0, the call returns at once and the machine keeps running.
+- `detail` (boolean, default `false`): `true` adds `output`, the end of what the debugger printed for its `RUN` command. Left out, `omitted` names the fields not sent.
+
+### What comes back
+
+- `verdict`: With `seconds`: `OTHER_STOP`, a breakpoint or a watch stopped the machine, and the stop's readings follow; `TIMEOUT`, nothing did, and it is left running with a `note`.
+- `waited_s`: With `seconds`: how long the call waited.
+- `output`: With `detail`: the end of the debugger's own text. `output_chars` is its whole length and `clipped` says whether it was cut.
+- `e9`: With a stop: the lines the program wrote to port E9, the emulator's debug output port, since the previous stop. They come with or without `detail`.
+
+<details><summary>All 16 reply fields</summary>
+
+- `cause` (string)
+- `regpoint_hit` (object)
+- `clipped` (boolean)
+- `cpu_mode` (string or object)
+- `e9` (object)
+- `enrichment` (object)
+- `frame` (integer or object)
+- `instruction` (DosboxInstruction)
+- `pc` (string)
+- `regs` (object)
+- `output` (string)
+- `output_chars` (integer)
+- `stop_seq` (integer)
+- `verdict` (string)
+- `waited_s` (number)
+- `watches` (array)
+
+</details>
+
+### What it refuses
+
+- A machine that is already running (`not_stopped`).
+- `seconds` above 0 on a DOSBox-X whose debugger has no `RUNSTATE` command (`no_channel`).
+
+### Why it works this way
+
+A machine that is already running is refused, because the debugger's `RUN` does nothing there and an `ok` would read as if it had been resumed. No breakpoint has to be set first: `stop` brings a running machine back.
+
+With `seconds` at 0 the call returns straight after resuming and does not look for a stop, so a machine that stops at once is found by the next call. With `seconds`, such a stop is this call's `OTHER_STOP`, and the call reports progress while it waits.
+
+A conf whose autoexec runs `boot` stops once more on its own. `boot` restarts the machine at the boot sector, `0000:7C00`, and the break at every start that `start` asks the debugger for fires there too. `cause` names it, and a second `resume` lets the operating system run.
+
+<details><summary>More on why</summary>
+
+On a DOSBox-X whose debugger has no `RUNSTATE` command no reply can see that stop at the boot sector. `stop` brings the machine back from wherever it is, and its position shows it is still there.
+
+</details>
+
+### Related tools
+
+- [`stop`](#stop)
+- [`wait`](#wait)
+- [`run_to`](#run_to)
+- [`run_for`](#run_for)
+- [`breakpoint_at`](breakpoints.md#breakpoint_at)
+- [`status`](session.md#status)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Let the machine run. `seconds` 0 (the default) returns at once with no deadline; a bound
 up to 600 waits for a stop and, if none comes, leaves it running. Needs a stopped
 machine. The guest's E9 lines come with the stop it waited for, with or without `detail`.
@@ -628,61 +1206,106 @@ Reply: with a bound, `waited_s` and `verdict` (`OTHER_STOP` with the stop reply 
 `TIMEOUT`, left running, with a `note`). `output` (with `detail=True`: the last
 2000 characters the debugger itself printed for `RUN`; else `omitted`).
 
-Reference: REFERENCE.md, Advancing the machine.
-
-| argument | type | default |
-|---|---|---|
-| `seconds` | number (>= 0, <= 600.0) | `0.0` |
-| `detail` | boolean | `false` |
-
-| reply field | type |
-|---|---|
-| `cause` | string |
-| `regpoint_hit` | object |
-| `clipped` | boolean |
-| `cpu_mode` | string or object |
-| `e9` | object |
-| `enrichment` | object |
-| `frame` | integer or object |
-| `instruction` | DosboxInstruction |
-| `pc` | string |
-| `regs` | object |
-| `output` | string |
-| `output_chars` | integer |
-| `stop_seq` | integer |
-| `verdict` | string |
-| `waited_s` | number |
-| `watches` | array |
-
-Example, from a live run:
-
-```json
-{}
+Reference: REFERENCE.md, Running and stopping.
 ```
 
-```json
-{
-  "summary": "resume: running",
-  "status": "ok",
-  "omitted": ["output", "output_chars", "clipped"],
-  "how": "detail=True adds what the debugger printed for this command"
-}
-```
+</details>
 <!-- scry-reference:end resume -->
-
-It asks `RUNSTATE` as `run_to` does and reports progress. A running guest is refused because a `RUN` there does nothing and an `ok` would read like a release. Nothing has to be declared first: `stop` brings a running guest back, headless or windowed. A release that stopped at once is a stop too, but only for a call with a bound: `seconds` 0 returns straight after the release with no look for a stop, and a stop after it is what the next call finds.
-
-A conf whose autoexec runs `boot` stops once more on its own: `boot` starts the machine afresh at the guest OS's boot sector, 0000:7C00, and the debugger's break at every start, which `start` asks for to park the session, fires there too. The stop's `cause` names it, and a second `resume` lets the guest OS run. On a build without `RUNSTATE` no reply can see that stop: `stop` brings the machine back from wherever it is, and its position says it is still at the boot sector.
 
 <!-- scry-reference:begin wait -->
 ## `wait`
 
-*Wait while the guest runs*
+Let a running program play for a while and see where it is after, without stopping it.
 
 ```text
 wait(seconds=30.0)
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, running after a `resume`.
+
+Ask:
+
+> Let the game play for one more second without stopping it.
+
+Call:
+
+```text
+wait(seconds=1)
+```
+
+Reply, 2 of 4 fields:
+
+```json
+{
+  "status": "ok",
+  "note": "the machine is still running after 1 s; a deliberate wait th ... (100 characters)"
+}
+```
+
+The second ran out with the game still running. That is the answer a wait is for, so `status` is `ok`.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "waited_s": "<volatile>",
+  "note": "the machine is still running after 1 s; a deliberate wait that expires is this answer, not a failure"
+}
+```
+
+</details>
+
+### Arguments
+
+- `seconds` (number (> 0, <= 600.0), default `30.0`): How long to let it run, in real seconds. Left out, 30.
+
+### What comes back
+
+- `waited_s`: How long the call waited.
+- `verdict`: Only when the machine stopped during the wait: `OTHER_STOP`, a breakpoint or a watch stopped it, and the stop's readings follow.
+
+<details><summary>All 13 reply fields</summary>
+
+- `cause` (string)
+- `regpoint_hit` (object)
+- `cpu_mode` (string or object)
+- `e9` (object)
+- `enrichment` (object)
+- `frame` (integer or object)
+- `instruction` (DosboxInstruction)
+- `pc` (string or object)
+- `regs` (object)
+- `stop_seq` (integer)
+- `verdict` (string)
+- `waited_s` (number)
+- `watches` (array)
+
+</details>
+
+### What it refuses
+
+- A machine that is stopped: `resume` it first (`not_running`).
+- A DOSBox-X whose debugger has no `RUNSTATE` command (`no_channel`).
+
+### Why it works this way
+
+The wait is deliberate, so running out of `seconds` is the answer and not a failure: the reply is `ok`, with a `note` that the machine is still running. `wait` neither resumes nor stops. `resume` lets a stopped machine run, and `stop` brings a running one back.
+
+### Related tools
+
+- [`resume`](#resume)
+- [`stop`](#stop)
+- [`log_wait`](machine.md#log_wait)
+- [`screen_wait`](#screen_wait)
+- [`status`](session.md#status)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Let a running guest play for `seconds` and answer where it is after, without releasing or
 stopping it. The wait is deliberate, so its expiry is the answer, never a failure; if the
 machine stops on its own during the wait (a breakpoint), the stop reply comes back.
@@ -691,55 +1314,128 @@ Reply: `waited_s`, and with a stop during the wait `verdict` `OTHER_STOP` with t
 of `run_to`; else a `note` that the machine is still running. Refused (`not_running`) when the
 machine is stopped: `wait` lets a running guest play, `resume` releases a stopped one.
 
-Reference: REFERENCE.md, Advancing the machine.
-
-| argument | type | default |
-|---|---|---|
-| `seconds` | number (> 0, <= 600.0) | `30.0` |
-
-| reply field | type |
-|---|---|
-| `cause` | string |
-| `regpoint_hit` | object |
-| `cpu_mode` | string or object |
-| `e9` | object |
-| `enrichment` | object |
-| `frame` | integer or object |
-| `instruction` | DosboxInstruction |
-| `pc` | string or object |
-| `regs` | object |
-| `stop_seq` | integer |
-| `verdict` | string |
-| `waited_s` | number |
-| `watches` | array |
-
-Example, from a live run:
-
-```json
-{
-  "seconds": 1.0
-}
+Reference: REFERENCE.md, Running and stopping.
 ```
 
-```json
-{
-  "summary": "wait 1.001s: running",
-  "status": "ok",
-  "waited_s": 1.001,
-  "note": "the machine is still running after 1 s; a deliberate wait that expires is this answer, not a failure"
-}
-```
+</details>
 <!-- scry-reference:end wait -->
 
 <!-- scry-reference:begin stop -->
 ## `stop`
 
-*Stop a running machine*
+Stop a running machine where it is and read where it stopped.
 
 ```text
 stop(until="")
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, running after a `resume`.
+
+Ask:
+
+> Stop the game where it is.
+
+Call:
+
+```text
+stop()
+```
+
+Reply, 3 of 13 fields:
+
+```json
+{
+  "interrupted": true,
+  "via": "break",
+  "cpu_mode": "real"
+}
+```
+
+`interrupted: true` means this call stopped the machine, through the debugger's own interrupt, which is `via: break`. It landed in real mode; where exactly differs from run to run.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "interrupted": true,
+  "via": "break",
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": "<volatile>",
+  "regs": "<volatile>",
+  "watches": "<volatile>",
+  "cause": "<volatile>",
+  "e9": "<volatile>",
+  "stop_seq": "<volatile>",
+  "instruction": "<volatile>"
+}
+```
+
+</details>
+
+### Arguments
+
+- `until` (one of `""`, `"protected"`, default `""`): `protected` goes on resuming and interrupting, in short runs, until the machine stops in protected mode. Left empty, it stops where it is.
+
+### What comes back
+
+- `interrupted`: `true` when this call stopped the machine, with the stop's readings. `false` when it was already stopped, with a `note`.
+- `via`: `break` when the stop came from this call's own interrupt.
+- `runs_to_protected`: With `until`: how many short runs it took. A `note` says so when none ended in protected mode.
+- `cpu_mode`: The cpu mode the machine stopped in: `real`, `protected`, `paged` or `VM86`.
+
+<details><summary>All 13 reply fields</summary>
+
+- `cause` (string)
+- `regpoint_hit` (object)
+- `cpu_mode` (string or object)
+- `e9` (object)
+- `frame` (integer or object)
+- `instruction` (DosboxInstruction)
+- `interrupted` (boolean)
+- `pc` (string)
+- `regs` (object)
+- `runs_to_protected` (integer)
+- `stop_seq` (integer)
+- `via` (string)
+- `watches` (array)
+
+</details>
+
+### What it refuses
+
+- A machine that did not report stopped after the interrupt: ask again (`not_settled`).
+
+### Why it works this way
+
+The interrupt goes through the emulator's own debugger connection, the conf's `[dosbox] mcp_server` setting. It needs no window and no menu, and takes nothing from your screen and keyboard.
+
+The machine stops wherever it is, often outside your program. A DJGPP program spends part of every frame in real-mode BIOS handlers, at `F000:xxxx`, where no symbol of a protected-mode table can be given an address. A breakpoint in your code, set at a stop inside it before resuming, brings the machine back into it, and so does `until="protected"`.
+
+<details><summary>More on why</summary>
+
+At a stop outside the program, a breakpoint on a symbol reads `unarmable` when the symbol is in the table and its address cannot be worked out at this instant. It reads `unresolved` when the table does not hold the name. That is a fact about the table, since `symbols_load` adds each table to the ones before.
+
+A `stop` on a machine already stopped answers with that stop as `last_stop`. If `stop` fails as well, `close` then `start`.
+
+</details>
+
+### Related tools
+
+- [`resume`](#resume)
+- [`wait`](#wait)
+- [`run_for`](#run_for)
+- [`status`](session.md#status)
+- [`close`](session.md#close)
+- [`start`](session.md#start)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Bring a running guest back to the debugger and survey the stop, headless or windowed.
 
 `until="protected"` is for a stop that landed in real mode (a DPMI client's interrupt, in
@@ -754,49 +1450,8 @@ Reply: `interrupted` (`true` with the stop reply and `via: "break"`; `false` whe
 stopped, with a `note`), `runs_to_protected` (with `until`), a `note` if it did not arrive.
 INVALID `not_settled`: after the `BREAK`, `RUNSTATE` did not say stopped; ask again.
 
-Reference: REFERENCE.md, Advancing the machine.
-
-| argument | type | default |
-|---|---|---|
-| `until` | one of `""`, `"protected"` | `""` |
-
-| reply field | type |
-|---|---|
-| `cause` | string |
-| `regpoint_hit` | object |
-| `cpu_mode` | string or object |
-| `e9` | object |
-| `frame` | integer or object |
-| `instruction` | DosboxInstruction |
-| `interrupted` | boolean |
-| `pc` | string |
-| `regs` | object |
-| `runs_to_protected` | integer |
-| `stop_seq` | integer |
-| `via` | string |
-| `watches` | array |
-
-Example, from a live run:
-
-```json
-{}
+Reference: REFERENCE.md, Running and stopping.
 ```
 
-```json
-{
-  "summary": "stop: already stopped",
-  "status": "ok",
-  "interrupted": false,
-  "last_stop": {
-    "stop_seq": 4,
-    "pc": "F000:0000FEA5",
-    "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-    "since_s": 0.7,
-    "wall_at": "<volatile>"
-  },
-  "note": "the machine was already stopped"
-}
-```
+</details>
 <!-- scry-reference:end stop -->
-
-The session sends `BREAK` down the emulator's own debugger channel (`[dosbox] mcp_server`), so it needs no window, no menu and nothing taken from whoever is using the screen. The machine stops wherever it is, often outside the program: a DJGPP guest spends part of every frame in real-mode BIOS handlers (`F000:xxxx`), where no protected-mode selector can place a symbol, so every symbol of a protected-mode table answers that the machine stopped outside the program. A breakpoint on the program, armed at a stop inside it before the release, brings the machine back into its code. At such a stop a declared symbol reads `unarmable` (it is in the table, and its address cannot be worked out at this instant) or `unresolved` (the table does not carry the name, a fact about the table and not the stop, since `symbols_load` accumulates its batches). If `stop` fails as well, `close` then `start`. A `stop` on a machine already stopped answers that stop as `last_stop`.

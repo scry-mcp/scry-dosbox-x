@@ -19,6 +19,28 @@ What a client of the server notices.
   and one exchange of that demo's run. Its `## Install` section has the lines to paste for ten
   MCP clients and a first question to ask.
 - Takes scry-core 0.119.0.
+- Each tool's reference entry opens with what the tool does and an example to try: what to
+  ask, the call and the reply it got. Its arguments, what comes back, what it refuses and why
+  follow, each under its own heading.
+- The examples are calls of one session on Bricks, a game this repository builds. The whole
+  session is `docs/reference/tour/TRANSCRIPT.md`.
+- The groups of tools have names that say what they hold: Run (it was Advance), Breakpoints
+  (Declarations), Sequences (Lists) and Project (Store). The `instructions`, the reference's
+  pages and the sections of `REFERENCE.md` carry them.
+- A scan's summary says how many candidates are left ("3 left"). An input's says "sent, reaction
+  not checked", "reaction seen" or "no reaction seen (TIMEOUT)", and so does `drive`'s.
+- A summary counts frames where it counted retraces. A reply that saves a candidate for
+  `promote` says "N saved for `promote`" in `kept`.
+- A stop a call made itself says so in `cause`: the frame `run_for`, `record` or an input ran
+  to, the step `step` made, the end of a trace's count. It said "no declared code breakpoint"
+  whenever anything was declared.
+- The `cause` of a stop nothing explains no longer names a memory watch when none is declared.
+- A `step` over a call that its time bound cut says the bound stopped it. A row typed through
+  `debug` that no address names (`BPINT`, `BPM`, `BPIF`) takes a stop from the call's own run.
+- `start`'s description says what `front` means in its `window`: no other application's window
+  covers its centre. It does not mean the window has the keyboard.
+- `promote` no longer lists an exported script as unwritable when the session's `start` gave no
+  `guest_files`.
 - On Windows a watched `start` with `background=false` brings its window to the front once it
   is up, as the session page says; while another application held the foreground the window
   opened behind it.

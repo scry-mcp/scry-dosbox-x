@@ -1,18 +1,118 @@
 # The Session tools
 
-A session is one DOSBox-X process, parked at the debugger by `start` and ended by `close`. The path rule, the binary ladder and the presence indicator are in [REFERENCE.md, The session](../../REFERENCE.md#the-session).
+A session is one DOSBox-X running under its debugger. `start` opens it from your conf and leaves the machine stopped at the debugger; `close` ends it. One session is open at a time.
 
-A repository may declare, in its own `.scry/`, the mechanical facts of how its program starts: the run recipe under `.scry/start/`, its screen maps under `.scry/maps/` and its `perform` scripts under `.scry/perform/`. What the program's trace means (which stop serves, a key's case, "up" against "sounding") stays in that repository's own rule, because only the repository holds the gate that keeps it true.
+`build_check` answers only while no session is open. `status`, `window` and `close` answer at any time, while the program runs too.
+
+A repository can keep how its program starts in its own `.scry/` folder, as a start profile: a file of `start` arguments. What every session shares, such as how a path is written and which DOSBox-X binary runs, is in [REFERENCE.md, The session](../../REFERENCE.md#the-session).
 
 <!-- scry-reference:begin build_check -->
 ## `build_check`
 
-*Check the build*
+Check which DOSBox-X would run and whether it has the debugger a session needs, before starting one.
 
 ```text
 build_check(binary="")
 ```
 
+### Try it
+
+On any host where DOSBox-X is installed, before a session is open. It needs no program.
+
+Ask:
+
+> Which DOSBox-X would you run, and does it have the debugger?
+
+Call:
+
+```text
+build_check()
+```
+
+Reply, 3 of 9 fields:
+
+```json
+{
+  "status": "ok",
+  "debugger": true,
+  "heavy_debug": true
+}
+```
+
+The build has the debugger, and it has heavy debugging, the option `trace` needs.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "binary": "<volatile>",
+  "binary_origin": "<volatile>",
+  "version": "<volatile>",
+  "debugger": true,
+  "heavy_debug": true,
+  "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "... 8 more"],
+  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 56 more"]
+}
+```
+
+</details>
+
+### Arguments
+
+- `binary` (string, default `""`): The DOSBox-X to check, as an absolute path. Left empty, `DOSBOX_X_BINARY`, else the `dosbox-x` on the PATH.
+
+### What comes back
+
+- `binary`: The executable that was found.
+- `binary_origin`: Where its path came from: `argument`, `DOSBOX_X_BINARY` or `PATH`.
+- `version`: The build's own version line, or `available: false` with a `why`.
+- `heavy_debug`: Whether the build has heavy debugging, which `trace` and a `freeze` watch, one that holds bytes at their value, need. `false` is an answer, not a failure.
+- `debugger_commands`: The optional debugger commands the build has; several tools need one. Left out when it has none.
+- `debugger_commands_missing`: Each command the build lacks (`command`) with the tools that stop working without it (`disables`). Left out when none is missing.
+
+<details><summary>All 8 reply fields</summary>
+
+- `binary` (string)
+- `binary_origin` (string)
+- `debugger` (boolean)
+- `debugger_commands` (array)
+- `debugger_commands_missing` (array)
+- `heavy_debug` (boolean)
+- `tools` (array)
+- `version` (string or object)
+
+</details>
+
+### What it refuses
+
+- A session is open: answering would start a second emulator (`session_live`).
+- A `binary` that is not an absolute path or names no executable (`bad_argument`).
+- `DOSBOX_X_BINARY` or the PATH naming no executable, or a build without the debugger (`host_failed`).
+
+### Why it works this way
+
+A DOSBox-X built without the debugger starts fine and then leaves `start` waiting until it gives up, so this check comes first. It reads the binary's own bytes and never asks it: `-helpdebug` lists `-break-start` on a build without the debugger too, and on Windows it prints nowhere and never exits.
+
+It is refused while a session is open: reading the version starts a second emulator, which a build that does not know the option runs until the check gives up. The answer is about the build, never about a reading, and `debugger` is always `true`: a build without one is refused.
+
+<details><summary>More on why</summary>
+
+`tools` lists this server's tools by name.
+
+</details>
+
+### Related tools
+
+- [`start`](#start)
+- [`status`](#status)
+- [`trace`](run.md#trace)
+- [`watch_add`](breakpoints.md#watch_add)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Whether a DOSBox-X binary resolves and carries the debugger. Run before `start`; it
 refuses `session_live` while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else
 the PATH's `dosbox-x`; a named build that fails is refused.
@@ -21,56 +121,283 @@ Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` 
 watch need it), `debugger_commands` (which of `RUNSTATE`, `STEPIN`, `SAVESTATE`, `LOADSTATE`, `PRESENCE`, `VGAMEMDUMP`, `BPIF`, `CAPTURE`, `TAP`, `PORTINFO`, `DOSTRACE`, `PIC`, `A20`, `MEMDUMPLIN` the build's debugger has;
 omitted when none), `debugger_commands_missing` (each one it lacks, with the tools that
 command disables; omitted when none is missing).
-
-| argument | type | default |
-|---|---|---|
-| `binary` | string | `""` |
-
-| reply field | type |
-|---|---|
-| `binary` | string |
-| `binary_origin` | string |
-| `debugger` | boolean |
-| `debugger_commands` | array |
-| `debugger_commands_missing` | array |
-| `heavy_debug` | boolean |
-| `tools` | array |
-| `version` | string or object |
-
-Example, from a live run:
-
-```json
-{}
 ```
 
-```json
-{
-  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
-  "status": "ok",
-  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
-  "binary_origin": "DOSBOX_X_BINARY",
-  "version": "<volatile>",
-  "debugger": true,
-  "heavy_debug": true,
-  "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "... 8 more"],
-  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 56 more"]
-}
-```
+</details>
 <!-- scry-reference:end build_check -->
-
-A build without the debugger starts fine and then hangs `start` until its timeout. The debugger and its optional commands (`debugger_commands`) are read off the binary itself, never asked of it: `-helpdebug` lists `-break-start` in a build configured without the debugger too, and on Windows it prints to no stream and never exits. It refuses while a session is live because its version probe starts the emulator, which a build that does not know the option runs until the probe's bound.
-
-**`heavy_debug: false` is an answer, not a failure**: it is `trace` and a freeze watch that refuse such a build. The tool is about the build, never about a reading. `binary_origin` is `argument`, `DOSBOX_X_BINARY` or `PATH`; `version` is the build's first line, or `{available: false, why}`.
 
 <!-- scry-reference:begin start -->
 ## `start`
 
-*Start a DOSBox-X session*
+Start DOSBox-X from your conf file and leave the machine stopped at the debugger, at its first instruction.
 
 ```text
-start(conf="", cwd="", session_seconds=null, shared=false, display=null, fullscreen=null, size=null, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program", profile="")
+start(conf="", cwd="", session_seconds=null, shared=false, display=null, fullscreen=null, size=null,
+    flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="",
+    plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null,
+    presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="",
+    base_from="program", profile="")
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds. The tour starts it for a person to watch, with a log file for what the game writes.
+
+Ask:
+
+> Start Bricks in a window I can watch without losing my keyboard, for at most fifteen minutes, and keep its log.
+
+Call:
+
+```text
+start(shared=true, background=true, display="<host>", conf="./demos/bricks/bricks.conf",
+    cwd="./demos/bricks", session_seconds=900, logfile="./tmp/demos/tour/files/e9.log",
+    state_dir="./tmp/demos/tour/files/states", captures_dir="./tmp/demos/tour/files/captures")
+```
+
+Reply, 6 of 25 fields:
+
+```json
+{
+  "status": "ok",
+  "conf": "./demos/bricks/bricks.conf",
+  "watched": true,
+  "bound_s": 900,
+  "logfile": "./tmp/demos/tour/files/e9.log",
+  "kept": "1 saved for `promote`"
+}
+```
+
+The session may live 900 seconds (`bound_s`), and `watched` says it has a window. `kept` says the arguments were saved as a start profile, for `promote` to write into a repository.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "pid": "<volatile>",
+  "conf": "./demos/bricks/bricks.conf",
+  "conf_digest": "af0834584e2dad05",
+  "watched": true,
+  "bound_s": 900,
+  "elapsed_s": "<volatile>",
+  "captures": "off",
+  "state_dir": "./tmp/demos/tour/files/states",
+  "shared": true,
+  "ready_after_s": "<volatile>",
+  "argv": "<volatile>",
+  "binary": "<volatile>",
+  "binary_origin": "<volatile>",
+  "version": "<volatile>",
+  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "... 8 more"],
+  "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
+  "input_port": "<volatile>",
+  "background": true,
+  "presence": true,
+  "window": "<volatile>",
+  "logfile": "./tmp/demos/tour/files/e9.log",
+  "declarations": {
+    "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
+  },
+  "kept": "1 saved for `promote`"
+}
+```
+
+</details>
+
+### Arguments
+
+- `conf` (string, default `""`): The DOSBox-X conf file to run, as it is. Required unless a start profile gives it.
+- `cwd` (string, default `""`): The folder the conf's relative paths resolve in. Required unless a start profile gives it.
+- `session_seconds` (integer (>= 1, <= 14400), optional): The session's lifetime in seconds, after which the emulator is ended. Required unless a start profile gives it.
+- `shared` (boolean, default `false`): `true` when a person watches: the session opens a window. Left out, it has none.
+- `display` (integer, optional): Which display the window opens on, by the operating system's index. Needs `shared=true`; left out, 0, the main display.
+- `fullscreen` (boolean, optional): `true` makes the window fill the display; DOSBox-X then captures the mouse, so its pointer no longer follows yours. Needs `shared=true`.
+- `size` (string, optional): The window's size as `WIDTHxHEIGHT`, in the host's unit. Needs `shared=true`; left out, the conf's own size, else the largest 4:3 window the display holds.
+- `flags` (array of string, optional): More command-line tokens for DOSBox-X, one list item each: `["-set", "cpu core=normal"]`. They come after the server's own, so a `-set` of the same key wins.
+- `break_on_int3` (boolean, default `false`): `true` also stops at the program's own `int 3`, where a program marks a break. The stop at the debugger's first prompt still comes first.
+- `program` (string, default `""`): A program to run inside DOS once the conf's `[autoexec]` has finished. Left empty, none.
+- `logfile` (string, default `""`): A file that receives what the program writes to port `0xE9`, its own debug log, which `log` and `log_wait` read. A file already there is overwritten.
+- `capture_video` (boolean, default `false`): `true` records the run of `program` as video. It needs `program`.
+- `captures_dir` (string, default `""`): Where the emulator writes a capture it takes itself. Left empty, `capture` under the working directory.
+- `plan` (array of object, optional): A list of calls to run right after the start, each `{"op": <tool>, ...arguments}`, run as `perform` runs a list.
+- `settle_seconds` (number (>= 0, <= 600.0), optional): How long each wait of the `plan` may take, in seconds. Left out, 30.
+- `input_port` (integer (>= 0, <= 65535), default `0`): The TCP port the emulated COM1 dials, through which keys and mouse reach the program. Left at 0, a free one; any other is 1024 or above.
+- `state_dir` (string, default `""`): The folder `state_write` saves into, which stays after `close`. Left empty, the session's temporary folder, deleted at `close`.
+- `binary` (string, default `""`): The DOSBox-X to run: an executable, or on macOS a `.app` bundle holding one. Left empty, `DOSBOX_X_BINARY`, else the `dosbox-x` on the PATH.
+- `background` (boolean, optional): `true` opens the window behind your other windows and leaves the keyboard focus where it is; `false` opens it in front. Left out, behind unless `shared`.
+- `presence` (boolean, default `true`): Draws a border around the emulator's window while the session is open, brighter while a call runs the machine. `false` leaves it off.
+- `dos_calls` (boolean, default `false`): `true` records every DOS call (INT 21h) the program makes, for `log(channel="dos")`. It needs a build whose debugger has `DOSTRACE`.
+- `log_categories` (object, optional): DOSBox-X's own `[log]` categories, each with its level, written into `logfile`. It needs `logfile`.
+- `guest_files` (array of string, optional): Up to 16 files on the host that the program is expected to leave. `guest_file` and `close` say what became of each.
+- `symbols` (string, default `""`): A symbol table, checked now and loaded at the first stop where DOS holds the program it is named after. `symbols_load` loads one later.
+- `base_from` (string (matching `^([pP][rR][oO][gG][rR][aA][mM]|[cC][sS]|[dD][sS]|[eE][sS]|[sS][sS]|[fF][sS]|[gG][sS])$`), default `"program"`): Where the table's addresses start: `program`, the program's own load address, or a segment register read at a protected-mode stop. Left out, `program`.
+- `profile` (string, default `""`): A start profile: a saved set of `start` arguments, by its name under `.scry/start/` or by a path. It fills only the arguments the call leaves out.
+
+### What comes back
+
+- `window`: With `shared`, where the window is. Its `front` is `true` when no other application's window covers its centre; it does not mean the window has the keyboard focus.
+- `input_port`: The TCP port the emulated COM1 dialled, or why no input connection was opened.
+- `symbols`: With `symbols`: `held`, the table's path; `base_from`; and `checked`, what comparing it with the executable beside it found.
+- `profile`: With a start profile: its `name`, its `file`, and `supplied`, the arguments it filled.
+- `kept`: Says that this start's arguments were saved as a start profile for `promote`, the tool that writes one into your repository's `.scry/` folder.
+- `start`: With `plan`: the start's own fields sit here, beside the plan's account of its steps.
+
+<details><summary>All 56 reply fields</summary>
+
+- `activation` (string)
+- `asked_display` (integer)
+- `seen` (object)
+- `errors` (array)
+- `failed` (object)
+- `field` (string)
+- `got` (any)
+- `ran_path` (string or object)
+- `recorded` (any)
+- `replies_path` (string or object)
+- `steps_total` (integer)
+- `still_running` (boolean)
+- `stopped` (object)
+- `stops` (object)
+- `truncated` (boolean)
+- `verdict` (string)
+- `searched` (array)
+- `kept` (string)
+- `failed_at` (integer or object)
+- `held` (integer)
+- `ran` (array)
+- `steps_completed` (integer)
+- `argv` (array)
+- `background` (boolean)
+- `binary` (string)
+- `binary_origin` (string)
+- `bound_s` (number)
+- `bundle` (string)
+- `captures` (string)
+- `conf` (string)
+- `conf_changed_on_disk` (boolean or object)
+- `image_changed_on_disk` (boolean or object)
+- `conf_digest` (string)
+- `debugger_commands` (array)
+- `declarations` (object)
+- `dos_calls` (string)
+- `elapsed_s` (number)
+- `guest_files` (array)
+- `input_port` (integer or object)
+- `log_categories` (object)
+- `logfile` (string)
+- `operations` (array)
+- `pid` (integer)
+- `presence` (boolean or object)
+- `ready_after_s` (number)
+- `rearm_refused` (string)
+- `shared` (boolean)
+- `start` (object)
+- `state_dir` (string)
+- `stub` (string)
+- `profile` (object)
+- `output_bytes_dropped` (integer)
+- `symbols` (object)
+- `version` (string or object)
+- `watched` (boolean)
+- `window` (object)
+
+</details>
+
+### What it refuses
+
+- A session is already open (`session_live`).
+- `conf`, `cwd` or `session_seconds` given neither by the call nor by a start profile, or a path that is not absolute (`bad_argument`).
+- A conf, a `cwd` or a `logfile` folder that does not exist, or a `symbols` table the executable beside it contradicts (`bad_argument`).
+- `display`, `fullscreen` or `size` without `shared=true`, or a `display` the host does not have (`bad_argument`).
+- A `size` that does not fit the display, comes with `fullscreen`, or is ignored by the conf's `sdl output` (`bad_argument`).
+- `fullscreen` under `sdl output=surface`, or on macOS on a display other than 0 (`bad_argument`).
+- `flags` that set what a named argument owns, or a `-set` glued to its value or without `=` (`bad_argument`).
+- `capture_video` without `program`, `log_categories` without `logfile`, an `input_port` from 1 to 1023, or `guest_files` naming a folder, a file twice or more than 16 (`bad_argument`).
+- A `profile` that no `.scry/` folder searched holds; `searched` lists them (`bad_argument`).
+- `dos_calls` on a build whose debugger has no `DOSTRACE` command (`no_channel`).
+- A window that never appears on the display asked for. The session stays open for `window` or `close` (`window_not_visible`).
+- A DOSBox-X that exits or never reaches its debugger (`session_broken`).
+
+### Why it works this way
+
+`shared` says whether a person watches. Without it the session has no window at all, and `window` cannot report one. With it the window opens on `display`, in front; add `background=true` to watch without losing the keyboard focus.
+
+A start profile is a file of `start` arguments, `.scry/start/<name>.json` in a repository, so a session starts with `start(profile="<name>")`. The call's own arguments win and the profile fills the rest. The `.scry/` folder is looked for upwards from the server's working directory, then from `cwd`.
+
+The server runs the conf you name as it is and writes none of its own. It mounts its own folder on a drive letter the conf's `[autoexec]` leaves free and runs `SCRY.COM` from it, the helper that delivers keys and mouse inside DOS. So the conf must not `exit` before `program` runs.
+
+<details><summary>More on why</summary>
+
+| you want | arguments | the window |
+|---|---|---|
+| Nobody watching | `shared=false`, the default | None. `window` refuses it as `no_channel`. |
+| Somebody watching | `shared=true`, with `display` and `size` or `fullscreen` if wanted | On the display, in front, confirmed in the host's window list. |
+| Watching and keeping the keyboard focus | `shared=true`, `background=true` | The same, opened behind your other windows. |
+
+**The window's size.**
+
+A windowed session opens 40 px inside the display's corner. Its size is `size` when given, else the conf's `windowresolution`, else the largest 4:3 window the display's usable area holds. The menu bar, Dock and taskbar do not count as usable.
+
+`size` is in the host's unit: points on macOS, real pixels on Windows. Every OpenGL output and Direct3D take a size, and so does an unset `output` on macOS and Windows; `surface` does not. Under an output that ignores it, `size` is refused, and without `size` the conf's size stays.
+
+`fullscreen` under `sdl output=surface` is refused because that output fills the display by switching its video mode, and the window ends off screen. On macOS it is accepted on display 0 only: a start stopped at its first instruction reaches full screen on another display only once the program runs.
+
+`start` waits until the host lists the window on that display. It does not check the size, since a stopped window keeps the conf's size until the program runs; `window` does. A watched window is not supported on Linux.
+
+`background` only chooses where the window opens. How the focus stays with you is the host's: on macOS the emulator starts as a background application, and on Windows no program may take the foreground while `start` launches. A click or ALT moves the focus as always.
+
+On Windows a start in front brings its window forward once it is up, and `window.front` says whether Windows allowed it.
+
+**The lifetime.**
+
+`session_seconds` is a hard limit because DOSBox-X's own time limit counts emulated time, which a machine stopped at the debugger never spends. A watchdog process, `scry-dosbox-x-guardian` in the process list, keeps the host's clock instead. It ends the emulator a few seconds past the limit, or soon after this server dies.
+
+**Flags.**
+
+- A flag that sets what a named argument sets (`-time-limit`, `sdl videodriver`, `log logfile`, the conf, the program) is refused, naming the argument: coming after the server's, it would undo it.
+- So is a `-set` of `sdl display`, `sdl fullscreen`, `sdl windowposition` or `sdl windowresolution`, and `-fullscreen`.
+- A `-set` value with spaces is one token. A `-set` glued to its value is refused because DOSBox-X hangs on it.
+- A `-set` without `=` is refused because DOSBox-X ignores it with no error, and the setting would not apply.
+- `key=value` with no section is accepted, and a key the server owns is refused in that spelling too.
+- Without a window the server passes `videodriver=dummy`. It never passes `-silent`, which exits after `AUTOEXEC.BAT` and cannot keep a session open.
+
+**The program and its symbols.**
+
+- `program` loads the input helper itself when the conf's autoexec does not run it. A copy of `SCRY.COM` in the conf that speaks another protocol is reported in the `note`.
+- A `symbols` table is compared with the executable beside it before anything starts. `symbols.checked` says how many global code symbols agreed, or why nothing could be compared.
+- It is compared again at the first stop that holds the program, since the executable can be rebuilt meanwhile. That stop's reply carries `symbols_placed`, once.
+- `symbols_placed` holds `placed`, `path`, `load_segment` in real mode, `base` and `loaded`; a refusal is `placed: false` with `code` and `why`.
+- `base_from=program` is the DOS load segment of a real-mode program. For a DJGPP COFF executable it is the selector `CS` holds at a protected-mode stop, where the code runs.
+- `break_on_int3` has two limits that are the debugger's: an `int 3` at the reset vector faults, and one at the address of a stop is stepped over by `resume`.
+- `guest_files` answers each file as `path` and `before`, what it was before the boot.
+
+**Speed.**
+
+`[cpu] use dynamic core with fpu` decides whether FPU code runs recompiled. Its `auto` takes FPU and MMX instructions off the dynamic core. A single-tasking DOS program that leans on the FPU then runs below real time with nothing in the session saying so, and a conf for it states `true`.
+
+**What else the reply says.**
+
+- `captures_dir` and `state_dir` are created with their parents. `state_dir` in the reply is the folder in use.
+- `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background` and `presence` say what the launch used.
+- `rearm_refused` says why saved raw breakpoints could not be set again.
+- No free drive letter for the input helper is refused before anything starts.
+
+</details>
+
+### Related tools
+
+- [`build_check`](#build_check)
+- [`status`](#status)
+- [`window`](#window)
+- [`close`](#close)
+- [`symbols_load`](names.md#symbols_load)
+- [`promote`](project.md#promote)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Open one live DOSBox-X session from your conf, parked at the debugger.
 
 Paths are absolute or `~`-led. `cwd`: where the conf's relative paths resolve. `binary`:
@@ -108,18 +435,17 @@ false`, `code`, `why`); a later `symbols_load` replaces it.
 
 Refused: a live session, a window that never appears on the asked display
 (`window_not_visible`, the session left live to `window` or `close`), `flags` setting what
-`display`, `fullscreen` or `size` own, `fullscreen` on `sdl output=surface` (it switches the
-video mode and leaves the window off screen), `fullscreen` on a display other than 0
-on macOS (a halted start never reaches full screen there), a bad path or `symbols` table,
+`display`, `fullscreen` or `size` own, `fullscreen` on `sdl output=surface` or, on macOS, on
+a display other than 0, a bad path or `symbols` table,
 `session_seconds` out of range, `capture_video` without `program`, an `input_port` other than
 0 outside 1024-65535, `log_categories` without `logfile`, `dos_calls`
 on a build with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
 16, or a session already live (`session_live`).
 
 Reply: `pid`, `stub`, `window` (`display`, `bounds`, `onscreen`, `front`, `fullscreen`, with
-`shared`), `input_port`, `declarations` (`rearm`), `logfile`, `dos_calls`, `log_categories`,
-`guest_files` (each when asked for: the log's path as written, the trace's path, the
-categories set, each file as it was before the boot), `symbols` (`held`, `base_from`,
+`shared`; `front` says no other application's window covers its centre, not that it has the keyboard focus), `input_port`, `declarations` (`rearm`), `logfile`, `dos_calls`,
+`log_categories`, `guest_files` (each when asked for: the log's path as written, the trace's
+path, the categories set, each file as it was before the boot), `symbols` (`held`, `base_from`,
 `checked`), and with a profile `profile` (`name`, `file`, `supplied`); with `plan`, these
 facts sit under `start` beside the plan's account. `note` when the conf or `flags` select a
 dynamic cpu core, which can pass over code breakpoints: start on
@@ -127,184 +453,157 @@ dynamic cpu core, which can pass over code breakpoints: start on
 
 Reference: REFERENCE.md, The session.
 
-| argument | type | default |
-|---|---|---|
-| `conf` | string | `""` |
-| `cwd` | string | `""` |
-| `session_seconds` | integer (>= 1, <= 14400) or null | `null` |
-| `shared` | boolean | `false` |
-| `display` | integer or null | `null` |
-| `fullscreen` | boolean or null | `null` |
-| `size` | string or null | `null` |
-| `flags` | array of string or null | `null` |
-| `break_on_int3` | boolean | `false` |
-| `program` | string | `""` |
-| `logfile` | string | `""` |
-| `capture_video` | boolean | `false` |
-| `captures_dir` | string | `""` |
-| `plan` | array of object or null | `null` |
-| `settle_seconds` | number (>= 0, <= 600.0) or null | `null` |
-| `input_port` | integer (>= 0, <= 65535) | `0` |
-| `state_dir` | string | `""` |
-| `binary` | string | `""` |
-| `background` | boolean or null | `null` |
-| `presence` | boolean | `true` |
-| `dos_calls` | boolean | `false` |
-| `log_categories` | object or null | `null` |
-| `guest_files` | array of string or null | `null` |
-| `symbols` | string | `""` |
-| `base_from` | string (matching `^([pP][rR][oO][gG][rR][aA][mM]\|[cC][sS]\|[dD][sS]\|[eE][sS]\|[sS][sS]\|[fF][sS]\|[gG][sS])$`) | `"program"` |
-| `profile` | string | `""` |
+break_on_int3: Also stop at the guest's own `int 3`, where a program marks a break; the debugger's first prompt still comes first.
 
-- `break_on_int3`: Also stop at the guest's own `int 3`, where a program marks a break; the debugger's first prompt still comes first.
-- `captures_dir`: Where the emulator writes a capture it takes itself; empty, `capture` under the working directory.
-- `background`: Launch behind, keeping the caller's focus, or in front; omitted it is behind unless `shared`.
-- `presence`: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
+captures_dir: Where the emulator writes a capture it takes itself; empty, `capture` under the working directory.
 
-| reply field | type |
-|---|---|
-| `activation` | string |
-| `asked_display` | integer |
-| `seen` | object |
-| `errors` | array |
-| `failed` | object |
-| `field` | string |
-| `got` | any |
-| `ran_path` | string or object |
-| `recorded` | any |
-| `replies_path` | string or object |
-| `steps_total` | integer |
-| `still_running` | boolean |
-| `stopped` | object |
-| `stops` | object |
-| `truncated` | boolean |
-| `verdict` | string |
-| `searched` | array |
-| `kept` | string |
-| `failed_at` | integer or object |
-| `held` | integer |
-| `ran` | array |
-| `steps_completed` | integer |
-| `argv` | array |
-| `background` | boolean |
-| `binary` | string |
-| `binary_origin` | string |
-| `bound_s` | number |
-| `bundle` | string |
-| `captures` | string |
-| `conf` | string |
-| `conf_changed_on_disk` | boolean or object |
-| `image_changed_on_disk` | boolean or object |
-| `conf_digest` | string |
-| `debugger_commands` | array |
-| `declarations` | object |
-| `dos_calls` | string |
-| `elapsed_s` | number |
-| `guest_files` | array |
-| `input_port` | integer or object |
-| `log_categories` | object |
-| `logfile` | string |
-| `operations` | array |
-| `pid` | integer |
-| `presence` | boolean or object |
-| `ready_after_s` | number |
-| `rearm_refused` | string |
-| `shared` | boolean |
-| `start` | object |
-| `state_dir` | string |
-| `stub` | string |
-| `profile` | object |
-| `output_bytes_dropped` | integer |
-| `symbols` | object |
-| `version` | string or object |
-| `watched` | boolean |
-| `window` | object |
+background: Launch behind, keeping the caller's focus, or in front; omitted it is behind unless `shared`.
 
-Example, from a live run:
-
-```json
-{
-  "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
-  "cwd": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest",
-  "session_seconds": 1200,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1033.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save"
-}
+presence: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
 ```
 
-```json
-{
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.061s",
-  "status": "ok",
-  "pid": "<volatile>",
-  "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
-  "conf_digest": "78bdc38f360b9b4a",
-  "bound_s": 1200,
-  "elapsed_s": 0.3,
-  "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save",
-  "ready_after_s": 0.061,
-  "argv": ["~/.local/state/dosbox-x-builds/scry/dosbox-x", "-conf", "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
-  "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
-  "binary_origin": "DOSBOX_X_BINARY",
-  "version": "<volatile>",
-  "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "... 8 more"],
-  "stub": "/path/to/scry-dosbox-x/src/scry_dosbox_x/guest/SCRY.COM",
-  "input_port": "<volatile>",
-  "background": true,
-  "presence": {"available": false, "why": "a session started without `shared` has no window to draw on"},
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1033.log",
-  "declarations": {
-    "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
-  },
-  "kept": "kept 1 (promote to review); start/probe: no .scry/ in $TMPDIR/dosbox-x-live-job-<run>/A/tests/guest, the repository it was kept in: promote(dry_run=true, root=$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest) lists what an approval would creat ... (241 characters)"
-}
-```
+</details>
 <!-- scry-reference:end start -->
-
-**`shared` is explicit, with no detection behind it.** Headless uses `videodriver=dummy`, not `SDL_VIDEODRIVER` and not `-silent`, which exits after `AUTOEXEC.BAT` and cannot host a session.
-
-**`session_seconds` is a hard bound** because a DOSBox-X held at its debugger never reaches its own time limit. The emulator's `-time-limit` counts emulated time, which a machine held at the debugger never advances, so a guardian (`scry-dosbox-x-guardian` in the process list) also keeps the host's clock, ending the emulator a few seconds past the bound or within one poll of this server dying.
-
-**The window.** Three situations, one combination of arguments each:
-
-| Situation | `start` | Window |
-|---|---|---|
-| No window to lose focus to | `shared=false` (the default) | none; `window` refuses it as `no_channel` |
-| A window nobody watches, kept behind | `shared=true`, `background=true` | placed on the display, behind the caller's application |
-| A window somebody tests | `shared=true`, with `display` and `size` or `fullscreen`, `background=false` | placed on the display, in front, proved in the host's window list |
-
-A watched start opens DOSBox-X's window on the display `display` names (the OS's index, 0 the main display and the default), placing a windowed run 40 px inside that display's corner, and `fullscreen` makes it fill that display. Its size is `size` (`WIDTHxHEIGHT` in the host's unit: points on macOS, real pixels on Windows) when stated, else the size the conf states in `windowresolution`, else the largest 4:3 window the display's usable area holds (menu bar, Dock and taskbar excluded) when the host reports one. The size reaches the emulator as `-set "sdl windowresolution=..."`: on Windows DOSBox-X stops being DPI aware from 200 %, so there the number is in logical pixels (a display at 300 % gets a third of the size asked) and below 200 % it is in real pixels, sent as asked; on macOS high DPI is off and the unit is the point. It is refused naming the usable size and the frame's share of it when it does not fit, beside `fullscreen`, and under an `sdl output` that ignores a size: every OpenGL output and Direct3D take one, and so does an unset `output` on macOS and Windows; `surface` does not. With an ignoring output and no `size` the conf's size stays. On macOS `fullscreen` is accepted on display 0 only: a start is halted at its first instruction, and on another display the window reaches full screen only once the emulator runs, so it is refused naming `display=0`. The same halt keeps a parked window at the conf's size until the guest runs, so `start` does not judge the size: `window` does, once the guest runs, comparing the window's client area on Windows and its outer rectangle on macOS (which has no client area, so a title bar's height is allowed on the height), with the tolerance in its reply. The server waits for the window to be listed on that display and answers it as `window`; one that never appears is `window_not_visible`, with the session left live to `window` or `close`. `flags` cannot retune it: a `-set` of `sdl display`, `sdl fullscreen`, `sdl windowposition` or `sdl windowresolution`, or `-fullscreen`, is refused naming the argument that owns it. `fullscreen` on `sdl output=surface` is refused too: that output fills the display by switching its video mode, and the window ends off screen. Linux is out of scope. A headless start takes none of these arguments.
-
-**`flags` come after this server's defaults**, so a `-set` for the same key wins, except the ones a named argument sets (`-time-limit`, `sdl videodriver`, `log logfile`, the conf, the program...): refused naming the argument, because after ours the flag would quietly undo it.
-
-**`break_on_int3`** has two limits that are the debugger's: at the reset vector there is no row, so a trap faults; and the first instruction after a `resume` runs unchecked, so a trap written at the stop itself is stepped over.
-
-**`binary` and `background`**: `binary` omitted is `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`, as `build_check` resolves it. `background` `true` starts behind, `false` in front, omitted by `shared`. How it keeps the focus is the host's: on macOS the emulator is launched as a background application (SDL's `SDL_MAC_BACKGROUND_APP`); on Windows no program may take the foreground while a start behind launches (`LockSetForegroundWindow`, lifted once the window is up), a start in front brings its window forward once it is up (`window.front` says whether Windows let it), and a click or ALT moves the focus as always.
-
-**`flags` are argv tokens, so a `-set` value with spaces is one token**; a glued `-set` is refused because DOSBox-X hangs on it, a `-set` with no `=` (shredded, or with the value after a space) because DOSBox-X ignores it at rc 0 and the setting would silently not apply. `key=value` with no section is taken, and a key the server owns is refused in that spelling too.
-
-**`program` loads the stub itself when the conf's autoexec does not run it**, which is why the autoexec must not `exit` before `program` runs.
-
-**A `symbols` table is judged before the boot and answered there.** `start` refuses one the executable beside it contradicts, without an emulator having run, and `symbols.checked` says what the comparison found: the executable and how many global code symbols agreed, or why nothing could be compared. The placement at the first stop compares again, since the executable can be relinked while the boot happens: a table that disagrees then is `symbols_placed`'s own refusal, said once. `base_from` `program` places the table at the program's own base: its DOS load segment for a real-mode program, or, when the executable beside the table is a DJGPP COFF image, the DPMI selector `CS` resolves at a protected-mode stop, since the load segment is the go32 stub's real-mode home, not where the protected-mode code runs.
-
-**The server derives no conf and mounts its own stub.** `start` runs the conf you name as it is and adds, on the command line, a mount of its guest directory on a drive the conf's `[autoexec]` does not use, running `SCRY.COM` from it. A conf taken from a repository's launch script therefore has to drop its boot line and its `exit`, which would end the session before `program` runs, and must not run a copy of `SCRY.COM` of its own: one that speaks another protocol is noted at `start`.
-
-**`[cpu] use dynamic core with fpu` decides whether the FPU runs recompiled.** Its `auto` routes FPU and MMX instructions off the dynamic core so a Windows 95-era program can swap them on a task switch. A single-tasking pure-DOS program that leans on the FPU then runs below real time on a host with speed to spare, and nothing in the session says so: the guest reaches the same frame count, only later, and only a session that compares its clock with the host's sees it. A conf for such a program states `true`.
-
-**`state_dir`** is what `state_write(method="save")` writes to; empty, `save` under the session's scratch, gone at `close`; `start` and `status` name that folder.
-
-**Also refused before anything starts**: a missing conf, `cwd` or `logfile` directory, an unresolved binary, a glued or shredded `-set`, and no drive free for the stub. `captures_dir` and `state_dir` are created with their parents. The reply also carries `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background`, `presence` and `rearm_refused` (why, when stored raw breakpoints could not re-arm).
 
 <!-- scry-reference:begin status -->
 ## `status`
 
-*Session status*
+Ask whether a session is open and what the machine is doing, without moving it.
 
 ```text
 status()
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), right after that start: the machine is stopped at its first instruction.
+
+Ask:
+
+> Is the emulator still up, and where is it stopped?
+
+Call:
+
+```text
+status()
+```
+
+Reply, 6 of 16 fields:
+
+```json
+{
+  "summary": "status: alive, stopped",
+  "status": "ok",
+  "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
+  "cpu_mode": "real",
+  "pc": "F000:0000FFF0",
+  "declarations": {"breakpoints": 0, "watches": 0, "regpoints": 0}
+}
+```
+
+The machine is stopped in real mode at `F000:0000FFF0`, the reset vector. `pending` is empty, so nothing waits for the next stop, and `declarations` counts no saved breakpoint or watch.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "status: alive, stopped",
+  "status": "ok",
+  "pid": "<volatile>",
+  "conf": "./demos/bricks/bricks.conf",
+  "conf_digest": "af0834584e2dad05",
+  "watched": true,
+  "bound_s": 900,
+  "elapsed_s": "<volatile>",
+  "captures": "off",
+  "state_dir": "./tmp/demos/tour/files/states",
+  "last_stop": {
+    "stop_seq": 1,
+    "pc": "F000:0000FFF0",
+    "cause": "no declared code breakpoint at F000:0000FFF0, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+    "since_s": "<volatile>",
+    "wall_at": "<volatile>"
+  },
+  "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
+  "cpu_mode": "real",
+  "pc": "F000:0000FFF0",
+  "declarations": {"breakpoints": 0, "watches": 0, "regpoints": 0},
+  "presence": true
+}
+```
+
+</details>
+
+### Arguments
+
+Takes no argument.
+
+### What comes back
+
+- `last_stop`: Where the machine last stopped: its `pc` and `cause`, and `since_s`, how long ago. Unavailable, with why, when there is no stop to report.
+- `pc`: Where the machine stands now, as `SSSS:OOOOOOOO`. Unavailable while the program runs; `last_stop.pc` is then the answer.
+- `cpu_mode`: `real`, `protected`, `paged` or `VM86`, read at a stop. Unavailable while the program runs.
+- `stopped_on_its_own`: Present when the machine had stopped and no call had reported it yet. `status` records that stop as the last one.
+- `pending`: What waits for the next stop: `arm`, the breakpoints declared while the program ran; a `disarm` count; and whether a `symbols_load` or a `base_remeasure` is queued.
+- `symbols_held`: Present while a `start` symbol table waits for its program: its `path`, its `base_from` and `waiting_for`, the program's file name.
+
+<details><summary>All 18 reply fields</summary>
+
+- `bound_s` (number)
+- `bundle` (string)
+- `captures` (string)
+- `conf` (string)
+- `conf_changed_on_disk` (boolean or object)
+- `image_changed_on_disk` (boolean or object)
+- `conf_digest` (string)
+- `cpu_mode` (string or object)
+- `declarations` (object)
+- `elapsed_s` (number)
+- `pc` (string or object)
+- `pending` (object)
+- `pid` (integer)
+- `presence` (boolean or object)
+- `state_dir` (string)
+- `symbols_held` (object)
+- `output_bytes_dropped` (integer)
+- `watched` (boolean)
+
+</details>
+
+### Why it works this way
+
+`status` answers in every state: with no session, while the machine runs and once the session is broken. It is where you learn why another tool does not answer.
+
+At a stop it also sets the breakpoints that were declared while the program ran, and says so in `applied_on_stop`.
+
+`session` carries four warnings, each only while it is true: `conf_changed_on_disk`, `image_changed_on_disk`, `output_bytes_dropped` and `program`.
+
+<details><summary>More on why</summary>
+
+- `conf_changed_on_disk`: the conf file changed since `start`. It is `false` too when the file is gone.
+- `image_changed_on_disk`: the executable the loaded symbol table was checked against was written since, as a rebuild under an open session does.
+- `output_bytes_dropped`: the emulator printed more than the server keeps.
+- `program`: the program that ran inside DOS is gone. It is `state: exited` with `name` and `seen_by`, or `state: fault` with `fault`, the message DJGPP writes as a program dies.
+- `program` is read at the stops that answer a call, never while the program runs, so a session that never stops never learns it.
+
+- `presence` is `true` when the border is drawn, `false` when it was asked off, or the reason it is not drawn.
+- `declarations` counts the server's own saved `breakpoints`, `watches` and `regpoints` (stops on a register condition).
+- `last_stop` also carries `stop_seq` and `wall_at`.
+- `pid`, `conf`, `conf_digest`, `watched`, `bound_s`, `elapsed_s`, `captures`, `state_dir` and `bundle` describe the process, as `start` set it up.
+
+</details>
+
+### Related tools
+
+- [`start`](#start)
+- [`close`](#close)
+- [`stop`](run.md#stop)
+- [`declaration_list`](breakpoints.md#declaration_list)
+- [`symbols_load`](names.md#symbols_load)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 What the session is right now. It records a stop no tool has reported
 (`stopped_on_its_own`) and applies what was queued while the guest ran
 (`applied_on_stop`).
@@ -320,61 +619,108 @@ program, which costs a memory-chain read at every stop. `session` carries `alive
 `running`, `altered` and each alarm while it holds.
 
 Reference: REFERENCE.md, What every reply carries.
-
-Takes no argument.
-
-| reply field | type |
-|---|---|
-| `bound_s` | number |
-| `bundle` | string |
-| `captures` | string |
-| `conf` | string |
-| `conf_changed_on_disk` | boolean or object |
-| `image_changed_on_disk` | boolean or object |
-| `conf_digest` | string |
-| `cpu_mode` | string or object |
-| `declarations` | object |
-| `elapsed_s` | number |
-| `pc` | string or object |
-| `pending` | object |
-| `pid` | integer |
-| `presence` | boolean or object |
-| `state_dir` | string |
-| `symbols_held` | object |
-| `output_bytes_dropped` | integer |
-| `watched` | boolean |
-
-Example, from a live run:
-
-```json
-{}
 ```
 
-```json
-{
-  "summary": "status: no session",
-  "status": "ok",
-  "last_stop": {"available": false, "why": "this session has not stopped yet"},
-  "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false}
-}
-```
+</details>
 <!-- scry-reference:end status -->
-
-**The alarms** are `conf_changed_on_disk` (the file changed since start; `false` also if gone), `image_changed_on_disk` (the executable the loaded table was checked against was written since, as a relink under a live session does), `output_bytes_dropped` (the emulator's output overflowed what the server keeps) and `program` (the program the guest was running is gone). They ride in `session` only while they hold.
-
-**`program` is read at the stops that answer a call**, not at each frame of a timed run: each reads DOS's current process (`EV PSPSEG`) and, when it changed, its owner in the debugger's `DOS MCBS` listing, so a program that ends while the guest runs shows from the next such stop on, and a session that never stops never learns it. The program is the one `start` launched by `program` (any other, when it named none), never the resident stub; only the first command interpreter counts as DOS being back at the prompt, not one the program opened. It is `state: exited` once DOS's current process is that interpreter's where it had been the program's, with `name` and `seen_by` (what was read); or `state: fault` when the text screen then holds, below the row that ran the program, the message DJGPP writes as a program dies (it never reaches the E9 log), quoted in `fault` from its first line to the prompt. A first stop that finds the prompt where none had seen the program names it from the start's `program`, but only when the log shows the program wrote a line of its own. A program started again clears it only when a stop sees it run: one relaunched and dead between two stops leaves the first exit in place. A wait that expired opens its `note` with it, or, when the guest wrote no line in the wait and the note does not already say so, with that fact; a wait in which lines kept arriving gets neither.
-
-**`pc` is read from the debugger at a stop**, so it is unavailable while the guest runs; `cpu_mode` is `real`, `protected`, `paged` or `VM86`. `last_stop` is unavailable with no session or a cut survey. `presence` is `true` drawn, `false` off, or why not, and is left out with no session. `declarations` is this server's own count.
 
 <!-- scry-reference:begin window -->
 ## `window`
 
-*The session's window*
+Find where the session's window is on your displays and whether another window covers it, or bring it in front.
 
 ```text
 window(front=false)
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), started with `shared=true` so that it has a window to report.
+
+Ask:
+
+> Where is the emulator's window, and can I see it?
+
+Call:
+
+```text
+window()
+```
+
+Reply, 1 of 3 fields:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+The run hides the `window` block and the summary here, because where the window is differs on every host. `status` is `ok`: the host listed the window.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "window": "<volatile>"
+}
+```
+
+</details>
+
+### Arguments
+
+- `front` (boolean, default `false`): `true` brings the window in front of whatever covers it and reads the result back. Left out, the window is reported where it is and nothing moves.
+
+### What comes back
+
+- `window`: Where it is: `display`, `bounds`, `onscreen`, `fullscreen` and `front`. `front` is `true` when no other application's window covers its centre; it does not mean the window has the keyboard focus.
+- `size`: Only when `start` named a `size`: what was `asked`, what is `seen`, and whether it `matches` within `tolerance_px`.
+
+<details><summary>All 5 reply fields</summary>
+
+- `activation` (string)
+- `asked_display` (integer)
+- `seen` (object)
+- `size` (object)
+- `window` (object)
+
+</details>
+
+### What it refuses
+
+- No session is open (`no_session`).
+- The session's emulator died (`session_broken`).
+- The session was started without `shared`, so there is no watched window to report (`no_channel`).
+- The window never appears, or with `front` is still covered after it was activated. `seen` says what the host listed (`window_not_visible`).
+
+### Why it works this way
+
+`front` answers one question: can a person see the picture? It is `true` when the window is on screen and no other application's window covers its centre. It is not the keyboard focus, which a window nothing covers can be without.
+
+`window` answers at any time, a running program included. Without `front` it moves nothing and reports the window wherever you put it. With `front`, a session started with `background=true` may stay behind, and the refusal names that as the likely cause.
+
+A `size` given to `start` is checked here and not there, because the window takes that size at the program's first video mode. Until the program has run it reads the emulator's own size, and the `note` says to `resume` and ask again. The size the server chose by itself is never checked.
+
+<details><summary>More on why</summary>
+
+- `compared` says which rectangle was measured: `client`, the area inside the frame, on Windows; `outer` on macOS, which has no client area, so a title bar's height is allowed.
+- `height_free` is `true` when the emulator fits the height to the picture's aspect by itself, so only the width is checked.
+- `display` is the operating system's index, and `fullscreen` is `true` when the window's bounds are the display's.
+- On a `window_not_visible` refusal, `asked_display` is the display `start` asked for and `activation` what bringing it forward answered.
+
+</details>
+
+### Related tools
+
+- [`start`](#start)
+- [`status`](#status)
+- [`snapshot`](captures.md#snapshot)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Where the watched window is on the host, at any time, a running guest included. `front`
 brings it in front of whatever covers it and reads that back.
 
@@ -383,49 +729,140 @@ Reply: `window` (`display`, the OS's index; `bounds`; `onscreen`; `front`, on sc
 Refused: no session (`no_session`), one that died (`session_broken`), a session started without `shared` (`no_channel`), a window that never appears or, with `front`, is still covered after the activation (`window_not_visible`, naming what was seen; on a `background=true` session it names that as what may keep it behind). Without `front` the window is answered wherever the owner put it.
 
 Reference: REFERENCE.md, The session.
-
-| argument | type | default |
-|---|---|---|
-| `front` | boolean | `false` |
-
-| reply field | type |
-|---|---|
-| `activation` | string |
-| `asked_display` | integer |
-| `seen` | object |
-| `size` | object |
-| `window` | object |
-
-Example, from a live run:
-
-```json
-{}
 ```
 
-```json
-{
-  "summary": "window: display 0, on screen, in front",
-  "status": "ok",
-  "window": {
-    "display": 0,
-    "bounds": {"x": 40, "y": 30, "width": 640, "height": 432},
-    "onscreen": true,
-    "front": true,
-    "fullscreen": false
-  }
-}
-```
+</details>
 <!-- scry-reference:end window -->
 
 <!-- scry-reference:begin close -->
 ## `close`
 
-*Close the session*
+End the session and the emulator with it, and learn how it ended.
 
 ```text
 close(detail=false)
 ```
 
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), at the end of the tour's session.
+
+Ask:
+
+> We are done: close the emulator and tell me how it ended.
+
+Call:
+
+```text
+close()
+```
+
+Reply, 6 of 16 fields:
+
+```json
+{
+  "summary": "close: quit, exit code 0",
+  "status": "ok",
+  "closed": true,
+  "ended_by": "quit",
+  "exit_code": 0,
+  "omitted": ["stdout_tail", "errorlog_tail"]
+}
+```
+
+DOSBox-X quit when asked, with exit code 0. `omitted` names the last lines it printed, which a clean quit leaves out.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "close: quit, exit code 0",
+  "status": "ok",
+  "closed": true,
+  "pid": "<volatile>",
+  "conf": "./demos/bricks/bricks.conf",
+  "conf_digest": "af0834584e2dad05",
+  "watched": true,
+  "bound_s": 900,
+  "elapsed_s": "<volatile>",
+  "captures": "off",
+  "state_dir": "./tmp/demos/tour/files/states",
+  "ended_by": "quit",
+  "exit_code": 0,
+  "omitted": ["stdout_tail", "errorlog_tail"],
+  "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
+  "draft": "<volatile>"
+}
+```
+
+</details>
+
+### Arguments
+
+- `detail` (boolean, default `false`): `true` returns the last lines the emulator printed (`stdout_tail`, `errorlog_tail`) after a clean quit too. Left out, they come only when the end was not clean.
+
+### What comes back
+
+- `closed`: `true` when a session was ended; `false` when there was none to close.
+- `ended_by`: How it ended: `quit`, `killed`, `died` or `none`.
+- `exit_code`: The emulator's exit code. It is `available: false` with a `why` when no session was running or the killed process could not be collected.
+- `pid`: The process this call ended, or `available: false` with a `why` when no session was running.
+- `guest_files`: Each file `start` named in `guest_files`, with the `state` that `guest_file` reports for it.
+- `draft`: The names of what the session saved and `promote` has not yet written into your repository's `.scry/` folder.
+
+<details><summary>All 18 reply fields</summary>
+
+- `draft` (array of string)
+- `bound_s` (number)
+- `bundle` (string)
+- `captures` (string)
+- `closed` (boolean)
+- `conf` (string)
+- `conf_changed_on_disk` (boolean or object)
+- `image_changed_on_disk` (boolean or object)
+- `conf_digest` (string)
+- `elapsed_s` (number)
+- `ended_by` (string)
+- `errorlog_tail` (string or object)
+- `guest_files` (array)
+- `pid` (integer or object)
+- `state_dir` (string)
+- `stdout_tail` (string)
+- `output_bytes_dropped` (integer)
+- `watched` (boolean)
+
+</details>
+
+### Why it works this way
+
+`close` ends the session now instead of leaving it to `session_seconds`. It asks DOSBox-X to quit and kills it only when the request is ignored; `ended_by` says which happened.
+
+`session` describes the state after the close: `alive`, `running` and `altered` are `false`, as with no session.
+
+The reply also says what the process was, in `status`'s fields, read before the end. So `pid` is the process this call ended.
+
+<details><summary>More on why</summary>
+
+- `quit`: DOSBox-X left when asked. A session started here does, with or without a program loaded, because `start` turns its quit warning off.
+- `killed`: a conf that turns the warning back on, or a program that ignored the request. `exit_code` is unavailable if the process is still not collected.
+- `died`: it had already exited.
+- `none`: there was no session.
+
+- The request is SIGTERM on macOS and the debugger's `QUIT` on Windows, which has no signal to ask with; the kill is SIGKILL, or a terminate on Windows.
+- A `note` says the emulator's output was not read to its end, so the last lines may be short.
+
+</details>
+
+### Related tools
+
+- [`start`](#start)
+- [`status`](#status)
+- [`promote`](project.md#promote)
+- [`guest_file`](files.md#guest_file)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 End the session deliberately rather than waiting for its bound.
 
 Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` and
@@ -434,53 +871,7 @@ Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid` and
 `note` when the output was not read to its end. `guest_files`: each file `start` named, with
 `guest_file`'s `state`. `session` is the block as it is after the close (`alive` and
 `running` false), and `draft` names the candidates the session left waiting for `promote`.
-
-| argument | type | default |
-|---|---|---|
-| `detail` | boolean | `false` |
-
-| reply field | type |
-|---|---|
-| `draft` | array of string |
-| `bound_s` | number |
-| `bundle` | string |
-| `captures` | string |
-| `closed` | boolean |
-| `conf` | string |
-| `conf_changed_on_disk` | boolean or object |
-| `image_changed_on_disk` | boolean or object |
-| `conf_digest` | string |
-| `elapsed_s` | number |
-| `ended_by` | string |
-| `errorlog_tail` | string or object |
-| `guest_files` | array |
-| `pid` | integer or object |
-| `state_dir` | string |
-| `stdout_tail` | string |
-| `output_bytes_dropped` | integer |
-| `watched` | boolean |
-
-Example, from a live run:
-
-```json
-{}
 ```
 
-```json
-{
-  "summary": "close: no session",
-  "status": "ok",
-  "closed": false,
-  "ended_by": "none",
-  "pid": "<volatile>",
-  "exit_code": {"available": false, "why": "no session was running"},
-  "note": "there was no session to close"
-}
-```
+</details>
 <!-- scry-reference:end close -->
-
-**The `ended_by` values**: `quit` is the emulator leaving when asked, which is what a session launched here does, program loaded or not, because `start` turns the quit warning off: SIGTERM on macOS, and the debugger's `QUIT` on Windows, which has no signal to ask with; `killed` is a conf that puts the warning back or a wedged guest that ignored the ask, ended by SIGKILL (a terminate on Windows); `died` is already exited when called; `none` is nothing to close. **`exit_code`** is unavailable when SIGKILLed and still not reaped, since an emulator may still be on the machine.
-
-**The `session` block is the session after the close**: `alive` and `running` false and `altered` false, as with no session at all.
-
-**`note`** says how the reader of the emulator's output ended when that was not at the end of its output: it outlived the close, or a read failed, so the tails may be short. **The reply also carries** what the process was (`status`'s rows, `pid` first), read before the end, so `pid` is the process this call ended.

@@ -1,43 +1,194 @@
 # The Files tools
 
-## The file tools
+These tools read files on your disk and need no running machine. `image_compare` and `audio_compare` compare two pictures, two series of frames or two recordings, and answer in numbers. `guest_file` says whether the DOS program wrote a file it was meant to write.
 
-The file tools (`image_compare(method="image")`, `image_compare(method="series")`, `image_compare(method="region")`, `image_compare(method="golden")`, `audio_compare(method="measure")`, `audio_compare(method="diff")`) read files and touch no machine, so they answer with the guest running or with none. Every comparison carries its control, because a result that cannot come out the other way is no result: a series whose frames never change says nothing about another (`control_silent`), two series with no frame in common compare nothing, a region whose measure never moves was missed, goldens meeting no file examined nothing, and two silent recordings are refused (`control_silent`) rather than called equal. A manifest is re-hashed and re-signed on reading, so a frame changed since, or a row edited by hand, is refused.
+A comparison that could not have come out different is refused, not answered, with the code `control_silent`. Two series that never change, or two silent recordings, would otherwise pass as equal.
 
-## Screen maps
+## A series of frames
 
-A screen map is a file, `<application>-screen-map.json`, kept in the application's own store, `.scry/maps/<application>-screen-map.json` (a game both servers run keeps one copy in each port's repository), in the format `scry-screen-map/1`.
+A series is a folder of PNGs beside one manifest, a JSON file in the format `scry-series/1`. The manifest names the `server`, the `source` of the frame numbers, the `crop`, and one row per frame: `frame`, `path`, `sha256`, `bytes`, `signature`.
 
-```json
-{"format": "scry-screen-map/1", "application": "bricks", "mode": "verified",
- "screens": [{"name": "play", "kind": "pixel", "size": [320, 200], "anchor": "main_loop",
-              "match": [{"crop": [0, 0, 52, 8], "signature": "<16 hex>"}],
-              "controls": [{"name": "court", "rect": [200, 80, 80, 40]}]}]}
-```
-
-Everything is in the program's own units, cells in a text mode and pixels in a graphics one, as `screen_view` counts them. A screen is known by the signatures of regions that stay still on it, never by the whole screen, which a cursor, a ball or an animated colour changes between stops: bricks' map signs the words `SCORE` and `LIVES` and none of their digits. A screen matches when its `kind` and `size` are the screen's and every region's signature is. A screen may instead say `"cells": "index"` (`screen_map_write(method="add", cells="index")`): its regions are then signed by the palette index each pixel was drawn with, not by the colour it shows, so one map knows a program on two machines whose palettes resolve one index to different colours. That needs a screen drawn through the DAC (a 15-, 16- or 32-bit linear mode has none): on any other it is refused `no_channel`. A screen that says nothing is signed in colour. A file with a duplicate name or a rectangle off its screen is refused whole.
-
-**Who answers for a map.** `mode` is required. A `verified` map belongs to a program still being written, so every way into a screen judges its signatures and a stale map is caught by the server: `run_to(screen=)` runs to the screen's `anchor` and refuses `stale_map` when the screen there no longer matches, leaving the guest at the anchor. A `consolidated` map belongs to a finished program whose authors keep it current: every screen names its `anchor`, the symbol after which it is whole, and `run_to(screen=)` takes the screen as shown there without a read, so its controls can be clicked at once. `screen_map_find` judges the signatures on either mode, when asked.
-
-**A port that shows the picture larger.** One program drawn in two video modes keeps one map in the units it draws in. A mode that doubles it inside a border, a 320x200 game shown in 640x480, is described at `load` by an integer `scale` and a `margin` [x, y] in the screen's own pixels on each side, so the screen is the program's size times the scale plus twice the margin. A read is sampled back into the program's units before it is signed, and a control's centre is aimed in the screen's. A read of a size the view does not fit answers `view_fits: false`.
-
-**Two layers, both kept by the server.** The FILE layer (`screen_map_write(method="load")`) survives a `start`; the SESSION layer (`screen_map_write(method="add")`) is emptied by it, since its screens were read off another run. `screen_map_find` tries the session's screens first. `screen_map_write(method="save")` writes both as one file, the session winning, and that file becomes the file layer. `screen_map_write(method="load")` and `screen_map_write(method="save")` touch files only, so they answer while the guest runs.
-
-**A control is named against the identification it came from.** The click acts on the screen `screen_map_find` last identified. Before the pointer moves, only the kind and size of what the guest shows are read again, off the stub's report, which answers whether the guest runs or is parked; a guest showing a screen of another kind or size is `needs_call`. What is drawn is not compared again, so a changed screen of the same mode is yours to catch: `screen_map_find` again, at a stop, after anything that may have changed it.
-
-**A program that keeps a pointer of its own** (it integrates the driver's motion and clamps the sum at the screen's edges, so after a clamp the two disagree) is steered by its map. The map declares, once, `"pointer": {"x": ref, "y": ref, "bytes": 2}`: the symbols or `SEG:OFF` where the program holds it, in its own units. A `send_mouse` to a place on a stopped machine then moves the driver, reads that pointer once the program has taken the move, and nudges the driver by the gap (learning the ratio from the motion the driver made on the first nudge, which its edge can cut short, at most four times) before any button goes; `arrived` is whether the program's pointer is on the place, wherever the driver sits, and for a drag whether the driver's end landed too (a program that adds the driver's motion to a pointer of its own takes a click where that pointer is, and the driver's place is in `pointer.screen` and `pointer.mouse`), and `pointer.program` says where it ended and how many nudges it took; the reply's `summary` names that pointer's place, with the driver's beside it when the two differ. A call whose first read finds the program's pointer on the place already sends no move to it, since the program would add that move to a pointer that is already there, and its reply carries no `motion`; a drag still moves to its end. With the program's pointer on the place, the reply is `arrived: false` with a `note` only when the driver is on another screen unit and its range (`max_x`, `max_y`) is not, after the move, what it was before it, a change the steering's own widening did not make (a range the program sets on the click itself is not the move's): a program that sets the range can be one that takes a click's position from the driver. A program reads the mouse once a pass of its own loop, so its pointer shows a move some retraces late: each read after a move runs the machine a retrace at a time, counted in `polls`, until the pointer changes or a bound passes, and a pointer the program's clamp holds never changes, so each read of it waits the whole bound. A move the steering did not send or did not follow (one in `units="mouse"`, one made while the guest ran, a drag's end, a steered move that left the guest in a mode of unknown size) is remembered while the map declares the pointer, and the next steered call's first read waits for it the same way: until the program's pointer leaves where that move found it (where its first read finds it, when nothing read it then), up to the same bound, and the driver's report is read after that wait; a loaded state drops such a move with the machine it was owed to, and with no such move behind it, that read waits for nothing. A driver at its edge loses the motion its program never sees, so the program's pointer can lag it by more than the room left to move: when four nudges do not reach the place the driver is swept once to the top-left and the bottom-right corners, where each pointer clamps and the two agree again, and the nudges start over (`corrections` then counts both rounds, eight at most). The guest sees that sweep, so a program that tracks a held button across separate calls sees the pointer cross the screen. A guest that runs cannot be read, so it is moved as ever, and a drag's end is not steered. A pointer that still does not arrive ends `arrived: false`, and `pointer.program.reach` gives the span (`x` and `y`, low and high) the program's pointer took at the driver's two corners: a program can show the driver's range on a window of its screen, and an aim outside that window cannot be reached by moving the driver. **A protected-mode program's pointer is read by linear address from a real-mode stop.** A `send_mouse` to a stopped machine ends on a retrace that is often inside a BIOS handler, in real mode, where the debugger addresses a `SEG:OFF` of 16-bit offsets and no further, and a DPMI program's data sits above the first megabyte. When the build's debugger has `MEMDUMPLIN` (it reads by linear address through the page tables CR3 holds, with paging on or off) and the table was loaded at a protected-mode stop with `base_from` a register (`DS`, or `CS` in a flat program), the pointer's symbols are placed as that register's base plus their offset and read that way, and the move is steered as at any other stop. `start(symbols=)` counts for a DJGPP program, which it places by `CS` at a protected-mode stop; a table with a base given by hand, and a build without the command have no way in: the call is refused (`unknown_ref` for a symbol, `bad_argument` for an explicit address) and the move is not steered. An Allegro program can also be made to read the driver instead: `mouse = I33` under `[mouse]` in its `allegro.cfg` (*The driver's pointer is the one placed*, [Input and the screen](input.md)).
-
-**In an export**, `screen_map_write(method="load")` and `screen_map_write(method="add")` are steps, so a replay knows the map an identification was made against; `screen_map_find` is a check; `screen_map_write(method="save")` is dropped, since a replay would find its file there. A `send_mouse` sent to a stopped machine is a step like any input to one ([Input and the screen](input.md), *The route*); one sent while the guest runs never reaches an export, which cuts at the release before it.
+Reading a manifest hashes every file again and fingerprints every picture again. A frame changed since, or a row edited by hand, is refused.
 
 <!-- scry-reference:begin image_compare -->
 ## `image_compare`
 
-*Compare pictures*
+Compare two pictures, two series of frames, or one region across a series, and get the difference as numbers.
 
 ```text
-image_compare(method, a="", b="", crop=null, shift=null, tolerance=null, manifest="", measure="", ref="", threshold=null, limit=null, dir="", checksums="")
+image_compare(method, a="", b="", crop=null, shift=null, tolerance=null, manifest="", measure="",
+    ref="", threshold=null, limit=null, dir="", checksums="")
 ```
 
+### Try it
+
+On the series the Bricks example of [`series_capture`](captures.md#series_capture) wrote: 14 frames of a video in which a brick falls. The rectangle is that brick's.
+
+Ask:
+
+> In the series, at which frames does the second brick's rectangle change, and by how many pixels?
+
+Call:
+
+```text
+image_compare(method="region", manifest="./tmp/demos/tour/files/series/manifest.json",
+    crop=[386, 148, 60, 16], measure="changed_pixels")
+```
+
+Reply, 4 of 11 fields:
+
+```json
+{
+  "summary": "image_compare region: changed_pixels, 4 transitions over 14 frames",
+  "frames": 14,
+  "transitions": [
+    [103, 32],
+    [104, 944],
+    [105, 40],
+    [106, 8]
+  ],
+  "gaps": [1, 1, 1]
+}
+```
+
+The rectangle changes at four of the 14 frames, and at frame 104, 944 of its pixels change at once: the brick is gone. Each of the `gaps` is 1, so the changes are on consecutive frames.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "image_compare region: changed_pixels, 4 transitions over 14 frames",
+  "status": "ok",
+  "measure": "changed_pixels",
+  "crop": [386, 148, 60, 16],
+  "frames": 14,
+  "start": {
+    "available": false,
+    "why": "`changed_pixels` counts a change from the frame before, and the first frame has none"
+  },
+  "transitions": [
+    [103, 32],
+    [104, 944],
+    [105, 40],
+    [106, 8]
+  ],
+  "gaps": [1, 1, 1],
+  "transitions_total": 4,
+  "path": "./tmp/demos/tour/files/series/track-1.json",
+  "manifest": "./tmp/demos/tour/files/series/manifest.json"
+}
+```
+
+</details>
+
+### The four methods
+
+| method | what it compares |
+|---|---|
+| `image` | Two PNGs, pixel by pixel: how many pixels differ, and where. |
+| `series` | Two series, frame by frame: how many frames are equal, and the first that differs. |
+| `region` | One rectangle across a series: the frames at which it changes. |
+| `golden` | A series or a folder of PNGs against a file of reference checksums. |
+
+### Arguments
+
+- `method` (one of `"image"`, `"series"`, `"region"`, `"golden"`, required): `image`, `series`, `region` or `golden`, as above.
+- `a` (string, default `""`): The first PNG for `image`, or the first manifest for `series`. An absolute path, or one starting with `~`.
+- `b` (string, default `""`): The second PNG or manifest, compared with `a`.
+- `crop` (array of integer, optional): The rectangle to compare, `[x, y, width, height]`, for every method but `golden`. Left out, the whole picture.
+- `shift` (array of integer, optional): For `image`: `[dx, dy]`, how far `b` is moved before the two are compared. Left out, no move.
+- `tolerance` (integer, optional): For `image`: the difference in one colour component still counted as equal, 0 to 255. Left out, 0.
+- `manifest` (string, default `""`): For `region` and `golden`: the series to read, by the path of its manifest.
+- `measure` (string, default `""`): For `region`, what is followed: the rectangle's `signature`, its `changed_pixels` since the frame before, or its `match` with `ref`. Left out, `signature`.
+- `ref` (string, default `""`): For the measure `match`: the PNG, of the crop's size, the rectangle is compared with.
+- `threshold` (number, optional): For `match`: the fraction of the rectangle's pixels that must equal `ref`, above 0 and at most 1. Left out, 0.98.
+- `limit` (integer, optional): For `region` and `golden`: how many items each list shows, 1 to 1000. Left out, 40; the whole count is beside the list.
+- `dir` (string, default `""`): For `golden`: a folder of PNGs to check, in place of `manifest`.
+- `checksums` (string, default `""`): For `golden`: the file of reference checksums, in the format `shasum -a 256` writes.
+
+### What comes back
+
+- `differing_pixels`: For `image`: how many pixels differ by more than `tolerance`. Zero means the two are equal over the rectangle compared.
+- `bbox`: For `image`: the rectangle that holds every differing pixel, `[x, y, width, height]` in the coordinates of `a`.
+- `first_differing`: For `series`: the first frame that differs, with its `frame` number, its `differing_pixels` and its `bbox`.
+- `differing`: For `series`: how many paired frames differ. For `golden`: the names of the files whose checksum differs.
+- `transitions`: For `region`: each change as `[frame, value]`, the first `limit` of them; `transitions_total` counts them all.
+- `path`: For `region`: a JSON file written beside the manifest, with every transition and each frame's value.
+
+<details><summary>All 32 reply fields</summary>
+
+- `a` (object or string)
+- `b` (object or string)
+- `bbox` (array or object)
+- `checksums` (string)
+- `crop` (array)
+- `differing` (integer or array)
+- `differing_pixels` (integer)
+- `differing_total` (integer)
+- `dir` (string)
+- `extra` (array)
+- `extra_total` (integer)
+- `first_differing` (object)
+- `frames` (integer)
+- `gaps` (array)
+- `height` (integer)
+- `identical` (integer)
+- `manifest` (string)
+- `matched` (integer)
+- `max_delta` (array)
+- `measure` (string)
+- `missing` (array)
+- `missing_total` (integer)
+- `only_in_a` (array)
+- `only_in_b` (array)
+- `pairs` (integer)
+- `path` (string)
+- `shift` (array)
+- `start` (array or object)
+- `tolerance` (integer)
+- `transitions` (array)
+- `transitions_total` (integer)
+- `width` (integer)
+
+</details>
+
+### What it refuses
+
+- An argument the method does not take (`bad_argument`).
+- Two pictures of different sizes with no `crop` that lies inside both (`bad_argument`).
+- A `crop` that leaves the picture, or a `shift` that moves it wholly off itself (`bad_argument`).
+- A path that is relative or missing, or a file that is no PNG or no `scry-series/1` manifest (`bad_argument`).
+- A manifest with a frame changed since it was written, or a row edited by hand (`bad_argument`).
+- A series that never changes, two series with no frame number in common, a region that never changes, or checksums that name no file examined (`control_silent`).
+
+### Why it works this way
+
+`image` compares the colours two pictures show, so an indexed PNG and an RGB one of the same screen are equal. `golden` compares file bytes through their checksums, so those two files differ.
+
+Two pictures of different sizes are refused unless a `crop` lies inside both. A tool that shows a picture enlarges it by its `scale`, so take both at `scale=1` before comparing them.
+
+A `crop` that leaves the picture is refused, never padded: a padded crop would compare pixels nobody drew.
+
+<details><summary>More on why</summary>
+
+- `series` pairs frames by number. Frames only one series has come back in `only_in_a` and `only_in_b` as `[first, last]` ranges.
+- `region` answers `start`, the first frame and its value, then the transitions. `gaps` counts the frames between one transition and the next.
+- `golden` pairs files and checksum lines by file name. `matched` counts the equal ones, `missing` lists lines with no file, `extra` files with no line.
+- The reply repeats the arguments it took, each path in full. For `image`, `a` and `b` come back with the file's `path` and `sha256`.
+
+</details>
+
+### Related tools
+
+- [`series_capture`](captures.md#series_capture)
+- [`snapshot`](captures.md#snapshot)
+- [`screen_signature`](screen.md#screen_signature)
+- [`screen_view`](screen.md#screen_view)
+- [`audio_compare`](#audio_compare)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Compare PNGs, series or a region of one, in numbers. `crop` [x, y, w, h]; `limit` 1..1000
 (default 40) cuts a list, its count beside it. Replies also echo the arguments they took.
 
@@ -59,101 +210,155 @@ Refused: an argument the method does not take; `control_silent` when nothing can
 Reads files, and `region` writes one, `path`: it needs no machine. Every path is absolute or starts with `~`.
 
 Reference: REFERENCE.md, Media files.
-
-| argument | type | default |
-|---|---|---|
-| `method` | one of `"image"`, `"series"`, `"region"`, `"golden"` | required |
-| `a` | string | `""` |
-| `b` | string | `""` |
-| `crop` | array of integer or null | `null` |
-| `shift` | array of integer or null | `null` |
-| `tolerance` | integer or null | `null` |
-| `manifest` | string | `""` |
-| `measure` | string | `""` |
-| `ref` | string | `""` |
-| `threshold` | number or null | `null` |
-| `limit` | integer or null | `null` |
-| `dir` | string | `""` |
-| `checksums` | string | `""` |
-
-| reply field | type |
-|---|---|
-| `a` | object or string |
-| `b` | object or string |
-| `bbox` | array or object |
-| `checksums` | string |
-| `crop` | array |
-| `differing` | integer or array |
-| `differing_pixels` | integer |
-| `differing_total` | integer |
-| `dir` | string |
-| `extra` | array |
-| `extra_total` | integer |
-| `first_differing` | object |
-| `frames` | integer |
-| `gaps` | array |
-| `height` | integer |
-| `identical` | integer |
-| `manifest` | string |
-| `matched` | integer |
-| `max_delta` | array |
-| `measure` | string |
-| `missing` | array |
-| `missing_total` | integer |
-| `only_in_a` | array |
-| `only_in_b` | array |
-| `pairs` | integer |
-| `path` | string |
-| `shift` | array |
-| `start` | array or object |
-| `tolerance` | integer |
-| `transitions` | array |
-| `transitions_total` | integer |
-| `width` | integer |
-
-Example, from a live run:
-
-```json
-{
-  "method": "region",
-  "manifest": "$TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json",
-  "measure": "changed_pixels"
-}
 ```
 
-```json
-{
-  "summary": "image_compare region: changed_pixels, 1 transition over 5 frames",
-  "status": "ok",
-  "measure": "changed_pixels",
-  "crop": [0, 0, 320, 8],
-  "frames": 5,
-  "start": {
-    "available": false,
-    "why": "`changed_pixels` counts a change from the frame before, and the first frame has none"
-  },
-  "transitions": [
-    [4, 2560]
-  ],
-  "gaps": [],
-  "transitions_total": 1,
-  "path": "$TMPDIR/dosbox-x-session-<run>/series/series-1/track-1.json",
-  "manifest": "$TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json"
-}
-```
+</details>
 <!-- scry-reference:end image_compare -->
-
-Replies echo the arguments they were given (`a`, `b`, `crop`, `shift`, `tolerance`, `manifest`, `dir`, `checksums`).
 
 <!-- scry-reference:begin audio_compare -->
 ## `audio_compare`
 
-*Measure or compare WAV recordings*
+Measure a WAV recording, or compare two, and get loudness, silence, timing and closeness as numbers.
 
 ```text
 audio_compare(method, path="", a="", b="", window=null, channel=null, align=null)
 ```
 
+### Try it
+
+On Minesweeper, a game this repository builds, after the [`audio_record`](captures.md#audio_record) example recorded its explosion. `b` is the reference recording the demo keeps.
+
+Ask:
+
+> Is the explosion I recorded the same as the reference boom.wav, sample for sample?
+
+Call:
+
+```text
+audio_compare(method="diff", a="./tmp/demos/mines/boom.wav", b="./demos/mines/boom.wav",
+    align=false)
+```
+
+Reply, 5 of 11 fields:
+
+```json
+{
+  "summary": "audio_compare diff: exact, equal, envelope 1.0",
+  "exact": true,
+  "snr_db": {
+    "available": false,
+    "why": "the two are equal after alignment: there is no error to measure the signal against"
+  },
+  "class": "exact",
+  "aligned_by_samples": 0
+}
+```
+
+`exact` is `true`: the two files hold the same samples, compared from their first sample. With nothing differing there is no ratio to give, so `snr_db` is unavailable.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "audio_compare diff: exact, equal, envelope 1.0",
+  "status": "ok",
+  "exact": true,
+  "snr_db": {
+    "available": false,
+    "why": "the two are equal after alignment: there is no error to measure the signal against"
+  },
+  "class": "exact",
+  "envelope_correlation": 1.0,
+  "onset_delta_ms": 0.0,
+  "length_delta_samples": 0,
+  "aligned_by_samples": 0,
+  "a": "<volatile>",
+  "b": "./demos/mines/boom.wav"
+}
+```
+
+</details>
+
+### The two methods
+
+| method | what it answers |
+|---|---|
+| `measure` | One recording: how loud it is, whether it is silent, when the sound begins and whether it clips. |
+| `diff` | Two recordings: whether they are equal and, if not, how close they are. |
+
+### Arguments
+
+- `method` (one of `"measure"`, `"diff"`, required): `measure` or `diff`, as above.
+- `path` (string, default `""`): For `measure`: the WAV to measure, 8- or 16-bit PCM. An absolute path, or one starting with `~`.
+- `a` (string, default `""`): For `diff`: the recording under test.
+- `b` (string, default `""`): For `diff`: the reference recording, of the same sample rate, `channels` and bit depth as `a`.
+- `window` (array of number, optional): The part of the recording to read, `[from_s, to_s]` in seconds. Left out, the whole file.
+- `channel` (integer, optional): For `measure`: which of the file's `channels` to measure, numbered from 0. Left out, each of them.
+- `align` (boolean, optional): For `diff`: `true` lines up where the two sounds begin before comparing them; `false` compares from the first sample. Left out, `true`.
+
+### What comes back
+
+- `measures`: For `measure`: one row for each of the `channels`, with `channel`, `peak_dbfs`, `rms_dbfs`, `silent`, `silence_spans` (its `count` and `first`), `onset_s`, `clipping_run` and `clipped`.
+- `pcm_sha256`: For `measure`: the SHA-256 of the samples in the window, equal for two files that hold the same sound.
+- `exact`: For `diff`: `true` when the two windows hold the same bytes.
+- `class`: For `diff`, the verdict in one word: `exact`, `inaudible`, `audible` or `different`.
+- `snr_db`: For `diff`: the signal-to-noise ratio of `a` against `b`, the worst of the `channels`. Unavailable when the two are equal once lined up.
+- `aligned_by_samples`: For `diff`: how many samples `a` was moved to line up with `b`.
+
+<details><summary>All 16 reply fields</summary>
+
+- `a` (string)
+- `b` (string)
+- `aligned_by_samples` (integer)
+- `bits` (integer)
+- `channels` (integer)
+- `envelope_correlation` (number)
+- `exact` (boolean)
+- `length_delta_samples` (integer)
+- `measures` (array)
+- `onset_delta_ms` (number)
+- `path` (string)
+- `pcm_sha256` (string)
+- `sample_rate_hz` (integer)
+- `snr_db` (number or object)
+- `window` (array)
+- `class` (string)
+
+</details>
+
+### What it refuses
+
+- An argument the method does not take (`bad_argument`).
+- A file that is not 8- or 16-bit PCM, holds no sample or cannot be read (`bad_argument`).
+- A `window` outside the recording, or a `channel` number the file does not have (`bad_argument`).
+- For `diff`, two recordings that differ in sample rate, `channels` or bit depth (`bad_argument`).
+- For `diff`, two recordings that are both silent over the window (`control_silent`).
+
+### Why it works this way
+
+The sound itself never comes back, only numbers, so a client that cannot listen checks a recording through them.
+
+Each of the `channels` is measured and compared on its own, never mixed down first. Mixed, one in antiphase would cancel, and two swapped ones would average to the same sound.
+
+`diff` lines up the two sounds unless `align` is `false`, so a recording that starts a few samples later is not called different. With `align` `false`, two recordings made from the same stop are compared sample for sample.
+
+<details><summary>More on why</summary>
+
+- A steady level that is not zero is no sound: loudness, silence and the comparison read the window less its mean.
+- Two recordings whose lengths are more than a tenth of a second apart are `different`.
+- The reply repeats `path`, `a`, `b` and the `window` it read.
+
+</details>
+
+### Related tools
+
+- [`audio_record`](captures.md#audio_record)
+- [`captures`](captures.md#captures)
+- [`image_compare`](#image_compare)
+
+<details><summary>The contract your client receives</summary>
+
+```text
 Measure a WAV or compare two, in numbers. 8- or 16-bit PCM; `window` [from_s, to_s],
 seconds, default the whole file.
 
@@ -174,129 +379,48 @@ Refused: an argument the method does not take; `control_silent` when both are si
 Reads files only: it needs no machine and alters nothing. Every path is absolute or starts with `~`.
 
 Reference: REFERENCE.md, Media files.
-
-| argument | type | default |
-|---|---|---|
-| `method` | one of `"measure"`, `"diff"` | required |
-| `path` | string | `""` |
-| `a` | string | `""` |
-| `b` | string | `""` |
-| `window` | array of number or null | `null` |
-| `channel` | integer or null | `null` |
-| `align` | boolean or null | `null` |
-
-| reply field | type |
-|---|---|
-| `a` | string |
-| `b` | string |
-| `aligned_by_samples` | integer |
-| `bits` | integer |
-| `channels` | integer |
-| `envelope_correlation` | number |
-| `exact` | boolean |
-| `length_delta_samples` | integer |
-| `measures` | array |
-| `onset_delta_ms` | number |
-| `path` | string |
-| `pcm_sha256` | string |
-| `sample_rate_hz` | integer |
-| `snr_db` | number or object |
-| `window` | array |
-| `class` | string |
-
-Example, from a live run:
-
-```json
-{
-  "method": "measure",
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
-}
 ```
 
-```json
-{
-  "summary": "audio_compare measure: ch0 peak -6.97 dBFS, onset 0.0 s, ch1 peak -6.97 dBFS, onset 0.0 s",
-  "status": "ok",
-  "sample_rate_hz": 48000,
-  "channels": 2,
-  "bits": 16,
-  "window": [0.0, 0.999],
-  "measures": [
-    {
-      "channel": 0,
-      "peak_dbfs": -6.97,
-      "rms_dbfs": -14.86,
-      "silent": false,
-      "silence_spans": {
-        "count": 0,
-        "first": {"available": false, "why": "no silence in the window"}
-      },
-      "onset_s": 0.0,
-      "clipping_run": 5,
-      "clipped": false
-    },
-    {
-      "channel": 1,
-      "peak_dbfs": -6.97,
-      "rms_dbfs": -14.86,
-      "silent": false,
-      "silence_spans": {
-        "count": 0,
-        "first": {"available": false, "why": "no silence in the window"}
-      },
-      "onset_s": 0.0,
-      "clipping_run": 5,
-      "clipped": false
-    }
-  ],
-  "pcm_sha256": "e60ff11bce0c03f6caa4a04e9e3654b9e40a70a8c156d9e6d2ec7c33a3703a62",
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
-}
-```
+</details>
 <!-- scry-reference:end audio_compare -->
-
-A model cannot listen, so a recording `audio_record` wrote is judged by these numbers. Each channel is measured and compared on its own, never mixed down first: a channel in antiphase would cancel, and two swapped channels would average to the same sound. `diff` meets the two onsets unless `align` is false, so a recording that starts a few samples later is not called different; with `align` false a recording made from the same stop on the same fixed clock is held sample for sample. Replies echo `path`, `a`, `b` and `window`; the sound itself never comes back.
 
 <!-- scry-reference:begin guest_file -->
 ## `guest_file`
 
-*What the guest left in a file*
+Check a file the DOS program was meant to write on a mounted drive: whether this run wrote it, its size and its hash.
 
 ```text
 guest_file(path)
 ```
 
-What the guest left at `path`, a host file `start(guest_files=)` fingerprinted before
-the emulator booted: `absent`, `empty`, `unchanged` (the bytes and time from before the
-run) or `written`. Reads the host's file, so it answers with the guest running or after
-`close`.
+### Try it
 
-Reply: `path`, `state`, `bytes`, `sha256`, `before` (`exists`, `bytes`, `sha256`),
-`same_bytes` (written again with the bytes it held). INVALID `readback_refused` on the
-first three, which hand nothing back; a path `start` did not name is refused.
+It needs a DOS program that writes a file on a mounted drive, which neither Bricks nor Minesweeper does. The reply shown comes from a test program that is not distributed.
 
-Reference: REFERENCE.md, The guest's files.
+Ask:
 
-| argument | type | default |
-|---|---|---|
-| `path` | string | required |
+> Did the program write OUT.TXT during this run?
 
-| reply field | type |
-|---|---|
-| `before` | object |
-| `bytes` | integer |
-| `path` | string |
-| `same_bytes` | boolean |
-| `sha256` | string |
-| `state` | string |
+Call:
 
-Example, from a live run:
+```text
+guest_file(path="$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT")
+```
+
+Reply, 4 of 7 fields:
 
 ```json
 {
-  "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Y/n1-dosio/OUT.TXT"
+  "state": "written",
+  "before": {"exists": false},
+  "bytes": 4,
+  "sha256": "580175b2969134a0d8c6f325b442c6d25cf5b10f0643150ed45ffd3a8905bcba"
 }
 ```
+
+`written` means this run wrote the file. Nothing was there before the emulator booted (`exists` is `false`), and the file now holds 4 bytes.
+
+<details><summary>The whole reply</summary>
 
 ```json
 {
@@ -309,11 +433,72 @@ Example, from a live run:
   "sha256": "580175b2969134a0d8c6f325b442c6d25cf5b10f0643150ed45ffd3a8905bcba"
 }
 ```
-<!-- scry-reference:end guest_file -->
 
-**The fingerprint is the size, the modification time and the SHA-256 together.** A file written
-again with the same bytes moves its time, so it is `written`, with `same_bytes`, and never
-`unchanged`; a file that keeps all three is the one from before the run. `close` judges each file
-after the emulator has exited: on a clean `quit` every handle the guest left open has been closed
-and flushed; an emulator that was killed may have left bytes unwritten. A file the host cannot
-read (the guest made a directory of it) is `unreadable`, and `close` still closes.
+</details>
+
+### Arguments
+
+- `path` (string, required): The file on your disk, one of the paths given to `start(guest_files=)`. An absolute path, or one starting with `~`.
+
+### What comes back
+
+- `state`: `written` when this run wrote the file. `absent`, `empty`, `unchanged` and `unreadable` come as a refusal.
+- `bytes`: The file's size now.
+- `sha256`: The SHA-256 of the file now.
+- `before`: What was there before the emulator booted: `exists` and, when it did, its `bytes` and `sha256`.
+- `same_bytes`: `true` when the run wrote the file again with the bytes it already held.
+
+<details><summary>All 6 reply fields</summary>
+
+- `before` (object)
+- `bytes` (integer)
+- `path` (string)
+- `same_bytes` (boolean)
+- `sha256` (string)
+- `state` (string)
+
+</details>
+
+### What it refuses
+
+- A path that `start(guest_files=)` did not name (`bad_argument`).
+- A file that is `absent`, `empty`, `unchanged` since before the run, or `unreadable` (`readback_refused`).
+
+### Why it works this way
+
+A DOS program hands a result back as a file on a mounted drive. `start(guest_files=)` records each file's size, modification time and SHA-256 before the emulator boots, and this tool compares the file with that record.
+
+A file left by an earlier run passes any test for existence, which is why `unchanged` is refused. A file written again with the same bytes has a new time, so it is `written`, with `same_bytes`.
+
+A file the program still holds open may not have its bytes yet: the emulator buffers them until DOS closes the file.
+
+<details><summary>More on why</summary>
+
+`close` checks each file again after the emulator has exited. On a clean quit every file the program left open has been closed and written out; an emulator that was killed may have left bytes unwritten.
+
+A file your computer cannot read, such as a name the program made a directory of, is `unreadable`, and `close` still closes.
+
+</details>
+
+### Related tools
+
+- [`start`](session.md#start)
+- [`close`](session.md#close)
+
+<details><summary>The contract your client receives</summary>
+
+```text
+What the guest left at `path`, a host file `start(guest_files=)` fingerprinted before
+the emulator booted: `absent`, `empty`, `unchanged` (the bytes and time from before the
+run) or `written`. Reads the host's file, so it answers with the guest running or after
+`close`.
+
+Reply: `path`, `state`, `bytes`, `sha256`, `before` (`exists`, `bytes`, `sha256`),
+`same_bytes` (written again with the bytes it held). INVALID `readback_refused` on the
+first three, which hand nothing back; a path `start` did not name is refused.
+
+Reference: REFERENCE.md, Files inside DOS.
+```
+
+</details>
+<!-- scry-reference:end guest_file -->

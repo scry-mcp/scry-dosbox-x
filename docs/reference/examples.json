@@ -1,6 +1,6 @@
 {
  "a20": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped a20 read",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 24",
   "call": {
    "method": "read"
   },
@@ -11,157 +11,179 @@
   }
  },
  "audio_compare": {
-  "from": "[T] sound and screen recorded at a stop, on the package's sound guest: T audio_compare hears the WAV, finds it exact against itself and different from silence",
+  "from": "demos/mines/TRANSCRIPT.md: call 34",
   "call": {
-   "method": "measure",
-   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
+   "method": "diff",
+   "a": "./tmp/demos/mines/boom.wav",
+   "b": "./demos/mines/boom.wav",
+   "align": false
   },
   "reply": {
-   "summary": "audio_compare measure: ch0 peak -6.97 dBFS, onset 0.0 s, ch1 peak -6.97 dBFS, onset 0.0 s",
+   "summary": "audio_compare diff: exact, equal, envelope 1.0",
    "status": "ok",
-   "sample_rate_hz": 48000,
-   "channels": 2,
-   "bits": 16,
-   "window": [
-    0.0,
-    0.999
-   ],
-   "measures": [
-    {
-     "channel": 0,
-     "peak_dbfs": -6.97,
-     "rms_dbfs": -14.86,
-     "silent": false,
-     "silence_spans": {
-      "count": 0,
-      "first": {
-       "available": false,
-       "why": "no silence in the window"
-      }
-     },
-     "onset_s": 0.0,
-     "clipping_run": 5,
-     "clipped": false
-    },
-    {
-     "channel": 1,
-     "peak_dbfs": -6.97,
-     "rms_dbfs": -14.86,
-     "silent": false,
-     "silence_spans": {
-      "count": 0,
-      "first": {
-       "available": false,
-       "why": "no silence in the window"
-      }
-     },
-     "onset_s": 0.0,
-     "clipping_run": 5,
-     "clipped": false
-    }
-   ],
-   "pcm_sha256": "e60ff11bce0c03f6caa4a04e9e3654b9e40a70a8c156d9e6d2ec7c33a3703a62",
-   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/T/n4.wav"
+   "exact": true,
+   "snr_db": {
+    "available": false,
+    "why": "the two are equal after alignment: there is no error to measure the signal against"
+   },
+   "class": "exact",
+   "envelope_correlation": 1.0,
+   "onset_delta_ms": 0.0,
+   "length_delta_samples": 0,
+   "aligned_by_samples": 0,
+   "a": "<volatile>",
+   "b": "./demos/mines/boom.wav"
   }
  },
  "audio_record": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped audio_record",
+  "from": "demos/mines/TRANSCRIPT.md: call 32",
   "call": {
-   "frames": 2,
-   "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1519.wav",
-   "seconds": 30
+   "frames": 45,
+   "dest": "./tmp/demos/mines/boom.wav"
   },
   "reply": {
-   "summary": "audio_record wav 2 frames: ELAPSED, 1344 samples at 48000 Hz, silent at $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1519.wav",
+   "summary": "audio_record wav 45 frames: ELAPSED, 30768 samples at 48000 Hz at ./tmp/demos/mines/boom.wav",
    "status": "ok",
    "verdict": "ELAPSED",
-   "polls": 2,
-   "pc": "0814:00000130",
+   "polls": 45,
+   "pc": "08DF:00000E08",
    "cpu_mode": "real",
-   "frame": 143,
+   "frame": 945,
    "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x000002b4",
-    "ECX": "0x000012d9",
-    "EDX": "0x00000814",
-    "ESI": "0x00000173",
-    "EDI": "0x0000015d",
+    "EAX": "0x00000004",
+    "EBX": "0x00000000",
+    "ECX": "0x00000160",
+    "EDX": "0x000003da",
+    "ESI": "0x000017d5",
+    "EDI": "0x00000fe3",
     "EBP": "0x0000091c",
-    "ESP": "0x0000fffe",
-    "EIP": "0x00000130",
-    "CS": "0x0814",
-    "DS": "0x0814",
-    "ES": "0x0814",
+    "ESP": "0x0000fffc",
+    "EIP": "0x00000e08",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0x08df",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814"
+    "SS": "0x08df"
    },
    "watches": [],
-   "cause": "the retrace run_for ran to, at 0814:00000130",
+   "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
    "e9": {
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 50074
+    "mark": "<volatile>"
    },
-   "stop_seq": 11,
+   "stop_seq": 668,
    "instruction": {
-    "address": "0814:00000130",
-    "bytes": "E2FE",
-    "text": "loop 0x130",
-    "flow": "branch",
+    "address": "08DF:00000E08",
+    "bytes": "A808",
+    "text": "test al, 8",
+    "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-     "available": false,
-     "why": "no symbol table is loaded"
-    },
-    "delta": {
-     "available": false,
-     "why": "no symbol table is loaded"
-    }
+    "symbol": "retrace",
+    "delta": 9
    },
-   "emulated_before_s": 2.003237,
-   "emulated_after_s": 2.0317731,
-   "frame_before": 141,
-   "frame_after": 143,
-   "cycles": 284494,
+   "emulated_before_s": 12.818086224999998,
+   "emulated_after_s": 13.459407425,
+   "frame_before": 900,
+   "frame_after": 945,
+   "cycles": 1789674,
    "kind": "wav",
-   "frames": 2,
+   "frames": 45,
    "began": true,
    "ended": true,
-   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1519.wav",
-   "bytes": 5420,
+   "path": "<volatile>",
+   "bytes": 123116,
    "channels": 2,
    "sample_rate_hz": 48000,
-   "samples": 1344,
-   "emulated_s": 0.0285361,
-   "sample_min": 0,
-   "sample_max": 0
+   "samples": 30768,
+   "emulated_s": 0.6413212,
+   "sample_min": -18099,
+   "sample_max": 18479
   }
  },
  "breakpoint_at": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped breakpoint_at",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 50",
   "call": {
-   "ref": "0000:0002"
+   "ref": "brick_hit"
   },
   "reply": {
-   "summary": "breakpoint_at 0000:0002: armed",
+   "summary": "breakpoint_at brick_hit: armed",
    "status": "ok",
-   "ref": "0000:0002",
-   "by": "address",
+   "ref": "brick_hit",
+   "by": "symbol",
    "role": "stop",
    "stored": true,
    "armed": true,
    "state": "armed",
-   "entry": "BP 0000:0002"
+   "entry": "BP 08DF:02C8"
+  },
+  "then": {
+   "tool": "resume",
+   "call": {
+    "seconds": 60
+   },
+   "reply": {
+    "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
+    "status": "ok",
+    "verdict": "OTHER_STOP",
+    "omitted": [
+     "output",
+     "output_chars",
+     "clipped"
+    ],
+    "how": "detail=True adds what the debugger printed for this command",
+    "waited_s": "<volatile>",
+    "pc": "08DF:000002C8",
+    "cpu_mode": "real",
+    "frame": 244,
+    "regs": {
+     "EAX": "0x00000005",
+     "EBX": "0x00000000",
+     "ECX": "0x005b0020",
+     "EDX": "0x00000000",
+     "ESI": "0x00000032",
+     "EDI": "0x00006410",
+     "EBP": "0x0000091c",
+     "ESP": "0x0000fffa",
+     "EIP": "0x000002c8",
+     "CS": "0x08df",
+     "DS": "0x08df",
+     "ES": "0xa000",
+     "FS": "0x0000",
+     "GS": "0x0000",
+     "SS": "0x08df"
+    },
+    "watches": [],
+    "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8",
+    "e9": {
+     "lines_total": 0,
+     "truncated": false,
+     "lines": [],
+     "mark": "<volatile>"
+    },
+    "stop_seq": 10,
+    "instruction": {
+     "address": "08DF:000002C8",
+     "bytes": "88DF",
+     "text": "mov bh, bl",
+     "flow": "sequential",
+     "code_bits": 16,
+     "bytes_from": "memory",
+     "comment": "AL = row, BL = column of the brick that falls",
+     "symbol": "brick_hit",
+     "delta": 0
+    }
+   }
   }
  },
  "breakpoint_interrupt": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped breakpoint_interrupt",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 71",
   "call": {
-   "number": 33,
-   "ah": 76
+   "number": "0x21",
+   "ah": "0x4C"
   },
   "reply": {
    "summary": "breakpoint_interrupt BPINT 21 AH=4C: stored",
@@ -176,16 +198,90 @@
     "clipped"
    ],
    "how": "detail=True adds what the debugger printed for this command"
+  },
+  "then": {
+   "tool": "resume",
+   "call": {
+    "seconds": 60
+   },
+   "reply": {
+    "summary": "resume: OTHER_STOP, stopped at 08DF:0000013C",
+    "status": "ok",
+    "verdict": "OTHER_STOP",
+    "omitted": [
+     "output",
+     "output_chars",
+     "clipped"
+    ],
+    "how": "detail=True adds what the debugger printed for this command",
+    "waited_s": "<volatile>",
+    "pc": "08DF:0000013C",
+    "cpu_mode": "real",
+    "frame": "<volatile>",
+    "regs": {
+     "EAX": "0x00004c00",
+     "EBX": "0x0000000f",
+     "ECX": "0x005b0004",
+     "EDX": "0x00000000",
+     "ESI": "0x00000615",
+     "EDI": "0x00006192",
+     "EBP": "0x0000091c",
+     "ESP": "0x0000fffe",
+     "EIP": "0x0000013c",
+     "CS": "0x08df",
+     "DS": "0x08df",
+     "ES": "0xa000",
+     "FS": "0x0000",
+     "GS": "0x0000",
+     "SS": "0x08df"
+    },
+    "watches": [
+     {
+      "ref": "lives",
+      "by": "symbol",
+      "mode": "freeze",
+      "length": 1,
+      "fmt": "u8",
+      "addr": "08DF:00000617",
+      "frozen_hex": "03",
+      "entries": [
+       "FM 00000617 (03)"
+      ],
+      "bytes": "03",
+      "state": "holding"
+     }
+    ],
+    "cause": "most likely the held `BPINT 21 AH=4C`: the guest is at `int 21`, at 08DF:0000013C",
+    "e9": {
+     "lines_total": 1,
+     "truncated": false,
+     "lines": [
+      "Bochs port E9h: HIT 5 0"
+     ],
+     "mark": "<volatile>"
+    },
+    "stop_seq": "<volatile>",
+    "instruction": {
+     "address": "08DF:0000013C",
+     "bytes": "CD21",
+     "text": "int 0x21",
+     "flow": "call",
+     "code_bits": 16,
+     "bytes_from": "memory",
+     "symbol": "main_loop",
+     "delta": 33
+    }
+   }
   }
  },
  "build_check": {
-  "from": "[A] every tool in every machine state, on the probe guest: A none    build_check",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 1",
   "call": {},
   "reply": {
-   "summary": "build_check: ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+   "summary": "<volatile>",
    "status": "ok",
-   "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
-   "binary_origin": "DOSBOX_X_BINARY",
+   "binary": "<volatile>",
+   "binary_origin": "<volatile>",
    "version": "<volatile>",
    "debugger": true,
    "heavy_debug": true,
@@ -210,16 +306,16 @@
   }
  },
  "call_stack": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped call_stack",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 29",
   "call": {},
   "reply": {
-   "summary": "call_stack: 1 call, innermost F000:0000FEA5, heuristic",
+   "summary": "call_stack: 1 call, innermost brick_hit, heuristic",
    "status": "ok",
    "heuristic": true,
    "code_bits": 16,
    "calls": [
     {
-     "seg_off": "F000:0000FEA5",
+     "seg_off": "08DF:000002C8",
      "via": "stop",
      "call": {
       "available": false,
@@ -229,15 +325,9 @@
       "available": false,
       "why": "no frame was read beside it"
      },
-     "addr": "0x000ffea5",
-     "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-     },
-     "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-     }
+     "addr": "0x000090b8",
+     "symbol": "brick_hit",
+     "delta": 0
     }
    ],
    "truncated": false,
@@ -245,102 +335,107 @@
   }
  },
  "capture_frame": {
-  "from": "[J] the screen from the VGA's listings and video memory, on the package's guests: J the 13h picture equals the emulator's own capture of that frame, pixel for pixel",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 47",
   "call": {
-   "frame": 2,
-   "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n11.png",
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n6-cap/screen_001.avi"
+   "frame": 104,
+   "capture_path": "./tmp/demos/tour/files/second-brick.avi",
+   "dest": "./tmp/demos/tour/files/brick-gone.png"
   },
   "reply": {
-   "summary": "capture_frame 2: 5072 bytes to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n11.png",
+   "summary": "<volatile>",
    "status": "ok",
-   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n11.png",
+   "path": "./tmp/demos/tour/files/brick-gone.png",
    "bytes": "<volatile>",
    "sha256": "<volatile>",
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/J/n6-cap/screen_001.avi",
-   "frame": 2
+   "capture_path": "./tmp/demos/tour/files/second-brick.avi",
+   "frame": 104
   }
  },
  "captures": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped captures",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 73",
   "call": {},
   "reply": {
-   "summary": "captures: 7 files",
+   "summary": "captures: 10 files",
    "status": "ok",
    "captures": [
     {
-     "kind": "bin",
-     "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1155.bin",
+     "kind": "png",
+     "path": "./tmp/demos/tour/files/wall.png",
      "present": true,
-     "bytes": 16
+     "bytes": "<volatile>"
     },
     {
      "kind": "png",
-     "path": "$TMPDIR/dosbox-x-session-<run>/gfx/palette-1.png",
+     "path": "./tmp/demos/tour/files/palette.png",
      "present": true,
-     "bytes": 1009
+     "bytes": "<volatile>"
+    },
+    {
+     "kind": "bin",
+     "path": "./tmp/demos/tour/files/wall.bin",
+     "present": true,
+     "bytes": "<volatile>"
     },
     {
      "kind": "json",
-     "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1332-stopped-screen-map.json",
+     "path": "./tmp/demos/tour/files/session.json",
      "present": true,
-     "bytes": 412
+     "bytes": "<volatile>"
     },
     {
      "kind": "trace",
-     "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1444.trace",
+     "path": "./tmp/demos/tour/files/captures/trace-1.trace",
      "present": true,
-     "bytes": 238
+     "bytes": "<volatile>"
     },
     {
      "kind": "avi",
-     "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1506.avi",
+     "path": "./tmp/demos/tour/files/second-brick.avi",
      "present": true,
-     "bytes": 36314,
+     "bytes": "<volatile>",
      "riff_avi": true,
-     "avi_frames": 1,
+     "avi_frames": 109,
      "complete": true
     },
-    {
-     "kind": "wav",
-     "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1519.wav",
-     "present": true,
-     "bytes": 5420,
-     "complete": true,
-     "samples": 1344,
-     "channels": 2,
-     "sample_rate_hz": 48000
-    },
-    "... 1 more"
+    "... 4 more"
    ]
   }
  },
  "close": {
-  "from": "[A] every tool in every machine state, on the probe guest: A none    close",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 74",
   "call": {},
   "reply": {
-   "summary": "close: no session",
+   "summary": "close: quit, exit code 0",
    "status": "ok",
-   "closed": false,
-   "ended_by": "none",
+   "closed": true,
    "pid": "<volatile>",
-   "exit_code": {
-    "available": false,
-    "why": "no session was running"
-   },
-   "note": "there was no session to close"
+   "conf": "./demos/bricks/bricks.conf",
+   "conf_digest": "af0834584e2dad05",
+   "watched": true,
+   "bound_s": 900,
+   "elapsed_s": "<volatile>",
+   "captures": "off",
+   "state_dir": "./tmp/demos/tour/files/states",
+   "ended_by": "quit",
+   "exit_code": 0,
+   "omitted": [
+    "stdout_tail",
+    "errorlog_tail"
+   ],
+   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
+   "draft": "<volatile>"
   }
  },
  "comment_list": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped comment_list",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 20",
   "call": {},
   "reply": {
    "summary": "comment_list: 1 comment",
    "status": "ok",
    "comments": [
     {
-     "ref": "8000:0100",
-     "by": "address",
+     "ref": "brick_hit",
+     "by": "symbol",
      "cpu": {
       "available": false,
       "why": "a DOS machine has one cpu, and every row acts on it"
@@ -348,9 +443,9 @@
      "created_at": "<volatile>",
      "origin": "<volatile>",
      "inherited": false,
-     "age_s": 0,
-     "text": "matrix A",
-     "addr": "0x00080100",
+     "age_s": "<volatile>",
+     "text": "AL = row, BL = column of the brick that falls",
+     "addr": "0x000090b8",
      "state": "resolved"
     }
    ],
@@ -358,23 +453,23 @@
    "truncated": false,
    "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/dosbox-x-live-matrix-A-<run>/dosbox-x-debug/declarations.json"
+    "path": "<volatile>"
    }
   }
  },
  "comment_write": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped comment_write add",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 18",
   "call": {
    "method": "add",
-   "ref": "8000:0100",
-   "text": "matrix A"
+   "ref": "brick_hit",
+   "text": "AL = row, BL = column of the brick that falls"
   },
   "reply": {
-   "summary": "comment_write add: 8000:0100 at 0x00080100, stored",
+   "summary": "comment_write add: brick_hit at 0x000090b8, stored",
    "status": "ok",
    "comment": {
-    "ref": "8000:0100",
-    "by": "address",
+    "ref": "brick_hit",
+    "by": "symbol",
     "cpu": {
      "available": false,
      "why": "a DOS machine has one cpu, and every row acts on it"
@@ -382,58 +477,59 @@
     "created_at": "<volatile>",
     "origin": "<volatile>",
     "inherited": false,
-    "age_s": 0,
-    "text": "matrix A",
-    "addr": "0x00080100",
+    "age_s": "<volatile>",
+    "text": "AL = row, BL = column of the brick that falls",
+    "addr": "0x000090b8",
     "state": "resolved"
    },
    "replaced_comments": [],
    "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/dosbox-x-live-matrix-A-<run>/dosbox-x-debug/declarations.json"
+    "path": "<volatile>"
    }
   }
  },
  "debug": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped debug",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 25",
   "call": {
-   "command": "BPLIST"
+   "command": "FPU"
   },
   "reply": {
-   "summary": "debug 'BPLIST': 90 chars",
+   "summary": "debug 'FPU': 460 chars",
    "status": "ok",
-   "command": "BPLIST",
-   "output": "Breakpoint list:\n-------------------------------------------------------------------------",
+   "command": "FPU",
+   "output": "status: B=0 C3-C0=0000 ES=0 SF=0 PE=0 UE=0 OE=0 ZE=0 DE=0 IE=0 TOP=0\n st(0): empty use80=0 val=0 (0x0000000000000000)\n st(1): empty use80=0 val=0 (0x0000000000000000)\n st(2): empty use80=0 val=0 (0x0000000000000000)\n st(3): empty use80=0 va ... (460 characters)",
    "clipped": false
   }
  },
  "declaration_clear": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped declaration_clear breakpoint",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 38",
   "call": {
-   "kind": "breakpoint",
-   "ref": "0000:0002"
+   "kind": "watch",
+   "ref": "score"
   },
   "reply": {
-   "summary": "declaration_clear breakpoint 0000:0002: 1 cleared",
+   "summary": "declaration_clear watch score: 1 cleared",
    "status": "ok",
    "declarations_cleared": 1,
    "disarmed": [
-    "BP 0000:0002"
+    "BPMEM 08DF:0615 (3C)",
+    "BPMEM 08DF:0616 (00)"
    ]
   }
  },
  "declaration_list": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped declaration_list breakpoint",
-  "call": {
-   "kind": "breakpoint"
-  },
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 45",
+  "call": {},
   "reply": {
-   "summary": "declaration_list breakpoint: 1 breakpoints declared",
+   "summary": "declaration_list: 0 breakpoints declared, 0 regpoints declared, 3 watches declared",
    "status": "ok",
-   "breakpoints": [
+   "breakpoints": [],
+   "regpoints": [],
+   "watches": [
     {
-     "ref": "0000:0002",
-     "by": "address",
+     "ref": "ball_x",
+     "by": "symbol",
      "cpu": {
       "available": false,
       "why": "a DOS machine has one cpu, and every row acts on it"
@@ -441,96 +537,222 @@
      "created_at": "<volatile>",
      "origin": "<volatile>",
      "inherited": false,
-     "age_s": 0,
-     "role": "stop",
-     "entry": "BP 0000:0002",
-     "marked": false,
-     "state": "armed"
+     "age_s": "<volatile>",
+     "mode": "show",
+     "length": 8,
+     "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+     "state": "evaluated"
+    },
+    {
+     "ref": "score",
+     "by": "symbol",
+     "cpu": {
+      "available": false,
+      "why": "a DOS machine has one cpu, and every row acts on it"
+     },
+     "created_at": "<volatile>",
+     "origin": "<volatile>",
+     "inherited": false,
+     "age_s": "<volatile>",
+     "mode": "count",
+     "length": 2,
+     "fmt": "u16",
+     "tally_id": "1",
+     "addr": "08DF:00000615",
+     "installed": true,
+     "state": "tallied",
+     "total": 1,
+     "overflow_values": 0,
+     "overflow_pcs": 0,
+     "values": [
+      {
+       "at": "08DF:00000615",
+       "raw_hex": "4600",
+       "count": 1,
+       "value": 70
+      }
+     ],
+     "values_total": 1,
+     "writers": [
+      {
+       "pc": "08DF:000002E7",
+       "count": 1,
+       "symbol": "brick_hit+0x1f"
+      }
+     ],
+     "writers_total": 1
+    },
+    {
+     "ref": "paddle_x",
+     "by": "symbol",
+     "cpu": {
+      "available": false,
+      "why": "a DOS machine has one cpu, and every row acts on it"
+     },
+     "created_at": "<volatile>",
+     "origin": "<volatile>",
+     "inherited": false,
+     "age_s": "<volatile>",
+     "mode": "capture",
+     "length": 1,
+     "fmt": "u8",
+     "tally_id": "2",
+     "addr": "08DF:0000061F",
+     "trigger_type": "r",
+     "installed": true,
+     "state": "captured",
+     "total": 110,
+     "rows_path": "<volatile>",
+     "rows_kept": 110,
+     "overflow_rows": 0,
+     "rows_max": 100000,
+     "first_rows": [
+      {
+       "n": 1,
+       "frame": 37,
+       "line": 417,
+       "time_s": 0.532617,
+       "pc": "08DF:000003E4",
+       "data": "0xd4000000",
+       "mask": "0xff000000",
+       "symbol": "draw_paddle+0xe"
+      },
+      {
+       "n": 2,
+       "frame": 38,
+       "line": 417,
+       "time_s": 0.5468845999999999,
+       "pc": "08DF:000003E4",
+       "data": "0xd6000000",
+       "mask": "0xff000000",
+       "symbol": "draw_paddle+0xe"
+      },
+      {
+       "n": 3,
+       "frame": 39,
+       "line": 417,
+       "time_s": 0.5611531,
+       "pc": "08DF:000003E4",
+       "data": "0xd8000000",
+       "mask": "0xff000000",
+       "symbol": "draw_paddle+0xe"
+      },
+      {
+       "n": 4,
+       "frame": 40,
+       "line": 417,
+       "time_s": 0.5754217,
+       "pc": "08DF:000003E4",
+       "data": "0xda000000",
+       "mask": "0xff000000",
+       "symbol": "draw_paddle+0xe"
+      },
+      {
+       "n": 5,
+       "frame": 41,
+       "line": 417,
+       "time_s": 0.589689,
+       "pc": "08DF:000003E4",
+       "data": "0xdc000000",
+       "mask": "0xff000000",
+       "symbol": "draw_paddle+0xe"
+      },
+      {
+       "n": 6,
+       "frame": 42,
+       "line": 417,
+       "time_s": 0.6039579,
+       "pc": "08DF:000003E4",
+       "data": "0xde000000",
+       "mask": "0xff000000",
+       "symbol": "draw_paddle+0xe"
+      },
+      "... 18 more"
+     ]
     }
    ],
    "debugger_read": true
   }
  },
  "disassemble": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped disassemble",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 19",
   "call": {
-   "ref": "0000:0020",
-   "length": 4
+   "ref": "brick_hit",
+   "length": 12
   },
   "reply": {
-   "summary": "disassemble 0000:0020: 3 lines at 0000:00000020, 16-bit",
+   "summary": "disassemble brick_hit: 4 lines at 08DF:000002C8, 16-bit",
    "status": "ok",
-   "ref": "0000:0020",
-   "seg_off": "0000:00000020",
-   "length": 4,
+   "ref": "brick_hit",
+   "seg_off": "08DF:000002C8",
+   "length": 12,
    "code_bits": 16,
    "code_bits_from": "real mode",
    "lines": [
-    "0000:00000020 A5                   movsw word ptr es:[di], word ptr [si]",
-    "0000:00000021 FE00                 inc byte ptr [bx + si]",
-    "0000:00000023 F0                   .byte 0xf0"
+    "08DF:000002C8 88DF                 mov bh, bl // AL = row, BL = column of the brick that falls",
+    "08DF:000002CA 88C3                 mov bl, al",
+    "08DF:000002CC E81FFF               call 0x1ee",
+    "08DF:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0"
    ],
    "flow": [
     "sequential",
     "sequential",
-    "unknown"
+    "call",
+    "sequential"
    ],
-   "flow_source": "capstone"
+   "flow_source": "capstone",
+   "resolved": [
+    {
+     "line": 2,
+     "operand": "0x1ee",
+     "kind": "target",
+     "seg_off": "08DF:000001EE",
+     "addr": "0x00008fde",
+     "symbol": "brick_index",
+     "delta": 0
+    }
+   ]
   }
  },
  "drive": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped drive",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 59",
   "call": {
    "act": [
     {
-     "op": "status"
+     "op": "send_keys",
+     "keys": [
+      "m"
+     ]
     }
-   ]
+   ],
+   "expect": "MOUSE ON$",
+   "seconds": 10
   },
   "reply": {
-   "summary": "drive: no expectation",
+   "summary": "drive: reaction seen",
    "status": "ok",
    "act": {
     "ran": [
      {
-      "op": "status",
+      "op": "send_keys",
       "reply": {
-       "summary": "status: alive, stopped",
+       "summary": "send_keys (guest): sent, reaction not checked",
        "status": "ok",
-       "pid": "<volatile>",
-       "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
-       "conf_digest": "78bdc38f360b9b4a",
-       "bound_s": 1200,
-       "elapsed_s": 5.9,
-       "captures": "off",
-       "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save",
-       "last_stop": {
-        "stop_seq": 11,
-        "pc": "0814:00000130",
-        "cause": "the retrace run_for ran to, at 0814:00000130",
-        "since_s": 0.3,
-        "wall_at": "<volatile>"
-       },
-       "pending": {
-        "arm": [],
-        "disarm": 0,
-        "symbols_load": false,
-        "base_remeasure": false
-       },
-       "cpu_mode": "real",
-       "pc": "0814:00000130",
-       "declarations": {
-        "breakpoints": 0,
-        "watches": 0,
-        "regpoints": 0
-       },
-       "presence": {
-        "available": false,
-        "why": "a session started without `shared` has no window to draw on"
+       "keys": [
+        "m"
+       ],
+       "modifiers": [],
+       "route": "guest",
+       "posted": 1,
+       "bytes": 2,
+       "frames": 2,
+       "verify": {
+        "checked": false,
+        "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
        },
        "session": {
         "alive": true,
-        "running": false,
+        "running": true,
         "altered": true
        }
       }
@@ -541,53 +763,58 @@
      "available": false,
      "why": "no step failed"
     },
+    "still_running": true,
+    "note": "the act ended with the machine running; `drive`'s wait for `expect` is the wait",
     "held": 0
    },
    "verify": {
-    "checked": false,
-    "why": "no `expect` given; the act's own steps carried whatever verification they asked for"
+    "checked": true,
+    "seen": true,
+    "expected": "MOUSE ON$",
+    "verdict": "TARGET",
+    "line": "Bochs port E9h: MOUSE ON",
+    "seen_before_waiting": "<volatile>",
+    "lines_before": "<volatile>",
+    "waited_s": "<volatile>",
+    "lines_total": "<volatile>"
    },
    "looked": {
     "guest": {
      "available": true,
-     "since_mark": 53708,
-     "lines_written": 0,
-     "lines_total": 0,
+     "since_mark": "<volatile>",
+     "lines_written": "<volatile>",
+     "lines_total": "<volatile>",
      "truncated": false,
-     "lines": [],
+     "lines": [
+      "Bochs port E9h: MOUSE ON"
+     ],
      "pattern": "."
     }
    }
   }
  },
  "find": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped find",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 17",
   "call": {
-   "data_hex": "00",
-   "ref": "8000:0000",
-   "length": 16
+   "data_hex": "53434f5245",
+   "ref": "start",
+   "length": 1384
   },
   "reply": {
-   "summary": "find 8000:0000: 16 hits of 00 in 16 bytes",
+   "summary": "find start: 1 hit of 53434f5245 in 1384 bytes",
    "status": "ok",
-   "ref": "8000:0000",
-   "seg_off": "8000:00000000",
-   "length": 16,
+   "ref": "start",
+   "seg_off": "08DF:00000100",
+   "length": 1384,
    "span": {
-    "from": "8000:00000000",
-    "length": 16,
+    "from": "08DF:00000100",
+    "length": 1384,
     "source": "ref+length"
    },
    "hits": [
-    "8000:00000000",
-    "8000:00000001",
-    "8000:00000002",
-    "8000:00000003",
-    "8000:00000004",
-    "8000:00000005",
-    "... 10 more"
+    "08DF:00000601"
    ],
-   "hits_total": 16,
+   "hits_total": 1,
    "truncated": false
   }
  },
@@ -609,58 +836,82 @@
   }
  },
  "image_compare": {
-  "from": "[Q] the media layer: each scenario the hand way and the new way, over one answer: Q S1 new: series_capture and image_compare region find the same frames, with no picture",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 75",
   "call": {
    "method": "region",
-   "manifest": "$TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json",
+   "manifest": "./tmp/demos/tour/files/series/manifest.json",
+   "crop": [
+    386,
+    148,
+    60,
+    16
+   ],
    "measure": "changed_pixels"
   },
   "reply": {
-   "summary": "image_compare region: changed_pixels, 1 transition over 5 frames",
+   "summary": "image_compare region: changed_pixels, 4 transitions over 14 frames",
    "status": "ok",
    "measure": "changed_pixels",
    "crop": [
-    0,
-    0,
-    320,
-    8
+    386,
+    148,
+    60,
+    16
    ],
-   "frames": 5,
+   "frames": 14,
    "start": {
     "available": false,
     "why": "`changed_pixels` counts a change from the frame before, and the first frame has none"
    },
    "transitions": [
     [
-     4,
-     2560
+     103,
+     32
+    ],
+    [
+     104,
+     944
+    ],
+    [
+     105,
+     40
+    ],
+    [
+     106,
+     8
     ]
    ],
-   "gaps": [],
-   "transitions_total": 1,
-   "path": "$TMPDIR/dosbox-x-session-<run>/series/series-1/track-1.json",
-   "manifest": "$TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json"
+   "gaps": [
+    1,
+    1,
+    1
+   ],
+   "transitions_total": 4,
+   "path": "./tmp/demos/tour/files/series/track-1.json",
+   "manifest": "./tmp/demos/tour/files/series/manifest.json"
   }
  },
  "interrupt_vectors": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped interrupt_vectors",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 11",
   "call": {
-   "number": 33
+   "number": "0x33"
   },
   "reply": {
-   "summary": "interrupt_vectors INT 21: F000:0000D100, bios_mem DOSBox callback area",
+   "summary": "interrupt_vectors INT 33: C402:00000010, mcbs 9FFF SC (DOS)",
    "status": "ok",
    "cpu_mode": "real",
    "vectors": [
     {
-     "number": "0x21",
-     "seg_off": "F000:0000D100",
-     "addr": "0x000fd100",
-     "bios_mem": {
-      "start": "000fca00",
-      "end": "000fdfff",
-      "status": "ALLOC DYN",
-      "what": "DOSBox callback area"
+     "number": "0x33",
+     "seg_off": "C402:00000010",
+     "addr": "0x000c4030",
+     "mcbs": {
+      "memory": "upper",
+      "mcb_seg": "9FFF",
+      "size_bytes": 180224,
+      "psp_seg": "0008",
+      "notes": "DOS",
+      "filename": "SC"
      }
     }
    ],
@@ -690,56 +941,59 @@
   }
  },
  "log": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped log",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 66",
   "call": {
-   "pattern": ".",
-   "channel": "emulator"
+   "pattern": "SERVE|HIT|LOST",
+   "channel": "guest"
   },
   "reply": {
-   "summary": "log emulator /./: 40 of 159 lines",
+   "summary": "log guest /SERVE|HIT|LOST/: 6 of 6 lines",
    "status": "ok",
-   "pattern": ".",
-   "channel": "emulator",
-   "lines_total": 159,
-   "truncated": true,
+   "pattern": "SERVE|HIT|LOST",
+   "channel": "guest",
+   "lines_total": 6,
+   "truncated": false,
    "lines": [
-    "DEBUG: Set interrupt breakpoint at INT 08",
-    "Breakpoint list:",
-    "-------------------------------------------------------------------------",
-    "00. BPINT 08",
-    "DEBUG: RUNSTATE running cycles=1254 ms=0.825700000 frames=0",
-    "pixratio 1.350, dw false, dh false",
-    "... 34 more"
+    "Bochs port E9h: HIT 0 7",
+    "Bochs port E9h: HIT 5 6",
+    "Bochs port E9h: HIT 5 0",
+    "Bochs port E9h: SERVE",
+    "Bochs port E9h: HIT 5 9",
+    "Bochs port E9h: LOST"
    ]
   }
  },
  "log_wait": {
-  "from": "[A] every tool in every machine state, on the probe guest: A running log_wait",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 63",
   "call": {
-   "pattern": "PROBE",
+   "pattern": "LOST$",
    "channel": "guest",
-   "seconds": 10
+   "seconds": 60
   },
   "reply": {
-   "summary": "log_wait guest /PROBE/: matched already in the log",
+   "summary": "<volatile>",
    "status": "ok",
    "verdict": "TARGET",
-   "pattern": "PROBE",
+   "pattern": "LOST$",
    "channel": "guest",
-   "line": "Bochs port E9h: [+ 00000.000] PROBE . tick",
-   "already": true,
-   "lines_total": 1,
-   "lines_before": 0,
-   "arrived_during": 0,
-   "waited_s": 0.0,
-   "lines_examined": 1
+   "line": "Bochs port E9h: LOST",
+   "already": "<volatile>",
+   "lines_total": "<volatile>",
+   "lines_before": "<volatile>",
+   "arrived_during": "<volatile>",
+   "waited_s": "<volatile>",
+   "lines_examined": "<volatile>"
   }
  },
  "machine_map": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped machine_map",
-  "call": {},
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 8",
+  "call": {
+   "sections": [
+    "mcbs"
+   ]
+  },
   "reply": {
-   "summary": "machine_map (real): 7 mcbs, 2 devs, 20 kern, 1 ems, 4 ems_pages, left out: bios_mem, callbacks, vga (see `omitted`)",
+   "summary": "machine_map (real): 9 mcbs, left out: devs, kern, xms, ems, ems_pages, bios_mem, callbacks, emu_mem, machine, control, vga (see `omitted`)",
    "status": "ok",
    "cpu_mode": "real",
    "mcbs": [
@@ -770,236 +1024,101 @@
      "mcb_seg": "07C9",
      "size_bytes": 1168,
      "psp_seg": "0814",
-     "filename": "PROBE"
+     "filename": "SCRY"
     },
     {
      "memory": "conventional",
      "mcb_seg": "0813",
-     "size_bytes": 622256,
+     "size_bytes": 2048,
      "psp_seg": "0814",
-     "filename": "PROBE"
+     "filename": "SCRY"
     },
     {
-     "memory": "upper",
-     "mcb_seg": "9FFF",
-     "size_bytes": 180224,
-     "psp_seg": "0008",
-     "notes": "DOS",
-     "filename": "SC"
+     "memory": "conventional",
+     "mcb_seg": "0894",
+     "size_bytes": 1168,
+     "psp_seg": "08DF",
+     "filename": "BRICKS"
     },
-    "... 1 more"
+    "... 3 more"
    ],
-   "devs": [
-    {
-     "header": "0071:0048",
-     "attr": "8004",
-     "strat": "0000",
-     "intr": "0000",
-     "name": "NUL"
-    },
-    {
-     "header": "00F9:0000",
-     "attr": "8013",
-     "strat": "FFFF",
-     "intr": "FFFF",
-     "name": "CON"
-    }
-   ],
-   "kern": [
-    {
-     "seg": "0070",
-     "size_bytes": 16,
-     "what": "DOS_IHSEG"
-    },
-    {
-     "seg": "0071",
-     "size_bytes": 800,
-     "what": "DOS_INFOBLOCK_SEG"
-    },
-    {
-     "seg": "00a3",
-     "size_bytes": 1376,
-     "what": "DOS_SDA_SEG"
-    },
-    {
-     "seg": "00f9",
-     "size_bytes": 64,
-     "what": "DOS_CONDRV_SEG"
-    },
-    {
-     "seg": "00fd",
-     "size_bytes": 256,
-     "what": "DOS_CDA_SEG"
-    },
-    {
-     "seg": "010d",
-     "size_bytes": 64,
-     "what": "dos.tables.tempdta"
-    },
-    "... 14 more"
-   ],
-   "xms": [],
-   "ems": [
-    {
-     "handle": 0,
-     "addr": "0x00110000",
-     "size_bytes": 393216,
-     "name": ""
-    }
-   ],
-   "ems_pages": [
-    {
-     "handle": "--",
-     "page": "0/",
-     "start": "000e0000",
-     "end": "000e3fff"
-    },
-    {
-     "handle": "--",
-     "page": "1/",
-     "start": "000e4000",
-     "end": "000e7fff"
-    },
-    {
-     "handle": "--",
-     "page": "2/",
-     "start": "000e8000",
-     "end": "000ebfff"
-    },
-    {
-     "handle": "--",
-     "page": "3/",
-     "start": "000ec000",
-     "end": "000effff"
-    }
-   ],
-   "emu_mem": {
-    "a20_gate": "ON",
-    "cpu_address_bits": 32,
-    "cpu_address_mask": "0xffffffff",
-    "cpu_address_mask_current": "0xffffffff",
-    "memory_reported_size_bytes": 16777216
-   },
-   "machine": "VGA S3 Trio",
-   "control": {
-    "cr0": "00000010",
-    "cr2": "00000000",
-    "cr3": "00000000",
-    "cpl": 0,
-    "eflags": "00007006",
-    "vm": 0,
-    "iopl": 3,
-    "nt": 1,
-    "gdtr": {
-     "base": "00000000",
-     "limit": "0000FFFF"
-    },
-    "idt": {
-     "base": "00000000",
-     "limit": "000003FF"
-    },
-    "tr": {
-     "selector": "0000",
-     "base": "000EF000",
-     "limit": "0000CA60*1"
-    },
-    "ldtr": {
-     "selector": "0000",
-     "base": "000EF000",
-     "limit": "0000CA60*1"
-    }
-   },
    "counts": {
-    "mcbs": 7,
-    "devs": 2,
-    "kern": 20,
-    "xms": 0,
-    "ems": 1,
-    "ems_pages": 4
+    "mcbs": 9
    },
    "sources": {
     "mcbs": [
      "DOS MCBS"
-    ],
-    "devs": [
-     "DOS DEVS"
-    ],
-    "kern": [
-     "DOS KERN"
-    ],
-    "xms": [
-     "DOS XMS"
-    ],
-    "ems": [
-     "DOS EMS"
-    ],
-    "ems_pages": [
-     "DOS EMS"
-    ],
-    "emu_mem": [
-     "EMU MEM"
-    ],
-    "machine": [
-     "EMU MACHINE"
-    ],
-    "control": [
-     "CPU"
     ]
    },
    "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off",
    "truncated": false,
    "omitted": [
+    "devs",
+    "kern",
+    "xms",
+    "ems",
+    "ems_pages",
     "bios_mem",
-    "callbacks",
-    "vga"
+    "... 5 more"
    ],
    "how": "sections=[...] names the sections to read; dest=<absolute path> writes every section read whole"
   }
  },
  "memdump": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped memdump",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 16",
   "call": {
-   "ref": "0000:0400",
-   "length": 16,
-   "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1155.bin"
+   "ref": "bricks",
+   "length": 60,
+   "dest": "./tmp/demos/tour/files/wall.bin"
   },
   "reply": {
-   "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1155.bin",
+   "summary": "memdump bricks: 60 bytes to ./tmp/demos/tour/files/wall.bin",
    "status": "ok",
-   "ref": "0000:0400",
-   "seg_off": "0000:00000400",
-   "length": 16,
-   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1155.bin",
-   "bytes": 16
+   "ref": "bricks",
+   "seg_off": "08DF:0000062C",
+   "length": 60,
+   "path": "./tmp/demos/tour/files/wall.bin",
+   "bytes": 60
   }
  },
  "palette": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped palette",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 13",
   "call": {
-   "first": 0,
-   "count": 2
+   "first": 32,
+   "count": 8,
+   "dest": "./tmp/demos/tour/files/palette.png"
   },
   "reply": {
-   "summary": "palette: entries 0 to 1 of 256; 256x128 PNG x8, inline",
+   "summary": "palette: entries 32 to 39 of 256; 1024x128 PNG x8, inline",
    "status": "ok",
    "entries": 256,
-   "first": 0,
-   "count": 2,
+   "first": 32,
+   "count": 8,
    "colors": [
-    "#000000",
-    "#0000aa"
+    "#ff2020",
+    "#ff9200",
+    "#fff330",
+    "#41eb41",
+    "#20d3eb",
+    "#5161ff",
+    "... 2 more"
    ],
    "rgb": [
-    "000000",
-    "00002a"
+    "3f0808",
+    "3f2400",
+    "3f3c0c",
+    "103a10",
+    "08343a",
+    "14183f",
+    "... 2 more"
    ],
    "bits": 6,
    "pel_mask": "ffh",
    "image": {
-    "path": "$TMPDIR/dosbox-x-session-<run>/gfx/palette-1.png",
+    "path": "./tmp/demos/tour/files/palette.png",
     "bytes": "<volatile>",
     "sha256": "<volatile>",
-    "width": 256,
+    "width": 1024,
     "height": 128,
     "scale": 8,
     "indexed": true,
@@ -1008,98 +1127,164 @@
   }
  },
  "perform": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped perform",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 62",
   "call": {
    "steps": [
     {
-     "op": "status"
+     "op": "send_keys",
+     "keys": [
+      "m"
+     ],
+     "expect": "MOUSE OFF$",
+     "seconds": 10
+    },
+    {
+     "op": "send_keys",
+     "keys": [
+      "space"
+     ],
+     "expect": "SERVE$",
+     "seconds": 10
     }
    ]
   },
   "reply": {
-   "summary": "perform: 1 of 1 step",
+   "summary": "perform: 2 of 2 steps, still running",
    "status": "ok",
    "ran": [
     {
-     "op": "status",
+     "op": "send_keys",
      "reply": {
-      "summary": "status: alive, stopped",
+      "summary": "send_keys (guest): reaction seen",
       "status": "ok",
-      "pid": "<volatile>",
-      "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
-      "conf_digest": "78bdc38f360b9b4a",
-      "bound_s": 1200,
-      "elapsed_s": 5.9,
-      "captures": "off",
-      "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save",
-      "last_stop": {
-       "stop_seq": 11,
-       "pc": "0814:00000130",
-       "cause": "the retrace run_for ran to, at 0814:00000130",
-       "since_s": 0.3,
-       "wall_at": "<volatile>"
-      },
-      "pending": {
-       "arm": [],
-       "disarm": 0,
-       "symbols_load": false,
-       "base_remeasure": false
-      },
-      "cpu_mode": "real",
-      "pc": "0814:00000130",
-      "declarations": {
-       "breakpoints": 0,
-       "watches": 0,
-       "regpoints": 0
-      },
-      "presence": {
-       "available": false,
-       "why": "a session started without `shared` has no window to draw on"
+      "keys": [
+       "m"
+      ],
+      "modifiers": [],
+      "route": "guest",
+      "posted": 1,
+      "bytes": 2,
+      "frames": 2,
+      "verify": {
+       "checked": true,
+       "seen": true,
+       "expected": "MOUSE OFF$",
+       "verdict": "TARGET",
+       "line": "Bochs port E9h: MOUSE OFF",
+       "seen_before_waiting": "<volatile>",
+       "lines_before": "<volatile>",
+       "waited_s": "<volatile>",
+       "lines_total": "<volatile>"
       },
       "session": {
        "alive": true,
-       "running": false,
+       "running": true,
+       "altered": true
+      }
+     }
+    },
+    {
+     "op": "send_keys",
+     "reply": {
+      "summary": "send_keys (guest): reaction seen",
+      "status": "ok",
+      "keys": [
+       "space"
+      ],
+      "modifiers": [],
+      "route": "guest",
+      "posted": 1,
+      "bytes": 2,
+      "frames": 2,
+      "verify": {
+       "checked": true,
+       "seen": true,
+       "expected": "SERVE$",
+       "verdict": "TARGET",
+       "line": "Bochs port E9h: SERVE",
+       "seen_before_waiting": "<volatile>",
+       "lines_before": "<volatile>",
+       "waited_s": "<volatile>",
+       "lines_total": "<volatile>"
+      },
+      "session": {
+       "alive": true,
+       "running": true,
        "altered": true
       }
      }
     }
    ],
-   "steps_completed": 1,
+   "steps_completed": 2,
    "failed_at": {
     "available": false,
     "why": "no step failed"
    },
+   "still_running": true,
+   "note": "the sequence ended with the machine running after a step that answers on a running machine, and nothing declared can stop it (no breakpoint, no interrupt breakpoint, no change watch), so no stop was waited for; declare one, or end the list  ... (301 characters)",
    "held": 0
   }
  },
  "perform_export": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped perform_export",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 32",
   "call": {
-   "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1905.json"
+   "dest": "./tmp/demos/tour/files/session.json"
   },
   "reply": {
-   "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1905.json",
+   "summary": "perform_export: 15 steps, 4 checks, 13 dropped to ./tmp/demos/tour/files/session.json",
    "status": "ok",
-   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1905.json",
-   "steps": 1,
-   "checks": 0,
-   "dropped": [],
-   "dropped_total": 0,
+   "path": "./tmp/demos/tour/files/session.json",
+   "steps": 15,
+   "checks": 4,
+   "dropped": [
+    {
+     "call": 1,
+     "op": "status",
+     "why": "a read the export does not check"
+    },
+    {
+     "call": 5,
+     "op": "machine_map",
+     "why": "it changes nothing in the emulated machine"
+    },
+    {
+     "call": 7,
+     "op": "symbols_find",
+     "why": "a read the export does not check"
+    },
+    {
+     "call": 8,
+     "op": "interrupt_vectors",
+     "why": "it changes nothing in the emulated machine"
+    },
+    {
+     "call": 9,
+     "op": "screen_view",
+     "why": "it changes nothing in the emulated machine"
+    },
+    {
+     "call": 10,
+     "op": "palette",
+     "why": "it changes nothing in the emulated machine"
+    },
+    "... 7 more"
+   ],
+   "dropped_total": 13,
    "cut": {
-    "call": 2,
-    "op": "resume",
-    "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches; it stopped inside frame 0, the one it began in"
+    "available": false,
+    "why": "the recording kept every call a replay takes"
    },
-   "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1905.json"
+   "replay": "uv run python -m scry_core.replay ./tmp/demos/tour/files/session.json",
+   "kept": "2 saved for `promote`"
   }
  },
  "pic": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped pic read",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 23",
   "call": {
    "method": "read"
   },
   "reply": {
-   "summary": "pic read: 2 controllers, masked 3, 4, 5, 6, 7, 10, 11, requested none",
+   "summary": "pic read: 2 controllers, masked 3, 5, 6, 7, 10, 11, requested none",
    "status": "ok",
    "controllers": [
     {
@@ -1173,7 +1358,7 @@
      "irq": 4,
      "vector": "0x0C",
      "requested": false,
-     "masked": true,
+     "masked": false,
      "in_service": false
     },
     {
@@ -1188,724 +1373,873 @@
   }
  },
  "port": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped port read",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 22",
   "call": {
    "method": "read",
-   "port": 986
+   "port": "0x3C8"
   },
   "reply": {
-   "summary": "port read: 8-bit read of 0x03DA: 0x04",
+   "summary": "port read: 8-bit read of 0x03C8: 0x28",
    "status": "ok",
-   "port": "0x03DA",
+   "port": "0x03C8",
    "bits": 8,
-   "value": "0x04"
+   "value": "0x28"
   }
  },
  "promote": {
-  "from": "[L] arguments judged, and the debugger's own files: L the recipe this boot ran and the map it learned are written into a store of the run's own only when the call approves them, and the map reads back",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 33",
   "call": {
-   "dry_run": true,
-   "root": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote"
+   "dry_run": true
   },
   "reply": {
-   "summary": "promote: 3 candidates in $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/.scry; would create .scry/, .scry/about.json, .scry/README.md",
+   "summary": "promote: 2 candidates in ./.scry",
    "status": "ok",
-   "store": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/.scry",
+   "store": "./.scry",
    "candidates": [
     {
-     "entry": "maps/probe",
-     "kind": "maps",
-     "name": "probe",
-     "file": ".scry/maps/probe-screen-map.json",
-     "bytes": 328,
-     "change": "new",
-     "from": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/guest"
+     "entry": "perform/session",
+     "kind": "perform",
+     "name": "session",
+     "file": ".scry/perform/session.json",
+     "bytes": 5129,
+     "change": "new"
     },
     {
-     "entry": "start/probe",
+     "entry": "start/bricks",
      "kind": "start",
-     "name": "probe",
-     "file": ".scry/start/probe.json",
-     "bytes": 122,
-     "change": "new",
-     "from": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n31-promote/guest"
-    },
-    {
-     "entry": "start/probe-profile",
-     "kind": "start",
-     "name": "probe-profile",
-     "file": ".scry/start/probe-profile.json",
-     "bytes": 197,
-     "change": "new",
-     "from": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/L/n30-store"
+     "name": "bricks",
+     "file": ".scry/start/bricks.json",
+     "bytes": 154,
+     "change": "update",
+     "diff": {
+      "added": [],
+      "removed": [
+       "break_on_int3"
+      ],
+      "changed": [
+       {
+        "path": "conf",
+        "was": "${env:DOSBOX_X_LIVE_BRICKS_DIR}/bricks.conf",
+        "now": "${root}/demos/bricks/bricks.conf"
+       },
+       {
+        "path": "cwd",
+        "was": "${env:DOSBOX_X_LIVE_BRICKS_DIR}",
+        "now": "${root}/demos/bricks"
+       }
+      ]
+     }
     }
    ],
    "unchanged": [],
-   "total_bytes": 647,
-   "store_bytes": 2221,
-   "would_create": [
-    ".scry/",
-    ".scry/about.json",
-    ".scry/README.md"
-   ]
+   "total_bytes": 5283,
+   "store_bytes": 10100
   }
  },
  "read_memory": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped read_memory",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 15",
   "call": {
-   "ref": "0000:0020",
-   "length": 4
+   "ref": "score",
+   "length": 2
   },
   "reply": {
-   "summary": "read_memory 0000:0020: 4 bytes at 0000:00000020: a5fe00f0",
+   "summary": "read_memory score: 2 bytes at 08DF:00000615: 0000",
    "status": "ok",
-   "ref": "0000:0020",
-   "seg_off": "0000:00000020",
-   "length": 4,
-   "hex": "a5fe00f0"
+   "ref": "score",
+   "seg_off": "08DF:00000615",
+   "length": 2,
+   "hex": "0000"
   }
  },
  "record": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped record",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 44",
   "call": {
-   "frames": 2,
-   "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1506.avi",
-   "seconds": 30
+   "frames": 110,
+   "dest": "./tmp/demos/tour/files/second-brick.avi",
+   "seconds": 60
   },
   "reply": {
-   "summary": "record 2 frames: ELAPSED, 1 frame at $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1506.avi",
+   "summary": "record 110 frames: ELAPSED, 109 frames at ./tmp/demos/tour/files/second-brick.avi",
    "status": "ok",
    "verdict": "ELAPSED",
-   "polls": 2,
-   "pc": "0814:00000130",
+   "polls": 110,
+   "pc": "<volatile>",
    "cpu_mode": "real",
-   "frame": 141,
-   "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x000002b8",
-    "ECX": "0x00006a1b",
-    "EDX": "0x00000814",
-    "ESI": "0x00000173",
-    "EDI": "0x0000015d",
-    "EBP": "0x0000091c",
-    "ESP": "0x0000fffe",
-    "EIP": "0x00000130",
-    "CS": "0x0814",
-    "DS": "0x0814",
-    "ES": "0x0814",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x0814"
-   },
-   "watches": [],
-   "cause": "the retrace run_for ran to, at 0814:00000130",
-   "e9": {
-    "lines_total": 0,
-    "truncated": false,
-    "lines": [],
-    "mark": 46555
-   },
-   "stop_seq": 10,
-   "instruction": {
-    "address": "0814:00000130",
-    "bytes": "E2FE",
-    "text": "loop 0x130",
-    "flow": "branch",
-    "code_bits": 16,
-    "bytes_from": "memory",
-    "symbol": {
-     "available": false,
-     "why": "no symbol table is loaded"
+   "frame": 146,
+   "regs": "<volatile>",
+   "watches": [
+    {
+     "ref": "ball_x",
+     "by": "symbol",
+     "mode": "show",
+     "length": 8,
+     "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+     "state": "evaluated",
+     "value": {
+      "x": 182,
+      "y": 88,
+      "dx": -2,
+      "dy": 2
+     },
+     "bytes": "<volatile>"
     },
-    "delta": {
-     "available": false,
-     "why": "no symbol table is loaded"
+    {
+     "ref": "score",
+     "by": "symbol",
+     "mode": "count",
+     "length": 2,
+     "fmt": "u16",
+     "tally_id": "1",
+     "addr": "08DF:00000615",
+     "installed": true,
+     "state": "tallied",
+     "total": 1,
+     "since_last_stop": 1,
+     "overflow_values": 0,
+     "overflow_pcs": 0
+    },
+    {
+     "ref": "paddle_x",
+     "by": "symbol",
+     "mode": "capture",
+     "length": 1,
+     "fmt": "u8",
+     "tally_id": "2",
+     "addr": "08DF:0000061F",
+     "trigger_type": "r",
+     "installed": true,
+     "state": "captured",
+     "total": 110,
+     "since_last_stop": 110,
+     "rows_path": "<volatile>",
+     "rows_kept": 110,
+     "overflow_rows": 0,
+     "rows_max": 100000
     }
+   ],
+   "cause": "<volatile>",
+   "e9": {
+    "lines_total": 1,
+    "truncated": false,
+    "lines": [
+     "Bochs port E9h: HIT 5 6"
+    ],
+    "mark": "<volatile>"
    },
-   "emulated_before_s": 1.9747018,
-   "emulated_after_s": 2.003237,
-   "frame_before": 139,
-   "frame_after": 141,
-   "cycles": 284474,
+   "stop_seq": 8,
+   "instruction": "<volatile>",
+   "emulated_before_s": "<volatile>",
+   "emulated_after_s": "<volatile>",
+   "frame_before": 36,
+   "frame_after": 146,
+   "cycles": 3595712,
    "kind": "avi",
-   "frames": 2,
+   "frames": 110,
    "began": true,
    "ended": true,
-   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1506.avi",
-   "bytes": 36314,
-   "avi_frames": 1
+   "path": "./tmp/demos/tour/files/second-brick.avi",
+   "bytes": "<volatile>",
+   "avi_frames": 109
   }
  },
  "registers": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped registers",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 28",
   "call": {},
   "reply": {
    "summary": "registers: 15 registers",
    "status": "ok",
    "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x00000124",
-    "ECX": "0x0000a97e",
-    "EDX": "0x00000814",
-    "ESI": "0x00000100",
-    "EDI": "0x0000fffe",
+    "EAX": "0x00000005",
+    "EBX": "0x00000707",
+    "ECX": "0x005b0020",
+    "EDX": "0x00000000",
+    "ESI": "0x00000039",
+    "EDI": "0x000064e4",
     "EBP": "0x0000091c",
-    "ESP": "0x0000fff8",
-    "EIP": "0x0000fea5",
-    "CS": "0xf000",
-    "DS": "0x0814",
-    "ES": "0x0814",
+    "ESP": "0x0000fffa",
+    "EIP": "0x000002c8",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814"
+    "SS": "0x08df"
    }
   }
  },
  "regpoint_add": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped regpoint_add",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 39",
   "call": {
-   "condition": "AX==4C00"
+   "condition": "DX==3DA"
   },
   "reply": {
-   "summary": "regpoint_add AX==4C00: armed",
+   "summary": "regpoint_add DX==3DA: armed",
    "status": "ok",
-   "ref": "AX==4C00",
+   "ref": "DX==3DA",
    "by": "expr",
-   "condition": "AX==4C00",
+   "condition": "DX==3DA",
    "stored": true,
    "while_running": false,
    "armed": true,
    "state": "armed",
-   "entry": "BPIF AX==4C00"
+   "entry": "BPIF DX==3DA"
+  },
+  "then": {
+   "tool": "resume",
+   "call": {
+    "seconds": 60
+   },
+   "reply": {
+    "summary": "resume: OTHER_STOP, stopped at 08DF:00000583",
+    "status": "ok",
+    "verdict": "OTHER_STOP",
+    "omitted": [
+     "output",
+     "output_chars",
+     "clipped"
+    ],
+    "how": "detail=True adds what the debugger printed for this command",
+    "waited_s": "<volatile>",
+    "pc": "08DF:00000583",
+    "cpu_mode": "real",
+    "frame": 36,
+    "regs": {
+     "EAX": "0x0000000f",
+     "EBX": "0x0000000f",
+     "ECX": "0x005b0004",
+     "EDX": "0x000003da",
+     "ESI": "0x00000615",
+     "EDI": "0x00006266",
+     "EBP": "0x0000091c",
+     "ESP": "0x0000fffc",
+     "EIP": "0x00000583",
+     "CS": "0x08df",
+     "DS": "0x08df",
+     "ES": "0xa000",
+     "FS": "0x0000",
+     "GS": "0x0000",
+     "SS": "0x08df"
+    },
+    "watches": [
+     {
+      "ref": "ball_x",
+      "by": "symbol",
+      "mode": "show",
+      "length": 8,
+      "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+      "state": "evaluated",
+      "value": {
+       "x": 230,
+       "y": 78,
+       "dx": 2,
+       "dy": 2
+      },
+      "bytes": "e6004e0002000200"
+     }
+    ],
+    "cause": "registerpoint DX==3DA, whose condition came true at 08DF:00000583",
+    "regpoint_hit": {
+     "ref": "DX==3DA",
+     "condition": "DX==3DA",
+     "pc": "08DF:00000583",
+     "note": "still armed: a registerpoint stops at every instruction where its condition holds, so the next advance stops again; `declaration_clear(kind=\"regpoint\")` removes it"
+    },
+    "e9": {
+     "lines_total": 1,
+     "truncated": false,
+     "lines": [
+      "Bochs port E9h: HIT 0 7"
+     ],
+     "mark": "<volatile>"
+    },
+    "stop_seq": 7,
+    "instruction": {
+     "address": "08DF:00000583",
+     "bytes": "EC",
+     "text": "in al, dx",
+     "flow": "sequential",
+     "code_bits": 16,
+     "bytes_from": "memory",
+     "symbol": "retrace",
+     "delta": 3
+    }
+   }
   }
  },
  "resume": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped resume",
-  "call": {},
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 36",
+  "call": {
+   "seconds": 60
+  },
   "reply": {
-   "summary": "resume: running",
+   "summary": "resume: OTHER_STOP, stopped at 08DF:000002EB",
    "status": "ok",
+   "verdict": "OTHER_STOP",
    "omitted": [
     "output",
     "output_chars",
     "clipped"
    ],
-   "how": "detail=True adds what the debugger printed for this command"
-  }
- },
- "run_for": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped run_for",
-  "call": {
-   "frames": 1
-  },
-  "reply": {
-   "summary": "run_for 1 frame: ELAPSED, 1 poll, at 0814:00000130",
-   "status": "ok",
-   "verdict": "ELAPSED",
-   "polls": 1,
-   "pc": "0814:00000130",
+   "how": "detail=True adds what the debugger printed for this command",
+   "waited_s": "<volatile>",
+   "pc": "08DF:000002EB",
    "cpu_mode": "real",
-   "frame": 139,
+   "frame": 36,
    "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x000002bc",
-    "ECX": "0x0000c14a",
-    "EDX": "0x00000814",
-    "ESI": "0x00000173",
-    "EDI": "0x0000015d",
+    "EAX": "0x0000003c",
+    "EBX": "0x00000700",
+    "ECX": "0x005b001e",
+    "EDX": "0x00000000",
+    "ESI": "0x00000007",
+    "EDI": "0x00001ee1",
     "EBP": "0x0000091c",
-    "ESP": "0x0000fffe",
-    "EIP": "0x00000130",
-    "CS": "0x0814",
-    "DS": "0x0814",
-    "ES": "0x0814",
+    "ESP": "0x0000fffa",
+    "EIP": "0x000002eb",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814"
+    "SS": "0x08df"
    },
-   "watches": [],
-   "cause": "the retrace run_for ran to, at 0814:00000130",
+   "watches": [
+    {
+     "ref": "ball_x",
+     "by": "symbol",
+     "mode": "show",
+     "length": 8,
+     "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+     "state": "evaluated",
+     "value": {
+      "x": 230,
+      "y": 78,
+      "dx": 2,
+      "dy": -2
+     },
+     "bytes": "e6004e000200feff"
+    },
+    {
+     "ref": "score",
+     "by": "symbol",
+     "mode": "change",
+     "length": 2,
+     "fmt": "u16",
+     "state": "armed",
+     "value": 60,
+     "bytes": "3c00"
+    }
+   ],
+   "cause": "no declared code breakpoint at 08DF:000002EB, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
    "e9": {
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 45438
+    "mark": "<volatile>"
    },
-   "stop_seq": 7,
+   "stop_seq": 6,
    "instruction": {
-    "address": "0814:00000130",
-    "bytes": "E2FE",
-    "text": "loop 0x130",
-    "flow": "branch",
+    "address": "08DF:000002EB",
+    "bytes": "F71E2706",
+    "text": "neg word ptr [0x627]",
+    "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-     "available": false,
-     "why": "no symbol table is loaded"
-    },
-    "delta": {
-     "available": false,
-     "why": "no symbol table is loaded"
-    }
-   },
-   "emulated_before_s": 1.9730953,
-   "emulated_after_s": 1.9747000000000001,
-   "frame_before": 138,
-   "frame_after": 139,
-   "cycles": 16038
+    "symbol": "brick_hit",
+    "delta": 35
+   }
   }
  },
- "run_to": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped run_to",
+ "run_for": {
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 55",
   "call": {
-   "ref": "0000:0003",
-   "seconds": 3,
-   "control": "0814:0130"
+   "frames": 3
   },
   "reply": {
-   "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 17",
+   "summary": "<volatile>",
    "status": "ok",
-   "verdict": "TIMEOUT",
-   "target": "0000:0003",
-   "ref": "0000:0003",
-   "pc": "0814:00000130",
+   "verdict": "ELAPSED",
+   "polls": 3,
+   "pc": "<volatile>",
    "cpu_mode": "real",
-   "target_disarmed": true,
-   "control_hits": 17,
-   "controls": [
-    {
-     "ref": "0814:0130",
-     "at": "0814:0130",
-     "hits_in_run": 17,
-     "removed": true
-    }
-   ],
-   "note": "it came to rest ON the control 0814:0130 (its hit number 17) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
-   "frame": 138,
-   "regs": {
-    "EAX": "0x00000000",
-    "EBX": "0x000002bc",
-    "ECX": "0x0000fff0",
-    "EDX": "0x00000814",
-    "ESI": "0x00000173",
-    "EDI": "0x0000015d",
-    "EBP": "0x0000091c",
-    "ESP": "0x0000fffe",
-    "EIP": "0x00000130",
-    "CS": "0x0814",
-    "DS": "0x0814",
-    "ES": "0x0814",
-    "FS": "0x0000",
-    "GS": "0x0000",
-    "SS": "0x0814"
-   },
+   "frame": 247,
+   "regs": "<volatile>",
    "watches": [],
-   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+   "cause": "<volatile>",
    "e9": {
     "lines_total": 1,
     "truncated": false,
     "lines": [
-     "Bochs port E9h: [+ 00000.000] PROBE . tick"
+     "Bochs port E9h: HIT 5 0"
     ],
-    "mark": 32564
+    "mark": "<volatile>"
    },
-   "stop_seq": 6,
+   "stop_seq": 11,
+   "instruction": "<volatile>",
+   "emulated_before_s": "<volatile>",
+   "emulated_after_s": "<volatile>",
+   "frame_before": 244,
+   "frame_after": 247,
+   "cycles": 68499
+  }
+ },
+ "run_to": {
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 27",
+  "call": {
+   "ref": "brick_hit",
+   "control": "retrace",
+   "seconds": 60
+  },
+  "reply": {
+   "summary": "run_to brick_hit: TARGET at 08DF:000002C8, control counted 34",
+   "status": "ok",
+   "verdict": "TARGET",
+   "target": "08DF:02C8",
+   "ref": "brick_hit",
+   "pc": "08DF:000002C8",
+   "cpu_mode": "real",
+   "target_disarmed": true,
+   "control_hits": 34,
+   "controls": [
+    {
+     "ref": "retrace",
+     "at": "08DF:0580",
+     "hits_in_run": 34,
+     "removed": true
+    }
+   ],
+   "frame": 36,
+   "regs": {
+    "EAX": "0x00000005",
+    "EBX": "0x00000707",
+    "ECX": "0x005b0020",
+    "EDX": "0x00000000",
+    "ESI": "0x00000039",
+    "EDI": "0x000064e4",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffa",
+    "EIP": "0x000002c8",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0xa000",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08df"
+   },
+   "watches": [
+    {
+     "ref": "ball_x",
+     "by": "symbol",
+     "mode": "show",
+     "length": 8,
+     "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+     "state": "evaluated",
+     "value": {
+      "x": 230,
+      "y": 78,
+      "dx": 2,
+      "dy": -2
+     },
+     "bytes": "e6004e000200feff"
+    }
+   ],
+   "cause": "run_to's target brick_hit at 08DF:000002C8",
+   "e9": {
+    "lines_total": 0,
+    "truncated": false,
+    "lines": [],
+    "mark": "<volatile>"
+   },
+   "stop_seq": 3,
    "instruction": {
-    "address": "0814:00000130",
-    "bytes": "E2FE",
-    "text": "loop 0x130",
-    "flow": "branch",
+    "address": "08DF:000002C8",
+    "bytes": "88DF",
+    "text": "mov bh, bl",
+    "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-     "available": false,
-     "why": "no symbol table is loaded"
-    },
-    "delta": {
-     "available": false,
-     "why": "no symbol table is loaded"
-    }
+    "comment": "AL = row, BL = column of the brick that falls",
+    "symbol": "brick_hit",
+    "delta": 0
    }
   }
  },
  "scan": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped scan start",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 21",
   "call": {
    "method": "start",
-   "ref": "8000:0000",
-   "length": 16
+   "ref": "row_colours",
+   "cell_bytes": 1,
+   "length": 216
   },
   "reply": {
-   "summary": "scan start: 8000:0000, 16 cells of 1 byte",
+   "summary": "scan start: row_colours, 216 cells of 1 byte",
    "status": "ok",
-   "ref": "8000:0000",
-   "seg_off": "8000:00000000",
-   "length": 16,
+   "ref": "row_colours",
+   "seg_off": "08DF:00000590",
+   "length": 216,
    "cell_bytes": 1,
-   "addr": "0x00080000",
-   "hits_total": 16
+   "addr": "0x00009380",
+   "hits_total": 216
+  },
+  "then": {
+   "tool": "scan",
+   "call": {
+    "method": "filter",
+    "value": 60
+   },
+   "reply": {
+    "summary": "scan filter: = 60, 2 left",
+    "status": "ok",
+    "operator": "=",
+    "value": "0x3c",
+    "iterations": 1,
+    "closed": false,
+    "hits": [
+     {
+      "seg_off": "08DF:00000597",
+      "addr": "0x00009387",
+      "value": "0x3c"
+     },
+     {
+      "seg_off": "08DF:00000615",
+      "addr": "0x00009405",
+      "value": "0x3c"
+     }
+    ],
+    "hits_total": 2,
+    "truncated": false
+   }
   }
  },
  "screen_map_find": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped screen_map_find",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 7",
   "call": {},
   "reply": {
-   "summary": "screen_map_find: probe_stopped (session), 0 controls",
+   "summary": "screen_map_find: play (file), 1 control",
    "status": "ok",
    "matched": true,
-   "screen": "probe_stopped",
-   "layer": "session",
-   "kind": "text",
+   "screen": "play",
+   "layer": "file",
+   "kind": "pixel",
    "size": [
-    80,
-    25
+    320,
+    200
    ],
-   "controls": []
+   "controls": [
+    {
+     "name": "court",
+     "rect": [
+      200,
+      80,
+      80,
+      40
+     ],
+     "centre": [
+      240,
+      100
+     ]
+    }
+   ]
   }
  },
  "screen_map_write": {
-  "from": "[A] every tool in every machine state, on the probe guest: A none    screen_map_write pointer",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 5",
   "call": {
-   "method": "pointer",
-   "pointer": {
-    "x": "2000:94CA",
-    "y": "2000:94CC"
-   }
+   "method": "load",
+   "path": "./demos/bricks/bricks-screen-map.json"
   },
   "reply": {
-   "summary": "screen_map_write pointer: the program's pointer at 2000:94CA and 2000:94CC, 2 bytes each",
+   "summary": "screen_map_write load: 1 screen, 1 control of bricks",
    "status": "ok",
-   "pointer": {
-    "x": "2000:94CA",
-    "y": "2000:94CC",
-    "bytes": 2
-   }
+   "path": "./demos/bricks/bricks-screen-map.json",
+   "application": "bricks",
+   "mode": "verified",
+   "screens": 1,
+   "controls": 1
   }
  },
  "screen_signature": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped screen_signature",
-  "call": {},
-  "reply": {
-   "summary": "screen_signature M_TEXT 80x25 at [0, 0]: ecc689ffb2847738",
-   "status": "ok",
-   "signature": "ecc689ffb2847738",
-   "kind": "text",
-   "vga_mode": "M_TEXT",
-   "width": 80,
-   "height": 25,
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 14",
+  "call": {
    "crop": [
     0,
     0,
-    80,
-    25
+    52,
+    8
+   ]
+  },
+  "reply": {
+   "summary": "screen_signature M_VGA 52x8 at [0, 0]: f38d22147fd6e2bd",
+   "status": "ok",
+   "signature": "f38d22147fd6e2bd",
+   "kind": "pixel",
+   "vga_mode": "M_VGA",
+   "width": 320,
+   "height": 200,
+   "crop": [
+    0,
+    0,
+    52,
+    8
    ]
   }
  },
  "screen_view": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped screen_view",
-  "call": {},
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 12",
+  "call": {
+   "dest": "./tmp/demos/tour/files/wall.png"
+  },
   "reply": {
-   "summary": "screen_view M_TEXT: 80x25 at [0, 0] text, cursor at 0,4",
+   "summary": "screen_view M_VGA: 320x200 at [0, 0] pixels; 1280x800 PNG x4, inline",
    "status": "ok",
-   "vga_mode": "M_TEXT",
-   "kind": "text",
-   "width": 80,
-   "height": 25,
+   "vga_mode": "M_VGA",
+   "kind": "pixel",
+   "width": 320,
+   "height": 200,
    "mode": "render",
    "crop": [
     0,
     0,
-    80,
-    25
+    320,
+    200
    ],
-   "text": [
-    "Z:\\>mount c \".\"",
-    "Drive C is mounted as local directory ./",
-    "Z:\\>c:",
-    "C:\\>PROBE.COM",
-    "",
-    "",
-    "... 19 more"
-   ],
-   "cursor": [
-    0,
-    4
-   ],
+   "screen_indexed": true,
+   "entries": 256,
+   "image": {
+    "path": "./tmp/demos/tour/files/wall.png",
+    "bytes": "<volatile>",
+    "sha256": "<volatile>",
+    "width": 1280,
+    "height": 800,
+    "scale": 4,
+    "indexed": true,
+    "inline": true
+   },
    "display_start": "0h"
   }
  },
  "screen_wait": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped screen_wait",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 6",
   "call": {
-   "text": "C:\\>PROBE.COM",
-   "seconds": 10
+   "screen": "play",
+   "seconds": 60
   },
   "reply": {
-   "summary": "screen_wait 'C:\\\\>PROBE.COM': already on screen at 0,3",
+   "summary": "screen_wait screen 'play': found after 2 frames",
    "status": "ok",
    "verdict": "TARGET",
-   "predicate": "text",
-   "already": true,
-   "waited_s": 0.0,
-   "polls": 0,
+   "predicate": "screen",
+   "already": false,
+   "waited_s": "<volatile>",
+   "polls": 2,
    "sampled_every": 0,
-   "text": [
-    "Z:\\>mount c \".\"",
-    "Drive C is mounted as local directory ./",
-    "Z:\\>c:",
-    "C:\\>PROBE.COM",
-    "",
-    "",
-    "... 19 more"
-   ],
-   "point": [
-    0,
-    3
-   ],
-   "line": "C:\\>PROBE.COM"
+   "screen": {
+    "name": "play",
+    "layer": "file"
+   },
+   "pc": "<volatile>",
+   "cpu_mode": "real",
+   "frame": 2,
+   "regs": "<volatile>",
+   "watches": [],
+   "cause": "<volatile>",
+   "e9": {
+    "lines_total": 2,
+    "truncated": false,
+    "lines": [
+     "Bochs port E9h: STUB  . scry device=present proto=7 motion=1",
+     "Bochs port E9h: BRICKS ready"
+    ],
+    "mark": "<volatile>"
+   },
+   "stop_seq": 2,
+   "instruction": "<volatile>"
   }
  },
  "send_keys": {
-  "from": "[B] argument edges: the maximum, one past it, the overflow: B send_keys 64 keys",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 62, step 2 of its `perform`",
   "call": {
    "keys": [
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a"
-   ]
+    "space"
+   ],
+   "expect": "SERVE$",
+   "seconds": 10
   },
   "reply": {
-   "summary": "send_keys (guest): posted, unverified",
+   "summary": "send_keys (guest): reaction seen",
    "status": "ok",
    "keys": [
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "... 58 more"
+    "space"
    ],
    "modifiers": [],
    "route": "guest",
-   "posted": 64,
-   "bytes": 128,
-   "frames": 128,
+   "posted": 1,
+   "bytes": 2,
+   "frames": 2,
    "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+    "checked": true,
+    "seen": true,
+    "expected": "SERVE$",
+    "verdict": "TARGET",
+    "line": "Bochs port E9h: SERVE",
+    "seen_before_waiting": "<volatile>",
+    "lines_before": "<volatile>",
+    "waited_s": "<volatile>",
+    "lines_total": "<volatile>"
    }
   }
  },
  "send_mouse": {
-  "from": "[P] the input route inside the guest: keys and the mouse, headless: P text mode: x=0 y=0 arrives, the driver at 0,0",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 60",
   "call": {
-   "x": 0,
-   "y": 0
+   "target": "court",
+   "expect": "MOUSE$",
+   "seconds": 10
   },
   "reply": {
-   "summary": "send_mouse: pointer at 0,0, program's own pointer not read; no button pressed; posted, unverified",
+   "summary": "send_mouse: pointer at 240,100, program's own pointer not read; no button pressed; reaction seen",
    "status": "ok",
-   "x": 0,
-   "y": 0,
+   "x": 240,
+   "y": 100,
    "units": "screen",
    "route": "guest",
    "pointer": {
     "screen": {
-     "x": 0,
-     "y": 0,
-     "width": 80,
-     "height": 25
+     "x": 240,
+     "y": 100,
+     "width": 320,
+     "height": 200
     },
     "mouse": {
-     "x": 0,
-     "y": 0,
+     "x": 480,
+     "y": 100,
      "max_x": 639,
      "max_y": 199
     },
     "buttons": [],
-    "bios_mode": "0x03"
+    "bios_mode": "0x13"
    },
    "driver_arrived": true,
    "motion": true,
    "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-   }
+    "checked": true,
+    "seen": true,
+    "expected": "MOUSE$",
+    "verdict": "TARGET",
+    "line": "Bochs port E9h: MOUSE",
+    "seen_before_waiting": "<volatile>",
+    "lines_before": "<volatile>",
+    "waited_s": "<volatile>",
+    "lines_total": "<volatile>"
+   },
+   "target": "court",
+   "screen": "play",
+   "identified_at_stop": 2
   }
  },
  "series_capture": {
-  "from": "[Q] the media layer: each scenario the hand way and the new way, over one answer: Q S1 new: series_capture and image_compare region find the same frames, with no picture",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 48",
   "call": {
-   "first": 0,
-   "last": 4,
-   "crop": [
-    0,
-    0,
-    320,
-    8
-   ],
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Q/n1-cap/screen_001.avi"
+   "first": 95,
+   "last": 108,
+   "capture_path": "./tmp/demos/tour/files/second-brick.avi",
+   "dest": "./tmp/demos/tour/files/series"
   },
   "reply": {
-   "summary": "series_capture: 5 AVI frames 0..4, 2 distinct, manifest $TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json",
+   "summary": "series_capture: 14 AVI frames 95..108, 14 distinct, manifest ./tmp/demos/tour/files/series/manifest.json",
    "status": "ok",
-   "manifest": "$TMPDIR/dosbox-x-session-<run>/series/series-1/manifest.json",
-   "count": 5,
-   "first": 0,
-   "last": 4,
-   "distinct": 2,
-   "frames_asked": 5,
-   "kept_after_close": false,
+   "manifest": "./tmp/demos/tour/files/series/manifest.json",
+   "count": 14,
+   "first": 95,
+   "last": 108,
+   "distinct": 14,
+   "frames_asked": 14,
+   "kept_after_close": true,
    "frame_source": "avi",
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/Q/n1-cap/screen_001.avi",
+   "capture_path": "./tmp/demos/tour/files/second-brick.avi",
    "crop": [
     0,
     0,
-    320,
-    8
+    640,
+    400
    ]
   }
  },
  "set_register": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped set_register",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 30",
   "call": {
-   "name": "eax",
+   "name": "ax",
    "value": 0
   },
   "reply": {
-   "summary": "set_register eax = 0, verified True",
+   "summary": "set_register ax = 0, verified True",
    "status": "ok",
-   "value": "0x00000000",
-   "register": "eax",
+   "value": "0x0000",
+   "register": "ax",
    "regs": {
     "EAX": "0x00000000",
-    "EBX": "0x00000124",
-    "ECX": "0x0000a97e",
-    "EDX": "0x00000814",
-    "ESI": "0x00000100",
-    "EDI": "0x0000fffe",
+    "EBX": "0x00000707",
+    "ECX": "0x005b0020",
+    "EDX": "0x00000000",
+    "ESI": "0x00000039",
+    "EDI": "0x000064e4",
     "EBP": "0x0000091c",
-    "ESP": "0x0000fff8",
-    "EIP": "0x0000fea5",
-    "CS": "0xf000",
-    "DS": "0x0814",
-    "ES": "0x0814",
+    "ESP": "0x0000fffa",
+    "EIP": "0x000002c8",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814"
+    "SS": "0x08df"
    },
-   "readback": "0x00000000",
+   "readback": "0x0000",
    "verified": true
   }
  },
  "snapshot": {
-  "from": "[P] the input route inside the guest: keys and the mouse, headless: P snapshot headless: the stub's command writes a PNG, no window and no menu",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 61",
   "call": {
-   "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/P/n4.png",
-   "seconds": 20
+   "dest": "./tmp/demos/tour/files/held.png"
   },
   "reply": {
-   "summary": "snapshot: 885 bytes at $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/P/n4.png",
+   "summary": "<volatile>",
    "status": "ok",
    "route": "guest",
-   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/P/n4.png",
+   "path": "./tmp/demos/tour/files/held.png",
    "bytes": "<volatile>",
    "sha256": "<volatile>"
   }
  },
  "start": {
-  "from": "[A] every tool in every machine state, on the probe guest: A none    start",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 2",
   "call": {
-   "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
-   "cwd": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest",
-   "session_seconds": 1200,
-   "logfile": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1033.log",
-   "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save"
+   "shared": true,
+   "background": true,
+   "display": "<host>",
+   "conf": "./demos/bricks/bricks.conf",
+   "cwd": "./demos/bricks",
+   "session_seconds": 900,
+   "logfile": "./tmp/demos/tour/files/e9.log",
+   "state_dir": "./tmp/demos/tour/files/states",
+   "captures_dir": "./tmp/demos/tour/files/captures"
   },
   "reply": {
-   "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.061s",
+   "summary": "<volatile>",
    "status": "ok",
    "pid": "<volatile>",
-   "conf": "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
-   "conf_digest": "78bdc38f360b9b4a",
-   "bound_s": 1200,
-   "elapsed_s": 0.3,
+   "conf": "./demos/bricks/bricks.conf",
+   "conf_digest": "af0834584e2dad05",
+   "watched": true,
+   "bound_s": 900,
+   "elapsed_s": "<volatile>",
    "captures": "off",
-   "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save",
-   "ready_after_s": 0.061,
-   "argv": [
-    "~/.local/state/dosbox-x-builds/scry/dosbox-x",
-    "-conf",
-    "$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest/probe.conf",
-    "-time-limit",
-    "1200",
-    "-break-start",
-    "... 20 more"
-   ],
-   "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
-   "binary_origin": "DOSBOX_X_BINARY",
+   "state_dir": "./tmp/demos/tour/files/states",
+   "shared": true,
+   "ready_after_s": "<volatile>",
+   "argv": "<volatile>",
+   "binary": "<volatile>",
+   "binary_origin": "<volatile>",
    "version": "<volatile>",
    "debugger_commands": [
     "A20",
@@ -1916,14 +2250,12 @@
     "MEMDUMPLIN",
     "... 8 more"
    ],
-   "stub": "/path/to/scry-dosbox-x/src/scry_dosbox_x/guest/SCRY.COM",
+   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
    "input_port": "<volatile>",
    "background": true,
-   "presence": {
-    "available": false,
-    "why": "a session started without `shared` has no window to draw on"
-   },
-   "logfile": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1033.log",
+   "presence": true,
+   "window": "<volatile>",
+   "logfile": "./tmp/demos/tour/files/e9.log",
    "declarations": {
     "rearm": {
      "rearmed": [],
@@ -1933,23 +2265,23 @@
      "unarmable": []
     }
    },
-   "kept": "kept 1 (promote to review); start/probe: no .scry/ in $TMPDIR/dosbox-x-live-job-<run>/A/tests/guest, the repository it was kept in: promote(dry_run=true, root=$TMPDIR/dosbox-x-live-job-<run>/A/tests/guest) lists what an approval would creat ... (241 characters)"
+   "kept": "1 saved for `promote`"
   }
  },
  "state_list": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped state_list",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 53",
   "call": {},
   "reply": {
-   "summary": "state_list: 1 state in $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save",
+   "summary": "state_list: 1 state in ./tmp/demos/tour/files/states",
    "status": "ok",
-   "state_dir": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save",
+   "state_dir": "./tmp/demos/tour/files/states",
    "states": [
     {
-     "name": "matrix-a-stopped",
-     "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save/matrix-a-stopped.sav",
-     "bytes": 87814,
+     "name": "third-brick",
+     "path": "./tmp/demos/tour/files/states/third-brick.sav",
+     "bytes": "<volatile>",
      "version": "<volatile>",
-     "program": "PROBE",
+     "program": "BRICKS",
      "machine": "MCH_VGA",
      "memory_mb": 4096,
      "saved_at": "<volatile>"
@@ -1962,145 +2294,238 @@
   }
  },
  "state_write": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped state_write save",
+  "from": "demos/bricks/TRANSCRIPT.md: call 26",
   "call": {
    "method": "save",
-   "name": "matrix-a-stopped",
-   "seconds": 10
+   "name": "bricks"
   },
   "reply": {
-   "summary": "state_write save: matrix-a-stopped, 87814 bytes, PROBE <time>",
+   "summary": "<volatile>",
    "status": "ok",
-   "name": "matrix-a-stopped",
-   "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1034-save/matrix-a-stopped.sav",
-   "bytes": 87814,
+   "name": "bricks",
+   "path": "./tmp/demos/bricks/bricks-states/bricks.sav",
+   "bytes": "<volatile>",
    "version": "<volatile>",
-   "program": "PROBE",
+   "program": "BRICKS",
    "machine": "MCH_VGA",
    "memory_mb": 4096,
    "saved_at": "<volatile>",
-   "paused": false
+   "paused": true
+  },
+  "then": {
+   "tool": "state_write",
+   "call": {
+    "method": "load",
+    "name": "bricks"
+   },
+   "reply": {
+    "summary": "<volatile>",
+    "status": "ok",
+    "name": "bricks",
+    "path": "./tmp/demos/bricks/bricks-states/bricks.sav",
+    "version": "<volatile>",
+    "program": "BRICKS",
+    "machine": "MCH_VGA",
+    "memory_mb": 4096,
+    "saved_at": "<volatile>",
+    "paused": true,
+    "mark": "<volatile>"
+   }
   }
  },
  "status": {
-  "from": "[A] every tool in every machine state, on the probe guest: A none    status",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 3",
   "call": {},
   "reply": {
-   "summary": "status: no session",
+   "summary": "status: alive, stopped",
    "status": "ok",
+   "pid": "<volatile>",
+   "conf": "./demos/bricks/bricks.conf",
+   "conf_digest": "af0834584e2dad05",
+   "watched": true,
+   "bound_s": 900,
+   "elapsed_s": "<volatile>",
+   "captures": "off",
+   "state_dir": "./tmp/demos/tour/files/states",
    "last_stop": {
-    "available": false,
-    "why": "this session has not stopped yet"
+    "stop_seq": 1,
+    "pc": "F000:0000FFF0",
+    "cause": "no declared code breakpoint at F000:0000FFF0, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+    "since_s": "<volatile>",
+    "wall_at": "<volatile>"
    },
    "pending": {
     "arm": [],
     "disarm": 0,
     "symbols_load": false,
     "base_remeasure": false
-   }
+   },
+   "cpu_mode": "real",
+   "pc": "F000:0000FFF0",
+   "declarations": {
+    "breakpoints": 0,
+    "watches": 0,
+    "regpoints": 0
+   },
+   "presence": true
   }
  },
  "step": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped step",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 31",
   "call": {
-   "count": 1
+   "count": 2
   },
   "reply": {
-   "summary": "step 1: 1 done, at F000:0000FEA6",
+   "summary": "step 2: 2 done, at 08DF:000002CC",
    "status": "ok",
    "mode": "into",
-   "asked": 1,
+   "asked": 2,
    "moved": true,
    "stalled": 0,
-   "before": "F000:0000FEA5",
-   "after": "F000:0000FEA6",
-   "instructions_completed": 1,
-   "note": "the stop landed in F000:0000FEA6 (linear 0xFFEA6), inside a ROM handler the program called into rather than in the program: `run_for` or `resume` leaves it, and a DPMI guest reaches a protected-mode stop with `stop(until=\"protected\")`",
-   "pc": "F000:0000FEA6",
+   "before": "08DF:000002C8",
+   "after": "08DF:000002CC",
+   "instructions_completed": 2,
+   "pc": "08DF:000002CC",
    "cpu_mode": "real",
-   "frame": 4,
+   "frame": 36,
    "regs": {
     "EAX": "0x00000000",
-    "EBX": "0x00000124",
-    "ECX": "0x0000a97e",
-    "EDX": "0x00000814",
-    "ESI": "0x00000100",
-    "EDI": "0x0000fffe",
+    "EBX": "0x00000700",
+    "ECX": "0x005b0020",
+    "EDX": "0x00000000",
+    "ESI": "0x00000039",
+    "EDI": "0x000064e4",
     "EBP": "0x0000091c",
-    "ESP": "0x0000fff8",
-    "EIP": "0x0000fea6",
-    "CS": "0xf000",
-    "DS": "0x0814",
-    "ES": "0x0814",
+    "ESP": "0x0000fffa",
+    "EIP": "0x000002cc",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814"
+    "SS": "0x08df"
    },
-   "watches": [],
-   "cause": "no declared code breakpoint at F000:0000FEA6: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+   "watches": [
+    {
+     "ref": "ball_x",
+     "by": "symbol",
+     "mode": "show",
+     "length": 8,
+     "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+     "state": "evaluated",
+     "value": {
+      "x": 230,
+      "y": 78,
+      "dx": 2,
+      "dy": -2
+     },
+     "bytes": "e6004e000200feff"
+    }
+   ],
+   "cause": "the stop `step` made after 2 steps, at 08DF:000002CC",
    "e9": {
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 6561
+    "mark": "<volatile>"
    },
-   "stop_seq": 5,
+   "stop_seq": 4,
    "instruction": {
-    "available": false,
-    "why": "the bytes at F000:0000FEA6 (FE...) start no instruction"
+    "address": "08DF:000002CC",
+    "bytes": "E81FFF",
+    "text": "call 0x1ee",
+    "flow": "call",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": "brick_hit",
+    "delta": 4
    }
   }
  },
  "stop": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped stop",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 65",
   "call": {},
   "reply": {
-   "summary": "stop: already stopped",
+   "summary": "<volatile>",
    "status": "ok",
-   "interrupted": false,
-   "last_stop": {
-    "stop_seq": 4,
-    "pc": "F000:0000FEA5",
-    "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-    "since_s": 0.7,
-    "wall_at": "<volatile>"
-   },
-   "note": "the machine was already stopped"
+   "interrupted": true,
+   "via": "break",
+   "pc": "<volatile>",
+   "cpu_mode": "real",
+   "frame": "<volatile>",
+   "regs": "<volatile>",
+   "watches": "<volatile>",
+   "cause": "<volatile>",
+   "e9": "<volatile>",
+   "stop_seq": "<volatile>",
+   "instruction": "<volatile>"
   }
  },
  "symbols_find": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped symbols_find",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 10",
   "call": {
-   "name": "MAP_DATA_SYMBOL"
+   "name": "ball"
   },
   "reply": {
-   "summary": "symbols_find MAP_DATA_SYMBOL: 1 symbol",
+   "summary": "symbols_find ball: 5 symbols",
    "status": "ok",
-   "query": "MAP_DATA_SYMBOL",
-   "symbols_total": 1,
+   "query": "ball",
+   "symbols_total": 5,
    "symbols": [
     {
-     "name": "MAP_DATA_SYMBOL",
-     "kind": "?",
-     "offset": "0x20",
+     "name": "ball_rect",
+     "kind": "T",
+     "offset": "0x398",
      "section": -1,
-     "addr": "0x00008020",
-     "idle": true
+     "addr": "0x00009188",
+     "idle": false
+    },
+    {
+     "name": "ball_x",
+     "kind": "D",
+     "offset": "0x621",
+     "section": -1,
+     "addr": "0x00009411",
+     "idle": false
+    },
+    {
+     "name": "ball_y",
+     "kind": "D",
+     "offset": "0x623",
+     "section": -1,
+     "addr": "0x00009413",
+     "idle": false
+    },
+    {
+     "name": "ball_dx",
+     "kind": "D",
+     "offset": "0x625",
+     "section": -1,
+     "addr": "0x00009415",
+     "idle": false
+    },
+    {
+     "name": "ball_dy",
+     "kind": "D",
+     "offset": "0x627",
+     "section": -1,
+     "addr": "0x00009417",
+     "idle": false
     }
    ],
    "truncated": false
   }
  },
  "symbols_load": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped symbols_load",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 9",
   "call": {
-   "path": "/path/to/scry-dosbox-x/tests/fixtures/borland-tlink16/MAPDEMO.MAP",
-   "base": "0x8000"
+   "path": "./demos/bricks/bricks.sym",
+   "base": "0x8df0"
   },
   "reply": {
-   "summary": "symbols_load: 5 loaded of 5 parsed, base 0x00008000, not checked against a build: no executable named MAPDEMO.exe beside the table, so it could not be checked against its build",
+   "summary": "symbols_load: 65 loaded of 65 parsed, base 0x00008df0, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
    "status": "ok",
-   "base": "0x00008000",
+   "base": "0x00008df0",
    "limit": {
     "available": false,
     "why": "no descriptor was read: the base was given, or each section has its own"
@@ -2119,165 +2544,282 @@
    "pending": false,
    "checked": {
     "available": false,
-    "why": "no executable named MAPDEMO.exe beside the table, so it could not be checked against its build"
+    "why": "no executable named bricks.exe beside the table, so it could not be checked against its build"
    },
    "base_from": "caller",
-   "parsed": 5,
-   "kept": 5,
+   "parsed": 65,
+   "kept": 65,
    "excluded_sections": 0,
    "excluded_pattern": 0,
    "excluded_unplaceable": 0,
    "unencodable": [],
    "unencodable_total": 0,
-   "truncated_names": 4,
-   "disambiguated": 1,
-   "renamed": 4,
+   "truncated_names": 0,
+   "disambiguated": 0,
+   "renamed": 0,
    "unreadable": 0,
-   "overlay_idle": 3,
+   "overlay_idle": 0,
    "table_mode": "replaced",
-   "table_total": 5,
-   "loaded": 5,
-   "bytes": 102,
+   "table_total": 65,
+   "loaded": 65,
+   "bytes": 1302,
    "symbols_typed": 0
   }
  },
  "trace": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped trace",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 34",
   "call": {
-   "instructions": 16,
-   "shape": "cs_ip",
-   "dest": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1444.trace",
-   "seconds": 30
+   "instructions": 40
   },
   "reply": {
-   "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1444.trace",
+   "summary": "trace 40 normal: ELAPSED, 40 executed at 34 addresses, at 08DF:00000221, to ./tmp/demos/tour/files/captures/trace-1.trace",
    "status": "ok",
-   "pc": "0814:00000130",
+   "pc": "08DF:00000221",
    "cpu_mode": "real",
-   "frame": 139,
+   "frame": 36,
    "regs": {
     "EAX": "0x00000000",
-    "EBX": "0x000002bc",
-    "ECX": "0x0000c13a",
-    "EDX": "0x00000814",
-    "ESI": "0x00000173",
-    "EDI": "0x0000015d",
+    "EBX": "0x00000700",
+    "ECX": "0x005b0002",
+    "EDX": "0x00000008",
+    "ESI": "0x00000007",
+    "EDI": "0x00001efd",
     "EBP": "0x0000091c",
-    "ESP": "0x0000fffe",
-    "EIP": "0x00000130",
-    "CS": "0x0814",
-    "DS": "0x0814",
-    "ES": "0x0814",
+    "ESP": "0x0000fff0",
+    "EIP": "0x00000221",
+    "CS": "0x08df",
+    "DS": "0x08df",
+    "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814"
+    "SS": "0x08df"
    },
-   "watches": [],
-   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+   "watches": [
+    {
+     "ref": "ball_x",
+     "by": "symbol",
+     "mode": "show",
+     "length": 8,
+     "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+     "state": "evaluated",
+     "value": {
+      "x": 230,
+      "y": 78,
+      "dx": 2,
+      "dy": -2
+     },
+     "bytes": "e6004e000200feff"
+    }
+   ],
+   "cause": "the end of the trace's count, at 08DF:00000221",
    "e9": {
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 46004
+    "mark": "<volatile>"
    },
-   "stop_seq": 8,
+   "stop_seq": 5,
    "instruction": {
-    "address": "0814:00000130",
-    "bytes": "E2FE",
-    "text": "loop 0x130",
-    "flow": "branch",
+    "address": "08DF:00000221",
+    "bytes": "F3AA",
+    "text": "rep stosb byte ptr es:[di], al",
+    "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-     "available": false,
-     "why": "no symbol table is loaded"
-    },
-    "delta": {
-     "available": false,
-     "why": "no symbol table is loaded"
-    }
+    "symbol": "fill_rect",
+    "delta": 3
    },
    "verdict": "ELAPSED",
    "trace": {
-    "path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1444.trace",
-    "bytes": 238,
-    "shape": "cs_ip",
-    "instructions": 16,
-    "addresses": 1,
-    "unplaced": 1,
-    "set_path": "$TMPDIR/dosbox-x-live-matrix-<run>/jobs-scratch/A/n1444-trace-set.jsonl",
-    "symbols": [],
-    "symbols_total": 0,
-    "truncated": false,
-    "note": "no symbol table is loaded: `symbols_load` names the routines"
+    "path": "./tmp/demos/tour/files/captures/trace-1.trace",
+    "bytes": 10209,
+    "shape": "normal",
+    "instructions": 40,
+    "addresses": 34,
+    "unplaced": 0,
+    "set_path": "./tmp/demos/tour/files/captures/trace-1-trace-set.jsonl",
+    "symbols": [
+     {
+      "symbol": "brick_index",
+      "addr": "0x00008fde",
+      "addresses": 6,
+      "instructions": 6,
+      "first": "0x00008fde",
+      "last": "0x00008fe8"
+     },
+     {
+      "symbol": "brick_rect",
+      "addr": "0x00008fe9",
+      "addresses": 18,
+      "instructions": 18,
+      "first": "0x00008fe9",
+      "last": "0x0000900c"
+     },
+     {
+      "symbol": "fill_rect",
+      "addr": "0x0000900e",
+      "addresses": 4,
+      "instructions": 10,
+      "first": "0x0000900e",
+      "last": "0x00009011"
+     },
+     {
+      "symbol": "brick_hit",
+      "addr": "0x000090b8",
+      "addresses": 6,
+      "instructions": 6,
+      "first": "0x000090bc",
+      "last": "0x000090cb"
+     }
+    ],
+    "symbols_total": 4,
+    "truncated": false
    }
   }
  },
  "wait": {
-  "from": "[A] every tool in every machine state, on the probe guest: A running wait",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 64",
   "call": {
-   "seconds": 1.0
+   "seconds": 1
   },
   "reply": {
-   "summary": "wait 1.001s: running",
+   "summary": "<volatile>",
    "status": "ok",
-   "waited_s": 1.001,
+   "waited_s": "<volatile>",
    "note": "the machine is still running after 1 s; a deliberate wait that expires is this answer, not a failure"
   }
  },
  "watch_add": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped watch_add",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 35",
   "call": {
-   "ref": "0040:006C",
-   "mode": "show",
-   "length": 4
+   "ref": "score",
+   "mode": "change",
+   "fmt": "u16"
   },
   "reply": {
-   "summary": "watch_add 0040:006C: evaluated",
+   "summary": "watch_add score: armed",
    "status": "ok",
-   "ref": "0040:006C",
-   "by": "address",
-   "mode": "show",
-   "fmt": "u32",
-   "length": 4,
+   "ref": "score",
+   "by": "symbol",
+   "mode": "change",
+   "fmt": "u16",
+   "length": 2,
    "stored": true,
-   "armed": false,
-   "state": "evaluated"
-  }
- },
- "window": {
-  "from": "[G] the windowed tools, on the probe guest and on the DPMI guest: G the host lists that window where `window` says",
-  "call": {},
-  "reply": {
-   "summary": "window: display 0, on screen, in front",
-   "status": "ok",
-   "window": {
-    "display": 0,
-    "bounds": {
-     "x": 40,
-     "y": 30,
-     "width": 640,
-     "height": 432
+   "armed": true,
+   "state": "armed",
+   "entry": "BPMEM 08DF:0615",
+   "entries": [
+    "BPMEM 08DF:0615",
+    "BPMEM 08DF:0616"
+   ],
+   "command": "BPM 08DF:0615"
+  },
+  "then": {
+   "tool": "resume",
+   "call": {
+    "seconds": 60
+   },
+   "reply": {
+    "summary": "resume: OTHER_STOP, stopped at 08DF:000002EB",
+    "status": "ok",
+    "verdict": "OTHER_STOP",
+    "omitted": [
+     "output",
+     "output_chars",
+     "clipped"
+    ],
+    "how": "detail=True adds what the debugger printed for this command",
+    "waited_s": "<volatile>",
+    "pc": "08DF:000002EB",
+    "cpu_mode": "real",
+    "frame": 36,
+    "regs": {
+     "EAX": "0x0000003c",
+     "EBX": "0x00000700",
+     "ECX": "0x005b001e",
+     "EDX": "0x00000000",
+     "ESI": "0x00000007",
+     "EDI": "0x00001ee1",
+     "EBP": "0x0000091c",
+     "ESP": "0x0000fffa",
+     "EIP": "0x000002eb",
+     "CS": "0x08df",
+     "DS": "0x08df",
+     "ES": "0xa000",
+     "FS": "0x0000",
+     "GS": "0x0000",
+     "SS": "0x08df"
     },
-    "onscreen": true,
-    "front": true,
-    "fullscreen": false
+    "watches": [
+     {
+      "ref": "ball_x",
+      "by": "symbol",
+      "mode": "show",
+      "length": 8,
+      "fmt": "{x:i16,y:i16,dx:i16,dy:i16}",
+      "state": "evaluated",
+      "value": {
+       "x": 230,
+       "y": 78,
+       "dx": 2,
+       "dy": -2
+      },
+      "bytes": "e6004e000200feff"
+     },
+     {
+      "ref": "score",
+      "by": "symbol",
+      "mode": "change",
+      "length": 2,
+      "fmt": "u16",
+      "state": "armed",
+      "value": 60,
+      "bytes": "3c00"
+     }
+    ],
+    "cause": "no declared code breakpoint at 08DF:000002EB, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+    "e9": {
+     "lines_total": 0,
+     "truncated": false,
+     "lines": [],
+     "mark": "<volatile>"
+    },
+    "stop_seq": 6,
+    "instruction": {
+     "address": "08DF:000002EB",
+     "bytes": "F71E2706",
+     "text": "neg word ptr [0x627]",
+     "flow": "sequential",
+     "code_bits": 16,
+     "bytes_from": "memory",
+     "symbol": "brick_hit",
+     "delta": 35
+    }
    }
   }
  },
+ "window": {
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 4",
+  "call": {},
+  "reply": {
+   "summary": "<volatile>",
+   "status": "ok",
+   "window": "<volatile>"
+  }
+ },
  "write": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped write",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 70",
   "call": {
-   "ref": "8000:0100",
-   "data_hex": "A55A"
+   "ref": "quit",
+   "data_hex": "01"
   },
   "reply": {
-   "summary": "write 8000:0100: 2 bytes, verified True",
+   "summary": "write quit: 1 byte, verified True",
    "status": "ok",
-   "ref": "8000:0100",
-   "seg_off": "8000:00000100",
-   "bytes_written": 2,
-   "readback": "a55a",
+   "ref": "quit",
+   "seg_off": "08DF:00000619",
+   "bytes_written": 1,
+   "readback": "01",
    "verified": true
   }
  }

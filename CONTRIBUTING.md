@@ -102,20 +102,40 @@ The tests refuse an `ok` reply that lacks a required field.
 not say.
 
 A change to a tool's arguments, reply model or description changes its reference page.
-`tests/test_dosbox_x_reference_pages.py` then fails, naming the tool, the page and the line.
-Rewrite the pages from the code:
+`tests/test_dosbox_x_reference_pages.py` then fails, naming the tool, the page and the line. Rewrite the pages from the code:
 
 ```sh
 uv run python -m scry_core.reference scry_dosbox_x.server:REFERENCE --write
 ```
 
-The examples on those pages come only from the transcript of a run against the real emulator.
-Each `--mark` spells one of that computer's directories the way the committed examples do:
+Every sentence of an entry is in `docs/reference/asks.json`, one object per tool. It holds what
+the tool does, its example's ask, a sentence per argument and per field, what it refuses and
+why. The registry gives the rest.
+
+- The same test fails when a tool has no entry there, or an entry has a sentence for an
+  argument the tool lost.
+- It fails too when a sentence passes its limit. `--write` writes no page until every entry
+  is whole, and lists what each lacks.
+
+The examples are calls of the tour, `docs/reference/tour/tour.py`: one session on Bricks
+that calls each tool once, with every reply checked.
 
 ```sh
+uv run python docs/reference/tour/tour.py --display 1
 uv run python -m scry_core.reference scry_dosbox_x.server:REFERENCE --write \
-    --examples <transcript.jsonl ...> --mark '/tmp/<the run>=$TMPDIR'
+    --examples docs/reference/tour/TRANSCRIPT.md demos/*/TRANSCRIPT.md
 ```
+
+- A run where every step passed copies its transcript to `docs/reference/tour/TRANSCRIPT.md`.
+  A second run gives the same file.
+- An entry's `call` names its example: the first call of those transcripts with those
+  arguments. A demo's call serves too, and so does a step of a `perform`.
+- One tool needs what Bricks lacks: `guest_file`, which reads a file the program wrote. Its example comes from a
+  run of the live test script, and `--examples` keeps the one it has.
+
+To replace one of those, add that run's `transcript.jsonl` to `--examples`. Each `--mark`
+spells one of that computer's directories the way the committed examples do:
+`--mark '/tmp/<the run>=$TMPDIR'`.
 
 - A run that passes deletes its temporary folder, transcript included. Hard-link
   `transcript.jsonl` while it runs, and only one newer than the run's start.
@@ -124,18 +144,14 @@ uv run python -m scry_core.reference scry_dosbox_x.server:REFERENCE --write \
   sits directly under `$TMPDIR`.
 - Before the commit, search `docs/reference` for `/Users/`, `/var/folders` and `/private/var`.
 
-### A tool that moves to another page
+### A tool that moves to another group
 
-The reference generator rewrites only the blocks between its markers. The hand-written
-paragraphs after a block belong to that tool by position, so a tool moved to another page
-leaves them behind.
+An entry is found by its tool's name, so it moves with the tool. Change the tool's group in
+`src/scry_dosbox_x/mcp.py`, then rewrite the pages: its block leaves one page and lands on the other.
 
-1. Take the text between the tool's end marker and the next begin marker, at `HEAD`.
-2. Remove it from the old page and put it after the same tool's end marker on the new page.
-3. Run `tests/test_dosbox_x_reference_pages.py` again.
-
-The paragraphs of `REFERENCE.md` that name the group, and the demos' tables of tools, need the
-same pass. The group of each tool both servers have is `roster.SHARED_FAMILIES` in scry-core.
+The line of each group in `asks.json`, the paragraphs of `REFERENCE.md` that name the group, and
+the demos' tables of tools need the same pass. The group of each tool both servers have is
+`roster.SHARED_FAMILIES` in scry-core.
 
 ## The commit hook
 
