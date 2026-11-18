@@ -331,19 +331,29 @@ def originals_held(reply: Reply, run: Run) -> str:
     return f"{at} bytes around the line are the disc's own script, hole by hole"
 
 
-def rewrite(run: Run) -> dict[str, Any]:
+def writes(run: Run) -> list[dict[str, Any]]:
+    """The new conversation as `write`s: the first holds the lookout's new line."""
     h = needle_at(run)
     ops = []
     for start, data in lookout.layout():
         for a, b in spans(0, len(data)):
-            ops.append({"op": "write", "ref": ref(h + start + a), "data_hex": data[a:b].hex()})
-    return {"steps": ops, "summaries": True}
+            ops.append({"ref": ref(h + start + a), "data_hex": data[a:b].hex()})
+    return ops
+
+
+def new_line(reply: Reply, run: Run) -> str:
+    expect(reply["verified"] is True, f"read back {reply['readback']}")
+    return "the lookout's new line written over his script, read back"
+
+
+def rewrite(run: Run) -> dict[str, Any]:
+    return {"steps": [{"op": "write", **op} for op in writes(run)[1:]], "summaries": True}
 
 
 def rewritten(reply: Reply, run: Run) -> str:
     expect(all(r["verified"] for r in replies(reply)), "a write did not read back")
     total = sum(len(data) for _, data in lookout.layout())
-    return (f"{len(lookout.TALK)} speeches, {total} bytes of bytecode over "
+    return (f"with the new line, {len(lookout.TALK)} speeches, {total} bytes of bytecode over "
             f"{len(lookout.layout())} holes, each read back")
 
 
@@ -508,6 +518,7 @@ STEPS = [
     Step("script", "perform", originals, originals_held,
          volatile={"ran": "the game's own bytes, which this repository does not carry: the "
                           "step's line gives their sha256 verdict"}),
+    Step("line written", "write", lambda run: writes(run)[0], new_line),
     Step("rewrite", "perform", rewrite, rewritten,
          title="Write a new conversation into the game",
          ask="Write the new lines over the lookout's script, and read each write back.",
@@ -564,11 +575,12 @@ DEMO = Demo(
              Moment("screen", "new line", "After `write` puts new bytecode over his script, he "
                                           "says a line the game never had.", frames=180)),
     alt="Monkey Island's lookout answering as written, then with a line written into memory",
-    lead=Lead(front=ROOT / "README.md", step="needle",
-              ask='Find where the game keeps the line "Nothing, if you want to sell shoes."',
+    lead=Lead(front=ROOT / "README.md", step="line written",
+              ask='Make the lookout say a line the game never had: "Nothing, if you\'re a Scry '
+                  'debugger." Write it over his script.',
               caption="The Secret of Monkey Island under this server: the lookout answers as "
                       "written, then with a line written over his script in memory.",
-              answer=("hits", "hits_total")),
+              answer=("bytes_written", "verified")),
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=precheck,
     host_args={"display": DISPLAY,
                "binary": "the host's own DOSBox-X"},

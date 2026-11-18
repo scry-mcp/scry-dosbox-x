@@ -253,15 +253,15 @@ Ask:
 Call:
 
 ```text
-perform(steps=[… 11 items], summaries=…)
+perform(steps=[… 10 items], summaries=…)
 ```
 
 Reply, 2 of 12 fields:
 
 ```json
 {
-  "summary": "perform: 11 of 11 steps",
-  "steps_completed": 11
+  "summary": "perform: 10 of 10 steps",
+  "steps_completed": 10
 }
 ```
 
@@ -271,61 +271,56 @@ The game's script is data in memory. This call writes new bytecode over three st
 
 ```json
 {
-  "summary": "perform: 11 of 11 steps",
+  "summary": "perform: 10 of 10 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "write",
-      "reply": {"summary": "write 82DD:000C: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82E5:000C: 98 bytes, verified True", "status": "ok"}
     },
     {
       "step": 1,
       "op": "write",
-      "reply": {"summary": "write 82E5:000C: 98 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82C5:000C: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 2,
       "op": "write",
-      "reply": {"summary": "write 82C5:000C: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82CD:000C: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 3,
       "op": "write",
-      "reply": {"summary": "write 82CD:000C: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82D5:000C: 99 bytes, verified True", "status": "ok"}
     },
     {
       "step": 4,
       "op": "write",
-      "reply": {"summary": "write 82D5:000C: 99 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82ED:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 5,
       "op": "write",
-      "reply": {"summary": "write 82ED:000D: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82F5:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 6,
       "op": "write",
-      "reply": {"summary": "write 82F5:000D: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82FD:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 7,
       "op": "write",
-      "reply": {"summary": "write 82FD:000D: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 8305:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 8,
       "op": "write",
-      "reply": {"summary": "write 8305:000D: 128 bytes, verified True", "status": "ok"}
-    },
-    {
-      "step": 9,
-      "op": "write",
       "reply": {"summary": "write 830D:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
-      "step": 10,
+      "step": 9,
       "op": "write",
       "reply": {
         "summary": "write 8315:000D: 38 bytes, verified True",
@@ -339,12 +334,12 @@ The game's script is data in memory. This call writes new bytecode over three st
       }
     }
   ],
-  "steps_total": 11,
+  "steps_total": 10,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 11,
+  "steps_completed": 10,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"

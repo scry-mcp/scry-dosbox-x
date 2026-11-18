@@ -1,4 +1,4 @@
-Every call of the run with its reply, in order: 58 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+Every call of the run with its reply, in order: 59 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
 
 **1. `start`**: OK start: shared DOSBox-X, parked at the debugger before DOS boots
 
@@ -2426,18 +2426,39 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**34. `perform`**: OK rewrite: 22 speeches, 1259 bytes of bytecode over 3 holes, each read back
+**34. `write`**: OK line written: the lookout's new line written over his script, read back
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "82DD:000C",
+  "data_hex": "1c6e14020f4e6f7468696e672c20696620796f75277265206120536372792064656275676765722eff0349742073746f70732074696d652c207265616473206d696e647320616e6420706c617973207468652074756e65732eff034576656e206d79206d696e642e00ae02d80f41206465627567676572207468617420706c61"
+}
+```
+
+```json
+{
+  "summary": "write 82DD:000C: 128 bytes, verified True",
+  "status": "ok",
+  "ref": "82DD:000C",
+  "seg_off": "82DD:0000000C",
+  "bytes_written": 128,
+  "readback": "1c6e14020f4e6f7468696e672c20696620796f75277265206120536372792064656275676765722eff0349742073746f70732074696d652c207265616473206d696e647320616e6420706c617973207468652074756e65732eff034576656e206d79206d696e642e00ae02d80f41206465627567676572207468617420706c61",
+  "verified": true,
+  "session": "<volatile>"
+}
+```
+
+</details>
+
+**35. `perform`**: OK rewrite: with the new line, 22 speeches, 1259 bytes of bytecode over 3 holes, each read back
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "steps": [
-    {
-      "op": "write",
-      "ref": "82DD:000C",
-      "data_hex": "1c6e14020f4e6f7468696e672c20696620796f75277265206120536372792064656275676765722eff0349742073746f70732074696d652c207265616473206d696e647320616e6420706c617973207468652074756e65732eff034576656e206d79206d696e642e00ae02d80f41206465627567676572207468617420706c61"
-    },
     {
       "op": "write",
       "ref": "82E5:000C",
@@ -2495,61 +2516,56 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "perform: 11 of 11 steps",
+  "summary": "perform: 10 of 10 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "write",
-      "reply": {"summary": "write 82DD:000C: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82E5:000C: 98 bytes, verified True", "status": "ok"}
     },
     {
       "step": 1,
       "op": "write",
-      "reply": {"summary": "write 82E5:000C: 98 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82C5:000C: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 2,
       "op": "write",
-      "reply": {"summary": "write 82C5:000C: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82CD:000C: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 3,
       "op": "write",
-      "reply": {"summary": "write 82CD:000C: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82D5:000C: 99 bytes, verified True", "status": "ok"}
     },
     {
       "step": 4,
       "op": "write",
-      "reply": {"summary": "write 82D5:000C: 99 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82ED:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 5,
       "op": "write",
-      "reply": {"summary": "write 82ED:000D: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82F5:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 6,
       "op": "write",
-      "reply": {"summary": "write 82F5:000D: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 82FD:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 7,
       "op": "write",
-      "reply": {"summary": "write 82FD:000D: 128 bytes, verified True", "status": "ok"}
+      "reply": {"summary": "write 8305:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 8,
       "op": "write",
-      "reply": {"summary": "write 8305:000D: 128 bytes, verified True", "status": "ok"}
-    },
-    {
-      "step": 9,
-      "op": "write",
       "reply": {"summary": "write 830D:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
-      "step": 10,
+      "step": 9,
       "op": "write",
       "reply": {
         "summary": "write 8315:000D: 38 bytes, verified True",
@@ -2563,12 +2579,12 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
       }
     }
   ],
-  "steps_total": 11,
+  "steps_total": 10,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": "<volatile>",
-  "steps_completed": 11,
+  "steps_completed": 10,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": "<volatile>"
@@ -2577,7 +2593,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**35. `breakpoint_interrupt`**: OK arm: a stop on every request to the CD driver
+**36. `breakpoint_interrupt`**: OK arm: a stop on every request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -2604,7 +2620,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**36. `perform`**: OK pick: the same comeback, picked again
+**37. `perform`**: OK pick: the same comeback, picked again
 
 <details><summary>call and reply</summary>
 
@@ -2677,7 +2693,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**37. `resume`**: OK first: stopped on INT 2Fh AX=1510h, a request to the CD driver
+**38. `resume`**: OK first: stopped on INT 2Fh AX=1510h, a request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -2735,7 +2751,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**38. `read_memory`**: OK request 1: STOP AUDIO (85h), let through
+**39. `read_memory`**: OK request 1: STOP AUDIO (85h), let through
 
 <details><summary>call and reply</summary>
 
@@ -2760,7 +2776,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**39. `perform`**: OK pass 1: the request answered
+**40. `perform`**: OK pass 1: the request answered
 
 <details><summary>call and reply</summary>
 
@@ -2818,7 +2834,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**40. `resume`**: OK second: stopped on INT 2Fh AX=1510h, a request to the CD driver
+**41. `resume`**: OK second: stopped on INT 2Fh AX=1510h, a request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -2876,7 +2892,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**41. `read_memory`**: OK request 2: STOP AUDIO (85h), let through
+**42. `read_memory`**: OK request 2: STOP AUDIO (85h), let through
 
 <details><summary>call and reply</summary>
 
@@ -2901,7 +2917,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**42. `perform`**: OK pass 2: the request answered
+**43. `perform`**: OK pass 2: the request answered
 
 <details><summary>call and reply</summary>
 
@@ -2959,7 +2975,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**43. `resume`**: OK third: stopped on INT 2Fh AX=1510h, a request to the CD driver
+**44. `resume`**: OK third: stopped on INT 2Fh AX=1510h, a request to the CD driver
 
 <details><summary>call and reply</summary>
 
@@ -3017,7 +3033,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**44. `read_memory`**: OK request 3: PLAY AUDIO (84h) from 36:45:00, the theme's first sector, for 12200 sectors
+**45. `read_memory`**: OK request 3: PLAY AUDIO (84h) from 36:45:00, the theme's first sector, for 12200 sectors
 
 <details><summary>call and reply</summary>
 
@@ -3042,7 +3058,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**45. `write`**: OK to the logo: the drive will start at 37:05:67, the logo's bar
+**46. `write`**: OK to the logo: the drive will start at 37:05:67, the logo's bar
 
 <details><summary>call and reply</summary>
 
@@ -3068,7 +3084,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**46. `declaration_clear`**: OK disarm: the stop on the CD driver cleared
+**47. `declaration_clear`**: OK disarm: the stop on the CD driver cleared
 
 <details><summary>call and reply</summary>
 
@@ -3091,7 +3107,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**47. `audio_record`**: OK theme: 8.0 s of the mixer at 44100 Hz
+**48. `audio_record`**: OK theme: 8.0 s of the mixer at 44100 Hz
 
 <details><summary>call and reply</summary>
 
@@ -3140,7 +3156,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**48. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
+**49. `audio_compare`**: OK the disc: the reader's own track 18 from the logo's bar, compared sample against sample with no realigning, SNR 48.62 dB
 
 <details><summary>call and reply</summary>
 
@@ -3172,7 +3188,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**49. `screen_map_find`**: OK music?: the map says: guybrush: a debugger that plays music
+**50. `screen_map_find`**: OK music?: the map says: guybrush: a debugger that plays music
 
 <details><summary>call and reply</summary>
 
@@ -3196,7 +3212,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**50. `perform`**: OK talk 1: the map says: lookout: the orange tycoon
+**51. `perform`**: OK talk 1: the map says: lookout: the orange tycoon
 
 <details><summary>call and reply</summary>
 
@@ -3256,7 +3272,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**51. `perform`**: OK talk 2: the map says: lookout: those files
+**52. `perform`**: OK talk 2: the map says: lookout: those files
 
 <details><summary>call and reply</summary>
 
@@ -3316,7 +3332,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**52. `perform`**: OK talk 3: the map says: lookout: still not a wave
+**53. `perform`**: OK talk 3: the map says: lookout: still not a wave
 
 <details><summary>call and reply</summary>
 
@@ -3376,7 +3392,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**53. `perform`**: OK talk 4: the map says: lookout: humor first
+**54. `perform`**: OK talk 4: the map says: lookout: humor first
 
 <details><summary>call and reply</summary>
 
@@ -3436,7 +3452,7 @@ Every call of the run with its reply, in order: 58 calls. `<volatile>` stands fo
 
 </details>
 
-**54. `screen_view`**: OK screen: mode M_VGA, 320x200 by palette index
+**55. `screen_view`**: OK screen: mode M_VGA, 320x200 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -3478,7 +3494,7 @@ Also attached: image/png.
 
 </details>
 
-**55. `record`**: OK new line: recorded 240 frames in ./tmp/demos/monkey/new-line.avi
+**56. `record`**: OK new line: recorded 240 frames in ./tmp/demos/monkey/new-line.avi
 
 <details><summary>call and reply</summary>
 
@@ -3523,7 +3539,7 @@ Also attached: image/png.
 
 </details>
 
-**56. `perform`**: OK goodbye: the map says: cliff
+**57. `perform`**: OK goodbye: the map says: cliff
 
 <details><summary>call and reply</summary>
 
@@ -3613,7 +3629,7 @@ Also attached: image/png.
 
 </details>
 
-**57. `perform`**: OK walk off: the map says: dark
+**58. `perform`**: OK walk off: the map says: dark
 
 <details><summary>call and reply</summary>
 
@@ -3691,7 +3707,7 @@ Also attached: image/png.
 
 </details>
 
-**58. `close`**: OK close: closed: quit
+**59. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
