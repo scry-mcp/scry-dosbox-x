@@ -132,7 +132,9 @@ def counted(name: str) -> Step:
                 volatile={**host.RETRACE_STOP,
                           **{key: "it names the instruction or the clock a retrace stop lands "
                                   "on, which drift with the host's cycles"
-                             for key in ("summary", "emulated_before_s", "emulated_after_s")}})
+                             for key in ("summary", "emulated_before_s", "emulated_after_s")}},
+                optional={"note": "it comes only when the stop landed in a ROM handler, which "
+                                  "is the host's"})
 
 
 def declared(name: str, here: Path, steps: list[Step], moments: Sequence[Moment],
