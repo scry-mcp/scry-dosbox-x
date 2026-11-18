@@ -224,7 +224,7 @@ picture is the screen that run ended on, linked to its guide, where it moves.
   where each brick falls.
 - [`demos/mines/`](demos/mines/): a Minesweeper this repository builds, its mines read out of
   memory and the board cleared without a miss.
-- [`demos/dpaint/`](demos/dpaint/): Deluxe Paint II paints a sunset, and a value scan finds the
+- [`demos/dpaint/`](demos/dpaint/): Deluxe Paint II paints a sunset, and a scan finds the
   byte that holds its colour; it needs the program.
 - [`demos/dpaint_maps/`](demos/dpaint_maps/): Deluxe Paint II driven through its menus and a
   dialog, each picked by name; it needs the program.
