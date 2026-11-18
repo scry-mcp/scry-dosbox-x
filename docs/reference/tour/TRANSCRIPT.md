@@ -1339,7 +1339,7 @@ Also attached: image/png.
   ],
   "unchanged": [],
   "total_bytes": 5283,
-  "store_bytes": 10100,
+  "store_bytes": 10126,
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```

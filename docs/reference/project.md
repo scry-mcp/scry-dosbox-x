@@ -34,7 +34,7 @@ Reply, 4 of 7 fields:
   "store": "./.scry",
   "unchanged": [],
   "total_bytes": 5283,
-  "store_bytes": 10100
+  "store_bytes": 10126
 }
 ```
 
@@ -79,7 +79,7 @@ The review read the repository's own `.scry/` folder and wrote nothing. `total_b
   ],
   "unchanged": [],
   "total_bytes": 5283,
-  "store_bytes": 10100
+  "store_bytes": 10126
 }
 ```
 
