@@ -800,7 +800,7 @@ A stereo WAV of 30768 samples, about 0.64 emulated seconds. `sample_min` and `sa
     "SS": "0x08df"
   },
   "watches": [],
-  "cause": "no declared code breakpoint at 08DF:00000E08: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+  "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 668,
   "instruction": {
