@@ -457,9 +457,12 @@ An empty `lines` is an answer: nothing matched. A log with no line from the prog
 
 <details><summary>More on why</summary>
 
+- On `dos`, each call is two rows of the debugger's `DOSTRACE`, one as DOS takes it and one as DOS hands it back, paired by number.
 - On `dos`, each call of `calls` holds `in` and `out`, the registers DOS took and handed back; `out.cf` is the carry flag.
 - `error` is the code and its name, for the calls that report failure by the carry: AH 38h and up. An older call answers in AL and gets none.
 - `returned` is `false` for a call DOS has not handed back yet, as at a stop inside it.
+- `switched: true` marks a call that never returned to its caller, as an EXEC or an exit: the registers are then another program's, so no result is claimed.
+- The emulator's own `int21` and `fileio` lines, switched on in the conf's `[log]` section, are written before DOS runs the call, so they never carry its result.
 - `time_s` and `returned_s` are seconds of emulated time since power-on, the clock `run_for` reports.
 
 </details>
@@ -591,7 +594,7 @@ Reply, 4 of 12 fields:
 
 ### What it refuses
 
-- A machine stopped at the debugger, or one that stops during the wait, while the log lacks the line: a stopped machine logs nothing (`wait_stopped`).
+- A machine stopped at the debugger, or one that stops during the wait, while the log lacks the line. It logs nothing, and `last_stop` says where it stopped (`wait_stopped`).
 - An emulator that exits during the wait (`session_broken`).
 - `seconds` out of range, an empty or malformed pattern, or a `since_mark` past the end of the log (`bad_argument`).
 - A session started without `logfile` (`no_channel`).
@@ -609,6 +612,7 @@ A log that does not exist yet is not refused: that is the state right after `res
 <details><summary>More on why</summary>
 
 - `lines_before` counts the lines read before the match and `lines_total` the matches in that read. On `dos` both count calls, and `calls_dropped` the oldest ones the server let go.
+- A debugger that does not answer, inside a long host call, is asked once, and then only the file is read. A `TIMEOUT` says the run state is unknown.
 - No breakpoint can be set on a log line; the nearest is a watch for changes on the variable whose change produces it.
 - `expect` on `send_keys` and `drive` is this wait on `guest`, from a position taken before the keys are sent.
 

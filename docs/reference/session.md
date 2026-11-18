@@ -67,7 +67,7 @@ The build has the debugger, and it has heavy debugging, the option `trace` needs
 
 - `binary`: The executable that was found.
 - `binary_origin`: Where its path came from: `argument`, `DOSBOX_X_BINARY` or `PATH`.
-- `version`: The build's own version line, or `available: false` with a `why`.
+- `version`: The build's own version line, or `available: false` with a `why`: a version that cannot be read never fails the call.
 - `heavy_debug`: Whether the build has heavy debugging, which `trace` and a `freeze` watch, one that holds bytes at their value, need. `false` is an answer, not a failure.
 - `debugger_commands`: The optional debugger commands the build has; several tools need one. Left out when it has none.
 - `debugger_commands_missing`: Each command the build lacks (`command`) with the tools that stop working without it (`disables`). Left out when none is missing.
@@ -141,7 +141,7 @@ start(conf="", cwd="", session_seconds=null, shared=false, display=null, fullscr
 
 ### Try it
 
-On [Bricks](../../demos/bricks/README.md), the game this repository builds. The tour starts it for a person to watch, with a log file for what the game writes.
+On [Bricks](../../demos/bricks/README.md), the game this repository builds. The example session starts it for a person to watch, with a log file for what the game writes.
 
 Ask:
 
@@ -232,7 +232,7 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
 - `log_categories` (object, optional): DOSBox-X's own `[log]` categories, each with its level, written into `logfile`. It needs `logfile`.
 - `guest_files` (array of string, optional): Up to 16 files on the host that the program is expected to leave. `guest_file` and `close` say what became of each.
 - `symbols` (string, default `""`): A symbol table, checked now and loaded at the first stop where DOS holds the program it is named after. `symbols_load` loads one later.
-- `base_from` (string (matching `^([pP][rR][oO][gG][rR][aA][mM]|[cC][sS]|[dD][sS]|[eE][sS]|[sS][sS]|[fF][sS]|[gG][sS])$`), default `"program"`): Where the table's addresses start: `program`, the program's own load address, or a segment register read at a protected-mode stop. Left out, `program`.
+- `base_from` (one of `"program"`, `"cs"`, `"ds"`, `"es"`, `"ss"`, `"fs"`, `"gs"` (in any case), default `"program"`): Where the table's addresses start: `program`, the program's own load address, or a segment register read at a protected-mode stop. Left out, `program`.
 - `profile` (string, default `""`): A start profile: a saved set of `start` arguments, by its name under `.scry/start/` or by a path. It fills only the arguments the call leaves out.
 
 ### What comes back
@@ -381,8 +381,17 @@ On Windows a start in front brings its window forward once it is up, and `window
 
 - `captures_dir` and `state_dir` are created with their parents. `state_dir` in the reply is the folder in use.
 - `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background` and `presence` say what the launch used.
+- A `version` the build would not give is `available: false` with a `why`, and never fails the start.
 - `rearm_refused` says why saved raw breakpoints could not be set again.
 - No free drive letter for the input helper is refused before anything starts.
+
+**Files, the emulator's log and the border.**
+
+- A file a tool reads must be a regular file, never a folder. A tool never writes over a file unless its entry says it replaces one, as `logfile` does.
+- `logfile` is written under a name of lowercase words joined by hyphens, as every file the server writes, so a capital or a `%` in it is replaced.
+- At `debug` a `log_categories` category can write a line per event: `files` writes one per read once the `[log]` setting `fileio` is on. Turn on only what the question needs.
+- The border never changes another reply: a failure to draw it shows only in `presence`, in `start` and `status`.
+- While the debugger does not answer, the border is not redrawn. It catches up once a call is answered.
 
 </details>
 
@@ -541,7 +550,7 @@ Takes no argument.
 ### What comes back
 
 - `last_stop`: Where the machine last stopped: its `pc` and `cause`, and `since_s`, how long ago. Unavailable, with why, when there is no stop to report.
-- `pc`: Where the machine stands now, as `SSSS:OOOOOOOO`. Unavailable while the program runs; `last_stop.pc` is then the answer.
+- `pc`: Where the machine stands now (`SSSS:OOOOOOOO`), read from the registers: a `set_register` moving `CS:IP` shows here, not in `last_stop`. While running, unavailable; `last_stop.pc` answers.
 - `cpu_mode`: `real`, `protected`, `paged` or `VM86`, read at a stop. Unavailable while the program runs.
 - `stopped_on_its_own`: Present when the machine had stopped and no call had reported it yet. `status` records that stop as the last one.
 - `pending`: What waits for the next stop: `arm`, the breakpoints declared while the program ran; a `disarm` count; and whether a `symbols_load` or a `base_remeasure` is queued.
@@ -576,7 +585,7 @@ Takes no argument.
 
 At a stop it also sets the breakpoints that were declared while the program ran, and says so in `applied_on_stop`.
 
-`session` carries four warnings, each only while it is true: `conf_changed_on_disk`, `image_changed_on_disk`, `output_bytes_dropped` and `program`.
+`session` carries five warnings, each only while it is true: `program`, `range_widened`, `conf_changed_on_disk`, `image_changed_on_disk` and `output_bytes_dropped`.
 
 <details><summary>More on why</summary>
 
@@ -745,7 +754,7 @@ close(detail=false)
 
 ### Try it
 
-On [Bricks](../../demos/bricks/README.md), at the end of the tour's session.
+On [Bricks](../../demos/bricks/README.md), at the end of the example session's session.
 
 Ask:
 

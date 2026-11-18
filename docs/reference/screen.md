@@ -291,7 +291,7 @@ The screen is in the 256-colour mode the debugger names `M_VGA`, 320x200, drawn 
 
 The screen is read from video memory and never by touching the video card, so reading it does not change it. Text and mode 13h come through the CPU's own view of that memory; planar, unchained and linear modes come from the video RAM, through the debugger's `VGAMEMDUMP` command.
 
-In a mode drawn through the palette, the PNG's pixels are the bytes the program wrote and its palette is the DAC, so the file is data. A 16-colour pixel goes through the Attribute Controller to its DAC entry; a 15- or 16-bit one is widened to eight bits a component.
+In a mode drawn through the palette, the PNG's pixels are the bytes the program wrote and its palette is the DAC, so the file is data. A 16-colour pixel goes through the Attribute Controller to its DAC entry; a 15- or 16-bit one is widened to eight bits a component by repeating its high bits.
 
 The views by palette index need a mode drawn through the palette: 256 colours, 16-colour planar or 8-bit linear. Nothing says who set a colour, because the debugger does not log writes to the DAC.
 
@@ -441,6 +441,10 @@ A character counts by its byte and the two colours its attribute gives it, a pix
 <details><summary>More on why</summary>
 
 It reads what `screen_view` reads. Each row of a series carries a signature in the same format, which [Media files](../../REFERENCE.md#media-files) sets out.
+
+The signature is BLAKE2b with an 8-byte digest, written as 16 lowercase hex characters. It hashes `scry-sig/1|<kind>|<w>x<h>|` and then the crop's cells, row by row, `w` and `h` being the crop's.
+
+A text cell is its code page 437 byte, then its foreground and background colours as the VGA shows them. Each goes through the Attribute Controller's palette registers (`VGA AC`), then the DAC. When `mode_control` bit 7 is set, `color-select` supplies bits 5 and 4 in place of the register's. With blinking on, `mode_control` bit 3, the background has three bits and the fourth blinks.
 
 </details>
 

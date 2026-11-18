@@ -4,6 +4,10 @@ This page is for a rule that several tools share. It holds the list of tools, th
 
 Each tool has its own entry, with arguments, reply and example, on its family's page under `docs/reference/`; a family is a group of tools. To install, see the [README](README.md).
 
+Each example is a call of the example session: one session on Bricks, a game this repository builds, kept whole in [`docs/reference/tour/TRANSCRIPT.md`](docs/reference/tour/TRANSCRIPT.md).
+
+A path in an example that starts with `./` stands for the folder of your clone, and `$TMPDIR` for your temporary folder. Write the whole path in your own call: a relative one is refused.
+
 ## Index
 
 <!-- scry-reference:begin index -->
@@ -206,6 +210,8 @@ The program is either stopped at the debugger or running, and the debugger reads
 - `status`, `window`, `close`, `log`, `log_wait`, `wait`, `stop`, `symbols_find`, `comment_list`, `captures`, `capture_frame`, `series_capture`, `snapshot`;
 - `comment_write(method="save")`, `screen_map_write` with `load`, `save` or `pointer`, and `registers(from_last_stop=True)`.
 
+A tool that answers may still refuse one of its modes while the program runs: its entry says which.
+
 **What you ask for while it runs is applied at the next stop**, before anything is read. Until then a breakpoint answers `pending`, and the lists answer from what the server holds, with `debugger_read: false`. The reply that meets the stop says `applied_on_stop`.
 
 **A stop nobody waited for is reported once**, in `stopped_on_its_own`, by the first tool that finds the program stopped.
@@ -222,7 +228,7 @@ Every reply that ends at a stop carries the same readings:
 - `cause`: what stopped the program.
 - `e9`: the lines the program wrote to port `0xE9`, a debug port a DOS program can log to, since the last stop.
 
-`cause` names the saved breakpoint at that address, the registerpoint, a `run_to`'s own target, your `stop`, or the time limit or frame a run ended at. Otherwise it says it cannot tell: a debugger row has no hit flag, and a memory watch stops at the instruction that wrote.
+`cause` names the saved breakpoint at that address, the registerpoint, a `run_to`'s own target, your `stop`, or the time limit or frame a run ended at. Otherwise it says it cannot tell: a debugger row has no hit flag, and a memory watch stops just past the instruction that wrote.
 
 `e9` is cut to a limit, and its `how` gives the `log` call that reads the rest. Without `start`'s `logfile` there are no lines.
 

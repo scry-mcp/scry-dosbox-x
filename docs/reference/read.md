@@ -329,6 +329,15 @@ The width is the segment's own, never the cpu mode's alone. Real mode is 16-bit;
 
 In `resolved`, `kind` is `target` or `memory`. A memory operand is read through the segment register named in `register`, as it stands at this stop. Outside the loaded table's range, `symbol` and `delta` are unavailable.
 
+**Checked against the debugger's own disassembly**
+
+Each listing is checked line by line against the debugger's own code pane, and its bytes against what `read_memory` reads. The two agree on address, length, bytes, mnemonic and operands, and may differ in spelling alone:
+
+- One instruction under two names: `jc` and `jb`, `jnc` and `jae`, `popad` and `popal`, `call` and `lcall` for a far call.
+- A string instruction's implicit operands, which the pane leaves out, and a size word it leaves out where a register fixes the size.
+- A symbol the pane prints in place of an operand's number.
+- `FE /7`, which is no x86 instruction: DOSBox-X enters its own code through `FE 38`, so the pane reads it as `callback`. Here it is a byte no instruction starts with.
+
 </details>
 
 ### Related tools
@@ -545,7 +554,7 @@ The file holds 60 bytes, as asked: `bytes` equals `length`. `path` is where it w
 ### Arguments
 
 - `ref` (string, required): Where the range begins: a symbol or a `SEG:OFF` address.
-- `length` (integer, required): How many bytes to write.
+- `length` (integer, required): How many bytes to write, 1 or more.
 - `dest` (string, required): The file to create: an absolute or `~`-led path, not there yet.
 
 ### What comes back
@@ -584,6 +593,8 @@ Inside offsets 0 to `0xFFFF` the segment's limit is not checked, and the debugge
 <details><summary>More on why</summary>
 
 Some builds of DOSBox-X name the file `MEMDUMP.BIN` themselves, in the working folder or in the captures folder, so a leftover of that name is refused in both. A `dest` is compared with those names on the file system, not by spelling. `captures_dir` is not where a dump lands.
+
+Deleting a leftover first would not be safer. A delete that failed quietly would leave the old file, the debugger would still report success, and a stale dump would come back as new.
 
 </details>
 

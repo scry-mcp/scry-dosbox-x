@@ -25,7 +25,7 @@ send_keys(keys, modifiers=null, expect="", seconds=null, action="press")
 
 ### Try it
 
-On [Bricks](../../demos/bricks/README.md), the game this repository builds, running, with the ball waiting on the paddle. The tour sends this key as one step of a `perform`.
+On [Bricks](../../demos/bricks/README.md), the game this repository builds, running, with the ball waiting on the paddle. The example session sends this key as one step of a `perform`.
 
 Ask:
 
@@ -84,7 +84,7 @@ Reply, 7 of 9 fields:
 ### Arguments
 
 - `keys` (array of string, required): The names of the keys to send, in order: at most 64, such as `enter`, `a`, `f1` or `left`.
-- `modifiers` (array of string (matching `^([sS][hH][iI][fF][tT]|[cC][tT][rR][lL]|[cC][oO][nN][tT][rR][oO][lL]|[aA][lL][tT]|[oO][pP][tT][iI][oO][nN])$`), optional): Keys held around the others: `shift`, `ctrl` (or `control`) and `alt` (or `option`), in any case. Left out, none.
+- `modifiers` (array of one of `"shift"`, `"ctrl"`, `"control"`, `"alt"`, `"option"` (in any case), optional): Keys held around the others: `shift`, `ctrl` (or `control`) and `alt` (or `option`), in any case. Left out, none.
 - `expect` (string, default `""`): A regular expression for the line the program writes to its log when it reacts. Left out, nothing is checked.
 - `seconds` (number (> 0, <= 600.0), optional): How long to wait for the `expect` line, up to 600. Left out, 10; refused without `expect`.
 - `action` (one of `"press"`, `"down"`, `"up"`, default `"press"`): `press` taps each key; `down` presses and holds, `up` lets go, so a key can stay held across calls. Left out, `press`.
@@ -377,7 +377,7 @@ DOS programs read the mouse in different ways: some ask the driver where the poi
 
 The pointer that moves is the mouse driver's, the one DOSBox-X provides: a mouse driver loaded inside DOS reads its own hardware and is not reached. A program that keeps a pointer of its own, adding up motion, can end somewhere else, so a plain screen move answers only `driver_arrived`.
 
-A [screen map](files.md#screen-maps) is a file that names a program's screens and the areas of each. When it also says where the program keeps its pointer, the server reads that pointer and corrects the move, and `arrived` then speaks for it.
+A [screen map](read.md#screen_map_write) is a file that names a program's screens and the areas of each. When it also says where the program keeps its pointer, the server reads that pointer and corrects the move, and `arrived` then speaks for it.
 
 <details><summary>More on why</summary>
 
@@ -427,6 +427,10 @@ With `target`, the reply adds `target`, `screen` (the screen recognised) and `id
 In a [`perform`](sequences.md#perform) run with `summaries`, each frame a send ran on a stopped machine is a numbered stop, and only the last one is in a reply. `stops.unaccounted` counts the stops numbered during the list that no step's reply shows, so a few sends make it large.
 
 The helper, a stopped machine, `expect` and a failed send work as under [`send_keys`](#send_keys). With no `logfile` the mouse goes in unchecked too.
+
+**The pointer you see**
+
+With a window and its border, the first move also shows an orange pointer: the DOS mouse driver's default graphics pointer, one cell per screen pixel. In a graphics mode it is the size of the program's own pointer, whatever the window's size. The mouse driver's pointer is at its new place at once; the orange one glides there briefly. It is never in a capture, and a failure to draw it fails nothing.
 
 </details>
 

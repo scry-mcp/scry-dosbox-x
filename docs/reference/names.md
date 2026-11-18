@@ -183,6 +183,15 @@ symbols:
 	@mv $@.tmp build/APP.SYM
 ```
 
+| symbol file | where its addresses come from |
+|---|---|
+| `nm` output, a GNU `ld` map, a real-mode Borland map | one `base`, given or measured through `base_from` |
+| a 32-bit Borland map, an Open Watcom map | `section_bases`, one address per section |
+
+The file is read leniently: a byte that is not UTF-8, such as a code page 437 character in a DOS map, is replaced and the rest is read. `base` and `section_bases` are two arguments because one value cannot honestly be a number for one file and a table for another.
+
+The names come from a text listing your toolchain writes. A DJGPP executable's own COFF symbols serve only to check it. The debugger's own `IV` command takes one address typed at its console, so the whole list goes in as the file the debugger loads. A function the compiler inlined, such as a `static` one at `-O3`, has no symbol.
+
 </details>
 
 ### Related tools
@@ -318,7 +327,7 @@ Five symbols start with `ball`, and all five came back. The whole reply, below, 
 - `offset` (integer or string, optional): An offset as the toolchain wrote it, before any base. The reply is the nearest symbol at or below it.
 - `section` (integer, optional): The section `offset` is in, by its index, for a table loaded with `section_bases`. A table without sections needs none.
 - `linear` (integer or string, optional): A linear address, never a `SEG:OFF`: an integer or `0x` text. The reply is the nearest symbol at or below it.
-- `limit` (integer (>= 1, <= 50), default `10`): How many symbols a name lookup lists: 1 to 50. Left out, 10.
+- `limit` (integer (>= 1, <= 50), default `10`): How many symbols a name lookup lists: 1 to 50. Left out, 10; a lookup by address does not use it.
 
 ### What comes back
 

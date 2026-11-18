@@ -15,7 +15,7 @@ state_list()
 
 ### Try it
 
-On Bricks, the game this repository builds, after a state was saved as `third-brick`. The tour gives `start` a `state_dir` of its own.
+On Bricks, the game this repository builds, after a state was saved as `third-brick`. The example session gives `start` a `state_dir` of its own.
 
 Ask:
 
@@ -270,6 +270,8 @@ A name is never digits only, because the emulator's own slot files are `<n>.sav`
 A load can move the program's load address. Each breakpoint saved by symbol name is then cleared at its old address and set again, because the debugger's own rows outlive a load.
 
 `mark` is where each log ended as the load was sent, the same position for `guest`, `emulator` and `all`. `log` and `log_wait` take it as `since_mark` to read what came after. It is a position in the file, not a moment, so a line written before the load and not yet flushed lands after it.
+
+A cancelled call releases a program it stopped. A cancelled `save` removes the file it began, and a cancelled `load` that was already sent marks the session `altered`, since part of the machine may be replaced.
 
 </details>
 

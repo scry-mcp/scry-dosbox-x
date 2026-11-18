@@ -36,7 +36,7 @@
    "returns": {
     "binary": "The executable that was found.",
     "binary_origin": "Where its path came from: `argument`, `DOSBOX_X_BINARY` or `PATH`.",
-    "version": "The build's own version line, or `available: false` with a `why`.",
+    "version": "The build's own version line, or `available: false` with a `why`: a version that cannot be read never fails the call.",
     "heavy_debug": "Whether the build has heavy debugging, which `trace` and a `freeze` watch, one that holds bytes at their value, need. `false` is an answer, not a failure.",
     "debugger_commands": "The optional debugger commands the build has; several tools need one. Left out when it has none.",
     "debugger_commands_missing": "Each command the build lacks (`command`) with the tools that stop working without it (`disables`). Left out when none is missing."
@@ -63,7 +63,7 @@
   "start": {
    "what": "Start DOSBox-X from your conf file and leave the machine stopped at the debugger, at its first instruction.",
    "ask": "Start Bricks in a window I can watch without losing my keyboard, for at most fifteen minutes, and keep its log.",
-   "on": "On [Bricks](../../demos/bricks/README.md), the game this repository builds. The tour starts it for a person to watch, with a log file for what the game writes.",
+   "on": "On [Bricks](../../demos/bricks/README.md), the game this repository builds. The example session starts it for a person to watch, with a log file for what the game writes.",
    "call": {
     "shared": true,
     "background": true,
@@ -157,7 +157,9 @@
     "**Speed.**",
     "`[cpu] use dynamic core with fpu` decides whether FPU code runs recompiled. Its `auto` takes FPU and MMX instructions off the dynamic core. A single-tasking DOS program that leans on the FPU then runs below real time with nothing in the session saying so, and a conf for it states `true`.",
     "**What else the reply says.**",
-    "- `captures_dir` and `state_dir` are created with their parents. `state_dir` in the reply is the folder in use.\n- `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background` and `presence` say what the launch used.\n- `rearm_refused` says why saved raw breakpoints could not be set again.\n- No free drive letter for the input helper is refused before anything starts."
+    "- `captures_dir` and `state_dir` are created with their parents. `state_dir` in the reply is the folder in use.\n- `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background` and `presence` say what the launch used.\n- A `version` the build would not give is `available: false` with a `why`, and never fails the start.\n- `rearm_refused` says why saved raw breakpoints could not be set again.\n- No free drive letter for the input helper is refused before anything starts.",
+    "**Files, the emulator's log and the border.**",
+    "- A file a tool reads must be a regular file, never a folder. A tool never writes over a file unless its entry says it replaces one, as `logfile` does.\n- `logfile` is written under a name of lowercase words joined by hyphens, as every file the server writes, so a capital or a `%` in it is replaced.\n- At `debug` a `log_categories` category can write a line per event: `files` writes one per read once the `[log]` setting `fileio` is on. Turn on only what the question needs.\n- The border never changes another reply: a failure to draw it shows only in `presence`, in `start` and `status`.\n- While the debugger does not answer, the border is not redrawn. It catches up once a call is answered."
    ],
    "related": [
     "build_check",
@@ -185,7 +187,7 @@
    "arguments": {},
    "returns": {
     "last_stop": "Where the machine last stopped: its `pc` and `cause`, and `since_s`, how long ago. Unavailable, with why, when there is no stop to report.",
-    "pc": "Where the machine stands now, as `SSSS:OOOOOOOO`. Unavailable while the program runs; `last_stop.pc` is then the answer.",
+    "pc": "Where the machine stands now (`SSSS:OOOOOOOO`), read from the registers: a `set_register` moving `CS:IP` shows here, not in `last_stop`. While running, unavailable; `last_stop.pc` answers.",
     "cpu_mode": "`real`, `protected`, `paged` or `VM86`, read at a stop. Unavailable while the program runs.",
     "stopped_on_its_own": "Present when the machine had stopped and no call had reported it yet. `status` records that stop as the last one.",
     "pending": "What waits for the next stop: `arm`, the breakpoints declared while the program ran; a `disarm` count; and whether a `symbols_load` or a `base_remeasure` is queued.",
@@ -195,7 +197,7 @@
    "why": [
     "`status` answers in every state: with no session, while the machine runs and once the session is broken. It is where you learn why another tool does not answer.",
     "At a stop it also sets the breakpoints that were declared while the program ran, and says so in `applied_on_stop`.",
-    "`session` carries four warnings, each only while it is true: `conf_changed_on_disk`, `image_changed_on_disk`, `output_bytes_dropped` and `program`."
+    "`session` carries five warnings, each only while it is true: `program`, `range_widened`, `conf_changed_on_disk`, `image_changed_on_disk` and `output_bytes_dropped`."
    ],
    "why_more": [
     "- `conf_changed_on_disk`: the conf file changed since `start`. It is `false` too when the file is gone.\n- `image_changed_on_disk`: the executable the loaded symbol table was checked against was written since, as a rebuild under an open session does.\n- `output_bytes_dropped`: the emulator printed more than the server keeps.\n- `program`: the program that ran inside DOS is gone. It is `state: exited` with `name` and `seen_by`, or `state: fault` with `fault`, the message DJGPP writes as a program dies.\n- `program` is read at the stops that answer a call, never while the program runs, so a session that never stops never learns it.",
@@ -248,7 +250,7 @@
   "close": {
    "what": "End the session and the emulator with it, and learn how it ended.",
    "ask": "We are done: close the emulator and tell me how it ended.",
-   "on": "On [Bricks](../../demos/bricks/README.md), at the end of the tour's session.",
+   "on": "On [Bricks](../../demos/bricks/README.md), at the end of the example session's session.",
    "call": {},
    "shows": [
     "summary",
@@ -424,7 +426,7 @@
     "An empty `lines` is an answer: nothing matched. A log with no line from the program at all is refused, so that silence is never read as no match. While the program runs a line it has only now written may not be in the file yet, and `note` says so."
    ],
    "why_more": [
-    "- On `dos`, each call of `calls` holds `in` and `out`, the registers DOS took and handed back; `out.cf` is the carry flag.\n- `error` is the code and its name, for the calls that report failure by the carry: AH 38h and up. An older call answers in AL and gets none.\n- `returned` is `false` for a call DOS has not handed back yet, as at a stop inside it.\n- `time_s` and `returned_s` are seconds of emulated time since power-on, the clock `run_for` reports."
+    "- On `dos`, each call is two rows of the debugger's `DOSTRACE`, one as DOS takes it and one as DOS hands it back, paired by number.\n- On `dos`, each call of `calls` holds `in` and `out`, the registers DOS took and handed back; `out.cf` is the carry flag.\n- `error` is the code and its name, for the calls that report failure by the carry: AH 38h and up. An older call answers in AL and gets none.\n- `returned` is `false` for a call DOS has not handed back yet, as at a stop inside it.\n- `switched: true` marks a call that never returned to its caller, as an EXEC or an exit: the registers are then another program's, so no result is claimed.\n- The emulator's own `int21` and `fileio` lines, switched on in the conf's `[log]` section, are written before DOS runs the call, so they never carry its result.\n- `time_s` and `returned_s` are seconds of emulated time since power-on, the clock `run_for` reports."
    ],
    "related": [
     "log_wait",
@@ -465,7 +467,7 @@
     "lines_examined": "How many lines were read in all: those the log held and those that came during the wait. On `dos`, the calls the server holds."
    },
    "refuses": [
-    "A machine stopped at the debugger, or one that stops during the wait, while the log lacks the line: a stopped machine logs nothing (`wait_stopped`).",
+    "A machine stopped at the debugger, or one that stops during the wait, while the log lacks the line. It logs nothing, and `last_stop` says where it stopped (`wait_stopped`).",
     "An emulator that exits during the wait (`session_broken`).",
     "`seconds` out of range, an empty or malformed pattern, or a `since_mark` past the end of the log (`bad_argument`).",
     "A session started without `logfile` (`no_channel`).",
@@ -478,7 +480,7 @@
     "A log that does not exist yet is not refused: that is the state right after `resume`. When the wait returns the program is usually still running: use the line to choose an address for `run_to` or `watch_add` on the next run."
    ],
    "why_more": [
-    "- `lines_before` counts the lines read before the match and `lines_total` the matches in that read. On `dos` both count calls, and `calls_dropped` the oldest ones the server let go.\n- No breakpoint can be set on a log line; the nearest is a watch for changes on the variable whose change produces it.\n- `expect` on `send_keys` and `drive` is this wait on `guest`, from a position taken before the keys are sent."
+    "- `lines_before` counts the lines read before the match and `lines_total` the matches in that read. On `dos` both count calls, and `calls_dropped` the oldest ones the server let go.\n- A debugger that does not answer, inside a long host call, is asked once, and then only the file is read. A `TIMEOUT` says the run state is unknown.\n- No breakpoint can be set on a log line; the nearest is a watch for changes on the variable whose change produces it.\n- `expect` on `send_keys` and `drive` is this wait on `guest`, from a position taken before the keys are sent."
    ],
    "related": [
     "log",
@@ -598,7 +600,10 @@
     "The width is the segment's own, never the cpu mode's alone. Real mode is 16-bit; protected mode takes it from the stop for `CS`, from `SELINFO` for a segment another register holds, and from the descriptor tables otherwise."
    ],
    "why_more": [
-    "In `resolved`, `kind` is `target` or `memory`. A memory operand is read through the segment register named in `register`, as it stands at this stop. Outside the loaded table's range, `symbol` and `delta` are unavailable."
+    "In `resolved`, `kind` is `target` or `memory`. A memory operand is read through the segment register named in `register`, as it stands at this stop. Outside the loaded table's range, `symbol` and `delta` are unavailable.",
+    "**Checked against the debugger's own disassembly**",
+    "Each listing is checked line by line against the debugger's own code pane, and its bytes against what `read_memory` reads. The two agree on address, length, bytes, mnemonic and operands, and may differ in spelling alone:",
+    "- One instruction under two names: `jc` and `jb`, `jnc` and `jae`, `popad` and `popal`, `call` and `lcall` for a far call.\n- A string instruction's implicit operands, which the pane leaves out, and a size word it leaves out where a register fixes the size.\n- A symbol the pane prints in place of an operand's number.\n- `FE /7`, which is no x86 instruction: DOSBox-X enters its own code through `FE 38`, so the pane reads it as `callback`. Here it is a byte no instruction starts with."
    ],
    "related": [
     "call_stack",
@@ -668,7 +673,7 @@
    "reads": "The file holds 60 bytes, as asked: `bytes` equals `length`. `path` is where it was written.",
    "arguments": {
     "ref": "Where the range begins: a symbol or a `SEG:OFF` address.",
-    "length": "How many bytes to write.",
+    "length": "How many bytes to write, 1 or more.",
     "dest": "The file to create: an absolute or `~`-led path, not there yet."
    },
    "returns": {
@@ -690,7 +695,8 @@
     "Inside offsets 0 to `0xFFFF` the segment's limit is not checked, and the debugger writes zeros past it."
    ],
    "why_more": [
-    "Some builds of DOSBox-X name the file `MEMDUMP.BIN` themselves, in the working folder or in the captures folder, so a leftover of that name is refused in both. A `dest` is compared with those names on the file system, not by spelling. `captures_dir` is not where a dump lands."
+    "Some builds of DOSBox-X name the file `MEMDUMP.BIN` themselves, in the working folder or in the captures folder, so a leftover of that name is refused in both. A `dest` is compared with those names on the file system, not by spelling. `captures_dir` is not where a dump lands.",
+    "Deleting a leftover first would not be safer. A delete that failed quietly would leave the old file, the debugger would still report success, and a stale dump would come back as new."
    ],
    "related": [
     "read_memory",
@@ -977,7 +983,7 @@
    ],
    "why": [
     "The screen is read from video memory and never by touching the video card, so reading it does not change it. Text and mode 13h come through the CPU's own view of that memory; planar, unchained and linear modes come from the video RAM, through the debugger's `VGAMEMDUMP` command.",
-    "In a mode drawn through the palette, the PNG's pixels are the bytes the program wrote and its palette is the DAC, so the file is data. A 16-colour pixel goes through the Attribute Controller to its DAC entry; a 15- or 16-bit one is widened to eight bits a component.",
+    "In a mode drawn through the palette, the PNG's pixels are the bytes the program wrote and its palette is the DAC, so the file is data. A 16-colour pixel goes through the Attribute Controller to its DAC entry; a 15- or 16-bit one is widened to eight bits a component by repeating its high bits.",
     "The views by palette index need a mode drawn through the palette: 256 colours, 16-colour planar or 8-bit linear. Nothing says who set a colour, because the debugger does not log writes to the DAC."
    ],
    "why_more": [
@@ -1034,7 +1040,9 @@
     "A character counts by its byte and the two colours its attribute gives it, a pixel by its colour. A palette fade or a recoloured character is a new signature; the cursor's blink is not."
    ],
    "why_more": [
-    "It reads what `screen_view` reads. Each row of a series carries a signature in the same format, which [Media files](../../REFERENCE.md#media-files) sets out."
+    "It reads what `screen_view` reads. Each row of a series carries a signature in the same format, which [Media files](../../REFERENCE.md#media-files) sets out.",
+    "The signature is BLAKE2b with an 8-byte digest, written as 16 lowercase hex characters. It hashes `scry-sig/1|<kind>|<w>x<h>|` and then the crop's cells, row by row, `w` and `h` being the crop's.",
+    "A text cell is its code page 437 byte, then its foreground and background colours as the VGA shows them. Each goes through the Attribute Controller's palette registers (`VGA AC`), then the DAC. When `mode_control` bit 7 is set, `color-select` supplies bits 5 and 4 in place of the register's. With blinking on, `mode_control` bit 3, the background has three bits and the fourth blinks."
    ],
    "related": [
     "screen_wait",
@@ -1063,7 +1071,7 @@
   },
   "scan": {
    "what": "Find the byte that holds a value nobody has named: start from a whole range and keep only what changes as the value does.",
-   "on": "On Bricks, the game this repository builds, stopped on its play screen with its symbols loaded. The tour filters after its first brick falls, when the score reads 60.",
+   "on": "On Bricks, the game this repository builds, stopped on its play screen with its symbols loaded. The example session filters after its first brick falls, when the score reads 60.",
    "ask": "Find the byte that holds the score: scan the 216 bytes from row_colours, and filter once a brick has fallen.",
    "call": {
     "method": "start",
@@ -1573,7 +1581,7 @@
     "retrace_pending": "`true` when a stop at the next retrace is still armed in the debugger, so the next resume stops there."
    },
    "refuses": [
-    "Both `milliseconds` and `frames`, or neither (`bad_argument`).",
+    "Both `milliseconds` and `frames` above zero, or neither, or a negative one (`bad_argument`).",
     "A run during which the emulated clock did not move (`no_progress`).",
     "`milliseconds` when `RUNSTATE` gave no clock to count from; nothing ran (`unexpected_answer`).",
     "A DOSBox-X whose debugger has no `RUNSTATE` command (`no_channel`).",
@@ -1648,6 +1656,7 @@
    "refuses": [
     "A DOSBox-X built without heavy debugging, which `build_check` reports as `heavy_debug` (`no_channel`).",
     "A working directory the emulator cannot write, since the debugger opens its log there (`no_channel`).",
+    "A `LOGCPU.TXT` already in the emulator's working directory: it is somebody's, so move it aside; it is never deleted (`bad_argument`).",
     "A cpu core whose cycle count does not move one per instruction: `start(flags=[\"-set\", \"cpu core=normal\"])` (`no_channel`).",
     "A log the machine closed before the trace stopped, an empty log, or one that would not close (`readback_refused`).",
     "A log file the debugger could not create; nothing ran (`host_failed`).",
@@ -1661,7 +1670,9 @@
    "why_more": [
     "| in `trace` | what it holds |\n|---|---|\n| `path`, `bytes`, `shape` | the log, its size and its format |\n| `set_path` | a file with one JSON line per executed address: `seg_off`, `addr` and `symbol` with `delta` where they can be worked out, `count`. Unavailable when it could not be written, which `note` says |\n| `instructions`, `addresses`, `unplaced` | instructions executed, distinct addresses, addresses no symbol covers |\n| `symbols` | the first rows, by address: `symbol`, `addr`, `addresses`, `instructions`, `first`, `last` |\n| `symbols_total`, `truncated` | how many symbols ran, and whether `symbols` leaves some out |\n| `closed` | on a refusal: whether the log was closed |",
     "An interrupt breakpoint stops inside its `INT`, after the counter took it and before it ran, so a run it stops may count one more than it executed. The log writes each line before breakpoints are checked, so a trace started on a breakpoint's address stops there again with nothing executed.",
-    "The machine can close the log itself: the BIOS's power-on self test does, so a trace started right after a reset meets it. How each address gets its symbol is in [REFERENCE.md](../../REFERENCE.md#a-trace-says-which-routines-ran)."
+    "The machine can close the log itself: the BIOS's power-on self test does, so a trace started right after a reset meets it. How each address gets its symbol is in [REFERENCE.md](../../REFERENCE.md#a-trace-says-which-routines-ran).",
+    "How a logged address becomes a linear one, and so gets its symbol:",
+    "- In real or virtual-8086 mode it is `CS` times 16 plus `EIP`. Otherwise it is the base of the selector in `CS` plus `EIP`.\n- That selector counts only as a present code descriptor whose privilege is the one it requests, read from one `GDT` and `LDT` listing at the stop.\n- A trace that starts and stops in real mode is read the real-mode way, even where it passed through protected mode.\n- An address with no linear form gets no symbol, and counts in `unplaced`."
    ],
    "related": [
     "run_for",
@@ -1971,7 +1982,7 @@
     "A symbol missing from the loaded symbol table is saved `unresolved`, not refused: the compiler may have inlined it this time. A raw `SEG:OFF` belongs to the build it was declared over and goes `stale` over another."
    ],
    "why_more": [
-    "- A breakpoint at a ROM address is accepted and never fires, while the same command at a RAM address does. Nothing detects it in advance.\n- When a `run_to` does not reach such a target, its note names this cause.\n- On a dynamic cpu core, or `core=auto` once protected-mode code runs, execution can pass over a breakpoint inside a compiled block. `note` says so.\n- A raw `SEG:OFF` declared before any symbol table was loaded is set again at `start`. One declared over a map is set again after a `symbols_load` of the same map.\n- `run_to`'s own `control` counts for that run alone: saved as one, it would stop the machine once per hit on every later run.\n- An `on_breakpoint` wait on a control is refused.\n- Setting needs the machine stopped, and the row is read back from the debugger's list.\n- A `pending` one is set at the next stop, whose reply says so in `applied_on_stop`.\n- `by` says how the ref was read and `role` which role it has. `armed` is `true` once the debugger holds the row."
+    "- A breakpoint at a ROM address is accepted and never fires, while the same command at a RAM address does. Nothing detects it in advance.\n- When a `run_to` does not reach such a target, its note names this cause.\n- On a dynamic cpu core, or `core=auto` once protected-mode code runs, execution can pass over a breakpoint inside a compiled block. `note` says so.\n- A raw `SEG:OFF` declared before any symbol table was loaded is set again at `start`. One declared over a map is set again after a `symbols_load` of the same map.\n- `run_to`'s own `control` counts for that run alone: saved as one, it would stop the machine once per hit on every later run.\n- An `on_breakpoint` wait on a control is refused.\n- Setting needs the machine stopped, and the row is read back from the debugger's list.\n- A `pending` one is set by the first call that meets the next stop, a reader such as `registers` included. That call's reply lists it in `applied_on_stop`.\n- `by` says how the ref was read and `role` which role it has. `armed` is `true` once the debugger holds the row."
    ],
    "related": [
     "run_to",
@@ -2134,7 +2145,7 @@
      "frame"
     ]
    },
-   "reads": "`OTHER_STOP` is a stop the call did not target: here, the watch. `pc` is just past the instruction that wrote the score; the whole reply names the routine in `instruction` and the new value in `watches`.",
+   "reads": "`OTHER_STOP` is a stop the call did not target, and its `cause` cannot name a watch. `pc` is just past the instruction that wrote the score, and `watches` in the whole reply holds the new value.",
    "modes": {
     "argument": "mode",
     "head": [
@@ -2204,7 +2215,7 @@
    ],
    "why_more": [
     "On every watch:",
-    "- A `show` watch sets nothing: it is a plain read at every stop. A `change` watch is read at every stop too.\n- A NaN or infinite `f32` or `f64` reads as the text `nan`, `inf` or `-inf`, which JSON has no number for.\n- A region is `memdump`'s job, which is why lengths are limited.\n- With `fmt` left at `auto`, a typed symbol reads as its type, else as the widest unsigned scalar that divides `length`. Otherwise `length` is a whole number of `fmt` values.\n- `why` gives the reason for a state that sets nothing, and `addr` is where a `count`, `capture` or `freeze` sits.",
+    "- A `show` watch sets nothing: it is a plain read at every stop. A `change` watch is read at every stop too.\n- A `change` watch declared while the program runs is `pending`. The first call that meets the next stop sets it, a reader included, and lists it in `applied_on_stop`.\n- A watch saved with no record of its session, marked `orphan: true`, is still read at every stop.\n- A NaN or infinite `f32` or `f64` reads as the text `nan`, `inf` or `-inf`, which JSON has no number for.\n- A region is `memdump`'s job, which is why lengths are limited.\n- With `fmt` left at `auto`, a typed symbol reads as its type, else as the widest unsigned scalar that divides `length`. Otherwise `length` is a whole number of `fmt` values.\n- `why` gives the reason for a state that sets nothing, and `addr` is where a `count`, `capture` or `freeze` sits.",
     "On `change`:",
     "- Arming reads the CPU mode off the machine: the same `SEG:OFF` is a different byte in each mode, and the mode changes as the program boots.\n- The debugger's `BPLM`, a watch on a linear address, is not offered.\n- A DPMI program, a DOS program in protected mode, runs paged, so a memory frame belongs to whoever holds it at that instant.\n- For the same reason a protected-mode `change` watch fires on the paging host, not on the program. It is armed, and `caveat` says not to trust its firing.\n- In real mode a `change` watch is trusted.\n- A watch at a raw `SEG:OFF` keeps the CPU mode of the stop that set it. At a stop of the other mode it reads `unarmable` with no value.\n- A watch by symbol or through a pointer is resolved at each stop and keeps no mode.\n- `command` is the debugger command sent, and `entry` the row as the debugger lists it: `BPM 0040:006C` lists as `BPMEM 0040:006C`.\n- A protected-mode row, `BPPM`, lists its offset in eight digits.",
     "Through a pointer:",
@@ -2312,7 +2323,7 @@
   "state_list": {
    "what": "List the session's saved states, with what each file says of itself: program, machine, memory and time.",
    "ask": "Which saved states does this session have?",
-   "on": "On Bricks, the game this repository builds, after a state was saved as `third-brick`. The tour gives `start` a `state_dir` of its own.",
+   "on": "On Bricks, the game this repository builds, after a state was saved as `third-brick`. The example session gives `start` a `state_dir` of its own.",
    "call": {},
    "shows": [
     "summary",
@@ -2416,7 +2427,8 @@
     "`save` alters nothing. A `load` marks the session `altered` even when the emulator refuses it part of the way through, since part of the machine may have been replaced.",
     "A name is never digits only, because the emulator's own slot files are `<n>.sav` in the same folder. The command's own answer is the confirmation: a refusal the emulator prints comes back quoted.",
     "A load can move the program's load address. Each breakpoint saved by symbol name is then cleared at its old address and set again, because the debugger's own rows outlive a load.",
-    "`mark` is where each log ended as the load was sent, the same position for `guest`, `emulator` and `all`. `log` and `log_wait` take it as `since_mark` to read what came after. It is a position in the file, not a moment, so a line written before the load and not yet flushed lands after it."
+    "`mark` is where each log ended as the load was sent, the same position for `guest`, `emulator` and `all`. `log` and `log_wait` take it as `since_mark` to read what came after. It is a position in the file, not a moment, so a line written before the load and not yet flushed lands after it.",
+    "A cancelled call releases a program it stopped. A cancelled `save` removes the file it began, and a cancelled `load` that was already sent marks the session `altered`, since part of the machine may be replaced."
    ],
    "related": [
     "state_list",
@@ -2483,7 +2495,10 @@
     "A row of a 32-bit Borland map is a section index and an offset inside that section, and its `Start` column is no help: every section starts at zero there. The server does not read the linked program, hence `section_bases`. Such a map describes a Win32 program: if every breakpoint is refused afterwards, that is why.",
     "- `parsed` counts the symbols the file holds and `kept` the ones that passed the filters.\n- `unreadable` counts the lines that could not be read, as `nm -C` writes when a name has spaces.\n- `excluded_sections`, `excluded_pattern` and `excluded_unplaceable` count what the filters dropped. `unencodable` lists names the debugger cannot hold and `unencodable_total` counts them.\n- `overlay_idle` counts the loaded symbols a Borland map marks `idle`. They are part of `kept`, and what the linker means by the mark is not settled.\n- `truncated_names` counts the cut names and `disambiguated` the ones given a `~n`.\n- `base`, `limit` and `descriptor` are what was measured; `base_from` says `caller` when you gave the base.\n- `debugger_holds` is every row the debugger holds now, given when that is more than `loaded`.\n- `table_total` is the size of the server's table now, `bytes` the size of the file given to the debugger, `symbols_typed` the names `types` typed.",
     "Writing the file is your build's job, with your toolchain's `nm`. Write it to a temporary file and move it: `>` empties the file before `nm` runs, and a half-written table would be trusted.",
-    "```make\nsymbols:\n\t@$(XPREFIX)nm build/APP.EXE > $@.tmp || { rm -f $@.tmp; exit 3; }\n\t@grep -qE '^[0-9a-f]+ [A-Za-z] ' $@.tmp || { rm -f $@.tmp; exit 3; }\n\t@mv $@.tmp build/APP.SYM\n```"
+    "```make\nsymbols:\n\t@$(XPREFIX)nm build/APP.EXE > $@.tmp || { rm -f $@.tmp; exit 3; }\n\t@grep -qE '^[0-9a-f]+ [A-Za-z] ' $@.tmp || { rm -f $@.tmp; exit 3; }\n\t@mv $@.tmp build/APP.SYM\n```",
+    "| symbol file | where its addresses come from |\n|---|---|\n| `nm` output, a GNU `ld` map, a real-mode Borland map | one `base`, given or measured through `base_from` |\n| a 32-bit Borland map, an Open Watcom map | `section_bases`, one address per section |",
+    "The file is read leniently: a byte that is not UTF-8, such as a code page 437 character in a DOS map, is replaced and the rest is read. `base` and `section_bases` are two arguments because one value cannot honestly be a number for one file and a table for another.",
+    "The names come from a text listing your toolchain writes. A DJGPP executable's own COFF symbols serve only to check it. The debugger's own `IV` command takes one address typed at its console, so the whole list goes in as the file the debugger loads. A function the compiler inlined, such as a `static` one at `-O3`, has no symbol."
    ],
    "related": [
     "symbols_find",
@@ -2512,7 +2527,7 @@
     "offset": "An offset as the toolchain wrote it, before any base. The reply is the nearest symbol at or below it.",
     "section": "The section `offset` is in, by its index, for a table loaded with `section_bases`. A table without sections needs none.",
     "linear": "A linear address, never a `SEG:OFF`: an integer or `0x` text. The reply is the nearest symbol at or below it.",
-    "limit": "How many symbols a name lookup lists: 1 to 50. Left out, 10."
+    "limit": "How many symbols a name lookup lists: 1 to 50. Left out, 10; a lookup by address does not use it."
    },
    "returns": {
     "symbols": "By name: the first `limit` matches, each with `name`, `kind`, `offset`, `section`, `addr` and `idle`.",
@@ -2644,7 +2659,7 @@
     "`save` and `load` are how a project keeps its comments under version control beside its symbol file. `load` is all or nothing, and the file wins where both comment an address."
    ],
    "why_more": [
-    "- A symbol the loaded symbol table lacks is saved `unresolved`, and resolves once a table has it.\n- Comments a rebuild or a `load` brought to one address are all kept. A call reaches the one whose `ref` it spells.\n- The file's `cpu` column is written empty, since a DOS machine has one processor. A file that fills it is refused.\n- The file has no build column: a raw address is trusted for the build it is loaded into.\n- A file saved before `symbols_load`, or while the program runs, can hold two rows that a later stop resolves to one byte.\n- A `load` keeps both such rows and names them in `note`. A `save` refuses them until one is deleted.\n- A `load` that gives a `stale` raw comment the text it already holds adopts it into this session and build.\n- A row a `load` cannot resolve at this stop is kept `unarmable`, its `why` naming the stop it waits for. An `add` refuses such an address.\n- `comments_total`, `dropped_total` and `replaced_total` count the whole lists; `truncated` says a list was cut. `declarations` names the saved breakpoints file, as in `comment_list`."
+    "- A comment sets nothing in the debugger, so it never stops the program.\n- A symbol the loaded symbol table lacks is saved `unresolved`, and resolves once a table has it.\n- A raw `SEG:OFF` comment is `stale` while the build it was written over is not the one loaded, as a raw breakpoint is.\n- Comments a rebuild or a `load` brought to one address are all kept. A call reaches the one whose `ref` it spells.\n- The file's `cpu` column is written empty, since a DOS machine has one processor. A file that fills it is refused.\n- The file has no build column: a raw address is trusted for the build it is loaded into.\n- A file saved before `symbols_load`, or while the program runs, can hold two rows that a later stop resolves to one byte.\n- A `load` keeps both such rows and names them in `note`. A `save` refuses them until one is deleted.\n- A `load` that gives a `stale` raw comment the text it already holds adopts it into this session and build.\n- A row a `load` cannot resolve at this stop is kept `unarmable`, its `why` naming the stop it waits for. An `add` refuses such an address.\n- `comments_total`, `dropped_total` and `replaced_total` count the whole lists; `truncated` says a list was cut. `declarations` names the saved breakpoints file, as in `comment_list`."
    ],
    "related": [
     "comment_list",
@@ -2655,7 +2670,7 @@
   },
   "send_keys": {
    "what": "Send keystrokes to the DOS program, and check in its log that it reacted to them.",
-   "on": "On [Bricks](../../demos/bricks/README.md), the game this repository builds, running, with the ball waiting on the paddle. The tour sends this key as one step of a `perform`.",
+   "on": "On [Bricks](../../demos/bricks/README.md), the game this repository builds, running, with the ball waiting on the paddle. The example session sends this key as one step of a `perform`.",
    "ask": "Press the space bar to serve the ball, and tell me whether the game logged the serve.",
    "call": {
     "keys": [
@@ -2783,7 +2798,7 @@
    "why": [
     "DOS programs read the mouse in different ways: some ask the driver where the pointer is, many read how far it moved, and some drive a PS/2 mouse themselves. So a move goes in twice: first as motion, which reaches all of them, then as an exact position. `motion` says whether the first half went in.",
     "The pointer that moves is the mouse driver's, the one DOSBox-X provides: a mouse driver loaded inside DOS reads its own hardware and is not reached. A program that keeps a pointer of its own, adding up motion, can end somewhere else, so a plain screen move answers only `driver_arrived`.",
-    "A [screen map](files.md#screen-maps) is a file that names a program's screens and the areas of each. When it also says where the program keeps its pointer, the server reads that pointer and corrects the move, and `arrived` then speaks for it."
+    "A [screen map](read.md#screen_map_write) is a file that names a program's screens and the areas of each. When it also says where the program keeps its pointer, the server reads that pointer and corrects the move, and `arrived` then speaks for it."
    ],
    "why_more": [
     "**How programs read the mouse**",
@@ -2803,7 +2818,9 @@
     "**The rest of the reply**",
     "With `target`, the reply adds `target`, `screen` (the screen recognised) and `identified_at_stop`, the number of the stop at which `screen_map_find` recognised it.",
     "In a [`perform`](sequences.md#perform) run with `summaries`, each frame a send ran on a stopped machine is a numbered stop, and only the last one is in a reply. `stops.unaccounted` counts the stops numbered during the list that no step's reply shows, so a few sends make it large.",
-    "The helper, a stopped machine, `expect` and a failed send work as under [`send_keys`](#send_keys). With no `logfile` the mouse goes in unchecked too."
+    "The helper, a stopped machine, `expect` and a failed send work as under [`send_keys`](#send_keys). With no `logfile` the mouse goes in unchecked too.",
+    "**The pointer you see**",
+    "With a window and its border, the first move also shows an orange pointer: the DOS mouse driver's default graphics pointer, one cell per screen pixel. In a graphics mode it is the size of the program's own pointer, whatever the window's size. The mouse driver's pointer is at its new place at once; the orange one glides there briefly. It is never in a capture, and a failure to draw it fails nothing."
    ],
    "related": [
     "send_keys",
@@ -3373,7 +3390,7 @@
    "arguments": {
     "steps": "The list to run: each step is `{\"op\": <tool>, ...}` with that tool's own arguments. Give this or `path`, never both.",
     "path": "A saved step list to replay in place of `steps`: a file under `.scry/perform/` or one `perform_export` wrote. Absolute, or starting with `~`.",
-    "settle_seconds": "How long each wait for the program to stop may take, before a step that needs it stopped. 0 never waits; left out, 30 seconds.",
+    "settle_seconds": "How long each wait for a stop may take, before a step that needs one: 0 to 600 seconds. 0 never waits; left out, 30.",
     "summaries": "`true` cuts each step's reply but the last to a short row and writes the full replies to a file. Left out, every reply comes back whole.",
     "until_frame": "A frame number, counted since power-on: the list repeats until a stop reads that frame. Needs `summaries` and a `run_for` step; left at 0, the list runs once."
    },
@@ -3407,7 +3424,9 @@
     "On a running program the first stop starts the count. Running out of steps or seconds is a `TIMEOUT` that names the last frame read. An exported script keeps the steps the repetitions ran, never the `until_frame`.",
     "With `summaries`, `steps_total` counts the rows and `truncated` says the reply shows fewer. Read `stops` for a count and `ran_path` for the whole table: a count made by hand from cut rows comes out wrong and looks right.",
     "After a `resume` step the server asks the debugger's `RUNSTATE` whether the program stopped again, so a stop is never guessed from a step's name. A `step` that comes back with the program running counts as a `resume`, and a `stop` step ends the run.",
-    "A `screen_view` step returns its text in the reply and writes its picture to its `path`, answering `not_inlined: nested`."
+    "A `screen_view` step returns its text in the reply and writes its picture to its `path`, answering `not_inlined: nested`.",
+    "**Steps on a running program**",
+    "- A step from the list a `not_stopped` refusal names in `answers_while_running` runs on a running program. Any other waits for a stop, `symbols_load` included even with a `base`.\n- That list also names tools that are no step: `close`, `drive`, `perform`, `perform_export`, `window` and `promote`.\n- A list that ends with the program running after such a step, with nothing declared that could stop it, returns at once and its `note` says why.\n- `operations`, the tools a step may name, comes once at the top of the reply, inside `act` in a `drive`."
    ],
    "related": [
     "drive",
@@ -3457,7 +3476,8 @@
    ],
    "why_more": [
     "When the frames are known, `cut` says how many the run took, and a `run_for` of that many replays it up to that frame's start. The script also ends at a call with no reply, a refusal after the program moved, and a program found elsewhere than the call before left it.",
-    "A `screen_wait` that found its text becomes a `run_for` of as many frames as it polled, which a replay reaches. A `send_keys` or `send_mouse` to a stopped program is kept as a step: it runs frame by frame to a stop a replay reaches."
+    "A `screen_wait` that found its text becomes a `run_for` of as many frames as it polled, which a replay reaches. A `send_keys` or `send_mouse` to a stopped program is kept as a step: it runs frame by frame to a stop a replay reaches.",
+    "- A `debug` command the script keeps is never checked against its answer, and a `state_write(method=\"load\")` is checked against nothing either.\n- The file names what a replay needs: `needs.states`, the saved states it loads and does not save itself.\n- And `needs.declarations`: the breakpoints and watches saved when the recorded `start` began, so a replay under others says so before it plays."
    ],
    "related": [
     "perform",

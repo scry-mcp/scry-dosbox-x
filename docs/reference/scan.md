@@ -13,7 +13,7 @@ scan(method, ref="", length=null, cell_bytes=null, operator=null, value=null, li
 
 ### Try it
 
-On Bricks, the game this repository builds, stopped on its play screen with its symbols loaded. The tour filters after its first brick falls, when the score reads 60.
+On Bricks, the game this repository builds, stopped on its play screen with its symbols loaded. The example session filters after its first brick falls, when the score reads 60.
 
 Ask:
 

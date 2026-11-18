@@ -114,7 +114,7 @@ Both steps ran and none failed. `still_running` says the list ended with the gam
 
 - `steps` (array of object, optional): The list to run: each step is `{"op": <tool>, ...}` with that tool's own arguments. Give this or `path`, never both.
 - `path` (string, default `""`): A saved step list to replay in place of `steps`: a file under `.scry/perform/` or one `perform_export` wrote. Absolute, or starting with `~`.
-- `settle_seconds` (number (>= 0, <= 600.0), default `30.0`): How long each wait for the program to stop may take, before a step that needs it stopped. 0 never waits; left out, 30 seconds.
+- `settle_seconds` (number (>= 0, <= 600.0), default `30.0`): How long each wait for a stop may take, before a step that needs one: 0 to 600 seconds. 0 never waits; left out, 30.
 - `summaries` (boolean, default `false`): `true` cuts each step's reply but the last to a short row and writes the full replies to a file. Left out, every reply comes back whole.
 - `until_frame` (integer, default `0`): A frame number, counted since power-on: the list repeats until a stop reads that frame. Needs `summaries` and a `run_for` step; left at 0, the list runs once.
 
@@ -185,6 +185,13 @@ With `summaries`, `steps_total` counts the rows and `truncated` says the reply s
 After a `resume` step the server asks the debugger's `RUNSTATE` whether the program stopped again, so a stop is never guessed from a step's name. A `step` that comes back with the program running counts as a `resume`, and a `stop` step ends the run.
 
 A `screen_view` step returns its text in the reply and writes its picture to its `path`, answering `not_inlined: nested`.
+
+**Steps on a running program**
+
+- A step from the list a `not_stopped` refusal names in `answers_while_running` runs on a running program. Any other waits for a stop, `symbols_load` included even with a `base`.
+- That list also names tools that are no step: `close`, `drive`, `perform`, `perform_export`, `window` and `promote`.
+- A list that ends with the program running after such a step, with nothing declared that could stop it, returns at once and its `note` says why.
+- `operations`, the tools a step may name, comes once at the top of the reply, inside `act` in a `drive`.
 
 </details>
 
@@ -337,6 +344,10 @@ So move with `run_for`, `run_to` and `step`, which stop at the same point on eve
 When the frames are known, `cut` says how many the run took, and a `run_for` of that many replays it up to that frame's start. The script also ends at a call with no reply, a refusal after the program moved, and a program found elsewhere than the call before left it.
 
 A `screen_wait` that found its text becomes a `run_for` of as many frames as it polled, which a replay reaches. A `send_keys` or `send_mouse` to a stopped program is kept as a step: it runs frame by frame to a stop a replay reaches.
+
+- A `debug` command the script keeps is never checked against its answer, and a `state_write(method="load")` is checked against nothing either.
+- The file names what a replay needs: `needs.states`, the saved states it loads and does not save itself.
+- And `needs.declarations`: the breakpoints and watches saved when the recorded `start` began, so a replay under others says so before it plays.
 
 </details>
 

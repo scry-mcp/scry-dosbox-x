@@ -347,7 +347,7 @@ Reply, 5 of 18 fields:
 
 ### What it refuses
 
-- Both `milliseconds` and `frames`, or neither (`bad_argument`).
+- Both `milliseconds` and `frames` above zero, or neither, or a negative one (`bad_argument`).
 - A run during which the emulated clock did not move (`no_progress`).
 - `milliseconds` when `RUNSTATE` gave no clock to count from; nothing ran (`unexpected_answer`).
 - A DOSBox-X whose debugger has no `RUNSTATE` command (`no_channel`).
@@ -579,6 +579,7 @@ All 40 instructions ran, which is what `ELAPSED` says, at 34 distinct addresses.
 
 - A DOSBox-X built without heavy debugging, which `build_check` reports as `heavy_debug` (`no_channel`).
 - A working directory the emulator cannot write, since the debugger opens its log there (`no_channel`).
+- A `LOGCPU.TXT` already in the emulator's working directory: it is somebody's, so move it aside; it is never deleted (`bad_argument`).
 - A cpu core whose cycle count does not move one per instruction: `start(flags=["-set", "cpu core=normal"])` (`no_channel`).
 - A log the machine closed before the trace stopped, an empty log, or one that would not close (`readback_refused`).
 - A log file the debugger could not create; nothing ran (`host_failed`).
@@ -606,6 +607,13 @@ The debugger writes its log only in the emulator's working directory, so the fil
 An interrupt breakpoint stops inside its `INT`, after the counter took it and before it ran, so a run it stops may count one more than it executed. The log writes each line before breakpoints are checked, so a trace started on a breakpoint's address stops there again with nothing executed.
 
 The machine can close the log itself: the BIOS's power-on self test does, so a trace started right after a reset meets it. How each address gets its symbol is in [REFERENCE.md](../../REFERENCE.md#a-trace-says-which-routines-ran).
+
+How a logged address becomes a linear one, and so gets its symbol:
+
+- In real or virtual-8086 mode it is `CS` times 16 plus `EIP`. Otherwise it is the base of the selector in `CS` plus `EIP`.
+- That selector counts only as a present code descriptor whose privilege is the one it requests, read from one `GDT` and `LDT` listing at the stop.
+- A trace that starts and stops in real mode is read the real-mode way, even where it passed through protected mode.
+- An address with no linear form gets no symbol, and counts in `unplaced`.
 
 </details>
 

@@ -253,7 +253,9 @@ One address shows one comment, however it is spelled: `start`, `0824:000B` and `
 
 <details><summary>More on why</summary>
 
+- A comment sets nothing in the debugger, so it never stops the program.
 - A symbol the loaded symbol table lacks is saved `unresolved`, and resolves once a table has it.
+- A raw `SEG:OFF` comment is `stale` while the build it was written over is not the one loaded, as a raw breakpoint is.
 - Comments a rebuild or a `load` brought to one address are all kept. A call reaches the one whose `ref` it spells.
 - The file's `cpu` column is written empty, since a DOS machine has one processor. A file that fills it is refused.
 - The file has no build column: a raw address is trusted for the build it is loaded into.

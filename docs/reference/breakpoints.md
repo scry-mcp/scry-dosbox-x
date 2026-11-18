@@ -4,7 +4,7 @@ These tools set breakpoints and watches and keep them. Each is saved as you name
 
 The tools call a saved breakpoint or watch a declaration, as in `declaration_list`. The debugger holds what is set now; the saved breakpoints file holds what you asked for. What they share is in [REFERENCE.md, Breakpoints and watches](../../REFERENCE.md#breakpoints-and-watches).
 
-A registerpoint (`regpoint` in the tool names) is a stop when a condition on the registers comes true. While the program runs nothing can be set: what you ask is saved, reads `pending`, and is set at the next stop.
+A registerpoint (`regpoint` in the tool names) is a stop when a condition on the registers comes true. While the program runs nothing can be set: what you ask is saved, reads `pending`, and is set at the next stop. A `count`, `capture` or `freeze` watch is the exception: it is refused until the program stops.
 
 ## What each state means
 
@@ -204,7 +204,7 @@ A symbol missing from the loaded symbol table is saved `unresolved`, not refused
 - `run_to`'s own `control` counts for that run alone: saved as one, it would stop the machine once per hit on every later run.
 - An `on_breakpoint` wait on a control is refused.
 - Setting needs the machine stopped, and the row is read back from the debugger's list.
-- A `pending` one is set at the next stop, whose reply says so in `applied_on_stop`.
+- A `pending` one is set by the first call that meets the next stop, a reader such as `registers` included. That call's reply lists it in `applied_on_stop`.
 - `by` says how the ref was read and `role` which role it has. `armed` is `true` once the debugger holds the row.
 
 </details>
@@ -727,7 +727,7 @@ Reply, 5 of 15 fields:
 }
 ```
 
-`OTHER_STOP` is a stop the call did not target: here, the watch. `pc` is just past the instruction that wrote the score; the whole reply names the routine in `instruction` and the new value in `watches`.
+`OTHER_STOP` is a stop the call did not target, and its `cause` cannot name a watch. `pc` is just past the instruction that wrote the score, and `watches` in the whole reply holds the new value.
 
 <details><summary>The two replies, whole</summary>
 
@@ -900,6 +900,8 @@ A `freeze` is the debugger putting each byte back after every instruction, so it
 On every watch:
 
 - A `show` watch sets nothing: it is a plain read at every stop. A `change` watch is read at every stop too.
+- A `change` watch declared while the program runs is `pending`. The first call that meets the next stop sets it, a reader included, and lists it in `applied_on_stop`.
+- A watch saved with no record of its session, marked `orphan: true`, is still read at every stop.
 - A NaN or infinite `f32` or `f64` reads as the text `nan`, `inf` or `-inf`, which JSON has no number for.
 - A region is `memdump`'s job, which is why lengths are limited.
 - With `fmt` left at `auto`, a typed symbol reads as its type, else as the widest unsigned scalar that divides `length`. Otherwise `length` is a whole number of `fmt` values.
