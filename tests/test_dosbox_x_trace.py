@@ -670,7 +670,7 @@ def test_the_description_states_the_bound_the_check_holds() -> None:
     assert f"(1 to {tracing.INSTRUCTIONS_MAX})" in str(server.trace.__doc__)
 
 
-@pytest.mark.parametrize("where", ["docs/reference/advance.md", "REFERENCE.md"])
+@pytest.mark.parametrize("where", ["docs/reference/run.md", "REFERENCE.md"])
 def test_the_texts_say_the_bound_interrupts_the_trace(where: str) -> None:
     """A trace whose stop never comes is interrupted at its bound, so the texts may not
     promise a count that runs on, nor a log left open for the next trace."""

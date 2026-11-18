@@ -246,12 +246,12 @@ A saved state is the whole machine, not the game's own save. So the paddle reads
 | Group | Tools |
 |---|---|
 | [Session](../../docs/reference/session.md) | `start`, `close` |
-| [Advance](../../docs/reference/advance.md) | `resume`, `run_for`, `stop` |
+| [Run](../../docs/reference/run.md) | `resume`, `run_for`, `stop` |
 | [Names](../../docs/reference/names.md) | `symbols_load` |
 | [Read](../../docs/reference/read.md) | `disassemble`, `read_memory` |
-| [Declarations](../../docs/reference/declarations.md) | `breakpoint_at`, `watch_add`, `declaration_clear` |
+| [Breakpoints](../../docs/reference/breakpoints.md) | `breakpoint_at`, `watch_add`, `declaration_clear` |
 | [Input](../../docs/reference/input.md) | `send_keys`, `send_mouse` |
-| [Lists](../../docs/reference/lists.md) | `drive` |
+| [Sequences](../../docs/reference/sequences.md) | `drive` |
 | [States](../../docs/reference/states.md) | `state_write` |
 | [Screen](../../docs/reference/screen.md) | `screen_view` |
 | [Captures](../../docs/reference/captures.md) | `record` |

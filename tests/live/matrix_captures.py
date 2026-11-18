@@ -138,7 +138,7 @@ U_CELLS = cells(
     ("U a capture of reads keeps each read of the polled byte",
      "watch_add docstring; known: tap.asm's r_poll, once a tick"),
     ("U a stop survey counts what came since the last stop",
-     "REFERENCE.md, Declarations"),
+     "REFERENCE.md, Breakpoints and watches"),
     ("U a tap is refused on a running machine",
      "watch_add docstring: count and capture need the machine STOPPED"),
     ("U a stretch with no OPL write has no DRO, and says why",

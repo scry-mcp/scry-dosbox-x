@@ -557,11 +557,11 @@ Reply, 2 of 12 fields:
 | Group | Tools |
 |---|---|
 | [Session](../../docs/reference/session.md) | `start`, `close` |
-| [Advance](../../docs/reference/advance.md) | `resume`, `run_to`, `run_for` |
+| [Run](../../docs/reference/run.md) | `resume`, `run_to`, `run_for` |
 | [Names](../../docs/reference/names.md) | `symbols_load` |
 | [Read](../../docs/reference/read.md) | `screen_map_write`, `screen_map_find`, `read_memory` |
 | [Input](../../docs/reference/input.md) | `send_mouse` |
-| [Lists](../../docs/reference/lists.md) | `perform` |
+| [Sequences](../../docs/reference/sequences.md) | `perform` |
 | [Machine](../../docs/reference/machine.md) | `log` |
 | [Files](../../docs/reference/files.md) | `audio_compare` |
 | [Screen](../../docs/reference/screen.md) | `screen_view` |

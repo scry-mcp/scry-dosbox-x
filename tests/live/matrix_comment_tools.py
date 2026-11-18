@@ -46,13 +46,13 @@ N_CELLS = cells(
     ("N comment_write add by start lands at 0000824B, resolved", "known: probe.sym at 8140"),
     ("N 0824:000B, the same byte, replaces the text and keeps the ref start",
      "comment_write add: docstring at one comment per place"),
-    ("N a raw 0814:0106 comment lands at 00008246", "REFERENCE.md, Declarations: real mode"),
+    ("N a raw 0814:0106 comment lands at 00008246", "REFERENCE.md, Breakpoints and watches: real mode"),
     ("N comment_list holds the two, each resolved", "comment_list docstring"),
     ("N disassemble ends each commented line with its text, and only those",
      "disassemble docstring: a line a comment is placed on ends ` // <text>`"),
-    ("N status declarations do not count a comment", "REFERENCE.md, Declarations"),
+    ("N status declarations do not count a comment", "REFERENCE.md, Breakpoints and watches"),
     ("N comment_write save writes the header and the two rows the contract spells",
-     "REFERENCE.md, Declarations: the comment file"),
+     "REFERENCE.md, Breakpoints and watches: the comment file"),
     ("N deleted, loaded back and saved again, the file is byte for byte the same",
      "comment_write load docstring: the file a save wrote loads back whole"),
     ("N a second delete of the same ref is unknown_ref", "comment_write delete docstring"),
@@ -64,28 +64,28 @@ N_CELLS = cells(
      "every path here is absolute or `~`-led"),
     ("N save refuses the store's own file, a FIFO and a file that is not a comment file, "
      "leaving each as it was", "comment_write save docstring"),
-    ("N perform runs comment steps", "REFERENCE.md, Sequences in one call"),
+    ("N perform runs comment steps", "REFERENCE.md, Several calls as one"),
     ("N on a running guest list and save answer at once, asking the debugger nothing",
      "comment_list and comment_write save docstrings: they answer on a running guest"),
     ("N on a running guest add, delete and load are refused not_stopped",
      "their docstrings: they need the machine stopped"),
     ("N the comment outlives the session and is deleted in the next",
-     "REFERENCE.md, Declarations: the store is the conf's, on disk"),
+     "REFERENCE.md, Breakpoints and watches: the store is the conf's, on disk"),
 )
 
 DOS_REAL16_COMMENT_CELLS = (
     ("D a comment by COMPOSE_FRAME follows the symbol to the rebuilt map",
-     "REFERENCE.md, Declarations: a symbol follows a rebuild; known: the map copy moves "
+     "REFERENCE.md, Breakpoints and watches: a symbol follows a rebuild; known: the map copy moves "
      "COMPOSE_FRAME by 10h"),
     ("D a raw comment stays resolved over the rebuilt map loaded in the same session",
-     "REFERENCE.md, Declarations: a raw address is judged by the batch that describes it, "
+     "REFERENCE.md, Breakpoints and watches: a raw address is judged by the batch that describes it, "
      "still held"),
 )
 DPMI_COMMENT_CELLS = (
     ("F a comment by _tick and CS:offset are one place, the ref kept",
-     "REFERENCE.md, Declarations: protected mode through the selector's base"),
+     "REFERENCE.md, Breakpoints and watches: protected mode through the selector's base"),
     ("F DS:offset is that place when DS has CS's base, another when not",
-     "REFERENCE.md, Declarations: the place is the linear address"),
+     "REFERENCE.md, Breakpoints and watches: the place is the linear address"),
     ("F comment_write save, delete, comment_write load, comment_write save: the same bytes",
      "comment_write load docstring: the file a save wrote loads back whole"),
 )

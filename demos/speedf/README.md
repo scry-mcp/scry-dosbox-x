@@ -263,8 +263,8 @@ Reply, 2 of 7 fields:
 | Group | Tools |
 |---|---|
 | [Session](../../docs/reference/session.md) | `start`, `close` |
-| [Declarations](../../docs/reference/declarations.md) | `breakpoint_interrupt`, `declaration_clear` |
-| [Advance](../../docs/reference/advance.md) | `resume`, `run_to` |
+| [Breakpoints](../../docs/reference/breakpoints.md) | `breakpoint_interrupt`, `declaration_clear` |
+| [Run](../../docs/reference/run.md) | `resume`, `run_to` |
 | [Read](../../docs/reference/read.md) | `read_memory` |
 | [Captures](../../docs/reference/captures.md) | `record` |
 | [Screen](../../docs/reference/screen.md) | `screen_view` |

@@ -466,14 +466,14 @@ The reply says whether the two recordings are equal (`exact`) and, if not, how f
 | Group | Tools |
 |---|---|
 | [Session](../../docs/reference/session.md) | `start`, `close` |
-| [Advance](../../docs/reference/advance.md) | `screen_wait`, `resume`, `run_for`, `step` |
+| [Run](../../docs/reference/run.md) | `screen_wait`, `resume`, `run_for`, `step` |
 | [Machine](../../docs/reference/machine.md) | `machine_map` |
 | [Read](../../docs/reference/read.md) | `screen_map_write`, `screen_map_find`, `find`, `read_memory` |
 | [Input](../../docs/reference/input.md) | `send_mouse`, `send_keys` |
 | [States](../../docs/reference/states.md) | `state_write` |
 | [Write](../../docs/reference/write.md) | `write` |
-| [Declarations](../../docs/reference/declarations.md) | `watch_add`, `breakpoint_interrupt`, `breakpoint_at`, `declaration_clear` |
-| [Lists](../../docs/reference/lists.md) | `perform` |
+| [Breakpoints](../../docs/reference/breakpoints.md) | `watch_add`, `breakpoint_interrupt`, `breakpoint_at`, `declaration_clear` |
+| [Sequences](../../docs/reference/sequences.md) | `perform` |
 | [Captures](../../docs/reference/captures.md) | `record`, `audio_record` |
 | [Files](../../docs/reference/files.md) | `audio_compare` |
 | [Screen](../../docs/reference/screen.md) | `screen_view` |

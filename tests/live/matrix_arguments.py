@@ -115,7 +115,7 @@ L_CELLS = cells(
                  "nor `all`, or both, is `bad_argument`"),
     (PERFORM_CELL, "perform docstring: every tool but `build_check`, `start`, `close`, "
                    "`perform`, `drive` and `perform_export` is a step"),
-    (LISTED_CELL, "REFERENCE.md, Sequences in one call: the one table"),
+    (LISTED_CELL, "REFERENCE.md, Several calls as one: the one table"),
     (PENDING_CELL, "perform docstring: after a `resume` the steps `answers_while_running` lists "
                    "run at once; breakpoint_at docstring: `pending` while the guest is running"),
     (PROFILE_CELL, "start docstring: `profile`, and the reply's `profile` block"),

@@ -472,12 +472,12 @@ After each move the screen map is asked which screen is showing, because the sam
 | Group | Tools |
 |---|---|
 | [Session](../../docs/reference/session.md) | `start`, `close` |
-| [Advance](../../docs/reference/advance.md) | `screen_wait`, `run_to`, `run_for` |
+| [Run](../../docs/reference/run.md) | `screen_wait`, `run_to`, `run_for` |
 | [Machine](../../docs/reference/machine.md) | `machine_map` |
 | [Read](../../docs/reference/read.md) | `screen_map_write`, `screen_map_find` |
 | [Input](../../docs/reference/input.md) | `send_mouse`, `send_keys` |
-| [Declarations](../../docs/reference/declarations.md) | `watch_add`, `declaration_clear` |
-| [Lists](../../docs/reference/lists.md) | `perform` |
+| [Breakpoints](../../docs/reference/breakpoints.md) | `watch_add`, `declaration_clear` |
+| [Sequences](../../docs/reference/sequences.md) | `perform` |
 | [Screen](../../docs/reference/screen.md) | `palette`, `screen_view` |
 
 Each group is a page of the reference. Some of the names need a word:

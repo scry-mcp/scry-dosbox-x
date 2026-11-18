@@ -50,7 +50,7 @@ E_CELLS = cells(
     ("E symbols_load refuses a map with no publics",
      "mapsweep's manifest of real maps: refused, NO `Publics by ...` section"),
     ("E run_to with the game's timer as control runs for a bound and rests on it",
-     "REFERENCE.md, Advancing the machine: at the bound the machine rests on the control"),
+     "REFERENCE.md, Running and stopping: at the bound the machine rests on the control"),
     ("E the stub announces the serial route", "REFERENCE.md, Input and the screen"),
     (STARTUP_CELL, "known: the game logs its identity's `e9` line at start"),
     (DOS_CELL, "log docstring: the DOS channel; measured: the game opens AUDIO\\*.IMA as it "

@@ -1,5 +1,5 @@
 """Count and capture watches through the debugger's `TAP`, which records every guest access to a
-place without stopping (`docs/reference/declarations.md`). Its rows and tables are files the
+place without stopping (`docs/reference/breakpoints.md`). Its rows and tables are files the
 debugger flushes when `TAPLIST` asks, once per stop survey while a tap is declared."""
 
 from __future__ import annotations

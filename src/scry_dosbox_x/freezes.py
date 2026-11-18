@@ -1,6 +1,6 @@
 """Freeze watches through the debugger's `FM`, which pins one byte at its value: after every
 instruction the heavy debugger finds the byte changed and writes the value back
-(`docs/reference/declarations.md`). One `FM` per byte, each a row of the breakpoint list."""
+(`docs/reference/breakpoints.md`). One `FM` per byte, each a row of the breakpoint list."""
 
 from __future__ import annotations
 

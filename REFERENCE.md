@@ -12,16 +12,16 @@ The [README](README.md) is the front door. This page holds the index, the envelo
 - [Scan](docs/reference/scan.md): [`scan`](docs/reference/scan.md#scan)
 - [Write](docs/reference/write.md): [`set_register`](docs/reference/write.md#set_register), [`write`](docs/reference/write.md#write), [`debug`](docs/reference/write.md#debug)
 - [Hardware](docs/reference/hardware.md): [`port`](docs/reference/hardware.md#port), [`pic`](docs/reference/hardware.md#pic), [`a20`](docs/reference/hardware.md#a20)
-- [Advance](docs/reference/advance.md): [`run_to`](docs/reference/advance.md#run_to), [`run_for`](docs/reference/advance.md#run_for), [`trace`](docs/reference/advance.md#trace), [`screen_wait`](docs/reference/advance.md#screen_wait), [`step`](docs/reference/advance.md#step), [`resume`](docs/reference/advance.md#resume), [`wait`](docs/reference/advance.md#wait), [`stop`](docs/reference/advance.md#stop)
-- [Declarations](docs/reference/declarations.md): [`breakpoint_at`](docs/reference/declarations.md#breakpoint_at), [`breakpoint_interrupt`](docs/reference/declarations.md#breakpoint_interrupt), [`regpoint_add`](docs/reference/declarations.md#regpoint_add), [`watch_add`](docs/reference/declarations.md#watch_add), [`declaration_list`](docs/reference/declarations.md#declaration_list), [`declaration_clear`](docs/reference/declarations.md#declaration_clear)
+- [Run](docs/reference/run.md): [`run_to`](docs/reference/run.md#run_to), [`run_for`](docs/reference/run.md#run_for), [`trace`](docs/reference/run.md#trace), [`screen_wait`](docs/reference/run.md#screen_wait), [`step`](docs/reference/run.md#step), [`resume`](docs/reference/run.md#resume), [`wait`](docs/reference/run.md#wait), [`stop`](docs/reference/run.md#stop)
+- [Breakpoints](docs/reference/breakpoints.md): [`breakpoint_at`](docs/reference/breakpoints.md#breakpoint_at), [`breakpoint_interrupt`](docs/reference/breakpoints.md#breakpoint_interrupt), [`regpoint_add`](docs/reference/breakpoints.md#regpoint_add), [`watch_add`](docs/reference/breakpoints.md#watch_add), [`declaration_list`](docs/reference/breakpoints.md#declaration_list), [`declaration_clear`](docs/reference/breakpoints.md#declaration_clear)
 - [States](docs/reference/states.md): [`state_list`](docs/reference/states.md#state_list), [`state_write`](docs/reference/states.md#state_write)
 - [Names](docs/reference/names.md): [`symbols_load`](docs/reference/names.md#symbols_load), [`symbols_find`](docs/reference/names.md#symbols_find)
 - [Comments](docs/reference/comments.md): [`comment_list`](docs/reference/comments.md#comment_list), [`comment_write`](docs/reference/comments.md#comment_write)
 - [Input](docs/reference/input.md): [`send_keys`](docs/reference/input.md#send_keys), [`send_mouse`](docs/reference/input.md#send_mouse)
 - [Captures](docs/reference/captures.md): [`captures`](docs/reference/captures.md#captures), [`capture_frame`](docs/reference/captures.md#capture_frame), [`series_capture`](docs/reference/captures.md#series_capture), [`snapshot`](docs/reference/captures.md#snapshot), [`record`](docs/reference/captures.md#record), [`audio_record`](docs/reference/captures.md#audio_record)
 - [Files](docs/reference/files.md): [`image_compare`](docs/reference/files.md#image_compare), [`audio_compare`](docs/reference/files.md#audio_compare), [`guest_file`](docs/reference/files.md#guest_file)
-- [Lists](docs/reference/lists.md): [`perform`](docs/reference/lists.md#perform), [`perform_export`](docs/reference/lists.md#perform_export), [`drive`](docs/reference/lists.md#drive)
-- [Store](docs/reference/store.md): [`promote`](docs/reference/store.md#promote)
+- [Sequences](docs/reference/sequences.md): [`perform`](docs/reference/sequences.md#perform), [`perform_export`](docs/reference/sequences.md#perform_export), [`drive`](docs/reference/sequences.md#drive)
+- [Project](docs/reference/project.md): [`promote`](docs/reference/project.md#promote)
 <!-- scry-reference:end index -->
 
 ## The session
@@ -122,9 +122,9 @@ The tools: [Names](docs/reference/names.md).
 
 A symbol table lists what *survived* compilation: at `-O3` an inlined `static` has no symbol, so a missing name is a fact about the build.
 
-## Declarations
+## Breakpoints and watches
 
-The tools: [Declarations](docs/reference/declarations.md), and the comment tools on [Comments](docs/reference/comments.md).
+The tools: [Breakpoints](docs/reference/breakpoints.md), and the comment tools on [Comments](docs/reference/comments.md).
 
 A ref is a **symbol or a `SEG:OFF`** everywhere, and the server works out the debugger's command
 from the machine's own CPU mode (a selector in protected mode, a paragraph in real mode, `BPM` or
@@ -185,9 +185,9 @@ holds takes it into this session and build, which is how a `stale` row is brough
 
 The tools: [Comments](docs/reference/comments.md).
 
-## Advancing the machine
+## Running and stopping
 
-The tools: [Advance](docs/reference/advance.md).
+The tools: [Run](docs/reference/run.md).
 
 ### What a stop returns
 
@@ -321,15 +321,15 @@ Live, the bytes a listing shows are held to the memory `read_memory` reads.
 
 **The timer is IRQ 0**, so `pic(method="raise", irq=0)` runs its handler on demand, as the debugger's `TIMERIRQ` does. A mask is read back off the listing; a raise, a lower and an acknowledgement answer the line as it is after, since a raised line the CPU takes at once is no longer requested by the time anything reads it.
 
-## The guest's files
+## Files inside DOS
 
 A DOS program hands a result back the DOS way: a file on a mounted drive. `start(guest_files=[...])` takes each file's size, time and digest before the emulator boots; `guest_file` and `close` then say what the guest left. The tool: [Files](docs/reference/files.md) (`guest_file`).
 
 **Absent, empty and unchanged are three failures, and existence catches none of the third.** A file left by an earlier run passes any "is it there" test; compared against its own fingerprint from before the boot it is `unchanged`, refused, and only bytes or a time the run gave it make it `written`. The verdict reads the host's file, so a file the guest still holds open may not have its bytes yet: the emulator buffers a handle until DOS closes it.
 
-## Sequences in one call
+## Several calls as one
 
-`perform(steps)` runs a list of the server's own operations in order and stops at the first failure with a full account; `start(plan=...)` runs the same list on the fresh session. The tools: [Lists](docs/reference/lists.md) (`perform`, `perform_export`, `drive`).
+`perform(steps)` runs a list of the server's own operations in order and stops at the first failure with a full account; `start(plan=...)` runs the same list on the fresh session. The tools: [Sequences](docs/reference/sequences.md) (`perform`, `perform_export`, `drive`).
 
 **The list is checked whole before its first step runs**, and before the session gate, so with no session a bad step answers `bad_argument` and a mistake in step 4 does not press the keys of steps 1 to 3. A step naming no operation is refused pointing at `operations`, carried once at the top level (inside `act` in a `drive`).
 
@@ -339,7 +339,7 @@ A DOS program hands a result back the DOS way: a file on a mounted drive. `start
 
 Messages count steps from 1, as the progress line does; the indexes a reply carries (`failed_at`, a row's `step`, `errors`' `step`) count from 0.
 
-## From an investigation to a bench
+## From a session to a test that replays itself
 
 Every session is recorded from the `start` that succeeds and cleared by the next; `close` keeps it. `perform_export(dest)` writes it as `perform`'s own document, and the runner plays it back with no model:
 
@@ -351,19 +351,19 @@ It exits 0 when every step held; 1 when a step diverged or failed; 2 on a usage 
 
 A step that left the guest at a new stop holds to the `regs` and the `frame` its reply carries (a `state_write(method="load")` answers none, so it holds to nothing); a `debug` line is never held to its answer, which is the debugger's. The document ends where no replay can reach what follows: whatever ends a run stops the guest at a place no replayed advance reaches, and every later stop inherits the shift, so the cut says how many frames that run took: `run_for` with that many frames replays it up to the start of the frame it stopped in; input sent to a stopped machine runs it by retraces instead, and stays in; a step that wrote a file the session named (`dest`) would find it there on replay. `needs.states` lists the saved states it loads and does not save, checked before anything plays; `needs.declarations` what the store held as the recorded `start` began, since a `start` re-arms what it finds stored for the conf. The document carries the `start`'s arguments as given, host paths included.
 
-The tool: [Lists](docs/reference/lists.md) (`perform_export`).
+The tool: [Sequences](docs/reference/sequences.md) (`perform_export`).
 
-## The store
+## The `.scry/` folder
 
 A repository can declare how a session starts on it, the screen maps of its program and the scripts that replay it, in a `.scry/` store it tracks, so a session gives only what is its own run's (`start(profile=...)`, `screen_map_write(method="load")`, `perform(path=...)`). A session keeps what it learned as drafts and writes nothing into the repository until a `promote` call names what to write: the store is tracked, so every entry is reviewed first, and every path in it is a placeholder ([the rule](https://github.com/scry-mcp/scry-core/blob/main/docs/store-paths.md)), so the file reads the same on any machine.
 
 Each entry belongs to one repository, fixed when it is kept: the one whose store a call read it from (a `start` profile, a map `screen_map_write` loaded, a script `perform` replayed), else the current `start`'s, that of the profile it read or else the one its guest runs in, its `cwd` or else its `conf`'s directory, taken up to the nearest directory holding `.scry/`, else `.git`. Without `root`, `promote` writes an entry only into that repository's store, so a session that ran programs of two repositories never files one in the other's, and the directory this server runs in, its own clone, never lends its store; an entry whose repository holds none is `unwritable` in a review and refused in an approval, naming the `root` that creates one there.
 
-The tool: [Store](docs/reference/store.md) (`promote`).
+The tool: [Project](docs/reference/project.md) (`promote`).
 
 ## Input and the screen
 
-Every input goes in inside the machine and nothing about the host is touched: no window comes to the front, the host pointer never moves, no Accessibility grant is asked for, and the window's scale changes nothing the guest sees. The tools: [Input](docs/reference/input.md), [Captures](docs/reference/captures.md), [Screen](docs/reference/screen.md) (`screen_view`, `screen_signature`, `palette`) and [Advance](docs/reference/advance.md) (`screen_wait`). A stretch of the screen or the sound is recorded between two stops through the debugger's `CAPTURE` (`record`, `audio_record`), so no window or menu is involved either.
+Every input goes in inside the machine and nothing about the host is touched: no window comes to the front, the host pointer never moves, no Accessibility grant is asked for, and the window's scale changes nothing the guest sees. The tools: [Input](docs/reference/input.md), [Captures](docs/reference/captures.md), [Screen](docs/reference/screen.md) (`screen_view`, `screen_signature`, `palette`) and [Run](docs/reference/run.md) (`screen_wait`). A stretch of the screen or the sound is recorded between two stops through the debugger's `CAPTURE` (`record`, `audio_record`), so no window or menu is involved either.
 
 **The screen is read from video memory**: text and 13h's chained bytes through the CPU's window,
 and every mode that window cannot read whole (planar 16-colour, unchained 256-colour, 8-, 15-,
@@ -386,7 +386,7 @@ A screen map names an application's screens and their controls, so a caller says
 
 A saved state needs the debugger commands `SAVESTATE` and `LOADSTATE` ([Debugger commands](#debugger-commands)). A build without them answers an unknown command, and both tools say so as `no_channel`, naming it. The tools: [States](docs/reference/states.md).
 
-## The debugger channel
+## The debugger connection
 
 Every reading and every command goes to the debugger through its channel (`[dosbox] mcp_server`): one request, the lines the command printed, one at a time, on every host. The debugger's screen is never read; a build whose debugger can run with no screen (`[dosbox] debugger headless`) is started that way, and one that cannot gets a terminal nobody reads on macOS, or a hidden console of its own on Windows. A reply longer than the channel keeps (it drops lines past its cap and says how many) is refused, never read as whole. `debug` is the raw command, its printed lines handed back. The tool: [Write](docs/reference/write.md) (`debug`).
 

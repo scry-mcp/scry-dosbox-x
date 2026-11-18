@@ -342,7 +342,7 @@ class Coverage:
 
 def join(session: ds.Session, parsed: Parsed, armed_real: bool, notes: list[str]) -> Coverage:
     """Each executed address as a linear one where its mode allows, plus the nearest symbol
-    (REFERENCE.md, Advancing the machine, has the rule)."""
+    (REFERENCE.md, Running and stopping, has the rule)."""
     stop_real = grammar.real_segments(STATE.last_stop["where"]["mode"])
     window_flat = armed_real and stop_real
     flat_of = {a: (a[2] if a[2] is not None else window_flat) for a in parsed.executed}

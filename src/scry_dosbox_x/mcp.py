@@ -45,9 +45,9 @@ ROSTER = roster.Roster(families=(
     ("Scan", ("scan",)),
     ("Write", ("set_register", "write", "debug")),
     ("Hardware", ("port", "pic", "a20")),
-    ("Advance", ("run_to", "run_for", "trace", "screen_wait", "step", "resume", "wait",
+    ("Run", ("run_to", "run_for", "trace", "screen_wait", "step", "resume", "wait",
                  "stop")),
-    ("Declarations", ("breakpoint_at", "breakpoint_interrupt", "regpoint_add", "watch_add",
+    ("Breakpoints", ("breakpoint_at", "breakpoint_interrupt", "regpoint_add", "watch_add",
                       "declaration_list", "declaration_clear")),
     ("States", ("state_list", "state_write")),
     ("Names", ("symbols_load", "symbols_find")),
@@ -56,8 +56,8 @@ ROSTER = roster.Roster(families=(
     ("Captures", ("captures", "capture_frame", "series_capture", "snapshot", "record",
                   "audio_record")),
     ("Files", ("image_compare", "audio_compare", "guest_file")),
-    ("Lists", ("perform", "perform_export", "drive")),
-    ("Store", ("promote",)),
+    ("Sequences", ("perform", "perform_export", "drive")),
+    ("Project", ("promote",)),
 ), answering=tuple(_ANSWERS_WHILE_RUNNING))
 
 

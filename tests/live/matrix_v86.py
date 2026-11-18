@@ -35,9 +35,9 @@ V_CELLS = cells(
     ("V status says VM86 and where the machine is",
      "status docstring: `pc` where it is now, read off the pane; `cpu_mode` `VM86`"),
     ("V CS:IP is a real-mode segment: the bytes there are the guest's own code",
-     "REFERENCE.md, Advancing the machine: a `VM86` stop is read as a real-mode one"),
+     "REFERENCE.md, Running and stopping: a `VM86` stop is read as a real-mode one"),
     ("V a change watch through a raw base is armed again when the mode changes, same numbers",
-     "declarations.md, Through a pointer; known: v86.asm's twin at 0010:0000 in both modes"),
+     "breakpoints.md, Through a pointer; known: v86.asm's twin at 0010:0000 in both modes"),
 )
 
 #: The stops `pm` may come after: a memory row just armed fires at its first check.

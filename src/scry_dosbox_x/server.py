@@ -744,7 +744,7 @@ def resume(seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail:
     `TIMEOUT`, left running, with a `note`). `output` (with `detail=True`: the last
     {DETAIL_TEXT_KEEP} characters the debugger itself printed for `RUN`; else `omitted`).
 
-    Reference: REFERENCE.md, Advancing the machine.
+    Reference: REFERENCE.md, Running and stopping.
     """
     return advance.resume(seconds, detail, bridge(ctx))
 
@@ -760,7 +760,7 @@ def wait(seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
     of `run_to`; else a `note` that the machine is still running. Refused (`not_running`) when the
     machine is stopped: `wait` lets a running guest play, `resume` releases a stopped one.
 
-    Reference: REFERENCE.md, Advancing the machine.
+    Reference: REFERENCE.md, Running and stopping.
     """
     return advance.wait(live(), seconds, bridge(ctx))
 
@@ -782,7 +782,7 @@ def stop(until: Annotated[str, vocab.enum(advance.STOP_UNTIL)] = "",
     stopped, with a `note`), `runs_to_protected` (with `until`), a `note` if it did not arrive.
     INVALID `not_settled`: after the `BREAK`, `RUNSTATE` did not say stopped; ask again.
 
-    Reference: REFERENCE.md, Advancing the machine.
+    Reference: REFERENCE.md, Running and stopping.
     """
     vocab.one_of("until", until, advance.STOP_UNTIL)
     session = live()
@@ -847,7 +847,7 @@ def run_to(ref: str = "", *, control: str = "", screen: str = "",
     no anchor), `note`, the stop (`pc`, `frame`, `regs`, `cause`). INVALID: `control_silent`,
     `cut_by_other_stop`, `not_settled`, `stale_map`.
 
-    Reference: REFERENCE.md, Advancing the machine.
+    Reference: REFERENCE.md, Running and stopping.
     """
     session = live()
     if screen:
@@ -881,7 +881,7 @@ def run_for(milliseconds: int = 0, frames: int = 0,
     unavailable with why), `retrace_pending` (a retrace stop is left armed), `note`,
     {STOP_FIELDS}. INVALID: `no_progress`, `unexpected_answer`.
 
-    Reference: REFERENCE.md, Advancing the machine.
+    Reference: REFERENCE.md, Running and stopping.
     """
     session = live()
     session.require_stopped("a `VRT`")
@@ -908,7 +908,7 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
     `unplaced`, `set_path`, `symbols` (first {SYMBOLS_SHOWN})). Refused: `no_channel`,
     `readback_refused`, `host_failed`.
 
-    Reference: REFERENCE.md, Advancing the machine.
+    Reference: REFERENCE.md, Running and stopping.
     """
     session = live()
     return tracing.trace(session, instructions, shape,
@@ -1105,7 +1105,7 @@ def breakpoint_interrupt(number: judges.NumberArg, ah: judges.NumberArg | None =
     `already_stored`, `armed`, `state` (while the guest runs), `entry` (once armed);
     with `detail=True` also `output`.
 
-    Reference: REFERENCE.md, Declarations.
+    Reference: REFERENCE.md, Breakpoints and watches.
     """
     return arming.breakpoint_interrupt(live(), *checks.interrupt(number, ah), detail)
 
@@ -1126,7 +1126,7 @@ def regpoint_add(condition: str) -> dict[str, Any]:
     `stored`, `already_stored`, `armed`, `state`, `while_running`, `entry` (once armed),
     `note`.
 
-    Reference: REFERENCE.md, Declarations.
+    Reference: REFERENCE.md, Breakpoints and watches.
     """
     return regpoints.regpoint_add(live(), condition)
 
@@ -1205,7 +1205,7 @@ def comment_list() -> dict[str, Any]:
     Reply: `comments` (each `ref`, `text`, `addr`, `state`, `why`),
     `comments_total`, `truncated`, `declarations`.
 
-    Reference: REFERENCE.md, Declarations.
+    Reference: REFERENCE.md, Breakpoints and watches.
     """
     return comments.comment_list(live())
 
@@ -1231,7 +1231,7 @@ def comment_write(method: Annotated[str, vocab.enum(tuple(folds.COMMENT))], ref:
     file, compared without regard to case on any volume (`bad_argument`), a name defined twice
     (`ambiguous_ref`), an unknown `ref` (`unknown_ref`), an unwritable store (`host_failed`).
 
-    Reference: REFERENCE.md, Declarations.
+    Reference: REFERENCE.md, Breakpoints and watches.
     """
     return methods.dispatch(folds.COMMENT, locals())
 
@@ -1480,7 +1480,7 @@ def breakpoint_at(ref: str, by: Annotated[str, vocab.enum(checks.BREAKPOINT_BY)]
     (`armed`, `counted` for a control, `unresolved`, `unarmable`, `pending` while the guest runs),
     `why`, `marked` and `note` for a linker-marked symbol.
 
-    Reference: REFERENCE.md, Declarations.
+    Reference: REFERENCE.md, Breakpoints and watches.
     """
     session = live()
     return dlaunch.with_dynamic_core_note(arming.breakpoint_at(session, ref, by, role),
@@ -1498,7 +1498,7 @@ def declaration_list(kind: Annotated[str, vocab.enum(("", *folds.KINDS))] = "",
     `created_at`, `origin`, `inherited`, `age_s`, `state`, plus its kind's fields), `foreign`
     (debugger entries no declaration resolves to), `debugger_read`.
 
-    Reference: REFERENCE.md, Declarations.
+    Reference: REFERENCE.md, Breakpoints and watches.
     """
     return folds.list_declarations(kind)
 
@@ -1517,7 +1517,7 @@ def declaration_clear(kind: Annotated[str, vocab.enum(folds.KINDS)], ref: str = 
     Reply: `declarations_cleared`, `disarmed`, `pending_disarm` (removed at the next stop),
     `note`.
 
-    Reference: REFERENCE.md, Declarations.
+    Reference: REFERENCE.md, Breakpoints and watches.
     """
     return folds.clear_declarations(kind, ref, all)
 
@@ -1561,7 +1561,7 @@ def watch_add(ref: str, mode: Annotated[str, vocab.enum(dec.WATCH_MODES)], lengt
     `addr`, `trigger`, `trigger_addr`, `trigger_type`; a freeze's `addr`, `entries`, `frozen_hex`;
     its account is `declaration_list`'s.
 
-    Reference: REFERENCE.md, Declarations.
+    Reference: REFERENCE.md, Breakpoints and watches.
     """
     return arming.watch_add(live(), ref, mode, length, fmt, by, trigger, trigger_type)
 
@@ -1668,7 +1668,7 @@ def guest_file(path: str) -> dict[str, Any]:
     `same_bytes` (written again with the bytes it held). INVALID `readback_refused` on the
     first three, which hand nothing back; a path `start` did not name is refused.
 
-    Reference: REFERENCE.md, The guest's files.
+    Reference: REFERENCE.md, Files inside DOS.
     """
     return guest.guest_file(path)
 
@@ -1724,7 +1724,7 @@ def perform_export(dest: str, overwrite: bool = False) -> dict[str, Any]:
 
     {EXPORT_KEPT}
 
-    Reference: REFERENCE.md, From an investigation to a bench.
+    Reference: REFERENCE.md, From a session to a test that replays itself.
     """
     return core_promote.after_export(STATE.drafts, st.reply(**recording.export(
         RECORDER, dest, overwrite)), mpromote.PROMOTE_PATHS)
@@ -1739,7 +1739,7 @@ def promote(dry_run: bool = False, entries: list[str] | None = None,
             names: dict[str, str] | None = None, root: str = "") -> dict[str, Any]:
     """{PROMOTE}
 
-    Reference: REFERENCE.md, The store.
+    Reference: REFERENCE.md, The `.scry/` folder.
     """
     return st.reply(**mpromote.promote(dry_run, entries, names, root))
 
@@ -1765,7 +1765,7 @@ def perform(steps: list[dict[str, Any]] | None = None, path: str = "",
 
     {PERFORM_REPLY}
 
-    Reference: REFERENCE.md, Sequences in one call.
+    Reference: REFERENCE.md, Several calls as one.
     """
     from_document = bool(path)
     steps = recording.steps_to_replay(steps, path, state=mpromote.scratch())

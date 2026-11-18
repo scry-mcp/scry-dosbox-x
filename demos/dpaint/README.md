@@ -239,13 +239,13 @@ In this video mode each byte is one pixel's colour number. The row holds 25 pixe
 | Group | Tools |
 |---|---|
 | [Session](../../docs/reference/session.md) | `start`, `close` |
-| [Advance](../../docs/reference/advance.md) | `screen_wait` |
+| [Run](../../docs/reference/run.md) | `screen_wait` |
 | [Machine](../../docs/reference/machine.md) | `machine_map` |
 | [Read](../../docs/reference/read.md) | `screen_map_write`, `screen_map_find`, `read_memory` |
 | [Input](../../docs/reference/input.md) | `send_mouse`, `send_keys` |
 | [Scan](../../docs/reference/scan.md) | `scan` |
-| [Declarations](../../docs/reference/declarations.md) | `watch_add`, `declaration_clear` |
-| [Lists](../../docs/reference/lists.md) | `perform` |
+| [Breakpoints](../../docs/reference/breakpoints.md) | `watch_add`, `declaration_clear` |
+| [Sequences](../../docs/reference/sequences.md) | `perform` |
 | [Screen](../../docs/reference/screen.md) | `screen_view` |
 
 Each group is a page of the reference. Some of the names need a word:

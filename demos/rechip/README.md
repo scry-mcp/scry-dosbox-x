@@ -278,7 +278,7 @@ Reply, 2 of 10 fields:
 | Group | Tools |
 |---|---|
 | [Session](../../docs/reference/session.md) | `start`, `close` |
-| [Advance](../../docs/reference/advance.md) | `resume`, `stop`, `run_for`, `screen_wait` |
+| [Run](../../docs/reference/run.md) | `resume`, `stop`, `run_for`, `screen_wait` |
 | [Machine](../../docs/reference/machine.md) | `log_wait` |
 | [Input](../../docs/reference/input.md) | `send_keys` |
 | [Read](../../docs/reference/read.md) | `read_memory`, `screen_map_write`, `screen_map_find` |

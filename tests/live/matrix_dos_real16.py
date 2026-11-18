@@ -61,7 +61,7 @@ D_CELLS = cells(
     ("D COMPOSE_FRAME hits over ten retraces, quoted",
      "measured, never required to equal the retraces: the game's pace is its own"),
     ("D run_for frames=10 lands ten retraces in the program",
-     "REFERENCE.md, Advancing the machine: a frame is one retrace"),
+     "REFERENCE.md, Running and stopping: a frame is one retrace"),
     ("D the stub announces the serial route", "REFERENCE.md, Input and the screen"),
     ("D a word scan opened at an odd offset keeps TOTALTIME",
      "REFERENCE.md, Reading and writing; known: the map puts TOTALTIME at an odd offset"),
