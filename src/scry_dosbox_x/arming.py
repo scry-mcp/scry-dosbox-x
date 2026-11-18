@@ -1058,12 +1058,10 @@ def declares_untold_stopper() -> bool:
 _UNTOLD_ROWS = ("BPINT ", "BPMEM ", "BPPM ", "BPLM ", grammar.CONDITION_ROW)
 
 
-def untold_stop_possible() -> bool:
-    """Whether a stop could come that no address names: such a row in the debugger's list at
-    the last stop, or such a declaration. A code breakpoint's stop is told by where it is."""
-    held = STATE.last_stop.get("held") or []
-    return declares_untold_stopper() or any(
-        str(r.get("entry", "")).startswith(_UNTOLD_ROWS) for r in held)
+def untold_row_listed(held: list[dict[str, str]]) -> bool:
+    """Whether `held`, the debugger's list read at a stop, has a row whose stop no address
+    names. A code breakpoint's stop is told by where it is."""
+    return any(str(r.get("entry", "")).startswith(_UNTOLD_ROWS) for r in held)
 
 
 def something_can_stop_it() -> bool:

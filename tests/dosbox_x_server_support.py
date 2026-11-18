@@ -328,7 +328,7 @@ class FakeSession(SessionGates):
     # each returns its tool's field set, so a tool dropping `running` or `arrived` shows
     def step(self, mode: str = "over", count: int = 1) -> dict[str, object]:
         return {"mode": mode, "asked": count, "completed": count, "running": False,
-                "moved": True, "stalled": 0,
+                "moved": True, "stalled": 0, "cut_by_bound": False,
                 "before": {"cs": "F000", "eip": "0000FFF0", "mode": "Real"},
                 "after": {"cs": "F000", "eip": "0000FFF5", "mode": "Real"}}
 
@@ -914,8 +914,8 @@ class NamesFake(SessionGates):
     def step(self, mode: str = "over", count: int = 1) -> dict[str, object]:
         self.running = self.step_running
         return {"mode": mode, "asked": count, "running": self.step_running, "completed": count,
-                "moved": True,
-                "stalled": 0, "before": {"cs": self.cs, "eip": self.eip, "mode": self.mode},
+                "moved": True, "stalled": 0, "cut_by_bound": False,
+                "before": {"cs": self.cs, "eip": self.eip, "mode": self.mode},
                 "after": {"cs": self.cs, "eip": self.eip, "mode": self.mode}}
 
     def run_to(self, segment: int, offset: int, seconds: float,

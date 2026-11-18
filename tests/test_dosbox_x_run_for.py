@@ -349,6 +349,45 @@ def test_a_frame_that_moved_is_the_run_s_own_retrace_with_a_code_breakpoint_decl
     assert got["cause"] == "the retrace run_for ran to, at 0814:00000106", got["cause"]
 
 
+@pytest.mark.parametrize("row", [
+    "BPINT 21", "BPMEM 0814:0200 (00)", "BPPM 0008:00001000 (00)", "BPLM 00001000 (00)",
+    f"{grammar.CONDITION_ROW}AX==1234",
+])
+def test_a_row_no_address_names_listed_at_the_stop_takes_it_from_the_run(tmp_path: Path,
+                                                                        row: str) -> None:
+    """A row typed through `debug` after the last stop is in no declaration and was not in
+    that stop's list. It can stop a run whose frame moved, so the list read at the stop itself
+    decides whether the retrace is the run's own."""
+    machine = frames(1)
+    machine.frames = 100
+    live(machine, tmp_path)
+    machine.breakpoints.append(row)
+    got = cast(dict[str, Any], server.run_for(frames=1))
+    assert got["frame"] == 101 and "ran to" not in got["cause"], got["cause"]
+    assert "cannot be told" in got["cause"], got["cause"]
+
+
+def test_a_declared_interrupt_breakpoint_takes_a_moved_frame_from_the_run(tmp_path: Path) -> None:
+    machine = frames(1)
+    machine.frames = 100
+    live(machine, tmp_path)
+    declared = cast(dict[str, Any], server.breakpoint_interrupt(number="0x21"))
+    assert declared["status"] == "ok" and "BPINT 21" in machine.breakpoints, declared
+    got = cast(dict[str, Any], server.run_for(frames=1, seconds=2))
+    assert got["frame"] == 101 and "ran to" not in got["cause"], got["cause"]
+
+
+def test_a_code_row_nobody_declared_at_the_stop_takes_it_from_the_run(tmp_path: Path) -> None:
+    """A raw `BP` typed through `debug` sits where the machine stopped: it made the stop, so
+    the frame that moved does not make it the run's retrace."""
+    machine = frames(1)
+    machine.frames = 100
+    live(machine, tmp_path)
+    machine.breakpoints.append("BP 0814:0106")
+    got = cast(dict[str, Any], server.run_for(frames=1))
+    assert got["frame"] == 101 and "ran to" not in got["cause"], got["cause"]
+
+
 def test_a_stop_nothing_explains_names_no_memory_watch(tmp_path: Path) -> None:
     """With nothing declared and a frame that did not move, the cause says it cannot be told
     and blames no watch: none exists."""

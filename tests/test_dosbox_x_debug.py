@@ -21,7 +21,11 @@ from channel_double import (
     protected,
     session_over,
 )
-from dosbox_x_server_support import returned_key_sets
+from dosbox_x_server_support import (  # noqa: F401  (the autouse teardown)
+    clean_session,
+    install,
+    returned_key_sets,
+)
 from scry_core import vocabulary as vocab
 from test_dosbox_x_e9_wait import E9_BOOT, LogSession
 
@@ -256,10 +260,8 @@ def test_a_step_over_whose_own_breakpoint_will_not_go_says_it_is_still_armed(
     assert "0814:0108 is STILL in the debugger's list" in str(got.get("note")), got
 
 
-def test_a_step_over_that_runs_past_its_bound_is_brought_back_and_says_where(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The bound's `BREAK` stops the machine inside the callee: the reply says it is stopped
-    there, and the steps after it are not sent."""
+def _over_a_call_that_does_not_come_back(tmp_path: Path,
+                                         monkeypatch: pytest.MonkeyPatch) -> tuple[Machine, Any]:
     monkeypatch.setattr(stepping, "STEP_WAIT_S", 0.05)
     machine = _step_guest(releases=[None])
     machine.regs["EIP"] = 0x105
@@ -271,8 +273,52 @@ def test_a_step_over_that_runs_past_its_bound_is_brought_back_and_says_where(
             machine.regs["EIP"] = 0x11F
         return original(command, *a, **k)
     machine.request = inside_the_callee  # type: ignore[method-assign]
+    return machine, s
+
+
+def test_a_step_over_cut_by_its_bound_names_the_bound_as_what_stopped_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The machine is stopped inside the callee by the bound, never by a step that landed:
+    the cause says so, where it said a step had been made."""
+    install()
+    _machine, dstate.STATE.session = _over_a_call_that_does_not_come_back(tmp_path, monkeypatch)
+    got = cast(dict[str, Any], server.step(count=3, mode="over"))
+    assert got["status"] == "ok" and got["instructions_completed"] == 1, got
+    assert got["cause"] == ("the stop `step` made when what it stepped over did not come back "
+                            "within its bound, at 0814:0000011F"), got["cause"]
+    assert "cut_by_bound" not in got
+
+
+@pytest.mark.parametrize("mode, row, own", [
+    ("into", "BPINT 21", True),
+    ("over", "", True),
+    ("over", "BPINT 21", False),
+    ("over", "BPMEM 0814:0200 (00)", False),
+])
+def test_a_step_is_its_own_stop_unless_it_ran_past_a_row_no_address_names(
+        tmp_path: Path, mode: str, row: str, own: bool) -> None:
+    """A step `into` executes one instruction and stops, whatever is listed. A step `over`
+    runs a call whole, where an interrupt breakpoint or a memory watch can stop it first."""
+    install()
+    machine = _step_guest(steps=[{"EIP": 0x105}], releases=[Stop({"EIP": 0x108})])
+    if mode == "over":
+        machine.regs["EIP"] = 0x105
+    if row:
+        machine.breakpoints.append(row)
+    dstate.STATE.session = session_over(machine, tmp_path)
+    got = cast(dict[str, Any], server.step(mode=mode))
+    assert got["status"] == "ok", got
+    assert got["cause"].startswith("the stop `step` made after 1 step, at ") is own, got["cause"]
+
+
+def test_a_step_over_that_runs_past_its_bound_is_brought_back_and_says_where(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The bound's `BREAK` stops the machine inside the callee: the reply says it is stopped
+    there, and the steps after it are not sent."""
+    machine, s = _over_a_call_that_does_not_come_back(tmp_path, monkeypatch)
     got = cast(dict[str, Any], s.step(count=3, mode="over"))
     assert got["running"] is False and got["completed"] == 1, got
+    assert got["cut_by_bound"] is True, got
     assert got["after"]["eip"] == "0000011F" and s.parked, got
     assert "BREAK" in machine.sent and machine.breakpoints == []
     assert machine.sent.count("EXEC RUN") == 1, "a step was sent after the interrupted one"
@@ -752,7 +798,8 @@ def test_each_tool_refuses_with_no_session_and_still_carries_the_envelope(
 # Derived from the method, not listed: a hand-written dict fell behind when `step` and
 # `run_to` gained fields, and this is the only check that the envelope drops nothing.
 # `step` names the session's count in the shared word; the rest of its account is handed on.
-TOOL_FIELDS = {"step": set(returned_key_sets(ds.Session.step)[0]) - {"completed", "running"}
+TOOL_FIELDS = {"step": (set(returned_key_sets(ds.Session.step)[0])
+                        - {"completed", "running", "cut_by_bound"})
                | {"instructions_completed"},
                "log_wait": next(set(keys) for keys in returned_key_sets(ds.Session.log_wait)
                                 if "line" in keys)}

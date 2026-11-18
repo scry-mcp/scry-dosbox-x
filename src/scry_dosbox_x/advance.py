@@ -267,13 +267,15 @@ def stop_in_protected_mode(session: ds.Session, progress: ds.Progress) -> dict[s
                               runs_to_protected=runs, **extra)
 
 
-def step_own_stop(mode: str, completed: int) -> str:
-    """The cause of the stop the steps themselves made, or "" when something else may have
-    made it: an `over` runs a call whole, where a watch or an interrupt breakpoint can stop it
-    first, and their stop no address names."""
-    if mode != "into" and arming.untold_stop_possible():
-        return ""
-    return f"the stop `step` made after {prose.counted(completed, 'step')}"
+def step_own_stop(mode: str, completed: int, cut_by_bound: bool) -> tuple[str, str]:
+    """The stop the steps made, as `stop_reply`'s `own` and `ran_to`, one of them empty. An
+    `over` runs a call whole, where a watch or an interrupt breakpoint can stop it first, so
+    its stop is one it ran to; one its bound cut stands inside what it stepped over."""
+    if cut_by_bound:
+        return ("the stop `step` made when what it stepped over did not come back within its "
+                "bound"), ""
+    made = f"the stop `step` made after {prose.counted(completed, 'step')}"
+    return (made, "") if mode == "into" else ("", made)
 
 
 def with_watches_disarmed(session: ds.Session, disarm: bool,

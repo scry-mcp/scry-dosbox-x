@@ -816,13 +816,14 @@ def step(count: Annotated[int, vocab.bounds(1, stepping.STEP_MAX)] = 1,
     session = live()
     out = cast(dict[str, Any], session.step(mode=mode, count=count))
     ran_away = bool(out.pop("running"))
+    cut = bool(out.pop("cut_by_bound"))
     out["instructions_completed"] = out.pop("completed")
     out["before"], out["after"] = (f"{w['cs']}:{w['eip']}" for w in (out["before"], out["after"]))
     # A step that STOPPED carries the full stop reply; one that ran away (a CALL that never
     # returned) left the machine running, which `session.running` says, and a running machine
     # has nothing to read.
-    return running.stop_or_base(session, not ran_away, out,
-                                own=advance.step_own_stop(mode, out["instructions_completed"]))
+    own, ran_to = advance.step_own_stop(mode, out["instructions_completed"], cut)
+    return running.stop_or_base(session, not ran_away, out, own=own, ran_to=ran_to)
 
 
 @tool("Run to a place or a mapped screen", summary=one_line.run_to, on_cancel="stop")

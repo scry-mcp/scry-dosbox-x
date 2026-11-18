@@ -457,6 +457,7 @@ def test_a_cut_log_the_host_holds_while_open_is_closed_then_collected(
     dest = tmp_path / "w.trace"
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "ok" and got["verdict"] == "OTHER_STOP", got
+    assert "trace's count" not in got["cause"], "a trace cut short did not reach its count"
     assert got["trace"]["instructions"] == 5506 and dest.exists(), got["trace"]
     assert released(machine) == ["LOGC 186A1", "LOGC 0"] and no_log_left(cwd)
     assert not log_open()

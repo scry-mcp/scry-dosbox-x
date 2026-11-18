@@ -59,6 +59,7 @@ def step(ses: ds.Session, count: int, mode: str) -> dict[str, object]:
     # COUNTED PER STEP, because comparing only the ENDPOINTS answers a different question than
     # the one `moved` is asked.
     stalled, sent = 0, 0
+    cut = False
     left: list[str] = []
     for _ in range(count):
         position_before = after
@@ -69,6 +70,7 @@ def step(ses: ds.Session, count: int, mode: str) -> dict[str, object]:
             left += [cleanup] if cleanup else []
             if interrupted:
                 # stopped by the bound inside what it stepped over: no further step
+                cut = True
                 completed += 1
                 stalled += after == position_before
                 break
@@ -90,7 +92,7 @@ def step(ses: ds.Session, count: int, mode: str) -> dict[str, object]:
         completed += 1
     return {"mode": mode, "asked": count, "completed": completed,
             "running": running, "moved": stalled < completed,
-            "stalled": stalled,
+            "stalled": stalled, "cut_by_bound": cut,
             "before": before, "after": after,
             **({"note": "".join(left).strip()} if left else {})}
 

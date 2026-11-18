@@ -84,18 +84,21 @@ DUE = _Due()
 def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
                made_by: dict[str, str] | None = None,
                asked_by: Literal["stop", "cancel"] | None = None,
-               own: str = "", placed: dict[str, Any] | None | _Due = DUE,
+               own: str = "", ran_to: str = "",
+               placed: dict[str, Any] | None | _Due = DUE,
                **base: Any) -> dict[str, Any]:
     """What a stop always returns on top of `base`: position, `cause`, watches, registers, E9.
     `made_by` attributes a stop the calling tool made itself; `asked_by` names the cause when
     no declaration is at the address; `own` is the cause of a stop nothing declared could make,
-    left unattributed. `placed` is a placement the caller already made at this stop (it is said
-    once)."""
+    left unattributed; `ran_to` is the same for a stop the call ran the machine to, which a
+    row no address names, listed at this stop, takes from it. `placed` is a placement the
+    caller already made at this stop (it is said once)."""
     # The table `start` holds is placed before the queue drains, so the re-arm sees it.
     if isinstance(placed, _Due):
         placed = start_symbols.place_if_due(session)
     try:
-        return _surveyed_stop(session, placed, retrace_may_stop, made_by, asked_by, own, base)
+        return _surveyed_stop(session, placed, retrace_may_stop, made_by, asked_by,
+                              (own, ran_to), base)
     except ds.Invalid as e:
         # The placement is consumed as it is said: a survey cut after it must still carry it.
         if placed is not None:
@@ -123,7 +126,7 @@ def unavailable_enrichment(exc: ds.Invalid) -> dict[str, Any]:
 
 def _surveyed_stop(session: ds.Session, placed: dict[str, Any] | None, retrace_may_stop: bool,
                    made_by: dict[str, str] | None, asked_by: Literal["stop", "cancel"] | None,
-                   own: str, base: dict[str, Any]) -> dict[str, Any]:
+                   owned: tuple[str, str], base: dict[str, Any]) -> dict[str, Any]:
     said: dict[str, Any] = {"symbols_placed": placed} if placed is not None else {}
     # One survey serves where, registers and the watches' list.
     arming.apply_pending(session)
@@ -144,8 +147,11 @@ def _surveyed_stop(session: ds.Session, placed: dict[str, Any] | None, retrace_m
     elif asked_by is not None and not attribution.get("attributed"):
         attribution = {"attributed": True, "ref": asked_by, "by": asked_by,
                        "at": attribution["at"]}
-    elif own and not attribution.get("attributed") and not attribution.get("row_here"):
-        attribution = {"attributed": False, "own": own, "at": attribution["at"]}
+    elif not attribution.get("attributed") and not attribution.get("row_here"):
+        own, ran_to = owned
+        made = own or ("" if arming.untold_row_listed(held) else ran_to)
+        if made:
+            attribution = {"attributed": False, "own": made, "at": attribution["at"]}
     STATE.remember_stop(session, where, registers, held, attribution)
     # Marked under the new number, or the next contact drains this stop again.
     STATE.pending["drained_seq"] = STATE.last_stop["seq"]
@@ -185,7 +191,7 @@ def stop_or_base(session: ds.Session, stopped: bool, base: dict[str, Any], *,
                  retrace_may_stop: bool = False,
                  made_by: dict[str, str] | None = None,
                  asked_by: Literal["stop", "cancel"] | None = None,
-                 own: str = "") -> dict[str, Any]:
+                 own: str = "", ran_to: str = "") -> dict[str, Any]:
     """The enriched stop reply when the machine stopped, else the tool's base answer.
     A halt whose position cannot be read keeps the base fields and marks the
     enrichment unavailable."""
@@ -195,7 +201,7 @@ def stop_or_base(session: ds.Session, stopped: bool, base: dict[str, Any], *,
     try:
         placed = start_symbols.place_if_due(session)
         return stop_reply(session, retrace_may_stop=retrace_may_stop, made_by=made_by,
-                          asked_by=asked_by, own=own, placed=placed, **base)
+                          asked_by=asked_by, own=own, ran_to=ran_to, placed=placed, **base)
     except ds.Invalid as e:
         kept: dict[str, Any] = {"symbols_placed": placed} if placed is not None else {}
         return st.reply(enrichment={"available": False, "why": str(e)}, **base, **kept)
