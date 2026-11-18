@@ -1,6 +1,6 @@
 """Section R of the live matrix: the presence edge is drawn into the window, never into the
-evidence, on the screen guest (`tests/guest/screen.asm`). Why: REFERENCE.md, The presence
-indicator. The red for the capture cells is a scratch build (`DOSBOX_X_LEAK_BINARY`): the
+evidence, on the screen guest (`tests/guest/screen.asm`). Why: REFERENCE.md, The orange edge
+of the window. The red for the capture cells is a scratch build (`DOSBOX_X_LEAK_BINARY`): the
 binary under test built with `presence-leak.patch` applied, which paints the first row of the
 source the capture reads while the overlay is on. `DOSBOX_X_STOCK_BINARY` names a release build,
 whose debugger has no PRESENCE command (section S reads the same variable). The screen readers
@@ -72,29 +72,29 @@ E9_OPEN = ["-set", "dosbox bochs debug port e9=true"]
 
 R_CELLS = cells(
     ("R a shared start says presence true, and status the same",
-     "REFERENCE.md, The presence indicator"),
+     "REFERENCE.md, The orange edge of the window"),
     ("R the emulator counts frames drawn lit while the guest runs and when a stopped machine "
      "is repainted", "the PRESENCE channel command's answer: frames"),
     ("R the host's capture with the edge acting differs from it off on all four sides of the "
      "picture and nowhere deeper than the edge, towards orange",
-     "REFERENCE.md, The presence indicator: on the inner sides of the picture"),
+     "REFERENCE.md, The orange edge of the window: on the inner sides of the picture"),
     ("R screen_view and screen_signature at the stop are byte-identical acting and off",
-     "REFERENCE.md, The presence indicator: never into the evidence"),
+     "REFERENCE.md, The orange edge of the window: never into the evidence"),
     ("R snapshot, capture_frame and series_capture of a still screen are byte-identical acting "
-     "and off", "REFERENCE.md, The presence indicator: never into the evidence"),
+     "and off", "REFERENCE.md, The orange edge of the window: never into the evidence"),
     ("R a build that paints where capture reads changes snapshot, capture_frame and "
      "series_capture: the comparison can fail",
-     "REFERENCE.md, The presence indicator: after the frame was handed to capture"),
+     "REFERENCE.md, The orange edge of the window: after the frame was handed to capture"),
     ("R a build whose debugger has no PRESENCE answers presence unavailable, naming it",
      "presence: NO_COMMAND"),
     ("R a session with no window says it has none, and one asked off says false",
      "presence: NO_WINDOW"),
     ("R the first mouse move draws the pointer inside the picture, away from the edge, and only "
      "the pointer: with it turned off the same screen differs by those pixels alone",
-     "REFERENCE.md, The presence indicator: an orange pointer stands on it"),
+     "REFERENCE.md, The orange edge of the window: an orange pointer stands on it"),
     ("R in the graphics modes the pointer is the sprite's height in guest pixels: the same "
      "number of rows at 320x200 and at 640x480",
-     "REFERENCE.md, The presence indicator: sized by the guest's pixels"),
+     "REFERENCE.md, The orange edge of the window: sized by the guest's pixels"),
 )
 #: The mouse guest's mode keys and the rows each mode shows (`tests/guest/mouse.asm`).
 GRAPHICS_MODES = (("g", 200), ("v", 480))

@@ -39,7 +39,7 @@ DPMI_CELLS = ("G the DPMI guest: snapshot", "G the DPMI guest: a click reaches t
 
 G_CELLS = cells(
     ("G stop brings a running guest back", "stop docstring: BREAK, `interrupted: true`"),
-    ("G declared while running applies at stop", "REFERENCE.md, Advancing: applied_on_stop"),
+    ("G declared while running applies at stop", "REFERENCE.md, Running and stopping: applied_on_stop"),
     ("G state_write save while running", "state_write save docstring"),
     ("G state_list lists it", "state_list docstring"),
     ("G state_write load while running", "state_write load docstring"),
