@@ -1231,7 +1231,7 @@ Also attached: image/png.
       "bytes": "e6004e000200feff"
     }
   ],
-  "cause": "no declared code breakpoint at 08DF:000002CC, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+  "cause": "the stop `step` made after 2 steps, at 08DF:000002CC",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 4,
   "instruction": {
@@ -1292,7 +1292,7 @@ Also attached: image/png.
 
 </details>
 
-**33. `promote`**: OK review: reviewed and nothing written: start/bricks
+**33. `promote`**: OK review: reviewed and nothing written: perform/session, start/bricks
 
 <details><summary>call and reply</summary>
 
@@ -1304,10 +1304,18 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "promote: 1 candidate in ./.scry, 1 entry cannot be written",
+  "summary": "promote: 2 candidates in ./.scry",
   "status": "ok",
   "store": "./.scry",
   "candidates": [
+    {
+      "entry": "perform/session",
+      "kind": "perform",
+      "name": "session",
+      "file": ".scry/perform/session.json",
+      "bytes": 5129,
+      "change": "new"
+    },
     {
       "entry": "start/bricks",
       "kind": "start",
@@ -1330,14 +1338,8 @@ Also attached: image/png.
     }
   ],
   "unchanged": [],
-  "total_bytes": 154,
-  "store_bytes": 4745,
-  "unwritable": [
-    {
-      "entry": "perform/session",
-      "reason": "the candidate perform/session's `guest_files` is a NoneType, not a path or a table of them"
-    }
-  ],
+  "total_bytes": 5283,
+  "store_bytes": 10100,
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
@@ -1390,7 +1392,7 @@ Also attached: image/png.
       "bytes": "e6004e000200feff"
     }
   ],
-  "cause": "no declared code breakpoint at 08DF:00000221, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+  "cause": "the end of the trace's count, at 08DF:00000221",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 5,
   "instruction": {
@@ -2267,7 +2269,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "capture_frame 104: 2446 bytes to ./tmp/demos/tour/files/brick-gone.png",
+  "summary": "<volatile>",
   "status": "ok",
   "path": "./tmp/demos/tour/files/brick-gone.png",
   "bytes": "<volatile>",
