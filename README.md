@@ -205,17 +205,19 @@ address, whose segment is where DOS loaded it.
 
 ## See it run
 
-Each demo is a `demo.py` that makes the calls a model would and checks every answer. The
-pictures move because they are cut from that run.
+Each demo is a `demo.py` that makes the calls a model would and checks every answer. Each
+picture is the screen that run ended on, linked to its guide, where it moves.
 
 <p align="center">
-  <a href="demos/bricks/"><picture><source media="(prefers-reduced-motion: reduce)" srcset="demos/bricks/screen.png"><img src="demos/bricks/loop.webp" alt="Bricks with its ball in play" width="170"></picture></a>
-  <a href="demos/mines/"><picture><source media="(prefers-reduced-motion: reduce)" srcset="demos/mines/screen.png"><img src="demos/mines/loop.webp" alt="Minesweeper being cleared" width="170"></picture></a>
-  <a href="demos/dpaint/"><picture><source media="(prefers-reduced-motion: reduce)" srcset="demos/dpaint/screen.png"><img src="demos/dpaint/loop.webp" alt="Deluxe Paint painting a sunset" width="170"></picture></a>
-  <a href="demos/dpaint_maps/"><picture><source media="(prefers-reduced-motion: reduce)" srcset="demos/dpaint_maps/screen.png"><img src="demos/dpaint_maps/loop.webp" alt="Deluxe Paint driven through its menus" width="170"></picture></a>
-  <a href="demos/lineup/"><picture><source media="(prefers-reduced-motion: reduce)" srcset="demos/lineup/screen.png"><img src="demos/lineup/loop.webp" alt="LineUp being played" width="170"></picture></a>
-  <a href="demos/speedf/"><picture><source media="(prefers-reduced-motion: reduce)" srcset="demos/speedf/screen.png"><img src="demos/speedf/loop.webp" alt="Speed Fight playing a match" width="170"></picture></a>
-  <a href="demos/rechip/"><picture><source media="(prefers-reduced-motion: reduce)" srcset="demos/rechip/screen.png"><img src="demos/rechip/loop.webp" alt="ReChip! playing a song" width="170"></picture></a>
+  <a href="demos/bricks/"><img src="demos/bricks/screen.png" alt="Bricks with its ball in play" width="240" height="150"></a>
+  <a href="demos/mines/"><img src="demos/mines/screen.png" alt="Minesweeper won, every safe cell open" width="202" height="150"></a>
+  <a href="demos/dpaint/"><img src="demos/dpaint/screen.png" alt="A sunset painted in Deluxe Paint" width="242" height="150"></a>
+  <a href="demos/dpaint_maps/"><img src="demos/dpaint_maps/screen.png" alt="A sunset and two boats in Deluxe Paint" width="200" height="150"></a>
+</p>
+<p align="center">
+  <a href="demos/lineup/"><img src="demos/lineup/screen.png" alt="LineUp in play" width="240" height="150"></a>
+  <a href="demos/speedf/"><img src="demos/speedf/screen.png" alt="Speed Fight playing a match" width="240" height="150"></a>
+  <a href="demos/rechip/"><img src="demos/rechip/screen.png" alt="ReChip! playing a song" width="202" height="150"></a>
 </p>
 
 - [`demos/bricks/`](demos/bricks/): a breakout game this repository builds, stopped by name
