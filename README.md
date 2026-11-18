@@ -218,6 +218,7 @@ picture is the screen that run ended on, linked to its guide, where it moves.
   <a href="demos/lineup/"><img src="demos/lineup/screen.png" alt="LineUp in play" width="240" height="150"></a>
   <a href="demos/speedf/"><img src="demos/speedf/screen.png" alt="Speed Fight playing a match" width="240" height="150"></a>
   <a href="demos/rechip/"><img src="demos/rechip/screen.png" alt="ReChip! playing a song" width="202" height="150"></a>
+  <a href="demos/xcom/"><img src="demos/xcom/screen.png" alt="X-COM Apocalypse's city in a new campaign" width="200" height="150"></a>
 </p>
 
 - [`demos/bricks/`](demos/bricks/): a breakout game this repository builds, stopped by name
@@ -236,6 +237,8 @@ picture is the screen that run ended on, linked to its guide, where it moves.
   it needs a checkout of the game.
 - [`demos/rechip/`](demos/rechip/): *ReChip!*, a tracker driven by its keys and read by its own
   log; it needs a checkout of the program.
+- [`demos/xcom/`](demos/xcom/): *X-COM Apocalypse*, led through its menus by its own DOS calls
+  and a screen map, every file it opens listed; it needs a copy of the game.
 
 ### Bricks, step by step
 
