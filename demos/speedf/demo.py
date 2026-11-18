@@ -83,7 +83,7 @@ STEPS = [
                    "held": "where the reader's copy of the game keeps its symbol table",
                    "logfile": "where the reader's copy of the game keeps the guest's log"},
          title="Start from the game's own start profile",
-         ask="Start Speed Fight from the start profile its repository keeps in `.scry/start/`.",
+         ask="Start Speed Fight from the start profile in its `.scry/start/` folder.",
          shown=("status", "kept"),
          reads=("A start profile is a saved set of `start` arguments: the call adds only what is "
                 "this run's own. `kept` says a candidate was saved for `promote`; the whole reply "

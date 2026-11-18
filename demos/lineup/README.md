@@ -11,18 +11,17 @@
 <!-- demo-motion:end -->
 
 *LineUp* (Eco-Games / GAMART, 1994) was an arcade game, and its team ported the same source to
-MS-DOS. This demo starts the DOS version from a file in the game's own repository. Then it
-replays the list of steps that repository keeps: a coin, a game started, a move, a colour, a
+MS-DOS. This demo starts the DOS version from a file in the game's `.scry/` folder. Then it
+replays the list of steps kept there: a coin, a game started, a move, a colour, a
 shot.
 
 ## The program
 
-LineUp is not distributed with this repository. The demo runs a copy of the DOS version: a
-directory with `EXES/LINEUP.EXE`, its symbol map `EXES/LINEUP.MAP`, `AUDIO/`, `GFX/`, `.scry/`
-and `SCRIPTS/dosbox-x-mcp-conf.sh`.
+LineUp is not distributed with this repository. The demo runs a copy of the DOS version in a
+directory with `EXES/LINEUP.EXE`, its symbol map `EXES/LINEUP.MAP`, `SCRIPTS/dosbox-x-mcp-conf.sh`
+and `.scry/`. The game loads its backgrounds and sound from `GFX/` and `AUDIO/` beside them.
 
-Its `.scry/` folder holds what the game keeps for SCRY: a start profile (saved `start`
-arguments), a screen map (a file naming its screens) and the list of steps.
+Its `.scry/` folder holds a start profile, a screen map and the list of steps.
 
 ## Run it
 
@@ -61,7 +60,7 @@ the demo, in the order the demo makes them.
 
 Ask:
 
-> Replay the list of steps the game's repository keeps in `.scry/perform/`.
+> Replay the list of steps saved in `.scry/perform/`.
 
 Call:
 

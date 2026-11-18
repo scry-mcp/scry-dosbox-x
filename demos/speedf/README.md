@@ -1,4 +1,4 @@
-# Speed Fight: the DOS game starts from a file in its own repository
+# Speed Fight: the DOS game starts from a file in its `.scry/` folder
 
 <!-- demo-motion:begin -->
 <p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Speed Fight playing its own demo match on the DOS version"></picture></p>
@@ -10,7 +10,7 @@
 
 *Speed Fight* (Eco-Games / GAMART, 1994) was an arcade game, and its team ported the same
 source to MS-DOS. This demo starts the DOS version from a start profile, a saved set of `start`
-arguments the game's own repository keeps. Then it runs to routines by their names, reads a
+arguments kept in the game's `.scry/` folder. Then it runs to routines by their names, reads a
 variable, and films the match the game plays by itself.
 
 ## The program
@@ -56,7 +56,7 @@ the demo, in the order the demo makes them.
 
 Ask:
 
-> Start Speed Fight from the start profile its repository keeps in `.scry/start/`.
+> Start Speed Fight from the start profile in its `.scry/start/` folder.
 
 Call:
 

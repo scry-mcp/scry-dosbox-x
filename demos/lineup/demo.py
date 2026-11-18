@@ -115,7 +115,7 @@ def steps() -> list[Step]:
             Step("script", "perform",
                  lambda run: {"path": str(game(run) / SCRIPT), "summaries": True}, played,
                  title="Replay a saved list of steps",
-                 ask="Replay the list of steps the game's repository keeps in `.scry/perform/`.",
+                 ask="Replay the list of steps saved in `.scry/perform/`.",
                  shown=("summary", "steps_completed", "held"),
                  reads=("One call runs the whole game script: a coin, a start, a move, a colour "
                         "and a shot. `held` counts the steps whose values matched the ones the "

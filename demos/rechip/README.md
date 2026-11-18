@@ -9,7 +9,7 @@
 <!-- demo-motion:end -->
 
 *ReChip!*, a 32-bit DOS program, converts music for vintage sound chips and plays it in a live
-tracker. This demo starts it from a file in its own repository and waits for its log to say
+tracker. This demo starts it from a file in its `.scry/` folder and waits for its log to say
 the song is sounding. It pauses and rewinds the song with keys the program logs, films it
 playing, and quits by its own dialog.
 
