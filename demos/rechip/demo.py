@@ -178,8 +178,8 @@ STEPS = [
          title="Press a key and check the program took it",
          ask="Press space and check that the program logged the key.",
          shown=("summary", "keys"),
-         reads=("The program logs every key it takes, by name. \"effect seen\" means that line "
-                "arrived: the key reached the program, not only the emulator.")),
+         reads=("The program logs every key it takes, by name. \"reaction seen\" means that "
+                "line arrived: the key reached the program, not only the emulator.")),
     Step("paused", "log_wait", {"pattern": PAUSED, "channel": "guest", "seconds": 10},
          targeted("the transport stopped"), volatile=LOG_TIMING),
     Step("rewind", "send_keys", {"keys": ["home"], "expect": REWOUND, "seconds": 10},
@@ -240,8 +240,8 @@ STEPS = [
          title="Leave the program by its own keys",
          ask="Answer the quit dialog: right arrow, then Enter.",
          shown=("summary", "keys"),
-         reads=("\"effect seen\" means the program logged which button the dialog took. So the "
-                "session closes over a program that quit by itself.")),
+         reads=("\"reaction seen\" means the program logged which button the dialog took. So "
+                "the session closes over a program that quit by itself.")),
     Step("close", "close", {}, quit_cleanly),
 ]
 
