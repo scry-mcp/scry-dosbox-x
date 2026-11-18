@@ -96,8 +96,10 @@ source = ["."]
 # The live tier runs against an emulator, never in the unit suite, which imports some of its files
 # for the bookkeeping they share (the runners' end, the bench): measured, those would weigh the
 # floor with sections only a live run executes. A demo's own `demo.py` is the live tier's too;
-# what the demos share, `demos/host.py`, is plain logic and is measured.
-omit = [".venv/*", "tests/live/*", "demos/*/*"]
+# what the demos share, `demos/host.py`, is plain logic and is measured. The reference tour
+# (`docs/reference/tour/tour.py`) is a demo in all but its folder, imported by the unit suite
+# only for the tail that keeps its transcript.
+omit = [".venv/*", "tests/live/*", "demos/*/*", "docs/reference/tour/*"]
 
 [tool.coverage.report]
 # THE FLOOR IS THE VENDOR'S: coverage.py's `fail_under`, judged by pytest-cov at the end of every
