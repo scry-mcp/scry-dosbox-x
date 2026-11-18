@@ -826,6 +826,7 @@ def test_a_stop_reply_carries_its_own_number(tmp_path: Path) -> None:
     _names(tmp_path)
     got = cast(dict[str, Any], server.step(mode="over"))
     assert got["stop_seq"] == dstate.STATE.last_stop["seq"], got
+    assert got["cause"].startswith("the stop `step` made after 1 step, at "), got["cause"]
     again = cast(dict[str, Any], server.step(mode="over"))
     assert again["stop_seq"] == got["stop_seq"] + 1, again
 

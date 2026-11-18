@@ -6,7 +6,7 @@ import time
 from collections.abc import Callable
 from typing import Any, cast
 
-from scry_core import cancel, screen_map, stop_wait
+from scry_core import cancel, prose, screen_map, stop_wait
 from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
 
@@ -265,6 +265,15 @@ def stop_in_protected_mode(session: ds.Session, progress: ds.Progress) -> dict[s
         extra["via"] = "break"
     return running.stop_reply(session, asked_by="stop", interrupted=interrupted,
                               runs_to_protected=runs, **extra)
+
+
+def step_own_stop(mode: str, completed: int) -> str:
+    """The cause of the stop the steps themselves made, or "" when something else may have
+    made it: an `over` runs a call whole, where a watch or an interrupt breakpoint can stop it
+    first, and their stop no address names."""
+    if mode != "into" and arming.untold_stop_possible():
+        return ""
+    return f"the stop `step` made after {prose.counted(completed, 'step')}"
 
 
 def with_watches_disarmed(session: ds.Session, disarm: bool,

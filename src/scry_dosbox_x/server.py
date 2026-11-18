@@ -821,7 +821,8 @@ def step(count: Annotated[int, vocab.bounds(1, stepping.STEP_MAX)] = 1,
     # A step that STOPPED carries the full stop reply; one that ran away (a CALL that never
     # returned) left the machine running, which `session.running` says, and a running machine
     # has nothing to read.
-    return running.stop_or_base(session, not ran_away, out)
+    return running.stop_or_base(session, not ran_away, out,
+                                own=advance.step_own_stop(mode, out["instructions_completed"]))
 
 
 @tool("Run to a place or a mapped screen", summary=one_line.run_to, on_cancel="stop")

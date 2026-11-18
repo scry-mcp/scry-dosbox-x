@@ -280,7 +280,8 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
         closed_early = _close_log(session, places, cut_what, **cut_extra)
     kept = {"path": str(collected), "bytes": collected.stat().st_size, "shape": shape}
     try:
-        reply = running.stop_reply(session, retrace_may_stop=not ran_out)
+        reply = running.stop_reply(session, retrace_may_stop=not ran_out,
+                                   own="the end of the trace's count" if ran_out else "")
     except ds.Invalid as exc:
         raise ds.Invalid("unexpected_answer",
             f"the stop the trace ended at could not be surveyed ({exc}), so its count cannot be "

@@ -338,7 +338,8 @@ def test_sixteen_instructions_ask_seventeen_lines_in_hex_and_come_back_elapsed(
         "instructions": 16, "addresses": 1}, got["trace"]
     assert dest.read_bytes() == (TRACE / "probe-settle-cs-ip-16.trace").read_bytes()
     assert no_log_left(cast(Path, machine.cwd)), "the log stayed in the working directory"
-    assert got["regs"] and "cause" in got and "stop_seq" in got and "e9" in got
+    assert got["regs"] and "stop_seq" in got and "e9" in got
+    assert got["cause"].startswith("the end of the trace's count, at "), got["cause"]
     assert got["session"]["altered"] is False, "advancing is not writing"
     assert got["summary"].startswith("trace 16 cs_ip: ELAPSED, 16 executed at 1 address")
 

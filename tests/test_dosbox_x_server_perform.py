@@ -1390,7 +1390,7 @@ def test_perform_with_summaries_cuts_every_step_but_the_last_and_counts_the_stop
     assert stops["unaccounted"] == 0 and stops["surveyed"] >= 2, stops
     assert stops["surveyed"] == stops["stop_seq_last"] - stops["stop_seq_first"] + 1, stops
     assert list(stops["by_cause"].values()) == [stops["surveyed"]], stops
-    assert next(iter(stops["by_cause"])).startswith("no declared code breakpoint"), stops
+    assert next(iter(stops["by_cause"])).startswith("the stop `step` made after 1 step"), stops
     plain = cast(dict[str, Any], server.perform(steps=[{"op": "registers"}]))
     assert "steps_total" not in plain and "regs" in plain["ran"][0]["reply"], plain
 

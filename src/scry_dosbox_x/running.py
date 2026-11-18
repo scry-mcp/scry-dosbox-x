@@ -184,7 +184,8 @@ def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[s
 def stop_or_base(session: ds.Session, stopped: bool, base: dict[str, Any], *,
                  retrace_may_stop: bool = False,
                  made_by: dict[str, str] | None = None,
-                 asked_by: Literal["stop", "cancel"] | None = None) -> dict[str, Any]:
+                 asked_by: Literal["stop", "cancel"] | None = None,
+                 own: str = "") -> dict[str, Any]:
     """The enriched stop reply when the machine stopped, else the tool's base answer.
     A halt whose position cannot be read keeps the base fields and marks the
     enrichment unavailable."""
@@ -194,7 +195,7 @@ def stop_or_base(session: ds.Session, stopped: bool, base: dict[str, Any], *,
     try:
         placed = start_symbols.place_if_due(session)
         return stop_reply(session, retrace_may_stop=retrace_may_stop, made_by=made_by,
-                          asked_by=asked_by, placed=placed, **base)
+                          asked_by=asked_by, own=own, placed=placed, **base)
     except ds.Invalid as e:
         kept: dict[str, Any] = {"symbols_placed": placed} if placed is not None else {}
         return st.reply(enrichment={"available": False, "why": str(e)}, **base, **kept)
