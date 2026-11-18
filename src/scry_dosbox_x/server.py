@@ -254,18 +254,17 @@ def start(conf: str = "", cwd: str = "",
 
     Refused: a live session, a window that never appears on the asked display
     (`window_not_visible`, the session left live to `window` or `close`), `flags` setting what
-    `display`, `fullscreen` or `size` own, `fullscreen` on `sdl output=surface` (it switches the
-    video mode and leaves the window off screen), `fullscreen` on a display other than 0
-    on macOS (a halted start never reaches full screen there), a bad path or `symbols` table,
+    `display`, `fullscreen` or `size` own, `fullscreen` on `sdl output=surface` or, on macOS, on
+    a display other than 0, a bad path or `symbols` table,
     `session_seconds` out of range, `capture_video` without `program`, an `input_port` other than
     0 outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX}, `log_categories` without `logfile`, `dos_calls`
     on a build with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
     {GUEST_FILES_MAX}, or a session already live (`session_live`).
 
     Reply: `pid`, `stub`, `window` (`display`, `bounds`, `onscreen`, `front`, `fullscreen`, with
-    `shared`), `input_port`, `declarations` (`rearm`), `logfile`, `dos_calls`, `log_categories`,
-    `guest_files` (each when asked for: the log's path as written, the trace's path, the
-    categories set, each file as it was before the boot), `symbols` (`held`, `base_from`,
+    `shared`; {WINDOW_FRONT}), `input_port`, `declarations` (`rearm`), `logfile`, `dos_calls`,
+    `log_categories`, `guest_files` (each when asked for: the log's path as written, the trace's
+    path, the categories set, each file as it was before the boot), `symbols` (`held`, `base_from`,
     `checked`), and with a profile `profile` (`name`, `file`, `supplied`); with `plan`, these
     facts sit under `start` beside the plan's account. `note` when the conf or `flags` select a
     dynamic cpu core, which can pass over code breakpoints: start on

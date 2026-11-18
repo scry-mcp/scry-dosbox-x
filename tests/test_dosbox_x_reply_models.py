@@ -75,3 +75,10 @@ def test_a_tool_that_reads_or_writes_at_a_ref_echoes_it_and_says_so(tool: str) -
     assert ("ref" in reply_schema.own_required(model)) is (tool != "scan"), tool
     doc = next(t for t in asyncio.run(server.mcp.list_tools()) if t.name == tool).description
     assert "ref" in reply_schema.reply_sentence_names(doc or ""), doc
+
+
+def test_start_says_what_front_means_and_that_it_is_not_focus() -> None:
+    """`start` lists `front` in its `window`, and "front" reads as holding the keyboard."""
+    doc = next(t for t in asyncio.run(server.mcp.list_tools()) if t.name == "start").description
+    assert ("`front` says no other application's window covers its centre, not that it has the "
+            "keyboard focus") in " ".join((doc or "").split())
