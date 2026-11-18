@@ -30,12 +30,12 @@ def test_a_map_learned_in_a_session_is_promoted_and_read_back(tmp_path: Path) ->
                                cwd=str(game / "bricks"), session_seconds=300,
                                logfile=str(tmp_path / "bricks-e9.log")))
     try:
-        assert started["kept"].startswith("kept 1 (promote to review)"), started
+        assert started["kept"].startswith("1 saved for `promote`"), started
         _ok(server.resume())
         _ok(server.log_wait(pattern="BRICKS ready", channel="guest", seconds=30))
         _ok(server.stop())
         added = _ok(server.screen_map_write("add", screen="header", match=[[0, 0, 52, 8]]))
-        assert added["kept"].startswith("kept 2 (promote to review)"), added
+        assert added["kept"].startswith("2 saved for `promote`"), added
         review = _ok(server.promote(dry_run=True, root=str(game)))
         entries = [c["entry"] for c in review["candidates"]]
         assert entries == ["maps/bricks", "start/bricks"], review
