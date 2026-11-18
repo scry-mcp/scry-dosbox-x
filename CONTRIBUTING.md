@@ -357,8 +357,8 @@ The song, the log line it waits for and the make target it calls belong to the p
 written for. A measurement of another program names its own.
 
 `tools/mapsweep.py` reads real symbol maps where they live, against a manifest that says what
-each one holds. It fails when the two disagree in either direction: a count that rose against
-an unchanged file means the reader has begun to read something that is not a symbol.
+each one holds. It fails when the two disagree in either direction. A count that rose against an
+unchanged file means the map parser has begun to read something that is not a symbol.
 
 ```sh
 uv run python tools/mapsweep.py --manifest <manifest>.json --root /where/those/maps/live
@@ -369,7 +369,7 @@ uv run python tools/mapsweep.py --manifest <manifest>.json --root /where/those/m
 - It covers the Borland, Open Watcom and `nm` formats on real maps. The GNU `ld` format is left
   out on purpose: the only such map is the fixture this repository builds.
 - A failure means a count moved. It cannot say a count is correct: the first time a project's
-  row is written, a person reads the map once and accepts what the reader says.
+  row is written, a person reads the map once and accepts what the map parser says.
 
 ## Test fixtures
 
@@ -383,7 +383,7 @@ One file per toolchain is built here and committed under `tests/fixtures/`:
 those formats.
 
 The two Borland routines share their first fifteen characters on purpose: the fixture exercises
-the name collision the reader resolves.
+the name collision the map parser resolves.
 
 Each fixture has its generator, the source it was built from and a `build.sh` that makes it
 again. Neither toolchain is in this repository; `build.sh` takes its location from an

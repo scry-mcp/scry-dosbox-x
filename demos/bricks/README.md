@@ -223,7 +223,7 @@ A saved state is the whole machine, not the game's own save. So the paddle reads
 
 <details><summary>The whole demo as one prompt</summary>
 
-1. Start DOSBox-X windowed on `demos/bricks/bricks.conf` from that directory, stopping at the
+1. Start DOSBox-X windowed on `demos/bricks/bricks.conf` from its directory, stopping at the
    program's own `int 3`, with the log in a file.
 2. Let it run to that first stop and tell me where DOS loaded the program.
 3. Load `bricks.sym` with its base at that segment, show me the start of `brick_hit`, put a

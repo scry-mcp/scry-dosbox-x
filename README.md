@@ -182,7 +182,7 @@ uv run --directory /path/to/scry-dosbox-x scry-dosbox-x
 
 It needs only Bricks, a small game this repository builds:
 
-> Start DOSBox-X on `demos/bricks/bricks.conf` from that folder, stopping at the program's own
+> Start DOSBox-X on `demos/bricks/bricks.conf` from its folder, stopping at the program's own
 > `int 3`. Run to it and tell me where DOS loaded the program.
 
 Your client calls `start` and `resume`, which stops at the program's own `int 3` and gives its

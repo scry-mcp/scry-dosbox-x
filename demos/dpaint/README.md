@@ -47,7 +47,7 @@ That last one is no program directory, another build of it, a DOSBox-X without r
 server that did not start.
 
 Deluxe Paint takes the mouse as movement, so it needs a DOSBox-X whose input device carries
-relative motion ([REFERENCE.md](../../REFERENCE.md), *Debugger commands*). On a build without
+relative motion ([`send_mouse`](../../docs/reference/input.md#send_mouse)). On a build without
 it the demo stops at its third step and says so.
 
 ## Try it yourself

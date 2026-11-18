@@ -152,7 +152,7 @@ A long wait reports progress about once a second, as MCP progress notifications.
 | `kill` | The emulator closed. A `close` cancelled half-way still finishes. | `start`, `close` |
 | `none` | The program as the call found it. | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan`, `debug`, `set_register`, `write`, `resume`, `wait`, `step`, `state_write`, `snapshot`, `state_list`, `breakpoint_interrupt`, `regpoint_add`, `symbols_load`, `symbols_find`, `comment_write`, `comment_list`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `screen_map_write`, `screen_map_find`, `series_capture`, `image_compare`, `audio_compare`, `breakpoint_at`, `declaration_list`, `declaration_clear`, `watch_add`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive`, `port`, `pic`, `a20`, `guest_file`, `window`, `promote` |
 
-Two tools of the last row still do something. A cancelled `state_write` ends at the emulator's next answer: a save removes its file, and a load counts as a write. Input sent to a stopped machine runs it frame by frame, and a cancel leaves it stopped with the input sent so far in.
+Three tools of the last row still do something. A cancelled `state_write` ends at the emulator's next answer: a save removes its file, and a load counts as a write. Input sent to a stopped machine runs it frame by frame, and a cancel leaves it stopped with the input sent so far in.
 
 The tools: every one in the [Index](#index).
 
