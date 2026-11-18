@@ -558,7 +558,7 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
   "emulated_after_s": "<volatile>",
   "frame_before": 50,
   "frame_after": 51,
-  "cycles": 137610,
+  "cycles": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -704,7 +704,7 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
   "emulated_after_s": "<volatile>",
   "frame_before": 115,
   "frame_after": 116,
-  "cycles": 166377,
+  "cycles": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -1644,7 +1644,7 @@ Also attached: image/png.
   "emulated_after_s": "<volatile>",
   "frame_before": 1050,
   "frame_after": 1051,
-  "cycles": 166253,
+  "cycles": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -1919,7 +1919,7 @@ Also attached: image/png.
   "emulated_after_s": "<volatile>",
   "frame_before": 1236,
   "frame_after": 1237,
-  "cycles": 166296,
+  "cycles": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -2121,7 +2121,7 @@ Also attached: image/png.
   "emulated_after_s": "<volatile>",
   "frame_before": 1351,
   "frame_after": 1352,
-  "cycles": 166296,
+  "cycles": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
