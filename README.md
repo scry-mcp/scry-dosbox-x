@@ -234,9 +234,9 @@ picture is the screen that run ended on, linked to its guide, where it moves.
 - [`demos/lineup/`](demos/lineup/): *LineUp*, replayed from the list of steps in its `.scry/`
   folder; it needs a copy of the game.
 - [`demos/speedf/`](demos/speedf/): *Speed Fight*, started from a file in its `.scry/` folder;
-  it needs a checkout of the game.
+  it needs a copy of the game.
 - [`demos/rechip/`](demos/rechip/): *ReChip!*, a tracker driven by its keys and read by its own
-  log; it needs a checkout of the program.
+  log; it needs a copy of the program.
 - [`demos/xcom/`](demos/xcom/): *X-COM Apocalypse*, led through its menus by its own DOS calls
   and a screen map, every file it opens listed; it needs a copy of the game.
 

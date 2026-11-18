@@ -39,7 +39,7 @@ does not take your keyboard.
   `PATH`.
 
 Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
-That last one is a checkout without its start profile or its build, a relative path or a server that did
+That last one is a copy without its start profile or its build, a relative path or a server that did
 not start.
 
 The picture is taken on an exact frame. The warning button pulses on the program's own counter,
@@ -48,7 +48,7 @@ the first frame the button goes dark.
 
 ## Try it yourself
 
-[Add the server to your client](../../README.md#install) and open it in your checkout of the program. Each of these is a step of
+[Add the server to your client](../../README.md#install) and open it in your copy of the program. Each of these is a step of
 the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
@@ -255,7 +255,7 @@ Reply, 2 of 10 fields:
 
 <details><summary>The whole demo as one prompt</summary>
 
-1. Start from the start profile `.scry/start/dev.json` of the checkout, with a window, on the
+1. Start from the start profile `.scry/start/dev.json` of the copy, with a window, on the
    normal core, with the symbols `build/RECHIPD.SYM`, and let it run.
 2. Wait on the program's log for `PERF . audio play=1`, press space and show me the program
    logged `key down SPACE`.
@@ -292,4 +292,4 @@ Each group is a page of the reference. Some of the names need a word:
 ## The transcript
 
 [TRANSCRIPT.md](TRANSCRIPT.md) has every call of the run with its reply. The paths of your
-checkout read `<host>` there, because they are your computer's.
+copy read `<host>` there, because they are your computer's.

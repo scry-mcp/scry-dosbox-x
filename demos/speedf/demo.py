@@ -27,7 +27,7 @@ from demos.host import (  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-#: What the game's checkout holds: the program and its symbols, then what its store declares.
+#: What the game's copy holds: the program and its symbols, then what its store declares.
 EXE, MAP = Path("EXES/SPEEDF.EXE"), Path("EXES/SPEEDF.MAP")
 PROFILE = Path(".scry/start/dos.json")
 #: The game's own deriver of a live-session conf; it writes `TMP/dosbox-mcp.conf`.
@@ -125,9 +125,9 @@ DEMO = Demo(
     alt="Speed Fight playing its own demo match on the DOS version",
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_GAME,
-    host_args={"cwd": "the reader's copy of the game, wherever it was cloned",
+    host_args={"cwd": "the reader's copy of the game",
                "display": DISPLAY,
-               "profile": "the reader's copy of the game, wherever it was cloned",
+               "profile": "the reader's copy of the game",
                "captures_dir": "the run's own directory"})
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 """The ReChip! demo on DOSBox-X: the program's own `.scry/` boots its DEV build, and its log says
-what the keys did. `--help` says how to run it. The program is the reader's checkout (`--cwd`),
+what the keys did. `--help` says how to run it. The program is the reader's copy (`--cwd`),
 built; nothing of it is in this repository.
 """
 
@@ -41,8 +41,7 @@ from demos.host import (  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-#: What the checkout holds once `make mcp-conf` ran: the recipe, the DEV build and the conf
-#: the recipe names.
+#: What the built copy holds: the start profile, the DEV build and the conf the profile names.
 PROFILE = Path(".scry/start/dev.json")
 SYMBOLS = Path("build/RECHIPD.SYM")
 BUILT = (Path("build/RECHIPD.EXE"), Path("build/mcp.conf"), SYMBOLS)
@@ -68,12 +67,11 @@ WAIT_S = 120
 #: song opens on a few bare rows, and by then its channels are sounding.
 PLAYING_FRAMES, PLAYING_SKIP, PLAYING_SHOWN = 1050, 840, 210
 VOLATILE_PROGRAM = {**VOLATILE,
-                    "conf": "where the reader's checkout keeps its derived conf",
+                    "conf": "where the reader's copy keeps its derived conf",
                     "state_dir": "a directory in the session's own temporary directory",
                     "window": "the host's display and the window it fits",
-                    "file": "where the reader's checkout keeps its store",
-                    "conf_digest": "`make mcp-conf` writes the checkout's own paths into the "
-                                   "conf"}
+                    "file": "where the reader's copy keeps its store",
+                    "conf_digest": "the conf holds the copy's own paths"}
 #: What a key's confirmation reports that the host decides: the input lands on a running program
 #: when the host delivers it, and the line carries the program's own clock stamp of that moment.
 KEY_TIMING = {**INPUT_TIMING, "line": "the program's own clock stamp on the line"}
@@ -104,7 +102,8 @@ WAIT_PLACE = {**STOP_PLACE, **RUN_SPAN, "waited_s": "wall-clock time the wait to
 
 def checked(run: Run) -> str:
     return precheck(run) or missing_under(
-        run, (PROFILE, *BUILT), "the reader's checkout of ReChip!, after `make mcp-conf`")
+        run, (PROFILE, *BUILT), "a built copy of ReChip!: its .scry/ holds the start profile, "
+        "and its build/ the program, its symbols and its conf")
 
 
 def boot(run: Run) -> dict[str, Any]:
@@ -158,11 +157,11 @@ def targeted(what: str) -> Any:
 STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary", "cwd", "display"}),
          volatile={"summary": "it carries how long the debugger took to answer",
-                   "conf": "where the reader's checkout keeps its derived conf",
-                   "name": "where the reader's checkout keeps its profile",
-                   "held": "where the reader's checkout keeps its symbol table",
-                   "against": "where the reader's checkout keeps its build",
-                   "logfile": "where the reader's checkout keeps the program's log"}),
+                   "conf": "where the reader's copy keeps its derived conf",
+                   "name": "where the reader's copy keeps its profile",
+                   "held": "where the reader's copy keeps its symbol table",
+                   "against": "where the reader's copy keeps its build",
+                   "logfile": "where the reader's copy keeps the program's log"}),
     Step("run", "resume", {"seconds": 0},
          released("DOS boots and the autoexec hands over to the program")),
     Step("sounding", "log_wait", {"pattern": SOUNDING, "channel": "guest", "seconds": WAIT_S},
@@ -191,7 +190,7 @@ STEPS = [
     Step("hold", "stop", {"until": "protected"},
          lambda reply, run: "the machine stopped in the program, its symbols placed",
          volatile={**STOP_PLACE,
-                   "path": "where the reader's checkout keeps its symbol table",
+                   "path": "where the reader's copy keeps its symbol table",
                    "runs_to_protected": "how many short runs reached the program, which "
                                         "follows where the host stopped it"},
          optional=STOP_NOTE),
@@ -225,7 +224,7 @@ STEPS = [
     Step("hold playing", "stop", {"until": "protected"},
          lambda reply, run: "the machine stopped in the program while the song plays",
          volatile={**STOP_PLACE,
-                   "path": "where the reader's checkout keeps its symbol table",
+                   "path": "where the reader's copy keeps its symbol table",
                    "runs_to_protected": "how many short runs reached the program, which "
                                         "follows where the host stopped it"},
          optional=STOP_NOTE),
@@ -255,11 +254,11 @@ DEMO = Demo(
     alt="ReChip! playing a song, its pattern scrolling under the playhead",
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_PROGRAM,
-    host_args={"cwd": "the reader's checkout of the program, wherever it was cloned",
+    host_args={"cwd": "the reader's copy of the program",
                "display": DISPLAY,
-               "profile": "the reader's checkout of the program, wherever it was cloned",
+               "profile": "the reader's copy of the program",
                "captures_dir": "the run's own directory",
-               "symbols": "the reader's checkout of the program, wherever it was cloned",
+               "symbols": "the reader's copy of the program",
                "since_mark": "a byte position in the log, where it ended before the wait: how "
                              "much the program wrote is the host's pace",
                "milliseconds": "how far the stop was from the pulse's next lit half, which "

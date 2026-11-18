@@ -39,8 +39,8 @@ DEMOS = [
         not SPEEDF, reason="set SPEEDF_MSDOS_DIR to a copy of Speed Fight's PC game: the "
                            "repository carries none of the game")),
     pytest.param("rechip", ["--cwd", RECHIP], marks=pytest.mark.skipif(
-        not RECHIP, reason="set RECHIP_DIR to a built checkout of ReChip! (after `make "
-                           "mcp-conf`): the repository carries none of the program"))]
+        not RECHIP, reason="set RECHIP_DIR to a built copy of ReChip!: the repository "
+                           "carries none of the program"))]
 
 #: The demos already run in this session: both tests below share one run per demo.
 _RUNS: dict[str, subprocess.CompletedProcess[str]] = {}

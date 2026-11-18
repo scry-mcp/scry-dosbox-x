@@ -31,7 +31,7 @@ from demos.host import (  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-#: What the game's checkout holds: the program and its symbols, then what its store declares.
+#: What the game's copy holds: the program and its symbols, then what its store declares.
 EXE, MAP = Path("EXES/LINEUP.EXE"), Path("EXES/LINEUP.MAP")
 PROFILE = Path(".scry/start/dos.json")
 SCREEN_MAP = Path(".scry/maps/lineup-screen-map.json")
@@ -91,7 +91,7 @@ def boot(run: Run) -> dict[str, Any]:
 
 
 def at(run: Run) -> Path:
-    """The game's screen map, in the same checkout the profile boots from."""
+    """The game's screen map, in the same copy the profile boots from."""
     return game(run) / SCREEN_MAP
 
 
@@ -149,8 +149,8 @@ DEMO = Demo(
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_GAME,
     host_args={"b": "the platform's own reference recording", "display": DISPLAY,
-               "cwd": "the reader's copy of the game, wherever it was cloned",
-               "profile": "the reader's copy of the game, wherever it was cloned",
+               "cwd": "the reader's copy of the game",
+               "profile": "the reader's copy of the game",
                "path": "a file of the reader's copy of the game",
                "captures_dir": "the run's own directory"})
 

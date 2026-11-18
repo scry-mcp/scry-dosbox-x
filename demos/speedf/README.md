@@ -38,7 +38,7 @@ does not take your keyboard.
   `PATH`.
 
 Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
-That last one is a checkout without its `.scry/` folder or its program, a relative path or a server that
+That last one is a copy without its `.scry/` folder or its program, a relative path or a server that
 did not start.
 
 The run passes two settings of its own to `start`: the normal core and a fixed speed. The
@@ -48,7 +48,7 @@ plays its match at pace on.
 
 ## Try it yourself
 
-[Add the server to your client](../../README.md#install) and open it in your checkout of the game. Each of these is a step of
+[Add the server to your client](../../README.md#install) and open it in your copy of the game. Each of these is a step of
 the demo, in the order the demo makes them.
 
 <!-- demo-transcript:begin -->
@@ -247,7 +247,7 @@ Reply, 2 of 7 fields:
 
 <details><summary>The whole demo as one prompt</summary>
 
-1. Start DOSBox-X from the start profile `.scry/start/dos.json` of the checkout, with a window,
+1. Start DOSBox-X from the start profile `.scry/start/dos.json` of the copy, with a window,
    on the normal core and a fixed speed.
 2. Put a breakpoint on the game's first VESA call, `INT 10h AH=4Fh`, let it run there and clear
    it.
@@ -276,4 +276,4 @@ Each group is a page of the reference. Some of the names need a word:
 ## The transcript
 
 [TRANSCRIPT.md](TRANSCRIPT.md) has every call of the run with its reply. The paths of your
-checkout read `<host>` there, because they are your computer's.
+copy read `<host>` there, because they are your computer's.

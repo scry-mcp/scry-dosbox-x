@@ -219,7 +219,7 @@ Each demo has a case that runs it, and skips without the program it needs:
 | LineUp | `LINEUP_MSDOS_DIR` | a copy of the game's DOS version with its symbol map |
 | Monkey Island | `MONKEY_ISLAND_CD` | the directory holding `monkey.cue` and its BINs |
 | Speed Fight | `SPEEDF_MSDOS_DIR` | a copy of the game with `EXES/SPEEDF.EXE` and `EXES/SPEEDF.MAP` |
-| ReChip! | `RECHIP_DIR` | a checkout of it after `make mcp-conf` |
+| ReChip! | `RECHIP_DIR` | a built copy of it, with its `build/mcp.conf` |
 
 Two habits keep a demo or a case the same on every computer:
 
