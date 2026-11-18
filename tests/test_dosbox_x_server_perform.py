@@ -379,7 +379,8 @@ def test_send_keys_expectation_that_cannot_be_checked_is_refused_before_the_post
     assert nonstr["status"] == "INVALID" and "expect is a string" in nonstr["message"], nonstr
     assert fake.commands_sent == [], "a refused verification must not have posted anything"
     empty = cast(dict[str, Any], server.send_keys(keys=["a"], expect=""))
-    assert empty["status"] == "ok" and "unverified" in empty["summary"], "empty is not given"
+    assert empty["status"] == "ok" and "reaction not checked" in empty["summary"], \
+        "empty is not given"
 
 
 def test_send_mouse_takes_the_same_expectation(tmp_path: Path) -> None:
@@ -408,7 +409,7 @@ def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Pa
     assert out["steps_completed"] == 1 and "step 1 ('send_keys')" in out["note"], out
     assert out["ran"][0]["reply"]["posted"] == 1, out["ran"][0]
     # the missed step's own words are in the list's note, not only in `ran`
-    assert "its own reply: send_keys (guest): effect not seen (TIMEOUT)" in out["note"], out
+    assert "its own reply: send_keys (guest): no reaction seen (TIMEOUT)" in out["note"], out
     assert "the guest wrote no line in the 1 s waited" in out["note"], out
     assert "status" not in [r["op"] for r in out["ran"]], "the steps after it were not sent"
 
@@ -1514,7 +1515,7 @@ def test_drive_says_its_check_was_not_made_when_the_act_ran_out(tmp_path: Path) 
         act=[{"op": "send_keys", "keys": ["a"], "expect": "never", "seconds": 1}],
         expect="key_cue_a"))
     assert got["verify"]["available"] is False, got
-    assert got["summary"] == "drive: effect not checked", got["summary"]
+    assert got["summary"] == "drive: reaction could not be checked", got["summary"]
 
 
 def test_drive_says_its_act_ended_after_its_last_step_when_the_emulator_went(

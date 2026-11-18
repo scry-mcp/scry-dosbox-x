@@ -51,7 +51,7 @@ def test_a_count_the_reply_did_not_carry_is_shown_as_it_came() -> None:
 
 def test_a_filter_with_no_value_names_no_value_in_its_line() -> None:
     line = one_line.filter_scan({"operator": "="}, {"hits_total": 3, "closed": False})
-    assert line == "=, 3 survivors", line
+    assert line == "=, 3 left", line
 
 
 def test_a_cut_scan_filter_says_how_much_of_the_list_it_holds() -> None:

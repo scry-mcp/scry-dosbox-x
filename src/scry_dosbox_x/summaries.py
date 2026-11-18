@@ -56,14 +56,6 @@ def _block(reply: dict[str, Any], key: str) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
-def _effect(verify: dict[str, Any], none: str) -> str:
-    """What an input's check found: seen, not seen, or `none` when no check ran."""
-    return ("effect not checked" if verify.get("available") is False else
-            "effect seen" if verify.get("seen") else
-            f"effect not seen ({verify['verdict']})" if "verdict" in verify else
-            "effect not seen" if verify.get("checked") else none)
-
-
 # ------------------------------------------------------------------------------ session
 
 def build_check(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -177,13 +169,13 @@ def start_scan(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def filter_scan(args: dict[str, Any], reply: dict[str, Any]) -> str:
     value = args.get("value")
     what = (args.get("operator") or "=") + ("" if value is None else f" {value}")
-    return f"{what}, {_said(reply.get('hits_total'), 'survivor')}" + (
+    return f"{what}, {prose.left(reply.get('hits_total', 0))}" + (
         ", scan closed" if reply.get("closed") else "") + (
         _listed(reply) if reply.get("truncated") else "")
 
 
 def _listed(reply: dict[str, Any]) -> str:
-    """How much of a cut survivor list a filter's reply holds."""
+    """How much of a cut list of candidates a filter's reply holds."""
     shown = len(reply.get("hits") or [])
     return f", the first {shown} listed" if shown else ", none listed (`note` says why)"
 
@@ -455,15 +447,15 @@ def watch_add(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def send_keys(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return (f"send_keys ({reply.get('route')}): "
-            f"{_effect(_block(reply, 'verify'), 'posted, unverified')}{_parked(reply)}")
+            f"{prose.reaction(_block(reply, 'verify'))}{_parked(reply)}")
 
 
 def _parked(reply: dict[str, Any]) -> str:
-    """A post to a stopped machine: the retraces it ran and the frame it left it in."""
+    """An input sent to a stopped machine: the frames it ran and the one it left it in."""
     if "polls" not in reply:
         return ""
     frame = reply.get("frame")
-    return f", {_said(reply['polls'], 'retrace')}" + (
+    return f", {_said(reply['polls'], 'frame')}" + (
         f" to frame {frame}" if isinstance(frame, int) else "")
 
 
@@ -489,7 +481,7 @@ def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:
         arrived += f", driver range widened to {widened['x']} x {widened['y']}"
     whose = "program's pointer" if steered else "pointer"
     return (f"send_mouse: {whose} at {at}{arrived}{pressed}; "
-            f"{_effect(_block(reply, 'verify'), 'posted, unverified')}{_parked(reply)}")
+            f"{prose.reaction(_block(reply, 'verify'))}{_parked(reply)}")
 
 
 def captures(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -559,7 +551,7 @@ def screen_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
     point = reply.get("point")
     at = f"{point[0]},{point[1]}" if isinstance(point, list) else "?"
     after = stop_wait.summary_after(reply) or \
-        f"after {prose.counted(int(reply.get('polls') or 0), 'retrace')}"
+        f"after {prose.counted(int(reply.get('polls') or 0), 'frame')}"
     if reply.get("verdict") == contract.TIMEOUT:
         return f"screen_wait {said}: TIMEOUT {after}"
     if reply.get("already"):
@@ -596,7 +588,7 @@ def perform(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def drive(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"drive: {_effect(_block(reply, 'verify'), 'no expectation')}"
+    return f"drive: {prose.reaction(_block(reply, 'verify'))}"
 
 
 def port_read(args: dict[str, Any], reply: dict[str, Any]) -> str:

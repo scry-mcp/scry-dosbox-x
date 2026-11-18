@@ -103,7 +103,7 @@ def test_the_guest_is_noted_before_the_launch_so_a_plan_s_add_knows_it() -> None
         assert STATE.guest == "lineup"
         STATE.maps.session["play"] = screen()
         kept = mpromote.after_map("add", {"screen": "play"})["kept"]
-    assert kept.startswith("kept 1 (promote to review)")
+    assert kept.startswith("1 saved for `promote`")
     assert STATE.drafts.entries() == ["maps/lineup"]
 
 
@@ -134,7 +134,7 @@ def test_a_map_add_is_named_by_the_entry_this_session_read() -> None:
     STATE.maps.session_application = "lineup"
     STATE.maps.session["play"] = screen()
     reply = mpromote.after_map("add", {"screen": "play"})
-    assert reply["kept"].startswith("kept 1 (promote to review)")
+    assert reply["kept"].startswith("1 saved for `promote`")
     assert STATE.drafts.entries() == ["maps/lineup"]
     assert STATE.drafts.held("maps", "lineup")[0].document["application"] == "lineup"
 
@@ -143,7 +143,7 @@ def test_a_map_add_after_a_start_is_named_by_the_guest() -> None:
     STATE.guest = "probe"
     STATE.maps.session["play"] = screen()
     kept = mpromote.after_map("add", {"screen": "play"})["kept"]
-    assert kept.startswith("kept 1 (promote to review)")
+    assert kept.startswith("1 saved for `promote`")
     assert STATE.drafts.entries() == ["maps/probe"]
 
 
@@ -196,7 +196,7 @@ def exported(path: Path) -> dict[str, Any]:
 def test_an_export_keeps_its_document_named_by_the_file_it_wrote(tmp_path: Path) -> None:
     path = tmp_path / "session.json"
     path.write_text(json.dumps(perform_document()))
-    assert exported(path)["kept"].startswith("kept 1 (promote to review)")
+    assert exported(path)["kept"].startswith("1 saved for `promote`")
     assert STATE.drafts.entries() == ["perform/session"]
 
 
@@ -376,7 +376,7 @@ def test_a_working_directory_that_is_gone_does_not_cost_the_reply(
     (tmp_path / ".scry").mkdir()
     working_directory_gone(monkeypatch)
     kept_probe(tmp_path)
-    assert core_promote.kept_line(STATE.drafts) == "kept 1 (promote to review)"
+    assert core_promote.kept_line(STATE.drafts) == "1 saved for `promote`"
 
 
 def test_a_promote_with_a_root_does_not_need_the_working_directory(
@@ -421,7 +421,7 @@ def test_a_kept_line_says_how_to_set_up_a_store_only_when_none_is_there(
     kept_probe(tmp_path)
     assert f"no .scry/ in {tmp_path}" in core_promote.kept_line(STATE.drafts)
     (tmp_path / ".scry").mkdir()
-    assert core_promote.kept_line(STATE.drafts) == "kept 1 (promote to review)"
+    assert core_promote.kept_line(STATE.drafts) == "1 saved for `promote`"
 
 
 def test_a_store_in_the_server_s_own_directory_does_not_silence_the_hint(

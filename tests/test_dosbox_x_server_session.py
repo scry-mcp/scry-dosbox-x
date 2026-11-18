@@ -1317,7 +1317,7 @@ def test_scan_filter_through_the_tool_reports_a_finished_scan_and_says_so() -> N
     got = server.scan("filter", operator="!", value=0)
     assert got["status"] == "ok", got
     assert got["hits_total"] == 0 and got["closed"] is True and got["hits"] == []
-    assert got["summary"] == "scan filter: ! 0, 0 survivors, scan closed"
+    assert got["summary"] == "scan filter: ! 0, 0 left, scan closed"
 
 
 def test_scan_clear_through_the_tool_reports_both_outcomes() -> None:
