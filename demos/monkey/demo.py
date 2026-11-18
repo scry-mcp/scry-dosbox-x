@@ -576,8 +576,7 @@ DEMO = Demo(
                                           "says a line the game never had.", frames=180)),
     alt="Monkey Island's lookout answering as written, then with a line written into memory",
     lead=Lead(front=ROOT / "README.md", step="line written",
-              ask='Make the lookout say a line the game never had: "Nothing, if you\'re a Scry '
-                  'debugger." Write it over his script.',
+              ask='Make the lookout say "Nothing, if you\'re a Scry debugger."',
               caption="The Secret of Monkey Island under this server: the lookout answers as "
                       "written, then with a line written over his script in memory.",
               answer=("bytes_written", "verified")),

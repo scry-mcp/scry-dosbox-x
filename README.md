@@ -17,7 +17,7 @@
 <p align="center"><em>The Secret of Monkey Island under this server: the lookout answers as written, then with a line written over his script in memory.</em></p>
 
 <table align="center">
-<tr><th align="left">You ask</th><td>Make the lookout say a line the game never had: "Nothing, if you're a Scry debugger." Write it over his script.</td></tr>
+<tr><th align="left">You ask</th><td>Make the lookout say "Nothing, if you're a Scry debugger."</td></tr>
 <tr><th align="left">Your client calls</th><td><code>write(ref="82DD:000C", data_hex="1c6e…6c61")</code></td></tr>
 <tr><th align="left">SCRY answers</th><td><code>{"bytes_written": 128, "verified": true}</code></td></tr>
 </table>
