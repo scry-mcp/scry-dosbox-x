@@ -94,7 +94,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "screen_wait screen 'paint': found after 7 retraces",
+  "summary": "screen_wait screen 'paint': found after 7 frames",
   "status": "ok",
   "verdict": "TARGET",
   "predicate": "screen",
@@ -362,7 +362,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "send_mouse: pointer at 300,179, program's own pointer not read; posted, unverified, 21 retraces to frame 28",
+  "summary": "send_mouse: pointer at 300,179, program's own pointer not read; sent, reaction not checked, 21 frames to frame 28",
   "status": "ok",
   "x": 300,
   "y": 179,
@@ -444,7 +444,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "scan filter: = 9, 71 survivors, the first 8 listed",
+  "summary": "scan filter: = 9, 71 left, the first 8 listed",
   "status": "ok",
   "operator": "=",
   "value": "0x09",
@@ -481,7 +481,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "send_mouse: pointer at 317,175, program's own pointer not read; posted, unverified, 25 retraces to frame 53",
+  "summary": "send_mouse: pointer at 317,175, program's own pointer not read; sent, reaction not checked, 25 frames to frame 53",
   "status": "ok",
   "x": 317,
   "y": 175,
@@ -533,7 +533,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "scan filter: = 55, 7 survivors",
+  "summary": "scan filter: = 55, 7 left",
   "status": "ok",
   "operator": "=",
   "value": "0x37",
@@ -631,7 +631,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 306,77, program's own pointer not read; posted, unverified, 25 retraces to frame 78",
+        "summary": "send_mouse: pointer at 306,77, program's own pointer not read; sent, reaction not checked, 25 frames to frame 78",
         "status": "ok",
         "stop_seq": 73,
         "cause": "<volatile>"
@@ -641,7 +641,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 317,169, program's own pointer not read; posted, unverified, 25 retraces to frame 103",
+        "summary": "send_mouse: pointer at 317,169, program's own pointer not read; sent, reaction not checked, 25 frames to frame 103",
         "status": "ok",
         "stop_seq": 98,
         "cause": "<volatile>"
@@ -651,7 +651,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 294,112, program's own pointer not read; posted, unverified, 30 retraces to frame 133",
+        "summary": "send_mouse: pointer at 294,112, program's own pointer not read; sent, reaction not checked, 30 frames to frame 133",
         "status": "ok",
         "x": 2,
         "y": 14,
@@ -748,7 +748,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 317,77, program's own pointer not read; posted, unverified, 25 retraces to frame 158",
+        "summary": "send_mouse: pointer at 317,77, program's own pointer not read; sent, reaction not checked, 25 frames to frame 158",
         "status": "ok",
         "stop_seq": 153,
         "cause": "<volatile>"
@@ -758,7 +758,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,189, program's own pointer not read; posted, unverified, 25 retraces to frame 183",
+        "summary": "send_mouse: pointer at 300,189, program's own pointer not read; sent, reaction not checked, 25 frames to frame 183",
         "status": "ok",
         "stop_seq": 178,
         "cause": "<volatile>"
@@ -768,7 +768,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 238,112, program's own pointer not read; posted, unverified, 30 retraces to frame 213",
+        "summary": "send_mouse: pointer at 238,112, program's own pointer not read; sent, reaction not checked, 30 frames to frame 213",
         "status": "ok",
         "x": 210,
         "y": 112,
@@ -857,7 +857,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 306,77, program's own pointer not read; posted, unverified, 25 retraces to frame 238",
+        "summary": "send_mouse: pointer at 306,77, program's own pointer not read; sent, reaction not checked, 25 frames to frame 238",
         "status": "ok",
         "stop_seq": 233,
         "cause": "<volatile>"
@@ -867,7 +867,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,163, program's own pointer not read; posted, unverified, 25 retraces to frame 263",
+        "summary": "send_mouse: pointer at 300,163, program's own pointer not read; sent, reaction not checked, 25 frames to frame 263",
         "status": "ok",
         "stop_seq": 258,
         "cause": "<volatile>"
@@ -877,7 +877,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 294,198, program's own pointer not read; posted, unverified, 30 retraces to frame 293",
+        "summary": "send_mouse: pointer at 294,198, program's own pointer not read; sent, reaction not checked, 30 frames to frame 293",
         "status": "ok",
         "x": 2,
         "y": 113,
@@ -973,7 +973,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,173, program's own pointer not read; posted, unverified, 25 retraces to frame 318",
+        "summary": "send_mouse: pointer at 300,173, program's own pointer not read; sent, reaction not checked, 25 frames to frame 318",
         "status": "ok",
         "stop_seq": 313,
         "cause": "<volatile>"
@@ -983,7 +983,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 112,158, program's own pointer not read; posted, unverified, 30 retraces to frame 348",
+        "summary": "send_mouse: pointer at 112,158, program's own pointer not read; sent, reaction not checked, 30 frames to frame 348",
         "status": "ok",
         "x": 60,
         "y": 150,
@@ -1090,7 +1090,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 302,51, program's own pointer not read; posted, unverified, 25 retraces to frame 373",
+        "summary": "send_mouse: pointer at 302,51, program's own pointer not read; sent, reaction not checked, 25 frames to frame 373",
         "status": "ok",
         "stop_seq": 368,
         "cause": "<volatile>"
@@ -1100,7 +1100,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 300,191, program's own pointer not read; posted, unverified, 25 retraces to frame 398",
+        "summary": "send_mouse: pointer at 300,191, program's own pointer not read; sent, reaction not checked, 25 frames to frame 398",
         "status": "ok",
         "stop_seq": 393,
         "cause": "<volatile>"
@@ -1110,7 +1110,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 86,118, program's own pointer not read; posted, unverified, 30 retraces to frame 428",
+        "summary": "send_mouse: pointer at 86,118, program's own pointer not read; sent, reaction not checked, 30 frames to frame 428",
         "status": "ok",
         "stop_seq": 423,
         "cause": "<volatile>"
@@ -1120,7 +1120,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 108,146, program's own pointer not read; posted, unverified, 30 retraces to frame 458",
+        "summary": "send_mouse: pointer at 108,146, program's own pointer not read; sent, reaction not checked, 30 frames to frame 458",
         "status": "ok",
         "stop_seq": 453,
         "cause": "<volatile>"
@@ -1130,7 +1130,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 86,146, program's own pointer not read; posted, unverified, 30 retraces to frame 488",
+        "summary": "send_mouse: pointer at 86,146, program's own pointer not read; sent, reaction not checked, 30 frames to frame 488",
         "status": "ok",
         "x": 108,
         "y": 146,
@@ -1220,7 +1220,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 314,98, program's own pointer not read; posted, unverified, 25 retraces to frame 513",
+        "summary": "send_mouse: pointer at 314,98, program's own pointer not read; sent, reaction not checked, 25 frames to frame 513",
         "status": "ok",
         "stop_seq": 508,
         "cause": "<volatile>"
@@ -1230,7 +1230,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 20,180, program's own pointer not read; posted, unverified, 25 retraces to frame 538",
+        "summary": "send_mouse: pointer at 20,180, program's own pointer not read; sent, reaction not checked, 25 frames to frame 538",
         "status": "ok",
         "stop_seq": 533,
         "cause": "<volatile>"
@@ -1240,7 +1240,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 2,
       "op": "send_keys",
       "reply": {
-        "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 588",
+        "summary": "send_keys (guest): sent, reaction not checked, 50 frames to frame 588",
         "status": "ok",
         "stop_seq": 583,
         "cause": "<volatile>"
@@ -1250,7 +1250,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 302,51, program's own pointer not read; posted, unverified, 25 retraces to frame 613",
+        "summary": "send_mouse: pointer at 302,51, program's own pointer not read; sent, reaction not checked, 25 frames to frame 613",
         "status": "ok",
         "x": 302,
         "y": 51,

@@ -72,7 +72,7 @@ Reply, 3 of 26 fields:
 
 ```json
 {
-  "summary": "send_mouse: pointer at 300,179, program's own pointer not re ... (107 characters)",
+  "summary": "send_mouse: pointer at 300,179, program's own pointer not re ... (113 characters)",
   "target": "blue",
   "driver_arrived": true
 }
@@ -84,7 +84,7 @@ The screen map says where `blue` sits, so the call holds no coordinates. `driver
 
 ```json
 {
-  "summary": "send_mouse: pointer at 300,179, program's own pointer not read; posted, unverified, 21 retraces to frame 28",
+  "summary": "send_mouse: pointer at 300,179, program's own pointer not read; sent, reaction not checked, 21 frames to frame 28",
   "status": "ok",
   "x": 300,
   "y": 179,
@@ -139,7 +139,7 @@ Reply, 2 of 10 fields:
 
 ```json
 {
-  "summary": "scan filter: = 55, 7 survivors",
+  "summary": "scan filter: = 55, 7 left",
   "hits_total": 7
 }
 ```
@@ -150,7 +150,7 @@ Reply, 2 of 10 fields:
 
 ```json
 {
-  "summary": "scan filter: = 55, 7 survivors",
+  "summary": "scan filter: = 55, 7 left",
   "status": "ok",
   "operator": "=",
   "value": "0x37",

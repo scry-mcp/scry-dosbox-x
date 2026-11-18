@@ -72,7 +72,7 @@ Reply, 2 of 28 fields:
 ```json
 {
   "status": "ok",
-  "kept": "kept 1 (promote to review)"
+  "kept": "1 saved for `promote`"
 }
 ```
 
@@ -116,7 +116,7 @@ A start profile is a saved set of `start` arguments: the call adds only what is 
       "why": "the table carries no symbol kinds (a link map lists none), so its code symbols cannot be told from the rest"
     }
   },
-  "kept": "kept 1 (promote to review)",
+  "kept": "1 saved for `promote`",
   "profile": {
     "name": "<volatile>",
     "file": "<volatile>",

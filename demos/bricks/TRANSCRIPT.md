@@ -46,7 +46,7 @@ Every call of the run with its reply, in order: 34 calls. `<volatile>` stands fo
   "declarations": {
     "rearm": {"rearmed": [], "stale": [], "unresolved": [], "ambiguous": [], "unarmable": []}
   },
-  "kept": "kept 1 (promote to review)",
+  "kept": "1 saved for `promote`",
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -678,14 +678,14 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "drive: no expectation",
+  "summary": "drive: sent, reaction not checked",
   "status": "ok",
   "act": {
     "ran": [
       {
         "op": "send_keys",
         "reply": {
-          "summary": "send_keys (guest): effect seen",
+          "summary": "send_keys (guest): reaction seen",
           "status": "ok",
           "keys": ["right"],
           "modifiers": [],
@@ -710,7 +710,7 @@ Also attached: image/png.
       {
         "op": "send_keys",
         "reply": {
-          "summary": "send_keys (guest): effect seen",
+          "summary": "send_keys (guest): reaction seen",
           "status": "ok",
           "keys": ["right"],
           "modifiers": [],
@@ -735,7 +735,7 @@ Also attached: image/png.
       {
         "op": "send_keys",
         "reply": {
-          "summary": "send_keys (guest): effect seen",
+          "summary": "send_keys (guest): reaction seen",
           "status": "ok",
           "keys": ["right"],
           "modifiers": [],
@@ -873,7 +873,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "status": "ok",
   "keys": ["m"],
   "modifiers": [],
@@ -913,7 +913,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_mouse: pointer at 240,100, program's own pointer not read; no button pressed; effect seen",
+  "summary": "send_mouse: pointer at 240,100, program's own pointer not read; no button pressed; reaction seen",
   "status": "ok",
   "x": 240,
   "y": 100,
@@ -958,7 +958,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "status": "ok",
   "keys": ["m"],
   "modifiers": [],
@@ -1101,7 +1101,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "status": "ok",
   "keys": ["left"],
   "modifiers": [],
@@ -1244,7 +1244,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "status": "ok",
   "keys": ["space"],
   "modifiers": [],

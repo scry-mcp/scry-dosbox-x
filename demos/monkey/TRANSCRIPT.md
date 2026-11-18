@@ -93,7 +93,7 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "screen_wait screen 'language': found after 637 retraces",
+  "summary": "screen_wait screen 'language': found after 637 frames",
   "status": "ok",
   "verdict": "TARGET",
   "predicate": "screen",

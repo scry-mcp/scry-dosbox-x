@@ -52,7 +52,7 @@ Every call of the run with its reply, in order: 10 calls. `<volatile>` stands fo
       "why": "the table carries no symbol kinds (a link map lists none), so its code symbols cannot be told from the rest"
     }
   },
-  "kept": "kept 1 (promote to review)",
+  "kept": "1 saved for `promote`",
   "profile": {
     "name": "<volatile>",
     "file": "<volatile>",

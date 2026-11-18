@@ -114,18 +114,18 @@ Reply, 2 of 10 fields:
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "keys": ["space"]
 }
 ```
 
-The program logs every key it takes, by name. "effect seen" means that line arrived: the key reached the program, not only the emulator.
+The program logs every key it takes, by name. "reaction seen" means that line arrived: the key reached the program, not only the emulator.
 
 <details><summary>The whole reply</summary>
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "status": "ok",
   "keys": ["space"],
   "modifiers": [],
@@ -217,18 +217,18 @@ Reply, 2 of 10 fields:
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "keys": ["right", "enter"]
 }
 ```
 
-"effect seen" means the program logged which button the dialog took. So the session closes over a program that quit by itself.
+"reaction seen" means the program logged which button the dialog took. So the session closes over a program that quit by itself.
 
 <details><summary>The whole reply</summary>
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "status": "ok",
   "keys": ["right", "enter"],
   "modifiers": [],

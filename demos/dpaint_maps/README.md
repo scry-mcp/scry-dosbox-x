@@ -91,7 +91,7 @@ Reply, 2 of 12 fields:
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; posted, unverified, 23 retraces to frame 74",
+        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; sent, reaction not checked, 23 frames to frame 74",
         "status": "ok",
         "stop_seq": 63,
         "cause": "<volatile>"
@@ -106,7 +106,7 @@ Reply, 2 of 12 fields:
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 7,39, program's own pointer not read; posted, unverified, 22 retraces to frame 94",
+        "summary": "send_mouse: pointer at 7,39, program's own pointer not read; sent, reaction not checked, 22 frames to frame 94",
         "status": "ok",
         "stop_seq": 85,
         "cause": "<volatile>"
@@ -126,7 +126,7 @@ Reply, 2 of 12 fields:
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 7,39; posted, unverified, 76 retraces to frame 115",
+        "summary": "send_mouse: pointer at 7,39; sent, reaction not checked, 76 frames to frame 115",
         "status": "ok",
         "stop_seq": 162,
         "cause": "<volatile>"
@@ -154,7 +154,7 @@ Reply, 2 of 12 fields:
     "surveyed": 4,
     "by_cause": {
       "the retrace the input's post ran to,": 1,
-      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 3
+      "no declared code breakpoint, and the debugger does not say which row stopped the machine, so what made this stop cannot be told": 3
     },
     "unaccounted": 118
   },
@@ -255,7 +255,7 @@ After each move the screen map is asked which screen is showing, because the sam
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; posted, unverified, 24 retraces to frame 1075",
+        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; sent, reaction not checked, 24 frames to frame 1075",
         "status": "ok",
         "stop_seq": 1121,
         "cause": "<volatile>"
@@ -265,7 +265,7 @@ After each move the screen map is asked which screen is showing, because the sam
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1090",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1090",
         "status": "ok",
         "stop_seq": 1136,
         "cause": "<volatile>"
@@ -285,7 +285,7 @@ After each move the screen map is asked which screen is showing, because the sam
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; posted, unverified, 30 retraces to frame 1120",
+        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; sent, reaction not checked, 30 frames to frame 1120",
         "status": "ok",
         "stop_seq": 1166,
         "cause": "<volatile>"
@@ -295,7 +295,7 @@ After each move the screen map is asked which screen is showing, because the sam
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1135",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1135",
         "status": "ok",
         "stop_seq": 1181,
         "cause": "<volatile>"
@@ -315,7 +315,7 @@ After each move the screen map is asked which screen is showing, because the sam
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1155",
+        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1155",
         "status": "ok",
         "stop_seq": 1201,
         "cause": "<volatile>"
@@ -335,7 +335,7 @@ After each move the screen map is asked which screen is showing, because the sam
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; posted, unverified, 20 retraces to frame 1175",
+        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1175",
         "status": "ok",
         "stop_seq": 1221,
         "cause": "<volatile>"
@@ -345,7 +345,7 @@ After each move the screen map is asked which screen is showing, because the sam
       "step": 12,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1190",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1190",
         "status": "ok",
         "stop_seq": 1236,
         "cause": "<volatile>"
@@ -355,7 +355,7 @@ After each move the screen map is asked which screen is showing, because the sam
       "step": 13,
       "op": "screen_wait",
       "reply": {
-        "summary": "screen_wait screen 'paint: custom brush': found after 10 retraces",
+        "summary": "screen_wait screen 'paint: custom brush': found after 10 frames",
         "status": "ok",
         "stop_seq": 1237,
         "cause": "<volatile>"
@@ -370,7 +370,7 @@ After each move the screen map is asked which screen is showing, because the sam
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; posted, unverified, 21 retraces to frame 1221",
+        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; sent, reaction not checked, 21 frames to frame 1221",
         "status": "ok",
         "stop_seq": 1258,
         "cause": "<volatile>"
@@ -380,7 +380,7 @@ After each move the screen map is asked which screen is showing, because the sam
       "step": 16,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1236",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1236",
         "status": "ok",
         "stop_seq": 1273,
         "cause": "<volatile>"
@@ -432,7 +432,7 @@ After each move the screen map is asked which screen is showing, because the sam
     "surveyed": 10,
     "by_cause": {
       "the retrace the input's post ran to,": 9,
-      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 1
+      "no declared code breakpoint, and the debugger does not say which row stopped the machine, so what made this stop cannot be told": 1
     },
     "unaccounted": 166
   },

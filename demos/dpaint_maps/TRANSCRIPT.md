@@ -94,7 +94,7 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "screen_wait screen 'paint: freehand': found after 13 retraces",
+  "summary": "screen_wait screen 'paint: freehand': found after 13 frames",
   "status": "ok",
   "verdict": "TARGET",
   "predicate": "screen",
@@ -399,7 +399,7 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 251,5, program's own pointer not read; posted, unverified, 16 retraces to frame 29",
+        "summary": "send_mouse: pointer at 251,5, program's own pointer not read; sent, reaction not checked, 16 frames to frame 29",
         "status": "ok",
         "stop_seq": 18,
         "cause": "<volatile>"
@@ -598,7 +598,7 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; posted, unverified, 23 retraces to frame 74",
+        "summary": "send_mouse: pointer at 100,59, program's own pointer not read; sent, reaction not checked, 23 frames to frame 74",
         "status": "ok",
         "stop_seq": 63,
         "cause": "<volatile>"
@@ -613,7 +613,7 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 7,39, program's own pointer not read; posted, unverified, 22 retraces to frame 94",
+        "summary": "send_mouse: pointer at 7,39, program's own pointer not read; sent, reaction not checked, 22 frames to frame 94",
         "status": "ok",
         "stop_seq": 85,
         "cause": "<volatile>"
@@ -633,7 +633,7 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 7,39; posted, unverified, 76 retraces to frame 115",
+        "summary": "send_mouse: pointer at 7,39; sent, reaction not checked, 76 frames to frame 115",
         "status": "ok",
         "stop_seq": 162,
         "cause": "<volatile>"
@@ -661,7 +661,7 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
     "surveyed": 4,
     "by_cause": {
       "the retrace the input's post ran to,": 1,
-      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 3
+      "no declared code breakpoint, and the debugger does not say which row stopped the machine, so what made this stop cannot be told": 3
     },
     "unaccounted": 118
   },
@@ -802,7 +802,7 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 37,149, program's own pointer not read; posted, unverified, 24 retraces to frame 140",
+        "summary": "send_mouse: pointer at 37,149, program's own pointer not read; sent, reaction not checked, 24 frames to frame 140",
         "status": "ok",
         "stop_seq": 187,
         "cause": "<volatile>"
@@ -812,7 +812,7 @@ Also attached: image/png.
       "step": 1,
       "op": "screen_wait",
       "reply": {
-        "summary": "screen_wait screen 'paint: freehand': found after 2 retraces",
+        "summary": "screen_wait screen 'paint: freehand': found after 2 frames",
         "status": "ok",
         "stop_seq": 188,
         "cause": "<volatile>"
@@ -827,7 +827,7 @@ Also attached: image/png.
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 23 retraces to frame 165",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; sent, reaction not checked, 23 frames to frame 165",
         "status": "ok",
         "stop_seq": 211,
         "cause": "<volatile>"
@@ -837,7 +837,7 @@ Also attached: image/png.
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,448, program's own pointer not read; posted, unverified, 25 retraces to frame 190",
+        "summary": "send_mouse: pointer at 604,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 190",
         "status": "ok",
         "stop_seq": 236,
         "cause": "<volatile>"
@@ -847,7 +847,7 @@ Also attached: image/png.
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 587,259, program's own pointer not read; posted, unverified, 30 retraces to frame 220",
+        "summary": "send_mouse: pointer at 587,259, program's own pointer not read; sent, reaction not checked, 30 frames to frame 220",
         "status": "ok",
         "stop_seq": 266,
         "cause": "<volatile>"
@@ -857,7 +857,7 @@ Also attached: image/png.
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 235",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 235",
         "status": "ok",
         "stop_seq": 281,
         "cause": "<volatile>"
@@ -877,7 +877,7 @@ Also attached: image/png.
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 634,142, program's own pointer not read; posted, unverified, 25 retraces to frame 260",
+        "summary": "send_mouse: pointer at 634,142, program's own pointer not read; sent, reaction not checked, 25 frames to frame 260",
         "status": "ok",
         "stop_seq": 306,
         "cause": "<volatile>"
@@ -887,7 +887,7 @@ Also attached: image/png.
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 285",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 285",
         "status": "ok",
         "stop_seq": 331,
         "cause": "<volatile>"
@@ -897,7 +897,7 @@ Also attached: image/png.
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 356,259, program's own pointer not read; posted, unverified, 30 retraces to frame 315",
+        "summary": "send_mouse: pointer at 356,259, program's own pointer not read; sent, reaction not checked, 30 frames to frame 315",
         "status": "ok",
         "stop_seq": 361,
         "cause": "<volatile>"
@@ -907,7 +907,7 @@ Also attached: image/png.
       "step": 12,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 330",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 330",
         "status": "ok",
         "stop_seq": 376,
         "cause": "<volatile>"
@@ -927,7 +927,7 @@ Also attached: image/png.
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 25 retraces to frame 355",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; sent, reaction not checked, 25 frames to frame 355",
         "status": "ok",
         "stop_seq": 401,
         "cause": "<volatile>"
@@ -937,7 +937,7 @@ Also attached: image/png.
       "step": 16,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,344, program's own pointer not read; posted, unverified, 25 retraces to frame 380",
+        "summary": "send_mouse: pointer at 604,344, program's own pointer not read; sent, reaction not checked, 25 frames to frame 380",
         "status": "ok",
         "stop_seq": 426,
         "cause": "<volatile>"
@@ -947,7 +947,7 @@ Also attached: image/png.
       "step": 17,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 587,475, program's own pointer not read; posted, unverified, 30 retraces to frame 410",
+        "summary": "send_mouse: pointer at 587,475, program's own pointer not read; sent, reaction not checked, 30 frames to frame 410",
         "status": "ok",
         "stop_seq": 456,
         "cause": "<volatile>"
@@ -957,7 +957,7 @@ Also attached: image/png.
       "step": 18,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 425",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 425",
         "status": "ok",
         "stop_seq": 471,
         "cause": "<volatile>"
@@ -1009,7 +1009,7 @@ Also attached: image/png.
     "surveyed": 14,
     "by_cause": {
       "the retrace the input's post ran to,": 13,
-      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 1
+      "no declared code breakpoint, and the debugger does not say which row stopped the machine, so what made this stop cannot be told": 1
     },
     "unaccounted": 294
   },
@@ -1089,7 +1089,7 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; posted, unverified, 25 retraces to frame 450",
+        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; sent, reaction not checked, 25 frames to frame 450",
         "status": "ok",
         "stop_seq": 496,
         "cause": "<volatile>"
@@ -1099,7 +1099,7 @@ Also attached: image/png.
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 475",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 475",
         "status": "ok",
         "stop_seq": 521,
         "cause": "<volatile>"
@@ -1109,7 +1109,7 @@ Also attached: image/png.
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 336,272, program's own pointer not read; posted, unverified, 30 retraces to frame 505",
+        "summary": "send_mouse: pointer at 336,272, program's own pointer not read; sent, reaction not checked, 30 frames to frame 505",
         "status": "ok",
         "stop_seq": 551,
         "cause": "<volatile>"
@@ -1119,7 +1119,7 @@ Also attached: image/png.
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 322,284, program's own pointer not read; posted, unverified, 30 retraces to frame 535",
+        "summary": "send_mouse: pointer at 322,284, program's own pointer not read; sent, reaction not checked, 30 frames to frame 535",
         "status": "ok",
         "stop_seq": 581,
         "cause": "<volatile>"
@@ -1129,7 +1129,7 @@ Also attached: image/png.
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 308,296, program's own pointer not read; posted, unverified, 30 retraces to frame 565",
+        "summary": "send_mouse: pointer at 308,296, program's own pointer not read; sent, reaction not checked, 30 frames to frame 565",
         "status": "ok",
         "stop_seq": 611,
         "cause": "<volatile>"
@@ -1139,7 +1139,7 @@ Also attached: image/png.
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 580",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 580",
         "status": "ok",
         "stop_seq": 626,
         "cause": "<volatile>"
@@ -1159,7 +1159,7 @@ Also attached: image/png.
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; posted, unverified, 25 retraces to frame 605",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; sent, reaction not checked, 25 frames to frame 605",
         "status": "ok",
         "stop_seq": 651,
         "cause": "<volatile>"
@@ -1169,7 +1169,7 @@ Also attached: image/png.
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 630",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; sent, reaction not checked, 25 frames to frame 630",
         "status": "ok",
         "stop_seq": 676,
         "cause": "<volatile>"
@@ -1179,7 +1179,7 @@ Also attached: image/png.
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 180,395, program's own pointer not read; posted, unverified, 30 retraces to frame 660",
+        "summary": "send_mouse: pointer at 180,395, program's own pointer not read; sent, reaction not checked, 30 frames to frame 660",
         "status": "ok",
         "stop_seq": 706,
         "cause": "<volatile>"
@@ -1189,7 +1189,7 @@ Also attached: image/png.
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 675",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 675",
         "status": "ok",
         "stop_seq": 721,
         "cause": "<volatile>"
@@ -1308,7 +1308,7 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; posted, unverified, 25 retraces to frame 700",
+        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; sent, reaction not checked, 25 frames to frame 700",
         "status": "ok",
         "stop_seq": 746,
         "cause": "<volatile>"
@@ -1318,7 +1318,7 @@ Also attached: image/png.
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 725",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; sent, reaction not checked, 25 frames to frame 725",
         "status": "ok",
         "stop_seq": 771,
         "cause": "<volatile>"
@@ -1328,7 +1328,7 @@ Also attached: image/png.
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 140,320, program's own pointer not read; posted, unverified, 30 retraces to frame 755",
+        "summary": "send_mouse: pointer at 140,320, program's own pointer not read; sent, reaction not checked, 30 frames to frame 755",
         "status": "ok",
         "stop_seq": 801,
         "cause": "<volatile>"
@@ -1338,7 +1338,7 @@ Also attached: image/png.
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 770",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 770",
         "status": "ok",
         "stop_seq": 816,
         "cause": "<volatile>"
@@ -1358,7 +1358,7 @@ Also attached: image/png.
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; posted, unverified, 25 retraces to frame 795",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 795",
         "status": "ok",
         "stop_seq": 841,
         "cause": "<volatile>"
@@ -1368,7 +1368,7 @@ Also attached: image/png.
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 176,374, program's own pointer not read; posted, unverified, 30 retraces to frame 825",
+        "summary": "send_mouse: pointer at 176,374, program's own pointer not read; sent, reaction not checked, 30 frames to frame 825",
         "status": "ok",
         "stop_seq": 871,
         "cause": "<volatile>"
@@ -1378,7 +1378,7 @@ Also attached: image/png.
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 142,374, program's own pointer not read; posted, unverified, 30 retraces to frame 855",
+        "summary": "send_mouse: pointer at 142,374, program's own pointer not read; sent, reaction not checked, 30 frames to frame 855",
         "status": "ok",
         "stop_seq": 901,
         "cause": "<volatile>"
@@ -1388,7 +1388,7 @@ Also attached: image/png.
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 870",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 870",
         "status": "ok",
         "stop_seq": 916,
         "cause": "<volatile>"
@@ -1482,7 +1482,7 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; posted, unverified, 25 retraces to frame 895",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; sent, reaction not checked, 25 frames to frame 895",
         "status": "ok",
         "stop_seq": 941,
         "cause": "<volatile>"
@@ -1492,7 +1492,7 @@ Also attached: image/png.
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 629,185, program's own pointer not read; posted, unverified, 25 retraces to frame 920",
+        "summary": "send_mouse: pointer at 629,185, program's own pointer not read; sent, reaction not checked, 25 frames to frame 920",
         "status": "ok",
         "stop_seq": 966,
         "cause": "<volatile>"
@@ -1502,7 +1502,7 @@ Also attached: image/png.
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 935",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 935",
         "status": "ok",
         "stop_seq": 981,
         "cause": "<volatile>"
@@ -1522,7 +1522,7 @@ Also attached: image/png.
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 40,60, program's own pointer not read; posted, unverified, 25 retraces to frame 960",
+        "summary": "send_mouse: pointer at 40,60, program's own pointer not read; sent, reaction not checked, 25 frames to frame 960",
         "status": "ok",
         "stop_seq": 1006,
         "cause": "<volatile>"
@@ -1532,7 +1532,7 @@ Also attached: image/png.
       "step": 6,
       "op": "send_keys",
       "reply": {
-        "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 1010",
+        "summary": "send_keys (guest): sent, reaction not checked, 50 frames to frame 1010",
         "status": "ok",
         "stop_seq": 1056,
         "cause": "<volatile>"
@@ -1542,7 +1542,7 @@ Also attached: image/png.
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; posted, unverified, 25 retraces to frame 1035",
+        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; sent, reaction not checked, 25 frames to frame 1035",
         "status": "ok",
         "stop_seq": 1081,
         "cause": "<volatile>"
@@ -1552,7 +1552,7 @@ Also attached: image/png.
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1050",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1050",
         "status": "ok",
         "stop_seq": 1096,
         "cause": "<volatile>"
@@ -1699,7 +1699,7 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; posted, unverified, 24 retraces to frame 1075",
+        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; sent, reaction not checked, 24 frames to frame 1075",
         "status": "ok",
         "stop_seq": 1121,
         "cause": "<volatile>"
@@ -1709,7 +1709,7 @@ Also attached: image/png.
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1090",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1090",
         "status": "ok",
         "stop_seq": 1136,
         "cause": "<volatile>"
@@ -1729,7 +1729,7 @@ Also attached: image/png.
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; posted, unverified, 30 retraces to frame 1120",
+        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; sent, reaction not checked, 30 frames to frame 1120",
         "status": "ok",
         "stop_seq": 1166,
         "cause": "<volatile>"
@@ -1739,7 +1739,7 @@ Also attached: image/png.
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1135",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1135",
         "status": "ok",
         "stop_seq": 1181,
         "cause": "<volatile>"
@@ -1759,7 +1759,7 @@ Also attached: image/png.
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; posted, unverified, 20 retraces to frame 1155",
+        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1155",
         "status": "ok",
         "stop_seq": 1201,
         "cause": "<volatile>"
@@ -1779,7 +1779,7 @@ Also attached: image/png.
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; posted, unverified, 20 retraces to frame 1175",
+        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1175",
         "status": "ok",
         "stop_seq": 1221,
         "cause": "<volatile>"
@@ -1789,7 +1789,7 @@ Also attached: image/png.
       "step": 12,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1190",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1190",
         "status": "ok",
         "stop_seq": 1236,
         "cause": "<volatile>"
@@ -1799,7 +1799,7 @@ Also attached: image/png.
       "step": 13,
       "op": "screen_wait",
       "reply": {
-        "summary": "screen_wait screen 'paint: custom brush': found after 10 retraces",
+        "summary": "screen_wait screen 'paint: custom brush': found after 10 frames",
         "status": "ok",
         "stop_seq": 1237,
         "cause": "<volatile>"
@@ -1814,7 +1814,7 @@ Also attached: image/png.
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; posted, unverified, 21 retraces to frame 1221",
+        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; sent, reaction not checked, 21 frames to frame 1221",
         "status": "ok",
         "stop_seq": 1258,
         "cause": "<volatile>"
@@ -1824,7 +1824,7 @@ Also attached: image/png.
       "step": 16,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1236",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1236",
         "status": "ok",
         "stop_seq": 1273,
         "cause": "<volatile>"
@@ -1876,7 +1876,7 @@ Also attached: image/png.
     "surveyed": 10,
     "by_cause": {
       "the retrace the input's post ran to,": 9,
-      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 1
+      "no declared code breakpoint, and the debugger does not say which row stopped the machine, so what made this stop cannot be told": 1
     },
     "unaccounted": 166
   },
@@ -1959,7 +1959,7 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 119,5, program's own pointer not read; posted, unverified, 19 retraces to frame 1256",
+        "summary": "send_mouse: pointer at 119,5, program's own pointer not read; sent, reaction not checked, 19 frames to frame 1256",
         "status": "ok",
         "stop_seq": 1293,
         "cause": "<volatile>"
@@ -1979,7 +1979,7 @@ Also attached: image/png.
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 119,5; posted, unverified, 15 retraces to frame 1271",
+        "summary": "send_mouse: pointer at 119,5; sent, reaction not checked, 15 frames to frame 1271",
         "status": "ok",
         "stop_seq": 1308,
         "cause": "<volatile>"
@@ -1989,7 +1989,7 @@ Also attached: image/png.
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1286",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1286",
         "status": "ok",
         "stop_seq": 1323,
         "cause": "<volatile>"
@@ -2009,7 +2009,7 @@ Also attached: image/png.
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 599,21, program's own pointer not read; posted, unverified, 25 retraces to frame 1311",
+        "summary": "send_mouse: pointer at 599,21, program's own pointer not read; sent, reaction not checked, 25 frames to frame 1311",
         "status": "ok",
         "stop_seq": 1348,
         "cause": "<volatile>"
@@ -2019,7 +2019,7 @@ Also attached: image/png.
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; posted, unverified, 25 retraces to frame 1336",
+        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; sent, reaction not checked, 25 frames to frame 1336",
         "status": "ok",
         "stop_seq": 1373,
         "cause": "<volatile>"
@@ -2029,7 +2029,7 @@ Also attached: image/png.
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; posted, unverified, 15 retraces to frame 1351",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1351",
         "status": "ok",
         "stop_seq": 1388,
         "cause": "<volatile>"

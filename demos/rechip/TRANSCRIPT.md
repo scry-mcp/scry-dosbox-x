@@ -50,7 +50,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     "base_from": "program",
     "checked": {"against": "<volatile>", "agree": 3214}
   },
-  "kept": "kept 1 (promote to review)",
+  "kept": "1 saved for `promote`",
   "profile": {
     "name": "<volatile>",
     "file": "<volatile>",
@@ -130,7 +130,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "status": "ok",
   "keys": ["space"],
   "modifiers": [],
@@ -201,7 +201,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "status": "ok",
   "keys": ["home"],
   "modifiers": [],
@@ -551,7 +551,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "status": "ok",
   "keys": ["space"],
   "modifiers": [],
@@ -690,7 +690,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "status": "ok",
   "keys": ["x"],
   "modifiers": ["alt"],
@@ -729,7 +729,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "send_keys (guest): effect seen",
+  "summary": "send_keys (guest): reaction seen",
   "status": "ok",
   "keys": ["right", "enter"],
   "modifiers": [],

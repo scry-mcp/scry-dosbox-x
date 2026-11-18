@@ -133,7 +133,7 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
       "step": 6,
       "op": "send_keys",
       "reply": {
-        "summary": "send_keys (guest): posted, unverified, 6 retraces to frame 361",
+        "summary": "send_keys (guest): sent, reaction not checked, 6 frames to frame 361",
         "status": "ok",
         "stop_seq": 10,
         "cause": "<volatile>"
@@ -173,7 +173,7 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
       "step": 12,
       "op": "send_keys",
       "reply": {
-        "summary": "send_keys (guest): posted, unverified, 9 retraces to frame 371",
+        "summary": "send_keys (guest): sent, reaction not checked, 9 frames to frame 371",
         "status": "ok",
         "stop_seq": 20,
         "cause": "<volatile>"
@@ -273,7 +273,7 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
     "surveyed": 14,
     "by_cause": {
       "run_to's target Draw_High_Scores_Screen": 1,
-      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told": 4,
+      "no declared code breakpoint, and the debugger does not say which row stopped the machine, so what made this stop cannot be told": 4,
       "the retrace the input's post ran to,": 5,
       "run_to's target Level_Write": 1,
       "run_to's target Gest_Scores": 3
