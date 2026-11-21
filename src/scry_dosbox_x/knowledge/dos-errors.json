@@ -22,7 +22,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_NONE",
           "cites": "#define DOSERR_NONE 0"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 00h (0)",
+            "line": " 00h (0)   no error"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_NONE",
+            "line": "#define DOSERR_NONE 0"
+          }
+        ],
+        "digest": "9d5c8c145dfec87f93a6b9c3ad9cae209ef08a476643705c25b447a414dde576"
+      }
     },
     {
       "key": "1",
@@ -40,7 +55,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_FUNCTION_NUMBER_INVALID",
           "cites": "#define DOSERR_FUNCTION_NUMBER_INVALID 1"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 01h (1)",
+            "line": " 01h (1)   function number invalid"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_FUNCTION_NUMBER_INVALID",
+            "line": "#define DOSERR_FUNCTION_NUMBER_INVALID 1"
+          }
+        ],
+        "digest": "06632511722acf499aef105d3890c631097dcf9b86607ec65f7fddfd1692144f"
+      }
     },
     {
       "key": "2",
@@ -58,7 +88,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_FILE_NOT_FOUND",
           "cites": "#define DOSERR_FILE_NOT_FOUND 2"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 02h (2)",
+            "line": " 02h (2)   file not found"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_FILE_NOT_FOUND",
+            "line": "#define DOSERR_FILE_NOT_FOUND 2"
+          }
+        ],
+        "digest": "14ffd118afdc69a4cb3f8e2fa50578ab212047778c05da0fa30fe3bffe62c71e"
+      }
     },
     {
       "key": "3",
@@ -76,7 +121,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_PATH_NOT_FOUND",
           "cites": "#define DOSERR_PATH_NOT_FOUND 3"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 03h (3)",
+            "line": " 03h (3)   path not found"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_PATH_NOT_FOUND",
+            "line": "#define DOSERR_PATH_NOT_FOUND 3"
+          }
+        ],
+        "digest": "bd7671aa608c690c6c2a73cda12886565da028d19c9a7811d9b1b18c874d7915"
+      }
     },
     {
       "key": "4",
@@ -94,7 +154,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_TOO_MANY_OPEN_FILES",
           "cites": "#define DOSERR_TOO_MANY_OPEN_FILES 4"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 04h (4)",
+            "line": " 04h (4)   too many open files (no handles available)"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_TOO_MANY_OPEN_FILES",
+            "line": "#define DOSERR_TOO_MANY_OPEN_FILES 4"
+          }
+        ],
+        "digest": "91774a5fcbfa0fa74c319029260459738a4d221d6b9ae5939294ac0506f4d6d7"
+      }
     },
     {
       "key": "5",
@@ -112,7 +187,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_ACCESS_DENIED",
           "cites": "#define DOSERR_ACCESS_DENIED 5"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 05h (5)",
+            "line": " 05h (5)   access denied"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_ACCESS_DENIED",
+            "line": "#define DOSERR_ACCESS_DENIED 5"
+          }
+        ],
+        "digest": "aa6389e048b2525773ce6571a535827dfd6c08cd505f3e35740dac3781b05f6c"
+      }
     },
     {
       "key": "6",
@@ -130,7 +220,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_INVALID_HANDLE",
           "cites": "#define DOSERR_INVALID_HANDLE 6"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 06h (6)",
+            "line": " 06h (6)   invalid handle"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_INVALID_HANDLE",
+            "line": "#define DOSERR_INVALID_HANDLE 6"
+          }
+        ],
+        "digest": "1b1e1d20052826e4fc98111815e0a2e503bd5e2830bd952d9000bf15c7e32f06"
+      }
     },
     {
       "key": "7",
@@ -148,7 +253,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_MCB_DESTROYED",
           "cites": "#define DOSERR_MCB_DESTROYED 7"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 07h (7)",
+            "line": " 07h (7)   memory control block destroyed"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_MCB_DESTROYED",
+            "line": "#define DOSERR_MCB_DESTROYED 7"
+          }
+        ],
+        "digest": "f2a8fd63a5f49e06fd10a1a378d51203516d648432efe751fdb9ed7b9c3020f0"
+      }
     },
     {
       "key": "8",
@@ -166,7 +286,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_INSUFFICIENT_MEMORY",
           "cites": "#define DOSERR_INSUFFICIENT_MEMORY 8"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 08h (8)",
+            "line": " 08h (8)   insufficient memory"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_INSUFFICIENT_MEMORY",
+            "line": "#define DOSERR_INSUFFICIENT_MEMORY 8"
+          }
+        ],
+        "digest": "9876c7f84eab94522cdf356bfad5099ce50ade2c8eb75b5d3e8ff4ee99467511"
+      }
     },
     {
       "key": "9",
@@ -184,7 +319,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_MB_ADDRESS_INVALID",
           "cites": "#define DOSERR_MB_ADDRESS_INVALID 9"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 09h (9)",
+            "line": " 09h (9)   memory block address invalid"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_MB_ADDRESS_INVALID",
+            "line": "#define DOSERR_MB_ADDRESS_INVALID 9"
+          }
+        ],
+        "digest": "76d9128b1d16e4c09d27738e893503702eebdbceaf0ba483beb3092e12c666c4"
+      }
     },
     {
       "key": "10",
@@ -202,7 +352,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_ENVIRONMENT_INVALID",
           "cites": "#define DOSERR_ENVIRONMENT_INVALID 10"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 0Ah (10)",
+            "line": " 0Ah (10)  environment invalid (usually >32K in length)"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_ENVIRONMENT_INVALID",
+            "line": "#define DOSERR_ENVIRONMENT_INVALID 10"
+          }
+        ],
+        "digest": "0b76022d899fc730a0db8a4b62b6335a253f442792e6603acc2b4b81761201eb"
+      }
     },
     {
       "key": "11",
@@ -220,7 +385,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_FORMAT_INVALID",
           "cites": "#define DOSERR_FORMAT_INVALID 11"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 0Bh (11)",
+            "line": " 0Bh (11)  format invalid"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_FORMAT_INVALID",
+            "line": "#define DOSERR_FORMAT_INVALID 11"
+          }
+        ],
+        "digest": "5142616bd735e4d103650ca4358244c6a851dc527a9756023dce6ffbf5e9ad3a"
+      }
     },
     {
       "key": "12",
@@ -238,7 +418,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_ACCESS_CODE_INVALID",
           "cites": "#define DOSERR_ACCESS_CODE_INVALID 12"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 0Ch (12)",
+            "line": " 0Ch (12)  access code invalid"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_ACCESS_CODE_INVALID",
+            "line": "#define DOSERR_ACCESS_CODE_INVALID 12"
+          }
+        ],
+        "digest": "beff773e4e205b0be80e09d611121f2d889874623110be679ad2d64fe3eeccf9"
+      }
     },
     {
       "key": "13",
@@ -256,7 +451,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_DATA_INVALID",
           "cites": "#define DOSERR_DATA_INVALID 13"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 0Dh (13)",
+            "line": " 0Dh (13)  data invalid"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_DATA_INVALID",
+            "line": "#define DOSERR_DATA_INVALID 13"
+          }
+        ],
+        "digest": "e15f3d89aacb0d2480557e304270f00c140cdb21063e8414f3c4e423db5d13a0"
+      }
     },
     {
       "key": "14",
@@ -274,7 +484,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_RESERVED",
           "cites": "#define DOSERR_RESERVED 14"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 0Eh (14)  reserved",
+            "line": " 0Eh (14)  reserved"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_RESERVED",
+            "line": "#define DOSERR_RESERVED 14"
+          }
+        ],
+        "digest": "8b34242a5b6ba147e754f62b1aa6c2cd48df12398c8c28c62bc24c57c2a76cfd"
+      }
     },
     {
       "key": "15",
@@ -292,7 +517,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_INVALID_DRIVE",
           "cites": "#define DOSERR_INVALID_DRIVE 15"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 0Fh (15)",
+            "line": " 0Fh (15)  invalid drive"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_INVALID_DRIVE",
+            "line": "#define DOSERR_INVALID_DRIVE 15"
+          }
+        ],
+        "digest": "11c6e09ad3e8d3b830ccb823249469d668eb0f18977442f11cd5e318ce890774"
+      }
     },
     {
       "key": "16",
@@ -310,7 +550,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_REMOVE_CURRENT_DIRECTORY",
           "cites": "#define DOSERR_REMOVE_CURRENT_DIRECTORY 16"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 10h (16)",
+            "line": " 10h (16)  attempted to remove current directory"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_REMOVE_CURRENT_DIRECTORY",
+            "line": "#define DOSERR_REMOVE_CURRENT_DIRECTORY 16"
+          }
+        ],
+        "digest": "3e3df86bfa298e78c38e3e77a50c8ee02348c806b9c83231adec401d77428acb"
+      }
     },
     {
       "key": "17",
@@ -328,7 +583,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_NOT_SAME_DEVICE",
           "cites": "#define DOSERR_NOT_SAME_DEVICE 17"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 11h (17)",
+            "line": " 11h (17)  not same device"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_NOT_SAME_DEVICE",
+            "line": "#define DOSERR_NOT_SAME_DEVICE 17"
+          }
+        ],
+        "digest": "6d7cdca2cf46bf5bbd244039379e1495879b739920a056188b1188c5d9203279"
+      }
     },
     {
       "key": "18",
@@ -346,7 +616,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_NO_MORE_FILES",
           "cites": "#define DOSERR_NO_MORE_FILES 18"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 12h (18)",
+            "line": " 12h (18)  no more files"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_NO_MORE_FILES",
+            "line": "#define DOSERR_NO_MORE_FILES 18"
+          }
+        ],
+        "digest": "d757485719e5145a91942b0494f223324f03f86fafec9b76e6c555bfc052f2e5"
+      }
     },
     {
       "key": "19",
@@ -364,7 +649,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_WRITE_PROTECTED",
           "cites": "#define DOSERR_WRITE_PROTECTED 19"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 13h (19)",
+            "line": " 13h (19)  disk write-protected"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_WRITE_PROTECTED",
+            "line": "#define DOSERR_WRITE_PROTECTED 19"
+          }
+        ],
+        "digest": "965af29aafb46e22a60e9099523fd1e36b760802eb0f22e335b3a59973d0c7f6"
+      }
     },
     {
       "key": "20",
@@ -377,7 +677,18 @@
           "ref": "rbil61:INTERRUP.G #01680 14h (20)",
           "cites": " 14h (20)  unknown unit"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 14h (20)",
+            "line": " 14h (20)  unknown unit"
+          }
+        ],
+        "digest": "27fb867a34613a9a63e1466c265d205a5421e2435e7662a6bb36bf479cd52e7e"
+      }
     },
     {
       "key": "21",
@@ -395,7 +706,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_DRIVE_NOT_READY",
           "cites": "#define DOSERR_DRIVE_NOT_READY 21"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 15h (21)",
+            "line": " 15h (21)  drive not ready"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_DRIVE_NOT_READY",
+            "line": "#define DOSERR_DRIVE_NOT_READY 21"
+          }
+        ],
+        "digest": "0df974ed76adf9b7bf731e4f672acb6bdb371660772ce3c845348cd5234b00fb"
+      }
     },
     {
       "key": "22",
@@ -408,7 +734,18 @@
           "ref": "rbil61:INTERRUP.G #01680 16h (22)",
           "cites": " 16h (22)  unknown command"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 16h (22)",
+            "line": " 16h (22)  unknown command"
+          }
+        ],
+        "digest": "b893a785a921ba3ef300a4970293fa97ff3c79fb407be81f3e181eb69867cdca"
+      }
     },
     {
       "key": "23",
@@ -421,7 +758,18 @@
           "ref": "rbil61:INTERRUP.G #01680 17h (23)",
           "cites": " 17h (23)  data error (CRC)"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 17h (23)",
+            "line": " 17h (23)  data error (CRC)"
+          }
+        ],
+        "digest": "d4d20d8b3944769bbdbe780a9e135e86f48c389653dc867bbf1c50c20926e1e3"
+      }
     },
     {
       "key": "24",
@@ -434,7 +782,18 @@
           "ref": "rbil61:INTERRUP.G #01680 18h (24)",
           "cites": " 18h (24)  bad request structure length"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 18h (24)",
+            "line": " 18h (24)  bad request structure length"
+          }
+        ],
+        "digest": "da722572b71b62dd3e1ef60262d9ae9e561c6d1c6b9830e698e127c724b2d8ec"
+      }
     },
     {
       "key": "25",
@@ -447,7 +806,18 @@
           "ref": "rbil61:INTERRUP.G #01680 19h (25)",
           "cites": " 19h (25)  seek error"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 19h (25)",
+            "line": " 19h (25)  seek error"
+          }
+        ],
+        "digest": "c3d6494d5ac00c62163bd74214f9b72614b352e85786ab849ababe7bff10b119"
+      }
     },
     {
       "key": "26",
@@ -460,7 +830,18 @@
           "ref": "rbil61:INTERRUP.G #01680 1Ah (26)",
           "cites": " 1Ah (26)  unknown media type (non-DOS disk)"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 1Ah (26)",
+            "line": " 1Ah (26)  unknown media type (non-DOS disk)"
+          }
+        ],
+        "digest": "f0d4b4839ff3ead1b3f21b70d768203a823512daa9f9cfedf4db0d5868a5a5f5"
+      }
     },
     {
       "key": "27",
@@ -473,7 +854,18 @@
           "ref": "rbil61:INTERRUP.G #01680 1Bh (27)",
           "cites": " 1Bh (27)  sector not found"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 1Bh (27)",
+            "line": " 1Bh (27)  sector not found"
+          }
+        ],
+        "digest": "53beeb4045f4f22bd9a40f5d7d3c181feb9dc95b5d7ece7cd4cd9d5c34133a74"
+      }
     },
     {
       "key": "28",
@@ -486,7 +878,18 @@
           "ref": "rbil61:INTERRUP.G #01680 1Ch (28)",
           "cites": " 1Ch (28)  printer out of paper"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 1Ch (28)",
+            "line": " 1Ch (28)  printer out of paper"
+          }
+        ],
+        "digest": "7fc596789d52003026873ff8e02b697edd8538f3ddf644b1a774b0666db27631"
+      }
     },
     {
       "key": "29",
@@ -499,7 +902,18 @@
           "ref": "rbil61:INTERRUP.G #01680 1Dh (29)",
           "cites": " 1Dh (29)  write fault"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 1Dh (29)",
+            "line": " 1Dh (29)  write fault"
+          }
+        ],
+        "digest": "b1ea898c883e9780c919184dc614d846943b01c912e6e46e37d8f4b89f89c4a0"
+      }
     },
     {
       "key": "30",
@@ -512,7 +926,18 @@
           "ref": "rbil61:INTERRUP.G #01680 1Eh (30)",
           "cites": " 1Eh (30)  read fault"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 1Eh (30)",
+            "line": " 1Eh (30)  read fault"
+          }
+        ],
+        "digest": "4c253b05378bfaa646bb738c34026aed200e59ef8713c6b7d6d8d41da1e381b5"
+      }
     },
     {
       "key": "31",
@@ -525,7 +950,18 @@
           "ref": "rbil61:INTERRUP.G #01680 1Fh (31)",
           "cites": " 1Fh (31)  general failure"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 1Fh (31)",
+            "line": " 1Fh (31)  general failure"
+          }
+        ],
+        "digest": "431b17f41c84b5479ab73bcf01596ea38e925a7162aa75e0c0689a48f9dedbac"
+      }
     },
     {
       "key": "32",
@@ -538,7 +974,18 @@
           "ref": "rbil61:INTERRUP.G #01680 20h (32)",
           "cites": " 20h (32)  sharing violation"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 20h (32)",
+            "line": " 20h (32)  sharing violation"
+          }
+        ],
+        "digest": "f78907c7b4ce5de67ea594f84ddb3f096dccbceb92644d7687f1d056fbe3527d"
+      }
     },
     {
       "key": "33",
@@ -551,7 +998,18 @@
           "ref": "rbil61:INTERRUP.G #01680 21h (33)",
           "cites": " 21h (33)  lock violation"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 21h (33)",
+            "line": " 21h (33)  lock violation"
+          }
+        ],
+        "digest": "0b2dd9600da8173afe9bee663cfbfd1cb91542083c7e8b63c493b1c91c0d42ba"
+      }
     },
     {
       "key": "34",
@@ -564,7 +1022,18 @@
           "ref": "rbil61:INTERRUP.G #01680 22h (34)",
           "cites": " 22h (34)  disk change invalid (ES:DI -> media ID structure)(see #01681)"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 22h (34)",
+            "line": " 22h (34)  disk change invalid (ES:DI -> media ID structure)(see #01681)"
+          }
+        ],
+        "digest": "7ab3b5f928f0c5ad209bdfdf0a36e05b3d60208f6d6a97367f3fadd74fadd156"
+      }
     },
     {
       "key": "35",
@@ -577,7 +1046,18 @@
           "ref": "rbil61:INTERRUP.G #01680 23h (35)  FCB",
           "cites": " 23h (35)  FCB unavailable"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 23h (35)  FCB",
+            "line": " 23h (35)  FCB unavailable"
+          }
+        ],
+        "digest": "c8eb702647352623029489b78998204d343fdf3cdafc283f28fc81363329578b"
+      }
     },
     {
       "key": "36",
@@ -590,7 +1070,18 @@
           "ref": "rbil61:INTERRUP.G #01680 24h (36)",
           "cites": " 24h (36)  sharing buffer overflow"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 24h (36)",
+            "line": " 24h (36)  sharing buffer overflow"
+          }
+        ],
+        "digest": "6ee117a8ac1cfde44c5b0887de8364c38f7ff1a126fe5b66ce23fa68332ca830"
+      }
     },
     {
       "key": "37",
@@ -603,7 +1094,18 @@
           "ref": "rbil61:INTERRUP.G #01680 25h (37)",
           "cites": " 25h (37)  (DOS 4.0+) code page mismatch"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 25h (37)",
+            "line": " 25h (37)  (DOS 4.0+) code page mismatch"
+          }
+        ],
+        "digest": "963500a89bfab350ce51da6b9951776bad26e1027c58697418b87ae601fe5c84"
+      }
     },
     {
       "key": "38",
@@ -616,7 +1118,18 @@
           "ref": "rbil61:INTERRUP.G #01680 26h (38)",
           "cites": " 26h (38)  (DOS 4.0+) cannot complete file operation (EOF / out of input)"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 26h (38)",
+            "line": " 26h (38)  (DOS 4.0+) cannot complete file operation (EOF / out of input)"
+          }
+        ],
+        "digest": "d81546931a50a51f785766c29afac0fd77638d83f6f732493613af0aa4291c55"
+      }
     },
     {
       "key": "39",
@@ -629,7 +1142,18 @@
           "ref": "rbil61:INTERRUP.G #01680 27h (39)",
           "cites": " 27h (39)  (DOS 4.0+) insufficient disk space"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 27h (39)",
+            "line": " 27h (39)  (DOS 4.0+) insufficient disk space"
+          }
+        ],
+        "digest": "edd4b08f1b41abdefa5e239c805ef36b7955a46340adda8f5498c491d886c952"
+      }
     },
     {
       "key": "50",
@@ -642,7 +1166,18 @@
           "ref": "rbil61:INTERRUP.G #01680 32h (50)",
           "cites": " 32h (50)  network request not supported"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 32h (50)",
+            "line": " 32h (50)  network request not supported"
+          }
+        ],
+        "digest": "9796f61f6f529c9b8c80f89160ed856603d971a3f286d360dd3473b8e571d65a"
+      }
     },
     {
       "key": "51",
@@ -655,7 +1190,18 @@
           "ref": "rbil61:INTERRUP.G #01680 33h (51)",
           "cites": " 33h (51)  remote computer not listening"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 33h (51)",
+            "line": " 33h (51)  remote computer not listening"
+          }
+        ],
+        "digest": "2459b2b1449591255d30c943eca83bfa6262c87181a0385ddfa4777647f9e7ce"
+      }
     },
     {
       "key": "52",
@@ -668,7 +1214,18 @@
           "ref": "rbil61:INTERRUP.G #01680 34h (52)",
           "cites": " 34h (52)  duplicate name on network"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 34h (52)",
+            "line": " 34h (52)  duplicate name on network"
+          }
+        ],
+        "digest": "64ebaed90d2c9e0dabbaf69b715d4963946e19d29fa92c92b78247bebe827285"
+      }
     },
     {
       "key": "53",
@@ -681,7 +1238,18 @@
           "ref": "rbil61:INTERRUP.G #01680 35h (53)",
           "cites": " 35h (53)  network name not found"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 35h (53)",
+            "line": " 35h (53)  network name not found"
+          }
+        ],
+        "digest": "23288db0e03b67884553a13096ede824d771332e53c538ac2787a59981c490b2"
+      }
     },
     {
       "key": "54",
@@ -694,7 +1262,18 @@
           "ref": "rbil61:INTERRUP.G #01680 36h (54)",
           "cites": " 36h (54)  network busy"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 36h (54)",
+            "line": " 36h (54)  network busy"
+          }
+        ],
+        "digest": "a2de24eb5ab844a60717b7d6d9908ac5a31832e04ff30d94c50d5c7e742dd718"
+      }
     },
     {
       "key": "55",
@@ -707,7 +1286,18 @@
           "ref": "rbil61:INTERRUP.G #01680 37h (55)",
           "cites": " 37h (55)  network device no longer exists"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 37h (55)",
+            "line": " 37h (55)  network device no longer exists"
+          }
+        ],
+        "digest": "85f38dbc065799d5345458778e9445c56635c4ba19bda882ea9ff9e1d0538a2f"
+      }
     },
     {
       "key": "56",
@@ -720,7 +1310,18 @@
           "ref": "rbil61:INTERRUP.G #01680 38h (56)",
           "cites": " 38h (56)  network BIOS command limit exceeded"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 38h (56)",
+            "line": " 38h (56)  network BIOS command limit exceeded"
+          }
+        ],
+        "digest": "a0f8a7b1748fd1eb35be9886bed91227bbc3098bd7c9e3ac920ec70895126b9c"
+      }
     },
     {
       "key": "57",
@@ -733,7 +1334,18 @@
           "ref": "rbil61:INTERRUP.G #01680 39h (57)",
           "cites": " 39h (57)  network adapter hardware error"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 39h (57)",
+            "line": " 39h (57)  network adapter hardware error"
+          }
+        ],
+        "digest": "ae7a164dde80d20b7047fa633c16896359e8f66faa2e2b4e4141d2b71028eeb3"
+      }
     },
     {
       "key": "58",
@@ -746,7 +1358,18 @@
           "ref": "rbil61:INTERRUP.G #01680 3Ah (58)",
           "cites": " 3Ah (58)  incorrect response from network"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 3Ah (58)",
+            "line": " 3Ah (58)  incorrect response from network"
+          }
+        ],
+        "digest": "0c0fb0fc1b3036a3458588e14f3d94af9c5fc795af5b713c36d2a3f14a6c3ecd"
+      }
     },
     {
       "key": "59",
@@ -759,7 +1382,18 @@
           "ref": "rbil61:INTERRUP.G #01680 3Bh (59)",
           "cites": " 3Bh (59)  unexpected network error"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 3Bh (59)",
+            "line": " 3Bh (59)  unexpected network error"
+          }
+        ],
+        "digest": "43a09eaebe687060c970a4b822b38809e288e14aed1afea7990b39e323a40c95"
+      }
     },
     {
       "key": "60",
@@ -772,7 +1406,18 @@
           "ref": "rbil61:INTERRUP.G #01680 3Ch (60)",
           "cites": " 3Ch (60)  incompatible remote adapter"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 3Ch (60)",
+            "line": " 3Ch (60)  incompatible remote adapter"
+          }
+        ],
+        "digest": "0bc3abfc24edce100d082022ef297eb2c089b11d21e293bdc5e8c1eeef1e51b7"
+      }
     },
     {
       "key": "61",
@@ -785,7 +1430,18 @@
           "ref": "rbil61:INTERRUP.G #01680 3Dh (61)",
           "cites": " 3Dh (61)  print queue full"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 3Dh (61)",
+            "line": " 3Dh (61)  print queue full"
+          }
+        ],
+        "digest": "1fc20c5b02b02a860e771ce534897f0190e700320bb25d923856bd52644821ee"
+      }
     },
     {
       "key": "62",
@@ -798,7 +1454,18 @@
           "ref": "rbil61:INTERRUP.G #01680 3Eh (62)",
           "cites": " 3Eh (62)  queue not full"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 3Eh (62)",
+            "line": " 3Eh (62)  queue not full"
+          }
+        ],
+        "digest": "a84c5a7845041105e1eed16448bae1cbdf3ae4aa4b591c83f3cb20ab946cda5b"
+      }
     },
     {
       "key": "63",
@@ -811,7 +1478,18 @@
           "ref": "rbil61:INTERRUP.G #01680 3Fh (63)",
           "cites": " 3Fh (63)  not enough space to print file"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 3Fh (63)",
+            "line": " 3Fh (63)  not enough space to print file"
+          }
+        ],
+        "digest": "224ad8c63a74c88cd9486fc174a88607fd19f8c16aaf3a86d5bfc36c12c3fa33"
+      }
     },
     {
       "key": "64",
@@ -824,7 +1502,18 @@
           "ref": "rbil61:INTERRUP.G #01680 40h (64)",
           "cites": " 40h (64)  network name was deleted"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 40h (64)",
+            "line": " 40h (64)  network name was deleted"
+          }
+        ],
+        "digest": "67f101d4322638a3f40bf00aee2974baf579aea612cac5b83f4ad563f36807c5"
+      }
     },
     {
       "key": "65",
@@ -837,7 +1526,18 @@
           "ref": "rbil61:INTERRUP.G #01680 41h (65)",
           "cites": " 41h (65)  network: Access denied"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 41h (65)",
+            "line": " 41h (65)  network: Access denied"
+          }
+        ],
+        "digest": "c07726bba21ce43369220fe340897192b4b141e71b46599dbe97bcad2d5578ab"
+      }
     },
     {
       "key": "66",
@@ -850,7 +1550,18 @@
           "ref": "rbil61:INTERRUP.G #01680 42h (66)",
           "cites": " 42h (66)  network device type incorrect"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 42h (66)",
+            "line": " 42h (66)  network device type incorrect"
+          }
+        ],
+        "digest": "ca7f784f5f42d03c8a25d7e9caecc5465c726dd18eee18064161b4068d44009b"
+      }
     },
     {
       "key": "67",
@@ -863,7 +1574,18 @@
           "ref": "rbil61:INTERRUP.G #01680 43h (67)",
           "cites": " 43h (67)  network name not found"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 43h (67)",
+            "line": " 43h (67)  network name not found"
+          }
+        ],
+        "digest": "3f09868df29f9743dfe598849a75fa0ff52b873aa42cb753fa2c534f4f6ea9e6"
+      }
     },
     {
       "key": "68",
@@ -876,7 +1598,18 @@
           "ref": "rbil61:INTERRUP.G #01680 44h (68)",
           "cites": " 44h (68)  network name limit exceeded"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 44h (68)",
+            "line": " 44h (68)  network name limit exceeded"
+          }
+        ],
+        "digest": "52e091beed2c896cf35c64700738e0b44b7f2cf418313d7ed6fa352b40601634"
+      }
     },
     {
       "key": "69",
@@ -889,7 +1622,18 @@
           "ref": "rbil61:INTERRUP.G #01680 45h (69)",
           "cites": " 45h (69)  network BIOS session limit exceeded"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 45h (69)",
+            "line": " 45h (69)  network BIOS session limit exceeded"
+          }
+        ],
+        "digest": "c67024f28609a535172a71d3ee356a7d10cc2fc5a90009c700314be31d25fb12"
+      }
     },
     {
       "key": "70",
@@ -902,7 +1646,18 @@
           "ref": "rbil61:INTERRUP.G #01680 46h (70)",
           "cites": " 46h (70)  temporarily paused"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 46h (70)",
+            "line": " 46h (70)  temporarily paused"
+          }
+        ],
+        "digest": "1ef750d83905f51eaffd16cc6f5b7f0f5faba18920cba8a0812bfad3c0d98392"
+      }
     },
     {
       "key": "71",
@@ -915,7 +1670,18 @@
           "ref": "rbil61:INTERRUP.G #01680 47h (71)",
           "cites": " 47h (71)  network request not accepted"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 47h (71)",
+            "line": " 47h (71)  network request not accepted"
+          }
+        ],
+        "digest": "8c5d1971b8e269c2f5c39783ab63045bc98b3f1045fe214c0a23f3bb20981f0c"
+      }
     },
     {
       "key": "72",
@@ -928,7 +1694,18 @@
           "ref": "rbil61:INTERRUP.G #01680 48h (72)",
           "cites": " 48h (72)  network print/disk redirection paused"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 48h (72)",
+            "line": " 48h (72)  network print/disk redirection paused"
+          }
+        ],
+        "digest": "2204795455b332ba0938772772fe4a7eb4830e95ef571569d7a69ea03a2d53f1"
+      }
     },
     {
       "key": "73",
@@ -941,7 +1718,18 @@
           "ref": "rbil61:INTERRUP.G #01680 49h (73)",
           "cites": " 49h (73)  network software not installed"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 49h (73)",
+            "line": " 49h (73)  network software not installed"
+          }
+        ],
+        "digest": "cf188c02e184cd4e9841fa7ee1c211a65cf19762841cf86fbf0dcae1b6986f30"
+      }
     },
     {
       "key": "74",
@@ -954,7 +1742,18 @@
           "ref": "rbil61:INTERRUP.G #01680 4Ah (74)",
           "cites": " 4Ah (74)  unexpected adapter close"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 4Ah (74)",
+            "line": " 4Ah (74)  unexpected adapter close"
+          }
+        ],
+        "digest": "b11ee76b132440903264a561e109428867039a09b48a7b739630bf2eeaa51bcb"
+      }
     },
     {
       "key": "75",
@@ -967,7 +1766,18 @@
           "ref": "rbil61:INTERRUP.G #01680 4Bh (75)",
           "cites": " 4Bh (75)  (LANtastic) password expired"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 4Bh (75)",
+            "line": " 4Bh (75)  (LANtastic) password expired"
+          }
+        ],
+        "digest": "f53be5f6fbbb79bd2f2565b1178f34920651d4d0efb494f2f71e9f3594516cf6"
+      }
     },
     {
       "key": "76",
@@ -980,7 +1790,18 @@
           "ref": "rbil61:INTERRUP.G #01680 4Ch (76)",
           "cites": " 4Ch (76)  (LANtastic) login attempt invalid at this time"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 4Ch (76)",
+            "line": " 4Ch (76)  (LANtastic) login attempt invalid at this time"
+          }
+        ],
+        "digest": "0bb64286301f0933872377df3a1e5393eb04ee9d12ebcda207465fcfbe4ba063"
+      }
     },
     {
       "key": "77",
@@ -993,7 +1814,18 @@
           "ref": "rbil61:INTERRUP.G #01680 4Dh (77)",
           "cites": " 4Dh (77)  (LANtastic v3+) disk limit exceeded on network node"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 4Dh (77)",
+            "line": " 4Dh (77)  (LANtastic v3+) disk limit exceeded on network node"
+          }
+        ],
+        "digest": "707bf26a61c03581d235de903a553d6297d4d49233e2a970e6324238642501a2"
+      }
     },
     {
       "key": "78",
@@ -1006,7 +1838,18 @@
           "ref": "rbil61:INTERRUP.G #01680 4Eh (78)",
           "cites": " 4Eh (78)  (LANtastic v3+) not logged in to network node"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 4Eh (78)",
+            "line": " 4Eh (78)  (LANtastic v3+) not logged in to network node"
+          }
+        ],
+        "digest": "b67c0dca96147ff30cda6c28ec812cf7bada5e958bcad5fa1fb4c64f6ec5498d"
+      }
     },
     {
       "key": "80",
@@ -1024,7 +1867,22 @@
           "ref": "dosbox-x:include/dos_inc.h DOSERR_FILE_ALREADY_EXISTS",
           "cites": "#define DOSERR_FILE_ALREADY_EXISTS 80"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 50h (80)",
+            "line": " 50h (80)  file exists"
+          },
+          {
+            "ref": "dosbox-x:include/dos_inc.h DOSERR_FILE_ALREADY_EXISTS",
+            "line": "#define DOSERR_FILE_ALREADY_EXISTS 80"
+          }
+        ],
+        "digest": "de130f0278b708c3614c8e9666e4e2a73c3e2059ae72598e1fbda3b6ee455c8f"
+      }
     },
     {
       "key": "81",
@@ -1037,7 +1895,18 @@
           "ref": "rbil61:INTERRUP.G #01680 51h (81)",
           "cites": " 51h (81)  (undoc) duplicated FCB"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 51h (81)",
+            "line": " 51h (81)  (undoc) duplicated FCB"
+          }
+        ],
+        "digest": "8fe7d94c32b6f22d4a87149d4013a39d8287ad0451c53ca52de861f63e6b0ae2"
+      }
     },
     {
       "key": "82",
@@ -1050,7 +1919,18 @@
           "ref": "rbil61:INTERRUP.G #01680 52h (82)",
           "cites": " 52h (82)  cannot make directory"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 52h (82)",
+            "line": " 52h (82)  cannot make directory"
+          }
+        ],
+        "digest": "e9a4af30c2851e2c6d300d33ff3dca935dc1d6ea3e7832cfc544bd45debd0dab"
+      }
     },
     {
       "key": "83",
@@ -1063,7 +1943,18 @@
           "ref": "rbil61:INTERRUP.G #01680 53h (83)",
           "cites": " 53h (83)  fail on INT 24h"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 53h (83)",
+            "line": " 53h (83)  fail on INT 24h"
+          }
+        ],
+        "digest": "bcad839979cf1d6d909e224a45a9c6fc5b41b53c2bf2ec121f56c71ef1881e9c"
+      }
     },
     {
       "key": "84",
@@ -1076,7 +1967,18 @@
           "ref": "rbil61:INTERRUP.G #01680 54h (84)",
           "cites": " 54h (84)  (DOS 3.3+) too many redirections / out of structures"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 54h (84)",
+            "line": " 54h (84)  (DOS 3.3+) too many redirections / out of structures"
+          }
+        ],
+        "digest": "82a217a8b7e7e6584dfacd9f72d756325174fa1c96523ab978e0c064e1dea6ff"
+      }
     },
     {
       "key": "85",
@@ -1089,7 +1991,18 @@
           "ref": "rbil61:INTERRUP.G #01680 55h (85)",
           "cites": " 55h (85)  (DOS 3.3+) duplicate redirection / already assigned"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 55h (85)",
+            "line": " 55h (85)  (DOS 3.3+) duplicate redirection / already assigned"
+          }
+        ],
+        "digest": "da08353868d6c7094439d22d494ac2a5d1a594a71e6b63e6562de086797641f2"
+      }
     },
     {
       "key": "86",
@@ -1102,7 +2015,18 @@
           "ref": "rbil61:INTERRUP.G #01680 56h (86)",
           "cites": " 56h (86)  (DOS 3.3+) invalid password"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 56h (86)",
+            "line": " 56h (86)  (DOS 3.3+) invalid password"
+          }
+        ],
+        "digest": "f6dd0586f7a3a65dfb6c0a8466d2695b1f36b4a9117d39bd5bfaeecac3786bae"
+      }
     },
     {
       "key": "87",
@@ -1115,7 +2039,18 @@
           "ref": "rbil61:INTERRUP.G #01680 57h (87)",
           "cites": " 57h (87)  (DOS 3.3+) invalid parameter"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 57h (87)",
+            "line": " 57h (87)  (DOS 3.3+) invalid parameter"
+          }
+        ],
+        "digest": "2722bdd22e678e029640dd62db8e8b36cbc4906f3a8c82d863ffd3d2b7bdfc9a"
+      }
     },
     {
       "key": "88",
@@ -1128,7 +2063,18 @@
           "ref": "rbil61:INTERRUP.G #01680 58h (88)",
           "cites": " 58h (88)  (DOS 3.3+) network write fault"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 58h (88)",
+            "line": " 58h (88)  (DOS 3.3+) network write fault"
+          }
+        ],
+        "digest": "1d41569cce655f8e9a1e0bc8db04b3f480a3afa9bbaa25fb57e7987a203e9c54"
+      }
     },
     {
       "key": "89",
@@ -1141,7 +2087,18 @@
           "ref": "rbil61:INTERRUP.G #01680 59h (89)",
           "cites": " 59h (89)  (DOS 4.0+) function not supported on network / no process slots"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 59h (89)",
+            "line": " 59h (89)  (DOS 4.0+) function not supported on network / no process slots"
+          }
+        ],
+        "digest": "501ce33b8253a2ebe83c2c7837c2e93ef07a670f94a73c3d0eb0ff7773249b5e"
+      }
     },
     {
       "key": "90",
@@ -1154,7 +2111,18 @@
           "ref": "rbil61:INTERRUP.G #01680 5Ah (90)",
           "cites": " 5Ah (90)  (DOS 4.0+) required system component not installed / not frozen"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 5Ah (90)",
+            "line": " 5Ah (90)  (DOS 4.0+) required system component not installed / not frozen"
+          }
+        ],
+        "digest": "397f271d3a478557268308eb195aee2555d2e68ef25726d5c793c21bd8e3a1c9"
+      }
     },
     {
       "key": "91",
@@ -1167,7 +2135,18 @@
           "ref": "rbil61:INTERRUP.G #01680 5Bh (91)",
           "cites": " 5Bh (91)  (DOS 4.0+,NetWare4) timer server table overflowed"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 5Bh (91)",
+            "line": " 5Bh (91)  (DOS 4.0+,NetWare4) timer server table overflowed"
+          }
+        ],
+        "digest": "4e6bcf1ea58565baf83ffe5d6d5ec928aa9bb228ac4303a981350b76682aa76b"
+      }
     },
     {
       "key": "92",
@@ -1180,7 +2159,18 @@
           "ref": "rbil61:INTERRUP.G #01680 5Ch (92)",
           "cites": " 5Ch (92)  (DOS 4.0+,NetWare4) duplicate in timer service table"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 5Ch (92)",
+            "line": " 5Ch (92)  (DOS 4.0+,NetWare4) duplicate in timer service table"
+          }
+        ],
+        "digest": "31d99d04ae01e194e8c2ca0fa7f4e8add8d79fe741986e8eebfc94f88c8b1731"
+      }
     },
     {
       "key": "93",
@@ -1193,7 +2183,18 @@
           "ref": "rbil61:INTERRUP.G #01680 5Dh (93)",
           "cites": " 5Dh (93)  (DOS 4.0+,NetWare4) no items to work on"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 5Dh (93)",
+            "line": " 5Dh (93)  (DOS 4.0+,NetWare4) no items to work on"
+          }
+        ],
+        "digest": "04683b4a91afff635e15b1bcb2292fd00f30ca89634b2071a3600d46955620ca"
+      }
     },
     {
       "key": "95",
@@ -1206,7 +2207,18 @@
           "ref": "rbil61:INTERRUP.G #01680 5Fh (95)",
           "cites": " 5Fh (95)  (DOS 4.0+,NetWare4) interrupted / invalid system call"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 5Fh (95)",
+            "line": " 5Fh (95)  (DOS 4.0+,NetWare4) interrupted / invalid system call"
+          }
+        ],
+        "digest": "e4a02a20f399a7d00c0f1d45f8ccf312540ae8efc1926c63ef988085043e3538"
+      }
     }
   ]
 }

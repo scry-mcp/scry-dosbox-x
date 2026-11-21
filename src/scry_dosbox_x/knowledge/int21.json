@@ -22,7 +22,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x00",
           "cites": "        case 0x00:      /* Terminate Program */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2100",
+            "line": "INT 21 - DOS 1+ - TERMINATE PROGRAM"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x00",
+            "line": "        case 0x00:      /* Terminate Program */"
+          }
+        ],
+        "digest": "a673a61850be9abc4f06dcf95c519e8b3b6f272286447c853e10143ae7a97fd5"
+      }
     },
     {
       "key": "0x21/0x01",
@@ -40,7 +55,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x01",
           "cites": "        case 0x01:      /* Read character from STDIN, with echo */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2101",
+            "line": "INT 21 - DOS 1+ - READ CHARACTER FROM STANDARD INPUT, WITH ECHO"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x01",
+            "line": "        case 0x01:      /* Read character from STDIN, with echo */"
+          }
+        ],
+        "digest": "b094834f271509fd6f34b4795bf30601dda36f2e8f48d7aaf66007722be0aa89"
+      }
     },
     {
       "key": "0x21/0x02",
@@ -58,7 +88,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x02",
           "cites": "        case 0x02:      /* Write character to STDOUT */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2102",
+            "line": "INT 21 - DOS 1+ - WRITE CHARACTER TO STANDARD OUTPUT"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x02",
+            "line": "        case 0x02:      /* Write character to STDOUT */"
+          }
+        ],
+        "digest": "996fd8e13e8670e615692bda628c8b8c3b4287bc882d9190da54505407f09bab"
+      }
     },
     {
       "key": "0x21/0x03",
@@ -76,7 +121,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x03",
           "cites": "        case 0x03:      /* Read character from STDAUX */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2103",
+            "line": "INT 21 - DOS 1+ - READ CHARACTER FROM STDAUX"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x03",
+            "line": "        case 0x03:      /* Read character from STDAUX */"
+          }
+        ],
+        "digest": "3a3f1a0cc883fa71d5f7dc0e5c6818d85d60366a38ed3fa4e65c1baa9f3a3fb3"
+      }
     },
     {
       "key": "0x21/0x04",
@@ -94,7 +154,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x04",
           "cites": "        case 0x04:      /* Write Character to STDAUX */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2104",
+            "line": "INT 21 - DOS 1+ - WRITE CHARACTER TO STDAUX"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x04",
+            "line": "        case 0x04:      /* Write Character to STDAUX */"
+          }
+        ],
+        "digest": "3e609820637a8e56b547534c50dd06c26684384306c3bf3b747bebbeaf14a033"
+      }
     },
     {
       "key": "0x21/0x05",
@@ -112,7 +187,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x05",
           "cites": "        case 0x05:      /* Write Character to PRINTER */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2105",
+            "line": "INT 21 - DOS 1+ - WRITE CHARACTER TO PRINTER"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x05",
+            "line": "        case 0x05:      /* Write Character to PRINTER */"
+          }
+        ],
+        "digest": "b8ba48a4f2a8bc8b8f55316d0c34c8179148c414f5dcb349a9881e874b379c71"
+      }
     },
     {
       "key": "0x21/0x06",
@@ -130,7 +220,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x06",
           "cites": "        case 0x06:      /* Direct Console Output / Input */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2106",
+            "line": "INT 21 - DOS 1+ - DIRECT CONSOLE OUTPUT"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x06",
+            "line": "        case 0x06:      /* Direct Console Output / Input */"
+          }
+        ],
+        "digest": "a13d7d4c8b23e2e1267c63ab1cc8489389898215cc4dfaa26c061fe85f60d724"
+      }
     },
     {
       "key": "0x21/0x07",
@@ -148,7 +253,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x07",
           "cites": "        case 0x07:      /* Character Input, without echo */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2107",
+            "line": "INT 21 - DOS 1+ - DIRECT CHARACTER INPUT, WITHOUT ECHO"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x07",
+            "line": "        case 0x07:      /* Character Input, without echo */"
+          }
+        ],
+        "digest": "15694a1899de97d83d3e0e94b43e637ea7b4b8a1b592806157e99deedb8dcc0d"
+      }
     },
     {
       "key": "0x21/0x08",
@@ -166,7 +286,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x08",
           "cites": "        case 0x08:      /* Direct Character Input, without echo (checks for breaks officially :)*/"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2108",
+            "line": "INT 21 - DOS 1+ - CHARACTER INPUT WITHOUT ECHO"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x08",
+            "line": "        case 0x08:      /* Direct Character Input, without echo (checks for breaks officially :)*/"
+          }
+        ],
+        "digest": "c78d1376048d81eb12911a68958821d758bbf0020a955c386c3987dfb509c68d"
+      }
     },
     {
       "key": "0x21/0x09",
@@ -184,7 +319,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x09",
           "cites": "        case 0x09:      /* Write string to STDOUT */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2109",
+            "line": "INT 21 - DOS 1+ - WRITE STRING TO STANDARD OUTPUT"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x09",
+            "line": "        case 0x09:      /* Write string to STDOUT */"
+          }
+        ],
+        "digest": "0d8837af5ae49d7248193c6358904dfe3344eb1367b7fb39a859ba894969ffff"
+      }
     },
     {
       "key": "0x21/0x0A",
@@ -202,7 +352,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0a",
           "cites": "        case 0x0a:      /* Buffered Input */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-210A",
+            "line": "INT 21 - DOS 1+ - BUFFERED INPUT"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0a",
+            "line": "        case 0x0a:      /* Buffered Input */"
+          }
+        ],
+        "digest": "7a6031630eae5972730f33a1be7f5ed975c4e2145466098caca8094c4a9d8e4c"
+      }
     },
     {
       "key": "0x21/0x0B",
@@ -220,7 +385,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0b",
           "cites": "        case 0x0b:      /* Get STDIN Status */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-210B",
+            "line": "INT 21 - DOS 1+ - GET STDIN STATUS"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0b",
+            "line": "        case 0x0b:      /* Get STDIN Status */"
+          }
+        ],
+        "digest": "f051acea636adf6e636f4fd031827a91bb14164d631be69648451d09777fccf8"
+      }
     },
     {
       "key": "0x21/0x0C",
@@ -238,7 +418,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c",
           "cites": "        case 0x0c:      /* Flush Buffer and read STDIN call */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-210C",
+            "line": "INT 21 - DOS 1+ - FLUSH BUFFER AND READ STANDARD INPUT"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c",
+            "line": "        case 0x0c:      /* Flush Buffer and read STDIN call */"
+          }
+        ],
+        "digest": "4bbd236c3cae9e1bb8f0158b505ff3583f2be90e0925bf8a105877f9b69f0889"
+      }
     },
     {
       "key": "0x21/0x0C/0x01",
@@ -251,7 +446,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x1",
           "cites": "                    case 0x1:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x1",
+            "line": "                    case 0x1:"
+          }
+        ],
+        "digest": "14381c2e0ff3f49c1db16ef8d76f33d51850e875ba737ed3b3f151ce9cd25513"
+      }
     },
     {
       "key": "0x21/0x0C/0x06",
@@ -264,7 +470,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x6",
           "cites": "                    case 0x6:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x6",
+            "line": "                    case 0x6:"
+          }
+        ],
+        "digest": "03eb00d81cbfbab7d45f73ec7a7a1d57c05d0143f5f1cb40c5081710ef24c2af"
+      }
     },
     {
       "key": "0x21/0x0C/0x07",
@@ -277,7 +494,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x7",
           "cites": "                    case 0x7:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x7",
+            "line": "                    case 0x7:"
+          }
+        ],
+        "digest": "81e7769cc9409c8ff2c393a9099c0d806b273ea001ac5ef28bafd6c73d317711"
+      }
     },
     {
       "key": "0x21/0x0C/0x08",
@@ -290,7 +518,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x8",
           "cites": "                    case 0x8:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x8",
+            "line": "                    case 0x8:"
+          }
+        ],
+        "digest": "c682c529d19cce2a94d68bee6b252f8acb031e4a9bbdacd0085215dfec5bd35d"
+      }
     },
     {
       "key": "0x21/0x0C/0x0A",
@@ -303,7 +542,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0xa",
           "cites": "                    case 0xa:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0xa",
+            "line": "                    case 0xa:"
+          }
+        ],
+        "digest": "20fdcdf11f1cc7d478a88837d55606922c49f553c0f9647878db2d544b326154"
+      }
     },
     {
       "key": "0x21/0x0D",
@@ -322,7 +572,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0d",
           "cites": "        case 0x0d:      /* Disk Reset */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-210D",
+            "line": "INT 21 - DOS 1+ - DISK RESET"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0d",
+            "line": "        case 0x0d:      /* Disk Reset */"
+          }
+        ],
+        "digest": "ec55e2a474a7b71d05f2d8c3c936ca214b3031e54fb1cb5d0c5102dfa38d85ed"
+      }
     },
     {
       "key": "0x21/0x0E",
@@ -341,7 +606,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0e",
           "cites": "        case 0x0e:      /* Select Default Drive */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-210E",
+            "line": "INT 21 - DOS 1+ - SELECT DEFAULT DRIVE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0e",
+            "line": "        case 0x0e:      /* Select Default Drive */"
+          }
+        ],
+        "digest": "cd3bc597ebb2e503901cd359b959f77b870db30ca2673cb331e01211c7027a33"
+      }
     },
     {
       "key": "0x21/0x0F",
@@ -359,7 +639,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0f",
           "cites": "        case 0x0f:      /* Open File using FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-210F",
+            "line": "INT 21 - DOS 1+ - OPEN FILE USING FCB"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0f",
+            "line": "        case 0x0f:      /* Open File using FCB */"
+          }
+        ],
+        "digest": "cf223151682bf40968fa006b5b3c95eb47110579cf683d5a75cc7ac881c173c3"
+      }
     },
     {
       "key": "0x21/0x10",
@@ -377,7 +672,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x10",
           "cites": "        case 0x10:      /* Close File using FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2110",
+            "line": "INT 21 - DOS 1+ - CLOSE FILE USING FCB"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x10",
+            "line": "        case 0x10:      /* Close File using FCB */"
+          }
+        ],
+        "digest": "047f625cde9ce007bc2ed76f7864b04dd9d5ad32e38b24a94dc96b142e7bb5e6"
+      }
     },
     {
       "key": "0x21/0x11",
@@ -395,7 +705,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x11",
           "cites": "        case 0x11:      /* Find First Matching File using FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2111",
+            "line": "INT 21 - DOS 1+ - FIND FIRST MATCHING FILE USING FCB"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x11",
+            "line": "        case 0x11:      /* Find First Matching File using FCB */"
+          }
+        ],
+        "digest": "008dfb4d684ecf5345b07fa125aa0d30b4fedb71656c2972bfb3ce9ddda7fcc1"
+      }
     },
     {
       "key": "0x21/0x12",
@@ -413,7 +738,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x12",
           "cites": "        case 0x12:      /* Find Next Matching File using FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2112",
+            "line": "INT 21 - DOS 1+ - FIND NEXT MATCHING FILE USING FCB"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x12",
+            "line": "        case 0x12:      /* Find Next Matching File using FCB */"
+          }
+        ],
+        "digest": "a7009a3c42d99d2b5df78112baf7f18f54da57b9effa14749a6ac59183b2f41d"
+      }
     },
     {
       "key": "0x21/0x13",
@@ -431,7 +771,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x13",
           "cites": "        case 0x13:      /* Delete File using FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2113",
+            "line": "INT 21 - DOS 1+ - DELETE FILE USING FCB"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x13",
+            "line": "        case 0x13:      /* Delete File using FCB */"
+          }
+        ],
+        "digest": "558fe2fcc2e59bd6a929b9e78ef78944e8cd764cde3b78bf1abe46ba0a7607c6"
+      }
     },
     {
       "key": "0x21/0x16",
@@ -449,7 +804,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x16",
           "cites": "        case 0x16:      /* Create or truncate file using FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2116",
+            "line": "INT 21 - DOS 1+ - CREATE OR TRUNCATE FILE USING FCB"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x16",
+            "line": "        case 0x16:      /* Create or truncate file using FCB */"
+          }
+        ],
+        "digest": "e428483679d90cdc6cd058363505788c5f32d29a6850e86ed3f5bc0304b022f0"
+      }
     },
     {
       "key": "0x21/0x17",
@@ -467,7 +837,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x17",
           "cites": "        case 0x17:      /* Rename file using FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2117",
+            "line": "INT 21 - DOS 1+ - RENAME FILE USING FCB"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x17",
+            "line": "        case 0x17:      /* Rename file using FCB */"
+          }
+        ],
+        "digest": "65139c1d89c4dba44dd83a9edf198cb28c0158a1184d93702bbbec8c9798fc4c"
+      }
     },
     {
       "key": "0x21/0x14",
@@ -486,7 +871,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x14",
           "cites": "        case 0x14:      /* Sequential read from FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2114",
+            "line": "INT 21 - DOS 1+ - SEQUENTIAL READ FROM FCB FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x14",
+            "line": "        case 0x14:      /* Sequential read from FCB */"
+          }
+        ],
+        "digest": "ee9744ece8b9b020d5a6d07b041316dfa47130ce9eeb2f8b133560c1ff443da2"
+      }
     },
     {
       "key": "0x21/0x15",
@@ -505,7 +905,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x15",
           "cites": "        case 0x15:      /* Sequential write to FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2115",
+            "line": "INT 21 - DOS 1+ - SEQUENTIAL WRITE TO FCB FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x15",
+            "line": "        case 0x15:      /* Sequential write to FCB */"
+          }
+        ],
+        "digest": "5c4ddef2a0e0741dbf729aa6d8b3c7f8f0d563fb9246ffd337137b432701c722"
+      }
     },
     {
       "key": "0x21/0x18",
@@ -523,7 +938,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x18",
           "cites": "        case 0x18:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2118",
+            "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x18",
+            "line": "        case 0x18:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+          }
+        ],
+        "digest": "7547e14a758f1a98ea01bb4a14106f68cf69167f744a9129dfe3f1524bafe3a5"
+      }
     },
     {
       "key": "0x21/0x19",
@@ -541,7 +971,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x19",
           "cites": "        case 0x19:      /* Get current default drive */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2119",
+            "line": "INT 21 - DOS 1+ - GET CURRENT DEFAULT DRIVE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x19",
+            "line": "        case 0x19:      /* Get current default drive */"
+          }
+        ],
+        "digest": "2c4e54fbe7db01b3018ea425fb7517d6e5048fa819f4fd2c4d8e0b096d9a3d95"
+      }
     },
     {
       "key": "0x21/0x1A",
@@ -559,7 +1004,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1a",
           "cites": "        case 0x1a:      /* Set Disk Transfer Area Address */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-211A",
+            "line": "INT 21 - DOS 1+ - SET DISK TRANSFER AREA ADDRESS"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1a",
+            "line": "        case 0x1a:      /* Set Disk Transfer Area Address */"
+          }
+        ],
+        "digest": "f4014271e4dc3f81e39161c9ed7044ac405bab2c42e4fb880f12240faf66f61c"
+      }
     },
     {
       "key": "0x21/0x1B",
@@ -577,7 +1037,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1b",
           "cites": "        case 0x1b:      /* Get allocation info for default drive */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-211B",
+            "line": "INT 21 - DOS 1+ - GET ALLOCATION INFORMATION FOR DEFAULT DRIVE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1b",
+            "line": "        case 0x1b:      /* Get allocation info for default drive */"
+          }
+        ],
+        "digest": "8ed13009cbcbc2ae7543dc1094f80ef74896702cc850862aa32c4aec82ab71cc"
+      }
     },
     {
       "key": "0x21/0x1C",
@@ -595,7 +1070,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1c",
           "cites": "        case 0x1c:      /* Get allocation info for specific drive */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-211C",
+            "line": "INT 21 - DOS 1+ - GET ALLOCATION INFORMATION FOR SPECIFIC DRIVE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1c",
+            "line": "        case 0x1c:      /* Get allocation info for specific drive */"
+          }
+        ],
+        "digest": "3d0aeafa4e5e53631f83a5689dc3059f2a39d27a68c78cde5de8bcc9297e60b0"
+      }
     },
     {
       "key": "0x21/0x1D",
@@ -613,7 +1103,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1d",
           "cites": "        case 0x1d:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-211D",
+            "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1d",
+            "line": "        case 0x1d:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+          }
+        ],
+        "digest": "27e49a806da4a5e470cf54fe59aeaba47d7b229389ec3913017aebe05edbbe69"
+      }
     },
     {
       "key": "0x21/0x1E",
@@ -631,7 +1136,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1e",
           "cites": "        case 0x1e:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-211E",
+            "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1e",
+            "line": "        case 0x1e:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+          }
+        ],
+        "digest": "b0bd228c8f801dbc4b3c7a0e868f73887ad9e5a5733996b38a5b1972bcc51fad"
+      }
     },
     {
       "key": "0x21/0x20",
@@ -649,7 +1169,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x20",
           "cites": "        case 0x20:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2120",
+            "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x20",
+            "line": "        case 0x20:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+          }
+        ],
+        "digest": "287c312b132343735fb00a5e2d44601c5074e46d751bb0e38ecec0fe61dff40b"
+      }
     },
     {
       "key": "0x21/0x1F",
@@ -667,7 +1202,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1f",
           "cites": "        case 0x1f: /* Get drive parameter block for default drive */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-211F",
+            "line": "INT 21 - DOS 1+ - GET DRIVE PARAMETER BLOCK FOR DEFAULT DRIVE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1f",
+            "line": "        case 0x1f: /* Get drive parameter block for default drive */"
+          }
+        ],
+        "digest": "de07c7c6b94b1f1e48625434bc37480364b62e1af9c3b0c7de37c488501057c4"
+      }
     },
     {
       "key": "0x21/0x21",
@@ -723,7 +1273,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x23",
           "cites": "        case 0x23:      /* Get file size for FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2123",
+            "line": "INT 21 - DOS 1+ - GET FILE SIZE FOR FCB"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x23",
+            "line": "        case 0x23:      /* Get file size for FCB */"
+          }
+        ],
+        "digest": "0a82fb7fb8b9956519005d21fd730a24f49716e39d54f1775ecc822abc9dc720"
+      }
     },
     {
       "key": "0x21/0x24",
@@ -741,7 +1306,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x24",
           "cites": "        case 0x24:      /* Set Random Record number for FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2124",
+            "line": "INT 21 - DOS 1+ - SET RANDOM RECORD NUMBER FOR FCB"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x24",
+            "line": "        case 0x24:      /* Set Random Record number for FCB */"
+          }
+        ],
+        "digest": "7081f4e1d5544f7fa4b26d9380101995e34b025f7ba6a04b71fb475ad7aab4ca"
+      }
     },
     {
       "key": "0x21/0x25",
@@ -759,7 +1339,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x25",
           "cites": "        case 0x25:      /* Set Interrupt Vector */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2125",
+            "line": "INT 21 - DOS 1+ - SET INTERRUPT VECTOR"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x25",
+            "line": "        case 0x25:      /* Set Interrupt Vector */"
+          }
+        ],
+        "digest": "f03c23c3b7f79f50c900e1e53fb0b56cde716c87fd6685fffe4e4e054732d538"
+      }
     },
     {
       "key": "0x21/0x26",
@@ -777,7 +1372,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x26",
           "cites": "        case 0x26:      /* Create new PSP */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2126",
+            "line": "INT 21 - DOS 1+ - CREATE NEW PROGRAM SEGMENT PREFIX"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x26",
+            "line": "        case 0x26:      /* Create new PSP */"
+          }
+        ],
+        "digest": "56b7c1cd83ec9bcfc4d99d3878e5e27c0565f1ef41a667d0c41ee68a2872110c"
+      }
     },
     {
       "key": "0x21/0x27",
@@ -796,7 +1406,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x27",
           "cites": "        case 0x27:      /* Random block read from FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2127",
+            "line": "INT 21 - DOS 1+ - RANDOM BLOCK READ FROM FCB FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x27",
+            "line": "        case 0x27:      /* Random block read from FCB */"
+          }
+        ],
+        "digest": "572906b6a136e1c110318c80c92d321e6fb8869570cc33b00acfc91881e50eb8"
+      }
     },
     {
       "key": "0x21/0x28",
@@ -815,7 +1440,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x28",
           "cites": "        case 0x28:      /* Random Block write to FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2128",
+            "line": "INT 21 - DOS 1+ - RANDOM BLOCK WRITE TO FCB FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x28",
+            "line": "        case 0x28:      /* Random Block write to FCB */"
+          }
+        ],
+        "digest": "54a20f707397e71c4cb4d70893dfa40e8a477f99a0459d29bd5535f45eb3d891"
+      }
     },
     {
       "key": "0x21/0x29",
@@ -833,7 +1473,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x29",
           "cites": "        case 0x29:      /* Parse filename into FCB */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2129",
+            "line": "INT 21 - DOS 1+ - PARSE FILENAME INTO FCB"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x29",
+            "line": "        case 0x29:      /* Parse filename into FCB */"
+          }
+        ],
+        "digest": "993b5c9622cfbe3efa96fe521f52c10066467d3ee53beb14f8fe48050ad49f56"
+      }
     },
     {
       "key": "0x21/0x2A",
@@ -851,7 +1506,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2a",
           "cites": "        case 0x2a:      /* Get System Date */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-212A",
+            "line": "INT 21 - DOS 1+ - GET SYSTEM DATE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2a",
+            "line": "        case 0x2a:      /* Get System Date */"
+          }
+        ],
+        "digest": "5e90c220bb5633103d3f0ee5309d09875cd371e505d43d50900c5d4450884480"
+      }
     },
     {
       "key": "0x21/0x2B",
@@ -870,7 +1540,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2b",
           "cites": "        case 0x2b:      /* Set System Date */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-212B",
+            "line": "INT 21 - DOS 1+ - SET SYSTEM DATE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2b",
+            "line": "        case 0x2b:      /* Set System Date */"
+          }
+        ],
+        "digest": "0286f4d34377797e07f8c841d33c6d2d67a55b74883948d4ed51d4cc9bb931c5"
+      }
     },
     {
       "key": "0x21/0x2C",
@@ -888,7 +1573,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2c",
           "cites": "        case 0x2c: {    /* Get System Time */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-212C",
+            "line": "INT 21 - DOS 1+ - GET SYSTEM TIME"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2c",
+            "line": "        case 0x2c: {    /* Get System Time */"
+          }
+        ],
+        "digest": "1708552f62014010e0fec50843f66304e890cfe49b528cb022ab0bb02f47576a"
+      }
     },
     {
       "key": "0x21/0x2D",
@@ -906,7 +1606,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2d",
           "cites": "        case 0x2d:      /* Set System Time */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-212D",
+            "line": "INT 21 - DOS 1+ - SET SYSTEM TIME"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2d",
+            "line": "        case 0x2d:      /* Set System Time */"
+          }
+        ],
+        "digest": "cfa4630f48eff54ab0bc68100d1d3758972411beaa49e9ec043393f21ba63d05"
+      }
     },
     {
       "key": "0x21/0x2E",
@@ -924,7 +1639,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2e",
           "cites": "        case 0x2e:      /* Set Verify flag */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-212E--DL00",
+            "line": "INT 21 - DOS 1+ - SET VERIFY FLAG"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2e",
+            "line": "        case 0x2e:      /* Set Verify flag */"
+          }
+        ],
+        "digest": "a5596f06a4f6425fd21eb60888ce3c09dbded277495da69ac422c6f961872631"
+      }
     },
     {
       "key": "0x21/0x2F",
@@ -942,7 +1672,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2f",
           "cites": "        case 0x2f:      /* Get Disk Transfer Area */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-212F",
+            "line": "INT 21 - DOS 2+ - GET DISK TRANSFER AREA ADDRESS"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2f",
+            "line": "        case 0x2f:      /* Get Disk Transfer Area */"
+          }
+        ],
+        "digest": "51fcee0d60cd0a481d8627bff8ea7dc778cb112d9f51d1b325674040e8602d39"
+      }
     },
     {
       "key": "0x21/0x30",
@@ -960,7 +1705,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x30",
           "cites": "        case 0x30:      /* Get DOS Version */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2130",
+            "line": "INT 21 - DOS 2+ - GET DOS VERSION"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x30",
+            "line": "        case 0x30:      /* Get DOS Version */"
+          }
+        ],
+        "digest": "e97b2a468bd86ae9ae77292ac888e7e8b19523c3645fa1e6c1dffc8334c639a5"
+      }
     },
     {
       "key": "0x21/0x31",
@@ -978,7 +1738,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x31",
           "cites": "        case 0x31:      /* Terminate and stay resident */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2131",
+            "line": "INT 21 - DOS 2+ - TERMINATE AND STAY RESIDENT"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x31",
+            "line": "        case 0x31:      /* Terminate and stay resident */"
+          }
+        ],
+        "digest": "04fe1575126b74203e84b7abb01d9e26b4c718e57f841793e30f2439c3d30581"
+      }
     },
     {
       "key": "0x21/0x32",
@@ -997,7 +1772,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x32",
           "cites": "        case 0x32: /* Get drive parameter block for specific drive */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2132",
+            "line": "INT 21 - DOS 2+ - GET DOS DRIVE PARAMETER BLOCK FOR SPECIFIC DRIVE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x32",
+            "line": "        case 0x32: /* Get drive parameter block for specific drive */"
+          }
+        ],
+        "digest": "91d495af7973bdb0c050672a591038d92af24da71b3c211bb261bf6608836bd4"
+      }
     },
     {
       "key": "0x21/0x33",
@@ -1015,7 +1805,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33",
           "cites": "        case 0x33:      /* Extended Break Checking */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2133",
+            "line": "INT 21 - DOS 2+ - EXTENDED BREAK CHECKING"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33",
+            "line": "        case 0x33:      /* Extended Break Checking */"
+          }
+        ],
+        "digest": "7947c94ac630372b270e55e2e9c6b29ae075a2aebf3c49ca488f1b638ced03da"
+      }
     },
     {
       "key": "0x21/0x33/0x00",
@@ -1028,7 +1833,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 0",
           "cites": "                case 0:reg_dl=dos.breakcheck;break;         /* Get the breakcheck flag */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 0",
+            "line": "                case 0:reg_dl=dos.breakcheck;break;         /* Get the breakcheck flag */"
+          }
+        ],
+        "digest": "166228295ea425f6fadbe06d3709b447e86720189abb99e4d1536ded66871aed"
+      }
     },
     {
       "key": "0x21/0x33/0x01",
@@ -1041,7 +1857,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 1",
           "cites": "                case 1:dos.breakcheck=(reg_dl>0);break;     /* Set the breakcheck flag */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 1",
+            "line": "                case 1:dos.breakcheck=(reg_dl>0);break;     /* Set the breakcheck flag */"
+          }
+        ],
+        "digest": "fb964e5a1400f3e6e3392563d8badf9b073fe2a360376f5a12b0c4982cbd3082"
+      }
     },
     {
       "key": "0x21/0x33/0x02",
@@ -1059,7 +1886,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 2",
           "cites": "                case 2:{bool old=dos.breakcheck;dos.breakcheck=(reg_dl>0);reg_dl=old;}break;"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213302",
+            "line": "INT 21 - DOS 3.x+ internal - GET AND SET EXTENDED CONTROL-BREAK CHECKING STATE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 2",
+            "line": "                case 2:{bool old=dos.breakcheck;dos.breakcheck=(reg_dl>0);reg_dl=old;}break;"
+          }
+        ],
+        "digest": "b324a094fd8e733907ac2f7d2aaff44e8e6ab6ebeaa5cdf52a04309d56609d84"
+      }
     },
     {
       "key": "0x21/0x33/0x03",
@@ -1078,7 +1920,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 3",
           "cites": "                case 3: /* Get cpsw */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213303",
+            "line": "INT 21 - DOS 3.4/4.0 - GET CURRENT CPSW STATE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 3",
+            "line": "                case 3: /* Get cpsw */"
+          }
+        ],
+        "digest": "50b3590912205742ad3155ec1348be8b45f87882ace91f4c5abe096dace44483"
+      }
     },
     {
       "key": "0x21/0x33/0x04",
@@ -1096,7 +1953,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 4",
           "cites": "                case 4: /* Set cpsw */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213304",
+            "line": "INT 21 - DOS 3.4/4.0 - SET CPSW STATE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 4",
+            "line": "                case 4: /* Set cpsw */"
+          }
+        ],
+        "digest": "d00c560c2cdfce026b4efbb918753bdeea064c372fb0eb1aab011c5ff333c726"
+      }
     },
     {
       "key": "0x21/0x33/0x05",
@@ -1114,7 +1986,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 5",
           "cites": "\t\tcase 5:reg_dl=3;break; /* Drive C: (TODO: Make configurable, or else initially set to Z: then re-set to the first drive mounted */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213305",
+            "line": "INT 21 - DOS 4.0+ - GET BOOT DRIVE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 5",
+            "line": "\t\tcase 5:reg_dl=3;break; /* Drive C: (TODO: Make configurable, or else initially set to Z: then re-set to the first drive mounted */"
+          }
+        ],
+        "digest": "c1cd71b0f8900ae69b3e08852a1cf348c49800be19aafb4af7cc9a3ecc5e7726"
+      }
     },
     {
       "key": "0x21/0x33/0x06",
@@ -1132,7 +2019,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 6",
           "cites": "                case 6:                                         /* Get true version number */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213306",
+            "line": "INT 21 - DOS 5+ - GET TRUE VERSION NUMBER"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 6",
+            "line": "                case 6:                                         /* Get true version number */"
+          }
+        ],
+        "digest": "7403d27cbe43e46b050f7e9fc9b97eb94c86b95ee9a560f0e579fa1a20fc1db1"
+      }
     },
     {
       "key": "0x21/0x33/0x07",
@@ -1150,7 +2052,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 7",
           "cites": "                case 7:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213307",
+            "line": "INT 21 - Windows95 - SET/CLEAR DOS_FLAG"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 7",
+            "line": "                case 7:"
+          }
+        ],
+        "digest": "ce6a46297678cbed07d769ce42c24e0a1408bdf814257a4cd726412522f26ad7"
+      }
     },
     {
       "key": "0x21/0x34",
@@ -1168,7 +2085,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x34",
           "cites": "        case 0x34:      /* Get INDos Flag */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2134",
+            "line": "INT 21 - DOS 2+ - GET ADDRESS OF INDOS FLAG"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x34",
+            "line": "        case 0x34:      /* Get INDos Flag */"
+          }
+        ],
+        "digest": "138009ab61d6fb6843a5aea8848e330ea00619c3414864a6345bd794622402f6"
+      }
     },
     {
       "key": "0x21/0x35",
@@ -1186,7 +2118,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x35",
           "cites": "        case 0x35:      /* Get interrupt vector */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2135",
+            "line": "INT 21 - DOS 2+ - GET INTERRUPT VECTOR"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x35",
+            "line": "        case 0x35:      /* Get interrupt vector */"
+          }
+        ],
+        "digest": "7e4c23469eb8f94e5bf7f318768483542938208fccf2387ed1f7cdd989ed9abf"
+      }
     },
     {
       "key": "0x21/0x36",
@@ -1204,7 +2151,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x36",
           "cites": "        case 0x36:      /* Get Free Disk Space */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2136",
+            "line": "INT 21 - DOS 2+ - GET FREE DISK SPACE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x36",
+            "line": "        case 0x36:      /* Get Free Disk Space */"
+          }
+        ],
+        "digest": "08436d2c69e85ed0703de3e28c80a406c2d8d573956a46a948474dba373b4d67"
+      }
     },
     {
       "key": "0x21/0x37",
@@ -1223,7 +2185,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37",
           "cites": "        case 0x37:      /* Get/Set Switch char Get/Set Availdev thing */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2137",
+            "line": "INT 21 - DOS 2.x and 3.3+ only - \"AVAILDEV\" - SPECIFY \\DEV\\ PREFIX USE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37",
+            "line": "        case 0x37:      /* Get/Set Switch char Get/Set Availdev thing */"
+          }
+        ],
+        "digest": "28ecf508e5c8c9cd10508055f066fe888688cfe373677e0e03f37a143d5e2ce4"
+      }
     },
     {
       "key": "0x21/0x37/0x00",
@@ -1241,7 +2218,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 0",
           "cites": "                case 0:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213700",
+            "line": "INT 21 - DOS 2+ - \"SWITCHAR\" - GET SWITCH CHARACTER"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 0",
+            "line": "                case 0:"
+          }
+        ],
+        "digest": "68d256ad078d980c738af19a262e99dd9ed0150a25f4260027a3637a054e63ce"
+      }
     },
     {
       "key": "0x21/0x37/0x01",
@@ -1259,7 +2251,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 1",
           "cites": "                case 1:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213701",
+            "line": "INT 21 - DOS 2+ - \"SWITCHAR\" - SET SWITCH CHARACTER"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 1",
+            "line": "                case 1:"
+          }
+        ],
+        "digest": "224968325a51c5988d7c649c52c769ba42b2dbcd00e97967ced5c000cab6617d"
+      }
     },
     {
       "key": "0x21/0x37/0x02",
@@ -1272,7 +2279,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 2",
           "cites": "                case 2:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 2",
+            "line": "                case 2:"
+          }
+        ],
+        "digest": "32bf288420a38200c2c9d8823e1c67e5c04a80fad7e50674020369cc193e9a87"
+      }
     },
     {
       "key": "0x21/0x37/0x03",
@@ -1285,7 +2303,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 3",
           "cites": "                case 3:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 3",
+            "line": "                case 3:"
+          }
+        ],
+        "digest": "ea8acb985991283a88de331c4b67b8baff775e3ee26453bad99e6009c07d49f3"
+      }
     },
     {
       "key": "0x21/0x38",
@@ -1304,7 +2333,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x38",
           "cites": "        case 0x38:                  /* Set Country Code */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2138",
+            "line": "INT 21 - DOS 2+ - GET COUNTRY-SPECIFIC INFORMATION"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x38",
+            "line": "        case 0x38:                  /* Set Country Code */"
+          }
+        ],
+        "digest": "c1bd9bc1bec5b0ce82a45891452cd1485af0274d4ff37b1788f2a470a1400d9f"
+      }
     },
     {
       "key": "0x21/0x39",
@@ -1322,7 +2366,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x39",
           "cites": "        case 0x39:      /* MKDIR Create directory */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2139",
+            "line": "INT 21 - DOS 2+ - \"MKDIR\" - CREATE SUBDIRECTORY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x39",
+            "line": "        case 0x39:      /* MKDIR Create directory */"
+          }
+        ],
+        "digest": "0ef46e331356b2fce68c2fd0990c35886d1a55e65e040e8a7dff8dc6bfbcb824"
+      }
     },
     {
       "key": "0x21/0x3A",
@@ -1340,7 +2399,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3a",
           "cites": "        case 0x3a:      /* RMDIR Remove directory */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213A",
+            "line": "INT 21 - DOS 2+ - \"RMDIR\" - REMOVE SUBDIRECTORY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3a",
+            "line": "        case 0x3a:      /* RMDIR Remove directory */"
+          }
+        ],
+        "digest": "8139917ef9b9fcf871e59ad32a1d5cec3b9cfbb8caa6694ea11c25fec815b044"
+      }
     },
     {
       "key": "0x21/0x3B",
@@ -1358,7 +2432,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3b",
           "cites": "        case 0x3b:      /* CHDIR Set current directory */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213B",
+            "line": "INT 21 - DOS 2+ - \"CHDIR\" - SET CURRENT DIRECTORY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3b",
+            "line": "        case 0x3b:      /* CHDIR Set current directory */"
+          }
+        ],
+        "digest": "ad21514f9b195eee5af2472f337710d1aa09c04f20c117e70fd2d5feddeec0de"
+      }
     },
     {
       "key": "0x21/0x3C",
@@ -1376,7 +2465,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3c",
           "cites": "        case 0x3c:      /* CREATE Create or truncate file */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213C",
+            "line": "INT 21 - DOS 2+ - \"CREAT\" - CREATE OR TRUNCATE FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3c",
+            "line": "        case 0x3c:      /* CREATE Create or truncate file */"
+          }
+        ],
+        "digest": "830bba49bd100476437bc12adb3f68a21510a637a14b0db7d79d44989b8d33ad"
+      }
     },
     {
       "key": "0x21/0x3D",
@@ -1394,7 +2498,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3d",
           "cites": "        case 0x3d:      /* OPEN Open existing file */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213D",
+            "line": "INT 21 - DOS 2+ - \"OPEN\" - OPEN EXISTING FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3d",
+            "line": "        case 0x3d:      /* OPEN Open existing file */"
+          }
+        ],
+        "digest": "322ca1447bd5b762c23b2897e21c2db2a6b6b4340ea9c95d98a042714431b32d"
+      }
     },
     {
       "key": "0x21/0x3E",
@@ -1412,7 +2531,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3e",
           "cites": "        case 0x3e:      /* CLOSE Close file */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213E",
+            "line": "INT 21 - DOS 2+ - \"CLOSE\" - CLOSE FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3e",
+            "line": "        case 0x3e:      /* CLOSE Close file */"
+          }
+        ],
+        "digest": "a9f465a26f389b9be3aecfea3917bbb60798304758ed38c4841ebc1369495de5"
+      }
     },
     {
       "key": "0x21/0x3F",
@@ -1430,7 +2564,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3f",
           "cites": "        case 0x3f:      /* READ Read from file or device */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-213F",
+            "line": "INT 21 - DOS 2+ - \"READ\" - READ FROM FILE OR DEVICE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3f",
+            "line": "        case 0x3f:      /* READ Read from file or device */"
+          }
+        ],
+        "digest": "e13bb128d4f91173d3ef980b99613c01a702107df61a56d1a5b429573e994457"
+      }
     },
     {
       "key": "0x21/0x40",
@@ -1448,7 +2597,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x40",
           "cites": "        case 0x40:                  /* WRITE Write to file or device */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2140",
+            "line": "INT 21 - DOS 2+ - \"WRITE\" - WRITE TO FILE OR DEVICE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x40",
+            "line": "        case 0x40:                  /* WRITE Write to file or device */"
+          }
+        ],
+        "digest": "d7d746827e582c132819f195bec50a0410281c787d2d83cb454c4a8849e9d623"
+      }
     },
     {
       "key": "0x21/0x41",
@@ -1466,7 +2630,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x41",
           "cites": "        case 0x41:                  /* UNLINK Delete file */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2141",
+            "line": "INT 21 - DOS 2+ - \"UNLINK\" - DELETE FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x41",
+            "line": "        case 0x41:                  /* UNLINK Delete file */"
+          }
+        ],
+        "digest": "c1c5284ab2b06fc5e33f104280e6254970b8d28082a7839fc82819a9ecf9a84e"
+      }
     },
     {
       "key": "0x21/0x42",
@@ -1484,7 +2663,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x42",
           "cites": "        case 0x42:                  /* LSEEK Set current file position */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-2142",
+            "line": "INT 21 - DOS 2+ - \"LSEEK\" - SET CURRENT FILE POSITION"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x42",
+            "line": "        case 0x42:                  /* LSEEK Set current file position */"
+          }
+        ],
+        "digest": "2905ee1a2f07ec283a4fd91602f7f11300fdf5b49f4876237556a771f38b00d6"
+      }
     },
     {
       "key": "0x21/0x43",
@@ -1497,7 +2691,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43",
           "cites": "        case 0x43:                  /* Get/Set file attributes */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43",
+            "line": "        case 0x43:                  /* Get/Set file attributes */"
+          }
+        ],
+        "digest": "cce790cc2c16c974a142e03e2ccacc63bb329ebc8fc7aeb170f07d853734f3fb"
+      }
     },
     {
       "key": "0x21/0x43/0x00",
@@ -1515,7 +2720,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43 case 0x00",
           "cites": "                case 0x00:              /* Get */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-214300",
+            "line": "INT 21 - DOS 2+ - GET FILE ATTRIBUTES"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43 case 0x00",
+            "line": "                case 0x00:              /* Get */"
+          }
+        ],
+        "digest": "7a1f5ea4d8cd5de7004b2d3d7f4a3f15e521ddeb8f90b9b472ddc4f2e788f33a"
+      }
     },
     {
       "key": "0x21/0x43/0x01",
@@ -1533,7 +2753,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43 case 0x01",
           "cites": "                case 0x01:              /* Set */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.F D-214301",
+            "line": "INT 21 - DOS 2+ - \"CHMOD\" - SET FILE ATTRIBUTES"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43 case 0x01",
+            "line": "                case 0x01:              /* Set */"
+          }
+        ],
+        "digest": "718f002c368e0eb8d3eee8cf00b6f3f416265e07cfae4e3f573a5d8c051025df"
+      }
     },
     {
       "key": "0x21/0x44",
@@ -1564,7 +2799,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x45",
           "cites": "        case 0x45:                  /* DUP Duplicate file handle */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2145",
+            "line": "INT 21 - DOS 2+ - \"DUP\" - DUPLICATE FILE HANDLE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x45",
+            "line": "        case 0x45:                  /* DUP Duplicate file handle */"
+          }
+        ],
+        "digest": "77818e4992ccf3f7348b6bc847ae73752176cdfbe881a710c53215fe9995c3d9"
+      }
     },
     {
       "key": "0x21/0x46",
@@ -1583,7 +2833,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x46",
           "cites": "        case 0x46:                  /* DUP2,FORCEDUP Force duplicate file handle */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2146",
+            "line": "INT 21 - DOS 2+ - \"DUP2\", \"FORCEDUP\" - FORCE DUPLICATE FILE HANDLE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x46",
+            "line": "        case 0x46:                  /* DUP2,FORCEDUP Force duplicate file handle */"
+          }
+        ],
+        "digest": "f3d83a5ab377dd511f94315df8558d9b68ce1a2a6277121930bedda363a41cae"
+      }
     },
     {
       "key": "0x21/0x47",
@@ -1601,7 +2866,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x47",
           "cites": "        case 0x47:                  /* CWD Get current directory */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2147",
+            "line": "INT 21 - DOS 2+ - \"CWD\" - GET CURRENT DIRECTORY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x47",
+            "line": "        case 0x47:                  /* CWD Get current directory */"
+          }
+        ],
+        "digest": "e5a13937725ae440d0ce7c6d05ae1d5699044cbd878c7b748de3d84376d549f5"
+      }
     },
     {
       "key": "0x21/0x48",
@@ -1619,7 +2899,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x48",
           "cites": "        case 0x48:                  /* Allocate memory */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2148",
+            "line": "INT 21 - DOS 2+ - ALLOCATE MEMORY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x48",
+            "line": "        case 0x48:                  /* Allocate memory */"
+          }
+        ],
+        "digest": "363866e04c069fab533a829cb23d4a4552431bbc089f37c3c8471e810530c227"
+      }
     },
     {
       "key": "0x21/0x49",
@@ -1637,7 +2932,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x49",
           "cites": "        case 0x49:                  /* Free memory */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2149",
+            "line": "INT 21 - DOS 2+ - FREE MEMORY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x49",
+            "line": "        case 0x49:                  /* Free memory */"
+          }
+        ],
+        "digest": "0c4379de625b2e43ffd21a402471f1cdd708f8755e765961209b9d38d7abde20"
+      }
     },
     {
       "key": "0x21/0x4A",
@@ -1655,7 +2965,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4a",
           "cites": "        case 0x4a:                  /* Resize memory block */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-214A",
+            "line": "INT 21 - DOS 2+ - RESIZE MEMORY BLOCK"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4a",
+            "line": "        case 0x4a:                  /* Resize memory block */"
+          }
+        ],
+        "digest": "9717c148bb106ae38c308082a529f943c4b1b8f4a4da6381f35aa9ce5db7f109"
+      }
     },
     {
       "key": "0x21/0x4B",
@@ -1673,7 +2998,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4b",
           "cites": "        case 0x4b:                  /* EXEC Load and/or execute program */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-214B",
+            "line": "INT 21 - DOS 2+ - \"EXEC\" - LOAD AND/OR EXECUTE PROGRAM"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4b",
+            "line": "        case 0x4b:                  /* EXEC Load and/or execute program */"
+          }
+        ],
+        "digest": "59543dc038d1aec488bde6c1029eafe258caebbf8710635d1d2f9f7d0b278557"
+      }
     },
     {
       "key": "0x21/0x4C",
@@ -1691,7 +3031,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4c",
           "cites": "        case 0x4c:                  /* EXIT Terminate with return code */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-214C",
+            "line": "INT 21 - DOS 2+ - \"EXIT\" - TERMINATE WITH RETURN CODE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4c",
+            "line": "        case 0x4c:                  /* EXIT Terminate with return code */"
+          }
+        ],
+        "digest": "aef0c0fa1ab1d096884e8ec8869b4cff04b3aaca9a408fe904d78e195f93fff4"
+      }
     },
     {
       "key": "0x21/0x4D",
@@ -1710,7 +3065,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4d",
           "cites": "        case 0x4d:                  /* Get Return code */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-214D",
+            "line": "INT 21 - DOS 2+ - GET RETURN CODE (ERRORLEVEL)"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4d",
+            "line": "        case 0x4d:                  /* Get Return code */"
+          }
+        ],
+        "digest": "835fc3b6c33230048ed42fcccc15e76b4123d1ec719c4f9e80f25b44214b3686"
+      }
     },
     {
       "key": "0x21/0x4E",
@@ -1728,7 +3098,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4e",
           "cites": "        case 0x4e: {                /* FINDFIRST Find first matching file */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-214E",
+            "line": "INT 21 - DOS 2+ - \"FINDFIRST\" - FIND FIRST MATCHING FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4e",
+            "line": "        case 0x4e: {                /* FINDFIRST Find first matching file */"
+          }
+        ],
+        "digest": "a028fe2c48480fae03905d5687231e38a2fda336b71e7f67c04385c28163aadf"
+      }
     },
     {
       "key": "0x21/0x4F",
@@ -1746,7 +3131,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4f",
           "cites": "        case 0x4f:                  /* FINDNEXT Find next matching file */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-214F",
+            "line": "INT 21 - DOS 2+ - \"FINDNEXT\" - FIND NEXT MATCHING FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4f",
+            "line": "        case 0x4f:                  /* FINDNEXT Find next matching file */"
+          }
+        ],
+        "digest": "495a729dd4140806d97872854fe16c1a21747e5291b480e46fa6c76bccd783bb"
+      }
     },
     {
       "key": "0x21/0x50",
@@ -1764,7 +3164,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x50",
           "cites": "        case 0x50:                  /* Set current PSP */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2150",
+            "line": "INT 21 - DOS 2+ internal - SET CURRENT PROCESS ID (SET PSP ADDRESS)"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x50",
+            "line": "        case 0x50:                  /* Set current PSP */"
+          }
+        ],
+        "digest": "54d77995929524290d60f85242920068e61dca90cd94c6f977e0731113b8ebfd"
+      }
     },
     {
       "key": "0x21/0x51",
@@ -1782,7 +3197,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x51",
           "cites": "        case 0x51:                  /* Get current PSP */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2151",
+            "line": "INT 21 - DOS 2+ internal - GET CURRENT PROCESS ID (GET PSP ADDRESS)"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x51",
+            "line": "        case 0x51:                  /* Get current PSP */"
+          }
+        ],
+        "digest": "7aa9d4427183b85c6a17a14bab1f039323f8663ab83b876404a34209fd51eb8d"
+      }
     },
     {
       "key": "0x21/0x52",
@@ -1800,7 +3230,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x52",
           "cites": "        case 0x52: {                /* Get list of lists */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2152",
+            "line": "INT 21 U - DOS 2+ internal - \"SYSVARS\" - GET LIST OF LISTS"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x52",
+            "line": "        case 0x52: {                /* Get list of lists */"
+          }
+        ],
+        "digest": "7c3f3f2f3258a5e681354a406ad5a1f3ffdb47a083320b78d198f1578e217050"
+      }
     },
     {
       "key": "0x21/0x53",
@@ -1818,7 +3263,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x53",
           "cites": "        case 0x53:                  /* Translate BIOS parameter block to drive parameter block */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2153",
+            "line": "INT 21 - DOS 2+ internal - TRANSLATE BIOS PARAMETER BLOCK TO DRIVE PARAM BLOCK"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x53",
+            "line": "        case 0x53:                  /* Translate BIOS parameter block to drive parameter block */"
+          }
+        ],
+        "digest": "1236209ef9033dea687c760f2cc56339e1adcca5bae4db4acf5fb34f03a52ec5"
+      }
     },
     {
       "key": "0x21/0x54",
@@ -1836,7 +3296,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x54",
           "cites": "        case 0x54:                  /* Get verify flag */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2154",
+            "line": "INT 21 - DOS 2+ - GET VERIFY FLAG"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x54",
+            "line": "        case 0x54:                  /* Get verify flag */"
+          }
+        ],
+        "digest": "a31a4df830b3a54d5f8c03b1ef96b2fcc56e8c76a38b7a8c7df9f09be97b12ea"
+      }
     },
     {
       "key": "0x21/0x55",
@@ -1854,7 +3329,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x55",
           "cites": "        case 0x55:                  /* Create Child PSP*/"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2155",
+            "line": "INT 21 - DOS 2+ internal - CREATE CHILD PSP"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x55",
+            "line": "        case 0x55:                  /* Create Child PSP*/"
+          }
+        ],
+        "digest": "bc2f9c1ea5c8df7e005f89dd11a84c26568ccffc19f248b115c92e0c704f7556"
+      }
     },
     {
       "key": "0x21/0x56",
@@ -1872,7 +3362,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x56",
           "cites": "        case 0x56:                  /* RENAME Rename file */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2156",
+            "line": "INT 21 - DOS 2+ - \"RENAME\" - RENAME FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x56",
+            "line": "        case 0x56:                  /* RENAME Rename file */"
+          }
+        ],
+        "digest": "13549183214850b20c4f88543160f261453aebec26abc422fef7ceecb058c031"
+      }
     },
     {
       "key": "0x21/0x57",
@@ -1885,7 +3390,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x57",
           "cites": "        case 0x57:                  /* Get/Set File's Date and Time */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x57",
+            "line": "        case 0x57:                  /* Get/Set File's Date and Time */"
+          }
+        ],
+        "digest": "bc83743b5eb635b403169418a60153ae0fe8499916659e53c59d9191046dedcc"
+      }
     },
     {
       "key": "0x21/0x58",
@@ -1903,7 +3419,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58",
           "cites": "        case 0x58:                  /* Get/Set Memory allocation strategy */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2158@1",
+            "line": "INT 21 - DOS 2.11+ - GET OR SET MEMORY ALLOCATION STRATEGY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58",
+            "line": "        case 0x58:                  /* Get/Set Memory allocation strategy */"
+          }
+        ],
+        "digest": "883c9627b5619f2e223fd7a8ec6f7c226462325f37bbd91c1ffb18950b0011da"
+      }
     },
     {
       "key": "0x21/0x58/0x00",
@@ -1916,7 +3447,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 0",
           "cites": "                case 0:                 /* Get Strategy */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 0",
+            "line": "                case 0:                 /* Get Strategy */"
+          }
+        ],
+        "digest": "e8782dd87e0c863bf90e9f4d0142e880ec8ba40de47b3fbccc8e80524335ae59"
+      }
     },
     {
       "key": "0x21/0x58/0x01",
@@ -1929,7 +3471,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 1",
           "cites": "                case 1:                 /* Set Strategy */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 1",
+            "line": "                case 1:                 /* Set Strategy */"
+          }
+        ],
+        "digest": "736fbea456a95a6e157a3a76c63ff11447aee7557776a68dcc1a636f78433de1"
+      }
     },
     {
       "key": "0x21/0x58/0x02",
@@ -1942,7 +3495,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 2",
           "cites": "                case 2:                 /* Get UMB Link Status */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 2",
+            "line": "                case 2:                 /* Get UMB Link Status */"
+          }
+        ],
+        "digest": "90e1273a41f9a97715694779589d9a5545561b4028659854ccf55bec0e0ba350"
+      }
     },
     {
       "key": "0x21/0x58/0x03",
@@ -1955,7 +3519,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 3",
           "cites": "                case 3:                 /* Set UMB Link Status */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 3",
+            "line": "                case 3:                 /* Set UMB Link Status */"
+          }
+        ],
+        "digest": "5c5e1ede2f2883fcfd5a3e1170f9f1e57ea4a62d3da56c7dcb26543b391a0d81"
+      }
     },
     {
       "key": "0x21/0x59",
@@ -1973,7 +3548,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x59",
           "cites": "        case 0x59:                  /* Get Extended error information */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-2159--BX0000",
+            "line": "INT 21 - DOS 3.0+ - GET EXTENDED ERROR INFORMATION"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x59",
+            "line": "        case 0x59:                  /* Get Extended error information */"
+          }
+        ],
+        "digest": "7dc15ca067fe2313036de5b38ef57c511a65bc448da60ba10c39dcc963269406"
+      }
     },
     {
       "key": "0x21/0x5A",
@@ -1992,7 +3582,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5a",
           "cites": "        case 0x5a:                  /* Create temporary file */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-215A",
+            "line": "INT 21 - DOS 3.0+ - CREATE TEMPORARY FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5a",
+            "line": "        case 0x5a:                  /* Create temporary file */"
+          }
+        ],
+        "digest": "4330736ac3ecfd9fb9e1defa815d4e6a839b052d3988a9c843ddecdec3879f2f"
+      }
     },
     {
       "key": "0x21/0x5B",
@@ -2010,7 +3615,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5b",
           "cites": "        case 0x5b:                  /* Create new file */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-215B",
+            "line": "INT 21 - DOS 3.0+ - CREATE NEW FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5b",
+            "line": "        case 0x5b:                  /* Create new file */"
+          }
+        ],
+        "digest": "901b97e85c47ab8da602253307d2b7c53153317ae5e570d1f2f75799e7527493"
+      }
     },
     {
       "key": "0x21/0x5C",
@@ -2028,7 +3648,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5c",
           "cites": "        case 0x5c:  {       /* FLOCK File region locking */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G D-215C",
+            "line": "INT 21 - DOS 3.0+ - \"FLOCK\" - RECORD LOCKING"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5c",
+            "line": "        case 0x5c:  {       /* FLOCK File region locking */"
+          }
+        ],
+        "digest": "f1fec785f26ad6f3d41a6ce77de4b0fedb1cdc0eae6c68e342f5922c24929c58"
+      }
     },
     {
       "key": "0x21/0x5D",
@@ -2041,7 +3676,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5d",
           "cites": "        case 0x5d:                  /* Network Functions */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5d",
+            "line": "        case 0x5d:                  /* Network Functions */"
+          }
+        ],
+        "digest": "d5d7aad2e5a58a6ed75df962a9b6bfa300c7cee3f5d98fa01ed762b7e810156f"
+      }
     },
     {
       "key": "0x21/0x5E",
@@ -2054,7 +3700,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e",
           "cites": "        case 0x5e:                  /* Network and printer functions */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e",
+            "line": "        case 0x5e:                  /* Network and printer functions */"
+          }
+        ],
+        "digest": "dc23764a8277afdce06e6591f99d24c541642693d230ae1e1ad9b05bd2d6393d"
+      }
     },
     {
       "key": "0x21/0x5F",
@@ -2067,7 +3724,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5f",
           "cites": "        case 0x5f:                  /* Network redirection */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5f",
+            "line": "        case 0x5f:                  /* Network redirection */"
+          }
+        ],
+        "digest": "df6498f479516efbe7b433ca92e9e65c7ceb97bd49cefd5f3553a5522f7a49eb"
+      }
     },
     {
       "key": "0x21/0x60",
@@ -2085,7 +3753,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x60",
           "cites": "        case 0x60:                  /* Canonicalize filename or path */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-2160",
+            "line": "INT 21 - DOS 3.0+ - \"TRUENAME\" - CANONICALIZE FILENAME OR PATH"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x60",
+            "line": "        case 0x60:                  /* Canonicalize filename or path */"
+          }
+        ],
+        "digest": "95b2217de678990f59339e654ea3b489fcdae09a325e0d4ba26efdf84f23804a"
+      }
     },
     {
       "key": "0x21/0x61",
@@ -2103,7 +3786,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x61",
           "cites": "        case 0x61:                  /* Unused (reserved for network use) */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-2161",
+            "line": "INT 21 - DOS 3.0+ - UNUSED (RESERVED FOR NETWORK USE)"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x61",
+            "line": "        case 0x61:                  /* Unused (reserved for network use) */"
+          }
+        ],
+        "digest": "9a2e321ac52dc4599fbefa8045048274c47bc92cd88c83f9c309fbabc53dcc8d"
+      }
     },
     {
       "key": "0x21/0x62",
@@ -2121,7 +3819,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x62",
           "cites": "        case 0x62:                  /* Get Current PSP Address */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-2162",
+            "line": "INT 21 - DOS 3.0+ - GET CURRENT PSP ADDRESS"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x62",
+            "line": "        case 0x62:                  /* Get Current PSP Address */"
+          }
+        ],
+        "digest": "57de084a4fa48da8d6692215f17697e2deef8f77d76d4fe8e4f5e13c4bc4c024"
+      }
     },
     {
       "key": "0x21/0x63",
@@ -2134,7 +3847,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x63",
           "cites": "        case 0x63:                  /* DOUBLE BYTE CHARACTER SET */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x63",
+            "line": "        case 0x63:                  /* DOUBLE BYTE CHARACTER SET */"
+          }
+        ],
+        "digest": "2c6395a98a3ac52e573e057a6b58d5e8e051edd81781bd96c554d621b9bc5761"
+      }
     },
     {
       "key": "0x21/0x64",
@@ -2152,7 +3876,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x64",
           "cites": "        case 0x64:                  /* Set device driver lookahead flag */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-2164",
+            "line": "INT 21 - DOS 3.2+ internal - SET DEVICE DRIVER LOOKAHEAD FLAG"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x64",
+            "line": "        case 0x64:                  /* Set device driver lookahead flag */"
+          }
+        ],
+        "digest": "cdc6b8ee14aa41e02debc9d26ee4ab3ca3fba2787e305818054f0c4e9cbb8ade"
+      }
     },
     {
       "key": "0x21/0x65",
@@ -2170,7 +3909,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65",
           "cites": "        case 0x65:                  /* Get extended country information and a lot of other useless shit*/"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-2165@1",
+            "line": "INT 21 - DOS 3.3+ - GET EXTENDED COUNTRY INFORMATION"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65",
+            "line": "        case 0x65:                  /* Get extended country information and a lot of other useless shit*/"
+          }
+        ],
+        "digest": "d2a3b869c43d7a408723bf5bb6454603ada6cf2f1b6fdf8ff157b2f37d482567"
+      }
     },
     {
       "key": "0x21/0x65/0x01",
@@ -2183,7 +3937,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x01",
           "cites": "                    case 0x01:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x01",
+            "line": "                    case 0x01:"
+          }
+        ],
+        "digest": "8b476018077dae71e4b37b23971696c7d67b09e28c861c6f2d8b866ddfec9834"
+      }
     },
     {
       "key": "0x21/0x65/0x05",
@@ -2196,7 +3961,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x05",
           "cites": "                    case 0x05: // Get pointer to filename terminator table"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x05",
+            "line": "                    case 0x05: // Get pointer to filename terminator table"
+          }
+        ],
+        "digest": "3e5c9f8cbc40d7647cff95c897258a050eea4ce97b1cb9ae65c789023feda7da"
+      }
     },
     {
       "key": "0x21/0x65/0x02",
@@ -2209,7 +3985,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x02",
           "cites": "                    case 0x02: // Get pointer to uppercase table"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x02",
+            "line": "                    case 0x02: // Get pointer to uppercase table"
+          }
+        ],
+        "digest": "35be8a4a9ce079a6f8a3976c57de3d375ee89c75c9ef97955bad88b0d5c7961a"
+      }
     },
     {
       "key": "0x21/0x65/0x04",
@@ -2222,7 +4009,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x04",
           "cites": "                    case 0x04: // Get pointer to filename uppercase table"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x04",
+            "line": "                    case 0x04: // Get pointer to filename uppercase table"
+          }
+        ],
+        "digest": "a1864b5d14199a6a62b308d6620ad34ab7f393677825dc09a95084aa8b8f0860"
+      }
     },
     {
       "key": "0x21/0x65/0x06",
@@ -2235,7 +4033,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x06",
           "cites": "                    case 0x06: // Get pointer to collating sequence table"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x06",
+            "line": "                    case 0x06: // Get pointer to collating sequence table"
+          }
+        ],
+        "digest": "8706498f29fbacf04e7d33b44b72b7823ff536c06c8ab57ff1ec5c918d0c245f"
+      }
     },
     {
       "key": "0x21/0x65/0x03",
@@ -2249,7 +4058,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x03",
           "cites": "                    case 0x03: // Get pointer to lowercase table"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x03",
+            "line": "                    case 0x03: // Get pointer to lowercase table"
+          }
+        ],
+        "digest": "d6caca6f6db002ca2f4570008bfcf24a2c366831e521148e8d1f04c957168a05"
+      }
     },
     {
       "key": "0x21/0x65/0x07",
@@ -2262,7 +4082,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x07",
           "cites": "                    case 0x07: // Get pointer to double byte char set table"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x07",
+            "line": "                    case 0x07: // Get pointer to double byte char set table"
+          }
+        ],
+        "digest": "c3634985dd174e6241b14640ad381d5cf4e5da028122708f0cbbd3167cafb9a4"
+      }
     },
     {
       "key": "0x21/0x65/0x20",
@@ -2275,7 +4106,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x20",
           "cites": "                    case 0x20: /* Capitalize Character */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x20",
+            "line": "                    case 0x20: /* Capitalize Character */"
+          }
+        ],
+        "digest": "9706b2f8f6a8d74aa5e3d99d5e3909f88bf7630a6d5efad4259374972289ead1"
+      }
     },
     {
       "key": "0x21/0x65/0x21",
@@ -2319,7 +4161,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x23",
           "cites": "                    case 0x23: /* Determine if character represents yes/no response (MS-DOS 4.0+) */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-216523",
+            "line": "INT 21 U - DOS 4.0+ - DETERMINE IF CHARACTER REPRESENTS YES/NO RESPONSE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x23",
+            "line": "                    case 0x23: /* Determine if character represents yes/no response (MS-DOS 4.0+) */"
+          }
+        ],
+        "digest": "7af5690a8c849a57e386cad0c9f61e0d28ff9a5f28e7690855e0aafdca45f25b"
+      }
     },
     {
       "key": "0x21/0x66",
@@ -2332,7 +4189,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66",
           "cites": "        case 0x66:                  /* Get/Set global code page table  */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66",
+            "line": "        case 0x66:                  /* Get/Set global code page table  */"
+          }
+        ],
+        "digest": "c0ca574cf19dd5d9e36cfb49bb45d08bd37392618b96fc5b71f59baee8d35de9"
+      }
     },
     {
       "key": "0x21/0x66/0x01",
@@ -2350,7 +4218,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66 case 1",
           "cites": "                case 1:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-216601",
+            "line": "INT 21 - DOS 3.3+ - GET GLOBAL CODE PAGE TABLE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66 case 1",
+            "line": "                case 1:"
+          }
+        ],
+        "digest": "781f12004706bbf7d1eb16659bbdf13c02f06aad184f2a68cce1657e0f301542"
+      }
     },
     {
       "key": "0x21/0x66/0x02",
@@ -2368,7 +4251,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66 case 2",
           "cites": "                case 2:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-216602",
+            "line": "INT 21 - DOS 3.3+ - SET GLOBAL CODE PAGE TABLE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66 case 2",
+            "line": "                case 2:"
+          }
+        ],
+        "digest": "5cff4401b4cbff1982653c5ef36be88ca52bc4aad50666ff899cf9e72a6030c3"
+      }
     },
     {
       "key": "0x21/0x67",
@@ -2386,7 +4284,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x67",
           "cites": "        case 0x67:                  /* Set handle count */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-2167",
+            "line": "INT 21 - DOS 3.3+ - SET HANDLE COUNT"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x67",
+            "line": "        case 0x67:                  /* Set handle count */"
+          }
+        ],
+        "digest": "14a5747958ff2f6f3039b9f24fb6aeebb4a4663e5c504d323b1cf946c5a53037"
+      }
     },
     {
       "key": "0x21/0x68",
@@ -2405,7 +4318,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x68",
           "cites": "        case 0x68:                  /* FFLUSH Commit file */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-2168",
+            "line": "INT 21 - DOS 3.3+ - \"FFLUSH\" - COMMIT FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x68",
+            "line": "        case 0x68:                  /* FFLUSH Commit file */"
+          }
+        ],
+        "digest": "963a5ce5fea20775b8da37f65a874daffbabbd2482f6289fea3f2ab976b06c06"
+      }
     },
     {
       "key": "0x21/0x69",
@@ -2423,7 +4351,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69",
           "cites": "        case 0x69:                  /* Get/Set disk serial number */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-2169",
+            "line": "INT 21 U - DOS 4.0+ internal - GET/SET DISK SERIAL NUMBER"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69",
+            "line": "        case 0x69:                  /* Get/Set disk serial number */"
+          }
+        ],
+        "digest": "cbcffa77b07540d827689950c42727498834870e77f3080760436c52c28020b5"
+      }
     },
     {
       "key": "0x21/0x69/0x00",
@@ -2436,7 +4379,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69 case 0x00",
           "cites": "                    case 0x00:              /* Get */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69 case 0x00",
+            "line": "                    case 0x00:              /* Get */"
+          }
+        ],
+        "digest": "a2811629a149262b77fccf30e2195959b02796ebde3a59d5ca9e6d80f8d28096"
+      }
     },
     {
       "key": "0x21/0x69/0x01",
@@ -2449,7 +4403,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69 case 0x01",
           "cites": "                    case 0x01:              /* Set */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69 case 0x01",
+            "line": "                    case 0x01:              /* Set */"
+          }
+        ],
+        "digest": "2e7f54e385cae88694fbc9052f2bd18d71239c6a715b37c4b87badb82290f1be"
+      }
     },
     {
       "key": "0x21/0x6A",
@@ -2467,7 +4432,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6a",
           "cites": "        case 0x6a:                  /* Commit file */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-216A",
+            "line": "INT 21 U - DOS 4.0+ - COMMIT FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6a",
+            "line": "        case 0x6a:                  /* Commit file */"
+          }
+        ],
+        "digest": "6dbfd4c7754fb0239996b13c34be0ccb30789d61c9e0b299d93fb5a0f16ce8f8"
+      }
     },
     {
       "key": "0x21/0x6B",
@@ -2485,7 +4465,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6b",
           "cites": "        case 0x6b:                  /* NULL Function */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-216B@2",
+            "line": "INT 21 U - DOS 5+ - NULL FUNCTION"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6b",
+            "line": "        case 0x6b:                  /* NULL Function */"
+          }
+        ],
+        "digest": "3dd5fdeea080f31ca74772aae1729f0f1bd49490cd52487cc4c899f08d1fd56d"
+      }
     },
     {
       "key": "0x21/0x6C",
@@ -2498,7 +4493,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6c",
           "cites": "        case 0x6c:                  /* Extended Open/Create */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6c",
+            "line": "        case 0x6c:                  /* Extended Open/Create */"
+          }
+        ],
+        "digest": "2ae9325027dc34faa3701043de0c2866453d181b1f9e51492d534eae361462cc"
+      }
     },
     {
       "key": "0x21/0x6D",
@@ -2516,7 +4522,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6d",
           "cites": "        case 0x6d:                  /* ROM - Find first ROM program */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-216D",
+            "line": "INT 21 U - DOS 5+ ROM - FIND FIRST ROM PROGRAM"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6d",
+            "line": "        case 0x6d:                  /* ROM - Find first ROM program */"
+          }
+        ],
+        "digest": "476f5499d30cc4444e64e8e7b713939f71aad94f07eaaf79e21699bba3d6d5e4"
+      }
     },
     {
       "key": "0x21/0x6E",
@@ -2534,7 +4555,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6e",
           "cites": "        case 0x6e:                  /* ROM - Find next ROM program */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-216E",
+            "line": "INT 21 U - DOS 5+ ROM - FIND NEXT ROM PROGRAM"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6e",
+            "line": "        case 0x6e:                  /* ROM - Find next ROM program */"
+          }
+        ],
+        "digest": "74cf4643694365eabdff5f21b3b79e7ae478c90b4cbe4431c0ebb395d92511f0"
+      }
     },
     {
       "key": "0x21/0x6F",
@@ -2547,7 +4583,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6f",
           "cites": "        case 0x6f:                  /* ROM functions */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6f",
+            "line": "        case 0x6f:                  /* ROM functions */"
+          }
+        ],
+        "digest": "ef73ab8109db497c993c46c639daa626d41a19896c58844fc57503e2a306bfb5"
+      }
     },
     {
       "key": "0x21/0x71",
@@ -2583,7 +4630,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x39",
           "cites": "\t\t    case 0x39:              /* LFN MKDIR */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-217139",
+            "line": "INT 21 - Windows95 - LONG FILENAME - MAKE DIRECTORY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x39",
+            "line": "\t\t    case 0x39:              /* LFN MKDIR */"
+          }
+        ],
+        "digest": "e3b75d13113b7fa77dead85742a7bb1ae25c2e1c617322ba5caa7363f15fd0e1"
+      }
     },
     {
       "key": "0x21/0x71/0x3A",
@@ -2601,7 +4663,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x3a",
           "cites": "\t\t    case 0x3a:              /* LFN RMDIR */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-21713A",
+            "line": "INT 21 - Windows95 - LONG FILENAME - REMOVE DIRECTORY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x3a",
+            "line": "\t\t    case 0x3a:              /* LFN RMDIR */"
+          }
+        ],
+        "digest": "965d6a4b56f2c6f92d8b949b14e0ad5b398aa55ee93477747679c3e887a643a5"
+      }
     },
     {
       "key": "0x21/0x71/0x3B",
@@ -2619,7 +4696,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x3b",
           "cites": "\t\t    case 0x3b:              /* LFN CHDIR */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-21713B",
+            "line": "INT 21 - Windows95 - LONG FILENAME - CHANGE DIRECTORY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x3b",
+            "line": "\t\t    case 0x3b:              /* LFN CHDIR */"
+          }
+        ],
+        "digest": "1a07b5eb74dfebd3616e05e8648ce5c9ca32d8f61426221e1432ff34911472d9"
+      }
     },
     {
       "key": "0x21/0x71/0x41",
@@ -2637,7 +4729,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x41",
           "cites": "\t\t    case 0x41:              /* LFN UNLINK */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-217141",
+            "line": "INT 21 - Windows95 - LONG FILENAME - DELETE FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x41",
+            "line": "\t\t    case 0x41:              /* LFN UNLINK */"
+          }
+        ],
+        "digest": "bdb2e4b338882d68fc2133b24027804c9a94322abdfc515d2bbe46756d6b1a9d"
+      }
     },
     {
       "key": "0x21/0x71/0x43",
@@ -2655,7 +4762,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x43",
           "cites": "\t\t    case 0x43:              /* LFN ATTR */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-217143",
+            "line": "INT 21 - Windows95 - LONG FILENAME - EXTENDED GET/SET FILE ATTRIBUTES"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x43",
+            "line": "\t\t    case 0x43:              /* LFN ATTR */"
+          }
+        ],
+        "digest": "be7cd0c063e80f6b0e516aa7cb411c8528c403bcc81c5a4a3abb263fefd6a232"
+      }
     },
     {
       "key": "0x21/0x71/0x47",
@@ -2691,7 +4813,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x4e",
           "cites": "\t\t    case 0x4e:              /* LFN FindFirst */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-21714E",
+            "line": "INT 21 - Windows95 - LONG FILENAME - FIND FIRST MATCHING FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x4e",
+            "line": "\t\t    case 0x4e:              /* LFN FindFirst */"
+          }
+        ],
+        "digest": "8ab773096a858c0aa44cfe5f94002c54e6cf34fd24474a27b5706dd41c559e53"
+      }
     },
     {
       "key": "0x21/0x71/0x4F",
@@ -2727,7 +4864,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x56",
           "cites": "\t\t    case 0x56:              /* LFN Rename */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-217156",
+            "line": "INT 21 - Windows95 - LONG FILENAME - RENAME FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x56",
+            "line": "\t\t    case 0x56:              /* LFN Rename */"
+          }
+        ],
+        "digest": "301ec762534eceab5324aa5786b287a2a8ffb568d51c3772cc7c123b1f07aa96"
+      }
     },
     {
       "key": "0x21/0x71/0x6C",
@@ -2745,7 +4897,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x6c",
           "cites": "\t\t    case 0x6c:              /* LFN Create */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-21716C",
+            "line": "INT 21 - Windows95 - LONG FILENAME - CREATE OR OPEN FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x6c",
+            "line": "\t\t    case 0x6c:              /* LFN Create */"
+          }
+        ],
+        "digest": "b8af69490ae7be2cc6797fe8dc2f4eb77620b6e7f2ffbd15d417d42174ca7da0"
+      }
     },
     {
       "key": "0x21/0x71/0xA0",
@@ -2817,7 +4984,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa8",
           "cites": "\t\t    case 0xa8:              /* LFN GenSFN */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-2171A8",
+            "line": "INT 21 - Windows95 - LONG FILENAME - GENERATE SHORT FILENAME"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa8",
+            "line": "\t\t    case 0xa8:              /* LFN GenSFN */"
+          }
+        ],
+        "digest": "d2c1c0ddf4bfc0ff7508fba3f2f69ce077afdc8f795a20047d8b0524c7045e9d"
+      }
     },
     {
       "key": "0x21/0x71/0x60",
@@ -2835,7 +5017,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x60",
           "cites": "\t\t    case 0x60:              /* LFN GetName */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-217160CL00",
+            "line": "INT 21 - Windows95 - LONG FILENAME - \"TRUENAME\" - CANONICALIZE PATH"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x60",
+            "line": "\t\t    case 0x60:              /* LFN GetName */"
+          }
+        ],
+        "digest": "86d439e3b8f18986b9f39a330802cc32c74caed2dd9f660eed0c920dbf87c969"
+      }
     },
     {
       "key": "0x21/0x71/0xA7",
@@ -2889,7 +5086,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa9",
           "cites": "\t\t    case 0xa9:              /* LFN Server Create */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-2171A9",
+            "line": "INT 21 - Windows95 - LONG FILENAME - SERVER CREATE OR OPEN FILE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa9",
+            "line": "\t\t    case 0xa9:              /* LFN Server Create */"
+          }
+        ],
+        "digest": "4204714a1b4c781bf429aa0cfc1c79928fa75da42bcc8154e9263ed3da386bb1"
+      }
     },
     {
       "key": "0x21/0x73",
@@ -2907,7 +5119,22 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73",
           "cites": "\tcase 0x73:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.H D-2173",
+            "line": "INT 21 - MS-DOS 7 - DRIVE LOCKING AND FLUSHING"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73",
+            "line": "\tcase 0x73:"
+          }
+        ],
+        "digest": "a77303f709b1f6b4e359c6de324fd72d6bc0a300d3dbab6a8f357752df864a5a"
+      }
     },
     {
       "key": "0x21/0xE0",
@@ -2920,7 +5147,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xE0",
           "cites": "\tcase 0xE0:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xE0",
+            "line": "\tcase 0xE0:"
+          }
+        ],
+        "digest": "f5f0a6a4b4b05ecfa678a0b2ee3f856d1455265df4ed31def5411bc0919f4aef"
+      }
     },
     {
       "key": "0x21/0xEF",
@@ -2933,7 +5171,18 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xEF",
           "cites": "        case 0xEF:                  /* Used in Ancient Art Of War CGA */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "K3a1c",
+        "writer": "K3a1",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xEF",
+            "line": "        case 0xEF:                  /* Used in Ancient Art Of War CGA */"
+          }
+        ],
+        "digest": "867649f410ec7943f1109b944571f80535dc879c31a9aaf077da5c43d592dc57"
+      }
     }
   ]
 }

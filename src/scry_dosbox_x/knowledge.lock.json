@@ -1,4 +1,3023 @@
 {
   "format": "scry-knowledge-lock/2",
-  "checked": {}
+  "checked": {
+    "ibm-pc:call:0x21/0x00": {
+      "digest": "a673a61850be9abc4f06dcf95c519e8b3b6f272286447c853e10143ae7a97fd5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2100",
+          "line": "INT 21 - DOS 1+ - TERMINATE PROGRAM"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x00",
+          "line": "        case 0x00:      /* Terminate Program */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x01": {
+      "digest": "b094834f271509fd6f34b4795bf30601dda36f2e8f48d7aaf66007722be0aa89",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2101",
+          "line": "INT 21 - DOS 1+ - READ CHARACTER FROM STANDARD INPUT, WITH ECHO"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x01",
+          "line": "        case 0x01:      /* Read character from STDIN, with echo */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x02": {
+      "digest": "996fd8e13e8670e615692bda628c8b8c3b4287bc882d9190da54505407f09bab",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2102",
+          "line": "INT 21 - DOS 1+ - WRITE CHARACTER TO STANDARD OUTPUT"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x02",
+          "line": "        case 0x02:      /* Write character to STDOUT */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x03": {
+      "digest": "3a3f1a0cc883fa71d5f7dc0e5c6818d85d60366a38ed3fa4e65c1baa9f3a3fb3",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2103",
+          "line": "INT 21 - DOS 1+ - READ CHARACTER FROM STDAUX"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x03",
+          "line": "        case 0x03:      /* Read character from STDAUX */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x04": {
+      "digest": "3e609820637a8e56b547534c50dd06c26684384306c3bf3b747bebbeaf14a033",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2104",
+          "line": "INT 21 - DOS 1+ - WRITE CHARACTER TO STDAUX"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x04",
+          "line": "        case 0x04:      /* Write Character to STDAUX */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x05": {
+      "digest": "b8ba48a4f2a8bc8b8f55316d0c34c8179148c414f5dcb349a9881e874b379c71",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2105",
+          "line": "INT 21 - DOS 1+ - WRITE CHARACTER TO PRINTER"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x05",
+          "line": "        case 0x05:      /* Write Character to PRINTER */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x06": {
+      "digest": "a13d7d4c8b23e2e1267c63ab1cc8489389898215cc4dfaa26c061fe85f60d724",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2106",
+          "line": "INT 21 - DOS 1+ - DIRECT CONSOLE OUTPUT"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x06",
+          "line": "        case 0x06:      /* Direct Console Output / Input */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x07": {
+      "digest": "15694a1899de97d83d3e0e94b43e637ea7b4b8a1b592806157e99deedb8dcc0d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2107",
+          "line": "INT 21 - DOS 1+ - DIRECT CHARACTER INPUT, WITHOUT ECHO"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x07",
+          "line": "        case 0x07:      /* Character Input, without echo */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x08": {
+      "digest": "c78d1376048d81eb12911a68958821d758bbf0020a955c386c3987dfb509c68d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2108",
+          "line": "INT 21 - DOS 1+ - CHARACTER INPUT WITHOUT ECHO"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x08",
+          "line": "        case 0x08:      /* Direct Character Input, without echo (checks for breaks officially :)*/"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x09": {
+      "digest": "0d8837af5ae49d7248193c6358904dfe3344eb1367b7fb39a859ba894969ffff",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2109",
+          "line": "INT 21 - DOS 1+ - WRITE STRING TO STANDARD OUTPUT"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x09",
+          "line": "        case 0x09:      /* Write string to STDOUT */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x0A": {
+      "digest": "7a6031630eae5972730f33a1be7f5ed975c4e2145466098caca8094c4a9d8e4c",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-210A",
+          "line": "INT 21 - DOS 1+ - BUFFERED INPUT"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0a",
+          "line": "        case 0x0a:      /* Buffered Input */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x0B": {
+      "digest": "f051acea636adf6e636f4fd031827a91bb14164d631be69648451d09777fccf8",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-210B",
+          "line": "INT 21 - DOS 1+ - GET STDIN STATUS"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0b",
+          "line": "        case 0x0b:      /* Get STDIN Status */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x0C": {
+      "digest": "4bbd236c3cae9e1bb8f0158b505ff3583f2be90e0925bf8a105877f9b69f0889",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-210C",
+          "line": "INT 21 - DOS 1+ - FLUSH BUFFER AND READ STANDARD INPUT"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c",
+          "line": "        case 0x0c:      /* Flush Buffer and read STDIN call */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x0C/0x01": {
+      "digest": "14381c2e0ff3f49c1db16ef8d76f33d51850e875ba737ed3b3f151ce9cd25513",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x1",
+          "line": "                    case 0x1:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x0C/0x06": {
+      "digest": "03eb00d81cbfbab7d45f73ec7a7a1d57c05d0143f5f1cb40c5081710ef24c2af",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x6",
+          "line": "                    case 0x6:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x0C/0x07": {
+      "digest": "81e7769cc9409c8ff2c393a9099c0d806b273ea001ac5ef28bafd6c73d317711",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x7",
+          "line": "                    case 0x7:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x0C/0x08": {
+      "digest": "c682c529d19cce2a94d68bee6b252f8acb031e4a9bbdacd0085215dfec5bd35d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x8",
+          "line": "                    case 0x8:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x0C/0x0A": {
+      "digest": "20fdcdf11f1cc7d478a88837d55606922c49f553c0f9647878db2d544b326154",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0xa",
+          "line": "                    case 0xa:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x0D": {
+      "digest": "ec55e2a474a7b71d05f2d8c3c936ca214b3031e54fb1cb5d0c5102dfa38d85ed",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-210D",
+          "line": "INT 21 - DOS 1+ - DISK RESET"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0d",
+          "line": "        case 0x0d:      /* Disk Reset */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x0E": {
+      "digest": "cd3bc597ebb2e503901cd359b959f77b870db30ca2673cb331e01211c7027a33",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-210E",
+          "line": "INT 21 - DOS 1+ - SELECT DEFAULT DRIVE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0e",
+          "line": "        case 0x0e:      /* Select Default Drive */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x0F": {
+      "digest": "cf223151682bf40968fa006b5b3c95eb47110579cf683d5a75cc7ac881c173c3",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-210F",
+          "line": "INT 21 - DOS 1+ - OPEN FILE USING FCB"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0f",
+          "line": "        case 0x0f:      /* Open File using FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x10": {
+      "digest": "047f625cde9ce007bc2ed76f7864b04dd9d5ad32e38b24a94dc96b142e7bb5e6",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2110",
+          "line": "INT 21 - DOS 1+ - CLOSE FILE USING FCB"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x10",
+          "line": "        case 0x10:      /* Close File using FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x11": {
+      "digest": "008dfb4d684ecf5345b07fa125aa0d30b4fedb71656c2972bfb3ce9ddda7fcc1",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2111",
+          "line": "INT 21 - DOS 1+ - FIND FIRST MATCHING FILE USING FCB"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x11",
+          "line": "        case 0x11:      /* Find First Matching File using FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x12": {
+      "digest": "a7009a3c42d99d2b5df78112baf7f18f54da57b9effa14749a6ac59183b2f41d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2112",
+          "line": "INT 21 - DOS 1+ - FIND NEXT MATCHING FILE USING FCB"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x12",
+          "line": "        case 0x12:      /* Find Next Matching File using FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x13": {
+      "digest": "558fe2fcc2e59bd6a929b9e78ef78944e8cd764cde3b78bf1abe46ba0a7607c6",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2113",
+          "line": "INT 21 - DOS 1+ - DELETE FILE USING FCB"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x13",
+          "line": "        case 0x13:      /* Delete File using FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x14": {
+      "digest": "ee9744ece8b9b020d5a6d07b041316dfa47130ce9eeb2f8b133560c1ff443da2",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2114",
+          "line": "INT 21 - DOS 1+ - SEQUENTIAL READ FROM FCB FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x14",
+          "line": "        case 0x14:      /* Sequential read from FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x15": {
+      "digest": "5c4ddef2a0e0741dbf729aa6d8b3c7f8f0d563fb9246ffd337137b432701c722",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2115",
+          "line": "INT 21 - DOS 1+ - SEQUENTIAL WRITE TO FCB FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x15",
+          "line": "        case 0x15:      /* Sequential write to FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x16": {
+      "digest": "e428483679d90cdc6cd058363505788c5f32d29a6850e86ed3f5bc0304b022f0",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2116",
+          "line": "INT 21 - DOS 1+ - CREATE OR TRUNCATE FILE USING FCB"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x16",
+          "line": "        case 0x16:      /* Create or truncate file using FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x17": {
+      "digest": "65139c1d89c4dba44dd83a9edf198cb28c0158a1184d93702bbbec8c9798fc4c",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2117",
+          "line": "INT 21 - DOS 1+ - RENAME FILE USING FCB"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x17",
+          "line": "        case 0x17:      /* Rename file using FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x18": {
+      "digest": "7547e14a758f1a98ea01bb4a14106f68cf69167f744a9129dfe3f1524bafe3a5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2118",
+          "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x18",
+          "line": "        case 0x18:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x19": {
+      "digest": "2c4e54fbe7db01b3018ea425fb7517d6e5048fa819f4fd2c4d8e0b096d9a3d95",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2119",
+          "line": "INT 21 - DOS 1+ - GET CURRENT DEFAULT DRIVE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x19",
+          "line": "        case 0x19:      /* Get current default drive */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x1A": {
+      "digest": "f4014271e4dc3f81e39161c9ed7044ac405bab2c42e4fb880f12240faf66f61c",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-211A",
+          "line": "INT 21 - DOS 1+ - SET DISK TRANSFER AREA ADDRESS"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1a",
+          "line": "        case 0x1a:      /* Set Disk Transfer Area Address */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x1B": {
+      "digest": "8ed13009cbcbc2ae7543dc1094f80ef74896702cc850862aa32c4aec82ab71cc",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-211B",
+          "line": "INT 21 - DOS 1+ - GET ALLOCATION INFORMATION FOR DEFAULT DRIVE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1b",
+          "line": "        case 0x1b:      /* Get allocation info for default drive */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x1C": {
+      "digest": "3d0aeafa4e5e53631f83a5689dc3059f2a39d27a68c78cde5de8bcc9297e60b0",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-211C",
+          "line": "INT 21 - DOS 1+ - GET ALLOCATION INFORMATION FOR SPECIFIC DRIVE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1c",
+          "line": "        case 0x1c:      /* Get allocation info for specific drive */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x1D": {
+      "digest": "27e49a806da4a5e470cf54fe59aeaba47d7b229389ec3913017aebe05edbbe69",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-211D",
+          "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1d",
+          "line": "        case 0x1d:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x1E": {
+      "digest": "b0bd228c8f801dbc4b3c7a0e868f73887ad9e5a5733996b38a5b1972bcc51fad",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-211E",
+          "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1e",
+          "line": "        case 0x1e:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x1F": {
+      "digest": "de07c7c6b94b1f1e48625434bc37480364b62e1af9c3b0c7de37c488501057c4",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-211F",
+          "line": "INT 21 - DOS 1+ - GET DRIVE PARAMETER BLOCK FOR DEFAULT DRIVE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1f",
+          "line": "        case 0x1f: /* Get drive parameter block for default drive */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x20": {
+      "digest": "287c312b132343735fb00a5e2d44601c5074e46d751bb0e38ecec0fe61dff40b",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2120",
+          "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x20",
+          "line": "        case 0x20:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x23": {
+      "digest": "0a82fb7fb8b9956519005d21fd730a24f49716e39d54f1775ecc822abc9dc720",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2123",
+          "line": "INT 21 - DOS 1+ - GET FILE SIZE FOR FCB"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x23",
+          "line": "        case 0x23:      /* Get file size for FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x24": {
+      "digest": "7081f4e1d5544f7fa4b26d9380101995e34b025f7ba6a04b71fb475ad7aab4ca",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2124",
+          "line": "INT 21 - DOS 1+ - SET RANDOM RECORD NUMBER FOR FCB"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x24",
+          "line": "        case 0x24:      /* Set Random Record number for FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x25": {
+      "digest": "f03c23c3b7f79f50c900e1e53fb0b56cde716c87fd6685fffe4e4e054732d538",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2125",
+          "line": "INT 21 - DOS 1+ - SET INTERRUPT VECTOR"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x25",
+          "line": "        case 0x25:      /* Set Interrupt Vector */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x26": {
+      "digest": "56b7c1cd83ec9bcfc4d99d3878e5e27c0565f1ef41a667d0c41ee68a2872110c",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2126",
+          "line": "INT 21 - DOS 1+ - CREATE NEW PROGRAM SEGMENT PREFIX"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x26",
+          "line": "        case 0x26:      /* Create new PSP */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x27": {
+      "digest": "572906b6a136e1c110318c80c92d321e6fb8869570cc33b00acfc91881e50eb8",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2127",
+          "line": "INT 21 - DOS 1+ - RANDOM BLOCK READ FROM FCB FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x27",
+          "line": "        case 0x27:      /* Random block read from FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x28": {
+      "digest": "54a20f707397e71c4cb4d70893dfa40e8a477f99a0459d29bd5535f45eb3d891",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2128",
+          "line": "INT 21 - DOS 1+ - RANDOM BLOCK WRITE TO FCB FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x28",
+          "line": "        case 0x28:      /* Random Block write to FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x29": {
+      "digest": "993b5c9622cfbe3efa96fe521f52c10066467d3ee53beb14f8fe48050ad49f56",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2129",
+          "line": "INT 21 - DOS 1+ - PARSE FILENAME INTO FCB"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x29",
+          "line": "        case 0x29:      /* Parse filename into FCB */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x2A": {
+      "digest": "5e90c220bb5633103d3f0ee5309d09875cd371e505d43d50900c5d4450884480",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-212A",
+          "line": "INT 21 - DOS 1+ - GET SYSTEM DATE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2a",
+          "line": "        case 0x2a:      /* Get System Date */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x2B": {
+      "digest": "0286f4d34377797e07f8c841d33c6d2d67a55b74883948d4ed51d4cc9bb931c5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-212B",
+          "line": "INT 21 - DOS 1+ - SET SYSTEM DATE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2b",
+          "line": "        case 0x2b:      /* Set System Date */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x2C": {
+      "digest": "1708552f62014010e0fec50843f66304e890cfe49b528cb022ab0bb02f47576a",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-212C",
+          "line": "INT 21 - DOS 1+ - GET SYSTEM TIME"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2c",
+          "line": "        case 0x2c: {    /* Get System Time */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x2D": {
+      "digest": "cfa4630f48eff54ab0bc68100d1d3758972411beaa49e9ec043393f21ba63d05",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-212D",
+          "line": "INT 21 - DOS 1+ - SET SYSTEM TIME"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2d",
+          "line": "        case 0x2d:      /* Set System Time */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x2E": {
+      "digest": "a5596f06a4f6425fd21eb60888ce3c09dbded277495da69ac422c6f961872631",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-212E--DL00",
+          "line": "INT 21 - DOS 1+ - SET VERIFY FLAG"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2e",
+          "line": "        case 0x2e:      /* Set Verify flag */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x2F": {
+      "digest": "51fcee0d60cd0a481d8627bff8ea7dc778cb112d9f51d1b325674040e8602d39",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-212F",
+          "line": "INT 21 - DOS 2+ - GET DISK TRANSFER AREA ADDRESS"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2f",
+          "line": "        case 0x2f:      /* Get Disk Transfer Area */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x30": {
+      "digest": "e97b2a468bd86ae9ae77292ac888e7e8b19523c3645fa1e6c1dffc8334c639a5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2130",
+          "line": "INT 21 - DOS 2+ - GET DOS VERSION"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x30",
+          "line": "        case 0x30:      /* Get DOS Version */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x31": {
+      "digest": "04fe1575126b74203e84b7abb01d9e26b4c718e57f841793e30f2439c3d30581",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2131",
+          "line": "INT 21 - DOS 2+ - TERMINATE AND STAY RESIDENT"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x31",
+          "line": "        case 0x31:      /* Terminate and stay resident */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x32": {
+      "digest": "91d495af7973bdb0c050672a591038d92af24da71b3c211bb261bf6608836bd4",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2132",
+          "line": "INT 21 - DOS 2+ - GET DOS DRIVE PARAMETER BLOCK FOR SPECIFIC DRIVE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x32",
+          "line": "        case 0x32: /* Get drive parameter block for specific drive */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x33": {
+      "digest": "7947c94ac630372b270e55e2e9c6b29ae075a2aebf3c49ca488f1b638ced03da",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2133",
+          "line": "INT 21 - DOS 2+ - EXTENDED BREAK CHECKING"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33",
+          "line": "        case 0x33:      /* Extended Break Checking */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x33/0x00": {
+      "digest": "166228295ea425f6fadbe06d3709b447e86720189abb99e4d1536ded66871aed",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 0",
+          "line": "                case 0:reg_dl=dos.breakcheck;break;         /* Get the breakcheck flag */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x33/0x01": {
+      "digest": "fb964e5a1400f3e6e3392563d8badf9b073fe2a360376f5a12b0c4982cbd3082",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 1",
+          "line": "                case 1:dos.breakcheck=(reg_dl>0);break;     /* Set the breakcheck flag */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x33/0x02": {
+      "digest": "b324a094fd8e733907ac2f7d2aaff44e8e6ab6ebeaa5cdf52a04309d56609d84",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213302",
+          "line": "INT 21 - DOS 3.x+ internal - GET AND SET EXTENDED CONTROL-BREAK CHECKING STATE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 2",
+          "line": "                case 2:{bool old=dos.breakcheck;dos.breakcheck=(reg_dl>0);reg_dl=old;}break;"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x33/0x03": {
+      "digest": "50b3590912205742ad3155ec1348be8b45f87882ace91f4c5abe096dace44483",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213303",
+          "line": "INT 21 - DOS 3.4/4.0 - GET CURRENT CPSW STATE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 3",
+          "line": "                case 3: /* Get cpsw */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x33/0x04": {
+      "digest": "d00c560c2cdfce026b4efbb918753bdeea064c372fb0eb1aab011c5ff333c726",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213304",
+          "line": "INT 21 - DOS 3.4/4.0 - SET CPSW STATE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 4",
+          "line": "                case 4: /* Set cpsw */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x33/0x05": {
+      "digest": "c1cd71b0f8900ae69b3e08852a1cf348c49800be19aafb4af7cc9a3ecc5e7726",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213305",
+          "line": "INT 21 - DOS 4.0+ - GET BOOT DRIVE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 5",
+          "line": "\t\tcase 5:reg_dl=3;break; /* Drive C: (TODO: Make configurable, or else initially set to Z: then re-set to the first drive mounted */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x33/0x06": {
+      "digest": "7403d27cbe43e46b050f7e9fc9b97eb94c86b95ee9a560f0e579fa1a20fc1db1",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213306",
+          "line": "INT 21 - DOS 5+ - GET TRUE VERSION NUMBER"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 6",
+          "line": "                case 6:                                         /* Get true version number */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x33/0x07": {
+      "digest": "ce6a46297678cbed07d769ce42c24e0a1408bdf814257a4cd726412522f26ad7",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213307",
+          "line": "INT 21 - Windows95 - SET/CLEAR DOS_FLAG"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 7",
+          "line": "                case 7:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x34": {
+      "digest": "138009ab61d6fb6843a5aea8848e330ea00619c3414864a6345bd794622402f6",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2134",
+          "line": "INT 21 - DOS 2+ - GET ADDRESS OF INDOS FLAG"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x34",
+          "line": "        case 0x34:      /* Get INDos Flag */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x35": {
+      "digest": "7e4c23469eb8f94e5bf7f318768483542938208fccf2387ed1f7cdd989ed9abf",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2135",
+          "line": "INT 21 - DOS 2+ - GET INTERRUPT VECTOR"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x35",
+          "line": "        case 0x35:      /* Get interrupt vector */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x36": {
+      "digest": "08436d2c69e85ed0703de3e28c80a406c2d8d573956a46a948474dba373b4d67",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2136",
+          "line": "INT 21 - DOS 2+ - GET FREE DISK SPACE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x36",
+          "line": "        case 0x36:      /* Get Free Disk Space */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x37": {
+      "digest": "28ecf508e5c8c9cd10508055f066fe888688cfe373677e0e03f37a143d5e2ce4",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2137",
+          "line": "INT 21 - DOS 2.x and 3.3+ only - \"AVAILDEV\" - SPECIFY \\DEV\\ PREFIX USE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37",
+          "line": "        case 0x37:      /* Get/Set Switch char Get/Set Availdev thing */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x37/0x00": {
+      "digest": "68d256ad078d980c738af19a262e99dd9ed0150a25f4260027a3637a054e63ce",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213700",
+          "line": "INT 21 - DOS 2+ - \"SWITCHAR\" - GET SWITCH CHARACTER"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 0",
+          "line": "                case 0:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x37/0x01": {
+      "digest": "224968325a51c5988d7c649c52c769ba42b2dbcd00e97967ced5c000cab6617d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213701",
+          "line": "INT 21 - DOS 2+ - \"SWITCHAR\" - SET SWITCH CHARACTER"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 1",
+          "line": "                case 1:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x37/0x02": {
+      "digest": "32bf288420a38200c2c9d8823e1c67e5c04a80fad7e50674020369cc193e9a87",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 2",
+          "line": "                case 2:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x37/0x03": {
+      "digest": "ea8acb985991283a88de331c4b67b8baff775e3ee26453bad99e6009c07d49f3",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 3",
+          "line": "                case 3:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x38": {
+      "digest": "c1bd9bc1bec5b0ce82a45891452cd1485af0274d4ff37b1788f2a470a1400d9f",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2138",
+          "line": "INT 21 - DOS 2+ - GET COUNTRY-SPECIFIC INFORMATION"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x38",
+          "line": "        case 0x38:                  /* Set Country Code */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x39": {
+      "digest": "0ef46e331356b2fce68c2fd0990c35886d1a55e65e040e8a7dff8dc6bfbcb824",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2139",
+          "line": "INT 21 - DOS 2+ - \"MKDIR\" - CREATE SUBDIRECTORY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x39",
+          "line": "        case 0x39:      /* MKDIR Create directory */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x3A": {
+      "digest": "8139917ef9b9fcf871e59ad32a1d5cec3b9cfbb8caa6694ea11c25fec815b044",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213A",
+          "line": "INT 21 - DOS 2+ - \"RMDIR\" - REMOVE SUBDIRECTORY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3a",
+          "line": "        case 0x3a:      /* RMDIR Remove directory */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x3B": {
+      "digest": "ad21514f9b195eee5af2472f337710d1aa09c04f20c117e70fd2d5feddeec0de",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213B",
+          "line": "INT 21 - DOS 2+ - \"CHDIR\" - SET CURRENT DIRECTORY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3b",
+          "line": "        case 0x3b:      /* CHDIR Set current directory */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x3C": {
+      "digest": "830bba49bd100476437bc12adb3f68a21510a637a14b0db7d79d44989b8d33ad",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213C",
+          "line": "INT 21 - DOS 2+ - \"CREAT\" - CREATE OR TRUNCATE FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3c",
+          "line": "        case 0x3c:      /* CREATE Create or truncate file */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x3D": {
+      "digest": "322ca1447bd5b762c23b2897e21c2db2a6b6b4340ea9c95d98a042714431b32d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213D",
+          "line": "INT 21 - DOS 2+ - \"OPEN\" - OPEN EXISTING FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3d",
+          "line": "        case 0x3d:      /* OPEN Open existing file */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x3E": {
+      "digest": "a9f465a26f389b9be3aecfea3917bbb60798304758ed38c4841ebc1369495de5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213E",
+          "line": "INT 21 - DOS 2+ - \"CLOSE\" - CLOSE FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3e",
+          "line": "        case 0x3e:      /* CLOSE Close file */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x3F": {
+      "digest": "e13bb128d4f91173d3ef980b99613c01a702107df61a56d1a5b429573e994457",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-213F",
+          "line": "INT 21 - DOS 2+ - \"READ\" - READ FROM FILE OR DEVICE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3f",
+          "line": "        case 0x3f:      /* READ Read from file or device */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x40": {
+      "digest": "d7d746827e582c132819f195bec50a0410281c787d2d83cb454c4a8849e9d623",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2140",
+          "line": "INT 21 - DOS 2+ - \"WRITE\" - WRITE TO FILE OR DEVICE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x40",
+          "line": "        case 0x40:                  /* WRITE Write to file or device */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x41": {
+      "digest": "c1c5284ab2b06fc5e33f104280e6254970b8d28082a7839fc82819a9ecf9a84e",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2141",
+          "line": "INT 21 - DOS 2+ - \"UNLINK\" - DELETE FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x41",
+          "line": "        case 0x41:                  /* UNLINK Delete file */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x42": {
+      "digest": "2905ee1a2f07ec283a4fd91602f7f11300fdf5b49f4876237556a771f38b00d6",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-2142",
+          "line": "INT 21 - DOS 2+ - \"LSEEK\" - SET CURRENT FILE POSITION"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x42",
+          "line": "        case 0x42:                  /* LSEEK Set current file position */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x43": {
+      "digest": "cce790cc2c16c974a142e03e2ccacc63bb329ebc8fc7aeb170f07d853734f3fb",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43",
+          "line": "        case 0x43:                  /* Get/Set file attributes */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x43/0x00": {
+      "digest": "7a1f5ea4d8cd5de7004b2d3d7f4a3f15e521ddeb8f90b9b472ddc4f2e788f33a",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-214300",
+          "line": "INT 21 - DOS 2+ - GET FILE ATTRIBUTES"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43 case 0x00",
+          "line": "                case 0x00:              /* Get */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x43/0x01": {
+      "digest": "718f002c368e0eb8d3eee8cf00b6f3f416265e07cfae4e3f573a5d8c051025df",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.F D-214301",
+          "line": "INT 21 - DOS 2+ - \"CHMOD\" - SET FILE ATTRIBUTES"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43 case 0x01",
+          "line": "                case 0x01:              /* Set */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x45": {
+      "digest": "77818e4992ccf3f7348b6bc847ae73752176cdfbe881a710c53215fe9995c3d9",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2145",
+          "line": "INT 21 - DOS 2+ - \"DUP\" - DUPLICATE FILE HANDLE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x45",
+          "line": "        case 0x45:                  /* DUP Duplicate file handle */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x46": {
+      "digest": "f3d83a5ab377dd511f94315df8558d9b68ce1a2a6277121930bedda363a41cae",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2146",
+          "line": "INT 21 - DOS 2+ - \"DUP2\", \"FORCEDUP\" - FORCE DUPLICATE FILE HANDLE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x46",
+          "line": "        case 0x46:                  /* DUP2,FORCEDUP Force duplicate file handle */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x47": {
+      "digest": "e5a13937725ae440d0ce7c6d05ae1d5699044cbd878c7b748de3d84376d549f5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2147",
+          "line": "INT 21 - DOS 2+ - \"CWD\" - GET CURRENT DIRECTORY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x47",
+          "line": "        case 0x47:                  /* CWD Get current directory */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x48": {
+      "digest": "363866e04c069fab533a829cb23d4a4552431bbc089f37c3c8471e810530c227",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2148",
+          "line": "INT 21 - DOS 2+ - ALLOCATE MEMORY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x48",
+          "line": "        case 0x48:                  /* Allocate memory */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x49": {
+      "digest": "0c4379de625b2e43ffd21a402471f1cdd708f8755e765961209b9d38d7abde20",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2149",
+          "line": "INT 21 - DOS 2+ - FREE MEMORY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x49",
+          "line": "        case 0x49:                  /* Free memory */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x4A": {
+      "digest": "9717c148bb106ae38c308082a529f943c4b1b8f4a4da6381f35aa9ce5db7f109",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-214A",
+          "line": "INT 21 - DOS 2+ - RESIZE MEMORY BLOCK"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4a",
+          "line": "        case 0x4a:                  /* Resize memory block */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x4B": {
+      "digest": "59543dc038d1aec488bde6c1029eafe258caebbf8710635d1d2f9f7d0b278557",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-214B",
+          "line": "INT 21 - DOS 2+ - \"EXEC\" - LOAD AND/OR EXECUTE PROGRAM"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4b",
+          "line": "        case 0x4b:                  /* EXEC Load and/or execute program */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x4C": {
+      "digest": "aef0c0fa1ab1d096884e8ec8869b4cff04b3aaca9a408fe904d78e195f93fff4",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-214C",
+          "line": "INT 21 - DOS 2+ - \"EXIT\" - TERMINATE WITH RETURN CODE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4c",
+          "line": "        case 0x4c:                  /* EXIT Terminate with return code */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x4D": {
+      "digest": "835fc3b6c33230048ed42fcccc15e76b4123d1ec719c4f9e80f25b44214b3686",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-214D",
+          "line": "INT 21 - DOS 2+ - GET RETURN CODE (ERRORLEVEL)"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4d",
+          "line": "        case 0x4d:                  /* Get Return code */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x4E": {
+      "digest": "a028fe2c48480fae03905d5687231e38a2fda336b71e7f67c04385c28163aadf",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-214E",
+          "line": "INT 21 - DOS 2+ - \"FINDFIRST\" - FIND FIRST MATCHING FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4e",
+          "line": "        case 0x4e: {                /* FINDFIRST Find first matching file */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x4F": {
+      "digest": "495a729dd4140806d97872854fe16c1a21747e5291b480e46fa6c76bccd783bb",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-214F",
+          "line": "INT 21 - DOS 2+ - \"FINDNEXT\" - FIND NEXT MATCHING FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4f",
+          "line": "        case 0x4f:                  /* FINDNEXT Find next matching file */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x50": {
+      "digest": "54d77995929524290d60f85242920068e61dca90cd94c6f977e0731113b8ebfd",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2150",
+          "line": "INT 21 - DOS 2+ internal - SET CURRENT PROCESS ID (SET PSP ADDRESS)"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x50",
+          "line": "        case 0x50:                  /* Set current PSP */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x51": {
+      "digest": "7aa9d4427183b85c6a17a14bab1f039323f8663ab83b876404a34209fd51eb8d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2151",
+          "line": "INT 21 - DOS 2+ internal - GET CURRENT PROCESS ID (GET PSP ADDRESS)"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x51",
+          "line": "        case 0x51:                  /* Get current PSP */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x52": {
+      "digest": "7c3f3f2f3258a5e681354a406ad5a1f3ffdb47a083320b78d198f1578e217050",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2152",
+          "line": "INT 21 U - DOS 2+ internal - \"SYSVARS\" - GET LIST OF LISTS"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x52",
+          "line": "        case 0x52: {                /* Get list of lists */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x53": {
+      "digest": "1236209ef9033dea687c760f2cc56339e1adcca5bae4db4acf5fb34f03a52ec5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2153",
+          "line": "INT 21 - DOS 2+ internal - TRANSLATE BIOS PARAMETER BLOCK TO DRIVE PARAM BLOCK"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x53",
+          "line": "        case 0x53:                  /* Translate BIOS parameter block to drive parameter block */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x54": {
+      "digest": "a31a4df830b3a54d5f8c03b1ef96b2fcc56e8c76a38b7a8c7df9f09be97b12ea",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2154",
+          "line": "INT 21 - DOS 2+ - GET VERIFY FLAG"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x54",
+          "line": "        case 0x54:                  /* Get verify flag */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x55": {
+      "digest": "bc2f9c1ea5c8df7e005f89dd11a84c26568ccffc19f248b115c92e0c704f7556",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2155",
+          "line": "INT 21 - DOS 2+ internal - CREATE CHILD PSP"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x55",
+          "line": "        case 0x55:                  /* Create Child PSP*/"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x56": {
+      "digest": "13549183214850b20c4f88543160f261453aebec26abc422fef7ceecb058c031",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2156",
+          "line": "INT 21 - DOS 2+ - \"RENAME\" - RENAME FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x56",
+          "line": "        case 0x56:                  /* RENAME Rename file */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x57": {
+      "digest": "bc83743b5eb635b403169418a60153ae0fe8499916659e53c59d9191046dedcc",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x57",
+          "line": "        case 0x57:                  /* Get/Set File's Date and Time */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x58": {
+      "digest": "883c9627b5619f2e223fd7a8ec6f7c226462325f37bbd91c1ffb18950b0011da",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2158@1",
+          "line": "INT 21 - DOS 2.11+ - GET OR SET MEMORY ALLOCATION STRATEGY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58",
+          "line": "        case 0x58:                  /* Get/Set Memory allocation strategy */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x58/0x00": {
+      "digest": "e8782dd87e0c863bf90e9f4d0142e880ec8ba40de47b3fbccc8e80524335ae59",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 0",
+          "line": "                case 0:                 /* Get Strategy */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x58/0x01": {
+      "digest": "736fbea456a95a6e157a3a76c63ff11447aee7557776a68dcc1a636f78433de1",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 1",
+          "line": "                case 1:                 /* Set Strategy */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x58/0x02": {
+      "digest": "90e1273a41f9a97715694779589d9a5545561b4028659854ccf55bec0e0ba350",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 2",
+          "line": "                case 2:                 /* Get UMB Link Status */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x58/0x03": {
+      "digest": "5c5e1ede2f2883fcfd5a3e1170f9f1e57ea4a62d3da56c7dcb26543b391a0d81",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 3",
+          "line": "                case 3:                 /* Set UMB Link Status */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x59": {
+      "digest": "7dc15ca067fe2313036de5b38ef57c511a65bc448da60ba10c39dcc963269406",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-2159--BX0000",
+          "line": "INT 21 - DOS 3.0+ - GET EXTENDED ERROR INFORMATION"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x59",
+          "line": "        case 0x59:                  /* Get Extended error information */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x5A": {
+      "digest": "4330736ac3ecfd9fb9e1defa815d4e6a839b052d3988a9c843ddecdec3879f2f",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-215A",
+          "line": "INT 21 - DOS 3.0+ - CREATE TEMPORARY FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5a",
+          "line": "        case 0x5a:                  /* Create temporary file */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x5B": {
+      "digest": "901b97e85c47ab8da602253307d2b7c53153317ae5e570d1f2f75799e7527493",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-215B",
+          "line": "INT 21 - DOS 3.0+ - CREATE NEW FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5b",
+          "line": "        case 0x5b:                  /* Create new file */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x5C": {
+      "digest": "f1fec785f26ad6f3d41a6ce77de4b0fedb1cdc0eae6c68e342f5922c24929c58",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G D-215C",
+          "line": "INT 21 - DOS 3.0+ - \"FLOCK\" - RECORD LOCKING"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5c",
+          "line": "        case 0x5c:  {       /* FLOCK File region locking */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x5D": {
+      "digest": "d5d7aad2e5a58a6ed75df962a9b6bfa300c7cee3f5d98fa01ed762b7e810156f",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5d",
+          "line": "        case 0x5d:                  /* Network Functions */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x5E": {
+      "digest": "dc23764a8277afdce06e6591f99d24c541642693d230ae1e1ad9b05bd2d6393d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e",
+          "line": "        case 0x5e:                  /* Network and printer functions */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x5F": {
+      "digest": "df6498f479516efbe7b433ca92e9e65c7ceb97bd49cefd5f3553a5522f7a49eb",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5f",
+          "line": "        case 0x5f:                  /* Network redirection */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x60": {
+      "digest": "95b2217de678990f59339e654ea3b489fcdae09a325e0d4ba26efdf84f23804a",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-2160",
+          "line": "INT 21 - DOS 3.0+ - \"TRUENAME\" - CANONICALIZE FILENAME OR PATH"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x60",
+          "line": "        case 0x60:                  /* Canonicalize filename or path */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x61": {
+      "digest": "9a2e321ac52dc4599fbefa8045048274c47bc92cd88c83f9c309fbabc53dcc8d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-2161",
+          "line": "INT 21 - DOS 3.0+ - UNUSED (RESERVED FOR NETWORK USE)"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x61",
+          "line": "        case 0x61:                  /* Unused (reserved for network use) */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x62": {
+      "digest": "57de084a4fa48da8d6692215f17697e2deef8f77d76d4fe8e4f5e13c4bc4c024",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-2162",
+          "line": "INT 21 - DOS 3.0+ - GET CURRENT PSP ADDRESS"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x62",
+          "line": "        case 0x62:                  /* Get Current PSP Address */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x63": {
+      "digest": "2c6395a98a3ac52e573e057a6b58d5e8e051edd81781bd96c554d621b9bc5761",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x63",
+          "line": "        case 0x63:                  /* DOUBLE BYTE CHARACTER SET */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x64": {
+      "digest": "cdc6b8ee14aa41e02debc9d26ee4ab3ca3fba2787e305818054f0c4e9cbb8ade",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-2164",
+          "line": "INT 21 - DOS 3.2+ internal - SET DEVICE DRIVER LOOKAHEAD FLAG"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x64",
+          "line": "        case 0x64:                  /* Set device driver lookahead flag */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x65": {
+      "digest": "d2a3b869c43d7a408723bf5bb6454603ada6cf2f1b6fdf8ff157b2f37d482567",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-2165@1",
+          "line": "INT 21 - DOS 3.3+ - GET EXTENDED COUNTRY INFORMATION"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65",
+          "line": "        case 0x65:                  /* Get extended country information and a lot of other useless shit*/"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x65/0x01": {
+      "digest": "8b476018077dae71e4b37b23971696c7d67b09e28c861c6f2d8b866ddfec9834",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x01",
+          "line": "                    case 0x01:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x65/0x02": {
+      "digest": "35be8a4a9ce079a6f8a3976c57de3d375ee89c75c9ef97955bad88b0d5c7961a",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x02",
+          "line": "                    case 0x02: // Get pointer to uppercase table"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x65/0x03": {
+      "digest": "d6caca6f6db002ca2f4570008bfcf24a2c366831e521148e8d1f04c957168a05",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x03",
+          "line": "                    case 0x03: // Get pointer to lowercase table"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x65/0x04": {
+      "digest": "a1864b5d14199a6a62b308d6620ad34ab7f393677825dc09a95084aa8b8f0860",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x04",
+          "line": "                    case 0x04: // Get pointer to filename uppercase table"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x65/0x05": {
+      "digest": "3e5c9f8cbc40d7647cff95c897258a050eea4ce97b1cb9ae65c789023feda7da",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x05",
+          "line": "                    case 0x05: // Get pointer to filename terminator table"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x65/0x06": {
+      "digest": "8706498f29fbacf04e7d33b44b72b7823ff536c06c8ab57ff1ec5c918d0c245f",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x06",
+          "line": "                    case 0x06: // Get pointer to collating sequence table"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x65/0x07": {
+      "digest": "c3634985dd174e6241b14640ad381d5cf4e5da028122708f0cbbd3167cafb9a4",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x07",
+          "line": "                    case 0x07: // Get pointer to double byte char set table"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x65/0x20": {
+      "digest": "9706b2f8f6a8d74aa5e3d99d5e3909f88bf7630a6d5efad4259374972289ead1",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x20",
+          "line": "                    case 0x20: /* Capitalize Character */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x65/0x23": {
+      "digest": "7af5690a8c849a57e386cad0c9f61e0d28ff9a5f28e7690855e0aafdca45f25b",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-216523",
+          "line": "INT 21 U - DOS 4.0+ - DETERMINE IF CHARACTER REPRESENTS YES/NO RESPONSE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x23",
+          "line": "                    case 0x23: /* Determine if character represents yes/no response (MS-DOS 4.0+) */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x66": {
+      "digest": "c0ca574cf19dd5d9e36cfb49bb45d08bd37392618b96fc5b71f59baee8d35de9",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66",
+          "line": "        case 0x66:                  /* Get/Set global code page table  */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x66/0x01": {
+      "digest": "781f12004706bbf7d1eb16659bbdf13c02f06aad184f2a68cce1657e0f301542",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-216601",
+          "line": "INT 21 - DOS 3.3+ - GET GLOBAL CODE PAGE TABLE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66 case 1",
+          "line": "                case 1:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x66/0x02": {
+      "digest": "5cff4401b4cbff1982653c5ef36be88ca52bc4aad50666ff899cf9e72a6030c3",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-216602",
+          "line": "INT 21 - DOS 3.3+ - SET GLOBAL CODE PAGE TABLE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66 case 2",
+          "line": "                case 2:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x67": {
+      "digest": "14a5747958ff2f6f3039b9f24fb6aeebb4a4663e5c504d323b1cf946c5a53037",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-2167",
+          "line": "INT 21 - DOS 3.3+ - SET HANDLE COUNT"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x67",
+          "line": "        case 0x67:                  /* Set handle count */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x68": {
+      "digest": "963a5ce5fea20775b8da37f65a874daffbabbd2482f6289fea3f2ab976b06c06",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-2168",
+          "line": "INT 21 - DOS 3.3+ - \"FFLUSH\" - COMMIT FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x68",
+          "line": "        case 0x68:                  /* FFLUSH Commit file */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x69": {
+      "digest": "cbcffa77b07540d827689950c42727498834870e77f3080760436c52c28020b5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-2169",
+          "line": "INT 21 U - DOS 4.0+ internal - GET/SET DISK SERIAL NUMBER"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69",
+          "line": "        case 0x69:                  /* Get/Set disk serial number */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x69/0x00": {
+      "digest": "a2811629a149262b77fccf30e2195959b02796ebde3a59d5ca9e6d80f8d28096",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69 case 0x00",
+          "line": "                    case 0x00:              /* Get */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x69/0x01": {
+      "digest": "2e7f54e385cae88694fbc9052f2bd18d71239c6a715b37c4b87badb82290f1be",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69 case 0x01",
+          "line": "                    case 0x01:              /* Set */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x6A": {
+      "digest": "6dbfd4c7754fb0239996b13c34be0ccb30789d61c9e0b299d93fb5a0f16ce8f8",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-216A",
+          "line": "INT 21 U - DOS 4.0+ - COMMIT FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6a",
+          "line": "        case 0x6a:                  /* Commit file */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x6B": {
+      "digest": "3dd5fdeea080f31ca74772aae1729f0f1bd49490cd52487cc4c899f08d1fd56d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-216B@2",
+          "line": "INT 21 U - DOS 5+ - NULL FUNCTION"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6b",
+          "line": "        case 0x6b:                  /* NULL Function */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x6C": {
+      "digest": "2ae9325027dc34faa3701043de0c2866453d181b1f9e51492d534eae361462cc",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6c",
+          "line": "        case 0x6c:                  /* Extended Open/Create */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x6D": {
+      "digest": "476f5499d30cc4444e64e8e7b713939f71aad94f07eaaf79e21699bba3d6d5e4",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-216D",
+          "line": "INT 21 U - DOS 5+ ROM - FIND FIRST ROM PROGRAM"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6d",
+          "line": "        case 0x6d:                  /* ROM - Find first ROM program */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x6E": {
+      "digest": "74cf4643694365eabdff5f21b3b79e7ae478c90b4cbe4431c0ebb395d92511f0",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-216E",
+          "line": "INT 21 U - DOS 5+ ROM - FIND NEXT ROM PROGRAM"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6e",
+          "line": "        case 0x6e:                  /* ROM - Find next ROM program */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x6F": {
+      "digest": "ef73ab8109db497c993c46c639daa626d41a19896c58844fc57503e2a306bfb5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6f",
+          "line": "        case 0x6f:                  /* ROM functions */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x71/0x39": {
+      "digest": "e3b75d13113b7fa77dead85742a7bb1ae25c2e1c617322ba5caa7363f15fd0e1",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-217139",
+          "line": "INT 21 - Windows95 - LONG FILENAME - MAKE DIRECTORY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x39",
+          "line": "\t\t    case 0x39:              /* LFN MKDIR */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x71/0x3A": {
+      "digest": "965d6a4b56f2c6f92d8b949b14e0ad5b398aa55ee93477747679c3e887a643a5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-21713A",
+          "line": "INT 21 - Windows95 - LONG FILENAME - REMOVE DIRECTORY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x3a",
+          "line": "\t\t    case 0x3a:              /* LFN RMDIR */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x71/0x3B": {
+      "digest": "1a07b5eb74dfebd3616e05e8648ce5c9ca32d8f61426221e1432ff34911472d9",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-21713B",
+          "line": "INT 21 - Windows95 - LONG FILENAME - CHANGE DIRECTORY"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x3b",
+          "line": "\t\t    case 0x3b:              /* LFN CHDIR */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x71/0x41": {
+      "digest": "bdb2e4b338882d68fc2133b24027804c9a94322abdfc515d2bbe46756d6b1a9d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-217141",
+          "line": "INT 21 - Windows95 - LONG FILENAME - DELETE FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x41",
+          "line": "\t\t    case 0x41:              /* LFN UNLINK */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x71/0x43": {
+      "digest": "be7cd0c063e80f6b0e516aa7cb411c8528c403bcc81c5a4a3abb263fefd6a232",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-217143",
+          "line": "INT 21 - Windows95 - LONG FILENAME - EXTENDED GET/SET FILE ATTRIBUTES"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x43",
+          "line": "\t\t    case 0x43:              /* LFN ATTR */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x71/0x4E": {
+      "digest": "8ab773096a858c0aa44cfe5f94002c54e6cf34fd24474a27b5706dd41c559e53",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-21714E",
+          "line": "INT 21 - Windows95 - LONG FILENAME - FIND FIRST MATCHING FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x4e",
+          "line": "\t\t    case 0x4e:              /* LFN FindFirst */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x71/0x56": {
+      "digest": "301ec762534eceab5324aa5786b287a2a8ffb568d51c3772cc7c123b1f07aa96",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-217156",
+          "line": "INT 21 - Windows95 - LONG FILENAME - RENAME FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x56",
+          "line": "\t\t    case 0x56:              /* LFN Rename */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x71/0x60": {
+      "digest": "86d439e3b8f18986b9f39a330802cc32c74caed2dd9f660eed0c920dbf87c969",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-217160CL00",
+          "line": "INT 21 - Windows95 - LONG FILENAME - \"TRUENAME\" - CANONICALIZE PATH"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x60",
+          "line": "\t\t    case 0x60:              /* LFN GetName */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x71/0x6C": {
+      "digest": "b8af69490ae7be2cc6797fe8dc2f4eb77620b6e7f2ffbd15d417d42174ca7da0",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-21716C",
+          "line": "INT 21 - Windows95 - LONG FILENAME - CREATE OR OPEN FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x6c",
+          "line": "\t\t    case 0x6c:              /* LFN Create */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x71/0xA8": {
+      "digest": "d2c1c0ddf4bfc0ff7508fba3f2f69ce077afdc8f795a20047d8b0524c7045e9d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-2171A8",
+          "line": "INT 21 - Windows95 - LONG FILENAME - GENERATE SHORT FILENAME"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa8",
+          "line": "\t\t    case 0xa8:              /* LFN GenSFN */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x71/0xA9": {
+      "digest": "4204714a1b4c781bf429aa0cfc1c79928fa75da42bcc8154e9263ed3da386bb1",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-2171A9",
+          "line": "INT 21 - Windows95 - LONG FILENAME - SERVER CREATE OR OPEN FILE"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa9",
+          "line": "\t\t    case 0xa9:              /* LFN Server Create */"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0x73": {
+      "digest": "a77303f709b1f6b4e359c6de324fd72d6bc0a300d3dbab6a8f357752df864a5a",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.H D-2173",
+          "line": "INT 21 - MS-DOS 7 - DRIVE LOCKING AND FLUSHING"
+        },
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73",
+          "line": "\tcase 0x73:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0xE0": {
+      "digest": "f5f0a6a4b4b05ecfa678a0b2ee3f856d1455265df4ed31def5411bc0919f4aef",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xE0",
+          "line": "\tcase 0xE0:"
+        }
+      ]
+    },
+    "ibm-pc:call:0x21/0xEF": {
+      "digest": "867649f410ec7943f1109b944571f80535dc879c31a9aaf077da5c43d592dc57",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xEF",
+          "line": "        case 0xEF:                  /* Used in Ancient Art Of War CGA */"
+        }
+      ]
+    },
+    "ibm-pc:error:0": {
+      "digest": "9d5c8c145dfec87f93a6b9c3ad9cae209ef08a476643705c25b447a414dde576",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 00h (0)",
+          "line": " 00h (0)   no error"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_NONE",
+          "line": "#define DOSERR_NONE 0"
+        }
+      ]
+    },
+    "ibm-pc:error:1": {
+      "digest": "06632511722acf499aef105d3890c631097dcf9b86607ec65f7fddfd1692144f",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 01h (1)",
+          "line": " 01h (1)   function number invalid"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_FUNCTION_NUMBER_INVALID",
+          "line": "#define DOSERR_FUNCTION_NUMBER_INVALID 1"
+        }
+      ]
+    },
+    "ibm-pc:error:10": {
+      "digest": "0b76022d899fc730a0db8a4b62b6335a253f442792e6603acc2b4b81761201eb",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 0Ah (10)",
+          "line": " 0Ah (10)  environment invalid (usually >32K in length)"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_ENVIRONMENT_INVALID",
+          "line": "#define DOSERR_ENVIRONMENT_INVALID 10"
+        }
+      ]
+    },
+    "ibm-pc:error:11": {
+      "digest": "5142616bd735e4d103650ca4358244c6a851dc527a9756023dce6ffbf5e9ad3a",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 0Bh (11)",
+          "line": " 0Bh (11)  format invalid"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_FORMAT_INVALID",
+          "line": "#define DOSERR_FORMAT_INVALID 11"
+        }
+      ]
+    },
+    "ibm-pc:error:12": {
+      "digest": "beff773e4e205b0be80e09d611121f2d889874623110be679ad2d64fe3eeccf9",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 0Ch (12)",
+          "line": " 0Ch (12)  access code invalid"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_ACCESS_CODE_INVALID",
+          "line": "#define DOSERR_ACCESS_CODE_INVALID 12"
+        }
+      ]
+    },
+    "ibm-pc:error:13": {
+      "digest": "e15f3d89aacb0d2480557e304270f00c140cdb21063e8414f3c4e423db5d13a0",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 0Dh (13)",
+          "line": " 0Dh (13)  data invalid"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_DATA_INVALID",
+          "line": "#define DOSERR_DATA_INVALID 13"
+        }
+      ]
+    },
+    "ibm-pc:error:14": {
+      "digest": "8b34242a5b6ba147e754f62b1aa6c2cd48df12398c8c28c62bc24c57c2a76cfd",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 0Eh (14)  reserved",
+          "line": " 0Eh (14)  reserved"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_RESERVED",
+          "line": "#define DOSERR_RESERVED 14"
+        }
+      ]
+    },
+    "ibm-pc:error:15": {
+      "digest": "11c6e09ad3e8d3b830ccb823249469d668eb0f18977442f11cd5e318ce890774",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 0Fh (15)",
+          "line": " 0Fh (15)  invalid drive"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_INVALID_DRIVE",
+          "line": "#define DOSERR_INVALID_DRIVE 15"
+        }
+      ]
+    },
+    "ibm-pc:error:16": {
+      "digest": "3e3df86bfa298e78c38e3e77a50c8ee02348c806b9c83231adec401d77428acb",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 10h (16)",
+          "line": " 10h (16)  attempted to remove current directory"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_REMOVE_CURRENT_DIRECTORY",
+          "line": "#define DOSERR_REMOVE_CURRENT_DIRECTORY 16"
+        }
+      ]
+    },
+    "ibm-pc:error:17": {
+      "digest": "6d7cdca2cf46bf5bbd244039379e1495879b739920a056188b1188c5d9203279",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 11h (17)",
+          "line": " 11h (17)  not same device"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_NOT_SAME_DEVICE",
+          "line": "#define DOSERR_NOT_SAME_DEVICE 17"
+        }
+      ]
+    },
+    "ibm-pc:error:18": {
+      "digest": "d757485719e5145a91942b0494f223324f03f86fafec9b76e6c555bfc052f2e5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 12h (18)",
+          "line": " 12h (18)  no more files"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_NO_MORE_FILES",
+          "line": "#define DOSERR_NO_MORE_FILES 18"
+        }
+      ]
+    },
+    "ibm-pc:error:19": {
+      "digest": "965af29aafb46e22a60e9099523fd1e36b760802eb0f22e335b3a59973d0c7f6",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 13h (19)",
+          "line": " 13h (19)  disk write-protected"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_WRITE_PROTECTED",
+          "line": "#define DOSERR_WRITE_PROTECTED 19"
+        }
+      ]
+    },
+    "ibm-pc:error:2": {
+      "digest": "14ffd118afdc69a4cb3f8e2fa50578ab212047778c05da0fa30fe3bffe62c71e",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 02h (2)",
+          "line": " 02h (2)   file not found"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_FILE_NOT_FOUND",
+          "line": "#define DOSERR_FILE_NOT_FOUND 2"
+        }
+      ]
+    },
+    "ibm-pc:error:20": {
+      "digest": "27fb867a34613a9a63e1466c265d205a5421e2435e7662a6bb36bf479cd52e7e",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 14h (20)",
+          "line": " 14h (20)  unknown unit"
+        }
+      ]
+    },
+    "ibm-pc:error:21": {
+      "digest": "0df974ed76adf9b7bf731e4f672acb6bdb371660772ce3c845348cd5234b00fb",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 15h (21)",
+          "line": " 15h (21)  drive not ready"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_DRIVE_NOT_READY",
+          "line": "#define DOSERR_DRIVE_NOT_READY 21"
+        }
+      ]
+    },
+    "ibm-pc:error:22": {
+      "digest": "b893a785a921ba3ef300a4970293fa97ff3c79fb407be81f3e181eb69867cdca",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 16h (22)",
+          "line": " 16h (22)  unknown command"
+        }
+      ]
+    },
+    "ibm-pc:error:23": {
+      "digest": "d4d20d8b3944769bbdbe780a9e135e86f48c389653dc867bbf1c50c20926e1e3",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 17h (23)",
+          "line": " 17h (23)  data error (CRC)"
+        }
+      ]
+    },
+    "ibm-pc:error:24": {
+      "digest": "da722572b71b62dd3e1ef60262d9ae9e561c6d1c6b9830e698e127c724b2d8ec",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 18h (24)",
+          "line": " 18h (24)  bad request structure length"
+        }
+      ]
+    },
+    "ibm-pc:error:25": {
+      "digest": "c3d6494d5ac00c62163bd74214f9b72614b352e85786ab849ababe7bff10b119",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 19h (25)",
+          "line": " 19h (25)  seek error"
+        }
+      ]
+    },
+    "ibm-pc:error:26": {
+      "digest": "f0d4b4839ff3ead1b3f21b70d768203a823512daa9f9cfedf4db0d5868a5a5f5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 1Ah (26)",
+          "line": " 1Ah (26)  unknown media type (non-DOS disk)"
+        }
+      ]
+    },
+    "ibm-pc:error:27": {
+      "digest": "53beeb4045f4f22bd9a40f5d7d3c181feb9dc95b5d7ece7cd4cd9d5c34133a74",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 1Bh (27)",
+          "line": " 1Bh (27)  sector not found"
+        }
+      ]
+    },
+    "ibm-pc:error:28": {
+      "digest": "7fc596789d52003026873ff8e02b697edd8538f3ddf644b1a774b0666db27631",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 1Ch (28)",
+          "line": " 1Ch (28)  printer out of paper"
+        }
+      ]
+    },
+    "ibm-pc:error:29": {
+      "digest": "b1ea898c883e9780c919184dc614d846943b01c912e6e46e37d8f4b89f89c4a0",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 1Dh (29)",
+          "line": " 1Dh (29)  write fault"
+        }
+      ]
+    },
+    "ibm-pc:error:3": {
+      "digest": "bd7671aa608c690c6c2a73cda12886565da028d19c9a7811d9b1b18c874d7915",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 03h (3)",
+          "line": " 03h (3)   path not found"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_PATH_NOT_FOUND",
+          "line": "#define DOSERR_PATH_NOT_FOUND 3"
+        }
+      ]
+    },
+    "ibm-pc:error:30": {
+      "digest": "4c253b05378bfaa646bb738c34026aed200e59ef8713c6b7d6d8d41da1e381b5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 1Eh (30)",
+          "line": " 1Eh (30)  read fault"
+        }
+      ]
+    },
+    "ibm-pc:error:31": {
+      "digest": "431b17f41c84b5479ab73bcf01596ea38e925a7162aa75e0c0689a48f9dedbac",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 1Fh (31)",
+          "line": " 1Fh (31)  general failure"
+        }
+      ]
+    },
+    "ibm-pc:error:32": {
+      "digest": "f78907c7b4ce5de67ea594f84ddb3f096dccbceb92644d7687f1d056fbe3527d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 20h (32)",
+          "line": " 20h (32)  sharing violation"
+        }
+      ]
+    },
+    "ibm-pc:error:33": {
+      "digest": "0b2dd9600da8173afe9bee663cfbfd1cb91542083c7e8b63c493b1c91c0d42ba",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 21h (33)",
+          "line": " 21h (33)  lock violation"
+        }
+      ]
+    },
+    "ibm-pc:error:34": {
+      "digest": "7ab3b5f928f0c5ad209bdfdf0a36e05b3d60208f6d6a97367f3fadd74fadd156",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 22h (34)",
+          "line": " 22h (34)  disk change invalid (ES:DI -> media ID structure)(see #01681)"
+        }
+      ]
+    },
+    "ibm-pc:error:35": {
+      "digest": "c8eb702647352623029489b78998204d343fdf3cdafc283f28fc81363329578b",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 23h (35)  FCB",
+          "line": " 23h (35)  FCB unavailable"
+        }
+      ]
+    },
+    "ibm-pc:error:36": {
+      "digest": "6ee117a8ac1cfde44c5b0887de8364c38f7ff1a126fe5b66ce23fa68332ca830",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 24h (36)",
+          "line": " 24h (36)  sharing buffer overflow"
+        }
+      ]
+    },
+    "ibm-pc:error:37": {
+      "digest": "963500a89bfab350ce51da6b9951776bad26e1027c58697418b87ae601fe5c84",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 25h (37)",
+          "line": " 25h (37)  (DOS 4.0+) code page mismatch"
+        }
+      ]
+    },
+    "ibm-pc:error:38": {
+      "digest": "d81546931a50a51f785766c29afac0fd77638d83f6f732493613af0aa4291c55",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 26h (38)",
+          "line": " 26h (38)  (DOS 4.0+) cannot complete file operation (EOF / out of input)"
+        }
+      ]
+    },
+    "ibm-pc:error:39": {
+      "digest": "edd4b08f1b41abdefa5e239c805ef36b7955a46340adda8f5498c491d886c952",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 27h (39)",
+          "line": " 27h (39)  (DOS 4.0+) insufficient disk space"
+        }
+      ]
+    },
+    "ibm-pc:error:4": {
+      "digest": "91774a5fcbfa0fa74c319029260459738a4d221d6b9ae5939294ac0506f4d6d7",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 04h (4)",
+          "line": " 04h (4)   too many open files (no handles available)"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_TOO_MANY_OPEN_FILES",
+          "line": "#define DOSERR_TOO_MANY_OPEN_FILES 4"
+        }
+      ]
+    },
+    "ibm-pc:error:5": {
+      "digest": "aa6389e048b2525773ce6571a535827dfd6c08cd505f3e35740dac3781b05f6c",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 05h (5)",
+          "line": " 05h (5)   access denied"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_ACCESS_DENIED",
+          "line": "#define DOSERR_ACCESS_DENIED 5"
+        }
+      ]
+    },
+    "ibm-pc:error:50": {
+      "digest": "9796f61f6f529c9b8c80f89160ed856603d971a3f286d360dd3473b8e571d65a",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 32h (50)",
+          "line": " 32h (50)  network request not supported"
+        }
+      ]
+    },
+    "ibm-pc:error:51": {
+      "digest": "2459b2b1449591255d30c943eca83bfa6262c87181a0385ddfa4777647f9e7ce",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 33h (51)",
+          "line": " 33h (51)  remote computer not listening"
+        }
+      ]
+    },
+    "ibm-pc:error:52": {
+      "digest": "64ebaed90d2c9e0dabbaf69b715d4963946e19d29fa92c92b78247bebe827285",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 34h (52)",
+          "line": " 34h (52)  duplicate name on network"
+        }
+      ]
+    },
+    "ibm-pc:error:53": {
+      "digest": "23288db0e03b67884553a13096ede824d771332e53c538ac2787a59981c490b2",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 35h (53)",
+          "line": " 35h (53)  network name not found"
+        }
+      ]
+    },
+    "ibm-pc:error:54": {
+      "digest": "a2de24eb5ab844a60717b7d6d9908ac5a31832e04ff30d94c50d5c7e742dd718",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 36h (54)",
+          "line": " 36h (54)  network busy"
+        }
+      ]
+    },
+    "ibm-pc:error:55": {
+      "digest": "85f38dbc065799d5345458778e9445c56635c4ba19bda882ea9ff9e1d0538a2f",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 37h (55)",
+          "line": " 37h (55)  network device no longer exists"
+        }
+      ]
+    },
+    "ibm-pc:error:56": {
+      "digest": "a0f8a7b1748fd1eb35be9886bed91227bbc3098bd7c9e3ac920ec70895126b9c",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 38h (56)",
+          "line": " 38h (56)  network BIOS command limit exceeded"
+        }
+      ]
+    },
+    "ibm-pc:error:57": {
+      "digest": "ae7a164dde80d20b7047fa633c16896359e8f66faa2e2b4e4141d2b71028eeb3",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 39h (57)",
+          "line": " 39h (57)  network adapter hardware error"
+        }
+      ]
+    },
+    "ibm-pc:error:58": {
+      "digest": "0c0fb0fc1b3036a3458588e14f3d94af9c5fc795af5b713c36d2a3f14a6c3ecd",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 3Ah (58)",
+          "line": " 3Ah (58)  incorrect response from network"
+        }
+      ]
+    },
+    "ibm-pc:error:59": {
+      "digest": "43a09eaebe687060c970a4b822b38809e288e14aed1afea7990b39e323a40c95",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 3Bh (59)",
+          "line": " 3Bh (59)  unexpected network error"
+        }
+      ]
+    },
+    "ibm-pc:error:6": {
+      "digest": "1b1e1d20052826e4fc98111815e0a2e503bd5e2830bd952d9000bf15c7e32f06",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 06h (6)",
+          "line": " 06h (6)   invalid handle"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_INVALID_HANDLE",
+          "line": "#define DOSERR_INVALID_HANDLE 6"
+        }
+      ]
+    },
+    "ibm-pc:error:60": {
+      "digest": "0bc3abfc24edce100d082022ef297eb2c089b11d21e293bdc5e8c1eeef1e51b7",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 3Ch (60)",
+          "line": " 3Ch (60)  incompatible remote adapter"
+        }
+      ]
+    },
+    "ibm-pc:error:61": {
+      "digest": "1fc20c5b02b02a860e771ce534897f0190e700320bb25d923856bd52644821ee",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 3Dh (61)",
+          "line": " 3Dh (61)  print queue full"
+        }
+      ]
+    },
+    "ibm-pc:error:62": {
+      "digest": "a84c5a7845041105e1eed16448bae1cbdf3ae4aa4b591c83f3cb20ab946cda5b",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 3Eh (62)",
+          "line": " 3Eh (62)  queue not full"
+        }
+      ]
+    },
+    "ibm-pc:error:63": {
+      "digest": "224ad8c63a74c88cd9486fc174a88607fd19f8c16aaf3a86d5bfc36c12c3fa33",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 3Fh (63)",
+          "line": " 3Fh (63)  not enough space to print file"
+        }
+      ]
+    },
+    "ibm-pc:error:64": {
+      "digest": "67f101d4322638a3f40bf00aee2974baf579aea612cac5b83f4ad563f36807c5",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 40h (64)",
+          "line": " 40h (64)  network name was deleted"
+        }
+      ]
+    },
+    "ibm-pc:error:65": {
+      "digest": "c07726bba21ce43369220fe340897192b4b141e71b46599dbe97bcad2d5578ab",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 41h (65)",
+          "line": " 41h (65)  network: Access denied"
+        }
+      ]
+    },
+    "ibm-pc:error:66": {
+      "digest": "ca7f784f5f42d03c8a25d7e9caecc5465c726dd18eee18064161b4068d44009b",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 42h (66)",
+          "line": " 42h (66)  network device type incorrect"
+        }
+      ]
+    },
+    "ibm-pc:error:67": {
+      "digest": "3f09868df29f9743dfe598849a75fa0ff52b873aa42cb753fa2c534f4f6ea9e6",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 43h (67)",
+          "line": " 43h (67)  network name not found"
+        }
+      ]
+    },
+    "ibm-pc:error:68": {
+      "digest": "52e091beed2c896cf35c64700738e0b44b7f2cf418313d7ed6fa352b40601634",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 44h (68)",
+          "line": " 44h (68)  network name limit exceeded"
+        }
+      ]
+    },
+    "ibm-pc:error:69": {
+      "digest": "c67024f28609a535172a71d3ee356a7d10cc2fc5a90009c700314be31d25fb12",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 45h (69)",
+          "line": " 45h (69)  network BIOS session limit exceeded"
+        }
+      ]
+    },
+    "ibm-pc:error:7": {
+      "digest": "f2a8fd63a5f49e06fd10a1a378d51203516d648432efe751fdb9ed7b9c3020f0",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 07h (7)",
+          "line": " 07h (7)   memory control block destroyed"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_MCB_DESTROYED",
+          "line": "#define DOSERR_MCB_DESTROYED 7"
+        }
+      ]
+    },
+    "ibm-pc:error:70": {
+      "digest": "1ef750d83905f51eaffd16cc6f5b7f0f5faba18920cba8a0812bfad3c0d98392",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 46h (70)",
+          "line": " 46h (70)  temporarily paused"
+        }
+      ]
+    },
+    "ibm-pc:error:71": {
+      "digest": "8c5d1971b8e269c2f5c39783ab63045bc98b3f1045fe214c0a23f3bb20981f0c",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 47h (71)",
+          "line": " 47h (71)  network request not accepted"
+        }
+      ]
+    },
+    "ibm-pc:error:72": {
+      "digest": "2204795455b332ba0938772772fe4a7eb4830e95ef571569d7a69ea03a2d53f1",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 48h (72)",
+          "line": " 48h (72)  network print/disk redirection paused"
+        }
+      ]
+    },
+    "ibm-pc:error:73": {
+      "digest": "cf188c02e184cd4e9841fa7ee1c211a65cf19762841cf86fbf0dcae1b6986f30",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 49h (73)",
+          "line": " 49h (73)  network software not installed"
+        }
+      ]
+    },
+    "ibm-pc:error:74": {
+      "digest": "b11ee76b132440903264a561e109428867039a09b48a7b739630bf2eeaa51bcb",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 4Ah (74)",
+          "line": " 4Ah (74)  unexpected adapter close"
+        }
+      ]
+    },
+    "ibm-pc:error:75": {
+      "digest": "f53be5f6fbbb79bd2f2565b1178f34920651d4d0efb494f2f71e9f3594516cf6",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 4Bh (75)",
+          "line": " 4Bh (75)  (LANtastic) password expired"
+        }
+      ]
+    },
+    "ibm-pc:error:76": {
+      "digest": "0bb64286301f0933872377df3a1e5393eb04ee9d12ebcda207465fcfbe4ba063",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 4Ch (76)",
+          "line": " 4Ch (76)  (LANtastic) login attempt invalid at this time"
+        }
+      ]
+    },
+    "ibm-pc:error:77": {
+      "digest": "707bf26a61c03581d235de903a553d6297d4d49233e2a970e6324238642501a2",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 4Dh (77)",
+          "line": " 4Dh (77)  (LANtastic v3+) disk limit exceeded on network node"
+        }
+      ]
+    },
+    "ibm-pc:error:78": {
+      "digest": "b67c0dca96147ff30cda6c28ec812cf7bada5e958bcad5fa1fb4c64f6ec5498d",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 4Eh (78)",
+          "line": " 4Eh (78)  (LANtastic v3+) not logged in to network node"
+        }
+      ]
+    },
+    "ibm-pc:error:8": {
+      "digest": "9876c7f84eab94522cdf356bfad5099ce50ade2c8eb75b5d3e8ff4ee99467511",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 08h (8)",
+          "line": " 08h (8)   insufficient memory"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_INSUFFICIENT_MEMORY",
+          "line": "#define DOSERR_INSUFFICIENT_MEMORY 8"
+        }
+      ]
+    },
+    "ibm-pc:error:80": {
+      "digest": "de130f0278b708c3614c8e9666e4e2a73c3e2059ae72598e1fbda3b6ee455c8f",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 50h (80)",
+          "line": " 50h (80)  file exists"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_FILE_ALREADY_EXISTS",
+          "line": "#define DOSERR_FILE_ALREADY_EXISTS 80"
+        }
+      ]
+    },
+    "ibm-pc:error:81": {
+      "digest": "8fe7d94c32b6f22d4a87149d4013a39d8287ad0451c53ca52de861f63e6b0ae2",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 51h (81)",
+          "line": " 51h (81)  (undoc) duplicated FCB"
+        }
+      ]
+    },
+    "ibm-pc:error:82": {
+      "digest": "e9a4af30c2851e2c6d300d33ff3dca935dc1d6ea3e7832cfc544bd45debd0dab",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 52h (82)",
+          "line": " 52h (82)  cannot make directory"
+        }
+      ]
+    },
+    "ibm-pc:error:83": {
+      "digest": "bcad839979cf1d6d909e224a45a9c6fc5b41b53c2bf2ec121f56c71ef1881e9c",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 53h (83)",
+          "line": " 53h (83)  fail on INT 24h"
+        }
+      ]
+    },
+    "ibm-pc:error:84": {
+      "digest": "82a217a8b7e7e6584dfacd9f72d756325174fa1c96523ab978e0c064e1dea6ff",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 54h (84)",
+          "line": " 54h (84)  (DOS 3.3+) too many redirections / out of structures"
+        }
+      ]
+    },
+    "ibm-pc:error:85": {
+      "digest": "da08353868d6c7094439d22d494ac2a5d1a594a71e6b63e6562de086797641f2",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 55h (85)",
+          "line": " 55h (85)  (DOS 3.3+) duplicate redirection / already assigned"
+        }
+      ]
+    },
+    "ibm-pc:error:86": {
+      "digest": "f6dd0586f7a3a65dfb6c0a8466d2695b1f36b4a9117d39bd5bfaeecac3786bae",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 56h (86)",
+          "line": " 56h (86)  (DOS 3.3+) invalid password"
+        }
+      ]
+    },
+    "ibm-pc:error:87": {
+      "digest": "2722bdd22e678e029640dd62db8e8b36cbc4906f3a8c82d863ffd3d2b7bdfc9a",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 57h (87)",
+          "line": " 57h (87)  (DOS 3.3+) invalid parameter"
+        }
+      ]
+    },
+    "ibm-pc:error:88": {
+      "digest": "1d41569cce655f8e9a1e0bc8db04b3f480a3afa9bbaa25fb57e7987a203e9c54",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 58h (88)",
+          "line": " 58h (88)  (DOS 3.3+) network write fault"
+        }
+      ]
+    },
+    "ibm-pc:error:89": {
+      "digest": "501ce33b8253a2ebe83c2c7837c2e93ef07a670f94a73c3d0eb0ff7773249b5e",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 59h (89)",
+          "line": " 59h (89)  (DOS 4.0+) function not supported on network / no process slots"
+        }
+      ]
+    },
+    "ibm-pc:error:9": {
+      "digest": "76d9128b1d16e4c09d27738e893503702eebdbceaf0ba483beb3092e12c666c4",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 09h (9)",
+          "line": " 09h (9)   memory block address invalid"
+        },
+        {
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_MB_ADDRESS_INVALID",
+          "line": "#define DOSERR_MB_ADDRESS_INVALID 9"
+        }
+      ]
+    },
+    "ibm-pc:error:90": {
+      "digest": "397f271d3a478557268308eb195aee2555d2e68ef25726d5c793c21bd8e3a1c9",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 5Ah (90)",
+          "line": " 5Ah (90)  (DOS 4.0+) required system component not installed / not frozen"
+        }
+      ]
+    },
+    "ibm-pc:error:91": {
+      "digest": "4e6bcf1ea58565baf83ffe5d6d5ec928aa9bb228ac4303a981350b76682aa76b",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 5Bh (91)",
+          "line": " 5Bh (91)  (DOS 4.0+,NetWare4) timer server table overflowed"
+        }
+      ]
+    },
+    "ibm-pc:error:92": {
+      "digest": "31d99d04ae01e194e8c2ca0fa7f4e8add8d79fe741986e8eebfc94f88c8b1731",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 5Ch (92)",
+          "line": " 5Ch (92)  (DOS 4.0+,NetWare4) duplicate in timer service table"
+        }
+      ]
+    },
+    "ibm-pc:error:93": {
+      "digest": "04683b4a91afff635e15b1bcb2292fd00f30ca89634b2071a3600d46955620ca",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 5Dh (93)",
+          "line": " 5Dh (93)  (DOS 4.0+,NetWare4) no items to work on"
+        }
+      ]
+    },
+    "ibm-pc:error:95": {
+      "digest": "e4a02a20f399a7d00c0f1d45f8ccf312540ae8efc1926c63ef988085043e3538",
+      "by": "K3a1c",
+      "against": [
+        {
+          "ref": "rbil61:INTERRUP.G #01680 5Fh (95)",
+          "line": " 5Fh (95)  (DOS 4.0+,NetWare4) interrupted / invalid system call"
+        }
+      ]
+    }
+  }
 }
