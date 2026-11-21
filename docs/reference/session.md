@@ -344,7 +344,7 @@ A windowed session opens 40 px inside the display's corner. Its size is `size` w
 
 `fullscreen` under `sdl output=surface` is refused because that output fills the display by switching its video mode, and the window ends off screen. On macOS it is accepted on display 0 only: a start stopped at its first instruction reaches full screen on another display only once the program runs.
 
-`start` waits until the host lists the window on that display. It does not check the size, since a stopped window keeps the conf's size until the program runs; `window` does. A watched window is not supported on Linux.
+`start` waits until the host lists the window on that display. It does not check the size, since a stopped window keeps the conf's size until the program runs; `window` does.
 
 `background` only chooses where the window opens. How the focus stays with you is the host's: on macOS the emulator starts as a background application, and on Windows no program may take the foreground while `start` launches. A click or ALT moves the focus as always.
 

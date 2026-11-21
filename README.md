@@ -334,8 +334,7 @@ says what is in it.
 
 ## Platforms
 
-macOS and Windows: the server and its tests run on both. Linux runs the unit tests
-(`.github/workflows/ci.yml`) and nothing else.
+macOS and Windows: the server and its tests run on both.
 
 - `start` runs the DOSBox-X its `binary` argument names, else `DOSBOX_X_BINARY`, else the
   `dosbox-x` on your `PATH`. `build_check` says whether a build has the debugger.
