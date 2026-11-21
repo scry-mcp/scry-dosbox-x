@@ -7,7 +7,8 @@ What a client of the server notices.
 - The `dos` channel of `log` and `log_wait` names the INT 21h function and the DOS error of each
   call from dictionaries that cite Ralf Brown's interrupt list and DOSBox-X's source, and the
   names are fuller: `open file` where it said `open`. Every function the emulator's handler has a
-  case for has a name, and every error code the emulator defines has one.
+  case for has a name, and so has every error code the emulator defines and every one the
+  list's table gives, up to 255.
 - `start` takes `overlay`, which layers the window shows over the edge: a caption naming each
   call, the keys held, the pointer, a mark while the machine is stopped and a blinking mark in
   the top right corner while `record` or `audio_record` runs, each on by default, and where the

@@ -3,7 +3,7 @@
   "dictionary": "dos-errors",
   "kind": "error",
   "scope": "ibm-pc",
-  "covers": "DOS extended error codes: the codes the emulator names with DOSERR_ defines and the list's table of error codes up to 95.",
+  "covers": "DOS extended error codes: the codes the emulator names with DOSERR_ defines and the list's table of error codes, from 0 up to 255.",
   "complete_against": "dosbox-x:include/dos_inc.h DOSERR_*",
   "entries": [
     {
@@ -2208,6 +2208,1449 @@
         ],
         "digest": "e4a02a20f399a7d00c0f1d45f8ccf312540ae8efc1926c63ef988085043e3538"
       }
+    },
+    {
+      "key": "100",
+      "name": "open semaphore limit",
+      "description": "DOS extended error code 100: open semaphore limit exceeded (DOS 4.0+, NetWare4); under MSCDEX the same code means unknown error.",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives two meanings for this code: open semaphore limit exceeded (DOS 4.0+, NetWare4) and unknown error (MSCDEX).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 64h (100) (DOS 4.0+,NetWare4) open semaphore limit exceeded",
+          "cites": " 64h (100) (DOS 4.0+,NetWare4) open semaphore limit exceeded"
+        }
+      ]
+    },
+    {
+      "key": "101",
+      "name": "semaphore already owned",
+      "description": "DOS extended error code 101: exclusive semaphore is already owned (DOS 4.0+, NetWare4); under MSCDEX it means not ready.",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives two meanings: exclusive semaphore is already owned (DOS 4.0+, NetWare4) and not ready (MSCDEX).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 65h (101) (DOS 4.0+,NetWare4) exclusive semaphore",
+          "cites": " 65h (101) (DOS 4.0+,NetWare4) exclusive semaphore is already owned"
+        }
+      ]
+    },
+    {
+      "key": "102",
+      "name": "semaphore set at close",
+      "description": "DOS extended error code 102: semaphore was set when close was attempted (DOS 4.0+, NetWare4); under MSCDEX it means EMS memory no longer valid.",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives two meanings: semaphore was set when close attempted (DOS 4.0+, NetWare4) and EMS memory no longer valid (MSCDEX).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 66h (102) (DOS 4.0+,NetWare4) semaphore was set",
+          "cites": " 66h (102) (DOS 4.0+,NetWare4) semaphore was set when close attempted"
+        }
+      ]
+    },
+    {
+      "key": "103",
+      "name": "too many excl semaphores",
+      "description": "DOS extended error code 103: too many exclusive semaphore requests (DOS 4.0+, NetWare4); under MSCDEX it means not High Sierra or ISO-9660 format.",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives two meanings: too many exclusive semaphore requests (DOS 4.0+, NetWare4) and a disc that is not High Sierra or ISO-9660 format (MSCDEX).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 67h (103) (DOS 4.0+,NetWare4) too many exclusive",
+          "cites": " 67h (103) (DOS 4.0+,NetWare4) too many exclusive semaphore requests"
+        }
+      ]
+    },
+    {
+      "key": "104",
+      "name": "invalid from int handler",
+      "description": "DOS extended error code 104: operation invalid from interrupt handler (DOS 4.0+, NetWare4); under MSCDEX it means door open.",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives two meanings: operation invalid from interrupt handler (DOS 4.0+, NetWare4) and door open (MSCDEX).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 68h (104) (DOS 4.0+,NetWare4) operation invalid",
+          "cites": " 68h (104) (DOS 4.0+,NetWare4) operation invalid from interrupt handler"
+        }
+      ]
+    },
+    {
+      "key": "105",
+      "name": "semaphore owner died",
+      "description": "DOS extended error code 105: the owner of a semaphore died (DOS 4.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 4.0+ and NetWare4, with the text semaphore owner died.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 69h (105)",
+          "cites": " 69h (105) (DOS 4.0+,NetWare4) semaphore owner died"
+        }
+      ]
+    },
+    {
+      "key": "106",
+      "name": "semaphore limit exceeded",
+      "description": "DOS extended error code 106: semaphore limit exceeded (DOS 4.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 4.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 6Ah (106)",
+          "cites": " 6Ah (106) (DOS 4.0+,NetWare4) semaphore limit exceeded"
+        }
+      ]
+    },
+    {
+      "key": "107",
+      "name": "insert disk or changed",
+      "description": "DOS extended error code 107: insert drive B: disk into A:, or disk changed (DOS 4.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives the meaning as insert drive B: disk into A: / disk changed, marked DOS 4.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 6Bh (107)",
+          "cites": " 6Bh (107) (DOS 4.0+,NetWare4) insert drive B: disk into A: / disk changed"
+        }
+      ]
+    },
+    {
+      "key": "108",
+      "name": "drive locked",
+      "description": "DOS extended error code 108: the drive is locked by another process (DOS 4.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 4.0+ and NetWare4, with the text drive locked by another process.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 6Ch (108)",
+          "cites": " 6Ch (108) (DOS 4.0+,NetWare4) drive locked by another process"
+        }
+      ]
+    },
+    {
+      "key": "109",
+      "name": "broken pipe",
+      "description": "DOS extended error code 109: broken pipe (DOS 4.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 4.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 6Dh (109)",
+          "cites": " 6Dh (109) (DOS 4.0+,NetWare4) broken pipe"
+        }
+      ]
+    },
+    {
+      "key": "110",
+      "name": "pipe open failed",
+      "description": "DOS extended error code 110: pipe open or create failed (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4, with the text pipe open/create failed.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 6Eh (110)",
+          "cites": " 6Eh (110) (DOS 5.0+,NetWare4) pipe open/create failed"
+        }
+      ]
+    },
+    {
+      "key": "111",
+      "name": "pipe buffer overflow",
+      "description": "DOS extended error code 111: the pipe buffer overflowed (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 6Fh (111)",
+          "cites": " 6Fh (111) (DOS 5.0+,NetWare4) pipe buffer overflowed"
+        }
+      ]
+    },
+    {
+      "key": "112",
+      "name": "disk full",
+      "description": "DOS extended error code 112: disk full (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 70h (112)",
+          "cites": " 70h (112) (DOS 5.0+,NetWare4) disk full"
+        }
+      ]
+    },
+    {
+      "key": "113",
+      "name": "no more search handles",
+      "description": "DOS extended error code 113: no more search handles (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 71h (113)",
+          "cites": " 71h (113) (DOS 5.0+,NetWare4) no more search handles"
+        }
+      ]
+    },
+    {
+      "key": "114",
+      "name": "bad dup2 target handle",
+      "description": "DOS extended error code 114: invalid target handle for dup2 (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 72h (114)",
+          "cites": " 72h (114) (DOS 5.0+,NetWare4) invalid target handle for dup2"
+        }
+      ]
+    },
+    {
+      "key": "115",
+      "name": "bad user address",
+      "description": "DOS extended error code 115: bad user virtual address, or protection violation (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives the meaning as bad user virtual address / protection violation, marked DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 73h (115)",
+          "cites": " 73h (115) (DOS 5.0+,NetWare4) bad user virtual address / protection violation"
+        }
+      ]
+    },
+    {
+      "key": "116",
+      "name": "viokbd request",
+      "description": "DOS extended error code 116: VIOKBD request (DOS 5.0+); under NetWare4 it means error on console I/O.",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives two meanings: VIOKBD request (DOS 5.0+) and error on console I/O (NetWare4).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 74h (116) (DOS 5.0+) VIOKBD request",
+          "cites": " 74h (116) (DOS 5.0+) VIOKBD request"
+        }
+      ]
+    },
+    {
+      "key": "117",
+      "name": "unknown IOCTL category",
+      "description": "DOS extended error code 117: unknown category code for IOCTL (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 75h (117)",
+          "cites": " 75h (117) (DOS 5.0+,NetWare4) unknown category code for IOCTL"
+        }
+      ]
+    },
+    {
+      "key": "118",
+      "name": "invalid verify flag",
+      "description": "DOS extended error code 118: invalid value for the verify flag (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 76h (118)",
+          "cites": " 76h (118) (DOS 5.0+,NetWare4) invalid value for verify flag"
+        }
+      ]
+    },
+    {
+      "key": "119",
+      "name": "level 4 driver not found",
+      "description": "DOS extended error code 119: level four driver not found by DOS IOCTL (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 77h (119)",
+          "cites": " 77h (119) (DOS 5.0+,NetWare4) level four driver not found by DOS IOCTL"
+        }
+      ]
+    },
+    {
+      "key": "120",
+      "name": "function not implemented",
+      "description": "DOS extended error code 120: invalid or unimplemented function number (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives the meaning as invalid / unimplemented function number, marked DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 78h (120)",
+          "cites": " 78h (120) (DOS 5.0+,NetWare4) invalid / unimplemented function number"
+        }
+      ]
+    },
+    {
+      "key": "121",
+      "name": "semaphore timeout",
+      "description": "DOS extended error code 121: semaphore timeout (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 79h (121)",
+          "cites": " 79h (121) (DOS 5.0+,NetWare4) semaphore timeout"
+        }
+      ]
+    },
+    {
+      "key": "122",
+      "name": "buffer too small",
+      "description": "DOS extended error code 122: the buffer is too small to hold the return data (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 7Ah (122)",
+          "cites": " 7Ah (122) (DOS 5.0+,NetWare4) buffer too small to hold return data"
+        }
+      ]
+    },
+    {
+      "key": "123",
+      "name": "invalid file-system name",
+      "description": "DOS extended error code 123: invalid character or bad file-system name (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives the meaning as invalid character or bad file-system name, marked DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 7Bh (123)",
+          "cites": " 7Bh (123) (DOS 5.0+,NetWare4) invalid character or bad file-system name"
+        }
+      ]
+    },
+    {
+      "key": "124",
+      "name": "info level unimplemented",
+      "description": "DOS extended error code 124: unimplemented information level (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 7Ch (124)",
+          "cites": " 7Ch (124) (DOS 5.0+,NetWare4) unimplemented information level"
+        }
+      ]
+    },
+    {
+      "key": "125",
+      "name": "no volume label",
+      "description": "DOS extended error code 125: no volume label found (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 7Dh (125)",
+          "cites": " 7Dh (125) (DOS 5.0+,NetWare4) no volume label found"
+        }
+      ]
+    },
+    {
+      "key": "126",
+      "name": "module not found",
+      "description": "DOS extended error code 126: module handle not found (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 7Eh (126)",
+          "cites": " 7Eh (126) (DOS 5.0+,NetWare4) module handle not found"
+        }
+      ]
+    },
+    {
+      "key": "127",
+      "name": "procedure not found",
+      "description": "DOS extended error code 127: procedure address not found (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 7Fh (127)",
+          "cites": " 7Fh (127) (DOS 5.0+,NetWare4) procedure address not found"
+        }
+      ]
+    },
+    {
+      "key": "128",
+      "name": "cwait no children",
+      "description": "DOS extended error code 128: CWait found no children (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 80h (128)",
+          "cites": " 80h (128) (DOS 5.0+,NetWare4) CWait found no children"
+        }
+      ]
+    },
+    {
+      "key": "129",
+      "name": "cwait children running",
+      "description": "DOS extended error code 129: CWait children are still running (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 81h (129)",
+          "cites": " 81h (129) (DOS 5.0+,NetWare4) CWait children still running"
+        }
+      ]
+    },
+    {
+      "key": "130",
+      "name": "bad direct-disk op",
+      "description": "DOS extended error code 130: invalid operation for a direct disk-access handle (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 82h (130)",
+          "cites": " 82h (130) (DOS 5.0+,NetWare4) invalid operation for direct disk-access handle"
+        }
+      ]
+    },
+    {
+      "key": "131",
+      "name": "seek to negative offset",
+      "description": "DOS extended error code 131: attempted seek to a negative offset (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 83h (131)",
+          "cites": " 83h (131) (DOS 5.0+,NetWare4) attempted seek to negative offset"
+        }
+      ]
+    },
+    {
+      "key": "132",
+      "name": "seek on device or pipe",
+      "description": "DOS extended error code 132: attempted to seek on a device or pipe (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 84h (132)",
+          "cites": " 84h (132) (DOS 5.0+,NetWare4) attempted to seek on device or pipe"
+        }
+      ]
+    },
+    {
+      "key": "133",
+      "name": "drive has joined drives",
+      "description": "DOS extended error code 133: the drive already has JOINed drives (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 85h (133)",
+          "cites": " 85h (133) (DOS 5.0+,NetWare4) drive already has JOINed drives"
+        }
+      ]
+    },
+    {
+      "key": "134",
+      "name": "drive already joined",
+      "description": "DOS extended error code 134: the drive is already JOINed (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 86h (134)",
+          "cites": " 86h (134) (DOS 5.0+,NetWare4) drive is already JOINed"
+        }
+      ]
+    },
+    {
+      "key": "135",
+      "name": "drive already substed",
+      "description": "DOS extended error code 135: the drive is already SUBSTed (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 87h (135)",
+          "cites": " 87h (135) (DOS 5.0+,NetWare4) drive is already SUBSTed"
+        }
+      ]
+    },
+    {
+      "key": "136",
+      "name": "drive not joined",
+      "description": "DOS extended error code 136: cannot delete a drive which is not JOINed (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 88h (136)",
+          "cites": " 88h (136) (DOS 5.0+,NetWare4) can not delete drive which is not JOINed"
+        }
+      ]
+    },
+    {
+      "key": "137",
+      "name": "drive not substed",
+      "description": "DOS extended error code 137: cannot delete a drive which is not SUBSTed (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 89h (137)",
+          "cites": " 89h (137) (DOS 5.0+,NetWare4) can not delete drive which is not SUBSTed"
+        }
+      ]
+    },
+    {
+      "key": "138",
+      "name": "join to joined drive",
+      "description": "DOS extended error code 138: cannot JOIN to a JOINed drive (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 8Ah (138)",
+          "cites": " 8Ah (138) (DOS 5.0+,NetWare4) can not JOIN to a JOINed drive"
+        }
+      ]
+    },
+    {
+      "key": "139",
+      "name": "subst to substed drive",
+      "description": "DOS extended error code 139: cannot SUBST to a SUBSTed drive (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 8Bh (139)",
+          "cites": " 8Bh (139) (DOS 5.0+,NetWare4) can not SUBST to a SUBSTed drive"
+        }
+      ]
+    },
+    {
+      "key": "140",
+      "name": "join to substed drive",
+      "description": "DOS extended error code 140: cannot JOIN to a SUBSTed drive (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 8Ch (140)",
+          "cites": " 8Ch (140) (DOS 5.0+,NetWare4) can not JOIN to a SUBSTed drive"
+        }
+      ]
+    },
+    {
+      "key": "141",
+      "name": "subst to joined drive",
+      "description": "DOS extended error code 141: cannot SUBST to a JOINed drive (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 8Dh (141)",
+          "cites": " 8Dh (141) (DOS 5.0+,NetWare4) can not SUBST to a JOINed drive"
+        }
+      ]
+    },
+    {
+      "key": "142",
+      "name": "drive busy",
+      "description": "DOS extended error code 142: the drive is busy (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 8Eh (142)",
+          "cites": " 8Eh (142) (DOS 5.0+,NetWare4) drive is busy"
+        }
+      ]
+    },
+    {
+      "key": "143",
+      "name": "join/subst to same drive",
+      "description": "DOS extended error code 143: cannot JOIN or SUBST a drive to itself (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives the text can not JOIN/SUBST to same drive, marked DOS 5.0+ and NetWare4, under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 8Fh (143)",
+          "cites": " 8Fh (143) (DOS 5.0+,NetWare4) can not JOIN/SUBST to same drive"
+        }
+      ]
+    },
+    {
+      "key": "144",
+      "name": "directory is root",
+      "description": "DOS extended error code 144: the directory must not be the root directory (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 90h (144)",
+          "cites": " 90h (144) (DOS 5.0+,NetWare4) directory must not be root directory"
+        }
+      ]
+    },
+    {
+      "key": "145",
+      "name": "join needs empty dir",
+      "description": "DOS extended error code 145: can only JOIN to an empty directory (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 91h (145)",
+          "cites": " 91h (145) (DOS 5.0+,NetWare4) can only JOIN to empty directory"
+        }
+      ]
+    },
+    {
+      "key": "146",
+      "name": "path in use for subst",
+      "description": "DOS extended error code 146: the path is already in use for SUBST (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 92h (146)",
+          "cites": " 92h (146) (DOS 5.0+,NetWare4) path is already in use for SUBST"
+        }
+      ]
+    },
+    {
+      "key": "147",
+      "name": "path in use for join",
+      "description": "DOS extended error code 147: the path is already in use for JOIN (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 93h (147)",
+          "cites": " 93h (147) (DOS 5.0+,NetWare4) path is already in use for JOIN"
+        }
+      ]
+    },
+    {
+      "key": "148",
+      "name": "path used by other proc",
+      "description": "DOS extended error code 148: the path is in use by another process (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 94h (148)",
+          "cites": " 94h (148) (DOS 5.0+,NetWare4) path is in use by another process"
+        }
+      ]
+    },
+    {
+      "key": "149",
+      "name": "directory was substed",
+      "description": "DOS extended error code 149: directory previously SUBSTituted (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4 and puts it under its JOIN/SUBST errors heading.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 95h (149)",
+          "cites": " 95h (149) (DOS 5.0+,NetWare4) directory previously SUBSTituted"
+        }
+      ]
+    },
+    {
+      "key": "150",
+      "name": "system trace error",
+      "description": "DOS extended error code 150: system trace error (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 96h (150)",
+          "cites": " 96h (150) (DOS 5.0+,NetWare4) system trace error"
+        }
+      ]
+    },
+    {
+      "key": "151",
+      "name": "bad muxsemwait count",
+      "description": "DOS extended error code 151: invalid event count for DosMuxSemWait (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 97h (151)",
+          "cites": " 97h (151) (DOS 5.0+,NetWare4) invalid event count for DosMuxSemWait"
+        }
+      ]
+    },
+    {
+      "key": "152",
+      "name": "too many mutex waiters",
+      "description": "DOS extended error code 152: too many waiting on a mutex (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 98h (152)",
+          "cites": " 98h (152) (DOS 5.0+,NetWare4) too many waiting on mutex"
+        }
+      ]
+    },
+    {
+      "key": "153",
+      "name": "invalid list format",
+      "description": "DOS extended error code 153: invalid list format (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 99h (153)",
+          "cites": " 99h (153) (DOS 5.0+,NetWare4) invalid list format"
+        }
+      ]
+    },
+    {
+      "key": "154",
+      "name": "volume label too large",
+      "description": "DOS extended error code 154: volume label too large (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 9Ah (154)",
+          "cites": " 9Ah (154) (DOS 5.0+,NetWare4) volume label too large"
+        }
+      ]
+    },
+    {
+      "key": "155",
+      "name": "cannot create tcb",
+      "description": "DOS extended error code 155: unable to create another TCB (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 9Bh (155)",
+          "cites": " 9Bh (155) (DOS 5.0+,NetWare4) unable to create another TCB"
+        }
+      ]
+    },
+    {
+      "key": "156",
+      "name": "signal refused",
+      "description": "DOS extended error code 156: signal refused (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 9Ch (156)",
+          "cites": " 9Ch (156) (DOS 5.0+,NetWare4) signal refused"
+        }
+      ]
+    },
+    {
+      "key": "157",
+      "name": "segment discarded",
+      "description": "DOS extended error code 157: segment discarded (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 9Dh (157)",
+          "cites": " 9Dh (157) (DOS 5.0+,NetWare4) segment discarded"
+        }
+      ]
+    },
+    {
+      "key": "158",
+      "name": "segment not locked",
+      "description": "DOS extended error code 158: segment not locked (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 9Eh (158)",
+          "cites": " 9Eh (158) (DOS 5.0+,NetWare4) segment not locked"
+        }
+      ]
+    },
+    {
+      "key": "159",
+      "name": "invalid thread id addr",
+      "description": "DOS extended error code 159: invalid thread-ID address (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 9Fh (159)",
+          "cites": " 9Fh (159) (DOS 5.0+,NetWare4) invalid thread-ID address"
+        }
+      ]
+    },
+    {
+      "key": "160",
+      "name": "bad arguments",
+      "description": "DOS extended error code 160: bad arguments (DOS 5.0+); under NetWare4 it means bad environment pointer.",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives two meanings: bad arguments (DOS 5.0+) and bad environment pointer (NetWare4).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 A0h (160) (DOS 5.0+) bad arguments",
+          "cites": " A0h (160) (DOS 5.0+) bad arguments"
+        }
+      ]
+    },
+    {
+      "key": "161",
+      "name": "invalid exec pathname",
+      "description": "DOS extended error code 161: invalid pathname passed to EXEC (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 A1h (161)",
+          "cites": " A1h (161) (DOS 5.0+,NetWare4) invalid pathname passed to EXEC"
+        }
+      ]
+    },
+    {
+      "key": "162",
+      "name": "signal already pending",
+      "description": "DOS extended error code 162: signal already pending (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 A2h (162)",
+          "cites": " A2h (162) (DOS 5.0+,NetWare4) signal already pending"
+        }
+      ]
+    },
+    {
+      "key": "163",
+      "name": "uncertain media",
+      "description": "DOS extended error code 163: uncertain media (DOS 5.0+); under NetWare4 the list says ERROR_124 mapping.",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives two meanings: uncertain media (DOS 5.0+) and ERROR_124 mapping (NetWare4).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 A3h (163) (DOS 5.0+) uncertain media",
+          "cites": " A3h (163) (DOS 5.0+) uncertain media"
+        }
+      ]
+    },
+    {
+      "key": "164",
+      "name": "max threads reached",
+      "description": "DOS extended error code 164: maximum number of threads reached (DOS 5.0+); under NetWare4 it means no more process slots.",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives two meanings: maximum number of threads reached (DOS 5.0+) and no more process slots (NetWare4).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 A4h (164) (DOS 5.0+) maximum",
+          "cites": " A4h (164) (DOS 5.0+) maximum number of threads reached"
+        }
+      ]
+    },
+    {
+      "key": "165",
+      "name": "error 124 mapping",
+      "description": "DOS extended error code 165: ERROR_124 mapping (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only, with the text ERROR_124 mapping.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 A5h (165)",
+          "cites": " A5h (165) (NetWare4) ERROR_124 mapping"
+        }
+      ]
+    },
+    {
+      "key": "176",
+      "name": "volume not locked",
+      "description": "DOS extended error code 176: the volume is not locked (MS-DOS 7.0).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it MS-DOS 7.0.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 B0h (176)",
+          "cites": " B0h (176) (MS-DOS 7.0) volume is not locked"
+        }
+      ]
+    },
+    {
+      "key": "177",
+      "name": "volume locked in drive",
+      "description": "DOS extended error code 177: the volume is locked in the drive (MS-DOS 7.0).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it MS-DOS 7.0.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 B1h (177)",
+          "cites": " B1h (177) (MS-DOS 7.0) volume is locked in drive"
+        }
+      ]
+    },
+    {
+      "key": "178",
+      "name": "volume not removable",
+      "description": "DOS extended error code 178: the volume is not removable (MS-DOS 7.0).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it MS-DOS 7.0.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 B2h (178)",
+          "cites": " B2h (178) (MS-DOS 7.0) volume is not removable"
+        }
+      ]
+    },
+    {
+      "key": "180",
+      "name": "lock count exceeded",
+      "description": "DOS extended error code 180: the lock count has been exceeded (MS-DOS 7.0); under NetWare4 it means invalid segment number.",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives two meanings: lock count has been exceeded (MS-DOS 7.0) and invalid segment number (NetWare4).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 B4h (180) (MS-DOS 7.0) lock count",
+          "cites": " B4h (180) (MS-DOS 7.0) lock count has been exceeded"
+        }
+      ]
+    },
+    {
+      "key": "181",
+      "name": "eject request failed",
+      "description": "DOS extended error code 181: a valid eject request failed (MS-DOS 7.0); for DOS 5.0-6.0 and NetWare4 it means invalid call gate.",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives two meanings: a valid eject request failed (MS-DOS 7.0) and invalid call gate (DOS 5.0-6.0, NetWare4).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 B5h (181) (MS-DOS 7.0) a valid eject",
+          "cites": " B5h (181) (MS-DOS 7.0) a valid eject request failed"
+        }
+      ]
+    },
+    {
+      "key": "182",
+      "name": "invalid ordinal",
+      "description": "DOS extended error code 182: invalid ordinal (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 B6h (182)",
+          "cites": " B6h (182) (DOS 5.0+,NetWare4) invalid ordinal"
+        }
+      ]
+    },
+    {
+      "key": "183",
+      "name": "shared segment exists",
+      "description": "DOS extended error code 183: a shared segment already exists (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 B7h (183)",
+          "cites": " B7h (183) (DOS 5.0+,NetWare4) shared segment already exists"
+        }
+      ]
+    },
+    {
+      "key": "184",
+      "name": "no child to wait for",
+      "description": "DOS extended error code 184: no child process to wait for (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 B8h (184)",
+          "cites": " B8h (184) (DOS 5.0+,NetWare4) no child process to wait for"
+        }
+      ]
+    },
+    {
+      "key": "185",
+      "name": "nowait child running",
+      "description": "DOS extended error code 185: NoWait specified and the child is still running (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 B9h (185)",
+          "cites": " B9h (185) (DOS 5.0+,NetWare4) NoWait specified and child still running"
+        }
+      ]
+    },
+    {
+      "key": "186",
+      "name": "invalid flag number",
+      "description": "DOS extended error code 186: invalid flag number (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 BAh (186)",
+          "cites": " BAh (186) (DOS 5.0+,NetWare4) invalid flag number"
+        }
+      ]
+    },
+    {
+      "key": "187",
+      "name": "semaphore missing",
+      "description": "DOS extended error code 187: the semaphore does not exist (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 BBh (187)",
+          "cites": " BBh (187) (DOS 5.0+,NetWare4) semaphore does not exist"
+        }
+      ]
+    },
+    {
+      "key": "188",
+      "name": "bad start code segment",
+      "description": "DOS extended error code 188: invalid starting code segment (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 BCh (188)",
+          "cites": " BCh (188) (DOS 5.0+,NetWare4) invalid starting code segment"
+        }
+      ]
+    },
+    {
+      "key": "189",
+      "name": "bad stack segment",
+      "description": "DOS extended error code 189: invalid stack segment (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 BDh (189)",
+          "cites": " BDh (189) (DOS 5.0+,NetWare4) invalid stack segment"
+        }
+      ]
+    },
+    {
+      "key": "190",
+      "name": "invalid module type",
+      "description": "DOS extended error code 190: invalid module type; a DLL cannot be used as an application (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives the text invalid module type (DLL can not be used as application), marked DOS 5.0+ and NetWare4. A note after the table reports a possible shift by one in some Microsoft documentation.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 BEh (190)",
+          "cites": " BEh (190) (DOS 5.0+,NetWare4) invalid module type (DLL can not be used as"
+        }
+      ]
+    },
+    {
+      "key": "191",
+      "name": "invalid exe signature",
+      "description": "DOS extended error code 191: invalid EXE signature (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 BFh (191)",
+          "cites": " BFh (191) (DOS 5.0+,NetWare4) invalid EXE signature"
+        }
+      ]
+    },
+    {
+      "key": "192",
+      "name": "exe marked invalid",
+      "description": "DOS extended error code 192: the EXE is marked invalid (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 C0h (192)",
+          "cites": " C0h (192) (DOS 5.0+,NetWare4) EXE marked invalid"
+        }
+      ]
+    },
+    {
+      "key": "193",
+      "name": "bad exe format",
+      "description": "DOS extended error code 193: bad EXE format, for example a DOS-mode program (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives the text bad EXE format, for example a DOS-mode program, marked DOS 5.0+ and NetWare4. A note after the table reports a possible shift by one in some Microsoft documentation.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 C1h (193)",
+          "cites": " C1h (193) (DOS 5.0+,NetWare4) bad EXE format (e.g. DOS-mode program)"
+        }
+      ]
+    },
+    {
+      "key": "194",
+      "name": "iterated data over 64K",
+      "description": "DOS extended error code 194: iterated data exceeds 64K (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 C2h (194)",
+          "cites": " C2h (194) (DOS 5.0+,NetWare4) iterated data exceeds 64K"
+        }
+      ]
+    },
+    {
+      "key": "195",
+      "name": "bad minimum allocation",
+      "description": "DOS extended error code 195: invalid minimum allocation size (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 C3h (195)",
+          "cites": " C3h (195) (DOS 5.0+,NetWare4) invalid minimum allocation size"
+        }
+      ]
+    },
+    {
+      "key": "196",
+      "name": "dynlink from bad ring",
+      "description": "DOS extended error code 196: dynamic link from an invalid Ring (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 C4h (196)",
+          "cites": " C4h (196) (DOS 5.0+,NetWare4) dynamic link from invalid Ring"
+        }
+      ]
+    },
+    {
+      "key": "197",
+      "name": "iopl not enabled",
+      "description": "DOS extended error code 197: IOPL not enabled (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 C5h (197)",
+          "cites": " C5h (197) (DOS 5.0+,NetWare4) IOPL not enabled"
+        }
+      ]
+    },
+    {
+      "key": "198",
+      "name": "bad descriptor priv",
+      "description": "DOS extended error code 198: invalid segment descriptor privilege level (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 C6h (198)",
+          "cites": " C6h (198) (DOS 5.0+,NetWare4) invalid segment descriptor privilege level"
+        }
+      ]
+    },
+    {
+      "key": "199",
+      "name": "auto data over 64K",
+      "description": "DOS extended error code 199: the automatic data segment exceeds 64K (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 C7h (199)",
+          "cites": " C7h (199) (DOS 5.0+,NetWare4) automatic data segment exceeds 64K"
+        }
+      ]
+    },
+    {
+      "key": "200",
+      "name": "ring2 segment fixed",
+      "description": "DOS extended error code 200: a Ring2 segment must be moveable (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 C8h (200)",
+          "cites": " C8h (200) (DOS 5.0+,NetWare4) Ring2 segment must be moveable"
+        }
+      ]
+    },
+    {
+      "key": "201",
+      "name": "relocation chain long",
+      "description": "DOS extended error code 201: the relocation chain exceeds the segment limit (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 C9h (201)",
+          "cites": " C9h (201) (DOS 5.0+,NetWare4) relocation chain exceeds segment limit"
+        }
+      ]
+    },
+    {
+      "key": "202",
+      "name": "relocation loop",
+      "description": "DOS extended error code 202: infinite loop in a relocation chain (DOS 5.0+, NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list marks it DOS 5.0+ and NetWare4. A note after the table reports that some Microsoft documentation shifts codes 188 to 202 up by one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 CAh (202)",
+          "cites": " CAh (202) (DOS 5.0+,NetWare4) infinite loop in relocation chain"
+        }
+      ]
+    },
+    {
+      "key": "203",
+      "name": "env variable not found",
+      "description": "DOS extended error code 203: environment variable not found (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 CBh (203)",
+          "cites": " CBh (203) (NetWare4) environment variable not found"
+        }
+      ]
+    },
+    {
+      "key": "204",
+      "name": "not current country",
+      "description": "DOS extended error code 204: not the current country (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 CCh (204)",
+          "cites": " CCh (204) (NetWare4) not current country"
+        }
+      ]
+    },
+    {
+      "key": "205",
+      "name": "no signal sent",
+      "description": "DOS extended error code 205: no signal sent (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 CDh (205)",
+          "cites": " CDh (205) (NetWare4) no signal sent"
+        }
+      ]
+    },
+    {
+      "key": "206",
+      "name": "file name not 8.3",
+      "description": "DOS extended error code 206: the file name is not 8.3 (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 CEh (206)",
+          "cites": " CEh (206) (NetWare4) file name not 8.3"
+        }
+      ]
+    },
+    {
+      "key": "207",
+      "name": "ring2 stack in use",
+      "description": "DOS extended error code 207: Ring2 stack in use (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 CFh (207)",
+          "cites": " CFh (207) (NetWare4) Ring2 stack in use"
+        }
+      ]
+    },
+    {
+      "key": "208",
+      "name": "meta expansion too long",
+      "description": "DOS extended error code 208: meta expansion is too long (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 D0h (208)",
+          "cites": " D0h (208) (NetWare4) meta expansion is too long"
+        }
+      ]
+    },
+    {
+      "key": "209",
+      "name": "invalid signal number",
+      "description": "DOS extended error code 209: invalid signal number (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 D1h (209)",
+          "cites": " D1h (209) (NetWare4) invalid signal number"
+        }
+      ]
+    },
+    {
+      "key": "210",
+      "name": "inactive thread",
+      "description": "DOS extended error code 210: inactive thread (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 D2h (210)",
+          "cites": " D2h (210) (NetWare4) inactive thread"
+        }
+      ]
+    },
+    {
+      "key": "211",
+      "name": "fs info not available",
+      "description": "DOS extended error code 211: file system information not available (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 D3h (211)",
+          "cites": " D3h (211) (NetWare4) file system information not available"
+        }
+      ]
+    },
+    {
+      "key": "212",
+      "name": "locked error",
+      "description": "DOS extended error code 212: locked error (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 D4h (212)",
+          "cites": " D4h (212) (NetWare4) locked error"
+        }
+      ]
+    },
+    {
+      "key": "213",
+      "name": "non-family api in dos",
+      "description": "DOS extended error code 213: attempted to execute a non-family API call in DOS mode (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 D5h (213)",
+          "cites": " D5h (213) (NetWare4) attempted to execute non-family API call in DOS mode"
+        }
+      ]
+    },
+    {
+      "key": "214",
+      "name": "too many modules",
+      "description": "DOS extended error code 214: too many modules (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 D6h (214)",
+          "cites": " D6h (214) (NetWare4) too many modules"
+        }
+      ]
+    },
+    {
+      "key": "215",
+      "name": "nesting not allowed",
+      "description": "DOS extended error code 215: nesting not allowed (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 D7h (215)",
+          "cites": " D7h (215) (NetWare4) nesting not allowed"
+        }
+      ]
+    },
+    {
+      "key": "230",
+      "name": "bad pipe or operation",
+      "description": "DOS extended error code 230: non-existent pipe, or bad operation (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives the text non-existent pipe, or bad operation, for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 E6h (230)",
+          "cites": " E6h (230) (NetWare4) non-existent pipe, or bad operation"
+        }
+      ]
+    },
+    {
+      "key": "231",
+      "name": "pipe busy",
+      "description": "DOS extended error code 231: the pipe is busy (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 E7h (231)",
+          "cites": " E7h (231) (NetWare4) pipe is busy"
+        }
+      ]
+    },
+    {
+      "key": "232",
+      "name": "no data for nb read",
+      "description": "DOS extended error code 232: no data available for a nonblocking read (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 E8h (232)",
+          "cites": " E8h (232) (NetWare4) no data available for nonblocking read"
+        }
+      ]
+    },
+    {
+      "key": "233",
+      "name": "pipe disconnected",
+      "description": "DOS extended error code 233: the pipe was disconnected by the server (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 E9h (233)",
+          "cites": " E9h (233) (NetWare4) pipe disconnected by server"
+        }
+      ]
+    },
+    {
+      "key": "234",
+      "name": "more data available",
+      "description": "DOS extended error code 234: more data available (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 EAh (234)",
+          "cites": " EAh (234) (NetWare4) more data available"
+        }
+      ]
+    },
+    {
+      "key": "255",
+      "name": "invalid drive",
+      "description": "DOS extended error code 255: invalid drive (NetWare4).",
+      "behaviour": "AH=59h returns the extended error code in AX. The list gives it for NetWare4 only; code 15 is the DOS 2.0+ invalid drive error.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 FFh (255)",
+          "cites": " FFh (255) (NetWare4) invalid drive"
+        }
+      ]
     }
   ]
 }

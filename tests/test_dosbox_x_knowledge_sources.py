@@ -162,8 +162,9 @@ def sources(cpp: str = DOS_CPP, inc: str = DOS_INC) -> Fake:
 def test_the_list_holds_every_top_level_and_nested_case_of_the_handler() -> None:
     assert tool.list_dos_21(sources()) == (
         "0x21/0x00", "0x21/0x33", "0x21/0x33/0x00", "0x21/0x33/0x05", "0x21/0x33/0x08",
-        "0x21/0x4C", "0x21/0x58", "0x21/0x58/0x00", "0x21/0x57", "0x21/0x5E", "0x21/0x5E/0x02",
-        "0x21/0x5F", "0x21/0x60", "0x21/0x60/0x01", "0x21/0x73")
+        "0x21/0x4C", "0x21/0x58", "0x21/0x58/0x00", "0x21/0x57", "0x21/0x57/0x00",
+        "0x21/0x57/0x01", "0x21/0x5E", "0x21/0x5E/0x02", "0x21/0x5F", "0x21/0x60",
+        "0x21/0x60/0x01", "0x21/0x73", "0x21/0x44/0x00", "0x21/0x44/0x0D", "0x21/0x44/0x11")
 
 
 def test_the_list_leaves_out_the_cases_only_the_windows_build_has() -> None:
@@ -586,6 +587,22 @@ def test_a_case_label_that_is_a_name_with_no_define_is_refused(others: Fake) -> 
     broken = Fake({}, None, {"src/ints/xms.cpp": XMS_CPP.replace("#define\tXMS_GET_VERSION", "//")})
     with pytest.raises(tool.Invalid, match="XMS_GET_VERSION"):
         tool.handler_keys(broken, tool._handler("XMS_Handler"))
+
+
+def test_a_test_of_al_is_a_subfunction_only_where_the_handler_says_so() -> None:
+    row = tool.resolve_dosbox_x(sources(), "src/dos/dos.cpp DOS_21Handler case 0x57 if 0x01")
+    assert row.key == "0x21/0x57/0x01" and "reg_al == 0x01" in row.line
+    with pytest.raises(tool.Invalid, match="0 tests"):
+        tool.resolve_dosbox_x(sources(), "src/dos/dos.cpp DOS_21Handler case 0x57 if 0x07")
+    with pytest.raises(tool.Invalid, match="0 cases"):
+        tool.resolve_dosbox_x(sources(), "src/dos/dos.cpp DOS_21Handler case 0x57 case 0x01")
+
+
+def test_a_function_of_its_own_gives_its_cases_under_the_function_it_serves() -> None:
+    row = tool.resolve_dosbox_x(sources(), "src/dos/dos_ioctl.cpp DOS_IOCTL case 0x0d")
+    assert row.key == "0x21/0x44/0x0D" and "Generic block device" in row.line
+    with pytest.raises(tool.Invalid, match="no nested"):
+        tool.resolve_dosbox_x(sources(), "src/dos/dos_ioctl.cpp DOS_IOCTL case 0x0d case 0x40")
 
 
 @pytest.mark.parametrize(("ident", "qualified", "key"), [

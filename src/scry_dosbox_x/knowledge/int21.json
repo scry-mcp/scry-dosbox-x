@@ -3,8 +3,8 @@
   "dictionary": "int21",
   "kind": "call",
   "scope": "ibm-pc",
-  "covers": "INT 21h, the DOS services: every function and subfunction the emulator's DOS_21Handler has a case for, except the Windows-only named-pipe calls of AH=5Fh.",
-  "complete_against": "dosbox-x:src/dos/dos.cpp DOS_21Handler",
+  "covers": "INT 21h, the DOS services: every function and subfunction the emulator's DOS_21Handler has a case for, and the subfunctions it resolves in its own IOCTL function and by tests of AL (AH=44h, 57h, 5Dh, 5Eh, 73h), except the Windows-only named-pipe calls of AH=5Fh.",
+  "complete_against": "dosbox-x:src/dos/dos.cpp DOS_21Handler, src/dos/dos_ioctl.cpp DOS_IOCTL",
   "entries": [
     {
       "key": "0x21/0x00",
@@ -2725,6 +2725,244 @@
       ]
     },
     {
+      "key": "0x21/0x44/0x00",
+      "name": "get device info",
+      "description": "IOCTL get device information: returns the information word of the handle in BX in DX.",
+      "behaviour": "An invalid handle fails with CF set and AX=0006h. Otherwise CF is clear and AX = DX: for a device its information word with bit 9 cleared and bit 15 set, for a file its information with the drive number (C: if unknown) in bits 4-0. In DOS-V Japanese mode handles 1A50h ($IBMAIAS) and 1A51h (MS$KANJI) get DX=0080h first.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214400",
+          "cites": "INT 21 - DOS 2+ - IOCTL - GET DEVICE INFORMATION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x00",
+          "cites": "\tcase 0x00:\t\t/* Get Device Information */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x01",
+      "name": "set device info",
+      "description": "IOCTL set device information: sets the information word of the character device handle in BX from DX.",
+      "behaviour": "It fails with CF set and AX=000Dh if DH is not zero, AX=0001h if the handle is a file, AX=0006h if it is invalid. For a device it passes DX to the device and returns AL = the low byte of the device's resulting information word, CF clear.",
+      "differs": "The list needs DH zero only before DOS 6.x; the emulator refuses a non-zero DH with error 0Dh at every DOS version.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214401",
+          "cites": "INT 21 - DOS 2+ - IOCTL - SET DEVICE INFORMATION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x01",
+          "cites": "\tcase 0x01:\t\t/* Set Device Information */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x02",
+      "name": "ioctl read channel",
+      "description": "IOCTL read from a character device control channel: CX bytes into the buffer at DS:DX.",
+      "behaviour": "A character device with bit 14 (IOCTL support) set whose driver accepts the read (the EMS and CD-ROM ones do) returns AX = byte count, CF clear. Otherwise CF set, AX=0001h (0006h if invalid handle). In DOS-V Japanese mode MS$KANJI handle 1A51h is answered first: CX=4 stores a far font-handler pointer at DS:DX, AX=4; other CX gives AX=0001h, CF set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214402@1",
+          "cites": "INT 21 - DOS 2+ - IOCTL - READ FROM CHARACTER DEVICE CONTROL CHANNEL"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x02",
+          "cites": "\tcase 0x02:\t\t/* Read from Device Control Channel */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x03",
+      "name": "ioctl write channel",
+      "description": "IOCTL write to a character device control channel: CX bytes from the buffer at DS:DX.",
+      "behaviour": "The device must have bit 14 (IOCTL support) set and a driver that accepts the write, such as the emulated EMS and CD-ROM devices: AX = the byte count the driver reports, CF clear. Otherwise CF is set with AX=0001h (a file or a device without support) or AX=0006h (invalid handle).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214403@1",
+          "cites": "INT 21 - DOS 2+ - IOCTL - WRITE TO CHARACTER DEVICE CONTROL CHANNEL"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x03",
+          "cites": "\tcase 0x03:\t\t/* Write to Device Control Channel */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x06",
+      "name": "get input status",
+      "description": "IOCTL get input status of the handle in BX: a device's readiness or whether a file has data left.",
+      "behaviour": "An invalid handle fails with CF set and AX=0006h; otherwise CF is clear and only AL is set. A device returns its own input status in AL. A file returns AL=FFh if its position is before the end and 00h at or past the end, and the position is restored.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214406",
+          "cites": "INT 21 - DOS 2+ - IOCTL - GET INPUT STATUS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x06",
+          "cites": "\tcase 0x06:      /* Get Input Status */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x07",
+      "name": "get output status",
+      "description": "IOCTL get output status of the handle in BX: ready or not.",
+      "behaviour": "An invalid handle fails with CF set and AX=0006h; otherwise CF is clear and only AL is set. A handle whose information word has bit 9 set returns the device's own output status in AL. Every other handle, files included, returns AL=FFh (always ready) and the emulator logs it as faked.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214407",
+          "cites": "INT 21 - DOS 2+ - IOCTL - GET OUTPUT STATUS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x07",
+          "cites": "\tcase 0x07:\t\t/* Get Output Status */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x08",
+      "name": "block dev removable",
+      "description": "IOCTL check whether the block device whose drive number is in BL is removable.",
+      "behaviour": "BL=00h is the default drive. An unmounted drive fails with CF set and AX=000Fh; a mounted A: or B: returns AX=0000h (removable) and a fixed drive from C: up AX=0001h, while a drive from C: up that the emulator marks removable fails with CF set and AX=0001h.",
+      "differs": "The list returns AX=0000h for any removable drive; the emulator does so only for A: and B:, and fails a removable drive from C: up with error 01h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214408",
+          "cites": "INT 21 - DOS 3.0+ - IOCTL - CHECK IF BLOCK DEVICE REMOVABLE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x08",
+          "cites": "\tcase 0x08:\t\t/* Check if block device removable */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x09",
+      "name": "block dev remote",
+      "description": "IOCTL check whether the block device whose drive number is in BL is remote, returning its attribute word.",
+      "behaviour": "BL=00h is the default drive; an unmounted drive from C: up fails with CF set and AX=000Fh. Otherwise CF is clear and AX=0300h. DX=1000h for a remote drive from C: up, else DX=0802h (open/close and 32-bit access supported), which A: and B: always get.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214409",
+          "cites": "INT 21 - DOS 3.1+ - IOCTL - CHECK IF BLOCK DEVICE REMOTE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x09",
+          "cites": "\tcase 0x09:\t\t/* Check if block device remote */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x0A",
+      "name": "handle remote",
+      "description": "IOCTL check whether the handle in BX refers to a remote file or device.",
+      "behaviour": "An invalid handle fails with CF set and AX=0006h. Any valid handle returns DX=8000h (remote) with CF clear, and the emulator logs the answer as faked. No other register is set.",
+      "differs": "The list returns the handle's attribute word as stored in the SFT; the emulator ignores what the handle is and returns the constant 8000h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-21440A",
+          "cites": "INT 21 - DOS 3.1+ - IOCTL - CHECK IF HANDLE IS REMOTE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x0A",
+          "cites": "\tcase 0x0A:\t\t/* Is Device of Handle Remote? */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x0B",
+      "name": "set sharing retry",
+      "description": "IOCTL set the sharing retry count: CX is the pause between retries, DX the number of retries.",
+      "behaviour": "No handle or drive is checked. DX=0000h fails with CF set and AX=0001h; any other DX succeeds with CF clear. Neither CX nor DX is stored, so the call changes nothing.",
+      "differs": "The list leaves the count unchanged and succeeds when DX=0; the emulator fails that case with error 01h, and for any other DX succeeds without storing the count.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-21440B",
+          "cites": "INT 21 - DOS 3.1+ - IOCTL - SET SHARING RETRY COUNT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x0B",
+          "cites": "\tcase 0x0B:\t\t/* Set sharing retry count */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x0D",
+      "name": "generic block ioctl",
+      "description": "IOCTL generic block device request: CH is the category, CL the minor code, DS:DX the parameter block.",
+      "behaviour": "BL = drive (BH for CL=4Bh/6Bh). A removable drive, or a CH other than 08h or 48h (FAT32), fails with AX=0001h. DOS_IOCTL_AX440D_CH08 or its CH=48h relative then switches on CL: 40h-42h, 46h, 60h-62h, 66h, 67h act on the drive (42h, 62h only log; CH=48h lacks 41h, 67h), 4Ah/4Bh/6Ah/6Bh are faked; other CL gives AX=0001h, a non-FAT-image drive AX=0005h; success AX=0000h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-21440D",
+          "cites": "INT 21 - DOS 3.2+ - IOCTL - GENERIC BLOCK DEVICE REQUEST"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x0D",
+          "cites": "\tcase 0x0D:\t\t/* Generic block device request */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x0E",
+      "name": "get logical drive map",
+      "description": "IOCTL get logical drive map: reports whether the block device in BL has one logical drive or which letter it is mapped to.",
+      "behaviour": "BL=00h is the default drive. A: and B: return AL = their number (AL=01h if unmounted); a non-removable drive from C: up returns AL=00h; a removable one fails with CF set and AX=0001h. Success sets AH=07h and clears CF; an unmounted drive from C: up fails with AX=000Fh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-21440E",
+          "cites": "INT 21 - DOS 3.2+ - IOCTL - GET LOGICAL DRIVE MAP"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x0E",
+          "cites": "\tcase 0x0E:\t\t\t/* Get Logical Drive Map */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44/0x11",
+      "name": "query generic ioctl",
+      "description": "IOCTL query generic IOCTL capability of a drive: asks whether the AL=0Dh request given by CH and CL is supported.",
+      "behaviour": "BL = drive (BH for CL=4Bh/6Bh). It dispatches on CH and CL as AL=0Dh does (DOS_IOCTL_AX440D_CH08 or its CH=48h relative) but only tests support and does nothing. Supported gives AX=0000h, CF clear; an unsupported CL or CH or a removable drive gives AX=0001h, and CL 40h-42h, 61h, 62h on a drive that is not a FAT image AX=0005h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214411",
+          "cites": "INT 21 - DOS 5+ - IOCTL - QUERY GENERIC IOCTL CAPABILITY (DRIVE)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x11",
+          "cites": "\tcase 0x11:\t\t/* query generic ioctl capability */"
+        }
+      ]
+    },
+    {
       "key": "0x21/0x45",
       "name": "dup handle",
       "description": "Duplicates the file handle in BX.",
@@ -3345,6 +3583,42 @@
       }
     },
     {
+      "key": "0x21/0x57/0x00",
+      "name": "get file time",
+      "description": "Gets the last-written time and date of the open file handle in BX.",
+      "behaviour": "Returns CX = time and DX = date in DOS packed format, CF clear. An invalid or closed handle fails with CF set and AX=0006h. For a file on a mounted host folder the stamp is first re-read from the host file's modification time.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-215700",
+          "cites": "INT 21 - DOS 2+ - GET FILE'S LAST-WRITTEN DATE AND TIME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x57 if 0x00",
+          "cites": "            if (reg_al == 0x00) {"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x57/0x01",
+      "name": "set file time",
+      "description": "Sets the last-written time and date of the open file handle in BX from CX (time) and DX (date).",
+      "behaviour": "It stores CX and DX in the file object and marks the stamp as new, CF clear; an invalid handle fails with CF set and AX=0006h. The stamp reaches storage later: a FAT image writes it to the directory entry on flush, a host-folder file takes it on close.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-215701",
+          "cites": "INT 21 - DOS 2+ - SET FILE'S LAST-WRITTEN DATE AND TIME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x57 if 0x01",
+          "cites": "            } else if (reg_al == 0x01) {"
+        }
+      ]
+    },
+    {
       "key": "0x21/0x58",
       "name": "alloc strategy",
       "description": "Gets or sets the memory allocation strategy, or the UMB link state, by AL.",
@@ -3631,6 +3905,43 @@
       }
     },
     {
+      "key": "0x21/0x5D/0x00",
+      "name": "server function call",
+      "description": "Remote server call: runs the INT 21h handler again with the registers stored in the block at DS:DX.",
+      "behaviour": "It loads AX, BX, CX, DX, SI, DI, DS and ES from offsets 00h, 02h, 04h, 06h, 08h, 0Ah, 0Ch and 0Eh of the block and re-enters the INT 21h handler, so the new AH selects the function and its results come back to the caller. The fields at 10h-14h, including the computer and process IDs, are not read.",
+      "differs": "The list runs the call under the given computer and process IDs, with sharing delays skipped and wildcards enabled; the emulator only reloads the registers and calls the handler again.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-215D00",
+          "cites": "INT 21 U - DOS 3.1+ internal - SERVER FUNCTION CALL"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5d if 0x00",
+          "cites": "            if(reg_al == 0x00) {"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x5D/0x06",
+      "name": "get dos swappable area",
+      "description": "Gets the address of the DOS swappable data area.",
+      "behaviour": "Returns DS:SI -> the emulator's data area (by default 00B2h:0000h), CX = the size to swap while in DOS (0560h by default), DX = 001Ah (the size to swap always), CF clear. The emulator maintains only the first 1Ah bytes of the area.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-215D06",
+          "cites": "INT 21 U - DOS 3.0+ internal - GET ADDRESS OF DOS SWAPPABLE DATA AREA"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5d if 0x06",
+          "cites": "            } else if(reg_al == 0x06) {"
+        }
+      ]
+    },
+    {
       "key": "0x21/0x5E",
       "name": "network printer fns",
       "description": "Gets the machine name (AL=00h) when a network redirector is available.",
@@ -3640,6 +3951,25 @@
           "role": "emulator",
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e",
           "cites": "        case 0x5e:                  /* Network and printer functions */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x5E/0x00",
+      "name": "get machine name",
+      "description": "Gets the network machine name into the 16-byte buffer at DS:DX.",
+      "behaviour": "It works only when AL=00h, secure mode is off, and either the network redirector is enabled or INT 2Fh AX=1100h answers AL=FFh. Then it writes the host's name, cut or space-padded to 15 characters plus a zero byte (17 bytes under 4DOS), sets CX=01FFh and clears CF. Otherwise AL=01h and CF is set.",
+      "differs": "The list describes a blank-padded name in the buffer; the emulator takes the name from the host and ends the 15 characters with a zero byte.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-215E00",
+          "cites": "INT 21 - DOS 3.1+ network - GET MACHINE NAME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e if 0x00",
+          "cites": "            if (!reg_al && !control->SecureMode()) {"
         }
       ]
     },
@@ -5065,6 +5395,75 @@
         ],
         "digest": "a77303f709b1f6b4e359c6de324fd72d6bc0a300d3dbab6a8f357752df864a5a"
       }
+    },
+    {
+      "key": "0x21/0x73/0x00",
+      "name": "drive flags",
+      "description": "MS-DOS 7 drive locking and flushing: gets the drive flag selected by CL.",
+      "behaviour": "Below DOS 7 it sets CF and AX=7300h. With AL=00h and CL=00h or 01h it returns AL=CL, AH=00h and CF clear; DL is not read and no flag is kept. Any other CL, and AL=01h (set), set CF and return AX=FFFFh.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73 if 0x00",
+          "cites": "\t    } else if (reg_al==0 && reg_cl<2) {"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x73/0x02",
+      "name": "fat32 get extended dpb",
+      "description": "FAT32 get extended DPB: copies the extended drive parameter block of a FAT32 drive to ES:DI.",
+      "behaviour": "DL = drive (0 = default), CX at least 003Fh. For a non-removable FAT32 image drive it writes 003Dh at ES:DI, the emulator's 24-byte DPB at +02h and the FAT32 fields up to +3Bh, CF clear. Any other drive, a removable one or a smaller CX fails with CF set and AX=0018h; DOS below 7 gives AX=7300h.",
+      "differs": "The list returns the next-DPB pointer only when SI=F1A6h and otherwise 0000:0000; the emulator ignores SI and always stores FFFFFFFFh there.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-217302",
+          "cites": "INT 21 - Windows95 - FAT32 - \"Get_ExtDPB\" - GET EXTENDED DPB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73 if 0x02",
+          "cites": "\t    } else if (reg_al==2) {"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x73/0x03",
+      "name": "fat32 get free space",
+      "description": "FAT32 get extended free space: fills the structure at ES:DI for the drive named by the string at DS:DX.",
+      "behaviour": "The string must begin X:\\ (CX bytes are read), else CF set and AX=FFFFh; a letter outside A-Z gives AX=0015h. Otherwise it writes the 2Ch-byte structure (version 0, sectors per cluster, bytes per sector, free and total clusters, sectors and allocation units) at ES:DI, AX=0, CF clear; if the space query fails, CF set and AX = the DOS error.",
+      "differs": "The list says that in a DOS box a path without a drive letter gives the default drive's space; the emulator rejects it with AX=FFFFh and CF set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-217303",
+          "cites": "INT 21 - Windows95 - FAT32 - GET EXTENDED FREE SPACE ON DRIVE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73 if 0x03",
+          "cites": "\t    } else if (reg_al==3) {"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x73/0x05",
+      "name": "fat32 abs disk rw",
+      "description": "FAT32 extended absolute disk read or write: transfers sectors using the INT 25h-style packet at DS:BX.",
+      "behaviour": "It needs CX=FFFFh and DOS 7.10 or later, else CF set and AX=FFFFh. AL = DL-1 (DL=01h is A:) and SI bit 0 picks write or read, run by the INT 26h or INT 25h code on the packet at DS:BX. AX=8002h and CF set for a bad or removable drive, 0207h or 0408h on a FAT image.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-217305CXFFFF",
+          "cites": "INT 21 - Windows95 - FAT32 - EXTENDED ABSOLUTE DISK READ/WRITE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73 if 0x05",
+          "cites": "\t    } else if (reg_al == 5 && reg_cx == 0xFFFF && (dos.version.major > 7 || dos.version.minor >= 10)) {"
+        }
+      ]
     },
     {
       "key": "0x21/0xE0",

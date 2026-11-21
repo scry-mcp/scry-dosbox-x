@@ -521,6 +521,14 @@
       "line": "        case 0x57:                  /* Get/Set File's Date and Time */",
       "key": "0x21/0x57"
     },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x57 if 0x00": {
+      "line": "            if (reg_al == 0x00) {",
+      "key": "0x21/0x57/0x00"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x57 if 0x01": {
+      "line": "            } else if (reg_al == 0x01) {",
+      "key": "0x21/0x57/0x01"
+    },
     "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58": {
       "line": "        case 0x58:                  /* Get/Set Memory allocation strategy */",
       "key": "0x21/0x58"
@@ -561,9 +569,21 @@
       "line": "        case 0x5d:                  /* Network Functions */",
       "key": "0x21/0x5D"
     },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5d if 0x00": {
+      "line": "            if(reg_al == 0x00) {",
+      "key": "0x21/0x5D/0x00"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5d if 0x06": {
+      "line": "            } else if(reg_al == 0x06) {",
+      "key": "0x21/0x5D/0x06"
+    },
     "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e": {
       "line": "        case 0x5e:                  /* Network and printer functions */",
       "key": "0x21/0x5E"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e if 0x00": {
+      "line": "            if (!reg_al && !control->SecureMode()) {",
+      "key": "0x21/0x5E/0x00"
     },
     "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5f": {
       "line": "        case 0x5f:                  /* Network redirection */",
@@ -773,6 +793,22 @@
       "line": "\tcase 0x73:",
       "key": "0x21/0x73"
     },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73 if 0x00": {
+      "line": "\t    } else if (reg_al==0 && reg_cl<2) {",
+      "key": "0x21/0x73/0x00"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73 if 0x02": {
+      "line": "\t    } else if (reg_al==2) {",
+      "key": "0x21/0x73/0x02"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73 if 0x03": {
+      "line": "\t    } else if (reg_al==3) {",
+      "key": "0x21/0x73/0x03"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73 if 0x05": {
+      "line": "\t    } else if (reg_al == 5 && reg_cx == 0xFFFF && (dos.version.major > 7 || dos.version.minor >= 10)) {",
+      "key": "0x21/0x73/0x05"
+    },
     "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xE0": {
       "line": "\tcase 0xE0:",
       "key": "0x21/0xE0"
@@ -780,6 +816,58 @@
     "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xEF": {
       "line": "        case 0xEF:                  /* Used in Ancient Art Of War CGA */",
       "key": "0x21/0xEF"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x00": {
+      "line": "\tcase 0x00:\t\t/* Get Device Information */",
+      "key": "0x21/0x44/0x00"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x01": {
+      "line": "\tcase 0x01:\t\t/* Set Device Information */",
+      "key": "0x21/0x44/0x01"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x02": {
+      "line": "\tcase 0x02:\t\t/* Read from Device Control Channel */",
+      "key": "0x21/0x44/0x02"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x03": {
+      "line": "\tcase 0x03:\t\t/* Write to Device Control Channel */",
+      "key": "0x21/0x44/0x03"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x06": {
+      "line": "\tcase 0x06:      /* Get Input Status */",
+      "key": "0x21/0x44/0x06"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x07": {
+      "line": "\tcase 0x07:\t\t/* Get Output Status */",
+      "key": "0x21/0x44/0x07"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x08": {
+      "line": "\tcase 0x08:\t\t/* Check if block device removable */",
+      "key": "0x21/0x44/0x08"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x09": {
+      "line": "\tcase 0x09:\t\t/* Check if block device remote */",
+      "key": "0x21/0x44/0x09"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x0A": {
+      "line": "\tcase 0x0A:\t\t/* Is Device of Handle Remote? */",
+      "key": "0x21/0x44/0x0A"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x0B": {
+      "line": "\tcase 0x0B:\t\t/* Set sharing retry count */",
+      "key": "0x21/0x44/0x0B"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x0D": {
+      "line": "\tcase 0x0D:\t\t/* Generic block device request */",
+      "key": "0x21/0x44/0x0D"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x0E": {
+      "line": "\tcase 0x0E:\t\t\t/* Get Logical Drive Map */",
+      "key": "0x21/0x44/0x0E"
+    },
+    "dosbox-x:src/dos/dos_ioctl.cpp DOS_IOCTL case 0x11": {
+      "line": "\tcase 0x11:\t\t/* query generic ioctl capability */",
+      "key": "0x21/0x44/0x11"
     },
     "rbil61:INTERRUP.F D-2100": {
       "digest": "82ce537d1e95af28b4ab68a4886264d1e9bdefea5a5437b67bca4378d3199f2d",
@@ -1425,6 +1513,502 @@
       "digest": "e49d464b4f3324eeaf1f16adf59da284957c96481717686a297880905ac3d880",
       "key": "95"
     },
+    "rbil61:INTERRUP.G #01680 64h (100) (DOS 4.0+,NetWare4) open semaphore limit exceeded": {
+      "digest": "1304fceb613fa5d3473fd1a4dcb14aedbc849a626b67b055c5e47968db36d088",
+      "key": "100"
+    },
+    "rbil61:INTERRUP.G #01680 65h (101) (DOS 4.0+,NetWare4) exclusive semaphore": {
+      "digest": "082c719bf45037b96934ad13d28d2374113f2e77ff6818dbd9767e607616074d",
+      "key": "101"
+    },
+    "rbil61:INTERRUP.G #01680 66h (102) (DOS 4.0+,NetWare4) semaphore was set": {
+      "digest": "a5e9df1b429556f97157bc93289e4367ef2f9e34e57faf2d5f8bf88bde447ce8",
+      "key": "102"
+    },
+    "rbil61:INTERRUP.G #01680 67h (103) (DOS 4.0+,NetWare4) too many exclusive": {
+      "digest": "aa29cf46e5dbc7d8f5de578c6cb2a6a181c657583652d74f79033c75b7be4d6a",
+      "key": "103"
+    },
+    "rbil61:INTERRUP.G #01680 68h (104) (DOS 4.0+,NetWare4) operation invalid": {
+      "digest": "a372938da34ceb61d9c674d8e073b22021aa4c3dc367a090a6901bf172ac6696",
+      "key": "104"
+    },
+    "rbil61:INTERRUP.G #01680 69h (105)": {
+      "digest": "adf7bbbdaa6be20751460a81f387128d1a2451408a509d7665732c29e957fbd8",
+      "key": "105"
+    },
+    "rbil61:INTERRUP.G #01680 6Ah (106)": {
+      "digest": "61b7474411dffc690f2f8ff3b6e983c902877caa14be2498440ee14d9d83fb2b",
+      "key": "106"
+    },
+    "rbil61:INTERRUP.G #01680 6Bh (107)": {
+      "digest": "6320aba105abcc775993bc18d63386018f154a2c4c746489b80cfeb668e687dd",
+      "key": "107"
+    },
+    "rbil61:INTERRUP.G #01680 6Ch (108)": {
+      "digest": "dd16d85f2593a5b56c39e3ea32e84710fd2660b055ca11e1b9c03f70c41be42d",
+      "key": "108"
+    },
+    "rbil61:INTERRUP.G #01680 6Dh (109)": {
+      "digest": "ab2dc02a02a2ea7d0952ee70072a08e20210b596ca356e4a0f914f9bf5631968",
+      "key": "109"
+    },
+    "rbil61:INTERRUP.G #01680 6Eh (110)": {
+      "digest": "7161c88dc2290f3d263de51dfdd18ab13c58d050d6831796bf53effc74cdb63d",
+      "key": "110"
+    },
+    "rbil61:INTERRUP.G #01680 6Fh (111)": {
+      "digest": "aa1773661fff8c81252f2d9a890c58b93f41783d1a464d382e904ab82c5936f1",
+      "key": "111"
+    },
+    "rbil61:INTERRUP.G #01680 70h (112)": {
+      "digest": "7ab40b6581c1a63646ba6290105a8bd90a7dd5cc5376364985b646e6343f7efc",
+      "key": "112"
+    },
+    "rbil61:INTERRUP.G #01680 71h (113)": {
+      "digest": "c2e8780085eea421bb44a6e2eaf809208720da607e0ca09e0ef72060a5903283",
+      "key": "113"
+    },
+    "rbil61:INTERRUP.G #01680 72h (114)": {
+      "digest": "2817c81fd4613cbc933ab99820c1779684ca330288c7c4beaf86872de3048c52",
+      "key": "114"
+    },
+    "rbil61:INTERRUP.G #01680 73h (115)": {
+      "digest": "17d394286d5f9103712f8ae41db5067253c542d06d532e81534f5c1e92d1925e",
+      "key": "115"
+    },
+    "rbil61:INTERRUP.G #01680 74h (116) (DOS 5.0+) VIOKBD request": {
+      "digest": "aefcb6612bc7a0c155a9ff31baa11bc46f40344d32806e2d2a499c767940c7a6",
+      "key": "116"
+    },
+    "rbil61:INTERRUP.G #01680 75h (117)": {
+      "digest": "49d0cb0a8a5bb792de8c6d739b3c7132799249452c98bf031e2d7571bc1f498d",
+      "key": "117"
+    },
+    "rbil61:INTERRUP.G #01680 76h (118)": {
+      "digest": "ed2ae2fd27b8e07f7fadc62355f7c62a72ecbf464bc09e42697fd1ba0562fefd",
+      "key": "118"
+    },
+    "rbil61:INTERRUP.G #01680 77h (119)": {
+      "digest": "cf6823d52c4523a2f9d9cc5b0a97e453b55cf60f0d7f85221c2a0188cb5f8f4d",
+      "key": "119"
+    },
+    "rbil61:INTERRUP.G #01680 78h (120)": {
+      "digest": "f649aca70ecc008097f9bd2206dc91b7b5835c028805bd5ce15c5e2276d7373f",
+      "key": "120"
+    },
+    "rbil61:INTERRUP.G #01680 79h (121)": {
+      "digest": "2eb8041d26b4d3897c032fde116c9231286d648af60f622940e288089cf2f152",
+      "key": "121"
+    },
+    "rbil61:INTERRUP.G #01680 7Ah (122)": {
+      "digest": "276d0c6f8d0cd690e53f67b444b07798e451a3df3997c98bc3ff798681d8145b",
+      "key": "122"
+    },
+    "rbil61:INTERRUP.G #01680 7Bh (123)": {
+      "digest": "ce32a2f79f7794166ddbdfd9e1191b802200510d533f99e8876cee4152f4ea8e",
+      "key": "123"
+    },
+    "rbil61:INTERRUP.G #01680 7Ch (124)": {
+      "digest": "fe9acc40a995fd244f75c92e150c35688eae06416508dd30765bc54d256b8672",
+      "key": "124"
+    },
+    "rbil61:INTERRUP.G #01680 7Dh (125)": {
+      "digest": "d06f6ddad3c1bc80305f513e90d23376621dbd94191245a248c8377b8ca250e6",
+      "key": "125"
+    },
+    "rbil61:INTERRUP.G #01680 7Eh (126)": {
+      "digest": "15164680c407fa6defad73a67f7361b8d5461a2399c3965541f3af1095e5bfd1",
+      "key": "126"
+    },
+    "rbil61:INTERRUP.G #01680 7Fh (127)": {
+      "digest": "a716c173cbd887d122e655bf24dca05fb980e0d5681ab168beda4b3185027aee",
+      "key": "127"
+    },
+    "rbil61:INTERRUP.G #01680 80h (128)": {
+      "digest": "1fe669073d2c3b49e2592afec6de54419417dbb7d8bca9df48f1275aa00718f5",
+      "key": "128"
+    },
+    "rbil61:INTERRUP.G #01680 81h (129)": {
+      "digest": "2e6ea3126337bcd8b09a0955e8a368c7a8aa531e19268c5d2f4bfdd012d5dc41",
+      "key": "129"
+    },
+    "rbil61:INTERRUP.G #01680 82h (130)": {
+      "digest": "67dfcfb4b6f79db1c0f97b4ad58a3ed39019d6cc39848a55883405119ba82ed9",
+      "key": "130"
+    },
+    "rbil61:INTERRUP.G #01680 83h (131)": {
+      "digest": "9f3bddcdfacd1409ed531625e4d72eb05493e04792330e8907876bf68db9f7eb",
+      "key": "131"
+    },
+    "rbil61:INTERRUP.G #01680 84h (132)": {
+      "digest": "4431a4f2a0de1886fe25c020d41764af5bc7b48b707a2cc410d910afcac7c41e",
+      "key": "132"
+    },
+    "rbil61:INTERRUP.G #01680 85h (133)": {
+      "digest": "111fe9eb593b1d335211ce7097db40f2fe506a23a1a5d6280c0c2060b7bd4a1b",
+      "key": "133"
+    },
+    "rbil61:INTERRUP.G #01680 86h (134)": {
+      "digest": "8e0fb3a711fc6b9e9637e57ea24bb486a6cfb1ed35d6c1bbb3d6a34f7b796e74",
+      "key": "134"
+    },
+    "rbil61:INTERRUP.G #01680 87h (135)": {
+      "digest": "d685d1d8d530310b2ed5cb7af8245b74ad9f61bf5bd99f59e01748470eccb6cc",
+      "key": "135"
+    },
+    "rbil61:INTERRUP.G #01680 88h (136)": {
+      "digest": "85839b1808c384f845133978fed9eb9b556467ad6dd868bf0fdcd873c290092c",
+      "key": "136"
+    },
+    "rbil61:INTERRUP.G #01680 89h (137)": {
+      "digest": "abe454920ed0c02d969c7144743622e9c342054efdb3db90b4f085ce5b0fadff",
+      "key": "137"
+    },
+    "rbil61:INTERRUP.G #01680 8Ah (138)": {
+      "digest": "8bbc753fd7bd74aca676fc37b5bec244f3dc05d750d7552969b002bf8126a384",
+      "key": "138"
+    },
+    "rbil61:INTERRUP.G #01680 8Bh (139)": {
+      "digest": "a7179ca5574f75eb25565cf72982ec23e3db22bb09b07116f06f413912fc6f52",
+      "key": "139"
+    },
+    "rbil61:INTERRUP.G #01680 8Ch (140)": {
+      "digest": "a69ffe7c051321338523f1984999975f97c177b1d295b38c20a83eed8c66532f",
+      "key": "140"
+    },
+    "rbil61:INTERRUP.G #01680 8Dh (141)": {
+      "digest": "4778f83a5f76e493f4c173bd29e032aae9dc22714c9ff379cf78895e301e45d5",
+      "key": "141"
+    },
+    "rbil61:INTERRUP.G #01680 8Eh (142)": {
+      "digest": "a5ac09149c2f00ad6d7574d0ac95e6ef809bbfa1d0c72bf6eb470fe99698eb4a",
+      "key": "142"
+    },
+    "rbil61:INTERRUP.G #01680 8Fh (143)": {
+      "digest": "07adfdf589af9b4509654eeac711f720d2f14d6fdfad1e09e89ff8bf2bf63d64",
+      "key": "143"
+    },
+    "rbil61:INTERRUP.G #01680 90h (144)": {
+      "digest": "1cf41def1c8c33c34a5a89914e62b7ccc952f51f21c6e4ea2126b8a3993303f4",
+      "key": "144"
+    },
+    "rbil61:INTERRUP.G #01680 91h (145)": {
+      "digest": "454611c1adce8ecff8cc86826bec9fac477ace91c02e7c6ada49cf1709fd12a6",
+      "key": "145"
+    },
+    "rbil61:INTERRUP.G #01680 92h (146)": {
+      "digest": "dde27c4a28742006343d1e3f0ee4a15750a0e8cedc7f0bc12bc203e920c17e17",
+      "key": "146"
+    },
+    "rbil61:INTERRUP.G #01680 93h (147)": {
+      "digest": "dea8e46534494cf8457a32b9b8d6c73ed19cb4afa859577a931245807bb77e1b",
+      "key": "147"
+    },
+    "rbil61:INTERRUP.G #01680 94h (148)": {
+      "digest": "6fcfc00c9d74392851ec4baa2b5a7dfdf37523d7db214ca178d67d9d8c8a882a",
+      "key": "148"
+    },
+    "rbil61:INTERRUP.G #01680 95h (149)": {
+      "digest": "74bab6b1cde936cea4231cdc89795162cc65c18be6d2e79ad9ad9f82c5716ba7",
+      "key": "149"
+    },
+    "rbil61:INTERRUP.G #01680 96h (150)": {
+      "digest": "b51c9bd791e38df6ee41205b009b21dc8bbc3c4b44d6cf37f7056bd7e2802e6b",
+      "key": "150"
+    },
+    "rbil61:INTERRUP.G #01680 97h (151)": {
+      "digest": "1f5480dd5fa18f2770ce5bdf244da811dcad30f2bb64933a3d88c05047c8ed11",
+      "key": "151"
+    },
+    "rbil61:INTERRUP.G #01680 98h (152)": {
+      "digest": "61c292abe9a93444cd0eaca0977b4eaec784adb932b3bd5f65eb8d1ec395346f",
+      "key": "152"
+    },
+    "rbil61:INTERRUP.G #01680 99h (153)": {
+      "digest": "155a69488db6ef4363bfa8d02844f3b3f375aa1963a2387e146836f7a5fb5272",
+      "key": "153"
+    },
+    "rbil61:INTERRUP.G #01680 9Ah (154)": {
+      "digest": "f447980a0a89552585a18bf330c437e2f0ffbacab08904fd0180bbb281ee500d",
+      "key": "154"
+    },
+    "rbil61:INTERRUP.G #01680 9Bh (155)": {
+      "digest": "12aa83ed846dabeb4acf0aff9a04382873bd1f123c427a22fdd8377901dda163",
+      "key": "155"
+    },
+    "rbil61:INTERRUP.G #01680 9Ch (156)": {
+      "digest": "cd6cadd2c0401064f88f93427756ba76d4ad6cdada3ae9bb19e75873bee5d293",
+      "key": "156"
+    },
+    "rbil61:INTERRUP.G #01680 9Dh (157)": {
+      "digest": "2e482249503360bab3948ff4b0a5a70c0fb921b64b3f4530b11b65f955832b6e",
+      "key": "157"
+    },
+    "rbil61:INTERRUP.G #01680 9Eh (158)": {
+      "digest": "4cb0ae5c776ff12a3ee41e00f1ede45d97c8ae29ee5ffb7a55462c3085b49492",
+      "key": "158"
+    },
+    "rbil61:INTERRUP.G #01680 9Fh (159)": {
+      "digest": "ee5079f0c8641f849802097054900ab2ccd61759d0829035ba6fcb2c5d6aa9dd",
+      "key": "159"
+    },
+    "rbil61:INTERRUP.G #01680 A0h (160) (DOS 5.0+) bad arguments": {
+      "digest": "69bbdd8a1983c5ab63df17a9277c5b101fb04b8577a73dbbc9b2fb57736388ca",
+      "key": "160"
+    },
+    "rbil61:INTERRUP.G #01680 A1h (161)": {
+      "digest": "b42379562fac736c988ddc87c1b3c98dc1997e8c021e89227b5b5cc1052e1bc3",
+      "key": "161"
+    },
+    "rbil61:INTERRUP.G #01680 A2h (162)": {
+      "digest": "2e2a7bd463d5e80238b307bdc8df30fde2ed0430edc4db53aea717ec743e03b0",
+      "key": "162"
+    },
+    "rbil61:INTERRUP.G #01680 A3h (163) (DOS 5.0+) uncertain media": {
+      "digest": "e680db238afbf50d260282efdeb647e769a1af7aab3a6faf7a59c64194ca93e6",
+      "key": "163"
+    },
+    "rbil61:INTERRUP.G #01680 A4h (164) (DOS 5.0+) maximum": {
+      "digest": "dae81bdf982b5b9b7ddecf2c32782d1b5eb5c419c03a50c67ed3e67150aa9627",
+      "key": "164"
+    },
+    "rbil61:INTERRUP.G #01680 A5h (165)": {
+      "digest": "6e0299035e54522fe4cd5e6f32a286cfb78391b25cf8e636529acd2d408cb03d",
+      "key": "165"
+    },
+    "rbil61:INTERRUP.G #01680 B0h (176)": {
+      "digest": "a9c19e0376388fe45e9438b5276b7a6172e5dbafd250b39fd7c56169dd295a4a",
+      "key": "176"
+    },
+    "rbil61:INTERRUP.G #01680 B1h (177)": {
+      "digest": "cc05e6b53067c9083de1917498ed7ecd974a69c78aaf56f68e9b9cea37b0a7ed",
+      "key": "177"
+    },
+    "rbil61:INTERRUP.G #01680 B2h (178)": {
+      "digest": "ed8fb9701bc28deff7cde4f2fc31bacf444565a2685e07a4220515af6f65ec57",
+      "key": "178"
+    },
+    "rbil61:INTERRUP.G #01680 B4h (180) (MS-DOS 7.0) lock count": {
+      "digest": "dd9345489e99f812f9937891287113c2bd77891e5d806639d824ca43ac393962",
+      "key": "180"
+    },
+    "rbil61:INTERRUP.G #01680 B5h (181) (MS-DOS 7.0) a valid eject": {
+      "digest": "736f4856d11e43e5a790b502b79ef6b7e62e1fb0e1f7aa182fb05d60ce32c0ed",
+      "key": "181"
+    },
+    "rbil61:INTERRUP.G #01680 B6h (182)": {
+      "digest": "b990cde5556c4f2b9554b02f97692459ac6124d89ac6436eb68de117659b0412",
+      "key": "182"
+    },
+    "rbil61:INTERRUP.G #01680 B7h (183)": {
+      "digest": "34106fe32e456fd99848e066b19e3c2e13beead2f6ae9baab77b722cb66c2a48",
+      "key": "183"
+    },
+    "rbil61:INTERRUP.G #01680 B8h (184)": {
+      "digest": "de68fac2b289fc8fe96f1cb2ec9da9cf66914108e44830d57178cc169da6b353",
+      "key": "184"
+    },
+    "rbil61:INTERRUP.G #01680 B9h (185)": {
+      "digest": "4fdb16de30ea6e346905643cd840dfc5cc068544b3d22fe0aac32c0295b8690b",
+      "key": "185"
+    },
+    "rbil61:INTERRUP.G #01680 BAh (186)": {
+      "digest": "8825c8c39015b300e18bb54a39b27cb4317eef3cd74cfbf4c1155a5ad7f207d6",
+      "key": "186"
+    },
+    "rbil61:INTERRUP.G #01680 BBh (187)": {
+      "digest": "bef7446521fdcf7123eb811e1a1bdd8e337ad57d5c19fbe25ea37ead132f6298",
+      "key": "187"
+    },
+    "rbil61:INTERRUP.G #01680 BCh (188)": {
+      "digest": "e2350c65f4f4fefd48afdb48ed0b71576f7205e6c3b4af95c815f2a915547b19",
+      "key": "188"
+    },
+    "rbil61:INTERRUP.G #01680 BDh (189)": {
+      "digest": "0fa4b86eae2233b19eded0f99a0fa011bd5a00ce4d4997fcb5392afa4054821d",
+      "key": "189"
+    },
+    "rbil61:INTERRUP.G #01680 BEh (190)": {
+      "digest": "800a4aaaaa2736bbbdc9828e1708b79e6353750d49d7ae5d9a810a7e11d0ee67",
+      "key": "190"
+    },
+    "rbil61:INTERRUP.G #01680 BFh (191)": {
+      "digest": "59baf4cd3d957d59cfcf725d5b0225355941f1e0612ffbd78642f49d4b61e234",
+      "key": "191"
+    },
+    "rbil61:INTERRUP.G #01680 C0h (192)": {
+      "digest": "9b63d04927bb035474084f7b9d54d101ba300f28ef59def8ae507a6924fda851",
+      "key": "192"
+    },
+    "rbil61:INTERRUP.G #01680 C1h (193)": {
+      "digest": "a5c4f55df6c74790ce0c5250cfb0ddc8cf62de17be9b7930cede2f40832fcd4c",
+      "key": "193"
+    },
+    "rbil61:INTERRUP.G #01680 C2h (194)": {
+      "digest": "c2bf89ecee48adbe302514e8150cb766020b6c62e8eaf3573b2f0aaa0354a3e4",
+      "key": "194"
+    },
+    "rbil61:INTERRUP.G #01680 C3h (195)": {
+      "digest": "a5dd778410f83640e5deb22b26f32ffcc8676a8ea4ef2cb118027082f7cbeb05",
+      "key": "195"
+    },
+    "rbil61:INTERRUP.G #01680 C4h (196)": {
+      "digest": "eb19664176f74b6e0aaac36752e8dcb25829fd562e76c9f84421dc3b6f93b164",
+      "key": "196"
+    },
+    "rbil61:INTERRUP.G #01680 C5h (197)": {
+      "digest": "c65c005e1674547ad1f40f32ef9edf75d49cdaed74446fa4e5d45c9f120d4b3a",
+      "key": "197"
+    },
+    "rbil61:INTERRUP.G #01680 C6h (198)": {
+      "digest": "a294629e9e89e0ae92443213a262190ce96ee1de53af56e041a09d2ff8b971c4",
+      "key": "198"
+    },
+    "rbil61:INTERRUP.G #01680 C7h (199)": {
+      "digest": "3703aa48bb8925cf1fe20df480cb12436ff26720f940ec5f7eadf12e16fe1b71",
+      "key": "199"
+    },
+    "rbil61:INTERRUP.G #01680 C8h (200)": {
+      "digest": "dff8167559a737dcf4cd3292a64ed2fb9efafa3fc090ff491c0457434a580816",
+      "key": "200"
+    },
+    "rbil61:INTERRUP.G #01680 C9h (201)": {
+      "digest": "d52658529a8e602fb9165da26f5a8b2ec10b5acee67a35fef9d63cee4a3672ef",
+      "key": "201"
+    },
+    "rbil61:INTERRUP.G #01680 CAh (202)": {
+      "digest": "74eb95b04f7692f3a29dcbe2d8314d13de0a63a216ccf9c3f77f7d4399ec7272",
+      "key": "202"
+    },
+    "rbil61:INTERRUP.G #01680 CBh (203)": {
+      "digest": "93ae9b2aae6d2a66b62b995b99f0eaa53d4c75872b309852567a6fea15b3b7cc",
+      "key": "203"
+    },
+    "rbil61:INTERRUP.G #01680 CCh (204)": {
+      "digest": "95439299d487897e75e031b77b9946b5f8e9e9d36f8062c2eef6074b3541dc29",
+      "key": "204"
+    },
+    "rbil61:INTERRUP.G #01680 CDh (205)": {
+      "digest": "11d2402533d760cb0ff88472c6b4c34b10eafff2711d27b67186cfde7753eb85",
+      "key": "205"
+    },
+    "rbil61:INTERRUP.G #01680 CEh (206)": {
+      "digest": "74662df4ad1f2974cb28f6353f9bcf533887f6f572ecbee6d816237a17432f25",
+      "key": "206"
+    },
+    "rbil61:INTERRUP.G #01680 CFh (207)": {
+      "digest": "cb581cac86bfcccbded32efec2e79de56f2b85b2339bf9d6bd52538fd71bbf01",
+      "key": "207"
+    },
+    "rbil61:INTERRUP.G #01680 D0h (208)": {
+      "digest": "d89fe5a439aed6eeb2045e27985bb910eb6d146dfa5671b8b4a78a03185b04a2",
+      "key": "208"
+    },
+    "rbil61:INTERRUP.G #01680 D1h (209)": {
+      "digest": "da6c648f9fe62d9e92fa8c2f86d279d21a5336add4dc7c781f9b93114c016c77",
+      "key": "209"
+    },
+    "rbil61:INTERRUP.G #01680 D2h (210)": {
+      "digest": "3cf9afc642fc7c1b167b691ed9625deae5f13b6d60ca16b1d10985e555d54fe5",
+      "key": "210"
+    },
+    "rbil61:INTERRUP.G #01680 D3h (211)": {
+      "digest": "a4016ce4603c12aef61ab3188d2234b8f7b34ce01f3a3cf34ca1161172d364a8",
+      "key": "211"
+    },
+    "rbil61:INTERRUP.G #01680 D4h (212)": {
+      "digest": "3f65719bb8d0bc90a5a512649aebf5f4fbd7188135be2002bfa0e1808ae0af80",
+      "key": "212"
+    },
+    "rbil61:INTERRUP.G #01680 D5h (213)": {
+      "digest": "8ef305b32b24224f008de39d76cd56404f9418cc51b4e3fbdba28fc50488b65f",
+      "key": "213"
+    },
+    "rbil61:INTERRUP.G #01680 D6h (214)": {
+      "digest": "2d041b22cf3b7097be4a72e2b1295b1df9e510861f904ff6b715a6833cddef0d",
+      "key": "214"
+    },
+    "rbil61:INTERRUP.G #01680 D7h (215)": {
+      "digest": "acf0df14a82926c44b16c479a396566f6d450aaa4ec6354e97cfa6ad1f8162ae",
+      "key": "215"
+    },
+    "rbil61:INTERRUP.G #01680 E6h (230)": {
+      "digest": "4fe91617f97670659b2b970c4a6981f11ff1f2437d31a0179a9e184036ae7183",
+      "key": "230"
+    },
+    "rbil61:INTERRUP.G #01680 E7h (231)": {
+      "digest": "2142ef6e37f01e8ca3a8169761e342219dd87e39ad8191bcc07a54bd67727871",
+      "key": "231"
+    },
+    "rbil61:INTERRUP.G #01680 E8h (232)": {
+      "digest": "6d6e3cd2a3a54c047da6cd66614b3ef1b8ab94ba542ffcfd81fac4ba9fe1f964",
+      "key": "232"
+    },
+    "rbil61:INTERRUP.G #01680 E9h (233)": {
+      "digest": "6a542bc8826cf4515fb5cfcfab0bb773621a8f1573d2d47c1a4c7785444e8175",
+      "key": "233"
+    },
+    "rbil61:INTERRUP.G #01680 EAh (234)": {
+      "digest": "605bf914ab8565faabf1442320e94a4ccc4f3c12375298a0762203d9e6e6a773",
+      "key": "234"
+    },
+    "rbil61:INTERRUP.G #01680 FFh (255)": {
+      "digest": "4e49e74580ec66a7ee707f44c7aa0a32992094bc3ace5b2f556ad2c8cce0d19a",
+      "key": "255"
+    },
+    "rbil61:INTERRUP.G D-214400": {
+      "digest": "4ac87ef6ea082b306452c2d7d6614ef7b4ac9eb0f70b748d066578de2101d886",
+      "key": "0x21/0x44/0x00"
+    },
+    "rbil61:INTERRUP.G D-214401": {
+      "digest": "97df732f350b7aa00c6fa754728c712f7e2983ee974221cc0d724ea19d1a3c9d",
+      "key": "0x21/0x44/0x01"
+    },
+    "rbil61:INTERRUP.G D-214402@1": {
+      "digest": "8f46089f4e730571f94dc8556f0cb1a5c7e07e1826cd7efe45f30af396480ee4",
+      "key": "0x21/0x44/0x02"
+    },
+    "rbil61:INTERRUP.G D-214403@1": {
+      "digest": "d36ac010bc44f09fc37d129baed6c5d69bff2234f3be80a9d6c95ef21e4cae46",
+      "key": "0x21/0x44/0x03"
+    },
+    "rbil61:INTERRUP.G D-214406": {
+      "digest": "559bc1724042c28ee3376b4b6a2c956cc835b6f3a588d7d72a95f5b7d80b51e6",
+      "key": "0x21/0x44/0x06"
+    },
+    "rbil61:INTERRUP.G D-214407": {
+      "digest": "6796e717672da32dab8d41ea0b15bcac8ab9e020b2ded7ee54f11f61c3b64937",
+      "key": "0x21/0x44/0x07"
+    },
+    "rbil61:INTERRUP.G D-214408": {
+      "digest": "a386be9b0a1c494719c5a482e197c510192a0ce716444bab69f65062e181c45c",
+      "key": "0x21/0x44/0x08"
+    },
+    "rbil61:INTERRUP.G D-214409": {
+      "digest": "6c48466088aafc68aaef6ca0b6264ec3344e2f357f41eb74b2f0104be348e229",
+      "key": "0x21/0x44/0x09"
+    },
+    "rbil61:INTERRUP.G D-21440A": {
+      "digest": "24a9cb7a87723acbff2cb6cfcc4250275de6818432038dade8056cd19c0f8eb5",
+      "key": "0x21/0x44/0x0A"
+    },
+    "rbil61:INTERRUP.G D-21440B": {
+      "digest": "3098bf7d7a254f820f4d7e2bc53799a8312775187c7826b6462a6d2dce7398e6",
+      "key": "0x21/0x44/0x0B"
+    },
+    "rbil61:INTERRUP.G D-21440D": {
+      "digest": "59c1be973de1f9d693d76127d26a063f0ab758e8df91eae400c4367870f2aa69",
+      "key": "0x21/0x44/0x0D"
+    },
+    "rbil61:INTERRUP.G D-21440E": {
+      "digest": "43ee0e053ecbfb696ab54e2f163e2ce8e783075bf40a7a29a75c367c9824b237",
+      "key": "0x21/0x44/0x0E"
+    },
+    "rbil61:INTERRUP.G D-214411": {
+      "digest": "1264028b764e802afee066ca3c63425a52ccb6e862782c179cebfc1fe98cb076",
+      "key": "0x21/0x44/0x11"
+    },
     "rbil61:INTERRUP.G D-2145": {
       "digest": "b9eb109630e25fe1f43868719e85aebbaefcfd5a573c6a0615295452996057fb",
       "key": "0x21/0x45"
@@ -1497,6 +2081,14 @@
       "digest": "7ce52ddf648c79639944661d8be8812c301b5af07c82eb610eb15e4838caf480",
       "key": "0x21/0x56"
     },
+    "rbil61:INTERRUP.G D-215700": {
+      "digest": "3662a79ce33df4ab66aaba6605e4040dd4c20aeb17432e81325e39b0eb554acb",
+      "key": "0x21/0x57/0x00"
+    },
+    "rbil61:INTERRUP.G D-215701": {
+      "digest": "f9a7ea16baa8acbb101af89d3f2b460a6a514320af3fb738d59e3b4177d5ba6c",
+      "key": "0x21/0x57/0x01"
+    },
     "rbil61:INTERRUP.G D-2158@1": {
       "digest": "e78db811f10bc25f83939384348605317673bc79734a5987b5e14fc9f9c952f6",
       "key": "0x21/0x58"
@@ -1516,6 +2108,18 @@
     "rbil61:INTERRUP.G D-215C": {
       "digest": "fdb82a259c03c02146ddffaf01d63a9a2922ab7d450ca41fc297f9c1ccfecc53",
       "key": "0x21/0x5C"
+    },
+    "rbil61:INTERRUP.G D-215D00": {
+      "digest": "3c351647fea8aee7d95c1101672796b7c013aac7e39f950c52cbf0101c11891c",
+      "key": "0x21/0x5D/0x00"
+    },
+    "rbil61:INTERRUP.G D-215D06": {
+      "digest": "1765e16e1f84d607e998b63dc5bb113050e8f0f0b176d163efec64cb803b3f4a",
+      "key": "0x21/0x5D/0x06"
+    },
+    "rbil61:INTERRUP.H D-215E00": {
+      "digest": "6a32efbd6ef74b34727fd2392640866ec2361baf14fc442a5fbbe1307ebd0daa",
+      "key": "0x21/0x5E/0x00"
     },
     "rbil61:INTERRUP.H D-2160": {
       "digest": "1a6aba32bd479836c3038a4dde9aab8d67156fc7282a34e5873831e7a5f2c280",
@@ -1656,6 +2260,18 @@
     "rbil61:INTERRUP.H D-2173": {
       "digest": "11cb638fb602bbc033142e920666c65d99e881bff54c69ee476e45bf1153c6e8",
       "key": "0x21/0x73"
+    },
+    "rbil61:INTERRUP.H D-217302": {
+      "digest": "8a84976e58be62ea0ab443a1331b551154228e881891ad426037f31e14c5f129",
+      "key": "0x21/0x73/0x02"
+    },
+    "rbil61:INTERRUP.H D-217303": {
+      "digest": "b56c0884e8865420646e2a22fc7eea53f0f3a37dbddae0663295509b9393315b",
+      "key": "0x21/0x73/0x03"
+    },
+    "rbil61:INTERRUP.H D-217305CXFFFF": {
+      "digest": "823f352911a90969854c2e259c8db95132c6bd3bcdaeff8759b4f531840fedeb",
+      "key": "0x21/0x73/0x05"
     }
   },
   "lists": {
@@ -1683,7 +2299,7 @@
       "21",
       "80"
     ],
-    "dosbox-x:src/dos/dos.cpp DOS_21Handler": [
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler, src/dos/dos_ioctl.cpp DOS_IOCTL": [
       "0x21/0x00",
       "0x21/0x01",
       "0x21/0x02",
@@ -1791,6 +2407,8 @@
       "0x21/0x55",
       "0x21/0x56",
       "0x21/0x57",
+      "0x21/0x57/0x00",
+      "0x21/0x57/0x01",
       "0x21/0x58",
       "0x21/0x58/0x00",
       "0x21/0x58/0x01",
@@ -1801,7 +2419,10 @@
       "0x21/0x5B",
       "0x21/0x5C",
       "0x21/0x5D",
+      "0x21/0x5D/0x00",
+      "0x21/0x5D/0x06",
       "0x21/0x5E",
+      "0x21/0x5E/0x00",
       "0x21/0x5F",
       "0x21/0x60",
       "0x21/0x61",
@@ -1854,8 +2475,25 @@
       "0x21/0x71/0xAA",
       "0x21/0x71/0xA9",
       "0x21/0x73",
+      "0x21/0x73/0x00",
+      "0x21/0x73/0x02",
+      "0x21/0x73/0x03",
+      "0x21/0x73/0x05",
       "0x21/0xE0",
-      "0x21/0xEF"
+      "0x21/0xEF",
+      "0x21/0x44/0x00",
+      "0x21/0x44/0x01",
+      "0x21/0x44/0x02",
+      "0x21/0x44/0x03",
+      "0x21/0x44/0x06",
+      "0x21/0x44/0x07",
+      "0x21/0x44/0x08",
+      "0x21/0x44/0x09",
+      "0x21/0x44/0x0A",
+      "0x21/0x44/0x0B",
+      "0x21/0x44/0x0D",
+      "0x21/0x44/0x11",
+      "0x21/0x44/0x0E"
     ]
   }
 }

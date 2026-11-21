@@ -109,10 +109,39 @@ class Handler:
     defines: tuple[str, ...] = ()
 
 
-HANDLERS: tuple[Handler, ...] = (Handler("src/dos/dos.cpp", "DOS_21Handler", 0x21),)
+HANDLERS: tuple[Handler, ...] = (
+    Handler("src/dos/dos.cpp", "DOS_21Handler", 0x21,
+            if_cases=frozenset({0x57, 0x5D, 0x5E, 0x73})),
+    Handler("src/dos/dos_ioctl.cpp", "DOS_IOCTL", 0x21, "reg_al", (0x44,)),
+    Handler("src/ints/int10.cpp", "INT10_Handler", 0x10),
+    Handler("src/ints/bios_int13.cpp", "INT13_DiskHandler", 0x13),
+    Handler("src/ints/bios.cpp", "INT15_Handler", 0x15),
+    Handler("src/ints/bios_keyboard.cpp", "INT16_Handler", 0x16),
+    Handler("src/ints/bios.cpp", "INT1A_Handler", 0x1A),
+    Handler("src/ints/mouse.cpp", "INT33_Handler", 0x33, "reg_ax"),
+    Handler("src/ints/ems.cpp", "INT67_Handler", 0x67),
+    # The XMS driver is called far, with the function in AH: its key is the multiplex number
+    # that finds it (43h) and the function.
+    Handler("src/ints/xms.cpp", "XMS_Handler", 0x43),
+    Handler("src/dos/dos_misc.cpp", "DOS_MultiplexFunctions", 0x2F, "reg_ax"),
+    Handler("src/ints/xms.cpp", "multiplex_xms", 0x2F, "reg_ax"),
+    Handler("src/dos/dos_mscdex.cpp", "MSCDEX_Handler", 0x2F, "reg_ax"),
+)
 #: A list a dictionary names in `complete_against`: the handlers whose keys it holds.
 LIST_HANDLERS: dict[str, tuple[str, ...]] = {
-    "dosbox-x:src/dos/dos.cpp DOS_21Handler": ("DOS_21Handler",),
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler, src/dos/dos_ioctl.cpp DOS_IOCTL":
+        ("DOS_21Handler", "DOS_IOCTL"),
+    "dosbox-x:src/ints/int10.cpp INT10_Handler": ("INT10_Handler",),
+    "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler": ("INT13_DiskHandler",),
+    "dosbox-x:src/ints/bios.cpp INT15_Handler": ("INT15_Handler",),
+    "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler": ("INT16_Handler",),
+    "dosbox-x:src/ints/bios.cpp INT1A_Handler": ("INT1A_Handler",),
+    "dosbox-x:src/ints/mouse.cpp INT33_Handler": ("INT33_Handler",),
+    "dosbox-x:src/ints/ems.cpp INT67_Handler": ("INT67_Handler",),
+    "dosbox-x:src/ints/xms.cpp XMS_Handler": ("XMS_Handler",),
+    "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions, src/ints/xms.cpp multiplex_xms, "
+    "src/dos/dos_mscdex.cpp MSCDEX_Handler":
+        ("DOS_MultiplexFunctions", "multiplex_xms", "MSCDEX_Handler"),
 }
 #: DOSBox-X has no DPMI host (the guest's extender is one), so the sections of the list that
 #: describe the DPMI calls are the list a dictionary of them covers.
