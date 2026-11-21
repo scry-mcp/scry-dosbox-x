@@ -1,20 +1,6 @@
 {
   "format": "scry-knowledge-lock/2",
   "checked": {
-    "ibm-pc:call:0x21/0x00": {
-      "digest": "a673a61850be9abc4f06dcf95c519e8b3b6f272286447c853e10143ae7a97fd5",
-      "by": "K3a1c",
-      "against": [
-        {
-          "ref": "rbil61:INTERRUP.F D-2100",
-          "line": "INT 21 - DOS 1+ - TERMINATE PROGRAM"
-        },
-        {
-          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x00",
-          "line": "        case 0x00:      /* Terminate Program */"
-        }
-      ]
-    },
     "ibm-pc:call:0x21/0x01": {
       "digest": "b094834f271509fd6f34b4795bf30601dda36f2e8f48d7aaf66007722be0aa89",
       "by": "K3a1c",
@@ -124,20 +110,6 @@
         {
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x08",
           "line": "        case 0x08:      /* Direct Character Input, without echo (checks for breaks officially :)*/"
-        }
-      ]
-    },
-    "ibm-pc:call:0x21/0x09": {
-      "digest": "0d8837af5ae49d7248193c6358904dfe3344eb1367b7fb39a859ba894969ffff",
-      "by": "K3a1c",
-      "against": [
-        {
-          "ref": "rbil61:INTERRUP.F D-2109",
-          "line": "INT 21 - DOS 1+ - WRITE STRING TO STANDARD OUTPUT"
-        },
-        {
-          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x09",
-          "line": "        case 0x09:      /* Write string to STDOUT */"
         }
       ]
     },
@@ -583,20 +555,6 @@
         }
       ]
     },
-    "ibm-pc:call:0x21/0x28": {
-      "digest": "54a20f707397e71c4cb4d70893dfa40e8a477f99a0459d29bd5535f45eb3d891",
-      "by": "K3a1c",
-      "against": [
-        {
-          "ref": "rbil61:INTERRUP.F D-2128",
-          "line": "INT 21 - DOS 1+ - RANDOM BLOCK WRITE TO FCB FILE"
-        },
-        {
-          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x28",
-          "line": "        case 0x28:      /* Random Block write to FCB */"
-        }
-      ]
-    },
     "ibm-pc:call:0x21/0x29": {
       "digest": "993b5c9622cfbe3efa96fe521f52c10066467d3ee53beb14f8fe48050ad49f56",
       "by": "K3a1c",
@@ -824,20 +782,6 @@
         {
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 5",
           "line": "\t\tcase 5:reg_dl=3;break; /* Drive C: (TODO: Make configurable, or else initially set to Z: then re-set to the first drive mounted */"
-        }
-      ]
-    },
-    "ibm-pc:call:0x21/0x33/0x06": {
-      "digest": "7403d27cbe43e46b050f7e9fc9b97eb94c86b95ee9a560f0e579fa1a20fc1db1",
-      "by": "K3a1c",
-      "against": [
-        {
-          "ref": "rbil61:INTERRUP.F D-213306",
-          "line": "INT 21 - DOS 5+ - GET TRUE VERSION NUMBER"
-        },
-        {
-          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 6",
-          "line": "                case 6:                                         /* Get true version number */"
         }
       ]
     },
@@ -1530,16 +1474,6 @@
         {
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5d",
           "line": "        case 0x5d:                  /* Network Functions */"
-        }
-      ]
-    },
-    "ibm-pc:call:0x21/0x5E": {
-      "digest": "dc23764a8277afdce06e6591f99d24c541642693d230ae1e1ad9b05bd2d6393d",
-      "by": "K3a1c",
-      "against": [
-        {
-          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e",
-          "line": "        case 0x5e:                  /* Network and printer functions */"
         }
       ]
     },
@@ -2680,16 +2614,6 @@
         {
           "ref": "rbil61:INTERRUP.G #01680 40h (64)",
           "line": " 40h (64)  network name was deleted"
-        }
-      ]
-    },
-    "ibm-pc:error:65": {
-      "digest": "c07726bba21ce43369220fe340897192b4b141e71b46599dbe97bcad2d5578ab",
-      "by": "K3a1c",
-      "against": [
-        {
-          "ref": "rbil61:INTERRUP.G #01680 41h (65)",
-          "line": " 41h (65)  network: Access denied"
         }
       ]
     },

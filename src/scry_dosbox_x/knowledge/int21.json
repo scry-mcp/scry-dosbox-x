@@ -10,7 +10,7 @@
       "key": "0x21/0x00",
       "name": "terminate program",
       "description": "Ends the program with return code 00h; DOS 2+ programs should use AH=4Ch instead.",
-      "behaviour": "CS is the PSP segment. The emulator passes DOS_Terminate the PSP segment it reads from the stack word above the return IP (the caller's CS), with return code 0, and clears the running program's name and arguments. If SP is above 0xFFFA it pops IP, CS and flags and uses the popped CS.",
+      "behaviour": "Terminates the PSP segment in the stack word above the return IP (the caller's CS), with return code 0; with SP above FFFAh it pops IP, CS and flags and uses that CS. In a DOS 7+ guest with long file names and a stack matching DIR /S's it ends the current PSP instead. Its name and arguments are cleared.",
       "sources": [
         {
           "role": "documentation",
@@ -22,22 +22,7 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x00",
           "cites": "        case 0x00:      /* Terminate Program */"
         }
-      ],
-      "checked": {
-        "by": "K3a1c",
-        "writer": "K3a1",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.F D-2100",
-            "line": "INT 21 - DOS 1+ - TERMINATE PROGRAM"
-          },
-          {
-            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x00",
-            "line": "        case 0x00:      /* Terminate Program */"
-          }
-        ],
-        "digest": "a673a61850be9abc4f06dcf95c519e8b3b6f272286447c853e10143ae7a97fd5"
-      }
+      ]
     },
     {
       "key": "0x21/0x01",
@@ -307,7 +292,7 @@
       "key": "0x21/0x09",
       "name": "write string",
       "description": "Writes the '$'-terminated string at DS:DX to standard output.",
-      "behaviour": "Returns AL = 24h, the '$' (the docs say nothing is returned). The emulator writes each byte from DS:DX up to the '$' to STDOUT. It skips the write when the string is one of the Windows-only program notices (such as 'This program cannot be run in DOS mode.') and its winautorun and startquiet settings call for it.",
+      "behaviour": "Returns AL = 24h, the '$' (the list says nothing is returned). The emulator writes each byte from DS:DX up to the '$' to STDOUT. It skips the write only for one of three Windows-only program notices (such as 'This program cannot be run in DOS mode.') when winautorun and startquiet are on and secure mode is off.",
       "sources": [
         {
           "role": "documentation",
@@ -319,22 +304,7 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x09",
           "cites": "        case 0x09:      /* Write string to STDOUT */"
         }
-      ],
-      "checked": {
-        "by": "K3a1c",
-        "writer": "K3a1",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.F D-2109",
-            "line": "INT 21 - DOS 1+ - WRITE STRING TO STANDARD OUTPUT"
-          },
-          {
-            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x09",
-            "line": "        case 0x09:      /* Write string to STDOUT */"
-          }
-        ],
-        "digest": "0d8837af5ae49d7248193c6358904dfe3344eb1367b7fb39a859ba894969ffff"
-      }
+      ]
     },
     {
       "key": "0x21/0x0A",
@@ -1223,7 +1193,7 @@
       "key": "0x21/0x21",
       "name": "fcb random read",
       "description": "Reads the record at the FCB's random record number into the disk transfer area.",
-      "behaviour": "DS:DX points at the opened FCB. AL is the status DOS_FCBRandomRead returns for one record: 00h successful, 01h no data, 03h partial record read. The file position is not updated.",
+      "behaviour": "DS:DX points at the opened FCB. The current block and record are set from the random record field, one record is read into the DTA, and they stay at that record; the random record field is unchanged. AL is 00h successful, 01h no data, 03h partial record read.",
       "differs": "The list also gives 02h, segment wrap in the DTA; the FCB helpers in src/dos/dos_files.cpp (FCB_SUCCESS, FCB_READ_NODATA, FCB_READ_PARTIAL) never return it.",
       "sources": [
         {
@@ -1242,7 +1212,7 @@
       "key": "0x21/0x22",
       "name": "fcb random write",
       "description": "Writes the record in the disk transfer area at the FCB's random record number.",
-      "behaviour": "DS:DX points at the opened FCB. AL is the status DOS_FCBRandomWrite returns for one record: 00h successful, 01h for any failure. The file position is not updated.",
+      "behaviour": "DS:DX points at the opened FCB. The current block and record are set from the random record field, one record is written from the DTA, and they stay at that record; the random record field is unchanged. AL is 00h successful, 01h for any failure.",
       "differs": "The list gives 01h as disk full and also 02h, segment wrap in the DTA; the FCB helpers in src/dos/dos_files.cpp return 01h (FCB_ERR_WRITE) for every failure and never 02h.",
       "sources": [
         {
@@ -1427,7 +1397,7 @@
       "key": "0x21/0x28",
       "name": "fcb block write",
       "description": "Writes CX records from the disk transfer area to the opened FCB at DS:DX.",
-      "behaviour": "AL is the status DOS_FCBRandomWrite returns: 00h successful, 01h for any failure. CX is passed by reference and returns the records written. The file position is updated.",
+      "behaviour": "AL is 00h successful, 01h for any failure. The current record starts at the random record field and is left after the last record written, the random record field follows it, and CX returns the records written. With CX=0 it writes zero bytes at the random record's position and updates the FCB's size, date and time.",
       "differs": "The list gives 01h as disk full or file read-only and also 02h, segment wrap in the DTA; the FCB helpers in src/dos/dos_files.cpp return 01h (FCB_ERR_WRITE) for every failure, never 02h.",
       "sources": [
         {
@@ -1440,22 +1410,7 @@
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x28",
           "cites": "        case 0x28:      /* Random Block write to FCB */"
         }
-      ],
-      "checked": {
-        "by": "K3a1c",
-        "writer": "K3a1",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.F D-2128",
-            "line": "INT 21 - DOS 1+ - RANDOM BLOCK WRITE TO FCB FILE"
-          },
-          {
-            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x28",
-            "line": "        case 0x28:      /* Random Block write to FCB */"
-          }
-        ],
-        "digest": "54a20f707397e71c4cb4d70893dfa40e8a477f99a0459d29bd5535f45eb3d891"
-      }
+      ]
     },
     {
       "key": "0x21/0x29",
@@ -2006,8 +1961,8 @@
     {
       "key": "0x21/0x33/0x06",
       "name": "get true version",
-      "description": "Returns the true DOS version, which SETVER cannot change.",
-      "behaviour": "Returns BL = major, BH = minor, DL = revision, and DH = 10h when DOS is in the HMA, else 00h.",
+      "description": "Returns the DOS version numbers and whether DOS is in the HMA.",
+      "behaviour": "Returns BL = major, BH = minor, DL = revision, and DH = 10h when DOS is in the HMA, else 00h. These are the numbers AH=30h returns in AL and AH.",
       "sources": [
         {
           "role": "documentation",
@@ -2020,21 +1975,7 @@
           "cites": "                case 6:                                         /* Get true version number */"
         }
       ],
-      "checked": {
-        "by": "K3a1c",
-        "writer": "K3a1",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.F D-213306",
-            "line": "INT 21 - DOS 5+ - GET TRUE VERSION NUMBER"
-          },
-          {
-            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 6",
-            "line": "                case 6:                                         /* Get true version number */"
-          }
-        ],
-        "digest": "7403d27cbe43e46b050f7e9fc9b97eb94c86b95ee9a560f0e579fa1a20fc1db1"
-      }
+      "differs": "The list says this call returns the true version, which SETVER can leave different from AH=30h; the emulator returns the same version AH=30h does."
     },
     {
       "key": "0x21/0x33/0x07",
@@ -2773,8 +2714,8 @@
     {
       "key": "0x21/0x44",
       "name": "ioctl",
-      "description": "Device control: AL selects the subfunction, BX holds the handle.",
-      "behaviour": "The emulator hands the call to DOS_IOCTL. CF is clear on success; on failure CF is set and AX = the DOS error code.",
+      "description": "Device control: AL selects the subfunction; most take a handle in BX, the drive ones a drive in BL.",
+      "behaviour": "The emulator hands the call to DOS_IOCTL. A handle in BX is used by AL=00h to 03h, 06h, 07h, 0Ah, 0Ch and 10h, a drive in BL by 08h, 09h, 0Dh, 0Eh and 11h, none by 0Bh; an AL above 11h returns error 01h. CF is clear on success; on failure CF is set and AX holds the DOS error.",
       "sources": [
         {
           "role": "emulator",
@@ -3693,25 +3634,14 @@
       "key": "0x21/0x5E",
       "name": "network printer fns",
       "description": "Gets the machine name (AL=00h) when a network redirector is available.",
-      "behaviour": "On success it writes the host name, padded with spaces to 15 characters, at DS:DX, returns CX=01FFh and clears CF. If AL is not 00h, or no redirector answers, it returns AL=01h and sets CF.",
+      "behaviour": "Only AL=00h is served, and only with secure mode off, a network redirector (the emulator's option, or INT 2Fh AX=1100h answering AL=FFh) and a readable host name: it writes the name at DS:DX, returns CX=01FFh and clears CF. Every other case, any other AL included, returns AL=01h with CF set.",
       "sources": [
         {
           "role": "emulator",
           "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e",
           "cites": "        case 0x5e:                  /* Network and printer functions */"
         }
-      ],
-      "checked": {
-        "by": "K3a1c",
-        "writer": "K3a1",
-        "against": [
-          {
-            "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e",
-            "line": "        case 0x5e:                  /* Network and printer functions */"
-          }
-        ],
-        "digest": "dc23764a8277afdce06e6591f99d24c541642693d230ae1e1ad9b05bd2d6393d"
-      }
+      ]
     },
     {
       "key": "0x21/0x5F",
@@ -4123,7 +4053,7 @@
       "key": "0x21/0x65/0x21",
       "name": "capitalize string",
       "description": "Capitalizes the CX characters at DS:DX in place.",
-      "behaviour": "CF is clear. A length over the emulator's copy buffer stops the emulator with an error. In UTF-8 names mode a character from 80h up is left as it is.",
+      "behaviour": "CF is clear. The CX characters at DS:DX are upper-cased in place, and a CX of 0 changes nothing; in UTF-8 names mode a character from 80h up is left as it is. The emulator's 64 KB copy buffer holds any CX a 16-bit register can carry.",
       "sources": [
         {
           "role": "emulator",
@@ -4136,7 +4066,7 @@
       "key": "0x21/0x65/0x22",
       "name": "capitalize asciiz",
       "description": "Capitalizes the ASCIZ string at DS:DX in place.",
-      "behaviour": "CF is clear. A string over the emulator's copy buffer stops the emulator with an error. In UTF-8 names mode a character from 80h up is left as it is.",
+      "behaviour": "CF is clear. The ASCIZ string at DS:DX is upper-cased in place; in UTF-8 names mode a character from 80h up is left as it is. A string with no NUL in its first 1024 bytes is left unchanged.",
       "sources": [
         {
           "role": "emulator",
@@ -4600,7 +4530,7 @@
       "key": "0x21/0x71",
       "name": "long filename fns",
       "description": "Windows 95 long file name functions, selected by AL.",
-      "behaviour": "With long file names off the emulator returns AX=7100h and sets CF. If the name is not valid UTF-8 in UTF-8 mode it returns AX=0002h and sets CF. An AL it has no routine for returns AX=7100h and sets CF.",
+      "behaviour": "With long file names off it returns AX=7100h with CF set. With them on, in UTF-8 names mode, AL=39h, 3Ah, 3Bh, 41h, 43h, 4Eh, 56h (both names), 60h, 6Ch and A8h return AX=0002h with CF set when the name is not valid UTF-8. An AL with no routine, A9h included, returns AX=7100h with CF set.",
       "sources": [
         {
           "role": "documentation",
@@ -4783,7 +4713,7 @@
       "key": "0x21/0x71/0x47",
       "name": "lfn get cwd",
       "description": "Returns the current directory of the drive in DL.",
-      "behaviour": "With long file names on, the emulator runs its DOS_Int21_7147 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "behaviour": "With long file names off it returns AX=7100h with CF set. With them on it writes the current directory of drive DL (0 is the default) at DS:SI as an ASCIZ long name, with AX=0 and CF clear, or returns the DOS error in AX with CF set. The UTF-8 name check does not apply.",
       "sources": [
         {
           "role": "documentation",
@@ -4834,7 +4764,7 @@
       "key": "0x21/0x71/0x4F",
       "name": "lfn find next",
       "description": "Finds the next file of the search the handle in BX names.",
-      "behaviour": "With long file names on, the emulator runs its DOS_Int21_714f routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "behaviour": "With long file names off it returns AX=7100h with CF set. With them on, BX is the search handle (0 or unopened: AX=0006h, CF set). It fills the find-data record at ES:DI (SI selects the time format), sets CX to the conversion flags and AX=4F00h plus the handle with CF clear, or returns the DOS error with CF set.",
       "sources": [
         {
           "role": "documentation",
@@ -4918,7 +4848,7 @@
       "key": "0x21/0x71/0xA0",
       "name": "lfn volume info",
       "description": "Returns information about the volume whose root the ASCIZ name at DS:DX gives.",
-      "behaviour": "With long file names on, the emulator runs its DOS_Int21_71a0 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "behaviour": "With long file names off it returns AX=7100h with CF set. With them on it canonicalizes the name at DS:DX: on success BX=4006h, CX=00FFh, DX=0104h, AX=0, CF clear, and if CX was above 3 it writes 'FAT' at ES:DI; a failure returns the DOS error with CF set. The UTF-8 name check does not apply.",
       "sources": [
         {
           "role": "documentation",
@@ -4936,7 +4866,7 @@
       "key": "0x21/0x71/0xA1",
       "name": "lfn find close",
       "description": "Ends the directory search the handle in BX names.",
-      "behaviour": "With long file names on, the emulator runs its DOS_Int21_71a1 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "behaviour": "With long file names off it returns AX=7100h with CF set. With them on, BX is the search handle: 0 or an unopened handle returns AX=0006h with CF set. Otherwise it ends the search, drops the handle from the program's handle table and frees the file object when its last reference goes, with AX=0 and CF clear.",
       "sources": [
         {
           "role": "documentation",
@@ -4954,7 +4884,7 @@
       "key": "0x21/0x71/0xA6",
       "name": "lfn file info by handle",
       "description": "Returns information about the file handle in BX.",
-      "behaviour": "With long file names on, the emulator runs its DOS_Int21_71a6 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "behaviour": "With long file names off it returns AX=7100h with CF set. With them on, BX is the handle; DS:DX receives 52 bytes: attribute (directory or archive), creation, access and write FILETIMEs of the host file, volume serial (1234h unless the drive gives one), size, link count and handle. A bad handle returns AX=0006h, CF set.",
       "sources": [
         {
           "role": "documentation",
@@ -5038,7 +4968,7 @@
       "key": "0x21/0x71/0xA7",
       "name": "lfn time convert",
       "description": "Converts between a file time and a DOS time, by BL.",
-      "behaviour": "With long file names on, the emulator runs its DOS_Int21_71a7 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "behaviour": "With long file names off it returns AX=7100h with CF set. With them on, BL=00h converts the FILETIME at DS:SI to CX=time, DX=date and BH=hundredths; BL=01h converts DX, CX and BH to a FILETIME at ES:DI; both return AX=0 with CF clear. Any other BL ends the emulator with an error.",
       "sources": [
         {
           "role": "documentation",
@@ -5056,7 +4986,7 @@
       "key": "0x21/0x71/0xAA",
       "name": "lfn subst",
       "description": "Creates, terminates or queries a SUBST, by BH.",
-      "behaviour": "With long file names on, the emulator runs its DOS_Int21_71aa routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "behaviour": "With long file names off it returns AX=7100h with CF set. With them on, BH selects: 0 creates a SUBST of drive BL (1 to 26) to the path at DS:DX, 1 ends it, 2 writes a local-directory drive's path at DS:DX; refusals give AX=000Fh, 0003h or 0005h with CF set. Another BH ends the emulator.",
       "sources": [
         {
           "role": "documentation",

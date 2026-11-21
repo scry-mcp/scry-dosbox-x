@@ -1518,26 +1518,15 @@
     {
       "key": "65",
       "name": "net access denied",
-      "description": "DOS extended error code 65: network: access denied; also codepage switching not possible (DOS 3.0+).",
-      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "description": "DOS extended error code 65: network: access denied; also, DOS 3.0+ (the list is unsure it is 3.3+), codepage switching not possible.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24, and refers to INT 21h AX=6602h and INT 2Fh AX=AD42h for the codepage meaning.",
       "sources": [
         {
           "role": "documentation",
           "ref": "rbil61:INTERRUP.G #01680 41h (65)",
           "cites": " 41h (65)  network: Access denied"
         }
-      ],
-      "checked": {
-        "by": "K3a1c",
-        "writer": "K3a1",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.G #01680 41h (65)",
-            "line": " 41h (65)  network: Access denied"
-          }
-        ],
-        "digest": "c07726bba21ce43369220fe340897192b4b141e71b46599dbe97bcad2d5578ab"
-      }
+      ]
     },
     {
       "key": "66",
