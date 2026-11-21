@@ -192,22 +192,7 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1216",
           "cites": "\tcase 0x1216:\t/* GET ADDRESS OF SYSTEM FILE TABLE ENTRY */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.K D-2F1216",
-            "line": "INT 2F U - DOS 3.0+ internal - GET ADDRESS OF SYSTEM FILE TABLE ENTRY"
-          },
-          {
-            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1216",
-            "line": "\tcase 0x1216:\t/* GET ADDRESS OF SYSTEM FILE TABLE ENTRY */"
-          }
-        ],
-        "digest": "b1cd9547c9fa56340282f8d5f054ba51d42c9ebbcea9f3eecdecb38cd9eec6e2"
-      }
+      ]
     },
     {
       "key": "0x2F/0x13/0x00",
@@ -423,22 +408,7 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1611",
           "cites": "    case 0x1611:    /* Get shell parameters */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.L D-2F1611",
-            "line": "INT 2F U - MS-DOS 7 kernel - GET SHELL PARAMETERS"
-          },
-          {
-            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1611",
-            "line": "    case 0x1611:    /* Get shell parameters */"
-          }
-        ],
-        "digest": "86123b36a34ded4019ae8ad414e08887e2eab0c799a7a607ff308bc67c272c4c"
-      }
+      ]
     },
     {
       "key": "0x2F/0x16/0x12",
@@ -576,22 +546,7 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1689",
           "cites": "\tcase 0x1689:\t/*  Kernel IDLE CALL */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.L W-2F1689",
-            "line": "INT 2F U - MS Windows 3.0+ - KERNEL IDLE CALL"
-          },
-          {
-            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1689",
-            "line": "\tcase 0x1689:\t/*  Kernel IDLE CALL */"
-          }
-        ],
-        "digest": "fa0d3164b650a3949acca645386460bce0bcbd579a05ee393e41e905103f5d30"
-      }
+      ]
     },
     {
       "key": "0x2F/0x16/0x8F",
@@ -727,22 +682,7 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1703",
           "cites": "\tcase 0x1703:"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.L W-2F1703",
-            "line": "INT 2F - MS Windows \"WINOLDAP\" - SET CLIPBOARD DATA"
-          },
-          {
-            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1703",
-            "line": "\tcase 0x1703:"
-          }
-        ],
-        "digest": "95eefee1cdb816713cbc0ce54968df3699576b2ac25605f73397dac6ad157c60"
-      }
+      ]
     },
     {
       "key": "0x2F/0x17/0x04",

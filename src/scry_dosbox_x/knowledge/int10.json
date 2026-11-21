@@ -419,22 +419,7 @@
           "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x0A",
           "cites": "\tcase 0x0A:\t\t\t\t\t\t\t\t/* Write Character at cursor CX times */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.A V-100A",
-            "line": "INT 10 - VIDEO - WRITE CHARACTER ONLY AT CURSOR POSITION"
-          },
-          {
-            "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x0A",
-            "line": "\tcase 0x0A:\t\t\t\t\t\t\t\t/* Write Character at cursor CX times */"
-          }
-        ],
-        "digest": "2d8c932f92560aca390196080c485530b35abd61b61162c333a9fdd4edcca251"
-      }
+      ]
     },
     {
       "key": "0x10/0x0B",
@@ -508,22 +493,7 @@
           "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x0E",
           "cites": "\tcase 0x0E:\t\t\t\t\t\t\t\t/* Teletype OutPut */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.A V-100E",
-            "line": "INT 10 - VIDEO - TELETYPE OUTPUT"
-          },
-          {
-            "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x0E",
-            "line": "\tcase 0x0E:\t\t\t\t\t\t\t\t/* Teletype OutPut */"
-          }
-        ],
-        "digest": "7aafa616d55f7731bf7e09d9692a94f1b173fc1d754fc84ae9fd0bab356ec94b"
-      }
+      ]
     },
     {
       "key": "0x10/0x0F",
@@ -1152,18 +1122,7 @@
           "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11",
           "cites": "\tcase 0x11:\t\t\t\t\t\t\t\t/* Character generator functions */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11",
-            "line": "\tcase 0x11:\t\t\t\t\t\t\t\t/* Character generator functions */"
-          }
-        ],
-        "digest": "68a3e5392f67e04c0f8636ac833129a18d369347ac3ec7655da60e66dac6564e"
-      }
+      ]
     },
     {
       "key": "0x10/0x11/0x00",
@@ -1426,22 +1385,7 @@
           "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x21",
           "cites": "\t\tcase 0x21:\t\t\t/* Set user graphics characters */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.A V-101121",
-            "line": "INT 10 - VIDEO - GRAPH-MODE CHARGEN - SET USER GRAPHICS CHARACTERS (PS,EGA,VGA)"
-          },
-          {
-            "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x21",
-            "line": "\t\tcase 0x21:\t\t\t/* Set user graphics characters */"
-          }
-        ],
-        "digest": "0a5a8872469771a819db71e7457c709c553c4d2867f16867c4b760981551c09f"
-      }
+      ]
     },
     {
       "key": "0x10/0x11/0x22",
@@ -1459,22 +1403,7 @@
           "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x22",
           "cites": "\t\tcase 0x22:\t\t\t/* Rom 8x14 set */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.A V-101122",
-            "line": "INT 10 - VIDEO - GRAPH-MODE CHARGEN - SET ROM 8x14 GRAPHICS CHARS (PS,EGA,VGA)"
-          },
-          {
-            "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x22",
-            "line": "\t\tcase 0x22:\t\t\t/* Rom 8x14 set */"
-          }
-        ],
-        "digest": "b731b7990c06268c43ddc8022552b4b0bda5605f6af5569561b5126c9188a08c"
-      }
+      ]
     },
     {
       "key": "0x10/0x11/0x23",
@@ -1492,22 +1421,7 @@
           "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x23",
           "cites": "\t\tcase 0x23:\t\t\t/* Rom 8x8 double dot set */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.A V-101123",
-            "line": "INT 10 - VIDEO - GRAPH-MODE CHARGEN - SET ROM 8x8 DOUBLE-DOT CHARS (PS,EGA,VGA)"
-          },
-          {
-            "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x23",
-            "line": "\t\tcase 0x23:\t\t\t/* Rom 8x8 double dot set */"
-          }
-        ],
-        "digest": "69f5a927ccf304c41fec1ac7461e5ceff6ba916d3992e9014072e32e42fb4601"
-      }
+      ]
     },
     {
       "key": "0x10/0x11/0x24",
@@ -1730,18 +1644,7 @@
           "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x1A",
           "cites": "\tcase 0x1A:\t\t\t\t\t\t\t\t/* Display Combination */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x1A",
-            "line": "\tcase 0x1A:\t\t\t\t\t\t\t\t/* Display Combination */"
-          }
-        ],
-        "digest": "1ccc0c286be755902cb22f03c9fa38e4d462ead841540f591a70595da2b4210a"
-      }
+      ]
     },
     {
       "key": "0x10/0x1B",
@@ -2512,18 +2415,7 @@
           "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x83",
           "cites": "\tcase 0x83:// Read the video RAM address and virtual text video RAM"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x83",
-            "line": "\tcase 0x83:// Read the video RAM address and virtual text video RAM"
-          }
-        ],
-        "digest": "2b3aec06342df35d0feb07cf14f74f3f1e99a25c31f9d016f004d8268e6bb3b0"
-      }
+      ]
     },
     {
       "key": "0x10/0x83/0x00",
@@ -2536,18 +2428,7 @@
           "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x83 case 0x00",
           "cites": "\t\tcase 0x00:"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x83 case 0x00",
-            "line": "\t\tcase 0x00:"
-          }
-        ],
-        "digest": "f53875b77cf3bc583f32b8b7e034fb7472ca2ac790e3280ff62f182997d6243b"
-      }
+      ]
     },
     {
       "key": "0x10/0x85",

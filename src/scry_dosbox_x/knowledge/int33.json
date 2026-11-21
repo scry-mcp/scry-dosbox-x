@@ -47,22 +47,7 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x01",
           "cites": "    case 0x01:  /* MS MOUSE v1.0+ - SHOW MOUSE CURSOR */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.N M-330001",
-            "line": "INT 33 - MS MOUSE v1.0+ - SHOW MOUSE CURSOR"
-          },
-          {
-            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x01",
-            "line": "    case 0x01:  /* MS MOUSE v1.0+ - SHOW MOUSE CURSOR */"
-          }
-        ],
-        "digest": "b5a5a2f9f5950a1ef3ecef06e393168d8593a4e37619fe2009e08081bc503239"
-      }
+      ]
     },
     {
       "key": "0x33/0x00/0x02",
@@ -83,22 +68,7 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x02",
           "cites": "    case 0x02:  /* MS MOUSE v1.0+ - HIDE MOUSE CURSOR */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.N M-330002",
-            "line": "INT 33 - MS MOUSE v1.0+ - HIDE MOUSE CURSOR"
-          },
-          {
-            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x02",
-            "line": "    case 0x02:  /* MS MOUSE v1.0+ - HIDE MOUSE CURSOR */"
-          }
-        ],
-        "digest": "018fe790fe587bd209eef28211c553769861bf6860dc5af9b65288009d09b3e6"
-      }
+      ]
     },
     {
       "key": "0x33/0x00/0x03",
@@ -119,22 +89,7 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x03",
           "cites": "    case 0x03:  /* MS MOUSE v1.0+ - RETURN POSITION AND BUTTON STATUS */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.N M-330003",
-            "line": "INT 33 - MS MOUSE v1.0+ - RETURN POSITION AND BUTTON STATUS"
-          },
-          {
-            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x03",
-            "line": "    case 0x03:  /* MS MOUSE v1.0+ - RETURN POSITION AND BUTTON STATUS */"
-          }
-        ],
-        "digest": "5d451abc34c57a054aadecdea7fbf960263e036afb73568e77186081f253d24e"
-      }
+      ]
     },
     {
       "key": "0x33/0x00/0x04",
@@ -191,22 +146,7 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x05",
           "cites": "    case 0x05:  /* MS MOUSE v1.0+ - RETURN BUTTON PRESS DATA */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.N M-330005",
-            "line": "INT 33 - MS MOUSE v1.0+ - RETURN BUTTON PRESS DATA"
-          },
-          {
-            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x05",
-            "line": "    case 0x05:  /* MS MOUSE v1.0+ - RETURN BUTTON PRESS DATA */"
-          }
-        ],
-        "digest": "bb1b5729115b65cbca54c369ccfc3cd81aa8aa05e9c9a3938cb85976a0a958c5"
-      }
+      ]
     },
     {
       "key": "0x33/0x00/0x06",
@@ -227,22 +167,7 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x06",
           "cites": "    case 0x06:  /* MS MOUSE v1.0+ - RETURN BUTTON RELEASE DATA */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.N M-330006",
-            "line": "INT 33 - MS MOUSE v1.0+ - RETURN BUTTON RELEASE DATA"
-          },
-          {
-            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x06",
-            "line": "    case 0x06:  /* MS MOUSE v1.0+ - RETURN BUTTON RELEASE DATA */"
-          }
-        ],
-        "digest": "905b9fb178de2e0132ea918ab6276ea30e3f1704e6e371e71eaee8a25be46534"
-      }
+      ]
     },
     {
       "key": "0x33/0x00/0x07",
@@ -264,22 +189,7 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x07",
           "cites": "    case 0x07:  /* MS MOUSE v1.0+ - DEFINE HORIZONTAL CURSOR RANGE */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.N M-330007",
-            "line": "INT 33 - MS MOUSE v1.0+ - DEFINE HORIZONTAL CURSOR RANGE"
-          },
-          {
-            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x07",
-            "line": "    case 0x07:  /* MS MOUSE v1.0+ - DEFINE HORIZONTAL CURSOR RANGE */"
-          }
-        ],
-        "digest": "5f016a6f8a23275871373fb75c6dc5b9403190bd3017e3d7657a5e744b69f520"
-      }
+      ]
     },
     {
       "key": "0x33/0x00/0x08",
@@ -301,22 +211,7 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x08",
           "cites": "    case 0x08:  /* MS MOUSE v1.0+ - DEFINE VERTICAL CURSOR RANGE */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.N M-330008",
-            "line": "INT 33 - MS MOUSE v1.0+ - DEFINE VERTICAL CURSOR RANGE"
-          },
-          {
-            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x08",
-            "line": "    case 0x08:  /* MS MOUSE v1.0+ - DEFINE VERTICAL CURSOR RANGE */"
-          }
-        ],
-        "digest": "56b23eaa762b8c61808c3c34aa88f3c192d7abad13636b7dd930cf8917c312e4"
-      }
+      ]
     },
     {
       "key": "0x33/0x00/0x09",
@@ -1343,22 +1238,7 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x26",
           "cites": "    case 0x26:  /* MS MOUSE v6.26+ - GET MAXIMUM VIRTUAL COORDINATES */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.N M-330026@1",
-            "line": "INT 33 - MS MOUSE v6.26+ - GET MAXIMUM VIRTUAL COORDINATES"
-          },
-          {
-            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x26",
-            "line": "    case 0x26:  /* MS MOUSE v6.26+ - GET MAXIMUM VIRTUAL COORDINATES */"
-          }
-        ],
-        "digest": "a5c61c834f3dc7b15b863ab6d2ecc7eca57a95637b52ee8099bd5f89750bec82"
-      }
+      ]
     },
     {
       "key": "0x33/0x00/0x27",

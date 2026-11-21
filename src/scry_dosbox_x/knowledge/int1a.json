@@ -348,18 +348,7 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1",
           "cites": "    case 0xb1:      /* PCI Bios Calls */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1",
-            "line": "    case 0xb1:      /* PCI Bios Calls */"
-          }
-        ],
-        "digest": "8d0351ac9fc5f24ed8d09a8d53d384409ac14ab575ea2135c2bc902e68487222"
-      }
+      ]
     },
     {
       "key": "0x1A/0xB1/0x01",

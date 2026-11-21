@@ -18,6 +18,7 @@ from scry_dosbox_x.knowledge.support import PINS, SUPPORT
 ROOT = Path(__file__).resolve().parent.parent
 INDEX = ROOT / "tests" / "fixtures" / "knowledge" / "sources.json"
 LOCK = ROOT / "src" / "scry_dosbox_x" / "knowledge.lock.json"
+SECOND_CHECK = ROOT / "src" / "scry_dosbox_x" / "knowledge.second-check.json"
 
 
 def committed_index(base: Base) -> SourceIndex:
@@ -61,6 +62,15 @@ class TestPcKnowledge(conformance.KnowledgeContract):
     @pytest.fixture
     def subject(self) -> PcKnowledge:
         return PcKnowledge()
+
+
+def test_the_second_check_names_only_entries_still_sealed_at_the_digest_it_confirmed() -> None:
+    rows = json.loads(SECOND_CHECK.read_text(encoding="utf-8"))["checked"]
+    sealed = {entry.id: entry.checked for entry in PcKnowledge().base().entries()}
+    assert rows
+    for entry_id, row in rows.items():
+        check = sealed.get(entry_id)
+        assert check is not None and check.digest == row["digest"], entry_id
 
 
 def test_the_pins_of_the_index_are_the_ones_the_server_declares() -> None:

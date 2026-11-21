@@ -479,18 +479,7 @@
           "ref": "rbil61:INTERRUP.N E-310102",
           "cites": "INT 31 P - DPMI 0.9+ - RESIZE DOS MEMORY BLOCK"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.N E-310102",
-            "line": "INT 31 P - DPMI 0.9+ - RESIZE DOS MEMORY BLOCK"
-          }
-        ],
-        "digest": "244eb11c7274ed8ca3d7d59eb78bd7ef14b9cfcd7110c2bcb1abba755b16f3f2"
-      }
+      ]
     },
     {
       "key": "0x31/0x02/0x00",
@@ -791,18 +780,7 @@
           "ref": "rbil61:INTERRUP.N E-310301",
           "cites": "INT 31 P - DPMI 0.9+ - CALL REAL MODE PROCEDURE WITH FAR RETURN FRAME"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.N E-310301",
-            "line": "INT 31 P - DPMI 0.9+ - CALL REAL MODE PROCEDURE WITH FAR RETURN FRAME"
-          }
-        ],
-        "digest": "2e28dba44be5194e9b78d3e556758d6a30d4733ae8bd2bfa87683f1d747dacda"
-      }
+      ]
     },
     {
       "key": "0x31/0x03/0x02",
@@ -1023,18 +1001,7 @@
           "ref": "rbil61:INTERRUP.N E-310501",
           "cites": "INT 31 P - DPMI 0.9+ - ALLOCATE MEMORY BLOCK"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.N E-310501",
-            "line": "INT 31 P - DPMI 0.9+ - ALLOCATE MEMORY BLOCK"
-          }
-        ],
-        "digest": "3c6e2943c50b7ddbed65f57ec239c32c57df52c75d927cdcfe390cd390802a12"
-      }
+      ]
     },
     {
       "key": "0x31/0x05/0x02",

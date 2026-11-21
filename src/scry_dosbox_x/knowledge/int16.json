@@ -22,22 +22,7 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x00",
           "cites": "    case 0x00: /* GET KEYSTROKE */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.D B-1600",
-            "line": "INT 16 - KEYBOARD - GET KEYSTROKE"
-          },
-          {
-            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x00",
-            "line": "    case 0x00: /* GET KEYSTROKE */"
-          }
-        ],
-        "digest": "80b39310816212bb2885e5895bcfd4be8d6bec18fa6f6f2e7e099ef4781666ec"
-      }
+      ]
     },
     {
       "key": "0x16/0x10",
@@ -55,22 +40,7 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x10",
           "cites": "    case 0x10: /* GET KEYSTROKE (enhanced keyboards only) */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.D B-1610",
-            "line": "INT 16 - KEYBOARD - GET ENHANCED KEYSTROKE (enhanced kbd support only)"
-          },
-          {
-            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x10",
-            "line": "    case 0x10: /* GET KEYSTROKE (enhanced keyboards only) */"
-          }
-        ],
-        "digest": "7ae115d7e57097820c81b16bdce745aa6a7b7fc472c7bc6f6f3cf807630f2a36"
-      }
+      ]
     },
     {
       "key": "0x16/0x01",
@@ -107,22 +77,7 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x11",
           "cites": "    case 0x11: /* CHECK FOR KEYSTROKE (enhanced keyboards only) */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.D B-1611",
-            "line": "INT 16 - KEYBOARD - CHECK FOR ENHANCED KEYSTROKE (enh kbd support only)"
-          },
-          {
-            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x11",
-            "line": "    case 0x11: /* CHECK FOR KEYSTROKE (enhanced keyboards only) */"
-          }
-        ],
-        "digest": "44764b0575a3e6a6f02f8da426aa1d8882888d2302271830853025c25ff21756"
-      }
+      ]
     },
     {
       "key": "0x16/0x02",

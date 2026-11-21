@@ -106,22 +106,7 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x03",
           "cites": "\tcase XMS_GLOBAL_ENABLE_A20:\t\t\t\t\t\t\t\t\t/* 03 */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.L #02753 Call the XMS driver \"Global enable A20, for using the HMA\"",
-            "line": "Call the XMS driver \"Global enable A20, for using the HMA\" function with:"
-          },
-          {
-            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x03",
-            "line": "\tcase XMS_GLOBAL_ENABLE_A20:\t\t\t\t\t\t\t\t\t/* 03 */"
-          }
-        ],
-        "digest": "87344f3aad7d885c7cb5bae60aa5d9efa069a7063b5c6288219a9523b27ad759"
-      }
+      ]
     },
     {
       "key": "0x43/0x04",
@@ -373,22 +358,7 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0b",
           "cites": "\tcase XMS_MOVE_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t\t/* 0b */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.L #02761 Call the XMS driver \"Move extended memory block\"",
-            "line": "Call the XMS driver \"Move extended memory block\" function with:"
-          },
-          {
-            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0b",
-            "line": "\tcase XMS_MOVE_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t\t/* 0b */"
-          }
-        ],
-        "digest": "c68b3a2917ab8b25bf2f49cf7397dcd84bf83549c50e3695cd38d453f58eb2e7"
-      }
+      ]
     },
     {
       "key": "0x43/0x0C",

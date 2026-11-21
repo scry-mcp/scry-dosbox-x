@@ -1283,22 +1283,7 @@
           "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x0c",
           "cites": "\t\t\tcase 0x0c: {\t/* VCPI Switch from V86 to Protected Mode */"
         }
-      ],
-      "checked": {
-        "by": "phase K3a2c",
-        "writer": "phase K3a2",
-        "against": [
-          {
-            "ref": "rbil61:INTERRUP.P E-67DE0C",
-            "line": "INT 67 - Virtual Control Program Interface - SWITCH TO PROTECTED MODE"
-          },
-          {
-            "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x0c",
-            "line": "\t\t\tcase 0x0c: {\t/* VCPI Switch from V86 to Protected Mode */"
-          }
-        ],
-        "digest": "00c59b23b35a675bcb8b07b3d4f36efd67506d3ad78ccf5fec5489ce7cd88a8d"
-      }
+      ]
     }
   ]
 }
