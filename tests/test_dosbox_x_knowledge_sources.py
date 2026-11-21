@@ -10,6 +10,7 @@ import zipfile
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import knowledge_sources as tool
 import pytest
@@ -37,6 +38,15 @@ static Bitu DOS_21Handler(void) {
 #endif
                 default:
                     break;
+            }
+            break;
+        case 0x57:                  /* Get/Set File's Date and Time */
+            if (reg_al == 0x00) {
+                break;
+            } else if (reg_al == 0x01) {
+                break;
+            } else {
+                LOG(LOG_DOSMISC,LOG_ERROR)("unsupported %X",reg_al);
             }
             break;
         case 0x5e:
@@ -102,27 +112,25 @@ Values for DOS extended error code:
  0Eh (14)  reserved
  0Eh (14)  (PTS-DOS 6.51+, S/DOS 1.0+) fixup overflow
 """
-LIST_FIRST = """\
-Interrupt List\t\t\tRelease 61\t\tLast change 16jul00
-Copyright (c) 1989-1999,2000 Ralf Brown
---------!---FILELIST-------------------------
-INTERRUP.A\tINT 00 through INT 10/BE
---------!---COPYRIGHT------------------------
-Permission is granted to use and redistribute the files
---------!---DISCLAIMER-----------------------
-no warranty
---------!---AVAILABILITY---------------------
-get new releases here
---------!---ABBREVIATIONS--------------------
-PC IBM PC
---------!---CREDITS--------------------------
-1/85 Janet Jack  (original list)
---------!---CONTACT_INFO---------------------
-write to the author
+IOCTL_CPP = """\
+bool DOS_IOCTL(void) {
+\tswitch(reg_al) {
+\tcase 0x00:\t\t/* Get Device Information */
+\t\treturn true;
+\tcase 0x0D:\t\t/* Generic block device request */
+\tcase 0x11:\t\t/* query generic ioctl capability */
+\t\tswitch (reg_cl) {
+\t\tcase 0x40:
+\t\t\tbreak;
+\t\t}
+\t\treturn true;
+\t}
+\treturn false;
+}
 """
-DICTIONARY = {
+DICTIONARY: dict[str, Any] = {
     "format": "scry-knowledge/1", "dictionary": "int21", "kind": "call", "scope": "ibm-pc",
-    "covers": "fixture", "complete_against": "dosbox-x:src/dos/dos.cpp DOS_21Handler",
+    "covers": "fixture", "complete_against": next(iter(tool.LIST_HANDLERS)),
     "entries": [{"key": "0x21/0x4C", "name": "exit", "description": "Ends the program.",
                  "behaviour": "Ends it.",
                  "sources": [
@@ -146,15 +154,16 @@ class Fake(tool.Sources):
 
 
 def sources(cpp: str = DOS_CPP, inc: str = DOS_INC) -> Fake:
-    return Fake({"INTERRUP.F": LIST_F.split("\n"), "INTERRUP.1ST": LIST_FIRST.split("\n")}, None,
-                {"src/dos/dos.cpp": cpp, "include/dos_inc.h": inc})
+    return Fake({"INTERRUP.F": LIST_F.split("\n")}, None,
+                {"src/dos/dos.cpp": cpp, "include/dos_inc.h": inc,
+                 "src/dos/dos_ioctl.cpp": IOCTL_CPP})
 
 
 def test_the_list_holds_every_top_level_and_nested_case_of_the_handler() -> None:
     assert tool.list_dos_21(sources()) == (
         "0x21/0x00", "0x21/0x33", "0x21/0x33/0x00", "0x21/0x33/0x05", "0x21/0x33/0x08",
-        "0x21/0x4C", "0x21/0x58", "0x21/0x58/0x00", "0x21/0x5E", "0x21/0x5E/0x02", "0x21/0x5F",
-        "0x21/0x60", "0x21/0x60/0x01", "0x21/0x73")
+        "0x21/0x4C", "0x21/0x58", "0x21/0x58/0x00", "0x21/0x57", "0x21/0x5E", "0x21/0x5E/0x02",
+        "0x21/0x5F", "0x21/0x60", "0x21/0x60/0x01", "0x21/0x73")
 
 
 def test_the_list_leaves_out_the_cases_only_the_windows_build_has() -> None:
@@ -266,20 +275,6 @@ def test_a_list_place_that_is_not_there_is_refused(locator: str) -> None:
         tool.resolve_rbil(sources(), locator)
 
 
-def test_the_notice_keeps_the_licence_the_credits_and_the_author_and_nothing_else() -> None:
-    text = tool.notice(sources())
-    assert text.splitlines()[0].startswith("Interrupt List")
-    for kept in ("COPYRIGHT", "DISCLAIMER", "AVAILABILITY", "CREDITS", "CONTACT_INFO"):
-        assert f"--------!---{kept}" in text
-    assert "ABBREVIATIONS" not in text and "FILELIST" not in text
-
-
-def test_a_list_without_its_credits_gives_no_notice() -> None:
-    first = LIST_FIRST.replace("--------!---CREDITS", "--------!---OTHER")
-    with pytest.raises(tool.Invalid, match="does not hold the sections"):
-        tool.notice(Fake({"INTERRUP.1ST": first.split("\n")}, None))
-
-
 # The command, over a real git repository and real archives of the fixture sources.
 
 
@@ -300,14 +295,14 @@ class World:
         for folder in (self.repo / "src" / "dos", self.repo / "include", self.zips, self.dicts):
             folder.mkdir(parents=True)
         (self.repo / "src" / "dos" / "dos.cpp").write_text(DOS_CPP, encoding="utf-8")
+        (self.repo / "src" / "dos" / "dos_ioctl.cpp").write_text(IOCTL_CPP, encoding="utf-8")
         (self.repo / "include" / "dos_inc.h").write_text(DOS_INC, encoding="utf-8")
         _git(self.repo, "init", "-q")
         _git(self.repo, "add", ".")
         _git(self.repo, "commit", "-q", "-m", "fixture")
         monkeypatch.setattr(tool, "DOSBOX_X_PIN", _git(self.repo, "rev-parse", "HEAD"))
         digests: dict[str, str] = {}
-        for name, members in (("inter61a.zip", {"INTERRUP.F": LIST_F,
-                                                 "INTERRUP.1ST": LIST_FIRST}),
+        for name, members in (("inter61a.zip", {"INTERRUP.F": LIST_F}),
                               ("inter61b.zip", {}), ("inter61c.zip", {}), ("inter61d.zip", {})):
             with zipfile.ZipFile(self.zips / name, "w") as zf:
                 for member, text in members.items():
@@ -334,35 +329,54 @@ def test_the_index_written_from_the_sources_equals_them(world: World) -> None:
     rc, out = world.run()
     assert rc == tool.OK and "the index equals the sources: 2 rows" in out[0], out
     doc = json.loads(world.index.read_text(encoding="utf-8"))
-    assert doc["lists"]["dosbox-x:src/dos/dos.cpp DOS_21Handler"][:2] == ["0x21/0x00", "0x21/0x33"]
+    name = next(iter(tool.LIST_HANDLERS))
+    assert doc["lists"][name][:2] == ["0x21/0x00", "0x21/0x33"]
     assert doc["rows"]["dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4c"]["line"] == (
         "        case 0x4c:                  /* EXIT Terminate with return code */")
+
+
+def test_a_list_line_is_kept_as_its_digest_and_never_as_its_text(world: World) -> None:
+    world.run("--write")
+    text = world.index.read_text(encoding="utf-8")
+    row = json.loads(text)["rows"]["rbil61:INTERRUP.F D-214C"]
+    assert row == {"digest": tool.digest('INT 21 - DOS 2+ - "EXIT" - TERMINATE WITH RETURN CODE'),
+                   "key": "0x21/0x4C"}
+    assert "TERMINATE WITH RETURN CODE" not in text
+
+
+def test_every_run_prints_how_many_list_lines_the_dictionaries_hold(world: World) -> None:
+    rc, out = world.run("--write")
+    assert rc == tool.OK and "list lines held: 1" in out[0], out
+    rc, out = world.run()
+    assert rc == tool.OK and "list lines held: 1" in out[0], out
+
+
+def test_the_list_lines_held_count_each_cited_place_once() -> None:
+    entry = DICTIONARY["entries"][0]
+    twice = {"entries": [entry, entry]}
+    only_emulator = {"entries": [{"sources": [entry["sources"][1]]}]}
+    assert tool.list_lines_held([DICTIONARY]) == 1
+    assert tool.list_lines_held([twice, DICTIONARY]) == 1
+    assert tool.list_lines_held([only_emulator]) == 0
+    assert tool.list_lines_held([]) == 0
 
 
 def test_a_row_that_changed_in_the_sources_is_red_and_named(world: World) -> None:
     world.run("--write")
     doc = json.loads(world.index.read_text(encoding="utf-8"))
     row = "rbil61:INTERRUP.F D-214C"
-    doc["rows"][row]["line"] = "INT 21 - DOS 2+ - EXIT"
+    doc["rows"][row]["digest"] = tool.digest("INT 21 - DOS 2+ - EXIT")
     world.index.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
     rc, out = world.run()
-    assert rc == tool.RED and any(row in ln and "TERMINATE WITH RETURN CODE" in ln for ln in out)
+    assert rc == tool.RED and any(row in ln and "digest" in ln for ln in out)
 
 
 def test_a_list_that_changed_in_the_sources_is_red(world: World) -> None:
     world.run("--write")
     doc = json.loads(world.index.read_text(encoding="utf-8"))
-    del doc["lists"]["dosbox-x:src/dos/dos.cpp DOS_21Handler"][-1]
+    del doc["lists"][next(iter(tool.LIST_HANDLERS))][-1]
     world.index.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
     assert world.run()[0] == tool.RED
-
-
-def test_a_notice_that_changed_is_red(world: World) -> None:
-    world.run("--write")
-    notice = world.index.with_name(tool.NOTICE_NAME)
-    notice.write_text(notice.read_text(encoding="utf-8") + "extra\n", encoding="utf-8")
-    rc, out = world.run()
-    assert rc == tool.RED and any(tool.NOTICE_NAME in ln for ln in out)
 
 
 def test_an_archive_that_is_not_the_pinned_one_is_invalid(world: World) -> None:
@@ -454,3 +468,287 @@ def test_a_missing_index_is_invalid_not_red(world: World) -> None:
 
 def test_an_unknown_option_exits_with_the_usage_code() -> None:
     assert tool.main(["--nonsense"], write=lambda _: None) == tool.USAGE
+
+
+# Handlers that are not DOS_21Handler: other registers, other layouts of the same C.
+
+BIOS_CPP = """\
+static Bitu INT15_Handler(void) {
+    if (machine == MCH_AMSTRAD && reg_ah < 0x07) {
+        switch(reg_ah) {
+            case 0x00:
+            case 0x01:
+                break;
+        }
+    }
+    switch (reg_ah) {
+    case 0x06:                  /* a lone brace: { */
+        break;
+    case 0x53: // APM
+        if (reg_al == 0x01) { reg_ax = '{'; }
+        switch(reg_al) {
+            case 0x00:
+                break;
+\t    case 0x07:
+                switch(reg_cx) {
+                    case 0x1: // standby
+                        break;
+                }
+                break;
+        }
+        break;
+\tcase 0xC2: case 0xC3:
+        break;
+    }
+    return CBRET_NONE;
+}
+static Bitu INT1A_Handler(void) {
+    switch (reg_ah) {
+    case 0x7F:
+        break;
+    }
+}
+"""
+MOUSE_CPP = """\
+static Bitu INT33_Handler(void) {
+    switch (reg_ax) {
+    case 0x0000:    /* Mouse: reset */
+        break;
+\tcase 0x0003:\t/* position */
+        break;
+    case 0x53c1:
+        break;
+    }
+}
+"""
+XMS_CPP = """\
+#define\tXMS_GET_VERSION\t\t\t0x00u
+#define XMS_QUERY_ANY_FREE_MEMORY\t\t\t0x88u
+Bitu XMS_Handler(void) {
+\tswitch (reg_ah) {
+\tcase XMS_GET_VERSION:\t\t\t/* 00 */
+        if (x) {
+        }
+\t\tbreak;
+\tcase XMS_QUERY_ANY_FREE_MEMORY:
+\t\tbreak;
+\t}
+}
+"""
+BIOS_HANDLERS = (
+    tool.Handler("src/ints/bios.cpp", "INT15_Handler", 0x15),
+    tool.Handler("src/ints/bios.cpp", "INT1A_Handler", 0x1A),
+    tool.Handler("src/ints/mouse.cpp", "INT33_Handler", 0x33, "reg_ax"),
+    tool.Handler("src/ints/xms.cpp", "XMS_Handler", 0x43),
+)
+
+
+@pytest.fixture
+def others(monkeypatch: pytest.MonkeyPatch) -> Fake:
+    monkeypatch.setattr(tool, "HANDLERS", BIOS_HANDLERS)
+    return Fake({}, None, {"src/ints/bios.cpp": BIOS_CPP, "src/ints/mouse.cpp": MOUSE_CPP,
+                           "src/ints/xms.cpp": XMS_CPP})
+
+
+def _keys(index: Fake, func: str) -> tuple[str, ...]:
+    return tuple(tool.handler_keys(index, tool._handler(func)))
+
+
+def test_the_outermost_switch_is_the_handlers_not_a_deeper_one_before_it(others: Fake) -> None:
+    assert _keys(others, "INT15_Handler") == (
+        "0x15/0x06", "0x15/0x53", "0x15/0x53/0x00", "0x15/0x53/0x07", "0x15/0xC2", "0x15/0xC3")
+
+
+def test_a_switch_inside_a_case_is_not_read_and_a_brace_in_a_comment_or_a_literal_is_not_counted(
+        others: Fake) -> None:
+    keys = _keys(others, "INT15_Handler")
+    assert "0x15/0x53/0x07" in keys and "0x15/0x53/0x01" not in keys
+    assert not any(k.endswith("/0x01") for k in keys) and "0x15/0xC3" in keys
+
+
+def test_two_handlers_of_one_file_do_not_read_each_others_cases(others: Fake) -> None:
+    assert _keys(others, "INT1A_Handler") == ("0x1A/0x7F",)
+
+
+def test_a_switch_on_ax_gives_the_key_of_its_two_bytes(others: Fake) -> None:
+    assert _keys(others, "INT33_Handler") == ("0x33/0x00/0x00", "0x33/0x00/0x03", "0x33/0x53/0xC1")
+    row = tool.resolve_dosbox_x(others, "src/ints/mouse.cpp INT33_Handler case 0x53c1")
+    assert row == Row("    case 0x53c1:", "0x33/0x53/0xC1")
+
+
+def test_a_case_named_by_a_define_with_a_suffix_is_the_number_it_defines(others: Fake) -> None:
+    assert _keys(others, "XMS_Handler") == ("0x43/0x00", "0x43/0x88")
+    row = tool.resolve_dosbox_x(others, "src/ints/xms.cpp XMS_Handler case 0x88")
+    assert row.line.strip() == "case XMS_QUERY_ANY_FREE_MEMORY:"
+
+
+def test_a_case_label_that_is_a_name_with_no_define_is_refused(others: Fake) -> None:
+    broken = Fake({}, None, {"src/ints/xms.cpp": XMS_CPP.replace("#define\tXMS_GET_VERSION", "//")})
+    with pytest.raises(tool.Invalid, match="XMS_GET_VERSION"):
+        tool.handler_keys(broken, tool._handler("XMS_Handler"))
+
+
+@pytest.mark.parametrize(("ident", "qualified", "key"), [
+    ("1012", False, "0x10/0x12"), ("104F02", False, "0x10/0x4F/0x02"),
+    ("3303", False, "0x33/0x00/0x03"), ("2F1680", False, "0x2F/0x16/0x80"),
+    ("1012", True, ""), ("212E", True, "0x21/0x2E"), ("10FF1", False, ""), ("10", False, "")])
+def test_a_section_header_gives_the_call_key_its_numbers_spell(
+        ident: str, qualified: bool, key: str) -> None:
+    assert tool._rbil_key(ident, qualified) == key
+
+
+def test_the_dpmi_sections_are_the_ones_the_list_titles_so_and_nothing_else() -> None:
+    first = ["--------E-310000-----------------", "INT 31 P - DPMI 0.9+ - ALLOCATE LDT DESCRIPTORS",
+             "--------E-31EE00------------------", "INT 31 - DOS32 v3.0+ - GET VERSION",
+             "--------E-310401-----------------", "INT 31 P - DPMI 1.0+ - GET CAPABILITIES",
+             "--------E-310100BX0001-----------", "INT 31 P - DPMI 0.9+ - A QUALIFIED SECTION",
+             "--------D-31---------------------", "INT 31 - overwritten by CP/M jump"]
+    assert tool.list_dpmi(Fake({"INTERRUP.N": first}, None)) == ("0x31/0x00/0x00", "0x31/0x04/0x01")
+
+
+@pytest.mark.parametrize("chain", ["""\
+#if defined(WIN32)
+        if (a) {
+#elif defined(MACOSX)
+        if (b) {
+#else
+        if (c) {
+#endif
+""", """\
+#if defined(MACOSX)
+        if (b) {
+#else
+        if (c) {
+#endif
+"""])
+def test_only_one_branch_of_a_preprocessor_chain_counts_its_braces(
+        monkeypatch: pytest.MonkeyPatch, chain: str) -> None:
+    cpp = f"""\
+static Bitu INT2A_Handler(void) {{
+    switch (reg_ah) {{
+    case 0x01:
+{chain}            x();
+        }}
+        break;
+    case 0x02:
+        break;
+    }}
+}}
+"""
+    monkeypatch.setattr(tool, "HANDLERS", (tool.Handler("src/x.cpp", "INT2A_Handler", 0x2A),))
+    fake = Fake({}, None, {"src/x.cpp": cpp})
+    assert tuple(tool.handler_keys(fake, tool._handler("INT2A_Handler"))) == (
+        "0x2A/0x01", "0x2A/0x02")
+
+
+def _only(monkeypatch: pytest.MonkeyPatch, func: str, cpp: str, **kw: object) -> Fake:
+    monkeypatch.setattr(tool, "HANDLERS", (tool.Handler("src/x.cpp", func, 0x2B, **kw),))  # type: ignore[arg-type]
+    return Fake({}, None, {"src/x.cpp": cpp})
+
+
+def _handler_keys(fake: Fake, func: str) -> tuple[str, ...]:
+    return tuple(tool.handler_keys(fake, tool._handler(func)))
+
+
+def test_code_no_host_runs_or_that_is_commented_out_gives_no_case(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _only(monkeypatch, "INT2B_Handler", """\
+static Bitu INT2B_Handler(void) {
+    // switch (reg_ah) {
+    switch (reg_ah) {
+    case 0x01:
+#if 0
+    case 0x02:
+#endif
+#ifdef WIN32
+    case 0x03:
+#else
+    case 0x04:
+#endif
+#if !defined(WIN32)
+    case 0x05:
+#else
+    case 0x06:
+#endif
+#if defined(MACOSX)
+    case 0x07:
+#else
+    case 0x08:
+#endif
+    /* a long comment { that goes on
+    case 0x09:
+    still { in it */
+    case 0x0A: s = "}";
+        break;
+    }
+}
+""")
+    assert _handler_keys(fake, "INT2B_Handler") == (
+        "0x2B/0x01", "0x2B/0x04", "0x2B/0x05", "0x2B/0x06", "0x2B/0x07", "0x2B/0x08", "0x2B/0x0A")
+
+
+def test_a_test_of_not_al_is_the_subfunction_zero(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _only(monkeypatch, "INT2B_Handler", """\
+static Bitu INT2B_Handler(void) {
+    switch (reg_ah) {
+    case 0x5e:
+        if (!reg_al && !secure) {
+            break;
+        }
+        break;
+    }
+}
+""", if_cases=frozenset({0x5E}))
+    assert _handler_keys(fake, "INT2B_Handler") == ("0x2B/0x5E", "0x2B/0x5E/0x00")
+
+
+@pytest.mark.parametrize(("cpp", "message"), [
+    ("""\
+static Bitu INT2B_Handler(void) {
+    switch (reg_ah) {
+    case 0x01:
+        break;
+    }
+    switch (reg_ah) {
+    case 0x02:
+        break;
+    }
+}
+""", "same indent"),
+    ("""\
+static Bitu INT2B_Handler(void) {
+    switch (reg_ah) {
+    case 0x01u:
+        break;
+    }
+}
+""", "cannot read"),
+])
+def test_a_handler_the_tool_cannot_read_whole_is_refused_not_listed_short(
+        monkeypatch: pytest.MonkeyPatch, cpp: str, message: str) -> None:
+    fake = _only(monkeypatch, "INT2B_Handler", cpp)
+    with pytest.raises(tool.Invalid, match=message):
+        tool.handler_keys(fake, tool._handler("INT2B_Handler"))
+
+
+@pytest.mark.parametrize(("header", "locator", "key"), [
+    ("--------X-1AB101-----------", "X-1AB101", "0x1A/0xB1/0x01"),
+    ("--------E-67DE00-----------", "E-67DE00", "0x67/0xDE/0x00"),
+    ("--------N-2FB800-----------", "N-2FB800", "0x2F/0xB8/0x00"),
+    ("--------V-1012--BL10-------", "V-1012--BL10", ""),
+    ("--------D-217160CL00-------", "D-217160CL00", "0x21/0x71/0x60"),
+])
+def test_a_section_header_whose_id_is_all_hex_letters_is_one_id_not_an_id_and_a_qualifier(
+        header: str, locator: str, key: str) -> None:
+    fake = Fake({"INTERRUP.Z": [header, "INT XX - A TITLE"]}, None)
+    assert tool.resolve_rbil(fake, f"INTERRUP.Z {locator}").key == key
+
+
+def test_a_run_that_finds_the_index_red_still_says_how_many_list_lines_are_held(
+        world: World) -> None:
+    world.run("--write")
+    doc = json.loads(world.index.read_text(encoding="utf-8"))
+    doc["rows"]["rbil61:INTERRUP.F D-214C"]["digest"] = "0" * 64
+    world.index.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    rc, out = world.run()
+    assert rc == tool.RED and "list lines held: 1" in out, out
