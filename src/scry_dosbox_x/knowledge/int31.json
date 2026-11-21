@@ -1,0 +1,1117 @@
+{
+  "format": "scry-knowledge/1",
+  "dictionary": "int31",
+  "kind": "call",
+  "scope": "ibm-pc",
+  "covers": "INT 31h, DPMI: the calls the list documents for DPMI 0.9 and 1.0. DOSBox-X has no DPMI host in its own code: a host running in the guest provides them.",
+  "complete_against": "rbil61:INTERRUP.N INT 31 DPMI sections",
+  "entries": [
+    {
+      "key": "0x31/0x00/0x00",
+      "name": "alloc ldt descriptors",
+      "aliases": [
+        "allocate descriptors"
+      ],
+      "description": "Allocates CX consecutive descriptors in the local descriptor table and returns the first selector.",
+      "behaviour": "CX = number of descriptors. CF clear: AX = base selector, and base and limit of each are 0 with type data; add the AX=0003h increment to reach later ones. CF set: AX = error code (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310000",
+          "cites": "INT 31 P - DPMI 0.9+ - ALLOCATE LDT DESCRIPTORS"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x01",
+      "name": "free ldt descriptor",
+      "aliases": [
+        "free descriptor"
+      ],
+      "description": "Frees one descriptor of the local descriptor table.",
+      "behaviour": "BX = selector. CF clear on success; CF set on error with AX=8022h (DPMI 1.0+). Only one descriptor is freed per call and the program's initial CS, DS and SS may be freed; DPMI 1.0+ sets segment registers holding the selector to 0000h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310001",
+          "cites": "INT 31 P - DPMI 0.9+ - FREE LDT DESCRIPTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x02",
+      "name": "segment to descriptor",
+      "aliases": [
+        "real segment selector"
+      ],
+      "description": "Returns a selector for a real mode segment.",
+      "behaviour": "BX = real mode segment. CF clear: AX = selector with a 64K limit, the same one for repeated calls on a segment, and it can never be modified or freed. CF set: AX=8011h (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310002",
+          "cites": "INT 31 P - DPMI 0.9+ - SEGMENT TO DESCRIPTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x03",
+      "name": "selector increment",
+      "aliases": [
+        "next selector increment"
+      ],
+      "description": "Returns the value to add to a selector to get the next sequential one.",
+      "behaviour": "CF clear; AX = the increment, which is a power of two. It is how to step through the descriptors of a multiple allocation from AX=0000h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310003",
+          "cites": "INT 31 P - DPMI 0.9+ - GET NEXT SELECTOR INCREMENT VALUE"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x04",
+      "name": "lock selector",
+      "description": "Locks a selector so it cannot be paged.",
+      "behaviour": "BX = selector. The list gives the return as unknown. It marks the call reserved in DPMI 0.9 and 1.0 but notes that MS Windows TASKMAN, PROGMAN and KERNEL call it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310004",
+          "cites": "INT 31 P - DPMI 0.9+ - LOCK SELECTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x05",
+      "name": "unlock selector",
+      "description": "Unlocks a selector so it may be paged.",
+      "behaviour": "BX = selector. The list gives the return as unknown. It marks the call reserved in DPMI 0.9 and 1.0 but notes that MS Windows TASKMAN, PROGMAN and KERNEL call it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310005",
+          "cites": "INT 31 P - DPMI 0.9+ - UNLOCK SELECTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x06",
+      "name": "get segment base",
+      "aliases": [
+        "get base address"
+      ],
+      "description": "Returns the linear base address of a selector's segment.",
+      "behaviour": "BX = selector. CF clear: CX:DX = linear base address. CF set: AX=8022h (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310006",
+          "cites": "INT 31 P - DPMI 0.9+ - GET SEGMENT BASE ADDRESS"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x07",
+      "name": "set segment base",
+      "aliases": [
+        "set base address"
+      ],
+      "description": "Sets the linear base address of a selector's segment.",
+      "behaviour": "BX = selector, CX:DX = linear base. CF set: AX=8022h or 8025h (DPMI 1.0+). Only modify descriptors from AX=0000h; 16-bit hosts use only the low 24 bits; DPMI 1.0+ reloads segment registers holding the selector.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310007",
+          "cites": "INT 31 P - DPMI 0.9+ - SET SEGMENT BASE ADDRESS"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x08",
+      "name": "set segment limit",
+      "description": "Sets the limit of a selector's segment.",
+      "behaviour": "BX = selector, CX:DX = limit; CX must be zero for 16-bit hosts, and a limit over 1 MB must be page aligned (low 12 bits set). CF set: AX=8021h, 8022h or 8025h (DPMI 1.0+). Only modify descriptors from AX=0000h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310008",
+          "cites": "INT 31 P - DPMI 0.9+ - SET SEGMENT LIMIT"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x09",
+      "name": "set access rights",
+      "aliases": [
+        "set descriptor rights"
+      ],
+      "description": "Sets the access rights and type bytes of a descriptor.",
+      "behaviour": "BX = selector, CL = access rights byte, CH = 80386 extended rights byte (32-bit hosts only). CF set: AX=8021h, 8022h or 8025h (DPMI 1.0+). If the Present bit is clear, CL bits 0-3 may have any value.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310009",
+          "cites": "INT 31 P - DPMI 0.9+ - SET DESCRIPTOR ACCESS RIGHTS"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x0A",
+      "name": "create alias",
+      "aliases": [
+        "create alias descriptor"
+      ],
+      "description": "Creates a data descriptor that aliases a code segment descriptor.",
+      "behaviour": "BX = selector. CF clear: AX = new data selector, which does not follow later changes to the original; free it with AX=0001h. It fails if BX is not a code segment or is invalid: AX=8011h or 8022h (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-31000A",
+          "cites": "INT 31 P - DPMI 0.9+ - CREATE ALIAS DESCRIPTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x0B",
+      "name": "get descriptor",
+      "description": "Copies the 8-byte descriptor of an LDT selector into a buffer.",
+      "behaviour": "BX = LDT selector, ES:(E)DI -> 8-byte buffer; 16-bit programs use ES:DI, 32-bit ES:EDI. CF clear: buffer filled. CF set: AX=8022h (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-31000B",
+          "cites": "INT 31 P - DPMI 0.9+ - GET DESCRIPTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x0C",
+      "name": "set descriptor",
+      "description": "Copies an 8-byte descriptor from a buffer into an LDT selector.",
+      "behaviour": "BX = LDT selector, ES:(E)DI -> 8-byte buffer; 16-bit programs use ES:DI, 32-bit ES:EDI. Only modify descriptors from AX=0000h. CF set: AX=8021h, 8022h or 8025h (DPMI 1.0+); DPMI 1.0+ reloads segment registers holding the selector.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-31000C",
+          "cites": "INT 31 P - DPMI 0.9+ - SET DESCRIPTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x0D",
+      "name": "alloc specific ldt",
+      "aliases": [
+        "allocate specific"
+      ],
+      "description": "Allocates one specific LDT descriptor by selector.",
+      "behaviour": "BX = LDT selector. CF set: AX=8011h or 8022h (DPMI 1.0+); free with AX=0001h. The first 16 descriptors (04h-7Ch) are reserved for this call, though some may be in use under DPMI 0.9; DPMI 1.0 guarantees 16 per client.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-31000D",
+          "cites": "INT 31 P - DPMI 0.9+ - ALLOCATE SPECIFIC LDT DESCRIPTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x0E",
+      "name": "get multiple descriptors",
+      "description": "Copies several descriptors into a buffer of selector and descriptor entries (DPMI 1.0).",
+      "behaviour": "CX = count, ES:(E)DI -> buffer of entries, each a WORD selector set by the client then a QWORD descriptor set by the host. CF set: AX=8022h and CX = number copied; the first CX entries are valid, the rest untouched.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-31000E",
+          "cites": "INT 31 P - DPMI 1.0+ - GET MULTIPLE DESCRIPTORS"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x00/0x0F",
+      "name": "set multiple descriptors",
+      "description": "Sets several descriptors from a buffer of selector and descriptor entries (DPMI 1.0).",
+      "behaviour": "CX = count, ES:(E)DI -> buffer of entries, each a WORD selector then a QWORD descriptor. CF set: AX=8021h, 8022h or 8025h and CX = number set; the first CX are valid, the rest untouched. Segment registers holding a changed selector are reloaded.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-31000F",
+          "cites": "INT 31 P - DPMI 1.0+ - SET MULTIPLE DESCRIPTORS"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x01/0x00",
+      "name": "alloc dos memory",
+      "aliases": [
+        "allocate dos memory"
+      ],
+      "description": "Allocates a block of DOS conventional memory and selectors for it.",
+      "behaviour": "BX = paragraphs. CF clear: AX = real mode segment, DX = first selector; a 16-bit caller gets several contiguous selectors for a block over 64K, and they must never be modified or freed. CF set: AX = DOS error 07h or 08h (DPMI 1.0+: 8011h), BX = largest block.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310100",
+          "cites": "INT 31 P - DPMI 0.9+ - ALLOCATE DOS MEMORY BLOCK"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x01/0x01",
+      "name": "free dos memory",
+      "description": "Frees a DOS memory block and all selectors allocated for it.",
+      "behaviour": "DX = selector of block. The list prints CF set for success and for error; on error AX = DOS error 07h or 09h. DPMI 1.0+ zeros segment registers holding a freed selector.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310101",
+          "cites": "INT 31 P - DPMI 0.9+ - FREE DOS MEMORY BLOCK"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x01/0x02",
+      "name": "resize dos memory",
+      "description": "Resizes a DOS memory block allocated by AX=0100h.",
+      "behaviour": "BX = new size in paragraphs, DX = selector. CF set: AX = DOS error 07h, 08h or 09h (DPMI 1.0+: 8011h or 8022h), BX = maximum size. Growth past a 64K boundary fails if the next LDT descriptor is in use.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310102",
+          "cites": "INT 31 P - DPMI 0.9+ - RESIZE DOS MEMORY BLOCK"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x02/0x00",
+      "name": "get rm vector",
+      "aliases": [
+        "get real mode vector"
+      ],
+      "description": "Returns the real mode interrupt vector BL.",
+      "behaviour": "BL = interrupt number. CF clear: CX:DX = segment:offset of the real mode handler. The list says the host must support all 256 vectors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310200",
+          "cites": "INT 31 P - DPMI 0.9+ - GET REAL MODE INTERRUPT VECTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x02/0x01",
+      "name": "set rm vector",
+      "aliases": [
+        "set real mode vector"
+      ],
+      "description": "Sets the real mode interrupt vector BL.",
+      "behaviour": "BL = interrupt number, CX:DX = segment:offset of the real mode handler. CF clear. The list says all memory a hardware interrupt handler may touch must be locked with AX=0600h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310201",
+          "cites": "INT 31 P - DPMI 0.9+ - SET REAL MODE INTERRUPT VECTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x02/0x02",
+      "name": "get exception handler",
+      "aliases": [
+        "get exception vector"
+      ],
+      "description": "Returns the protected mode handler of processor exception BL.",
+      "behaviour": "BL = exception number (00h-1Fh). CF clear: CX:(E)DX = selector:offset (DX for 16-bit programs, EDX for 32-bit); CF set: AX=8021h (DPMI 1.0+). DPMI 1.0+ keeps it for compatibility; the list says to use AX=0210h or 0211h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310202",
+          "cites": "INT 31 P - DPMI 0.9+ - GET PROCESSOR EXCEPTION HANDLER VECTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x02/0x03",
+      "name": "set exception handler",
+      "aliases": [
+        "set exception vector"
+      ],
+      "description": "Sets the protected mode handler of processor exception BL.",
+      "behaviour": "BL = exception number (00h-1Fh), CX:(E)DX = selector:offset; the handler returns with a FAR return and is called only for protected mode exceptions the host does not handle. CF set: AX=8021h or 8022h (DPMI 1.0+); 1.0 prefers AX=0212h and 0213h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310203",
+          "cites": "INT 31 P - DPMI 0.9+ - SET PROCESSOR EXCEPTION HANDLER VECTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x02/0x04",
+      "name": "get pm vector",
+      "aliases": [
+        "get protected vector"
+      ],
+      "description": "Returns the protected mode interrupt vector BL.",
+      "behaviour": "BL = interrupt number. CF clear: CX:(E)DX = selector:offset of the handler; 16-bit programs use DX, 32-bit EDX. The list says the host must support all 256 vectors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310204",
+          "cites": "INT 31 P - DPMI 0.9+ - GET PROTECTED MODE INTERRUPT VECTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x02/0x05",
+      "name": "set pm vector",
+      "aliases": [
+        "set protected vector"
+      ],
+      "description": "Sets the protected mode interrupt vector BL.",
+      "behaviour": "BL = interrupt number, CX:(E)DX = selector:offset. CF set: AX=8022h (DPMI 1.0+). Hardware interrupts are reflected to the virtual machine's primary client and software interrupts to the current client; 32-bit programs chain with a 32-bit frame.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310205",
+          "cites": "INT 31 P - DPMI 0.9+ - SET PROTECTED MODE INTERRUPT VECTOR"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x02/0x10",
+      "name": "get pm ext exc handler",
+      "description": "Returns the protected mode extended handler of exception BL (DPMI 1.0).",
+      "behaviour": "BL = exception number (00h-1Fh). CF clear: CX:(E)DX = selector:offset of the handler; CF set: AX=8021h. The host reflects the exception to the current client's handler.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310210",
+          "cites": "INT 31 P - DPMI 1.0+ - GET PROTECTED MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x02/0x11",
+      "name": "get rm ext exc handler",
+      "description": "Returns the protected mode handler for real mode exception BL (DPMI 1.0).",
+      "behaviour": "BL = exception number (00h-1Fh). CF clear: CX:(E)DX = selector:offset; CF set: AX=8021h. The host switches to protected mode, reflects the exception to the primary client, and returns to real mode when the handler finishes.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310211",
+          "cites": "INT 31 P - DPMI 1.0+ - GET REAL MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x02/0x12",
+      "name": "set pm ext exc handler",
+      "description": "Sets the protected mode extended handler of exception BL (DPMI 1.0).",
+      "behaviour": "BL = exception or fault number (00h-1Fh), CX:(E)DX = selector:offset. CF set: AX=8021h or 8022h. The host sends the exception to the current client's handler.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310212",
+          "cites": "INT 31 P - DPMI 1.0+ - SET PROTECTED MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x02/0x13",
+      "name": "set rm ext exc handler",
+      "description": "Sets the protected mode handler for real mode exception BL (DPMI 1.0).",
+      "behaviour": "BL = exception or fault number (00h-1Fh), CX:(E)DX = selector:offset. CF set: AX=8021h or 8022h. The host switches to protected mode, reflects the exception to the primary client, and returns to real mode when the handler finishes.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310213",
+          "cites": "INT 31 P - DPMI 1.0+ - SET REAL MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x03/0x00",
+      "name": "simulate rm interrupt",
+      "aliases": [
+        "simulate real mode int"
+      ],
+      "description": "Calls the real mode handler of interrupt BL, with registers taken from a real mode call structure.",
+      "behaviour": "BL = interrupt number, BH = flags (0; DPMI 0.9 bit 0 resets the interrupt controller and A20), CX = words copied to the real mode stack, ES:(E)DI -> call structure, updated on return except SS:SP and CS:IP. CF set: AX=8012h, 8013h, 8014h or 8021h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310300",
+          "cites": "INT 31 P - DPMI 0.9+ - SIMULATE REAL MODE INTERRUPT"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x03/0x01",
+      "name": "call rm far proc",
+      "aliases": [
+        "call real mode far"
+      ],
+      "description": "Calls a real mode procedure that returns with a far return, with registers taken from a real mode call structure.",
+      "behaviour": "BH = flags (0), CX = words copied to the real mode stack, ES:(E)DI -> call structure, updated on return except SS:SP and CS:IP. A zero SS:SP gets a small real mode stack. CF set: AX=8012h, 8013h, 8014h or 8021h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310301",
+          "cites": "INT 31 P - DPMI 0.9+ - CALL REAL MODE PROCEDURE WITH FAR RETURN FRAME"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x03/0x02",
+      "name": "call rm iret proc",
+      "aliases": [
+        "call real mode iret"
+      ],
+      "description": "Calls a real mode procedure that returns with IRET, with registers taken from a real mode call structure.",
+      "behaviour": "BH = flags (0), CX = words copied to the real mode stack, ES:(E)DI -> call structure; its flags are pushed first and TF and IF are clear on entry. A zero SS:SP gets a small real mode stack. CF set: AX=8012h, 8013h, 8014h or 8021h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310302",
+          "cites": "INT 31 P - DPMI 0.9+ - CALL REAL MODE PROCEDURE WITH IRET FRAME"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x03/0x03",
+      "name": "alloc rm callback",
+      "aliases": [
+        "allocate callback"
+      ],
+      "description": "Allocates a real mode address that calls a protected mode procedure.",
+      "behaviour": "DS:(E)SI = procedure, ES:(E)DI = real mode call structure. CF clear: CX:DX = real mode call address; CF set: AX=8015h (DPMI 1.0+). The procedure is entered with DS:(E)SI -> real mode SS:SP and ES:(E)DI -> the structure, and ends with IRET; hosts give at least 16 callbacks.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310303",
+          "cites": "INT 31 P - DPMI 0.9+ - ALLOCATE REAL MODE CALLBACK ADDRESS"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x03/0x04",
+      "name": "free rm callback",
+      "aliases": [
+        "free callback"
+      ],
+      "description": "Frees a real mode callback address.",
+      "behaviour": "CX:DX = real mode callback address. CF clear on success; CF set: AX=8024h (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310304",
+          "cites": "INT 31 P - DPMI 0.9+ - FREE REAL MODE CALLBACK ADDRESS"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x03/0x05",
+      "name": "get state save addrs",
+      "aliases": [
+        "state save restore"
+      ],
+      "description": "Returns the addresses of the procedures that save and restore the task state for raw mode switching.",
+      "behaviour": "CF clear: AX = state buffer size in bytes (zero if no state need be kept), BX:CX = real mode procedure, SI:(E)DI = protected mode procedure. Call the procedures with AL=00h save or 01h restore and ES:(E)DI -> buffer. Only needed with AX=0306h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310305",
+          "cites": "INT 31 P - DPMI 0.9+ - GET STATE SAVE/RESTORE ADDRESSES"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x03/0x06",
+      "name": "get raw switch addrs",
+      "aliases": [
+        "raw mode switch"
+      ],
+      "description": "Returns the entry points that switch between real and protected mode directly.",
+      "behaviour": "CF clear: BX:CX = real to protected switch, SI:(E)DI = protected to real switch. They are jumped to with AX = new DS, CX = new ES, DX = new SS, (E)BX = new (E)SP, SI:(E)DI = new CS:(E)IP; save task state with AX=0305h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310306",
+          "cites": "INT 31 P - DPMI 0.9+ - GET RAW MODE SWITCH ADDRESSES"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x04/0x00",
+      "name": "get dpmi version",
+      "aliases": [
+        "dpmi version"
+      ],
+      "description": "Returns the DPMI version, host flags, processor type and the interrupt controller base vectors.",
+      "behaviour": "CF clear: AH = major version, AL = minor version, BX = host flags (bit 0 32-bit, bit 1 reflects to real mode, bit 2 virtual memory), CL = processor (02h 80286, 03h 80386, 04h 80486), DH = master and DL = slave PIC base.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310400",
+          "cites": "INT 31 P - DPMI 0.9+ - GET DPMI VERSION"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x04/0x01",
+      "name": "get dpmi capabilities",
+      "aliases": [
+        "dpmi capabilities"
+      ],
+      "description": "Returns the host's capability bits and fills a buffer with its version and vendor name (DPMI 1.0).",
+      "behaviour": "ES:(E)DI -> 128-byte buffer: major, minor, then an ASCIZ vendor name. CF clear: AX = capabilities (bit 0 accessed/dirty, 1 restartable exceptions, 2 device mapping, 3 conventional mapping, 4 zero-fill, 5-6 write-protect), CX = DX = 0. CF set only on DPMI 0.9.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310401",
+          "cites": "INT 31 P - DPMI 1.0+ - GET DPMI CAPABILITIES"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x00",
+      "name": "get free memory info",
+      "aliases": [
+        "free memory information"
+      ],
+      "description": "Fills a buffer with the host's memory statistics.",
+      "behaviour": "ES:(E)DI -> 48-byte buffer: largest block in bytes first, then page counts and paging file size; CF clear. Unsupported fields hold FFFFFFFFh and the result is advisory only. DPMI 1.0+ keeps it for compatibility; use AX=050Bh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310500",
+          "cites": "INT 31 P - DPMI 0.9+ - GET FREE MEMORY INFORMATION"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x01",
+      "name": "alloc memory block",
+      "aliases": [
+        "allocate memory block"
+      ],
+      "description": "Allocates a block of extended memory and returns its linear address and handle.",
+      "behaviour": "BX:CX = size in bytes. CF clear: BX:CX = linear address, SI:DI = handle; no selectors are allocated and the block is unlocked. CF set: AX=8012h-8014h, 8016h or 8021h (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310501",
+          "cites": "INT 31 P - DPMI 0.9+ - ALLOCATE MEMORY BLOCK"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x02",
+      "name": "free memory block",
+      "description": "Frees a memory block by handle.",
+      "behaviour": "SI:DI = handle. CF set: AX=8023h (DPMI 1.0+). Free any selectors allocated for the block as well, preferably before freeing the block.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310502",
+          "cites": "INT 31 P - DPMI 0.9+ - FREE MEMORY BLOCK"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x03",
+      "name": "resize memory block",
+      "description": "Resizes a memory block, which may move it.",
+      "behaviour": "BX:CX = new size in bytes (nonzero), SI:DI = handle. CF clear: BX:CX = new linear address, SI:DI = new handle, and the old handle is invalid, so selectors on the block need updating. CF set: AX=8012h-8014h, 8016h, 8021h or 8023h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310503",
+          "cites": "INT 31 P - DPMI 0.9+ - RESIZE MEMORY BLOCK"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x04",
+      "name": "alloc linear block",
+      "aliases": [
+        "allocate linear block"
+      ],
+      "description": "Allocates a linear memory block at a chosen or any address (DPMI 1.0).",
+      "behaviour": "EBX = page-aligned address or 0, ECX = size in bytes (nonzero), EDX bit 0 = commit pages. CF clear: EBX = linear address, ESI = handle; CF set: AX=8001h, 8012h-8014h, 8016h, 8021h or 8025h. 32-bit hosts only, usable by 16-bit clients.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310504",
+          "cites": "INT 31 P - DPMI 1.0+ - ALLOCATE LINEAR MEMORY BLOCK"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x05",
+      "name": "resize linear block",
+      "description": "Resizes a linear memory block (DPMI 1.0).",
+      "behaviour": "ESI = handle, ECX = new size, EDX bit 0 = commit, bit 1 = update descriptors listed at ES:EBX with EDI selectors. CF clear: EBX = new base, ESI = new handle, old handle invalid. CF set: AX=8001h, 8012h-8014h, 8016h, 8021h or 8023h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310505",
+          "cites": "INT 31 P - DPMI 1.0+ - RESIZE LINEAR MEMORY BLOCK"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x06",
+      "name": "get page attributes",
+      "description": "Fills an array of words with the attributes of pages of a memory block (DPMI 1.0).",
+      "behaviour": "ESI = handle, EBX = offset of first page (rounded down), ECX = pages, ES:EDX -> WORD array: bits 0-2 type (0 uncommitted, 1 committed, 2 mapped), 3 read/write, 4-6 accessed/written. CF set: AX=8001h, 8023h or 8025h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310506",
+          "cites": "INT 31 P - DPMI 1.0+ - GET PAGE ATTRIBUTES"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x07",
+      "name": "modify page attributes",
+      "description": "Sets the attributes of pages of a memory block from an array of words (DPMI 1.0).",
+      "behaviour": "ESI = handle, EBX = offset of first page (rounded down), ECX = pages, ES:EDX -> WORD array. CF set: AX = 8001h, 8002h, 8013h, 8014h, 8021h, 8023h or 8025h, and ECX = pages already set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310507",
+          "cites": "INT 31 P - DPMI 1.0+ - MODIFY PAGE ATTRIBUTES"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x08",
+      "name": "map device in block",
+      "description": "Maps a device's physical pages into a memory block (DPMI 1.0).",
+      "behaviour": "ESI = handle, EBX = page-aligned offset, ECX = pages, EDX = page-aligned physical address. CF set: AX=8001h, 8003h, 8023h or 8025h. Support is optional, perhaps only for some devices.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310508",
+          "cites": "INT 31 P - DPMI 1.0+ - MAP DEVICE IN MEMORY BLOCK"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x09",
+      "name": "map conv memory in block",
+      "description": "Maps conventional memory pages into a memory block (DPMI 1.0).",
+      "behaviour": "ESI = handle, EBX = page-aligned offset, ECX = pages, EDX = page-aligned linear address below 1 MB. CF set: AX=8001h, 8003h, 8023h or 8025h. Support is optional.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310509",
+          "cites": "INT 31 P - DPMI 1.0+ - MAP CONVENTIONAL MEMORY IN MEMORY BLOCK"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x0A",
+      "name": "get block size and base",
+      "description": "Returns the size and base address of a memory block (DPMI 1.0).",
+      "behaviour": "SI:DI = handle. CF clear: SI:DI = size in bytes, BX:CX = base address. CF set: AX=8023h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-31050A",
+          "cites": "INT 31 P - DPMI 1.0+ - GET MEMORY BLOCK SIZE AND BASE"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x05/0x0B",
+      "name": "get memory information",
+      "description": "Fills a 128-byte buffer with the host's memory information (DPMI 1.0).",
+      "behaviour": "ES:(E)DI -> buffer: physical, virtual and per-machine and per-client allocated and available bytes, locked bytes, highest address, largest block, minimum allocation unit and alignment. CF clear. CF set only on DPMI 0.9.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-31050B",
+          "cites": "INT 31 P - DPMI 1.0+ - GET MEMORY INFORMATION"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x06/0x00",
+      "name": "lock linear region",
+      "description": "Locks pages of a linear region against paging.",
+      "behaviour": "BX:CX = linear address, SI:DI = size in bytes. Pages at both ends are locked if partly covered, and each page has a lock count. CF set: AX=8013h, 8017h or 8025h (DPMI 1.0+), and no memory is locked.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310600",
+          "cites": "INT 31 P - DPMI 0.9+ - LOCK LINEAR REGION"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x06/0x01",
+      "name": "unlock linear region",
+      "description": "Unlocks pages of a linear region.",
+      "behaviour": "BX:CX = linear address, SI:DI = size in bytes. Pages at both ends are unlocked if partly covered; a page stays locked until its count reaches zero. CF set: AX=8002h or 8025h (DPMI 1.0+), and none is unlocked.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310601",
+          "cites": "INT 31 P - DPMI 0.9+ - UNLOCK LINEAR REGION"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x06/0x02",
+      "name": "rm region pageable",
+      "aliases": [
+        "mark real mode pageable"
+      ],
+      "description": "Marks a real mode region as pageable.",
+      "behaviour": "BX:CX = linear address, SI:DI = size in bytes; pageability is binary, not a count. DPMI 0.9 requires relocking the region before terminating and DPMI 1.0+ does it. CF set: AX=8002h or 8025h (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310602",
+          "cites": "INT 31 P - DPMI 0.9+ - MARK REAL MODE REGION AS PAGEABLE"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x06/0x03",
+      "name": "relock rm region",
+      "aliases": [
+        "relock real mode region"
+      ],
+      "description": "Relocks a real mode region made pageable by AX=0602h.",
+      "behaviour": "BX:CX = linear address, SI:DI = size in bytes. Pages at both ends are relocked if partly covered; the state is binary, not a count. CF set: AX=8002h, 8013h or 8025h (DPMI 1.0+), and none is relocked.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310603",
+          "cites": "INT 31 P - DPMI 0.9+ - RELOCK REAL MODE REGION"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x06/0x04",
+      "name": "get page size",
+      "description": "Returns the size of a memory page.",
+      "behaviour": "CF clear: BX:CX = page size in bytes. CF set: AX = error code (DPMI 1.0+), including 8001h for a 16-bit host. The list notes that the Borland C++ 3.1 DPMILOAD returns CF clear with BX and CX unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310604",
+          "cites": "INT 31 P - DPMI 0.9+ - GET PAGE SIZE"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x07/0x02",
+      "name": "mark demand paging",
+      "aliases": [
+        "demand paging candidate"
+      ],
+      "description": "Marks a byte range as a candidate for demand paging.",
+      "behaviour": "BX:CX = starting linear address, SI:DI = number of bytes. CF set: AX=8025h (DPMI 1.0+). The call is advisory and forces no immediate paging; partial pages are not discarded.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310702",
+          "cites": "INT 31 P - DPMI 0.9+ - MARK PAGE AS DEMAND PAGING CANDIDATE"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x07/0x03",
+      "name": "discard page contents",
+      "description": "Marks the contents of a byte range as discarded.",
+      "behaviour": "BX:CX = starting linear address, SI:DI = number of bytes. CF set: AX=8025h (DPMI 1.0+). The call is advisory and may be ignored by the host; partial pages are not discarded.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310703",
+          "cites": "INT 31 P - DPMI 0.9+ - DISCARD PAGE CONTENTS"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x08/0x00",
+      "name": "map physical address",
+      "aliases": [
+        "physical address mapping"
+      ],
+      "description": "Maps physical memory, normally above 1 MB, to a linear address.",
+      "behaviour": "BX:CX = physical address, SI:DI = size in bytes. CF clear: BX:CX = linear address and the caller must build a selector; CF set: AX=8003h or 8021h (DPMI 1.0+). The host may refuse it; do not use it for the first megabyte.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310800",
+          "cites": "INT 31 P - DPMI 0.9+ - PHYSICAL ADDRESS MAPPING"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x08/0x01",
+      "name": "free physical mapping",
+      "aliases": [
+        "free physical address"
+      ],
+      "description": "Frees a mapping made by AX=0800h (DPMI 1.0).",
+      "behaviour": "BX:CX = linear address returned by AX=0800h. CF clear on success; CF set: AX=8025h. Call it when access to the device ends.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310801",
+          "cites": "INT 31 P - DPMI 1.0+ - FREE PHYSICAL ADDRESS MAPPING"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x09/0x00",
+      "name": "disable virtual ints",
+      "aliases": [
+        "get and disable vif"
+      ],
+      "description": "Disables the virtual interrupt state and returns the previous state.",
+      "behaviour": "CF clear; AL = previous state (00h disabled, 01h enabled), AH preserved. Another INT 31h call restores the old state; a CLI also works but traps to the host and is slow.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310900",
+          "cites": "INT 31 P - DPMI 0.9+ - GET AND DISABLE VIRTUAL INTERRUPT STATE"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x09/0x01",
+      "name": "enable virtual ints",
+      "aliases": [
+        "get and enable vif"
+      ],
+      "description": "Enables the virtual interrupt state and returns the previous state.",
+      "behaviour": "CF clear; AL = previous state (00h disabled, 01h enabled), AH preserved. Another INT 31h call restores the old state; a STI also works but traps to the host and is slow.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310901",
+          "cites": "INT 31 P - DPMI 0.9+ - GET AND ENABLE VIRTUAL INTERRUPT STATE"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x09/0x02",
+      "name": "get virtual int state",
+      "aliases": [
+        "get vif"
+      ],
+      "description": "Returns the current virtual interrupt state.",
+      "behaviour": "CF clear; AL = state (00h disabled, 01h enabled). Use it instead of PUSHF, which yields the physical state and not the per-client virtualized interrupt flag.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310902",
+          "cites": "INT 31 P - DPMI 0.9+ - GET VIRTUAL INTERRUPT STATE"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0A/0x00",
+      "name": "get vendor api",
+      "aliases": [
+        "vendor entry point"
+      ],
+      "description": "Returns the extended API entry point for a vendor name.",
+      "behaviour": "DS:(E)SI -> case-sensitive ASCIZ vendor name. CF clear: ES:(E)DI -> far entry point, with DS, FS, GS, EAX, EBX, ECX, EDX, ESI and EBP destroyed; CF set: AX=8001h (DPMI 1.0+). DPMI 1.0+ prefers INT 2Fh AX=168Ah.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310A00",
+          "cites": "INT 31 P - DPMI 0.9+ - GET VENDOR SPECIFIC API ENTRY POINT"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0B/0x00",
+      "name": "set watchpoint",
+      "aliases": [
+        "set debug watchpoint"
+      ],
+      "description": "Sets a debug watchpoint at a linear address.",
+      "behaviour": "BX:CX = linear address, DL = size (1, 2 or 4), DH = type (00h execute, 01h write, 02h read/write). CF clear: BX = watchpoint handle. CF set: AX=8016h, 8021h or 8025h (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310B00",
+          "cites": "INT 31 P - DPMI 0.9+ - SET DEBUG WATCHPOINT"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0B/0x01",
+      "name": "clear watchpoint",
+      "aliases": [
+        "clear debug watchpoint"
+      ],
+      "description": "Clears a debug watchpoint and frees its handle.",
+      "behaviour": "BX = watchpoint handle. CF clear on success; CF set: AX=8023h (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310B01",
+          "cites": "INT 31 P - DPMI 0.9+ - CLEAR DEBUG WATCHPOINT"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0B/0x02",
+      "name": "get watchpoint state",
+      "aliases": [
+        "get debug watchpoint"
+      ],
+      "description": "Returns whether a debug watchpoint has triggered.",
+      "behaviour": "BX = watchpoint handle. CF clear: AX bit 0 = the watchpoint has executed since AX=0B00h or AX=0B03h. CF set: AX=8023h (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310B02",
+          "cites": "INT 31 P - DPMI 0.9+ - GET STATE OF DEBUG WATCHPOINT"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0B/0x03",
+      "name": "reset watchpoint",
+      "aliases": [
+        "reset debug watchpoint"
+      ],
+      "description": "Resets the triggered state of a debug watchpoint.",
+      "behaviour": "BX = watchpoint handle. CF clear on success; CF set: AX=8023h (DPMI 1.0+).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310B03",
+          "cites": "INT 31 P - DPMI 0.9+ - RESET DEBUG WATCHPOINT"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0C/0x00",
+      "name": "install tsr init",
+      "aliases": [
+        "resident handler init"
+      ],
+      "description": "Declares an intent to provide resident protected mode services (DPMI 1.0).",
+      "behaviour": "ES:(E)DI -> resident service provider structure: 16-bit and 32-bit data and code descriptors plus callback offsets. CF set: AX=8015h, 8021h or 8025h. A later AX=0C01h keeps the services resident.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310C00",
+          "cites": "INT 31 P - DPMI 1.0+ - INSTALL RESIDENT HANDLER INIT CALLBACK"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0C/0x01",
+      "name": "terminate and stay",
+      "aliases": [
+        "dpmi tsr"
+      ],
+      "description": "Ends the program but keeps its resident protected mode services (DPMI 1.0).",
+      "behaviour": "BL = return code, DX = paragraphs of DOS memory to keep (0 or at least 6). It never returns. Without a prior AX=0C00h the program is simply terminated; protected mode memory not freed first stays allocated.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310C01",
+          "cites": "INT 31 P - DPMI 1.0+ - TERMINATE AND STAY RESIDENT"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0D/0x00",
+      "name": "alloc shared memory",
+      "aliases": [
+        "allocate shared memory"
+      ],
+      "description": "Allocates a named shared memory block (DPMI 1.0).",
+      "behaviour": "ES:(E)DI -> request structure: requested length, then returned length, handle and linear address, and a name pointer. CF set: AX=8012h-8014h, 8016h or 8021h. The first 16 bytes are zeroed on first allocation.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310D00",
+          "cites": "INT 31 P - DPMI 1.0+ - ALLOCATE SHARED MEMORY"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0D/0x01",
+      "name": "free shared memory",
+      "description": "Frees a shared memory block by handle (DPMI 1.0).",
+      "behaviour": "SI:DI = handle. CF set: AX=8023h. The handle becomes invalid; the block is destroyed when its global use count reaches zero, counted apart from the per-machine count.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310D01",
+          "cites": "INT 31 P - DPMI 1.0+ - FREE SHARED MEMORY"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0D/0x02",
+      "name": "serialize shared mem",
+      "description": "Serializes access to a shared memory block, exclusive or shared (DPMI 1.0).",
+      "behaviour": "SI:DI = handle, DX bit 0 = return at once if unavailable, bit 1 = shared instead of exclusive. CF set: AX=8004h, 8005h, 8017h-8019h or 8023h. Hosts need not detect deadlock; AX=0D03h cancels a blocked call.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310D02",
+          "cites": "INT 31 P - DPMI 1.0+ - SERIALIZE SHARED MEMORY"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0D/0x03",
+      "name": "free serialization",
+      "description": "Releases serialization on a shared memory block (DPMI 1.0).",
+      "behaviour": "SI:DI = handle, DX bit 0 = release shared instead of exclusive serialization, bit 1 = free pending serialization. CF set: AX=8002h or 8023h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310D03",
+          "cites": "INT 31 P - DPMI 1.0+ - FREE SERIALIZATION ON SHARED MEMORY"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0E/0x00",
+      "name": "get coprocessor status",
+      "description": "Returns the coprocessor status bits (DPMI 1.0).",
+      "behaviour": "CF clear: AX bit 0 = coprocessor enabled for the client, 1 = client emulates, 2 = present, 3 = host emulates; bits 4-7 type (0 none, 2 80287, 3 80387, 4 80486 with coprocessor).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310E00",
+          "cites": "INT 31 P - DPMI 1.0+ - GET COPROCESSOR STATUS"
+        }
+      ]
+    },
+    {
+      "key": "0x31/0x0E/0x01",
+      "name": "set emulation",
+      "description": "Enables the coprocessor or declares client emulation (DPMI 1.0).",
+      "behaviour": "BX bit 0 = enable the coprocessor for the client, bit 1 = the client will emulate it. CF set: AX=8026h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.N E-310E01",
+          "cites": "INT 31 P - DPMI 1.0+ - SET EMULATION"
+        }
+      ]
+    }
+  ]
+}

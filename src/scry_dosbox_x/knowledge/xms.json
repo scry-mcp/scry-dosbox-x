@@ -1,0 +1,412 @@
+{
+  "format": "scry-knowledge/1",
+  "dictionary": "xms",
+  "kind": "call",
+  "scope": "ibm-pc",
+  "covers": "The XMS driver: every function the emulator's XMS_Handler has a case for. The driver is called far through the address INT 2Fh AX=4310h returns, with the function in AH, so the key is `0x43/<AH>` (43h is the multiplex number that finds the driver).",
+  "complete_against": "dosbox-x:src/ints/xms.cpp XMS_Handler",
+  "entries": [
+    {
+      "key": "0x43/0x00",
+      "name": "get xms version",
+      "description": "Returns the XMS specification version, the driver revision and whether the HMA exists.",
+      "behaviour": "Returns AX=0300h (XMS 3.00), BX=0301h (the driver revision) and DX=1 if the HMA exists (the hma option) or 0 if not. BL is not touched.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02750 Call the XMS driver \"Get XMS version number\"",
+          "cites": "Call the XMS driver \"Get XMS version number\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x00",
+          "cites": "\tcase XMS_GET_VERSION:\t\t\t\t\t\t\t\t\t\t/* 00 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x01",
+      "name": "request hma",
+      "description": "Asks the driver for the high memory area.",
+      "behaviour": "DX = bytes wanted. Success: AX=1 and the HMA is marked as held by the caller; BL is not touched. Failure: AX=0 and BL=90h if there is no HMA, 91h if an application or the DOS kernel already holds it, 92h if DX is below the hma minimum allocation.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02751 Call the XMS driver \"Request High Memory Area\"",
+          "cites": "Call the XMS driver \"Request High Memory Area\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x01",
+          "cites": "\tcase XMS_ALLOCATE_HIGH_MEMORY:\t\t\t\t\t\t\t\t/* 01 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x02",
+      "name": "release hma",
+      "description": "Gives the high memory area back to the driver.",
+      "behaviour": "AX=1 and the HMA is released if an application holds it. Otherwise AX=0 and BL=93h (not allocated), or BL=90h if there is no HMA. If the DOS kernel occupies the HMA the emulator logs a warning and answers the same way.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02752 Call the XMS driver \"Release High Memory Area\"",
+          "cites": "Call the XMS driver \"Release High Memory Area\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x02",
+          "cites": "\tcase XMS_FREE_HIGH_MEMORY:\t\t\t\t\t\t\t\t\t/* 02 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x03",
+      "name": "global enable a20",
+      "description": "Turns the A20 gate on for the HMA and keeps it on until the global disable.",
+      "behaviour": "The first call raises the local enable count and switches A20 on if the count was 0; later calls do nothing. Returns AX=1 and BL=00h. No error is ever returned.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02753 Call the XMS driver \"Global enable A20, for using the HMA\"",
+          "cites": "Call the XMS driver \"Global enable A20, for using the HMA\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x03",
+          "cites": "\tcase XMS_GLOBAL_ENABLE_A20:\t\t\t\t\t\t\t\t\t/* 03 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x04",
+      "name": "global disable a20",
+      "description": "Undoes the global A20 enable.",
+      "behaviour": "If A20 was globally enabled it lowers the local enable count, switching A20 off at 0, and returns AX=1, BL=00h; if the count is already 0 it returns AX=0, BL=82h. If it was not globally enabled it returns AX=1, BL=00h.",
+      "differs": "The list gives 94h when the A20 line is still enabled; the emulator never returns 94h, only 82h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02754 Call the XMS driver \"Global disable A20\"",
+          "cites": "Call the XMS driver \"Global disable A20\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x04",
+          "cites": "\tcase XMS_GLOBAL_DISABLE_A20:\t\t\t\t\t\t\t\t/* 04 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x05",
+      "name": "local enable a20",
+      "description": "Turns the A20 gate on for direct access to extended memory.",
+      "behaviour": "Raises the local enable count and switches A20 on if the count was 0. Returns AX=1 and BL=00h; no error is returned.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02755 Call the XMS driver \"Local enable A20\"",
+          "cites": "Call the XMS driver \"Local enable A20\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x05",
+          "cites": "    case XMS_LOCAL_ENABLE_A20:\t\t\t\t\t\t\t\t\t/* 05 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x06",
+      "name": "local disable a20",
+      "description": "Cancels one local A20 enable.",
+      "behaviour": "Lowers the local enable count and switches A20 off when it reaches 0, returning AX=1 and BL=00h. If the count is already 0 it returns AX=0 and BL=82h.",
+      "differs": "The list gives 94h when the A20 line is still enabled; the emulator never returns 94h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02756 Call the XMS driver \"Local disable A20\"",
+          "cites": "Call the XMS driver \"Local disable A20\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x06",
+          "cites": "\tcase XMS_LOCAL_DISABLE_A20:\t\t\t\t\t\t\t\t\t/* 06 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x07",
+      "name": "query a20",
+      "description": "Tells whether the A20 gate is enabled.",
+      "behaviour": "Returns AX=1 if A20 is enabled and AX=0 if not, with BL=00h. A20 is read from port 92h bit 1 (on PC-98, port F2h bit 0 clear means enabled).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02757 Call the XMS driver \"Query A20 state\"",
+          "cites": "Call the XMS driver \"Query A20 state\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x07",
+          "cites": "\tcase XMS_QUERY_A20:\t\t\t\t\t\t\t\t\t\t\t/* 07 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x08",
+      "name": "query free ext memory",
+      "description": "Returns the largest free extended memory block and the total free extended memory, in KB.",
+      "behaviour": "AX = largest free block and DX = total free, in KB, each capped at 65535; function 88h gives the uncapped values. BL=00h, or BL=A0h if no memory is free (then AX and DX are 0).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02758 Call the XMS driver \"Query free extended memory\"",
+          "cites": "Call the XMS driver \"Query free extended memory\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x08",
+          "cites": "\tcase XMS_QUERY_FREE_EXTENDED_MEMORY:\t\t\t\t\t\t/* 08 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x09",
+      "name": "allocate ext memory",
+      "description": "Allocates an extended memory block of DX kilobytes and returns a handle.",
+      "behaviour": "DX = KB wanted. Success: AX=1 and DX = the handle. Failure: AX=0, DX=0 and BL=A1h if no handle is free or A0h if the memory is not available; a size of 0 still gets a handle, even when no memory is left.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02759 Call the XMS driver \"Allocate extended memory block\"",
+          "cites": "Call the XMS driver \"Allocate extended memory block\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x09",
+          "cites": "\tcase XMS_ALLOCATE_EXTENDED_MEMORY:\t\t\t\t\t\t\t/* 09 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x0A",
+      "name": "free ext memory",
+      "description": "Frees an extended memory block.",
+      "behaviour": "DX = handle. Success: AX=1, BL=00h and the block is freed. Failure: AX=0 and BL=A2h if the handle is 0, out of range or not in use, or ABh if the block is locked.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02760 Call the XMS driver \"Free extended memory block\"",
+          "cites": "Call the XMS driver \"Free extended memory block\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0a",
+          "cites": "\tcase XMS_FREE_EXTENDED_MEMORY:\t\t\t\t\t\t\t\t/* 0a */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x0B",
+      "name": "move ext memory",
+      "description": "Copies a block of memory between conventional and extended memory according to a move structure.",
+      "behaviour": "DS:SI = structure (length, source and destination handle and offset); handle 0 means a segment:offset address. Success: AX=1, BL untouched, A20 forced on during the copy. Failure: AX=0 and BL=A3h or A5h bad source or destination handle, A4h or A6h bad offset, A7h odd length, length past the block, or real end past 10FFF0h.",
+      "differs": "The list gives A8h for an invalid overlap and 80h to 82h; the emulator never returns them and copies overlapping ranges with no check.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02761 Call the XMS driver \"Move extended memory block\"",
+          "cites": "Call the XMS driver \"Move extended memory block\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0b",
+          "cites": "\tcase XMS_MOVE_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t\t/* 0b */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x0C",
+      "name": "lock ext memory",
+      "description": "Locks an extended memory block and returns its physical address.",
+      "behaviour": "DX = handle. Success: AX=1 and DX:BX = the 32-bit physical address, with the lock count raised by one up to 255. Failure: AX=0 and BL=A2h for an invalid handle.",
+      "differs": "The list gives ACh when the lock count overflows; the emulator stops the count at 255 and returns success.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02762 Call the XMS driver \"Lock extended memory block\"",
+          "cites": "Call the XMS driver \"Lock extended memory block\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0c",
+          "cites": "\tcase XMS_LOCK_EXTENDED_MEMORY_BLOCK: {\t\t\t\t\t\t/* 0c */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x0D",
+      "name": "unlock ext memory",
+      "description": "Unlocks an extended memory block.",
+      "behaviour": "DX = handle. Success: AX=1, BL=00h and the lock count goes down by one. Failure: AX=0 and BL=A2h for an invalid handle, or AAh if the count is already 0.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02763 Call the XMS driver \"Unlock extended memory block\"",
+          "cites": "Call the XMS driver \"Unlock extended memory block\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0d",
+          "cites": "\tcase XMS_UNLOCK_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t\t/* 0d */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x0E",
+      "name": "get handle info",
+      "description": "Returns the lock count, free handle count and size of a block.",
+      "behaviour": "DX = handle. Success: AX=1, BH = lock count, BL = number of free handles (8 bits) and DX = size in KB (low 16 bits). Failure: AX=0 and BL=A2h for an invalid handle.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02764 Call the XMS driver \"Get handle information\"",
+          "cites": "Call the XMS driver \"Get handle information\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0e",
+          "cites": "\tcase XMS_GET_EMB_HANDLE_INFORMATION:  \t\t\t\t\t\t/* 0e */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x0F",
+      "name": "resize ext memory",
+      "description": "Changes the size of an unlocked extended memory block.",
+      "behaviour": "DX = handle, BX = new size in KB. Success: AX=1, BL=00h. Failure: AX=0 and BL=A2h for an invalid handle, ABh if the block is locked, A0h if the memory cannot be reallocated.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02765 Call the XMS driver \"Reallocate extended memory block\"",
+          "cites": "Call the XMS driver \"Reallocate extended memory block\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0f",
+          "cites": "\tcase XMS_RESIZE_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t\t/* 0f */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x10",
+      "name": "request umb",
+      "description": "Allocates an upper memory block of DX paragraphs.",
+      "behaviour": "Works only with the umb option on, else AX=0 and BL=80h. Success: AX=1 and BX = segment. Failure: AX=0 and BL=B1h with DX=0 if none is free, or B0h with DX = the largest block if only a smaller one is.",
+      "differs": "The list returns the actual block size in DX on success; the emulator does not write DX.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02766 Call the XMS driver \"Request upper memory block\"",
+          "cites": "Call the XMS driver \"Request upper memory block\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x10",
+          "cites": "\tcase XMS_ALLOCATE_UMB: {\t\t\t\t\t\t\t\t\t/* 10 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x11",
+      "name": "release umb",
+      "description": "Frees an upper memory block given by its segment.",
+      "behaviour": "DX = segment. Works only with the umb option on, else AX=0 and BL=80h. If DOS frees the block AX=1; any failure gives AX=0 and BL=B1h.",
+      "differs": "The list gives B2h for an invalid UMB segment; the emulator returns B1h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02767 Call the XMS driver \"Release upper memory block\"",
+          "cites": "Call the XMS driver \"Release upper memory block\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x11",
+          "cites": "\tcase XMS_DEALLOCATE_UMB:\t\t\t\t\t\t\t\t\t/* 11 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x88",
+      "name": "query any free memory",
+      "description": "Returns the largest free block, the total free memory and the highest memory address, with 32-bit sizes.",
+      "behaviour": "EAX = largest free block in KB, EDX = total free KB, both uncapped, and ECX = the highest physical memory address. BL=00h, or A0h if no memory is free (EAX and EDX are then 0, ECX is still set).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02771 Call the XMS v3.0 driver \"Query free extended memory\"",
+          "cites": "Call the XMS v3.0 driver \"Query free extended memory\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x88",
+          "cites": "\tcase XMS_QUERY_ANY_FREE_MEMORY:\t\t\t\t\t\t\t\t/* 88 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x89",
+      "name": "allocate any memory",
+      "description": "Allocates an extended memory block of EDX kilobytes, with a 32-bit size.",
+      "behaviour": "EDX = KB wanted, all 32 bits used. Success: AX=1 and DX = the handle. Failure: AX=0, DX=0 and BL=A1h if no handle is free or A0h if the memory is not available.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02772 Call the XMS v3.0 driver \"Allocate any extended memory\"",
+          "cites": "Call the XMS v3.0 driver \"Allocate any extended memory\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x89",
+          "cites": "\tcase XMS_ALLOCATE_ANY_MEMORY:\t\t\t\t\t\t\t\t/* 89 */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x8E",
+      "name": "get ext handle info",
+      "description": "Returns the lock count, free handle count and size of a block, with 32-bit sizes.",
+      "behaviour": "DX = handle. Success: AX=1, BH = lock count, CX = number of free handles and EDX = size in KB; BL is untouched. Failure: AX=0 and BL=A2h for an invalid handle.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02773 Call the XMS v3.0 driver \"Get extended EMB handle information\"",
+          "cites": "Call the XMS v3.0 driver \"Get extended EMB handle information\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x8e",
+          "cites": "\tcase XMS_GET_EMB_HANDLE_INFORMATION_EXT: {\t\t\t\t\t/* 8e */"
+        }
+      ]
+    },
+    {
+      "key": "0x43/0x8F",
+      "name": "resize any ext memory",
+      "description": "Changes the size of an unlocked block, with a 32-bit size.",
+      "behaviour": "DX = handle, EBX = new size in KB. Success: AX=1, BL=00h. Failure: AX=0 and BL=A2h for an invalid handle, ABh if the block is locked, A0h if the memory cannot be reallocated.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L #02774 Call the XMS v3.0 driver \"Reallocate any extended memory block\"",
+          "cites": "Call the XMS v3.0 driver \"Reallocate any extended memory block\" function with:"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x8f",
+          "cites": "\tcase XMS_RESIZE_ANY_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t/* 0x8f */"
+        }
+      ]
+    }
+  ]
+}

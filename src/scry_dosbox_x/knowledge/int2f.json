@@ -1,0 +1,1063 @@
+{
+  "format": "scry-knowledge/1",
+  "dictionary": "int2f",
+  "kind": "call",
+  "scope": "ibm-pc",
+  "covers": "INT 2Fh, the multiplex interrupt: every call the emulator's multiplex handlers have a case for (DOS itself, the XMS installation check, MSCDEX).",
+  "complete_against": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions, src/ints/xms.cpp multiplex_xms, src/dos/dos_mscdex.cpp MSCDEX_Handler",
+  "entries": [
+    {
+      "key": "0x2F/0x08/0x00",
+      "name": "driver.sys check",
+      "description": "Installation check of the DOS-internal support code behind DRIVER.SYS.",
+      "behaviour": "The emulator only writes a debug-level log line (Unhandled DRIVER.SYS call) and returns false, so the call continues down the multiplex chain. No register is changed, so AL stays 00h, which a caller reads as not installed, OK to install.",
+      "differs": "The list says AL returns FFh because the support code is always present from DOS 3.2; the emulator leaves AX unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K D-2F0800",
+          "cites": "INT 2F U - DRIVER.SYS support - INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0800",
+          "cites": "    case 0x0800:    /* DRIVER.SYS function */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x08/0x01",
+      "name": "driver.sys add unit",
+      "description": "Adds the drive data table at DS:DI to DRIVER.SYS's internal chain of block device tables.",
+      "behaviour": "Same path as AX=0800h: a debug-level log line, then false, so the call continues down the chain. No register is changed and no table is added.",
+      "differs": "The list appends the table to its chain and destroys AX, BX, SI and ES; the emulator does nothing and leaves every register unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K D-2F0801",
+          "cites": "INT 2F U - DRIVER.SYS support - ADD NEW BLOCK DEVICE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0801",
+          "cites": "    case 0x0801:    /* DRIVER.SYS function */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x08/0x02",
+      "name": "driver.sys request",
+      "description": "Runs the device driver request header at ES:BX through DRIVER.SYS's internal path.",
+      "behaviour": "Same path as AX=0800h: a debug-level log line, then false, so the call continues down the chain. The request header and every register are left unchanged.",
+      "differs": "The list executes the request and updates its header; the emulator never executes it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K D-2F0802",
+          "cites": "INT 2F U - DRIVER.SYS support - EXECUTE DEVICE DRIVER REQUEST"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0802",
+          "cites": "    case 0x0802:    /* DRIVER.SYS function */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x08/0x03",
+      "name": "drive data table list",
+      "description": "Returns the head of the DOS 4.0+ DRIVER.SYS drive data table list in DS:DI.",
+      "behaviour": "Logs at debug level, sets DS:DI to the head of a dummy list and returns false, so the call also continues down the chain. The dummy list is one paragraph whose next-table pointer is FFFFh:FFFFh, which Windows 95 SCANDISK and setup accept as a valid, empty list.",
+      "differs": "The list points DS:DI at the first real drive data table; the emulator points it at an empty dummy list.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K D-2F0803",
+          "cites": "INT 2F U - DOS 4.0+ DRIVER.SYS support - GET DRIVE DATA TABLE LIST"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0803",
+          "cites": "    case 0x0803:    /* DRIVER.SYS function */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x10/0x00",
+      "name": "share check",
+      "description": "SHARE installation check: AL=FFh reports that file sharing is installed.",
+      "behaviour": "Always handled. With the share option on, AL becomes FFh; with it off nothing changes, so AL stays 00h, not installed, OK to install. Only this check is emulated, not the other SHARE functions.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K f-2F1000",
+          "cites": "INT 2F - SHARE - INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1000",
+          "cites": "    case 0x1000:    /* SHARE.EXE installation check */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x12/0x16",
+      "name": "get sft entry",
+      "description": "Returns in ES:DI a pointer to the system file table entry that BX numbers.",
+      "behaviour": "Treats BX as a file handle and logs an error line. CF is clear for BX up to the FILES count, else set. Only for BX below 16 and an open handle does it fill the entry and return ES:DI to it with AX=C000h; BX is not updated, and ES:DI is untouched otherwise.",
+      "differs": "The list takes BX as a table entry number and returns the relative entry number in BX; the emulator takes BX as a file handle and leaves BX unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K D-2F1216",
+          "cites": "INT 2F U - DOS 3.0+ internal - GET ADDRESS OF SYSTEM FILE TABLE ENTRY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1216",
+          "cites": "\tcase 0x1216:\t/* GET ADDRESS OF SYSTEM FILE TABLE ENTRY */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x13/0x00",
+      "name": "set disk int handler",
+      "description": "A call the emulator answers with AX=0 and no other effect.",
+      "behaviour": "The emulator answers exactly AX=1300h with AX=0 and returns true. DS:DX and ES:BX are neither read nor written, and no handler is recorded.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1300",
+          "cites": "    case 0x1300:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x13/0x02",
+      "name": "set disk int handler 2",
+      "description": "A call the emulator answers with AX=0 and no other effect.",
+      "behaviour": "The emulator answers exactly AX=1302h with AX=0 and returns true. DS:DX and ES:BX are neither read nor written, and no handler is recorded. Other AL values are not handled by this case.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1302",
+          "cites": "    case 0x1302:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x00",
+      "name": "windows enhanced check",
+      "description": "Windows enhanced mode installation check; AL=00h means no Windows 3.x enhanced mode or Windows/386 is running.",
+      "behaviour": "Always handled and leaves AX=1600h, telling the caller that no Windows is running. Exception: with secure mode off and either a fixed stack signature or the running program DOSCLIP or TOCLIP, AX becomes 0301h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1600",
+          "cites": "INT 2F - MS Windows - WINDOWS ENHANCED MODE INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1600",
+          "cites": "    case 0x1600:    /* Windows enhanced mode installation check */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x05",
+      "name": "windows init broadcast",
+      "description": "Broadcast issued when Windows enhanced mode or the 286 DOS extender starts; DX bit 0 tells them apart.",
+      "behaviour": "Logs the broadcast and returns false, so it continues down the chain; CX is untouched. Side effects: the enable a20 on windows init option turns A20 on; in DOS-V mode for enhanced mode, ES:BX is chained into a startup info block and returned; when EMS VCPI is enabled with V86 startup, DS:SI gets the vm86 control entry.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1605",
+          "cites": "INT 2F C - MS Windows - WINDOWS ENHANCED MODE & 286 DOSX INIT BROADCAST"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1605",
+          "cites": "\tcase 0x1605:\t/* Windows init broadcast */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x06",
+      "name": "windows exit broadcast",
+      "description": "Broadcast issued when Windows enhanced mode or the 286 DOS extender ends; DX bit 0 tells them apart.",
+      "behaviour": "Logs the broadcast and returns false, so it continues down the chain. No register is changed.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1606",
+          "cites": "INT 2F C - MS Windows - WINDOWS ENHANCED MODE & 286 DOSX EXIT BROADCAST"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1606",
+          "cites": "\tcase 0x1606:\t/* Windows exit broadcast */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x07",
+      "name": "vxd callout",
+      "description": "Virtual device call out: Windows virtual devices call DOS drivers with BX=device ID and CX=subfunction.",
+      "behaviour": "Logs the call unless BX=0018h. For DOSMGR (BX=0015h) it answers CX=0000h, 0001h, 0003h, 0004h and 0005h with fixed values and returns true; CX=0000h gives CX=1, DX=50h, ES=0050h, BX=60h. BX=0018h (VMPoll idle) returns true unchanged, and anything else returns false.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1607",
+          "cites": "INT 2F C - MS Windows - VIRTUAL DEVICE CALL OUT API"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1607",
+          "cites": "\tcase 0x1607:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x0A",
+      "name": "windows version",
+      "description": "Identifies the Windows version and mode: AX=0 when supported, BX the version, CX the mode.",
+      "behaviour": "Handled only when long file names are on and the program is PEDIT, PEDITLGT or NESTICLE, or a stack signature of a few other callers matches: AX=0000h, BX=0400h (4.00), CX=0002h. Otherwise it returns false and AX stays 160Ah, unsupported.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F160A",
+          "cites": "INT 2F - MS Windows 3.1 - IDENTIFY WINDOWS VERSION AND TYPE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x160A",
+          "cites": "\tcase 0x160A:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x11",
+      "name": "get shell parameters",
+      "description": "Returns the CONFIG.SYS SHELL= program name and command line of the MS-DOS 7 kernel.",
+      "behaviour": "Only when the emulated DOS version is 7 or later, and not for a program named DOSSETUP or KRNL386; otherwise returns false. Writes COMMAND.COM (4DOS.COM when 4DOS is active) as ASCIZ at DS:DX and the counted string /P /D /K AUTOEXEC at DS:SI, with AX=0 and BX=0.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L D-2F1611",
+          "cites": "INT 2F U - MS-DOS 7 kernel - GET SHELL PARAMETERS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1611",
+          "cites": "    case 0x1611:    /* Get shell parameters */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x12",
+      "name": "get dos7 kernel data",
+      "description": "MS-DOS 7 kernel call whose purpose the list leaves unknown; it returns a pointer to kernel data.",
+      "behaviour": "Only when the emulated DOS version is 7 or later, otherwise returns false. Sets AX=0 and writes 32 bytes at the caller's ES:BX: the first word is 0001h, the other 30 bytes are not set by the code.",
+      "differs": "The list returns ES:BX pointing at DOS 7 kernel data; the emulator writes a 32-byte block into the buffer ES:BX already points to.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L D-2F1612",
+          "cites": "INT 2F U - MS-DOS 7 kernel - GET ???"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1612",
+          "cites": "    case 0x1612:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x13",
+      "name": "get system.dat path",
+      "description": "Returns the pathname of the Windows 95 SYSTEM.DAT registry file in the buffer at ES:DI.",
+      "behaviour": "Only when the emulated DOS version is 7 or later, otherwise returns false. Copies the stored path, C:\\WINDOWS\\SYSTEM.DAT unless AX=1614h changed it, plus its NUL to ES:DI, and sets AX=0 and CX=path length without the NUL.",
+      "differs": "The list takes the buffer size in CX and returns the bytes copied; the emulator ignores the size and returns the length without the NUL.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L D-2F1613",
+          "cites": "INT 2F - MS-DOS 7 kernel - GET SYSTEM.DAT (REGISTRY FILE) PATHNAME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1613",
+          "cites": "    case 0x1613:    /* Get SYSTEM.DAT path */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x14",
+      "name": "set system.dat path",
+      "description": "Sets the pathname of the Windows 95 SYSTEM.DAT registry file from the ASCIZ string at ES:DI.",
+      "behaviour": "Only when the emulated DOS version is 7 or later, otherwise returns false. Stores the string at ES:DI, at most 512 bytes, as the path that AX=1613h returns, and sets AX=0 whatever its length.",
+      "differs": "The list returns the maximum path length in AX when the path is too long; the emulator always returns AX=0.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L D-2F1614",
+          "cites": "INT 2F U - MS-DOS 7 kernel - SET SYSTEM.DAT (REGISTRY FILE) PATHNAME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1614",
+          "cites": "    case 0x1614:    /* Set SYSTEM.DAT path */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x80",
+      "name": "release time slice",
+      "description": "Release current virtual machine time slice: an idle loop tells the multitasker it has nothing to do.",
+      "behaviour": "Always handled. With the dos idle api option on (read at the first call) it enables interrupts, halts the emulated CPU until the next interrupt and sets AL=00h, supported. With it off no register changes, so AL stays 80h, not supported.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1680",
+          "cites": "INT 2F - MS Windows, DPMI, various - RELEASE CURRENT VIRTUAL MACHINE TIME-SLICE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1680",
+          "cites": "\tcase 0x1680:\t/*  RELEASE CURRENT VIRTUAL MACHINE TIME-SLICE */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x89",
+      "name": "kernel idle call",
+      "description": "Windows 3.0+ kernel idle call: tells the virtual machine monitor that the system is idle.",
+      "behaviour": "Returns true and changes no register; the call is accepted and ignored, and BX is not read.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1689",
+          "cites": "INT 2F U - MS Windows 3.0+ - KERNEL IDLE CALL"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1689",
+          "cites": "\tcase 0x1689:\t/*  Kernel IDLE CALL */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x16/0x8F",
+      "name": "close awareness",
+      "description": "Windows 95 close awareness: DH selects enable or disable, query, acknowledge or cancel of the Close command.",
+      "behaviour": "Returns true and changes no register whatever DH is, so AX stays 168Fh. For the query (DH=01h) the list reads that as close not selected; for the other subfunctions a nonzero AX reads as failed.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F168FDH01",
+          "cites": "INT 2F - Windows95 - CLOSE-AWARENESS - QUERY CLOSE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x168f",
+          "cites": "\tcase 0x168f:\t/*  Close awareness crap */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x17/0x00",
+      "name": "winoldap version",
+      "description": "Identifies the WinOldAp version, the Windows extension that gives character-mode programs clipboard access.",
+      "behaviour": "With the dos clipboard api option on and secure mode off it sets AX=0101h (version 1.1) and returns true. It returns false, leaving AX=1700h, meaning no clipboard support, for programs named DEFRAG, DISKEDIT, NDD, NDIAGS, UNERASE, UNFORMAT or WINCHECK, and for INSTALL or INSTALLD with a matching stack.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1700",
+          "cites": "INT 2F - MS Windows \"WINOLDAP\" - IDENTIFY WinOldAp VERSION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1700",
+          "cites": "\tcase 0x1700:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x17/0x01",
+      "name": "open clipboard",
+      "description": "WinOldAp call that opens the clipboard; AX nonzero means success.",
+      "behaviour": "Needs the dos clipboard api option on and secure mode off, otherwise returns false with AX unchanged. On a Windows host AX=1 if the host clipboard opens, else 0; on any other host AX=1.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1701",
+          "cites": "INT 2F - MS Windows \"WINOLDAP\" - OPEN CLIPBOARD"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1701",
+          "cites": "\tcase 0x1701:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x17/0x02",
+      "name": "empty clipboard",
+      "description": "WinOldAp call that empties the clipboard; AX nonzero means success.",
+      "behaviour": "Needs the dos clipboard api option on and secure mode off, otherwise returns false with AX unchanged. AX=0 by default; AX=1 when the host clipboard was emptied (Windows), set to empty text with no text left (SDL2), or set to empty (macOS without SDL2).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1702",
+          "cites": "INT 2F - MS Windows \"WINOLDAP\" - EMPTY CLIPBOARD"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1702",
+          "cites": "\tcase 0x1702:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x17/0x03",
+      "name": "set clipboard data",
+      "description": "WinOldAp call that copies data from ES:BX to the clipboard, format in DX.",
+      "behaviour": "Same gate as AX=1701h. Only DX=1 (text) and DX=7 (OEM text) are copied, CX bytes from ES:BX, stopping at a NUL; SI is ignored; AX=1 on success, else 0. On SDL2 and macOS hosts CR LF becomes LF and the guest code page is converted; a process in UTF-8 mode keeps UTF-8.",
+      "differs": "The list takes the size in SI:CX and accepts every clipboard format; the emulator uses CX alone and copies only formats 1 and 7.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1703",
+          "cites": "INT 2F - MS Windows \"WINOLDAP\" - SET CLIPBOARD DATA"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1703",
+          "cites": "\tcase 0x1703:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x17/0x04",
+      "name": "clipboard data size",
+      "description": "WinOldAp call that returns the size in bytes of the clipboard data in the format given in DX.",
+      "behaviour": "Same gate as AX=1701h. Only DX=1 and DX=7 are served; any other format gives AX=0 with DX unchanged. Returns DX:AX, the host text converted to guest form (CR LF line ends, other control characters dropped) plus one for the NUL, or 0:0 with no text; in UTF-8 mode the size is that of the UTF-8 text, under 1 MB.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1704",
+          "cites": "INT 2F - MS Windows \"WINOLDAP\" - GET CLIPBOARD DATA SIZE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1704",
+          "cites": "\tcase 0x1704:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x17/0x05",
+      "name": "get clipboard data",
+      "description": "WinOldAp call that copies the clipboard data in the format given in DX to the buffer at ES:BX.",
+      "behaviour": "Same gate as AX=1701h. For DX=1 or 7 it copies the host clipboard text, in the form AX=1704h sizes, plus a NUL to ES:BX and returns AX=1; with no text or another format AX=0. The buffer size is not checked.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1705",
+          "cites": "INT 2F - MS Windows \"WINOLDAP\" - GET CLIPBOARD DATA"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1705",
+          "cites": "\tcase 0x1705:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x17/0x08",
+      "name": "close clipboard",
+      "description": "WinOldAp call that closes the clipboard; AX nonzero means success.",
+      "behaviour": "Same gate as AX=1701h. Returns true with AX=1 whatever the state; on a Windows host it also closes the host clipboard.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F1708",
+          "cites": "INT 2F - MS Windows \"WINOLDAP\" - CloseClipboard"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1708",
+          "cites": "\tcase 0x1708:"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x1A/0x00",
+      "name": "ansi.sys check",
+      "description": "DOS 4.0+ ANSI.SYS installation check: AL=FFh means ANSI.SYS is installed.",
+      "behaviour": "Always handled. On PC-98 nothing changes, because the kernel does not answer this call. Elsewhere AL=FFh if the emulated CON device has ANSI.SYS emulation on (the ansi.sys option); otherwise nothing changes, as on DOS without ANSI.SYS.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L V-2F1A00",
+          "cites": "INT 2F - DOS 4.0+ ANSI.SYS - INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1a00",
+          "cites": "    case 0x1a00:    /* ANSI.SYS installation check (MS-DOS 4.0 or higher) */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x46/0x80",
+      "name": "windows 3.0 check",
+      "description": "Windows 3.0 installation check: AX=0000h means Windows 3.0 in real or standard mode, or DOSSHELL active.",
+      "behaviour": "Returns true and leaves AX=4680h, which is nonzero: no Windows 3.0 in real or standard mode and no DOSSHELL.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L W-2F4680",
+          "cites": "INT 2F U - MS Windows v3.0 - INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4680",
+          "cites": "    case 0x4680:    /* Windows v3.0 check */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x4A/0x01",
+      "name": "query hma space",
+      "description": "DOS 5+ call that returns the free space in the high memory area.",
+      "behaviour": "Returns true. With DOS 5 or later in the HMA (dos=high, with XMS and its hma option on): BX = free bytes, ES:DI = start of the free area. Otherwise BX=0 and ES:DI=FFFFh:FFFFh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L D-2F4A01",
+          "cites": "INT 2F - DOS 5+ - QUERY FREE HMA SPACE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a01",
+          "cites": "\tcase 0x4a01: {\t/* Query free hma space */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x4A/0x02",
+      "name": "allocate hma space",
+      "description": "DOS 5+ call that allocates BX bytes of the high memory area.",
+      "behaviour": "Returns true. On success ES:DI is the start of the block, BX is the size, rounded up to 16 bytes if the emulated DOS is below 7, and the space is claimed. If DOS is not in the HMA or the space is short, BX=0 and ES:DI=FFFFh:FFFFh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L D-2F4A02",
+          "cites": "INT 2F - DOS 5+ - ALLOCATE HMA SPACE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a02",
+          "cites": "\tcase 0x4a02: {\t/* ALLOCATE HMA SPACE */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x4A/0x10",
+      "name": "smartdrv api",
+      "description": "Microsoft SmartDrive API: installation check, cache statistics and cache control, BX selecting the function.",
+      "behaviour": "Logs Unhandled SMARTDRV call at debug level and returns true with no register changed, so AX is never BABEh and a caller finds no SmartDrive.",
+      "differs": "The list returns AX=BABEh and cache statistics when SMARTDRV is installed; the emulator emulates none of it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L c-2F4A10BX0000@1",
+          "cites": "INT 2F - SMARTDRV v4.00+ - INSTALLATION CHECK AND HIT RATIOS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a10",
+          "cites": "    case 0x4a10: { /* Microsoft SmartDrive (SMARTDRV) API */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x4A/0x11",
+      "name": "dblspace api",
+      "description": "DoubleSpace driver API: installation check and drive control, BX selecting the function.",
+      "behaviour": "Logs Unhandled DBLSPACE call at debug level and returns true with no register changed, so AX is never 0000h and a caller finds no DoubleSpace.",
+      "differs": "The list returns AX=0000h and BX=444Dh when DBLSPACE.BIN is installed; the emulator emulates none of it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L k-2F4A11BX0000",
+          "cites": "INT 2F - DBLSPACE.BIN - \"GetVersion\" - INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a11",
+          "cites": "    case 0x4a11: { /* Microsoft DoubleSpace (DBLSPACE.BIN) API */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x4A/0x16",
+      "name": "open boot log",
+      "description": "Windows 95 call that opens the boot log file.",
+      "behaviour": "Returns true with no register changed and no file opened.",
+      "differs": "The list returns AX=0000h when the log is opened; the emulator leaves AX=4A16h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L D-2F4A16",
+          "cites": "INT 2F U - Windows95 - OPEN BOOT LOG"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a16",
+          "cites": "    case 0x4a16:    /* Open bootlog */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x4A/0x17",
+      "name": "write boot log",
+      "description": "Windows 95 call that writes a message to the boot log file.",
+      "behaviour": "Reads an ASCIZ string at DS:DX, at most 255 bytes, and prints it with a BOOTLOG: prefix to the emulator log. Returns true with AX unchanged.",
+      "differs": "The list writes CX bytes to a boot log file and returns a status in AX; the emulator ignores CX, reads an ASCIZ string and leaves AX unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L D-2F4A17",
+          "cites": "INT 2F U - Windows95 - WRITE TO BOOT LOG"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a17",
+          "cites": "    case 0x4a17:    /* Write bootlog */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x4A/0x18",
+      "name": "close boot log",
+      "description": "Windows 95 call that closes the boot log file.",
+      "behaviour": "Returns true with no register changed.",
+      "differs": "The list returns AX=0000h on success; the emulator leaves AX=4A18h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L D-2F4A18",
+          "cites": "INT 2F U - Windows95 - CLOSE BOOT LOG"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a18",
+          "cites": "    case 0x4a18:    /* Close bootlog */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x4A/0x33",
+      "name": "check ms-dos 7",
+      "description": "Windows 95 call that tells MS-DOS 7 from older DOS by returning AX=0000h.",
+      "behaviour": "With the emulated DOS version 7 or later it sets AX=0 and returns true; otherwise it returns false and AX stays 4A33h, nonzero. The undocumented DS:DX and DS:SI shell outputs are not set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L D-2F4A33",
+          "cites": "INT 2F - Windows95 - CHECK MS-DOS VERSION 7"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a33",
+          "cites": "\tcase 0x4a33:\t/* Check MS-DOS Version 7 */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0xB8/0x00",
+      "name": "network install check",
+      "description": "Network installation check: AL nonzero means a network is installed, BX giving the components.",
+      "behaviour": "Needs the network redirector option on, otherwise returns false with registers unchanged. With it on, sets AL=1 and BX=0008h (the redirector bit only), then still returns false, so the call continues down the chain with those values.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.M N-2FB800",
+          "cites": "INT 2F - NETWORK - INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0xb800",
+          "cites": "\tcase 0xb800:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t// Network - installation check"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0xB8/0x09",
+      "name": "network get version",
+      "description": "Network call that returns the network software version in AX.",
+      "behaviour": "Needs the network redirector option on, otherwise returns false with registers unchanged. With it on, sets AX=0201h and returns false, so the call continues down the chain. The source comment calls it major-minor, which is the list's LANtastic layout.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.M N-2FB809@1",
+          "cites": "INT 2F - NETWORK - LANtastic, NetWare Lite - GET VERSION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0xb809",
+          "cites": "\tcase 0xb809:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t// Network - get version"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x43/0x00",
+      "name": "xms install check",
+      "description": "XMS installation check: AL=80h means an XMS driver is installed.",
+      "behaviour": "Sets AL=80h and returns true. The handler exists only while XMS emulation is on: the xms option on, CPU 286 or later, and more than 1 MB plus 64 KB of memory. Otherwise the call is not handled here.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L m-2F4300",
+          "cites": "INT 2F - EXTENDED MEMORY SPECIFICATION (XMS) v2+ - INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp multiplex_xms case 0x4300",
+          "cites": "\tcase 0x4300:\t\t\t\t\t/* XMS installed check */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x43/0x10",
+      "name": "xms driver address",
+      "description": "XMS get driver address: returns the entry point of the XMS driver in ES:BX.",
+      "behaviour": "Sets ES:BX to the emulator's XMS entry point and returns true, with no other register changed. Present only while XMS emulation is on, under the same conditions as AX=4300h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.L m-2F4310@1",
+          "cites": "INT 2F - EXTENDED MEMORY SPECIFICATION (XMS) v2+ - GET DRIVER ADDRESS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/xms.cpp multiplex_xms case 0x4310",
+          "cites": "\tcase 0x4310:\t\t\t\t\t/* XMS handler seg:offset */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x00",
+      "name": "cdrom install check",
+      "description": "MSCDEX installation check: BX returns the number of CD-ROM drives and CX the first drive letter.",
+      "behaviour": "Sets BX to the number of CD-ROM drives, CX to the first drive (0=A:, only when BX is nonzero) and AL=FFh, with CF clear. Not handled, with AX unchanged, until a CD-ROM drive has been added to MSCDEX.",
+      "differs": "The list shows AX=15FFh only for Novell DOS 7 NWCDEX; the emulator always sets AL=FFh, so AX is 15FFh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F1500BX0000",
+          "cites": "INT 2F - CD-ROM - INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1500",
+          "cites": "\t\tcase 0x1500:\t/* Install check */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x01",
+      "name": "cdrom drive list",
+      "description": "Fills the buffer at ES:BX with the sub-unit number and driver header address of each CD-ROM drive.",
+      "behaviour": "Writes 5 bytes per drive: the sub-unit index, then a far pointer to the MSCDEX device driver header, offset 0. CF clear; the buffer size is not checked. Not handled until a CD-ROM drive has been added.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F1501",
+          "cites": "INT 2F - CD-ROM - GET DRIVE DEVICE LIST"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1501",
+          "cites": "\t\tcase 0x1501:\t/* Get cdrom driver info */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x02",
+      "name": "cdrom copyright file",
+      "description": "Returns the name of the copyright file of the CD in drive CX, into the buffer at ES:BX.",
+      "behaviour": "Reads the first volume descriptor and copies the 37-byte name field at offset 702 up to a NUL or space, with a NUL, to ES:BX. If the descriptor cannot be read, which includes a drive that is not a CD-ROM, AX=000Fh and CF set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F1502",
+          "cites": "INT 2F - CD-ROM - GET COPYRIGHT FILE NAME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1502",
+          "cites": "\t\tcase 0x1502:\t/* Get Copyright filename */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x03",
+      "name": "cdrom abstract file",
+      "description": "Returns the name of the abstract file of the CD in drive CX, into the buffer at ES:BX.",
+      "behaviour": "Reads the first volume descriptor and copies the 37-byte name field at offset 739 up to a NUL or space, with a NUL, to ES:BX. If the descriptor cannot be read, which includes a drive that is not a CD-ROM, AX=000Fh and CF set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F1503",
+          "cites": "INT 2F - CD-ROM - GET ABSTRACT FILE NAME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1503",
+          "cites": "\t\tcase 0x1503:\t/* Get Abstract filename */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x04",
+      "name": "cdrom biblio file",
+      "description": "Returns the name of the bibliographic documentation file of the CD in drive CX, into the buffer at ES:BX.",
+      "behaviour": "Reads the first volume descriptor and copies the 37-byte name field at offset 776 up to a NUL or space, with a NUL, to ES:BX. If the descriptor cannot be read, which includes a drive that is not a CD-ROM, AX=000Fh and CF set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F1504",
+          "cites": "INT 2F - CD-ROM - GET BIBLIOGRAPHIC DOC FILE NAME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1504",
+          "cites": "\t\tcase 0x1504:\t/* Get Documentation filename */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x05",
+      "name": "cdrom read vtoc",
+      "description": "Reads volume descriptor DX (0 is the first) of the CD in drive CX into the 2048-byte buffer at ES:BX.",
+      "behaviour": "Reads sector 16+DX (plus the multisession base). It accepts an identifier CD001 or CDROM (High Sierra); on success AX=1 for a standard descriptor, FFh for the terminator, else 0. On failure CF is set, with AX=0015h (21, not ready) if the read fails, 000Bh (11) if the identifier is neither.",
+      "differs": "The list gives AX=15 decimal (invalid drive) for a drive that is not a CD-ROM; the emulator never does: such a drive fails the read and returns 0015h (not ready).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F1505",
+          "cites": "INT 2F - CD-ROM - READ VTOC"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1505",
+          "cites": "\t\tcase 0x1505: {\t// read vtoc"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x06",
+      "name": "cdrom debug on",
+      "description": "Turns on an MSCDEX debugging function, BX selecting it; the list reserves it for development.",
+      "behaviour": "Handled with no effect: CF is cleared and no register changes. The source notes it is not functional in production MSCDEX. Not handled until a CD-ROM drive has been added.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F1506",
+          "cites": "INT 2F - CD-ROM - TURN DEBUGGING ON"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1506",
+          "cites": "\t\tcase 0x1506:\t/* Debugging on */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x07",
+      "name": "cdrom debug off",
+      "description": "Turns off an MSCDEX debugging function, BX selecting it; the list reserves it for development.",
+      "behaviour": "Handled with no effect: CF is cleared and no register changes. The source notes it is not functional in production MSCDEX. Not handled until a CD-ROM drive has been added.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F1507",
+          "cites": "INT 2F - CD-ROM - TURN DEBUGGING OFF"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1507",
+          "cites": "\t\tcase 0x1507:\t/* Debugging off */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x08",
+      "name": "cdrom absolute read",
+      "description": "Reads DX sectors from sector SI:DI of the CD in drive CX into the buffer at ES:BX.",
+      "behaviour": "Reads cooked 2048-byte sectors and charges emulated CPU cycles for the transfer. On success AX=0 and CF clear. On any failure AX=000Fh and CF set.",
+      "differs": "The list separates error 0Fh (invalid drive) from 15h (not ready); the emulator returns only AX=000Fh, even for a read that fails because the drive is not ready.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F1508",
+          "cites": "INT 2F - CD-ROM - ABSOLUTE DISK READ"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1508",
+          "cites": "\t\tcase 0x1508: {\t// read sectors"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x09",
+      "name": "cdrom absolute write",
+      "description": "Writes sectors to a CD-ROM drive; the list says it is reserved and nonfunctional.",
+      "behaviour": "Not supported: AX=0001h (invalid function) and CF set, with no data written. Not handled until a CD-ROM drive has been added.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F1509",
+          "cites": "INT 2F - CD-ROM - ABSOLUTE DISK WRITE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1509",
+          "cites": "\t\tcase 0x1509:\t// write sectors - not supported"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x0A",
+      "name": "cdrom reserved",
+      "description": "Reserved MSCDEX function.",
+      "behaviour": "Handled with no effect: CF is cleared and no register changes. Not handled until a CD-ROM drive has been added.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F150A",
+          "cites": "INT 2F - CD-ROM - RESERVED"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150A",
+          "cites": "\t\tcase 0x150A:\t/* Reserved */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x0B",
+      "name": "cdrom drive check",
+      "description": "Checks whether drive CX is a CD-ROM drive handled by MSCDEX.",
+      "behaviour": "Returns BX=ADADh always, and AX=5AD8h if drive CX is a CD-ROM drive handled by MSCDEX, else 0000h. CF clear. Not handled until a CD-ROM drive has been added.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F150B",
+          "cites": "INT 2F - CD-ROM v2.00+ - DRIVE CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150B",
+          "cites": "\t\tcase 0x150B:\t/* Valid CDROM drive ? */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x0C",
+      "name": "mscdex version",
+      "description": "Returns the MSCDEX version number in BX, BH major and BL minor.",
+      "behaviour": "Sets BX=0217h: major 2, minor 23, version 2.23. The entry value of BX is ignored and CF is clear. Not handled until a CD-ROM drive has been added.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F150CBX0000",
+          "cites": "INT 2F - CD-ROM v2.00+ - GET MSCDEX.EXE VERSION (GET VERSION)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150C",
+          "cites": "\t\tcase 0x150C:\t/* Get MSCDEX Version */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x0D",
+      "name": "cdrom drive letters",
+      "description": "Fills the buffer at ES:BX with the drive numbers (0=A:) of the CD-ROM drives, one byte per drive.",
+      "behaviour": "Writes one byte per CD-ROM drive, in the same order as AX=1501h, to ES:BX; CF clear and the buffer size is not checked. Not handled until a CD-ROM drive has been added.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F150D",
+          "cites": "INT 2F - CD-ROM v2.00+ - GET CD-ROM DRIVE LETTERS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150D",
+          "cites": "\t\tcase 0x150D:\t/* Get drives */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x0E",
+      "name": "cdrom volume pref",
+      "description": "Gets (BX=0) or sets (BX=1) the volume descriptor preference of the CD in drive CX.",
+      "behaviour": "Get returns DX=0100h. Set accepts only DH=01h and stores nothing. A drive that is not a CD-ROM gives AX=000Fh (invalid drive), a bad BX or DH gives AX=0001h, each with CF set.",
+      "differs": "The list lets the preference be set to the supplementary descriptor (DH=02h) and kept; the emulator refuses DH other than 01h and never stores a preference.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F150E",
+          "cites": "INT 2F - CD-ROM v2.00+ - GET/SET VOLUME DESCRIPTOR PREFERENCE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150E",
+          "cites": "\t\tcase 0x150E:\t/* Get/Set Volume Descriptor Preference */"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x0F",
+      "name": "cdrom directory entry",
+      "description": "Looks up a path on the CD in drive CL and copies its directory entry to the buffer at SI:DI.",
+      "behaviour": "ES:BX holds a length byte then the path. Success: CF clear, AX=1 for ISO 9660, 0 for High Sierra, entry copied raw, or as a 64-byte record if CH bit 0 is set. Not found: AX=2, CF set; a failed read gives AX=0, CF set; a disc of neither format ends the emulator.",
+      "differs": "The list takes an ASCIZ path name at ES:BX and a 285-byte canonical record; the emulator reads a length-prefixed path and writes a 64-byte canonical record.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F150F",
+          "cites": "INT 2F - CD-ROM v2.00+ - GET DIRECTORY ENTRY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150F",
+          "cites": "\t\tcase 0x150F: {\t// Get directory entry"
+        }
+      ]
+    },
+    {
+      "key": "0x2F/0x15/0x10",
+      "name": "cdrom driver request",
+      "description": "Sends the CD-ROM device driver request header at ES:BX to the driver of drive CX.",
+      "behaviour": "Writes the drive's sub-unit into byte 1 of the header and runs the emulator's driver strategy and interrupt handlers directly; CF is clear and the status word is in the header. A CX that is not a CD-ROM drive gives AX=000Fh and CF set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.K d-2F1510",
+          "cites": "INT 2F - CD-ROM v2.10+ - SEND DEVICE DRIVER REQUEST"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1510",
+          "cites": "\t\tcase 0x1510:\t/* Device driver request */"
+        }
+      ]
+    }
+  ]
+}

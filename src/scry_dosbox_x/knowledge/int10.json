@@ -1,0 +1,1796 @@
+{
+  "format": "scry-knowledge/1",
+  "dictionary": "int10",
+  "kind": "call",
+  "scope": "ibm-pc",
+  "covers": "INT 10h, the video BIOS: every function and subfunction the emulator's INT10_Handler has a case for, VESA included.",
+  "complete_against": "dosbox-x:src/ints/int10.cpp INT10_Handler",
+  "entries": [
+    {
+      "key": "0x10/0x00",
+      "name": "set video mode",
+      "aliases": [
+        "set mode",
+        "mode set"
+      ],
+      "description": "Sets the video mode in AL, reprogramming the adapter and, unless AL bit 7 is set, clearing video memory.",
+      "behaviour": "AL = mode, bit 7 set means keep video memory. A mode the machine type does not have (above 13h on standard VGA, above 06h on CGA, above 0Ah on Tandy and PCjr) changes nothing and reports no error. AL is never modified; with DOS/V or J-3100 active, modes 03h, 70h-73h and 78h select the emulator's Japanese text modes.",
+      "differs": "The list returns a mode flag in AL on Phoenix and AMI BIOSes; the emulator leaves AL as the caller passed it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1000",
+          "cites": "INT 10 - VIDEO - SET VIDEO MODE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x00",
+          "cites": "\tcase 0x00:\t\t\t\t\t\t\t\t/* Set VideoMode */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x01",
+      "name": "set cursor shape",
+      "description": "Sets the start and end scan lines of the text-mode hardware cursor.",
+      "behaviour": "CH = start line (bits 6-5 = 01h hides the cursor), CL = end line. The emulator stores CH:CL in the BIOS data area and writes CRTC registers 0Ah and 0Bh. Except on CGA, Olivetti, 3270PC, Tandy and PCjr machines, with cursor emulation on (AH=12h BL=34h) CGA-style values are first rescaled to the current font height.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1001",
+          "cites": "INT 10 - VIDEO - SET TEXT-MODE CURSOR SHAPE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x01",
+          "cites": "\tcase 0x01:\t\t\t\t\t\t\t\t/* Set TextMode Cursor Shape */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x02",
+      "name": "set cursor position",
+      "description": "Moves the text cursor of display page BH to row DH, column DL.",
+      "behaviour": "The emulator stores the position in the BIOS data area for page BH and, if BH is the active page, programs CRTC registers 0Eh and 0Fh. Row and column are not range-checked. DOS/V and J-3100 Japanese text modes force page 0.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1002",
+          "cites": "INT 10 - VIDEO - SET CURSOR POSITION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x02",
+          "cites": "\tcase 0x02:\t\t\t\t\t\t\t\t/* Set Cursor Pos */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x03",
+      "name": "get cursor position",
+      "description": "Returns the cursor position of display page BH and the cursor shape.",
+      "behaviour": "BH = page. Returns DH = row and DL = column of that page from the BIOS data area, and CX = the cursor shape last stored by AH=01h (CH start, CL end), not read back from the CRTC. AX is not changed.",
+      "differs": "The list says AX is 0000h on Phoenix BIOSes; the emulator leaves AX unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1003",
+          "cites": "INT 10 - VIDEO - GET CURSOR POSITION AND SIZE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x03",
+          "cites": "\tcase 0x03:\t\t\t\t\t\t\t\t/* get Cursor Pos and Cursor Shape*/"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x04",
+      "name": "read light pen",
+      "description": "Reports the light pen position; the emulator has no light pen.",
+      "behaviour": "Sets AX = 0000h (pen not triggered) and leaves BX, CX and DX unchanged, whatever the machine type or video mode.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1004@1",
+          "cites": "INT 10 - VIDEO - READ LIGHT PEN POSITION (except VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x04",
+          "cites": "\tcase 0x04:\t\t\t\t\t\t\t\t/* read light pen pos YEAH RIGHT */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x05",
+      "name": "select active page",
+      "description": "Makes display page AL the visible page.",
+      "behaviour": "AL = page, not range-checked (above 7 is only logged; S3 Trio masks it to 0-7). The emulator stores the page start in the BIOS data area, writes it to CRTC registers 0Ch and 0Dh and redisplays the cursor. On Tandy and PCjr, AL with bit 7 set selects the CRT/CPU page registers instead.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1005@1",
+          "cites": "INT 10 - VIDEO -  SELECT ACTIVE DISPLAY PAGE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x05",
+          "cites": "\tcase 0x05:\t\t\t\t\t\t\t\t/* Set Active Page */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x05/0x80",
+      "name": "get crt/cpu page regs",
+      "description": "Returns the PCjr or Tandy CRT page register in BH and CPU page register in BL.",
+      "behaviour": "Tandy and PCjr only: BH = bits 0-2 and BL = bits 3-5 of the stored page byte, which the emulator also writes back to port 3DFh and the BIOS data area. On any other machine type AL=80h is passed to the normal page-select call as page 80h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-100580",
+          "cites": "INT 10 - VIDEO - PCjr, Tandy 1000 - GET CRT/CPU PAGE REGISTERS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x05 case 0x80",
+          "cites": "\t\t\tcase 0x80:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x05/0x81",
+      "name": "set cpu page reg",
+      "description": "Sets the PCjr or Tandy CPU page register from BL.",
+      "behaviour": "Tandy and PCjr only: bits 0-2 of BL become the CPU page (bits 3-5 of the stored byte), which is written to port 3DFh and the BIOS data area. On PCjr, BH and BL then return the resulting CRT and CPU pages.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x05 case 0x81",
+          "cites": "\t\t\tcase 0x81:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x05/0x82",
+      "name": "set crt page reg",
+      "description": "Sets the PCjr or Tandy CRT page register from BH.",
+      "behaviour": "Tandy and PCjr only: bits 0-2 of BH become the CRT page (bits 0-2 of the stored byte), which is written to port 3DFh and the BIOS data area. On PCjr, BH and BL then return the resulting CRT and CPU pages.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x05 case 0x82",
+          "cites": "\t\t\tcase 0x82:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x05/0x83",
+      "name": "set both page regs",
+      "description": "Sets the PCjr or Tandy CRT page register from BH and CPU page register from BL together.",
+      "behaviour": "Tandy and PCjr only: bits 0-2 of BH become the CRT page and bits 0-2 of BL the CPU page, written to port 3DFh and the BIOS data area. On PCjr, BH and BL then return the resulting CRT and CPU pages.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x05 case 0x83",
+          "cites": "\t\t\tcase 0x83:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x06",
+      "name": "scroll window up",
+      "description": "Scrolls the window CH,CL to DH,DL up by AL lines, filling the new lines with attribute BH.",
+      "behaviour": "AL = 0 clears the window. The emulator clamps the lower-right corner to the screen, does nothing if the upper-left corner lies beyond the lower-right, and scrolls the page at the current start address. It handles text, CGA, Tandy, EGA and mode 13h screens; any other mode type is logged as unhandled.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1006",
+          "cites": "INT 10 - VIDEO - SCROLL UP WINDOW"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x06",
+          "cites": "\tcase 0x06:\t\t\t\t\t\t\t\t/* Scroll Up */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x07",
+      "name": "scroll window down",
+      "description": "Scrolls the window CH,CL to DH,DL down by AL lines, filling the new lines with attribute BH.",
+      "behaviour": "AL = 0 clears the window. Same code as AH=06h with the direction reversed: the lower-right corner is clamped to the screen, an inverted window does nothing, and only text, CGA, Tandy, EGA and mode 13h screens are scrolled.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1007",
+          "cites": "INT 10 - VIDEO - SCROLL DOWN WINDOW"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x07",
+          "cites": "\tcase 0x07:\t\t\t\t\t\t\t\t/* Scroll Down */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x08",
+      "name": "read char and attribute",
+      "description": "Returns the character, and in text modes its attribute, at the cursor position of page BH.",
+      "behaviour": "In text modes AL = character and AH = attribute from video memory. In CGA, Tandy and EGA/VGA graphics modes the emulator matches the pixels at the cursor against the font tables and returns AL = character, AH = 0, or AL = 0 if none matches. BH = FFh means the current page; BH is ignored in one-page modes.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1008",
+          "cites": "INT 10 - VIDEO - READ CHARACTER AND ATTRIBUTE AT CURSOR POSITION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x08",
+          "cites": "\tcase 0x08:\t\t\t\t\t\t\t\t/* Read character & attribute at cursor */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x09",
+      "name": "write char and attribute",
+      "description": "Writes character AL with attribute or colour BL at the cursor of page BH, CX times, without moving the cursor.",
+      "behaviour": "In text modes BL is the stored attribute; in graphics modes BL is the colour (bit 7 XORs it, except in 256-colour modes) and BH the page (the background in 256-colour modes). CX copies wrap to the next row, never scroll. Mode 11h forces the colour to (BL AND 80h) OR 3Fh; mode 06h, (BL AND 80h) OR 1.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1009",
+          "cites": "INT 10 - VIDEO - WRITE CHARACTER AND ATTRIBUTE AT CURSOR POSITION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x09",
+          "cites": "\tcase 0x09:\t\t\t\t\t\t\t\t/* Write Character & Attribute at cursor CX times */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x0A",
+      "name": "write char only",
+      "description": "Writes character AL at the cursor of page BH, CX times, without moving the cursor.",
+      "behaviour": "In text modes the existing attribute is kept and BL is ignored. In graphics modes BL is the colour, handled as in AH=09h (bit 7 XORs, BH is the page or the 256-colour background) except for the mode 11h colour override. CX copies wrap to the next row and never scroll.",
+      "differs": "The list says BL is the attribute on PCjr and Tandy 1000; the emulator never writes the attribute in text modes.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-100A",
+          "cites": "INT 10 - VIDEO - WRITE CHARACTER ONLY AT CURSOR POSITION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x0A",
+          "cites": "\tcase 0x0A:\t\t\t\t\t\t\t\t/* Write Character at cursor CX times */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x0B",
+      "name": "set palette or border",
+      "description": "Sets the background and border colour (BH=00h) or selects the CGA palette (BH=01h) from BL.",
+      "behaviour": "BH = 00h: BL = colour. Any other BH acts as 01h: BL bit 0 picks the palette. Both update the colour-select byte in the BIOS data area, then write port 3D9h (CGA, MCGA, Tandy), the PCjr palette registers, or EGA/VGA attribute registers (border only in text modes, registers 0-3 above mode 03h); other machines only update the byte.",
+      "differs": "The list defines BH=00h and BH=01h; the emulator treats every BH other than 00h as 01h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-100B--BH00",
+          "cites": "INT 10 - VIDEO - SET BACKGROUND/BORDER COLOR"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x0B",
+          "cites": "\tcase 0x0B:\t\t\t\t\t\t\t\t/* Set Background/Border Colour & Set Palette*/"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x0C",
+      "name": "write graphics pixel",
+      "description": "Sets the pixel at column CX, row DX of page BH to colour AL in a graphics mode.",
+      "behaviour": "Writes straight to the video memory layout of CGA 2 and 4-colour, Tandy 16-colour, EGA planar and 256-colour modes. AL bit 7 XORs the colour except in 256-colour modes. Coordinates are not range-checked, and text modes and other mode types are logged once and ignored.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-100C",
+          "cites": "INT 10 - VIDEO - WRITE GRAPHICS PIXEL"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x0C",
+          "cites": "\tcase 0x0C:\t\t\t\t\t\t\t\t/* Write Graphics Pixel */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x0D",
+      "name": "read graphics pixel",
+      "description": "Returns in AL the colour of the pixel at column CX, row DX of page BH.",
+      "behaviour": "Reads CGA 2 and 4-colour, Tandy 16-colour, EGA planar (all four planes) and 256-colour modes. In a text mode or any other mode type the emulator logs an error and leaves AL unchanged. Coordinates are not range-checked.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-100D",
+          "cites": "INT 10 - VIDEO - READ GRAPHICS PIXEL"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x0D",
+          "cites": "\tcase 0x0D:\t\t\t\t\t\t\t\t/* Read Graphics Pixel */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x0E",
+      "name": "teletype output",
+      "description": "Writes character AL at the cursor of the active page, advances the cursor and scrolls when needed.",
+      "behaviour": "BL = colour in graphics modes; text modes keep the attribute. Codes 07h (a beep, length set by the beep duration option), 08h, 0Ah (no carriage return) and 0Dh are interpreted. BH is ignored and the active page used; a scroll off the bottom fills with the attribute at the cursor in text modes, black in graphics.",
+      "differs": "The list takes the page from BH; the emulator ignores BH and uses the active page.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-100E",
+          "cites": "INT 10 - VIDEO - TELETYPE OUTPUT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x0E",
+          "cites": "\tcase 0x0E:\t\t\t\t\t\t\t\t/* Teletype OutPut */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x0F",
+      "name": "get video mode",
+      "description": "Returns the current video mode, the number of columns and the active page.",
+      "behaviour": "AL = mode from the BIOS data area, with bit 7 (set when the mode was set without clearing) taken from the video control byte on EGA and VGA machines; AH = number of columns (low byte); BH = active page.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-100F",
+          "cites": "INT 10 - VIDEO - GET CURRENT VIDEO MODE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x0F",
+          "cites": "\tcase 0x0F:\t\t\t\t\t\t\t\t/* Get videomode */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10",
+      "name": "palette functions",
+      "description": "Dispatches the palette and DAC calls selected by AL.",
+      "behaviour": "AL selects the function; arguments are in BX, CX, DH and ES:DX (see the AL entries). MCGA acts only on AL 10h, 12h, 15h and 17h-19h; PCjr and non-EGA/VGA machines on 00h-02h; EGA on 00h-03h; VGA on all. A call outside the machine's set returns with no register changed.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10",
+          "cites": "\tcase 0x10:\t\t\t\t\t\t\t\t/* Palette functions */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x00",
+      "name": "set palette register",
+      "description": "Sets EGA/VGA attribute palette register BL to value BH.",
+      "behaviour": "BL = register, BH = value. On EGA/VGA the emulator writes it through the attribute controller (registers up to 14h; EGA masks BL to 1Fh); PCjr and Tandy use their own palette registers. Not run on MCGA.",
+      "differs": "The list says MCGA supports only BX=0712h here; the emulator ignores AL=00h on MCGA.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101000",
+          "cites": "INT 10 - VIDEO - SET SINGLE PALETTE REGISTER (PCjr,Tandy,EGA,MCGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x00",
+          "cites": "\t\tcase 0x00:\t\t\t\t\t\t\t/* SET SINGLE PALETTE REGISTER */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x01",
+      "name": "set overscan color",
+      "description": "Sets the border (overscan) colour to BH.",
+      "behaviour": "BH = colour. VGA and EGA write attribute register 11h; Tandy and PCjr write their border palette register 2. Not run on MCGA.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101001",
+          "cites": "INT 10 - VIDEO - SET BORDER (OVERSCAN) COLOR (PCjr,Tandy,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x01",
+          "cites": "\t\tcase 0x01:\t\t\t\t\t\t\t/* SET BORDER (OVERSCAN) COLOR*/"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x02",
+      "name": "set all palette regs",
+      "description": "Sets all 16 palette registers and the border colour from a 17-byte table at ES:DX.",
+      "behaviour": "ES:DX = table: 16 palette values, then the border colour. EGA/VGA write them through the attribute controller and Tandy and PCjr through their palette registers. Not run on MCGA, and BH is not used.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101002",
+          "cites": "INT 10 - VIDEO - SET ALL PALETTE REGISTERS (PCjr,Tandy,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x02",
+          "cites": "\t\tcase 0x02:\t\t\t\t\t\t\t/* SET ALL PALETTE REGISTERS */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x03",
+      "name": "intensity or blink",
+      "description": "Chooses between background intensity (BL=00h) and blinking (BL=01h) for attribute bit 7.",
+      "behaviour": "EGA and VGA only. The emulator sets attribute mode control bit 3, updates the BIOS data area byte for it, and moves the blinking check marks in the host's menu. On VGA a BL above 01h changes nothing; on EGA any non-zero BL means blinking and only text modes are touched.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101003",
+          "cites": "INT 10 - VIDEO - TOGGLE INTENSITY/BLINKING BIT (Jr, PS, TANDY 1000, EGA, VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x03",
+          "cites": "\t\tcase 0x03:\t\t\t\t\t\t\t/* TOGGLE INTENSITY/BLINKING BIT */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x07",
+      "name": "get palette register",
+      "description": "Returns in BH the value of attribute palette register BL.",
+      "behaviour": "VGA only. BL = register (00h-14h); a larger BL leaves BH unchanged. The emulator reads it through the attribute controller.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101007",
+          "cites": "INT 10 - VIDEO - GET INDIVIDUAL PALETTE REGISTER (VGA,UltraVision v2+)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x07",
+          "cites": "\t\tcase 0x07:\t\t\t\t\t\t\t/* GET SINGLE PALETTE REGISTER */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x08",
+      "name": "get overscan color",
+      "description": "Returns the border (overscan) colour in BH.",
+      "behaviour": "VGA only. The emulator reads attribute register 11h and returns it in BH.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101008",
+          "cites": "INT 10 - VIDEO - READ OVERSCAN (BORDER COLOR) REGISTER (VGA,UltraVision v2+)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x08",
+          "cites": "\t\tcase 0x08:\t\t\t\t\t\t\t/* READ OVERSCAN (BORDER COLOR) REGISTER */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x09",
+      "name": "get all palette regs",
+      "description": "Reads the 16 palette registers and the border colour into a 17-byte buffer at ES:DX.",
+      "behaviour": "VGA only. The emulator reads the sixteen registers and then register 11h through the attribute controller and writes the 17 bytes to ES:DX.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101009",
+          "cites": "INT 10 - VIDEO - READ ALL PALETTE REGISTERS AND OVERSCAN REGISTER (VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x09",
+          "cites": "\t\tcase 0x09:\t\t\t\t\t\t\t/* READ ALL PALETTE REGISTERS AND OVERSCAN REGISTER */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x10",
+      "name": "set dac register",
+      "description": "Sets DAC colour register BL to red DH, green CH, blue CL.",
+      "behaviour": "Only BL is used as the register number, not BX. If bit 1 or 2 of the BIOS data area byte at 0040:0089 is set (gray-scale summing), all three components are set to the luminance 77R+151G+28B. Each value is 6 bits.",
+      "differs": "The list gives the register number in BX; the emulator uses BL only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101010",
+          "cites": "INT 10 - VIDEO - SET INDIVIDUAL DAC REGISTER (VGA/MCGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x10",
+          "cites": "\t\tcase 0x10:\t\t\t\t\t\t\t/* SET INDIVIDUAL DAC REGISTER */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x12",
+      "name": "set dac block",
+      "description": "Sets CX DAC colour registers from BX onward from RGB triples at ES:DX.",
+      "behaviour": "BX = first register (used as a byte), CX = count, ES:DX = 3*CX bytes of red, green, blue. With gray-scale summing on (bit 1 or 2 of 0040:0089), each triple becomes its luminance in all three components. No range check on BX+CX.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101012",
+          "cites": "INT 10 - VIDEO - SET BLOCK OF DAC REGISTERS (VGA/MCGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x12",
+          "cites": "\t\tcase 0x12:\t\t\t\t\t\t\t/* SET BLOCK OF DAC REGISTERS */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x13",
+      "name": "select dac color page",
+      "description": "Selects the DAC paging mode (BL=00h) or the colour page (BL=01h).",
+      "behaviour": "BL = 00h: BH = 0 selects four blocks of 64, BH = 1 sixteen blocks of 16 (attribute mode control bit 7). BL = anything else: BH = page, written to the colour select register 14h (shifted by two in 4-block mode, masked to 4 bits).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101013",
+          "cites": "INT 10 - VIDEO - SELECT VIDEO DAC COLOR PAGE (VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x13",
+          "cites": "\t\tcase 0x13:\t\t\t\t\t\t\t/* SELECT VIDEO DAC COLOR PAGE */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x15",
+      "name": "get dac register",
+      "description": "Returns DAC colour register BL as red DH, green CH, blue CL.",
+      "behaviour": "Only BL is the register number, not BX. The values are read from the DAC data port. AX is not changed.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101015",
+          "cites": "INT 10 - VIDEO - READ INDIVIDUAL DAC REGISTER (VGA/MCGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x15",
+          "cites": "\t\tcase 0x15:\t\t\t\t\t\t\t/* GET INDIVIDUAL DAC REGISTER */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x17",
+      "name": "get dac block",
+      "description": "Reads CX DAC colour registers from BX onward into a buffer at ES:DX.",
+      "behaviour": "BX = first register (used as a byte), CX = count, ES:DX = buffer of 3*CX bytes (red, green, blue). No range check on BX+CX.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101017",
+          "cites": "INT 10 - VIDEO - READ BLOCK OF DAC REGISTERS (VGA/MCGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x17",
+          "cites": "\t\tcase 0x17:\t\t\t\t\t\t\t/* GET BLOCK OF DAC REGISTER */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x18",
+      "name": "set pel mask",
+      "description": "Writes BL to the DAC pixel mask register.",
+      "behaviour": "The emulator writes BL to port 3C6h and returns nothing. MCGA accepts this AL as well.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101018",
+          "cites": "INT 10 U - VIDEO - SET PEL MASK (VGA/MCGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x18",
+          "cites": "\t\tcase 0x18:\t\t\t\t\t\t\t/* undocumented - SET PEL MASK */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x19",
+      "name": "get pel mask",
+      "description": "Reads the DAC pixel mask register into BL.",
+      "behaviour": "The emulator reads port 3C6h into BL and sets BH = 0.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101019",
+          "cites": "INT 10 U - VIDEO - READ PEL MASK (VGA/MCGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x19",
+          "cites": "\t\tcase 0x19:\t\t\t\t\t\t\t/* undocumented - GET PEL MASK */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x1A",
+      "name": "get dac color page",
+      "description": "Returns the DAC paging mode in BL and the current colour page in BH.",
+      "behaviour": "VGA only. BL = 00h for four blocks of 64, 01h for sixteen blocks of 16; BH = page, read from attribute registers 10h and 14h. The emulator then rewrites the index so the screen stays enabled.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-10101A",
+          "cites": "INT 10 - VIDEO - GET VIDEO DAC COLOR-PAGE STATE (VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x1A",
+          "cites": "\t\tcase 0x1A:\t\t\t\t\t\t\t/* GET VIDEO DAC COLOR PAGE */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0x1B",
+      "name": "gray-scale summing",
+      "description": "Converts DAC colour registers BX to BX+CX-1 to gray levels.",
+      "behaviour": "BX = first register, CX = count (capped at 256). For each one the emulator reads the RGB value and writes back the luminance 77R+151G+28B (clamped to 63) in all three components.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-10101B",
+          "cites": "INT 10 - VIDEO - PERFORM GRAY-SCALE SUMMING (VGA/MCGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0x1B",
+          "cites": "\t\tcase 0x1B:\t\t\t\t\t\t\t/* PERFORM GRAY-SCALE SUMMING */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0xF0",
+      "name": "et4000 hicolor mode",
+      "description": "Sets a Tseng ET4000 HiColor graphics mode numbered BL.",
+      "behaviour": "Acts only with the Tseng ET4000 card emulated; otherwise it is logged as unhandled and nothing changes. The emulator sets mode 200h+BL and, if that works, returns AX = 0010h; on failure AX is unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1010F0",
+          "cites": "INT 10 - VIDEO - Tseng ET-4000 BIOS - SET HiColor GRAPHICS MODE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0xF0",
+          "cites": "\t\tcase 0xF0: case 0xF1: case 0xF2: /* ET4000 Sierra HiColor DAC support */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0xF1",
+      "name": "et4000 get dac type",
+      "description": "Returns the Tseng ET4000 DAC type in BL.",
+      "behaviour": "Acts only with the Tseng ET4000 card emulated; returns AX = 0010h and BL = 01h if the 3C6h HiColor RAMDAC option is on, else BL = 00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1010F1",
+          "cites": "INT 10 - VIDEO - Tseng ET-4000 BIOS - GET DAC TYPE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0xF1",
+          "cites": "\t\tcase 0xF0: case 0xF1: case 0xF2: /* ET4000 Sierra HiColor DAC support */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x10/0xF2",
+      "name": "et4000 hicolor check",
+      "description": "Gets (BL=00h) or sets (BL=01h 15-bit, BL=02h 16-bit) the Tseng ET4000 HiColor DAC mode.",
+      "behaviour": "Acts only with the Tseng ET4000 card emulated. BL returns 00h, 01h or 02h for the current DAC mode (never 03h). AX = 0010h on a get and on a set that changes the mode.",
+      "differs": "The list returns AX = 0010h whenever supported; the emulator leaves AX unchanged when a set does not change the mode.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1010F2",
+          "cites": "INT 10 u - VIDEO - Tseng ET-4000 BIOS - CHECK IF HiColor MODE/SET HiColor MODE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x10 case 0xF2",
+          "cites": "\t\tcase 0xF0: case 0xF1: case 0xF2: /* ET4000 Sierra HiColor DAC support */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11",
+      "name": "character generator",
+      "description": "Dispatches the font calls selected by AL: load fonts, set the block specifier, graphics-mode fonts, get font pointers.",
+      "behaviour": "AL selects the function. Nothing happens on machines other than EGA, VGA and MCGA; MCGA passes only AL=24h (which then does nothing) and 30h. The 1xh loads also reprogram the CRTC and the BIOS data area for the new height, and the mouse driver is told as for a mode change.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11",
+          "cites": "\tcase 0x11:\t\t\t\t\t\t\t\t/* Character generator functions */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x00",
+      "name": "load user font",
+      "description": "Loads CX user font patterns from ES:BP into font block BL, starting at character DX.",
+      "behaviour": "ES:BP = patterns, CX = count, DX = first character, BL = block (bit 7 ignored), BH = bytes per character. The emulator only loads the font into plane 2 and does not reprogram the screen.",
+      "differs": "The list says this causes a mode set; the emulator reloads the font only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101100",
+          "cites": "INT 10 - VIDEO - TEXT-MODE CHARGEN - LOAD USER-SPECIFIED PATTERNS (PS,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x00",
+          "cites": "\t\tcase 0x00:\t\t\t/* Load user font */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x10",
+      "name": "load user font, reset",
+      "description": "Loads user font patterns as AL=00h does, then recomputes the screen geometry for the new height.",
+      "behaviour": "Same inputs as AL=00h (ES:BP, CX, DX, BL, BH). It then reprograms the CRTC (max scan line, vertical display end, and for mode 7 the underline), the BIOS rows, character height, page size and cursor shape, and clips the cursor row.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101110@1",
+          "cites": "INT 10 - VIDEO - TEXT-MODE CHARGEN - LOAD USER-SPECIFIED PATTERNS (PS,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x10",
+          "cites": "\t\tcase 0x10:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x01",
+      "name": "load rom 8x14 font",
+      "description": "Loads the ROM 8x14 font into block BL.",
+      "behaviour": "BL = block (bit 7 ignored). The emulator loads 256 patterns of 14 bytes into plane 2 and does not reprogram the screen.",
+      "differs": "The list says this causes a mode set; the emulator reloads the font only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101101",
+          "cites": "INT 10 - VIDEO - TEXT-MODE CHARGEN - LOAD ROM MONOCHROME PATTERNS (PS,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x01",
+          "cites": "\t\tcase 0x01:\t\t\t/* Load 8x14 font */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x11",
+      "name": "load 8x14 font, reset",
+      "description": "Loads the ROM 8x14 font into block BL and recomputes the screen geometry for height 14.",
+      "behaviour": "BL = block (bit 7 ignored). As AL=01h, then reprograms the CRTC, the BIOS rows, character height 14, page size and cursor shape, and clips the cursor row.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101111@1",
+          "cites": "INT 10 - VIDEO - TEXT-MODE CHARGEN - LOAD ROM MONOCHROME PATTERNS (PS,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x11",
+          "cites": "\t\tcase 0x11:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x02",
+      "name": "load rom 8x8 font",
+      "description": "Loads the ROM 8x8 double-dot font into block BL.",
+      "behaviour": "BL = block (bit 7 ignored). The emulator loads 256 patterns of 8 bytes into plane 2 and does not reprogram the screen.",
+      "differs": "The list says this causes a mode set; the emulator reloads the font only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101102",
+          "cites": "INT 10 - VIDEO - TEXT-MODE CHARGEN - LOAD ROM 8x8 DBL-DOT PATTERNS (PS,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x02",
+          "cites": "\t\tcase 0x02:\t\t\t/* Load 8x8 font */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x12",
+      "name": "load 8x8 font, reset",
+      "description": "Loads the ROM 8x8 font into block BL and recomputes the screen geometry for height 8.",
+      "behaviour": "BL = block (bit 7 ignored). As AL=02h, then reprograms the CRTC, the BIOS rows, character height 8, page size and cursor shape. With the TTF output in mode 03h or 55h it sets 50 rows and resets the TTF screen instead.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101112@1",
+          "cites": "INT 10 - VIDEO - TEXT-MODE CHARGEN - LOAD ROM 8x8 DBL-DOT PATTERNS (PS,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x12",
+          "cites": "\t\tcase 0x12:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x03",
+      "name": "set block specifier",
+      "description": "Selects which font blocks attribute bit 3 chooses between.",
+      "behaviour": "BL = block specifier, written to sequencer register 3 through ports 3C4h and 3C5h. Nothing else changes and nothing is returned.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101103",
+          "cites": "INT 10 - VIDEO - TEXT-MODE CHARGEN - SET BLOCK SPECIFIER (PS,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x03",
+          "cites": "\t\tcase 0x03:\t\t\t/* Set Block Specifier */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x04",
+      "name": "load rom 8x16 font",
+      "description": "Loads the ROM 8x16 font into block BL.",
+      "behaviour": "BL = block (bit 7 ignored). VGA machines only; on EGA and MCGA the call does nothing. The emulator loads 256 patterns of 16 bytes into plane 2 and does not reprogram the screen.",
+      "differs": "The list says this causes a mode set; the emulator reloads the font only.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101104",
+          "cites": "INT 10 - VIDEO - TEXT-MODE CHARGEN - LOAD ROM 8x16 CHARACTER SET (VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x04",
+          "cites": "\t\tcase 0x04:\t\t\t/* Load 8x16 font */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x14",
+      "name": "load 8x16 font, reset",
+      "description": "Loads the ROM 8x16 font into block BL and recomputes the screen geometry for height 16.",
+      "behaviour": "BL = block (bit 7 ignored). VGA machines only; otherwise nothing happens. As AL=04h, then reprograms the CRTC, the BIOS rows, character height 16, page size and cursor shape.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101114",
+          "cites": "INT 10 - VIDEO - TEXT-MODE CHARGEN - LOAD ROM 8x16 CHARACTER SET (VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x14",
+          "cites": "\t\tcase 0x14:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x20",
+      "name": "set int 1fh chars",
+      "description": "Sets the INT 1Fh vector to the user 8x8 graphics character table at ES:BP.",
+      "behaviour": "ES:BP = table for characters 80h-FFh. The emulator stores the pointer in the INT 1Fh vector and changes nothing else.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101120",
+          "cites": "INT 10 - VIDEO - GRAPH-MODE CHARGEN - SET USER 8x8 GRAPHICS CHARS (PS,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x20",
+          "cites": "\t\tcase 0x20:\t\t\t/* Set User 8x8 Graphics characters */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x21",
+      "name": "set user graphics font",
+      "description": "Sets the INT 43h graphics font to the table at ES:BP, CX bytes per character.",
+      "behaviour": "ES:BP = table, CX = bytes per character, stored in the INT 43h vector and the BIOS character height. BL then sets the BIOS row count: 00h = DL rows, 01h = 14, 02h or other = 25, 03h = 43. AL is not changed.",
+      "differs": "The list returns the new row count in AL on the Diamond Stealth64; the emulator does not set AL.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101121",
+          "cites": "INT 10 - VIDEO - GRAPH-MODE CHARGEN - SET USER GRAPHICS CHARACTERS (PS,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x21",
+          "cites": "\t\tcase 0x21:\t\t\t/* Set user graphics characters */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x22",
+      "name": "graphics rom 8x14 font",
+      "description": "Sets the INT 43h graphics font to the ROM 8x14 font.",
+      "behaviour": "Stores the ROM 8x14 table in the INT 43h vector and 14 as the BIOS character height. BL = row specifier as in AL=21h (00h = DL rows, 01h = 14, 02h or other = 25, 03h = 43), saved as the BIOS row count.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101122",
+          "cites": "INT 10 - VIDEO - GRAPH-MODE CHARGEN - SET ROM 8x14 GRAPHICS CHARS (PS,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x22",
+          "cites": "\t\tcase 0x22:\t\t\t/* Rom 8x14 set */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x23",
+      "name": "graphics rom 8x8 font",
+      "description": "Sets the INT 43h graphics font to the ROM 8x8 double-dot font.",
+      "behaviour": "Stores the ROM 8x8 table in the INT 43h vector and 8 as the BIOS character height. BL = row specifier as in AL=21h, saved as the BIOS row count.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101123",
+          "cites": "INT 10 - VIDEO - GRAPH-MODE CHARGEN - SET ROM 8x8 DOUBLE-DOT CHARS (PS,EGA,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x23",
+          "cites": "\t\tcase 0x23:\t\t\t/* Rom 8x8 double dot set */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x24",
+      "name": "graphics rom 8x16 font",
+      "description": "Sets the INT 43h graphics font to the ROM 8x16 font.",
+      "behaviour": "Stores the ROM 8x16 table in the INT 43h vector and 16 as the BIOS character height. BL = row specifier as in AL=21h. VGA only: on EGA and MCGA the call does nothing.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101124",
+          "cites": "INT 10 - VIDEO - GRAPH-MODE CHARGEN - LOAD 8x16 GRAPHICS CHARS (VGA,MCGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x24",
+          "cites": "\t\tcase 0x24:\t\t\t/* Rom 8x16 set */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x11/0x30",
+      "name": "get font information",
+      "description": "Returns a pointer to the font selected by BH, with the on-screen character height and highest row.",
+      "behaviour": "BH = 00h INT 1Fh, 01h INT 43h, 02h 8x14, 03h and 04h the two 8x8 halves, 05h 9x14, 06h 8x16, 07h 9x16. Returns ES:BP, CX = on-screen character height, DL = highest row; BH above 07h leaves them unchanged (Tseng still fills CX, DL). On MCGA, BH 05h and 07h do nothing and 02h returns the 8x16 font.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101130",
+          "cites": "INT 10 - VIDEO - GET FONT INFORMATION (EGA, MCGA, VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x11 case 0x30",
+          "cites": "\t\tcase 0x30:/* Get Font Information */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x12",
+      "name": "alternate select",
+      "description": "Dispatches the EGA/VGA alternate select calls chosen by BL, such as EGA information and the VGA mode-set options.",
+      "behaviour": "BL selects the function; machines other than EGA, VGA and MCGA ignore it. BL=10h returns EGA information (BH mono flag, BL memory, CX switches), not on MCGA; BL=20h does nothing. BL=30h-36h are VGA only and return AL=12h (32h and 35h only pretend); other BL clear AL except on EGA.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1012--BL10",
+          "cites": "INT 10 - VIDEO - ALTERNATE FUNCTION SELECT (PS, EGA, VGA, MCGA) - GET EGA INFO"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x12",
+          "cites": "\tcase 0x12:\t\t\t\t\t\t\t\t/* alternate function select */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x12/0x00",
+      "name": "select 200 scan lines",
+      "description": "With BL=30h, selects 200 scan lines for text modes at the next mode set.",
+      "behaviour": "VGA only; other machines return unchanged. With BL=30h and AL=00h the emulator sets the BIOS 0040:0089 and 0040:0088 bytes for 200 lines and returns AL=12h. With an SVGA card, AL above 02h returns AL=0.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1012--BL30",
+          "cites": "INT 10 - VIDEO - ALTERNATE FUNCTION SELECT (VGA) - SELECT VERTICAL RESOLUTION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x12 case 0x00",
+          "cites": "\t\t\t\tcase 0: // 200"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x12/0x01",
+      "name": "select 350 scan lines",
+      "description": "With BL=30h, selects 350 scan lines for text modes at the next mode set.",
+      "behaviour": "VGA only; other machines return unchanged. With BL=30h and AL=01h the emulator sets the BIOS 0040:0089 and 0040:0088 bytes for 350 lines (EGA enhanced) and returns AL=12h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1012--BL30",
+          "cites": "INT 10 - VIDEO - ALTERNATE FUNCTION SELECT (VGA) - SELECT VERTICAL RESOLUTION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x12 case 0x01",
+          "cites": "\t\t\t\tcase 1: // 350"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x12/0x02",
+      "name": "select 400 scan lines",
+      "description": "With BL=30h, selects 400 scan lines for text modes at the next mode set.",
+      "behaviour": "VGA only; other machines return unchanged. With BL=30h and AL=02h the emulator sets the BIOS 0040:0089 and 0040:0088 bytes for 400 lines and returns AL=12h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1012--BL30",
+          "cites": "INT 10 - VIDEO - ALTERNATE FUNCTION SELECT (VGA) - SELECT VERTICAL RESOLUTION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x12 case 0x02",
+          "cites": "\t\t\t\tcase 2: // 400"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x13",
+      "name": "write string",
+      "description": "Writes a string of CX characters at row DH, column DL of page BH, optionally with attributes and cursor update.",
+      "behaviour": "ES:BP = string. AL bit 0 set leaves the cursor after the string, bit 1 set means character/attribute pairs, else BL is the attribute; DH = FFh starts at the cursor. Characters go through teletype output, so CR, LF, BS and BEL act and the screen scrolls; with DOS/V active, AL=10h or 11h reads text into the buffer.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-1013",
+          "cites": "INT 10 - VIDEO - WRITE STRING (AT and later,EGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x13",
+          "cites": "\tcase 0x13:\t\t\t\t\t\t\t\t/* Write String */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x18",
+      "name": "dos/v font read",
+      "description": "Copies the DOS/V font bitmap of one character into the buffer at ES:SI.",
+      "behaviour": "Only when the DOS/V (or TTF DOS/V) Japanese, Chinese or Korean video mode is active; otherwise nothing happens. AL=00h and BX=0: DH,DL = 8,16, 8,19, 16,16, 12,24 or 24,24 and CL/CX = the character code. AL returns 00h on success, 01h if the size is unknown.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x18",
+          "cites": "\tcase 0x18:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x1A",
+      "name": "display combination code",
+      "description": "Returns (AL=00h) or sets (AL=01h) the display combination code.",
+      "behaviour": "VGA and MCGA only; AL of 02h or more changes nothing. AL=00h returns BX = codes (BL active, BH alternate), FFFFh if the table has no entry, and 000Ch on MCGA; AL=01h stores the index of BX in the BIOS data area. Success sets AX = 001Ah.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x1A",
+          "cites": "\tcase 0x1A:\t\t\t\t\t\t\t\t/* Display Combination */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x1B",
+      "name": "functionality state info",
+      "description": "Fills the 64-byte buffer at ES:DI with the video functionality and state information.",
+      "behaviour": "VGA only. BX must be 0000h; the emulator returns AL=1Bh, otherwise AL=0. The buffer holds the static functionality table pointer, a copy of the BIOS data area, colour count and page count of the mode, scan lines, DCC, and constant misc flags 21h (text) or 01h with 256 KB memory.",
+      "differs": "The list defines the misc flags bits by the current setup; the emulator writes the constants 21h in text modes and 01h otherwise.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101B",
+          "cites": "INT 10 - VIDEO - FUNCTIONALITY/STATE INFORMATION (PS,VGA/MCGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x1B",
+          "cites": "\tcase 0x1B:\t\t\t\t\t\t\t\t/* functionality State Information */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x1C",
+      "name": "save/restore video state",
+      "description": "Reports the size of, saves or restores the video state, chosen by AL.",
+      "behaviour": "VGA only. CX = state bits (0 hardware, 1 BIOS data, 2 DAC); AL=00h size, 01h save to ES:BX, 02h restore. Returns AL=1Ch on success and AL=0 on failure; any other AL returns AL=0 (AX=0 with Tseng).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-101C",
+          "cites": "INT 10 - VIDEO - SAVE/RESTORE VIDEO STATE (PS50+,VGA)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x1C",
+          "cites": "\tcase 0x1C:\t/* Video Save Area */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x1C/0x00",
+      "name": "get state buffer size",
+      "description": "Returns the number of 64-byte blocks needed to save the video state in CX.",
+      "behaviour": "VGA only. CX with none of bits 0-2 set fails with AL=0. Otherwise BX = blocks of 64 bytes and AL=1Ch: 20h bytes plus 46h for hardware, 3Ah for BIOS data and 303h for the DAC (plus 43h for bit 3 on S3 Trio), rounded up.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x1C case 0x00",
+          "cites": "\t\t\tcase 0: {"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x1C/0x01",
+      "name": "save video state",
+      "description": "Saves the video states chosen in CX into the buffer at ES:BX.",
+      "behaviour": "VGA only. CX bits 0-2 (hardware registers and plane latches, BIOS data area with four vectors, DAC) select what is written after a header of block offsets; none set returns AL=0, else AL=1Ch.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x1C case 0x01",
+          "cites": "\t\t\tcase 1:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x1C/0x02",
+      "name": "restore video state",
+      "description": "Restores the video states chosen in CX from the buffer at ES:BX.",
+      "behaviour": "VGA only. CX bits 0-2 select hardware, BIOS data area (with four vectors) and DAC to reload using the block offsets in the buffer header; none set returns AL=0, else AL=1Ch. The buffer is not validated.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x1C case 0x02",
+          "cites": "\t\t\tcase 2:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x1D",
+      "name": "dos/v text rows",
+      "description": "Sets or reads the number of text rows in the DOS/V video mode.",
+      "behaviour": "Only when a DOS/V or TTF DOS/V CJK mode is active; otherwise nothing happens. AL=00h sets the BIOS row count to the base rows minus BL, AL=01h to the base rows, AL=02h returns BX = base rows minus the BIOS row count.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x1d",
+          "cites": "\tcase 0x1d:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F",
+      "name": "vesa vbe",
+      "description": "Dispatches the VESA BIOS Extension calls selected by AL.",
+      "behaviour": "Acts only on VGA machine types with the S3 Trio or integration-device SVGA card; otherwise every register is left unchanged. AL 06h and up are also ignored when VBE 1.0 is emulated, and while the integration device's BIOS lockout is on. An unknown AL clears AL and leaves AH.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F",
+          "cites": "\tcase 0x4f:\t\t\t\t\t\t\t\t/* VESA Calls */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F/0x00",
+      "name": "vbe get info",
+      "description": "Fills the VESA information block at ES:DI with version, capabilities, mode list and video memory.",
+      "behaviour": "ES:DI = buffer; if it holds 'VBE2' on entry (and VBE 2 or later is emulated) the 512-byte form is filled, with OEM strings after the first 256 bytes. The version is 0100h, 0102h, 0200h or 0300h by the emulated level, and capability bit 0 shows the 8-bit DAC option. Returns AX=004Fh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-104F00",
+          "cites": "INT 10 - VESA SuperVGA BIOS (VBE) - GET SuperVGA INFORMATION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F case 0x00",
+          "cites": "\t\tcase 0x00:\t\t\t\t\t\t\t/* Get SVGA Information */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F/0x01",
+      "name": "vbe get mode info",
+      "description": "Fills the 256-byte mode information block at ES:DI for VESA mode CX.",
+      "behaviour": "CX = mode, bits 14 and 15 ignored. AH=01h for a mode below 100h, an unknown, deleted or card-rejected mode, a mode a VBE option disables, or 120h and up under VBE 1.x. Otherwise AX=004Fh and the block is filled, with the linear framebuffer address when allowed.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-104F01",
+          "cites": "INT 10 - VESA SuperVGA BIOS - GET SuperVGA MODE INFORMATION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F case 0x01",
+          "cites": "\t\tcase 0x01:\t\t\t\t\t\t\t/* Get SVGA Mode Information */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F/0x02",
+      "name": "vbe set mode",
+      "description": "Sets VESA video mode BX.",
+      "behaviour": "BX = mode; bit 14 asks for the linear framebuffer, bit 15 keeps video memory. The mouse driver is notified, the DAC drops back to 6 bits and the mode is remembered for AX=4F03h. AH=01h if the mode fails, needs an LFB that is disabled, or is not accepted; else AX=004Fh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-104F02",
+          "cites": "INT 10 - VESA SuperVGA BIOS - SET SuperVGA VIDEO MODE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F case 0x02",
+          "cites": "\t\tcase 0x02:\t\t\t\t\t\t\t/* Set videomode */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F/0x03",
+      "name": "vbe get mode",
+      "description": "Returns the current VESA video mode in BX.",
+      "behaviour": "BX = the mode last set by AX=4F02h (with bit 14, bit 15 cleared), or the current BIOS mode number if no VESA mode has been set since the last AH=00h. Returns AX=004Fh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-104F03",
+          "cites": "INT 10 - VESA SuperVGA BIOS - GET CURRENT VIDEO MODE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F case 0x03",
+          "cites": "\t\tcase 0x03:\t\t\t\t\t\t\t/* Get videomode */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F/0x04",
+      "name": "vbe save/restore state",
+      "description": "Gets the size of, saves or restores the SuperVGA video state, chosen by DL.",
+      "behaviour": "DL = 00h size (BX = blocks of 64 bytes), 01h save to ES:BX, 02h restore from ES:BX; other DL fail. CX = state bits as in AH=1Ch (bit 3 is the S3 Trio state). AH=00h on success, AH=01h if CX has none of bits 0-2; AL=4Fh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-104F04",
+          "cites": "INT 10 - VESA SuperVGA BIOS - SAVE/RESTORE SuperVGA VIDEO STATE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F case 0x04",
+          "cites": "\t\tcase 0x04:\t\t\t\t\t\t\t/* Save/restore state */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F/0x05",
+      "name": "vbe window control",
+      "description": "Selects (BH=00h) or reads (BH=01h) the video memory window BL position in DX.",
+      "behaviour": "BL = window; window 1 works only if window mirroring is on, else AH=01h. DX = position in granularity units, masked to the bank width; with range checking on, a position past video memory fails with AH=01h. BH above 01h returns AH=01h with AL unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-104F05",
+          "cites": "INT 10 - VESA SuperVGA BIOS - CPU VIDEO MEMORY CONTROL"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F case 0x05",
+          "cites": "\t\tcase 0x05:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F/0x06",
+      "name": "vbe scan line length",
+      "description": "Sets or reports the logical scan line length: BL=00h set in pixels, 01h get, 02h set in bytes, 03h get maximum.",
+      "behaviour": "CX = width for set. Returns BX = bytes per line, CX = pixels per line, DX = maximum lines; a width that is too large is capped, not rejected. AH=03h in unsupported mode types, AH=02h if no line fits, AH=FFh for other BL.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-104F06",
+          "cites": "INT 10 - VESA SuperVGA BIOS v1.1+ - GET/SET LOGICAL SCAN LINE LENGTH (PIXELS)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F case 0x06",
+          "cites": "\t\tcase 0x06:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F/0x07",
+      "name": "vbe display start",
+      "description": "Sets (BL=00h, or 80h at retrace) or gets (BL=01h) the first displayed pixel and scan line.",
+      "behaviour": "CX = first pixel, DX = first line; get returns BH=00h, CX and DX. The emulator programs the CRTC start address and panning register. AH=03h in unsupported mode types, AH=01h for any other BL.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-104F07@1",
+          "cites": "INT 10 - VESA SuperVGA BIOS v1.1+ - GET/SET DISPLAY START"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F case 0x07",
+          "cites": "\t\tcase 0x07:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F/0x08",
+      "name": "vbe dac width",
+      "description": "Sets (BL=00h) or gets (BL=01h) the DAC width in bits per colour.",
+      "behaviour": "Only in 256-colour, 4-bit and 2-colour linear or packed modes; AH=03h elsewhere. BL=00h: BH >= 8 selects 8 bits if the 8-bit DAC option is on, else 6. Both return BH = the width now in effect and AX=004Fh; other BL return AH=01h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-104F08",
+          "cites": "INT 10 - VESA SuperVGA BIOS v1.2+ - GET/SET DAC PALETTE CONTROL"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F case 0x08",
+          "cites": "        case 0x08:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F/0x09",
+      "name": "vbe palette entries",
+      "description": "Sets (BL=00h, or 80h at retrace) or gets (BL=01h) CX palette entries from index DX at ES:DI.",
+      "behaviour": "Each entry is 4 bytes: blue, green, red, filler. DX + CX over 256 fails with AH=01h, and so do BL=02h and 03h (secondary palette), leaving AL unchanged. Success is AX=004Fh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-104F09",
+          "cites": "INT 10 - VESA SuperVGA BIOS v2.0+ - GET/SET PALETTE ENTRIES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F case 0x09",
+          "cites": "\t\tcase 0x09:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x4F/0x0A",
+      "name": "vbe pmode interface",
+      "description": "Returns the protected-mode interface table, or the code for one of its three entry points.",
+      "behaviour": "BL = 00h returns ES:DI = the table and CX = its size, 01h the set-window code, 02h set display start, 03h set palette (CX = its length). AX=004Fh. When VBE 1.x is emulated or no table exists, and for other BL, AX=014Fh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.A V-104F0ABL00",
+          "cites": "INT 10 - VESA SuperVGA BIOS v2.0+ - GET PROTECTED-MODE INTERFACE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x4F case 0x0a",
+          "cites": "\t\tcase 0x0a:\t\t\t\t\t\t\t/* Get Pmode Interface */"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x50",
+      "name": "ax crt bios mode",
+      "description": "Sets (AL=00h) or reads (AL=01h) whether the AX/JEGA CRT BIOS is in US or Japanese mode.",
+      "behaviour": "AL=00h: BX = 01h (US) or 51h (Japanese); on a JEGA machine it sets the mode, sets video mode 03h and returns AL=00h, else AL=01h. AL=01h returns BX = 51h if the Japanese flag is set, else 01h, and AL=00h. Other AL clear AL.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x50",
+          "cites": "\tcase 0x50:// Set/Read JP/US mode of CRT BIOS"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x50/0x00",
+      "name": "set ax crt bios mode",
+      "description": "Switches the AX/JEGA CRT BIOS to US (BX=0001h) or Japanese (BX=0051h) mode.",
+      "behaviour": "Needs the JEGA (AX) machine type; otherwise AL=01h. For BX=0001h or 0051h it flips the mode flag, sets video mode 03h with video memory cleared and returns AL=00h; any other BX returns AL=01h.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x50 case 0x00",
+          "cites": "\t\t\tcase 0x00:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x50/0x01",
+      "name": "get ax crt bios mode",
+      "description": "Returns in BX whether the AX/JEGA CRT BIOS is in US or Japanese mode.",
+      "behaviour": "BX = 0051h if the machine is JEGA and its Japanese flag is set, else 0001h. AL = 00h.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x50 case 0x01",
+          "cites": "\t\t\tcase 0x01:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x51",
+      "name": "ax jfont pattern",
+      "description": "Stores (AL=00h) or reads (AL=01h) a character pattern of the AX Japanese CRT BIOS.",
+      "behaviour": "Does nothing unless the AX CRT BIOS is in Japanese mode (JEGA machine type). ES:BP = pattern buffer, DX = character code, BH,BL = width,height in bits; AL returns 00h on success and 01h on failure or any other AL.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x51",
+          "cites": "\tcase 0x51:// Save/Read JFONT pattern"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x51/0x00",
+      "name": "store jfont pattern",
+      "description": "Stores a 16 by 16 user font pattern from ES:BP for character code DX.",
+      "behaviour": "Only with the AX CRT BIOS in Japanese mode. BH = BL = 16 required; the 32 bytes are interleaved into the DBCS font table. AL=00h on success, AL=01h for any other size.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x51 case 0x00",
+          "cites": "\t\tcase 0x00:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x51/0x01",
+      "name": "read jfont pattern",
+      "description": "Reads the pattern of character code DX into the buffer at ES:BP.",
+      "behaviour": "Only with the AX CRT BIOS in Japanese mode. BH,BL = 8,8, 8,14 or 8,19 copy a single-byte pattern, 16,16 a double-byte one. AL=00h on success, AL=01h for any other size.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x51 case 0x01",
+          "cites": "\t\tcase 0x01:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x52",
+      "name": "ax virtual text ram",
+      "description": "Sets (AL=00h) or reads (AL=01h) the segment of the virtual text RAM used in AX Japanese graphics modes.",
+      "behaviour": "Does nothing unless the AX CRT BIOS is in Japanese mode. AL=00h: BX = segment, 0 disables it, otherwise it is filled with spaces for 80x25. AL=01h returns BX = the segment (0 if none).",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x52",
+          "cites": "\tcase 0x52:// Set/Read virtual text ram buffer when the video mode is JEGA graphic mode"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x52/0x00",
+      "name": "set virtual text ram",
+      "description": "Sets the segment of the AX virtual text RAM to BX and clears it with spaces.",
+      "behaviour": "Only with the AX CRT BIOS in Japanese mode. BX = 0 disables the buffer; any other BX is stored and the 80x25 cells are filled with blanks. Nothing is returned.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x52 case 0x00",
+          "cites": "\t\tcase 0x00:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x52/0x01",
+      "name": "get virtual text ram",
+      "description": "Returns the segment of the AX virtual text RAM in BX.",
+      "behaviour": "Only with the AX CRT BIOS in Japanese mode. BX = the stored segment, 0 if none is set.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x52 case 0x01",
+          "cites": "\t\tcase 0x01:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x82",
+      "name": "japanese scroll mode",
+      "description": "Reads or sets the scroll mode and, on J-3100, cursor blink, for the Japanese video modes.",
+      "behaviour": "On a J-3100 in mode 74h (or 75h): AL=00h returns the scroll mode and forces it on if BL is 0 or 1; AL=04h returns the blink flag and stores BL if 0 or 1; AL=05h may set BL=1. With the AX CRT BIOS in Japanese mode, AL=00h reads (BL=FFh) or ORs in scroll flag bit 0.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x82",
+          "cites": "\t\tcase 0x82:// Set/Read the scroll mode when the video mode is JEGA graphic mode"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x82/0x00",
+      "name": "scroll mode",
+      "description": "Reads (BL=FFh) or sets the scroll mode flag of the AX or J-3100 Japanese video mode.",
+      "behaviour": "On a J-3100 in mode 74h (or 75h) AL returns the stored mode and BL = 00h or 01h forces it to 01h. With the AX CRT BIOS in Japanese mode, BL = FFh only reads bit 0 into AL; any other BL ORs bit 0 in and returns the previous bit in AL.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x82 case 0x00",
+          "cites": "\t\tcase 0x00:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x83",
+      "name": "ax video ram address",
+      "description": "Returns the video RAM base address and virtual text RAM address for the AX Japanese video mode.",
+      "behaviour": "On a J-3100 in mode 74h returns AX = BX = 0. With the AX CRT BIOS in Japanese mode and AL=00h: AX = the mode's video start address and ES:BX = the virtual text RAM. Otherwise nothing changes.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x83",
+          "cites": "\tcase 0x83:// Read the video RAM address and virtual text video RAM"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x83/0x00",
+      "name": "get ax vram address",
+      "description": "Returns the graphics video RAM address in AX and the virtual text RAM in ES:BX.",
+      "behaviour": "Only with the AX CRT BIOS in Japanese mode. AX = the current mode's start address; ES:BX = the virtual text RAM from the stored segment.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x83 case 0x00",
+          "cites": "\t\tcase 0x00:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x85",
+      "name": "japanese attribute",
+      "description": "Returns the current kanji attribute in AL on a J-3100 in Japanese mode.",
+      "behaviour": "Only on a J-3100 in mode 74h: AL = the kanji attribute byte. In any other case nothing changes.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x85",
+          "cites": "\tcase 0x85:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0x88",
+      "name": "gaiji font table",
+      "description": "Returns the segment of the gaiji (user-defined character) font table on a J-3100 in Japanese mode.",
+      "behaviour": "Only on a J-3100 in mode 74h: BX = 0000h and ES = the gaiji table segment. In any other case nothing changes.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0x88",
+          "cites": "\tcase 0x88:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0xDB",
+      "name": "eten call",
+      "description": "Accepts the Chinese ETen video call and does nothing.",
+      "behaviour": "The handler has an empty case for AH=DBh: every register keeps its value, whatever AL.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0xdb",
+          "cites": "    case 0xdb:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0xF0",
+      "name": "ril read register",
+      "description": "Reads one EGA register through the EGA Register Interface Library.",
+      "behaviour": "DX = group index (00h CRTC, 08h sequencer, 10h graphics, 18h attribute, 20h-38h single registers), BL = register number, ignored for single registers. Returns BL = the value; an unknown DX is logged and BL is unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B V-10F0@1",
+          "cites": "INT 10 - EGA Register Interface Library - READ ONE REGISTER"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0xf0",
+          "cites": "\tcase 0xf0:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0xF1",
+      "name": "ril write register",
+      "description": "Writes one EGA register through the EGA Register Interface Library.",
+      "behaviour": "DX = group index: a pointer/data group (00h-18h) takes BL = register and BH = value, and BL returns BH; a single register (20h-38h) takes BL = value. An unknown DX writes nothing, and no machine type is checked.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B V-10F1@1",
+          "cites": "INT 10 - EGA Register Interface Library - WRITE ONE REGISTER"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0xf1",
+          "cites": "\tcase 0xf1:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0xF2",
+      "name": "ril read register range",
+      "description": "Reads CL consecutive registers from CH of an EGA group into the buffer at ES:BX.",
+      "behaviour": "DX = group index (00h, 08h, 10h, 18h; a single register is logged and ignored), CH = first register, CL = count, clipped to the group size. Nothing is read if CH is past the last register. The attribute controller flip-flop is reset around the reads.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B V-10F2@1",
+          "cites": "INT 10 - EGA Register Interface Library - READ REGISTER RANGE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0xf2",
+          "cites": "\tcase 0xf2:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0xF3",
+      "name": "ril write register range",
+      "description": "Writes CL consecutive registers from CH of an EGA group from the buffer at ES:BX.",
+      "behaviour": "DX = group index (00h, 08h, 10h, 18h; a single register is logged and ignored), CH = first register, CL = count, clipped to the group size. Nothing is written if CH is past the last register.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B V-10F3@1",
+          "cites": "INT 10 - EGA Register Interface Library - WRITE REGISTER RANGE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0xf3",
+          "cites": "\tcase 0xf3:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0xF4",
+      "name": "ril read register set",
+      "description": "Reads CX EGA registers listed in the table at ES:BX, writing each value back into its record.",
+      "behaviour": "Each 4-byte record is: word group index, byte register number, byte value. The emulator reads the register named by the first two fields and stores the value in the fourth byte.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B V-10F4@1",
+          "cites": "INT 10 - EGA Register Interface Library - READ REGISTER SET"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0xf4",
+          "cites": "\tcase 0xf4:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0xF5",
+      "name": "ril write register set",
+      "description": "Writes CX EGA registers listed in the table at ES:BX.",
+      "behaviour": "Each 4-byte record is: word group index, byte register number, byte value. The emulator writes the value to the named register of the group; unknown groups are skipped.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B V-10F5@1",
+          "cites": "INT 10 - EGA Register Interface Library - WRITE REGISTER SET"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0xf5",
+          "cites": "\tcase 0xf5:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0xFA",
+      "name": "ril interrogate driver",
+      "description": "Returns a pointer to the EGA Register Interface version, showing the library is present.",
+      "behaviour": "Returns ES:BX = C000h:0030h, a spot in the emulated video ROM; callers only test BX for non-zero. BX on entry is not examined.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B V-10FA--BX0000",
+          "cites": "INT 10 - EGA Register Interface Library - INTERROGATE DRIVER"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0xfa",
+          "cites": "\tcase 0xfa: {"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0xFE",
+      "name": "get shadow buffer",
+      "description": "Returns the address of the text buffer; the emulator implements it for DOS/V.",
+      "behaviour": "With DOS/V Japanese, Chinese or Korean text mode active, returns DI = 0 and ES = the text buffer segment. Otherwise ES:DI is unchanged, which the list defines as no multitasker present.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B V-10FE",
+          "cites": "INT 10 - TopView - GET SHADOW BUFFER"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0xfe",
+          "cites": "\tcase 0xfe:"
+        }
+      ]
+    },
+    {
+      "key": "0x10/0xFF",
+      "name": "update from shadow",
+      "description": "Redraws CX characters from the DOS/V text buffer at DI.",
+      "behaviour": "With DOS/V CJK text mode active, draws CX characters of the text buffer starting at offset DI on the screen. Otherwise the call does nothing; the emulator logs a note once.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B V-10FF@1",
+          "cites": "INT 10 - TopView - UPDATE SCREEN FROM SHADOW BUFFER"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/int10.cpp INT10_Handler case 0xff",
+          "cites": "\tcase 0xff:"
+        }
+      ]
+    }
+  ]
+}

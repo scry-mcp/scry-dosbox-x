@@ -1,0 +1,392 @@
+{
+  "format": "scry-knowledge/1",
+  "dictionary": "int13",
+  "kind": "call",
+  "scope": "ibm-pc",
+  "covers": "INT 13h, the disk BIOS: every function the emulator's INT13_DiskHandler has a case for.",
+  "complete_against": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler",
+  "entries": [
+    {
+      "key": "0x13/0x00",
+      "name": "reset disk",
+      "description": "Resets the disk system for the drive in DL, recalibrating its heads.",
+      "behaviour": "DL = drive. With no disk image mounted it succeeds; with images and an inactive drive it sets CF and the last status to 01h, except on CGA, Amstrad, PCjr, Olivetti and 3270 PC machines, which succeed if floppy 0 or 1 is active. Otherwise it resets the IDE or floppy emulation and clears CF; AH is never written.",
+      "differs": "The list returns AH=00h on success; the emulator leaves AH unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1300",
+          "cites": "INT 13 - DISK - RESET DISK SYSTEM"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x0",
+          "cites": "    case 0x0: /* Reset disk */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x01",
+      "name": "get last status",
+      "description": "Returns the status of the last disk operation.",
+      "behaviour": "Returns the single global last status, whatever DL is: if it is not 00h, AH = that status and CF is set, otherwise AH=00h and CF is clear. Reading it does not clear it. Several functions (AH=04h to 07h, 11h, 17h, 41h, 44h) leave it unchanged on success.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1301",
+          "cites": "INT 13 - DISK - GET STATUS OF LAST OPERATION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x1",
+          "cites": "    case 0x1: /* Get status of last operation */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x02",
+      "name": "read sectors",
+      "description": "Reads AL sectors from the CHS address in CX and DH into the buffer at ES:BX.",
+      "behaviour": "Floppies take an 8-bit cylinder and sector and the INT 1Eh sector size; hard disks a 10-bit cylinder, 6-bit sector, 512 bytes. AL=0 or a drive with no image gives AH=01h (FFh for a mounted fixed DOS drive), a failed sector its status, all with CF set. The first read after a floppy swap fails with AH=06h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1302",
+          "cites": "INT 13 - DISK - READ SECTOR(S) INTO MEMORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x2",
+          "cites": "    case 0x2: /* Read sectors */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x03",
+      "name": "write sectors",
+      "description": "Writes AL sectors from the buffer at ES:BX to the CHS address in CX and DH.",
+      "behaviour": "Registers as AH=02h, but the sector size is the INT 1Eh table's for floppies and the image's own size for hard disks. An unmounted drive returns AH=FFh and CF; a sector size over 2048 returns AH=80h; the first failed sector stops the write with its status in AH and CF set. On success AH=00h, CF clear, AL unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1303",
+          "cites": "INT 13 - DISK - WRITE DISK SECTOR(S)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x3",
+          "cites": "    case 0x3: /* Write sectors */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x04",
+      "name": "verify sectors",
+      "description": "Verifies AL sectors at the CHS address in CX and DH without transferring data.",
+      "behaviour": "AL=0 returns AH=01h and CF set; an inactive drive returns AH=01h (the last status) with CF set. Otherwise the emulator reads nothing and compares nothing: it only accounts for the drive time on floppies and IDE disks, then returns AH=00h with CF clear and AL unchanged.",
+      "differs": "The list returns in AL the number of sectors verified and checks each sector's CRC; the emulator leaves AL unchanged and checks nothing.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1304",
+          "cites": "INT 13 - DISK - VERIFY DISK SECTOR(S)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x04",
+          "cites": "    case 0x04: /* Verify sectors */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x05",
+      "name": "format track",
+      "description": "Formats a track on the drive in DL.",
+      "behaviour": "The emulator does nothing to the disk and logs a warning that the call is ignored. An inactive drive returns AH=FFh with CF set; any other returns AH=00h with CF clear, for floppies after accounting for the format time. ES:BX and the interleave are not read.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1305@1",
+          "cites": "INT 13 - FLOPPY - FORMAT TRACK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x05",
+          "cites": "    case 0x05: /* Format track */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x06",
+      "name": "format bad flags",
+      "description": "Formats a track and sets the bad sector flags on a fixed disk (XT only in the list).",
+      "behaviour": "The emulator ignores the format and logs a warning. An inactive drive returns AH=FFh with CF set; any other drive, floppy or hard, returns AH=00h with CF clear. No data is written and no time is accounted.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1306",
+          "cites": "INT 13 - FIXED DISK - FORMAT TRACK AND SET BAD SECTOR FLAGS (XT,PORT)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x06",
+          "cites": "    case 0x06: /* Format track set bad sector flags */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x07",
+      "name": "format drive",
+      "description": "Formats a fixed disk starting at the given track (XT only in the list).",
+      "behaviour": "The emulator ignores the format and logs a warning. An inactive drive returns AH=FFh with CF set; any other drive, floppy or hard, returns AH=00h with CF clear. No data is written and no time is accounted.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1307",
+          "cites": "INT 13 - FIXED DISK - FORMAT DRIVE STARTING AT GIVEN TRACK (XT,PORT)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x07",
+          "cites": "    case 0x07: /* Format track set bad sector flags */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x08",
+      "name": "get drive params",
+      "description": "Returns the geometry of the drive in DL and the number of drives.",
+      "behaviour": "AX=0, BL = floppy BIOS type (0 for hard disks), CH and CL = maximum cylinder and sector, DH = maximum head, DL = mounted drives of that kind (cylinders less any reserved). Floppies also return ES:DI -> the emulator's own table. An inactive DL=00h returns fixed 1.44M values, any other inactive drive AH=07h with CF.",
+      "differs": "For an unmounted floppy 0 the list says error; the emulator succeeds with fixed 1.44M values (BL=4, CH=79, CL=18, DH=1, DL=1).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1308",
+          "cites": "INT 13 - DISK - GET DRIVE PARAMETERS (PC,XT286,CONV,PS,ESDI,SCSI)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x08",
+          "cites": "    case 0x08: /* Get drive parameters */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x0C",
+      "name": "seek",
+      "description": "Seeks the hard disk in DL to the cylinder in CH and CL.",
+      "behaviour": "A floppy DL returns AH=01h with CF set. An inactive hard disk sets CF and the last status without writing AH. Otherwise only the IDE emulation accounts for the seek time; the call returns AH=00h with CF clear and moves nothing.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-130C",
+          "cites": "INT 13 - HARD DISK - SEEK TO CYLINDER"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x0C",
+          "cites": "    case 0x0C: /* Seek to cylinder (hard disk) */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x11",
+      "name": "recalibrate",
+      "description": "Recalibrates the hard disk in DL, seeking it to cylinder 0.",
+      "behaviour": "The emulator does not look at DL beyond a hard disk on the IDE emulation, which accounts for the recalibrate time. It always returns AH=00h with CF clear, even for an unmounted drive or a floppy, and does not set the last status.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1311",
+          "cites": "INT 13 - HARD DISK - RECALIBRATE DRIVE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x11",
+          "cites": "    case 0x11: /* Recalibrate drive */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x15",
+      "name": "get disk type",
+      "description": "Returns the type of the drive in DL and, for a hard disk, its size in sectors.",
+      "behaviour": "With images: an inactive drive gives AH=07h, CF set; floppies AH=2 if change detect is on and the BIOS type is 2 or more, else 1; hard disks AH=3 and CX:DX = sectors (the byte size wraps at 4 GiB). With none: a floppy gives AH=2 or 1, a mounted DOS drive AH=3 and CX:DX=0003:4800h, else AH=FFh with CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1315",
+          "cites": "INT 13 - DISK - GET DISK TYPE (XT 1986/1/10 or later,XT286,AT,PS)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x15",
+          "cites": "    case 0x15: /* Get disk type */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x16",
+      "name": "detect disk change",
+      "description": "Reports whether the floppy in DL was changed since the last call.",
+      "behaviour": "With the 'int 13 disk change detect' option off it returns AH=FFh, CF set. Otherwise an inactive drive gives AH=80h with CF; a floppy whose flag is set gives AH=06h with CF and clears the flag, else AH=00h and CF clear; a hard disk always gives AH=06h with CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1316",
+          "cites": "INT 13 - FLOPPY DISK - DETECT DISK CHANGE (XT 1986/1/10 or later,XT286,AT,PS)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x16",
+          "cites": "    case 0x16: /* Detect disk change (apparently added to XT BIOSes in 1986 according to RBIL) */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x17",
+      "name": "set format type",
+      "description": "Sets the floppy disk type for a following format.",
+      "behaviour": "AL and DL are not read. The emulator only arms a one-shot flag and returns AH=00h with CF clear: the next sector read (AH=02h or 42h) transfers no data and fails once with AH=04h, after which reads work normally.",
+      "differs": "The list sets the media type for formatting from AL; the emulator ignores AL and arms a single failing read instead.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B B-1317",
+          "cites": "INT 13 - FLOPPY DISK - SET DISK TYPE FOR FORMAT (AT,PS)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x17",
+          "cites": "    case 0x17: /* Set disk type for format */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x41",
+      "name": "check extensions",
+      "description": "Checks whether the INT 13 extensions are present for the drive in DL.",
+      "behaviour": "If BX=55AAh and the drive is active: AH=01h, BX=AA55h, CX=0001h (functions 42h to 44h, 47h, 48h), CF clear, DH unset. Otherwise CF is set and AH is not written. With the 'int 13 extensions' option off, AH=40h to 48h return AH=FFh with CF set.",
+      "differs": "The list returns AH=01h on failure; the emulator leaves AH unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B d-1341--BX55AA",
+          "cites": "INT 13 - IBM/MS INT 13 Extensions - INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x41",
+          "cites": "    case 0x41: /* Check Extensions Present */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x42",
+      "name": "extended read",
+      "description": "Reads blocks from an LBA given by the disk address packet at DS:SI.",
+      "behaviour": "The packet must be 10h bytes with reserved byte, high sector dword and count in order (count non-zero), else AH=01h with CF. Each block copies only 512 bytes (2048 on an El Torito no-emulation drive). A failed block sets CF, AH = its status and the packet's count to the blocks done; an inactive drive gives AH=FFh.",
+      "differs": "The list allows a packet of 18h bytes with a 64-bit flat buffer; the emulator refuses it with AH=01h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B d-1342",
+          "cites": "INT 13 - IBM/MS INT 13 Extensions - EXTENDED READ"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x42",
+          "cites": "    case 0x42: /* Extended Read Sectors From Drive */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x43",
+      "name": "extended write",
+      "description": "Writes blocks to an LBA given by the disk address packet at DS:SI.",
+      "behaviour": "AL (write flags) is ignored, so no verify is done. An inactive drive returns AH=FFh; a bad packet or zero count returns AH=01h. Each block takes the image's own sector size from the buffer, not 512; the first failed block returns its status in AH with CF set.",
+      "differs": "The list sets the packet's block count to the blocks transferred on error; the emulator never writes the count here.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B d-1343",
+          "cites": "INT 13 - IBM/MS INT 13 Extensions - EXTENDED WRITE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x43",
+          "cites": "    case 0x43: { /* Extended Write Sectors to Drive */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x44",
+      "name": "extended verify",
+      "description": "Verifies blocks at the LBA given by the disk address packet at DS:SI.",
+      "behaviour": "An inactive drive returns AH=FFh with CF set. Otherwise the emulator verifies nothing: for an IDE disk with a valid packet it only accounts for the drive time. It returns AH=00h with CF clear and leaves the packet's count untouched.",
+      "differs": "The list checks the blocks and writes the number verified into the packet; the emulator checks nothing and writes nothing.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B d-1344",
+          "cites": "INT 13 - IBM/MS INT 13 Extensions - VERIFY SECTORS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x44",
+          "cites": "    case 0x44: /* Extended Verify Sectors [http://www.ctyme.com/intr/rb-0711.htm] */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x47",
+      "name": "extended seek",
+      "description": "Seeks the drive to the LBA given by the disk address packet at DS:SI.",
+      "behaviour": "An inactive drive returns AH=FFh; an invalid packet (size not 10h, reserved byte or high sector dword not 0) returns AH=01h, both with CF set. Otherwise only an IDE disk accounts for the seek time. It returns AH=00h with CF clear and sets the last status to 00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B d-1347",
+          "cites": "INT 13 - IBM/MS INT 13 Extensions - EXTENDED SEEK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x47",
+          "cites": "    case 0x47: { /* Extended Seek */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x48",
+      "name": "ext get drive params",
+      "description": "Fills the buffer at DS:SI with the extended drive parameters of the drive in DL.",
+      "behaviour": "An inactive drive or a buffer size under 1Ah returns AH=FFh with CF set. Written: flags 0003h, cylinders, heads and sectors as dwords, total sectors (capped at 0FFFFFFFh unless 48-bit LBA is on) and 512 bytes per sector, always. A size over 1Eh returns 1Eh bytes with the FFFFFFFFh EDD pointer; 1Ah to 1Eh returns 1Ah bytes.",
+      "differs": "The list sizes a v2.x call at 1Eh and returns the EDD pointer; the emulator, given exactly 1Eh, returns the 1Ah-byte v1.x form without it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.B d-1348",
+          "cites": "INT 13 - IBM/MS INT 13 Extensions - GET DRIVE PARAMETERS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x48",
+          "cites": "    case 0x48: { /* get drive parameters */"
+        }
+      ]
+    },
+    {
+      "key": "0x13/0x4B",
+      "name": "cd emulation status",
+      "description": "Gets the bootable CD-ROM emulation status, or terminates the emulation.",
+      "behaviour": "Only for DL=7Fh or the El Torito no-emulation drive, with AL=0 or 1, else AH=FFh with CF. It fills the 13h-byte packet at DS:SI: size 13h, media type 00h (no emulation) plus 40h on IDE, drive number, IDE controller and slave bit, and returns AH=00h with CF clear. AL=00h and 01h act alike and no emulation is ended.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x4B",
+          "cites": "    case 0x4B: /* Terminate disk emulation or get emulation status */"
+        }
+      ]
+    }
+  ]
+}

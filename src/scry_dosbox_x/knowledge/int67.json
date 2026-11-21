@@ -1,0 +1,759 @@
+{
+  "format": "scry-knowledge/1",
+  "dictionary": "int67",
+  "kind": "call",
+  "scope": "ibm-pc",
+  "covers": "INT 67h, the expanded memory manager: every function and subfunction the emulator's INT67_Handler has a case for.",
+  "complete_against": "dosbox-x:src/ints/ems.cpp INT67_Handler",
+  "entries": [
+    {
+      "key": "0x67/0x40",
+      "name": "get manager status",
+      "description": "Checks that the expanded memory manager is present and working.",
+      "behaviour": "Returns AH=00h whatever the state: the emulator tests no hardware, so the list's 80h, 81h and 84h never come back. The handler exists only when EMS emulation is on (ems setting other than none, and not on a PCjr).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6740",
+          "cites": "INT 67 - LIM EMS - GET MANAGER STATUS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x40",
+          "cites": "\tcase 0x40:\t\t/* Get Status */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x41",
+      "name": "get page frame segment",
+      "description": "Returns the segment of the EMS page frame.",
+      "behaviour": "Returns AH=00h and BX = the page frame segment. The segment is E000h on an IBM PC, D000h on PC-98 or J-3100, or C000h if the ems frame setting asks for it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6741",
+          "cites": "INT 67 - LIM EMS - GET PAGE FRAME SEGMENT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x41",
+          "cites": "\tcase 0x41:\t\t/* Get PageFrame Segment */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x42",
+      "name": "get number of pages",
+      "description": "Returns how many expanded memory pages are free and how many there are in total.",
+      "behaviour": "Returns AH=00h, BX = free pages (free 4K memory pages divided by 4) and DX = the largest free block in pages, both capped at 7FFFh. A page is 16 KB.",
+      "differs": "The list gives DX as the total number of pages; the emulator derives it from the largest free memory block, not from a fixed total.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6742",
+          "cites": "INT 67 - LIM EMS - GET NUMBER OF PAGES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x42",
+          "cites": "\tcase 0x42:\t\t/* Get number of pages */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x43",
+      "name": "allocate handle",
+      "description": "Allocates a handle with BX logical pages of 16 KB.",
+      "behaviour": "BX = pages; returns AH=00h and DX = the new handle (1 to 199, 0 being the system handle). Errors: 89h for BX=0, 88h if fewer than BX pages are free, 85h if no handle is free, never 87h. The pages are zeroed only if the zero-memory-on-EMS-allocation option is on.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6743",
+          "cites": "INT 67 - LIM EMS - GET HANDLE AND ALLOCATE MEMORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x43",
+          "cites": "\tcase 0x43:\t\t/* Get Handle and Allocate Pages */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x44",
+      "name": "map page",
+      "description": "Maps logical page BX of handle DX into physical page AL of the page frame.",
+      "behaviour": "AL = physical page (0 to 3), BX = logical page (FFFFh unmaps and ignores the handle), DX = handle. Errors: 8Bh for AL above 3, 83h for an invalid handle, 8Ah for a logical page past the handle's pages. The A20 gate is switched on if it was off.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6744",
+          "cites": "INT 67 - LIM EMS - MAP MEMORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x44",
+          "cites": "\tcase 0x44:\t\t/* Map Expanded Memory Page */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x45",
+      "name": "release handle",
+      "description": "Frees a handle and its pages.",
+      "behaviour": "DX = handle. AH=83h for an invalid handle, else the pages are freed, the handle's name and saved map are cleared, and AH=00h. Handle 0 is never deallocated.",
+      "differs": "The list gives 86h when the handle still holds a saved mapping context; the emulator has that check commented out and frees the handle anyway.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6745",
+          "cites": "INT 67 - LIM EMS - RELEASE HANDLE AND MEMORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x45",
+          "cites": "\tcase 0x45:\t\t/* Release handle and free pages */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x46",
+      "name": "get emm version",
+      "description": "Returns the version of the expanded memory manager.",
+      "behaviour": "Returns AH=00h and AL=40h, that is version 4.0. The emulator reports 4.0 whatever the ems setting.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6746",
+          "cites": "INT 67 - LIM EMS - GET EMM VERSION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x46",
+          "cites": "\tcase 0x46:\t\t/* Get EMM Version */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x47",
+      "name": "save mapping context",
+      "description": "Saves the current page frame mapping under a handle.",
+      "behaviour": "DX = handle. AH=83h if the handle is not valid, 8Dh if that handle already holds a saved map, else the four page frame mappings are stored with the handle and AH=00h. Handle 0 is accepted even without an allocation.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6747",
+          "cites": "INT 67 - LIM EMS - SAVE MAPPING CONTEXT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x47",
+          "cites": "\tcase 0x47:\t\t/* Save Page Map */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x48",
+      "name": "restore mapping context",
+      "description": "Restores the page frame mapping saved under a handle.",
+      "behaviour": "DX = handle. AH=83h for an invalid handle, 8Eh if nothing was saved for it. Otherwise the saved mappings are put back, the page frame is remapped, the save is discarded (a second restore gives 8Eh) and AH=00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6748",
+          "cites": "INT 67 - LIM EMS - RESTORE MAPPING CONTEXT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x48",
+          "cites": "\tcase 0x48:\t\t/* Restore Page Map */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x4B",
+      "name": "get handle count",
+      "description": "Returns the number of open EMM handles.",
+      "behaviour": "Returns AH=00h and BX = the number of allocated handles in the 200-entry table. Handle 0, the system handle, counts when it is allocated, which is every mode except ems=emsboard.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-674B",
+          "cites": "INT 67 - LIM EMS - GET NUMBER OF EMM HANDLES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x4b",
+          "cites": "\tcase 0x4b:\t\t/* Get Handle Count */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x4C",
+      "name": "get handle pages",
+      "description": "Returns the number of logical pages a handle owns.",
+      "behaviour": "DX = handle. AH=83h if the handle is not allocated, else AH=00h and BX = its page count. The system handle 0 is valid when it is allocated.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-674C",
+          "cites": "INT 67 - LIM EMS - GET PAGES OWNED BY HANDLE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x4c",
+          "cites": "\tcase 0x4c:\t\t/* Get Pages for one Handle */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x4D",
+      "name": "get all handle pages",
+      "description": "Fills an array with every open handle and its page count.",
+      "behaviour": "ES:DI = buffer. Returns AH=00h, BX = the number of allocated handles (the system handle 0 included when it exists) and, per handle in ascending order, a word handle and a word page count; the buffer size is not checked.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-674D",
+          "cites": "INT 67 - LIM EMS - GET PAGES FOR ALL HANDLES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x4d",
+          "cites": "\tcase 0x4d:\t\t/* Get Pages for all Handles */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x4E",
+      "name": "get or set page map",
+      "description": "Reads or writes the whole page frame mapping, by the subfunction in AL.",
+      "behaviour": "AL=00h to 03h picks the subfunction, each with its own entry. The map is the four (handle, logical page) word pairs of the page frame, 16 bytes. Any other AL gives AH=8Fh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-674E",
+          "cites": "INT 67 - LIM EMS - GET OR SET PAGE MAP"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x4e",
+          "cites": "\tcase 0x4e:\t\t/*Save/Restore Page Map */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x4E/0x00",
+      "name": "get page map",
+      "description": "Copies the current page frame mapping to a buffer.",
+      "behaviour": "ES:DI = buffer for 16 bytes: four (handle, logical page) word pairs, one per physical page. Returns AH=00h. Nothing about the map is changed.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x4e case 0x00",
+          "cites": "\t\tcase 0x00:\t/* Save Page Map */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x4E/0x01",
+      "name": "set page map",
+      "description": "Loads a page frame mapping from a buffer and remaps the frame to it.",
+      "behaviour": "DS:SI = 16 bytes in the get-map layout. The emulator copies them into its map table without validating them, remaps the page frame and the other mapped segments, and returns AH=00h even if a remap fails.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x4e case 0x01",
+          "cites": "\t\tcase 0x01:\t/* Restore Page Map */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x4E/0x02",
+      "name": "get and set page map",
+      "description": "Saves the current mapping to a buffer, then loads a new one.",
+      "behaviour": "ES:DI = buffer that receives the current 16-byte map, DS:SI = the 16-byte map to load. The save is written first, then the new map is loaded and the frame remapped. Returns AH=00h.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x4e case 0x02",
+          "cites": "\t\tcase 0x02:\t/* Save and Restore Page Map */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x4E/0x03",
+      "name": "page map size",
+      "description": "Returns the size in bytes of the page map array.",
+      "behaviour": "Returns AH=00h and AL=16 (10h), the size of the four-entry map. No registers are read.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x4e case 0x03",
+          "cites": "\t\tcase 0x03:\t/* Get Page Map Array Size */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x4F",
+      "name": "partial page map",
+      "description": "Saves, restores or sizes a partial page map, by the subfunction in AL.",
+      "behaviour": "AL=00h: DS:SI = count and segments, ES:DI receives the count and 4 bytes per segment; AH=8Bh for a segment outside the frame unless the mode is mixed or EMM386, or it is A000h to AFFFh or just below the frame. AL=01h remaps from the DS:SI map (index 40h or more: 8Bh); AL=02h returns AL = 2+4*BX. Else AH=84h.",
+      "differs": "The list gives 8Fh for an undefined subfunction; the emulator returns 84h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-674F",
+          "cites": "INT 67 - LIM EMS 4.0 - GET/SET PARTIAL PAGE MAP"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x4f",
+          "cites": "\tcase 0x4f:\t/* Save/Restore Partial Page Map */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x50",
+      "name": "map multiple pages",
+      "description": "Maps or unmaps several handle pages at once, by the subfunction in AL.",
+      "behaviour": "DX = handle, CX = entries, DS:SI = array of (logical page, physical page or segment) word pairs. AL=00h or 01h picks the subfunction, each with its own entry; any other AL gives AH=8Fh. Entries are applied in order and AH is the first error (CX=0 gives AH=00h).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6750",
+          "cites": "INT 67 - LIM EMS 4.0 - MAP/UNMAP MULTIPLE HANDLE PAGES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x50",
+          "cites": "\tcase 0x50:\t/* Map/Unmap multiple handle pages */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x50/0x00",
+      "name": "map pages by number",
+      "description": "Maps handle pages into physical pages given by number.",
+      "behaviour": "Each entry is a logical page word then a physical page word, handled as in AH=44h: FFFFh unmaps, errors are 8Bh, 83h or 8Ah. It stops at the first error and keeps the mappings made before it.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x50 case 0x00",
+          "cites": "\t\t\tcase 0x00: // use physical page numbers"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x50/0x01",
+      "name": "map pages by segment",
+      "description": "Maps handle pages at segment addresses.",
+      "behaviour": "Each entry is a logical page word then a segment word; FFFFh unmaps. In mixed or EMM386 mode any segment is accepted; in board mode only A000h to AFFFh and the page frame, else AH=8Bh. Other errors are 83h and 8Ah, and it stops at the first error.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x50 case 0x01",
+          "cites": "\t\t\tcase 0x01: // use segment address"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x51",
+      "name": "reallocate pages",
+      "description": "Changes the number of pages a handle owns.",
+      "behaviour": "DX = handle, BX = new page count. AH=83h for an invalid handle, 88h if the memory manager cannot grow the block, else AH=00h and the handle holds BX pages. The 87h of the list is never returned.",
+      "differs": "The list returns the actual page count in BX; the emulator never writes BX.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6751",
+          "cites": "INT 67 - LIM EMS 4.0 - REALLOCATE PAGES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x51",
+          "cites": "\tcase 0x51:\t/* Reallocate Pages */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x52",
+      "name": "handle attributes",
+      "description": "Gets or sets whether a handle is volatile, or gets the attribute capability.",
+      "behaviour": "DX = handle; AH=83h if invalid, except for AL=02h. AL=00h and 02h return AL=00h (volatile only). AL=01h with BL=00h also returns AL=00h; BL=01h gives 91h, other BL 90h, and any other AL gives 8Fh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6752",
+          "cites": "INT 67 - LIM EMS 4.0 - GET/SET HANDLE ATTRIBUTES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x52",
+          "cites": "\tcase 0x52: // Set/Get Handle attributes"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x53",
+      "name": "handle name",
+      "description": "Gets or sets the 8-byte name of a handle.",
+      "behaviour": "DX = handle; AH=83h if it is not allocated. AL=00h writes the name to ES:DI, AL=01h reads 8 bytes from DS:SI as the name. Any other AL gives AH=8Fh; otherwise AH=00h.",
+      "differs": "The list gives A1h for a duplicate name; the emulator copies the name without a check and never returns A1h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6753",
+          "cites": "INT 67 - LIM EMS 4.0 - GET/SET HANDLE NAME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x53",
+          "cites": "\tcase 0x53: // Set/Get Handlename"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x54",
+      "name": "handle directory",
+      "description": "Lists handle names, searches a handle by name, or returns the handle total.",
+      "behaviour": "AL=00h: ES:DI receives 10 bytes per allocated handle (word handle, 8-byte name) and AL = their count. AL=01h: DS:SI = 8-byte name, returns DX = the first handle with that name or AH=A0h; AL=02h: BX = 200. Other AL gives AH=8Fh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6754",
+          "cites": "INT 67 - LIM EMS 4.0 - GET HANDLE DIRECTORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x54",
+          "cites": "\tcase 0x54:\t/* Handle Functions */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x57",
+      "name": "move or exchange region",
+      "description": "Moves or exchanges a memory region between conventional and expanded memory.",
+      "behaviour": "AL=00h move, AL=01h exchange, DS:SI = the parameter block; a type of 0 is conventional memory and any other value is read as expanded. Errors: 83h invalid handle, 8Ah region past the handle's pages, 84h for AL above 1. There are no overlap or wrap checks, and A20 is forced on during the copy.",
+      "differs": "The list gives 93h for a region past the handle's pages, 8Fh for a bad AL and 92h to 98h for overlaps; the emulator returns 8Ah, 84h and none of the overlap codes.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6757",
+          "cites": "INT 67 - LIM EMS 4.0 - MOVE/EXCHANGE MEMORY REGION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x57",
+          "cites": "\tcase 0x57:\t/* Memory region */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x58",
+      "name": "mappable address array",
+      "description": "Returns the mappable physical pages of the page frame.",
+      "behaviour": "CX = 4, the number of entries, and AH=00h for any AL. Only AL=00h also fills ES:DI with four (segment, physical page number) word pairs, at the page frame segment plus 400h per page.",
+      "differs": "The list gives 8Fh for an undefined AL; the emulator treats every AL other than 00h like 01h and returns the count.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6758",
+          "cites": "INT 67 - LIM EMS 4.0 - GET MAPPABLE PHYSICAL ADDRESS ARRAY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x58",
+          "cites": "\tcase 0x58: // Get mappable physical array address array"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x59",
+      "name": "hardware information",
+      "description": "Returns expanded memory hardware information, by the subfunction in AL.",
+      "behaviour": "AL=00h and AL=01h pick the subfunction, each with its own entry. Any other AL gives AH=8Fh; the emulator logs it. AH=00h otherwise.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-6759",
+          "cites": "INT 67 - LIM EMS 4.0 - GET EXPANDED MEMORY HARDWARE INFORMATION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x59",
+          "cites": "\tcase 0x59: // Get hardware information"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x59/0x00",
+      "name": "hardware config array",
+      "description": "Fills a buffer with the hardware configuration of the emulated EMS.",
+      "behaviour": "ES:DI = buffer of five words: 0400h (a page is 1K paragraphs), 0 alternate register sets, 16 (context save area bytes), 0 DMA register sets, 0 DMA type. Returns AH=00h.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x59 case 0x00",
+          "cites": "\t\tcase 0x00:\t// Get hardware configuration"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x59/0x01",
+      "name": "raw page count",
+      "description": "Returns the number of unallocated and total raw pages.",
+      "behaviour": "Returns AH=00h, BX = free pages (free 4K pages divided by 4, capped at 7FFFh) and DX = all memory pages divided by 4. The source comments that the DX value is not entirely correct.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x59 case 0x01",
+          "cites": "\t\tcase 0x01:\t// get unallocated raw page count"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x5A",
+      "name": "allocate standard or raw",
+      "description": "Allocates a handle with BX pages, where a request for zero pages is allowed.",
+      "behaviour": "AL=00h and 01h behave alike: BX = pages (0 allowed), returns DX = handle and AH=00h. Errors: 88h not enough pages, 85h no free handle; AL above 01h gives AH=8Fh. A raw page is the same 16 KB as a standard one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P m-675A",
+          "cites": "INT 67 - LIM EMS 4.0 - ALLOCATE STANDARD/RAW PAGES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x5a",
+          "cites": "\tcase 0x5A:              /* Allocate standard/raw Pages */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0x70",
+      "name": "pc-98 page frame bank",
+      "description": "A function group the emulator reserves for the NEC PC-98 EMS page frame bank control.",
+      "behaviour": "Returns AH=8Fh for every AL and does nothing else. For AL=01h with BX=0 or 1 on PC-98 it only logs that remapping the page frame at B000h to system or video memory is not implemented.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0x70",
+          "cites": "    case 0x70:              /* NEC PC-98 specific function group? */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE",
+      "name": "vcpi",
+      "description": "The VCPI call group, which 386 programs use to share the machine with an EMM386-style manager; the subfunction is in AL.",
+      "behaviour": "Each AL has its own entry. VCPI exists only when the vcpi option is on and EMS runs in a mode other than board (that needs a 386 or later and XMS); otherwise every AH=DEh call returns AH=84h. An AL with no entry, such as 08h or 09h, also returns 84h.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde",
+          "cites": "\tcase 0xDE:\t\t/* VCPI Functions */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE/0x00",
+      "name": "vcpi install check",
+      "description": "Tells whether VCPI is present.",
+      "behaviour": "Returns AH=00h and BX=0100h (version 1.0) only if CX=0 and DI=0012h, or if the CPU is already in virtual 8086 mode. From plain real mode with other registers it returns AH=84h, so VCPI looks absent there.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P E-67DE00",
+          "cites": "INT 67 - Virtual Control Program Interface - INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x00",
+          "cites": "\t\t\tcase 0x00:\t\t/* VCPI Installation Check */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE/0x01",
+      "name": "vcpi get pm interface",
+      "description": "Returns the protected mode entry point and fills the page table and descriptor slots the client supplies.",
+      "behaviour": "ES:DI = page table buffer, DS:SI = three descriptor slots. The emulator fills 256 four-byte entries for the first megabyte, advances DI by 400h, writes a 32-bit code descriptor for its callback area and two flat data descriptors, and returns EBX = low 16 bits of the entry and AH=00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P E-67DE01",
+          "cites": "INT 67 - Virtual Control Program Interface - GET PROTECTED MODE INTERFACE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x01",
+          "cites": "\t\t\tcase 0x01: {\t/* VCPI Get Protected Mode Interface */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE/0x02",
+      "name": "vcpi max phys address",
+      "description": "Returns the physical address of the highest 4K page.",
+      "behaviour": "Returns AH=00h and EDX = total emulated memory minus one, rounded down to a 4K boundary.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P E-67DE02",
+          "cites": "INT 67 - Virtual Control Program Interface - GET MAX PHYSICAL MEMORY ADDRESS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x02",
+          "cites": "\t\t\tcase 0x02:\t\t/* VCPI Maximum Physical Address */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE/0x03",
+      "name": "vcpi free page count",
+      "description": "Returns the number of free 4K pages.",
+      "behaviour": "Returns AH=00h and EDX = the count of free 4K memory pages, with no cap. The same pool supplies EMS pages and XMS blocks.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P E-67DE03",
+          "cites": "INT 67 - Virtual Control Program Interface - GET NUMBER OF FREE 4K PAGES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x03",
+          "cites": "\t\t\tcase 0x03:\t\t/* VCPI Get Number of Free Pages */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE/0x04",
+      "name": "vcpi allocate page",
+      "description": "Allocates one 4K page.",
+      "behaviour": "Returns AH=00h and EDX = the physical address of the page, or AH=88h if no memory is left. The list says the client must free it before it ends.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P E-67DE04",
+          "cites": "INT 67 - Virtual Control Program Interface - ALLOCATE A 4K PAGE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x04",
+          "cites": "\t\t\tcase 0x04: {\t/* VCPI Allocate one Page */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE/0x05",
+      "name": "vcpi free page",
+      "description": "Frees a 4K page given by its physical address.",
+      "behaviour": "EDX = physical address. The emulator releases page EDX shifted right 12 bits without checking that it was allocated, and always returns AH=00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P E-67DE05",
+          "cites": "INT 67 - Virtual Control Program Interface - FREE 4K PAGE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x05",
+          "cites": "\t\t\tcase 0x05:\t\t/* VCPI Free Page */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE/0x06",
+      "name": "vcpi page phys address",
+      "description": "Returns the physical address of a page in the first megabyte.",
+      "behaviour": "CX = page number (linear address shifted right 12). For a page inside the EMS page frame: AH=8Bh if that physical page has nothing mapped, else EDX = the address of the mapped 4K page. Outside the frame EDX = CX shifted left 12, and AH=00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P E-67DE06",
+          "cites": "INT 67 - Virtual Control Program Interface - GET PHYS ADDR OF PAGE IN FIRST MB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x06",
+          "cites": "\t\t\tcase 0x06: {\t/* VCPI Get Physical Address of Page in 1st MB */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE/0x07",
+      "name": "vcpi read cr0",
+      "description": "Returns the value of control register 0.",
+      "behaviour": "Returns AH=00h and EBX = the emulated CR0.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P E-67DE07",
+          "cites": "INT 67 - Virtual Control Program Interface - READ CR0"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x07",
+          "cites": "\t\t\tcase 0x07:\t\t/* VCPI Read CR0 */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE/0x0A",
+      "name": "vcpi get pic mappings",
+      "description": "Returns the interrupt vector bases of the two PICs.",
+      "behaviour": "Returns AH=00h, BX = master PIC base and CX = slave PIC base, as last recorded by AX=DE0Bh. The initial values are 08h and 70h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P E-67DE0A",
+          "cites": "INT 67 - Virtual Control Program Interface - GET 8259 INTERRUPT VECTOR MAPPINGS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x0a",
+          "cites": "\t\t\tcase 0x0a:\t\t/* VCPI Get PIC Vector Mappings */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE/0x0B",
+      "name": "vcpi set pic mappings",
+      "description": "Tells the VCPI server the PIC vector bases the client has set.",
+      "behaviour": "BX = master base, CX = slave base. The emulator clears IF, records the low byte of each as the values AX=DE0Ah returns, and returns AH=00h. This handler does not reprogram the PICs.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P E-67DE0B",
+          "cites": "INT 67 - Virtual Control Program Interface - SET 8259 INTERRUPT VECTOR MAPPINGS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x0b",
+          "cites": "\t\t\tcase 0x0b:\t\t/* VCPI Set PIC Vector Mappings */"
+        }
+      ]
+    },
+    {
+      "key": "0x67/0xDE/0x0C",
+      "name": "vcpi switch to pmode",
+      "description": "Switches from virtual 8086 mode to protected mode and jumps to the client's entry point.",
+      "behaviour": "ESI = linear address of the register block. The emulator clears IF, loads CR3, GDTR, IDTR, LDTR and TR from it, sets CR0.PE (and PG if CR3 is not 0), zeroes DS, ES, FS and GS, clears VM and NT, and jumps to CS:EIP read at offset 10h. It does not return.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.P E-67DE0C",
+          "cites": "INT 67 - Virtual Control Program Interface - SWITCH TO PROTECTED MODE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/ems.cpp INT67_Handler case 0xde case 0x0c",
+          "cites": "\t\t\tcase 0x0c: {\t/* VCPI Switch from V86 to Protected Mode */"
+        }
+      ]
+    }
+  ]
+}

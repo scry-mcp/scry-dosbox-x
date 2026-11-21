@@ -1,0 +1,406 @@
+{
+  "format": "scry-knowledge/1",
+  "dictionary": "int1a",
+  "kind": "call",
+  "scope": "ibm-pc",
+  "covers": "INT 1Ah, the time and date BIOS and the PCI BIOS: every function and subfunction the emulator's INT1A_Handler has a case for.",
+  "complete_against": "dosbox-x:src/ints/bios.cpp INT1A_Handler",
+  "entries": [
+    {
+      "key": "0x1A/0x00",
+      "name": "get system time",
+      "description": "Returns the timer tick count since midnight and the midnight flag.",
+      "behaviour": "CX:DX = the tick count at 0040:006C, AL = the midnight flag at 0040:0070, which the call then clears; CF is not touched. IF is set on return. PC-98 machines install a separate INT 1Ah handler instead of this one.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.D B-1A00",
+          "cites": "INT 1A - TIME - GET SYSTEM TIME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x00",
+          "cites": "    case 0x00:  /* Get System time */"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0x01",
+      "name": "set system time",
+      "description": "Sets the timer tick count since midnight.",
+      "behaviour": "CX:DX is stored as the tick count at 0040:006C. The midnight flag at 0040:0070 is left as it is. No register is returned.",
+      "differs": "The list says the call resets the midnight-passed flag; the emulator does not touch it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.D B-1A01",
+          "cites": "INT 1A - TIME - SET SYSTEM TIME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x01",
+          "cites": "    case 0x01:  /* Set System time */"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0x02",
+      "name": "get rtc time",
+      "description": "Reads the time from the real-time clock.",
+      "behaviour": "First sets the CMOS clock to BCD and 24-hour mode. Then CH = hours (CMOS 04h), CL = minutes (02h), DH = seconds (00h), DL = bit 0 of CMOS register 0Bh (daylight saving, set by that first step), and CF is cleared; it waits for any clock update to finish and lets the CPU idle four times.",
+      "differs": "The list sets CF on error (clock stopped or mid-update); the emulator always clears CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.D B-1A02",
+          "cites": "INT 1A - TIME - GET REAL-TIME CLOCK TIME (AT,XT286,PS)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x02",
+          "cites": "    case 0x02:  /* GET REAL-TIME CLOCK TIME (AT,XT286,PS) */"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0x03",
+      "name": "set rtc time",
+      "description": "Sets the time of the real-time clock.",
+      "behaviour": "First sets the CMOS clock to BCD and 24-hour mode, waits for any update, stops updates, and writes CH, CL and DH as hours, minutes and seconds (CMOS 04h, 02h, 00h) unchanged. It sets the daylight saving bit from bit 0 of DH, then resumes updates and idles the CPU four times. CF and AH are not set.",
+      "differs": "The list takes the daylight saving flag from DL; the emulator takes it from bit 0 of DH, the seconds, and ignores DL.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.D B-1A03",
+          "cites": "INT 1A - TIME - SET REAL-TIME CLOCK TIME (AT,XT286,PS)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x03",
+          "cites": "    case 0x03:  // set RTC time"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0x04",
+      "name": "get rtc date",
+      "description": "Reads the date from the real-time clock.",
+      "behaviour": "First sets the CMOS clock to BCD and 24-hour mode. Then CH = century (CMOS 32h), CL = year (09h), DH = month (08h), DL = day (07h), and CF is cleared; it waits for any clock update to finish and lets the CPU idle four times.",
+      "differs": "The list sets CF on error; the emulator always clears CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.D B-1A04",
+          "cites": "INT 1A - TIME - GET REAL-TIME CLOCK DATE (AT,XT286,PS)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x04",
+          "cites": "    case 0x04:  /* GET REAL-TIME ClOCK DATE  (AT,XT286,PS) */"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0x05",
+      "name": "set rtc date",
+      "description": "Sets the date of the real-time clock.",
+      "behaviour": "First sets the CMOS clock to BCD and 24-hour mode, waits for any update, stops updates, and writes CH, CL, DH and DL as century, year, month and day (CMOS 32h, 09h, 08h, 07h) unchanged and unchecked. It then resumes updates and idles the CPU four times. CF and AH are not set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.D B-1A05",
+          "cites": "INT 1A - TIME - SET REAL-TIME CLOCK DATE (AT,XT286,PS)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x05",
+          "cites": "    case 0x05:  // set RTC date"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0x80",
+      "name": "sound multiplexer",
+      "description": "Sets up the sound multiplexer on a PCjr or Tandy (AL = source).",
+      "behaviour": "On every machine type the emulator only logs an error line naming AL (the source) and returns with the registers and CF unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.D s-1A80",
+          "cites": "INT 1A - PCjr, Tandy 2500???, Tandy 1000SL/TL - SET UP SOUND MULTIPLEXOR"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x80",
+          "cites": "    case 0x80:  /* Pcjr Setup Sound Multiplexer */"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0x81",
+      "name": "tandy sound check",
+      "description": "Tandy digital sound installation check: returns the sound port and whether it is busy.",
+      "behaviour": "Acts only when the BIOS set up the Tandy DAC with a Sound Blaster or Tandy sound device; otherwise it returns at once with registers unchanged. AX = the Tandy DAC's port when that device is present, else 00C4h (the value the list gives for a Tandy 1000SL/TL). CF = set if a transfer is in progress.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x81",
+          "cites": "    case 0x81:  /* Tandy sound system check */"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0x82",
+      "name": "tandy sound record",
+      "description": "Starts recording digital sound into the buffer at ES:BX.",
+      "behaviour": "Needs the Tandy DAC setup as for AH=81h. CX = length, DX = delay (low 12 bits), AL = volume (low 3 bits). If a transfer is running it returns AH=00h with CF set; otherwise it starts a DMA recording, a transfer crossing a 64K page limited to the page and chained on, and returns AH=00h, CF clear.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.D s-1A82",
+          "cites": "INT 1A - Tandy 2500???, Tandy 1000SL/TL - DIGITAL SOUND - RECORD SOUND"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x82",
+          "cites": "    case 0x82:  /* Tandy sound system start recording */"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0x83",
+      "name": "tandy sound play",
+      "description": "Starts playing digital sound from the buffer at ES:BX.",
+      "behaviour": "Needs the Tandy DAC setup as for AH=81h. CX = length, DX = delay (low 12 bits), AL = volume (low 3 bits). If a transfer is running it returns AH=00h with CF set; otherwise it starts a DMA playback, a transfer crossing a 64K page limited to the page and chained on, and returns AH=00h, CF clear.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.D s-1A83",
+          "cites": "INT 1A - Tandy 2500, Tandy 1000L series - START PLAYING DIGITAL SOUND"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x83",
+          "cites": "    case 0x83:  /* Tandy sound system start playback */"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0x84",
+      "name": "tandy sound stop",
+      "description": "Stops digital sound playback.",
+      "behaviour": "Needs the Tandy DAC setup as for AH=81h. It replaces the transfer with a short buffer of silence in the BIOS area at F000:A084, and returns AH=00h with CF clear.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.D s-1A84",
+          "cites": "INT 1A - Tandy 2500, Tandy 1000L series - STOP PLAYING DIGITAL SOUND"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x84",
+          "cites": "    case 0x84:  /* Tandy sound system stop playing */"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0x85",
+      "name": "tandy sound reset",
+      "description": "Resets the Tandy digital sound hardware.",
+      "behaviour": "Needs the Tandy DAC setup as for AH=81h. With a Tandy DAC device it clears the low five bits of the DAC's control port; with only a Sound Blaster it writes nothing. It returns AH=00h with CF clear.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.D s-1A85",
+          "cites": "INT 1A - Tandy 2500, Tandy 1000L series - DIGITAL SOUND???"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x85",
+          "cites": "    case 0x85:  /* Tandy sound system reset */"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0xB1",
+      "name": "pci bios",
+      "description": "The PCI BIOS entry: AL selects the function.",
+      "behaviour": "Active only when the PCI bus is enabled (pcibus_enable); otherwise it sets CF and leaves AH. Each call is logged at warning level. An AL that is not 01h to 03h or 08h to 0Dh is logged as an error and sets CF with AH unchanged.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1",
+          "cites": "    case 0xb1:      /* PCI Bios Calls */"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0xB1/0x01",
+      "name": "pci installation",
+      "description": "Checks that the PCI BIOS is present and returns its version and entry point.",
+      "behaviour": "If the PCI bus is initialised: AH=00h, AL=01h (configuration mechanism 1), BX=0210h, CX=0000h (one bus), EDX=20494350h and EDI = the protected-mode entry point, with CF clear. Otherwise CF is set and AH is not written.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.E X-1AB101",
+          "cites": "INT 1A - PCI BIOS v2.0c+ - INSTALLATION CHECK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1 case 0x01",
+          "cites": "                case 0x01:  // installation check"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0xB1/0x02",
+      "name": "pci find device",
+      "description": "Finds the SI-th PCI device with the given vendor and device ID.",
+      "behaviour": "CX = device ID, DX = vendor ID, SI = index. It scans the configuration space of bus 0 only; on a match AH=00h, BH=00h, BL = device and function, CF clear. With no match AH=86h and CF set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.E X-1AB102",
+          "cites": "INT 1A - PCI BIOS v2.0c+ - FIND PCI DEVICE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1 case 0x02",
+          "cites": "                case 0x02: {    // find device"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0xB1/0x03",
+      "name": "pci find class",
+      "description": "Finds the SI-th PCI device with the given class code.",
+      "behaviour": "ECX = class code (low 24 bits), SI = index. It scans the configuration space of bus 0 only; on a match AH=00h, BH=00h, BL = device and function, CF clear. With no match AH=86h and CF set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.E X-1AB103",
+          "cites": "INT 1A - PCI BIOS v2.0c+ - FIND PCI CLASS CODE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1 case 0x03",
+          "cites": "                case 0x03: {    // find device by class code"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0xB1/0x08",
+      "name": "pci read config byte",
+      "description": "Reads one byte of a device's PCI configuration space.",
+      "behaviour": "BX = bus and device/function, DI = register. CL = the byte read, AH=00h, CF clear. It never fails: there is no register range or device existence check, and DI is masked to the register.",
+      "differs": "The list returns AH=87h for a bad register number; the emulator never does.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.E X-1AB108",
+          "cites": "INT 1A - PCI BIOS v2.0c+ - READ CONFIGURATION BYTE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1 case 0x08",
+          "cites": "                case 0x08:  // read configuration byte"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0xB1/0x09",
+      "name": "pci read config word",
+      "description": "Reads one word of a device's PCI configuration space.",
+      "behaviour": "BX = bus and device/function, DI = register. CX = the word read, AH=00h, CF clear. It never fails: there is no register range or device existence check, and DI is masked to the register.",
+      "differs": "The list returns AH=87h for a bad register number; the emulator never does.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.E X-1AB109",
+          "cites": "INT 1A - PCI BIOS v2.0c+ - READ CONFIGURATION WORD"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1 case 0x09",
+          "cites": "                case 0x09:  // read configuration word"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0xB1/0x0A",
+      "name": "pci read config dword",
+      "description": "Reads one dword of a device's PCI configuration space.",
+      "behaviour": "BX = bus and device/function, DI = register. ECX = the dword read, AH=00h, CF clear. It never fails: there is no register range or device existence check, and DI is masked to the register.",
+      "differs": "The list returns AH=87h for a bad register number; the emulator never does.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.E X-1AB10A",
+          "cites": "INT 1A - PCI BIOS v2.0c+ - READ CONFIGURATION DWORD"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1 case 0x0a",
+          "cites": "                case 0x0a:  // read configuration dword"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0xB1/0x0B",
+      "name": "pci write config byte",
+      "description": "Writes one byte of a device's PCI configuration space.",
+      "behaviour": "BX = bus and device/function, DI = register, CL = the byte. It writes through the configuration ports and returns AH=00h with CF clear, with no register range or device existence check.",
+      "differs": "The list returns AH=87h for a bad register number; the emulator never does.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.E X-1AB10B",
+          "cites": "INT 1A - PCI BIOS v2.0c+ - WRITE CONFIGURATION BYTE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1 case 0x0b",
+          "cites": "                case 0x0b:  // write configuration byte"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0xB1/0x0C",
+      "name": "pci write config word",
+      "description": "Writes one word of a device's PCI configuration space.",
+      "behaviour": "BX = bus and device/function, DI = register, CX = the word. It writes through the configuration ports and returns AH=00h with CF clear, with no register range or device existence check.",
+      "differs": "The list returns AH=87h for a bad register number; the emulator never does.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.E X-1AB10C",
+          "cites": "INT 1A - PCI BIOS v2.0c+ - WRITE CONFIGURATION WORD"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1 case 0x0c",
+          "cites": "                case 0x0c:  // write configuration word"
+        }
+      ]
+    },
+    {
+      "key": "0x1A/0xB1/0x0D",
+      "name": "pci write config dword",
+      "description": "Writes one dword of a device's PCI configuration space.",
+      "behaviour": "BX = bus and device/function, DI = register, ECX = the dword. It writes through the configuration ports and returns AH=00h with CF clear, with no register range or device existence check.",
+      "differs": "The list returns AH=87h for a bad register number; the emulator never does.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.E X-1AB10D",
+          "cites": "INT 1A - PCI BIOS v2.0c+ - WRITE CONFIGURATION DWORD"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1 case 0x0d",
+          "cites": "                case 0x0d:  // write configuration dword"
+        }
+      ]
+    }
+  ]
+}
