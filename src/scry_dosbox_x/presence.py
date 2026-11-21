@@ -45,18 +45,12 @@ NO_WINDOW = "a session started without `shared` has no window to draw on"
 MIN_VERSION = 2
 #: The version that takes the layers of `overlay`.
 PROTOCOL = 3
-#: What `overlay` calls a layer, where the command calls it otherwise.
-WIRE_LAYER: dict[str, str] = {"calls": "caption"}
-LAYER_OF_WIRE = {wire: layer for layer, wire in WIRE_LAYER.items()}
 #: The layers a build of protocol 2 does not draw.
 PROTOCOL_LAYERS = frozenset({"calls", "keys", "pause"})
 #: What the command takes of a caption and of the keys, in bytes.
 CAPTION_BYTES = 160
 KEY_BYTES = 12
 KEYS_SHOWN = 8
-#: The VGA ROM font's glyph width in guest pixels, which turns the look's characters a second
-#: into the guest pixels a second the command scrolls by.
-GLYPH_PX = 8
 #: The INT 33h driver's default graphics pointer, hot spot top-left: `X` outline, `o` fill, `.`
 #: untouched. One cell per guest pixel, it matches a DOS program's own pointer.
 POINTER = (
@@ -91,8 +85,11 @@ def channel_args(look: presence.Look = presence.LOOK) -> str:
 
 
 def caption_args(look: presence.Look = presence.LOOK) -> str:
-    """The look of the layers protocol 3 added: the scroll speed in guest pixels a second."""
-    return f"scroll={look.scroll_cps * GLYPH_PX:g}"
+    """The look of the layers protocol 3 added, as `Look` holds it: the command takes the scroll
+    speed in characters a second and keeps its own fades."""
+    return (f"caption_text_rgb={look.caption_text_rgb:06X} caption_alpha={look.caption_alpha:g} "
+            f"keycap_rgb={look.keycap_rgb:06X} keycap_text_rgb={look.keycap_text_rgb:06X} "
+            f"keycap_alpha={look.keycap_alpha:g} scroll_cps={look.scroll_cps:g}")
 
 
 def encoded(text: str, limit: int) -> str:
@@ -122,8 +119,8 @@ class ChannelAdapter:
         self._args = channel_args(look)
         self._caption_args = caption_args(look)
         self._overlay = overlay
-        # The caption the emulator holds, as last delivered: sent once, and again when its text or
-        # its tint changes (a call that ended refused).
+        # The caption the emulator holds, as last delivered: sent once, and again when its serial,
+        # text or tint changes (a call that ended refused).
         self._caption: tuple[int, str, int] | None = None
         self.answer = ""
         self.version: int | None = None
@@ -165,8 +162,7 @@ class ChannelAdapter:
                         ) -> tuple[str, tuple[int, str, int] | None]:
         """The words protocol 3 adds, and the caption the emulator holds once they are taken. A
         caption goes only when it is a new one or leaves."""
-        drawn = [WIRE_LAYER.get(layer, layer) for layer in payload.layers]
-        out = [f" layers={','.join(drawn)} place={payload.place} {self._caption_args}"]
+        out = [f" layers={','.join(payload.layers)} place={payload.place} {self._caption_args}"]
         if "keys" in payload.layers:
             out.append(" keys=" + ",".join(
                 encoded(name, KEY_BYTES) for name in payload.keys[-KEYS_SHOWN:]))
@@ -175,7 +171,7 @@ class ChannelAdapter:
         if held != self._caption:
             out.append(" caption=" + ("" if caption is None
                                       else encoded(caption.text, CAPTION_BYTES)
-                                      + f" tint={caption.rgb:06X}"))
+                                      + f" serial={caption.serial} tint={caption.rgb:06X}"))
         return "".join(out), held
 
     def overlay_reply(self) -> ov.OverlayReply:
@@ -188,7 +184,7 @@ class ChannelAdapter:
             lacking = {layer: why for layer in asked if layer in PROTOCOL_LAYERS}
             return ov.reply(self._overlay, lacking)
         output = said.get("output", "none")
-        lacks = {LAYER_OF_WIRE.get(name, name) for name in said.get("lacks", "").split(",")}
+        lacks = set(said.get("lacks", "").split(","))
         lacking = {layer: f"this DOSBox-X's output ({output}) cannot draw this layer"
                    for layer in asked if layer in lacks}
         place = said.get("place")

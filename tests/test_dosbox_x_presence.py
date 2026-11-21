@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import json
 import socket
 import threading
 import time
@@ -45,6 +46,10 @@ def test_the_look_goes_to_the_channel_one_word_per_key_with_its_pointer() -> Non
                      "sprite": "/".join(dpresence.POINTER)}
 
 
+#: The lines of two real builds, as their debugger printed them in a live session of this server.
+CAPTURED = json.loads((Path(__file__).parent / "fixtures" / "presence_channel.json").read_text())
+
+
 class _Session:
     """The session's debugger: the commands its build parses, and what each `exec` prints."""
 
@@ -54,7 +59,7 @@ class _Session:
         self.commands = commands
         self.sent: list[str] = []
         self.bare: tuple[bool, list[str]] = (
-            True, [f"PRESENCE off frames=0 pointer=0 output=none version={version}"])
+            True, CAPTURED[f"protocol{version}"]["bare_before_output"])
 
     def has(self, command: str) -> bool:
         return command in self.commands
@@ -74,11 +79,8 @@ def _shown(*answers: tuple[bool, list[str]], asked: bool = True, shared: bool = 
     return dpresence.open_shown(s, asked, shared, overlay), s
 
 
-DRAWN = (True, ["PRESENCE held frames=3 pointer=0 output=640x400x32"])
-#: What a build of protocol 3 answers, from the design's reply line.
-DRAWN_3 = (True, ["PRESENCE held frames=3 pointer=0 output=640x400x32 px_read=0 px_written=0 "
-                  "bytes_presented=0 uploads=0 upload_bytes=0 "
-                  "layers=edge,pointer,keys,caption,pause place=bottom"])
+DRAWN = (True, CAPTURED["protocol2"]["drawn"])
+DRAWN_3 = (True, CAPTURED["protocol3"]["drawn"])
 
 
 def test_a_build_with_the_command_is_drawn_and_its_answer_kept() -> None:
@@ -87,7 +89,8 @@ def test_a_build_with_the_command_is_drawn_and_its_answer_kept() -> None:
     assert channel.sent[0].startswith("PRESENCE held rgb=")
     assert channel.sent[0].endswith(" pointer=0")
     assert isinstance(shown.adapter, dpresence.ChannelAdapter)
-    assert dpresence.frames(shown.adapter.answer) == 3
+    assert shown.adapter.answer == DRAWN[1][0]
+    assert dpresence.frames(shown.adapter.answer) == 65
     shown.close()
 
 
@@ -146,11 +149,11 @@ def test_a_build_naming_presence_whose_debugger_does_not_parse_it_is_said_unavai
 
 def test_what_the_command_refuses_is_said_in_place_of_true() -> None:
     """Captured off the build: a refusal is its reason alone."""
-    shown, _ = _shown((False, ["PRESENCE does not know the argument size"]))
+    shown, _ = _shown((False, CAPTURED["protocol2"]["refused_unknown_word"]))
     said = shown.reply()
     assert isinstance(said, dict) and said["available"] is False
     assert said["why"] == ("the first delivery failed: RuntimeError: the debugger refused "
-                           "PRESENCE: PRESENCE does not know the argument size"), said
+                           "PRESENCE: PRESENCE does not know the argument bogus"), said
     assert shown.held is None
 
 
@@ -198,14 +201,14 @@ def test_the_first_mouse_move_turns_the_pointer_on_once() -> None:
 
 
 def test_an_output_the_emulator_cannot_draw_on_is_said_unavailable() -> None:
-    shown, _ = _shown((True, ["PRESENCE held frames=0 pointer=0 output=undrawable"]))
+    shown, _ = _shown((True, CAPTURED["protocol3"]["undrawable"]), version=3)
     said = shown.reply()
     assert isinstance(said, dict) and said["why"] == dpresence.NO_OUTPUT, said
     assert shown.held is None
 
 
 def test_a_start_parked_before_its_first_frame_is_still_drawn_once_there_is_one() -> None:
-    shown, _ = _shown((True, ["PRESENCE held frames=0 pointer=0 output=none"]))
+    shown, _ = _shown((True, CAPTURED["protocol3"]["acting_before_output"]), version=3)
     assert shown.reply() is True
     shown.close()
 
@@ -310,13 +313,17 @@ def test_a_build_older_than_the_pointers_pixel_size_is_said_unavailable_by_versi
 
 
 def test_a_build_names_its_version_in_the_bare_answer() -> None:
-    assert dpresence.build_version(["PRESENCE off frames=0 pointer=0 output=none version=2"]) == 2
+    assert dpresence.build_version(CAPTURED["protocol2"]["bare_before_output"]) == 2
+    assert dpresence.build_version(CAPTURED["protocol3"]["bare"]) == 3
     assert dpresence.build_version(["PRESENCE needs a state"]) == 1
 
 
 # ----------------------------------------------------------------------- protocol 3
 
 ALL = ("edge", "pointer", "keys", "calls", "pause")
+#: The words of the layers protocol 3 added to the look, in the order the adapter sends them.
+PROTOCOL_3_LOOK = ("caption_text_rgb", "caption_alpha", "keycap_rgb", "keycap_text_rgb",
+                   "keycap_alpha", "scroll_cps")
 
 
 def _payload(**kw: Any) -> presence.Payload:
@@ -337,15 +344,22 @@ def _words(line: str) -> dict[str, str]:
     return dpresence.words(line)
 
 
-def test_a_build_of_protocol_3_is_sent_the_layers_the_place_and_the_scroll_speed() -> None:
+def test_a_build_of_protocol_3_is_sent_the_layers_the_place_and_the_look_it_parses() -> None:
     adapter, channel = _adapter()
     adapter.show("held", _payload(layers=("edge", "keys", "calls"), place="top"))
     sent = _words(channel.sent[0])
+    look = presence.LOOK
     assert channel.sent[0].startswith("PRESENCE held rgb=")
-    assert sent["layers"] == "edge,keys,caption", "`calls` is the command's `caption`"
+    assert sent["layers"] == "edge,keys,calls", "the command names the layer as `overlay` does"
     assert sent["place"] == "top"
-    assert sent["scroll"] == f"{presence.LOOK.scroll_cps * dpresence.GLYPH_PX:g}"
     assert sent["pointer"] == "0"
+    assert {k: sent[k] for k in PROTOCOL_3_LOOK} == {
+        "caption_text_rgb": f"{look.caption_text_rgb:06X}",
+        "caption_alpha": f"{look.caption_alpha:g}",
+        "keycap_rgb": f"{look.keycap_rgb:06X}", "keycap_text_rgb": f"{look.keycap_text_rgb:06X}",
+        "keycap_alpha": f"{look.keycap_alpha:g}", "scroll_cps": f"{look.scroll_cps:g}"}
+    assert not {"scroll", "cap_scale", "caption_in", "caption_out"} & sent.keys(), (
+        "the fork's own fades stand, and no word is sent that the command does not parse")
 
 
 def test_a_caption_longer_than_the_command_takes_is_cut_to_what_it_takes() -> None:
@@ -358,7 +372,7 @@ def test_the_caption_is_sent_with_its_tint_percent_encoded_in_one_word() -> None
     adapter, channel = _adapter()
     text = abbreviation.caption("write", {"address": "0x100", "path": "/srv/a/b c.bin"})
     adapter.show("acting", _payload(caption=_caption(text)))
-    assert f"caption={dpresence.encoded(text, 160)} tint=5AC8FA" in channel.sent[0]
+    assert f"caption={dpresence.encoded(text, 160)} serial=1 tint=5AC8FA" in channel.sent[0]
     assert " " not in dpresence.encoded(text, 160) and "%20" in dpresence.encoded(text, 160)
 
 
@@ -383,6 +397,7 @@ def test_a_caption_goes_once_when_new_and_again_for_a_new_call_of_the_same_text(
     first, again, second = (_words(line) for line in channel.sent[:3])
     assert "caption" in first and "caption" not in again
     assert second["caption"] == first["caption"], "a new call of equal text is a new caption"
+    assert (first["serial"], second["serial"]) == ("1", "2"), "the command tells them apart by it"
 
 
 def test_a_call_that_ends_refused_sends_its_caption_again_in_the_refused_tint() -> None:
@@ -404,7 +419,7 @@ def test_a_caption_that_leaves_is_taken_away_with_an_empty_word_and_only_once() 
 
 
 def test_a_caption_a_delivery_did_not_take_is_sent_again() -> None:
-    channel = _Session((False, ["PRESENCE busy"]), DRAWN_3, version=3)
+    channel = _Session((False, CAPTURED["protocol3"]["refused_value"]), DRAWN_3, version=3)
     adapter = dpresence.ChannelAdapter(channel)
     with pytest.raises(RuntimeError, match="refused PRESENCE"):
         adapter.show("acting", _payload(caption=_caption()))
@@ -463,12 +478,11 @@ def test_the_overlay_of_a_build_of_protocol_3_is_what_its_answer_draws_and_lacks
     adapter, _ = _adapter()
     adapter.show("held", _payload())
     assert adapter.overlay_reply() == {"layers": list(ALL), "place": "bottom"}
-    adapter.answer = ("PRESENCE held frames=3 pointer=0 output=640x400x32 layers=edge,pointer "
-                      "place=top lacks=caption,keys")
+    adapter.answer = CAPTURED["protocol3"]["undrawable"][0]
     said = adapter.overlay_reply()
-    assert said["layers"] == ["edge", "pointer", "pause"] and said["place"] == "top", said
-    assert set(said["lacking"]) == {"calls", "keys"}
-    assert "640x400x32" in said["lacking"]["calls"], said
+    assert said["layers"] == [] and said["place"] == "bottom", said
+    assert set(said["lacking"]) == set(ALL)
+    assert "undrawable" in said["lacking"]["calls"], said
 
 
 def test_the_overlay_of_a_build_of_protocol_2_names_the_layers_it_lacks() -> None:
@@ -717,7 +731,8 @@ def test_a_call_heard_by_the_presence_is_delivered_as_a_caption() -> None:
     shown.held.began(call)
     shown.held.ended(call, "ok")
     sent = _sent(channel, 2)
-    assert any(" caption=read_memory%200x10 tint=5AC8FA" in line for line in sent), sent
+    assert any(" caption=read_memory%200x10 serial=" in line and " tint=5AC8FA" in line
+               for line in sent), sent
     shown.close()
 
 

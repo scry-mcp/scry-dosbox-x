@@ -60,8 +60,9 @@ USAGE_MARKS = {name: b"\0DEBUG: " + name.encode() + b" usage: " for name in ("CA
 USAGE_MARKS |= {"PIC": b"\0MASKIRQ\0", "A20": b"A20 gate is %s"}
 #: The debugger with no screen, which needs no terminal or console.
 HEADLESS_MARK = b"\0debugger headless\0"
-#: A word only a `PRESENCE` of protocol 3 parses: the build draws captions, keycaps, a pause mark.
-PRESENCE_OVERLAY_MARK = b"\0cap_scale\0"
+#: A key only a `PRESENCE` of protocol 3 parses, held as a literal of its own: the build draws
+#: captions, keycaps and a pause mark. The file answers before a session starts.
+PRESENCE_OVERLAY_MARK = b"\0keycap_text_rgb\0"
 
 
 def command_mark(name: str) -> bytes:

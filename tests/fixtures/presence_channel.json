@@ -1,0 +1,39 @@
+{
+  "about": "Lines a DOSBox-X build sent over the debugger channel in a live session of this server, verbatim: protocol 3 from the fork's debugger-presence-command at 158f511fa, protocol 2 from the build the scry link points at.",
+  "protocol3": {
+    "bare_before_output": [
+      "PRESENCE paused frames=0 pointer=0 output=none version=3"
+    ],
+    "bare": [
+      "PRESENCE paused frames=55 pointer=0 output=720x400x32 px_read=47328 px_written=581360 bytes_presented=3293120 uploads=0 upload_bytes=0 layers=edge,pointer,keys,calls,pause place=bottom version=3"
+    ],
+    "acting_before_output": [
+      "PRESENCE acting frames=0 pointer=0 output=none"
+    ],
+    "drawn": [
+      "PRESENCE held frames=5 pointer=0 output=720x400x32 px_read=46144 px_written=72240 bytes_presented=1256640 uploads=0 upload_bytes=0 layers=edge,pointer,keys,calls,pause place=bottom"
+    ],
+    "undrawable": [
+      "PRESENCE held frames=0 pointer=0 output=undrawable layers= place=bottom lacks=edge,pointer,keys,calls,pause"
+    ],
+    "refused_unknown_word": [
+      "PRESENCE does not know the argument bogus",
+      "*** Debugger command not recognized"
+    ],
+    "refused_value": [
+      "PRESENCE layers=caption is not a value it takes",
+      "*** Debugger command not recognized"
+    ]
+  },
+  "protocol2": {
+    "bare_before_output": [
+      "PRESENCE held frames=0 pointer=0 output=none version=2"
+    ],
+    "drawn": [
+      "PRESENCE held frames=65 pointer=0 output=640x400x32"
+    ],
+    "refused_unknown_word": [
+      "PRESENCE does not know the argument bogus"
+    ]
+  }
+}

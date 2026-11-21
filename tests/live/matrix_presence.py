@@ -5,6 +5,11 @@ binary under test built with `presence-leak.patch` applied, which paints the fir
 source the capture reads while the overlay is on. `DOSBOX_X_STOCK_BINARY` names a release build,
 whose debugger has no PRESENCE command (section S reads the same variable). The screen readers
 have no red, since they read guest memory.
+
+The layers of protocol 3 (captions, keycaps, the pause mark) are judged by a second section R on
+the same guest, with the build's own `PRESENCE` words and nothing that needs `RUNSTATE`, so a
+build that carries the presence command alone can be judged by it; against a build of protocol 2
+its cells are BLOCKED, naming the version.
 """
 from __future__ import annotations
 
@@ -33,7 +38,8 @@ from matrix_common import (
     videos,
 )
 from matrix_ledger import EXIT_INVALID
-from scry_core import avi, presence, window_capture
+from scry_core import avi, overlay_timeline, presence, window_capture
+from scry_core import overlay as ov
 
 from scry_dosbox_x import presence as dpresence  # isort: skip -- found through the path the matrix sets
 from scry_dosbox_x.state import STATE  # isort: skip
@@ -96,11 +102,30 @@ R_CELLS = cells(
      "number of rows at 320x200 and at 640x480",
      "REFERENCE.md, The orange edge of the window: sized by the guest's pixels"),
 )
+LAYER_CELLS = cells(
+    ("R each layer of protocol 3 is drawn in its own place in the window: the caption in the "
+     "middle of the bottom band, or of the top one when placed there, the keycaps at its right "
+     "and the pause mark at its left, and the window differs from the edge alone by that box",
+     "REFERENCE.md, The orange edge of the window: calls, keys, pause and place"),
+    ("R no capture carries a layer: screen_view and screen_signature with every layer drawn are "
+     "those of the edge alone",
+     "REFERENCE.md, The orange edge of the window: after a frame is handed to capture"),
+    ("R the build answers a delivery with the layers asked and the band in use",
+     "the PRESENCE channel command's answer: layers and place"),
+    ("R a caption sent again under its serial repaints nothing, and under a new serial it does",
+     "the PRESENCE channel command's word: serial"),
+)
 #: The mouse guest's mode keys and the rows each mode shows (`tests/guest/mouse.asm`).
 GRAPHICS_MODES = (("g", 200), ("v", 480))
 #: How far, as a share of the sprite's rows, the pointer's measured rows may be off: the window's
 #: scaling smears an edge.
 ROWS_TOLERANCE = 0.3
+#: Where in the window a layer's box may lie, as shares of its size: the outer quarter, since the
+#: bands are an eighth of the picture and the capture also holds a title bar the overlay never
+#: draws on. A box is also narrower than the widest each layer can be, so a band-wide change fails.
+BAND_BOTTOM_FROM, BAND_TOP_TO = 0.75, 0.25
+MIDDLE_SLACK = 0.05
+CAPTION_WIDEST, CORNER_WIDEST = 0.4, 0.2
 
 
 def _digest(path: Path) -> str:
@@ -158,6 +183,17 @@ def _stills() -> dict[str, str]:
     shown = M.call(server.screen_view, dest=str(view), attach=False)
     sig = M.call(server.screen_signature)
     return {"screen_view": _digest(view) if ok(shown) else "",
+            "screen_signature": str(sig.get("signature", "")) if ok(sig) else ""}
+
+
+def _screen_read() -> dict[str, str]:
+    """What the screen readers say at a stop, in a text mode too, where there is no picture to
+    write: the text rows and the signature."""
+    shown = M.call(server.screen_view)
+    sig = M.call(server.screen_signature)
+    rows = shown.get("text")
+    text = "\n".join(map(str, rows)) if ok(shown) and isinstance(rows, list) else ""
+    return {"screen_view": text,
             "screen_signature": str(sig.get("signature", "")) if ok(sig) else ""}
 
 
@@ -301,6 +337,122 @@ def section_r() -> None:
     close_whatever()
     _pointer(R_CELLS[8].label)
     _pointer_rows(R_CELLS[9].label)
+
+
+def _layer_box(base: window_capture.Image | str, shot: window_capture.Image | str
+               ) -> tuple[window_capture.Difference, int, int] | str:
+    """What a layer changed against the edge alone, and the window's size, or why it cannot be
+    judged."""
+    if isinstance(base, str) or isinstance(shot, str):
+        return base if isinstance(base, str) else str(shot)
+    try:
+        return window_capture.difference(base, shot), base.width, base.height
+    except ValueError as e:
+        return f"the window changed between its captures: {e}"
+
+
+def _layers_drawn(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
+    """Each layer of protocol 3 delivered alone beside the edge, the window captured settled, the
+    build's answer kept; then every layer at once with the stills read, and a caption sent again
+    under its serial. Nothing is drawn by a build of protocol 2: `blocked` says so."""
+    adapter.show("held", presence.Payload())  # the build's version is read at the first delivery
+    if (adapter.version or 0) < dpresence.PROTOCOL:
+        return {"blocked": f"this build's PRESENCE is version {adapter.version}: it draws the "
+                           "edge and the pointer only"}
+    out: dict[str, Any] = {}
+    serial = iter(range(100, 200))
+
+    def deliver(tag: str, state: Any = "held", **kw: Any) -> window_capture.Image | str:
+        kw.setdefault("layers", ("edge",))
+        kw.setdefault("place", "bottom")
+        adapter.show(state, presence.Payload(**kw))
+        time.sleep(QUIET_S + presence.LOOK.fade_s)
+        out[f"{tag}-answer"] = dpresence.words(adapter.answer)
+        return _settled(tag)
+
+    def caption(text: str) -> overlay_timeline.Caption:
+        return overlay_timeline.Caption(text, "read", 0x5AC8FA, next(serial))
+
+    base = deliver("edge-alone")
+    out["stills-edge"] = _screen_read()
+    out["calls-bottom"] = _layer_box(base, deliver(
+        "calls-bottom", layers=("edge", "calls"), caption=caption("registers")))
+    out["calls-top"] = _layer_box(base, deliver(
+        "calls-top", layers=("edge", "calls"), place="top", caption=caption("registers")))
+    out["keys"] = _layer_box(base, deliver("keys", layers=("edge", "keys"), keys=("ctrl", "a")))
+    out["pause"] = _layer_box(base, deliver("pause", layers=("edge", "pause"), paused=True))
+    deliver("all", layers=ov.LAYERS, caption=caption("registers"),
+            keys=("ctrl", "a"), paused=True)
+    out["stills-all"] = _screen_read()
+    # A caption again under its own serial, by hand: the adapter would not send it twice.
+    held = caption("registers")
+    deliver("serial", layers=("edge", "calls"), caption=held)
+    at = _frame_count(adapter)
+    again = f"PRESENCE held caption=registers serial={held.serial} tint={held.rgb:06X}"
+    _debugger().exec(again)
+    time.sleep(QUIET_S)
+    after_same = _frame_count(adapter)
+    _debugger().exec(again.replace(f"serial={held.serial}", f"serial={next(serial)}"))
+    time.sleep(QUIET_S)
+    out["serial-frames"] = (at, after_same, _frame_count(adapter))
+    return out
+
+
+def _judge_layers(spun: dict[str, Any]) -> None:
+    labels = [c.label for c in LAYER_CELLS]
+    if "blocked" in spun:
+        for label in labels:
+            M.block(label, str(spun["blocked"]))
+        return
+    boxes = {name: spun[name] for name in ("calls-bottom", "calls-top", "keys", "pause")}
+    unjudged = [f"{name}: {box}" for name, box in boxes.items() if isinstance(box, str)]
+    if unjudged:
+        M.block(labels[0], "; ".join(unjudged))
+    else:
+        def where(name: str) -> tuple[float, float, float, float, int]:
+            d, w, h = boxes[name]
+            x0, y0, x1, y1 = d.box
+            return x0 / w, y0 / h, x1 / w, y1 / h, d.changed
+        cb, ct, k, p = (where(n) for n in ("calls-bottom", "calls-top", "keys", "pause"))
+        middle = (cb[0] + cb[2]) / 2
+        holds = (
+            all(b[4] > 0 for b in (cb, ct, k, p))
+            and cb[1] >= BAND_BOTTOM_FROM and abs(middle - 0.5) <= MIDDLE_SLACK
+            and cb[2] - cb[0] <= CAPTION_WIDEST
+            and ct[3] <= BAND_TOP_TO and ct[2] - ct[0] <= CAPTION_WIDEST
+            and k[0] > 0.5 and k[1] >= BAND_BOTTOM_FROM and k[2] - k[0] <= CORNER_WIDEST
+            and p[2] < 0.5 and p[1] >= BAND_BOTTOM_FROM and p[2] - p[0] <= CORNER_WIDEST)
+        M.judge(labels[0], holds,
+                "(left, top, right, bottom as shares of the window, pixels changed) caption "
+                f"bottom {tuple(round(v, 3) for v in cb)}, caption top "
+                f"{tuple(round(v, 3) for v in ct)}, keycaps {tuple(round(v, 3) for v in k)}, "
+                f"pause {tuple(round(v, 3) for v in p)}")
+    edge, every = spun["stills-edge"], spun["stills-all"]
+    M.judge(labels[1], all(edge.values()) and edge == every,
+            f"edge alone {edge}, every layer {every}")
+    asked = spun["calls-top-answer"]
+    answered = spun["all-answer"]
+    M.judge(labels[2], asked.get("layers") == "edge,calls" and asked.get("place") == "top"
+            and answered.get("layers") == ",".join(ov.LAYERS),
+            f"calls at the top: layers={asked.get('layers')} place={asked.get('place')}; "
+            f"every layer: layers={answered.get('layers')}")
+    first, same, new = spun["serial-frames"]
+    M.judge(labels[3], None not in (first, same, new) and same == first and new > same,
+            f"frames before {first}, after the same serial {same}, after a new serial {new}")
+
+
+@M.section("R", "protocol 3's layers, drawn into the window and never into the evidence",
+           LAYER_CELLS, alone=True)
+def section_r_layers() -> None:
+    _start(presence=True)
+    # Unbounded, so a build with no RUNSTATE answers too: the machine runs a moment, then stops.
+    must(M.call(server.resume), "releasing the screen guest")
+    time.sleep(STRETCH_S)
+    M.call(server.stop)
+    with _by_hand() as adapter:
+        drawn = _layers_drawn(adapter)
+    _judge_layers(drawn)
+    close_whatever()
 
 
 def _pointer_difference(mode_key: str | None, x: int, y: int

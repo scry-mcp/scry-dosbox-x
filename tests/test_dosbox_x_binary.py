@@ -166,8 +166,8 @@ def test_a_bare_pic_or_a20_word_in_a_build_is_not_the_debuggers_command(tmp_path
 
 @pytest.mark.parametrize("marks, layers", [
     (b"\0PRESENCE\0", ["edge", "pointer"]),
-    (b"\0PRESENCE\0\0layers\0\0cap_scale\0", ["edge", "pointer", "keys", "calls", "pause"]),
-    (b"\0cap_scale\0", []),
+    (b"\0PRESENCE\0\0layers\0\0keycap_text_rgb\0", ["edge", "pointer", "keys", "calls", "pause"]),
+    (b"\0keycap_text_rgb\0", []),
     (b"a word of a build that has no command", []),
 ])
 def test_the_layers_a_build_draws_are_read_off_the_literal_of_protocol_3(
