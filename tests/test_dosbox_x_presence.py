@@ -47,7 +47,7 @@ def test_the_look_goes_to_the_channel_one_word_per_key_with_its_pointer() -> Non
 
 
 #: The lines of two real builds, as their debugger printed them in a live session of this server.
-CAPTURED = json.loads((Path(__file__).parent / "fixtures" / "presence_channel.json").read_text())
+CAPTURED = json.loads((Path(__file__).parent / "fixtures" / "presence-channel.json").read_text())
 
 
 class _Session:
