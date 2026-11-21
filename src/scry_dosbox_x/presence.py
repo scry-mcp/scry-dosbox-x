@@ -4,12 +4,12 @@ the pause mark, drawn by the emulator's `PRESENCE` command.
 It draws into the scaled output after the frame went to capture, so no capture or screen read
 carries it. The pointer appears once the session has moved the guest's mouse. A build that
 announces protocol 2 is sent only what protocol 2 parses; the layers it lacks are named in the
-`overlay` of `start` and `status`.
+`overlay` of `start` and `status`; so is a build of protocol 3 that predates the record mark.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Collection, Iterable
 from typing import Any, Protocol
 
 from pydantic import ValidationError
@@ -45,8 +45,8 @@ NO_WINDOW = "a session started without `shared` has no window to draw on"
 MIN_VERSION = 2
 #: The version that takes the layers of `overlay`.
 PROTOCOL = 3
-#: The layers a build of protocol 2 does not draw.
-PROTOCOL_LAYERS = frozenset({"calls", "keys", "pause"})
+#: The layers a build of protocol 2 draws.
+PROTOCOL_2_LAYERS = frozenset({"edge", "pointer"})
 #: What the command takes of a caption and of the keys, in bytes.
 CAPTION_BYTES = 160
 KEY_BYTES = 12
@@ -92,6 +92,11 @@ def caption_args(look: presence.Look = presence.LOOK) -> str:
             f"keycap_alpha={look.keycap_alpha:g} scroll_cps={look.scroll_cps:g}")
 
 
+def record_args(look: presence.Look = presence.LOOK) -> str:
+    """The look of the record mark, for a build that draws it."""
+    return f"record_rgb={look.record_rgb:06X} record_blink_s={look.record_blink_s:g}"
+
+
 def encoded(text: str, limit: int) -> str:
     """`text` as one word of the command: at most `limit` ASCII bytes, a space, a percent sign
     and any other byte outside the printable range as `%XX`."""
@@ -114,11 +119,16 @@ class ChannelAdapter:
     """`scry_core.presence.Adapter` over a session's debugger, read at each delivery."""
 
     def __init__(self, session: Debugger, look: presence.Look = presence.LOOK,
-                 overlay: ov.Overlay = ov.OVERLAY) -> None:
+                 overlay: ov.Overlay = ov.OVERLAY,
+                 drawn: Collection[str] = ov.LAYERS) -> None:
+        """`drawn`: the layers the build's PRESENCE can draw (`binary.presence_layers`), of
+        which a build of protocol 2 draws only its own two."""
         self._session = session
         self._args = channel_args(look)
         self._caption_args = caption_args(look)
+        self._record_args = record_args(look)
         self._overlay = overlay
+        self._drawn = frozenset(drawn)
         # The caption the emulator holds, as last delivered: sent once, and again when its serial,
         # text or tint changes (a call that ended refused).
         self._caption: tuple[int, str, int] | None = None
@@ -162,7 +172,10 @@ class ChannelAdapter:
                         ) -> tuple[str, tuple[int, str, int] | None]:
         """The words protocol 3 adds, and the caption the emulator holds once they are taken. A
         caption goes only when it is a new one or leaves."""
-        out = [f" layers={','.join(payload.layers)} place={payload.place} {self._caption_args}"]
+        layers = [layer for layer in payload.layers if layer in self._drawn]
+        out = [f" layers={','.join(layers)} place={payload.place} {self._caption_args}"]
+        if "record" in self._drawn:
+            out.append(f" rec={payload.recording} {self._record_args}")
         if "keys" in payload.layers:
             out.append(" keys=" + ",".join(
                 encoded(name, KEY_BYTES) for name in payload.keys[-KEYS_SHOWN:]))
@@ -178,15 +191,24 @@ class ChannelAdapter:
         """The `overlay` of `start` and `status`: the layers the last answer says are drawn."""
         asked = self._overlay.asked()
         said = words(self.answer)
+        lacking: dict[ov.Layer, str] = {}
         if (self.version or 0) < PROTOCOL:
             why = (f"this DOSBox-X's PRESENCE is version {self.version}, which draws the edge and "
                    f"the pointer; version {PROTOCOL} draws this layer")
-            lacking = {layer: why for layer in asked if layer in PROTOCOL_LAYERS}
+            lacking = {layer: why for layer in asked if layer not in PROTOCOL_2_LAYERS}
             return ov.reply(self._overlay, lacking)
+        for layer in asked:
+            if layer not in self._drawn:
+                lacking[layer] = (
+                    f"this DOSBox-X's PRESENCE is version {self.version}, but its build predates "
+                    "the record mark" if layer == "record" else
+                    f"this DOSBox-X's PRESENCE is version {self.version}, which does not draw "
+                    "this layer")
         output = said.get("output", "none")
         lacks = set(said.get("lacks", "").split(","))
-        lacking = {layer: f"this DOSBox-X's output ({output}) cannot draw this layer"
-                   for layer in asked if layer in lacks}
+        for layer in asked:
+            if layer in lacks and layer not in lacking:
+                lacking[layer] = f"this DOSBox-X's output ({output}) cannot draw this layer"
         place = said.get("place")
         return ov.reply(self._overlay, lacking,
                         "top" if place == "top" else "bottom" if place == "bottom" else None)
@@ -270,13 +292,15 @@ def of(session: object) -> presence.Shown:
 
 
 def open_shown(session: Debugger, asked: bool, shared: bool,
-               overlay: ov.Overlay = ov.OVERLAY) -> presence.Shown:
+               overlay: ov.Overlay = ov.OVERLAY,
+               drawn: Collection[str] = ov.LAYERS) -> presence.Shown:
     """A session's presence, its first state delivered before `start` answers."""
     if not asked:
         return presence.Shown()
     if not shared:
         return presence.Shown(refused=unavailable(NO_WINDOW))
-    return presence.Presence.open(ChannelAdapter(session, overlay=overlay), DRIVING_TOOLS,
+    return presence.Presence.open(ChannelAdapter(session, overlay=overlay, drawn=drawn),
+                                  DRIVING_TOOLS,
                                   overlay=overlay)
 
 

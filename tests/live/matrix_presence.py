@@ -13,6 +13,7 @@ its cells are BLOCKED, naming the version.
 """
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import sys
 import time
@@ -41,7 +42,8 @@ from matrix_ledger import EXIT_INVALID
 from scry_core import avi, overlay_timeline, presence, window_capture
 from scry_core import overlay as ov
 
-from scry_dosbox_x import presence as dpresence  # isort: skip -- found through the path the matrix sets
+from scry_dosbox_x import binary as dbinary  # isort: skip -- found through the path the matrix sets
+from scry_dosbox_x import presence as dpresence  # isort: skip
 from scry_dosbox_x.state import STATE  # isort: skip
 
 LEAK_VAR = "DOSBOX_X_LEAK_BINARY"
@@ -114,6 +116,9 @@ LAYER_CELLS = cells(
      "the PRESENCE channel command's answer: layers and place"),
     ("R a caption sent again under its serial repaints nothing, and under a new serial it does",
      "the PRESENCE channel command's word: serial"),
+    ("R the record mark is drawn at the top right of the window while a recording is on, "
+     "blinks, and is gone once it ends, and the window differs from the edge alone by that mark",
+     "REFERENCE.md, The orange edge of the window: record"),
 )
 #: The mouse guest's mode keys and the rows each mode shows (`tests/guest/mouse.asm`).
 GRAPHICS_MODES = (("g", 200), ("v", 480))
@@ -126,6 +131,10 @@ ROWS_TOLERANCE = 0.3
 BAND_BOTTOM_FROM, BAND_TOP_TO = 0.75, 0.25
 MIDDLE_SLACK = 0.05
 CAPTION_WIDEST, CORNER_WIDEST = 0.4, 0.2
+#: The mark's blink for the capture that must hold still: shown for the first half, so a settled
+#: capture is taken inside it.
+STILL_BLINK_S = 10.0
+BLINK_SAMPLES, BLINK_GAP_S = 12, 0.2
 
 
 def _digest(path: Path) -> str:
@@ -140,10 +149,16 @@ def _by_hand() -> Iterator[dpresence.ChannelAdapter]:
     session.presence.close()
     session.presence = presence.Shown()
     time.sleep(QUIET_S)
+    drawn = _drawn_by(session)
     try:
-        yield dpresence.ChannelAdapter(session)
+        yield dpresence.ChannelAdapter(session, drawn=drawn)
     finally:
-        session.presence = dpresence.open_shown(session, asked=True, shared=True)
+        session.presence = dpresence.open_shown(session, asked=True, shared=True, drawn=drawn)
+
+
+def _drawn_by(session: Any) -> list[ov.Layer]:
+    """The layers the session's build draws, as the server read them from its binary."""
+    return dbinary.presence_layers(session.launch.binary, sorted(session.commands))
 
 
 def _put(adapter: dpresence.ChannelAdapter, state: str) -> int | None:
@@ -353,21 +368,25 @@ def _layer_box(base: window_capture.Image | str, shot: window_capture.Image | st
 
 def _layers_drawn(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
     """Each layer of protocol 3 delivered alone beside the edge, the window captured settled, the
-    build's answer kept; then every layer at once with the stills read, and a caption sent again
-    under its serial. Nothing is drawn by a build of protocol 2: `blocked` says so."""
+    build's answer kept; then every layer at once with the stills read, a caption sent again
+    under its serial, and the record mark's place, blink and end. Nothing is drawn by a build of
+    protocol 2: `blocked` says so; a build before the record mark says that of its cell."""
     adapter.show("held", presence.Payload())  # the build's version is read at the first delivery
     if (adapter.version or 0) < dpresence.PROTOCOL:
         return {"blocked": f"this build's PRESENCE is version {adapter.version}: it draws the "
                            "edge and the pointer only"}
-    out: dict[str, Any] = {}
+    drawn = _drawn_by(_debugger())
+    out: dict[str, Any] = {"drawn": drawn}
     serial = iter(range(100, 200))
 
-    def deliver(tag: str, state: Any = "held", **kw: Any) -> window_capture.Image | str:
+    def deliver(tag: str, state: Any = "held", via: dpresence.ChannelAdapter = adapter,
+                wait: float = QUIET_S + presence.LOOK.fade_s, **kw: Any
+                ) -> window_capture.Image | str:
         kw.setdefault("layers", ("edge",))
         kw.setdefault("place", "bottom")
-        adapter.show(state, presence.Payload(**kw))
-        time.sleep(QUIET_S + presence.LOOK.fade_s)
-        out[f"{tag}-answer"] = dpresence.words(adapter.answer)
+        via.show(state, presence.Payload(**kw))
+        time.sleep(wait)
+        out[f"{tag}-answer"] = dpresence.words(via.answer)
         return _settled(tag)
 
     def caption(text: str) -> overlay_timeline.Caption:
@@ -382,7 +401,7 @@ def _layers_drawn(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
     out["keys"] = _layer_box(base, deliver("keys", layers=("edge", "keys"), keys=("ctrl", "a")))
     out["pause"] = _layer_box(base, deliver("pause", layers=("edge", "pause"), paused=True))
     deliver("all", layers=ov.LAYERS, caption=caption("registers"),
-            keys=("ctrl", "a"), paused=True)
+            keys=("ctrl", "a"), paused=True, recording="both")
     out["stills-all"] = _screen_read()
     # A caption again under its own serial, by hand: the adapter would not send it twice.
     held = caption("registers")
@@ -395,6 +414,40 @@ def _layers_drawn(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
     _debugger().exec(again.replace(f"serial={held.serial}", f"serial={next(serial)}"))
     time.sleep(QUIET_S)
     out["serial-frames"] = (at, after_same, _frame_count(adapter))
+    if "record" in drawn:
+        out.update(_record_mark(adapter, deliver, base, drawn))
+    else:
+        out["record-blocked"] = ("this build's PRESENCE is version 3 and predates the record mark: "
+                                 f"it draws {', '.join(drawn)}")
+    return out
+
+
+def _record_mark(adapter: dpresence.ChannelAdapter, deliver: Any,
+                 base: window_capture.Image | str, drawn: list[ov.Layer]) -> dict[str, Any]:
+    """The mark held still (a blink longer than the captures take) against the edge alone, then
+    gone; and the window sampled while it blinks at its own period, each against the edge alone."""
+    slow = dpresence.ChannelAdapter(
+        _debugger(), look=dataclasses.replace(presence.LOOK, record_blink_s=STILL_BLINK_S),
+        drawn=drawn)
+    asked: dict[str, Any] = {"layers": ("edge", "record")}
+    shown = deliver("record-on", via=slow, wait=QUIET_S, recording="video", **asked)
+    gone = deliver("record-off", via=slow, wait=QUIET_S, recording="none", **asked)
+    out: dict[str, Any] = {"record-on": _layer_box(base, shown),
+                           "record-off": _layer_box(base, gone)}
+    deliver("record-blink", wait=0.0, recording="video", **asked)
+    samples: list[int | str] = []
+    for _ in range(BLINK_SAMPLES):
+        snap = _window("record-blink")
+        if isinstance(snap, str) or isinstance(base, str):
+            samples.append(snap if isinstance(snap, str) else str(base))
+        else:
+            try:
+                samples.append(window_capture.difference(base, snap).changed)
+            except ValueError as e:
+                samples.append(f"the window changed between its captures: {e}")
+        time.sleep(BLINK_GAP_S)
+    out["record-blink"] = samples
+    deliver("record-end", wait=0.0, recording="none", **asked)
     return out
 
 
@@ -433,12 +486,34 @@ def _judge_layers(spun: dict[str, Any]) -> None:
     asked = spun["calls-top-answer"]
     answered = spun["all-answer"]
     M.judge(labels[2], asked.get("layers") == "edge,calls" and asked.get("place") == "top"
-            and answered.get("layers") == ",".join(ov.LAYERS),
+            and answered.get("layers") == ",".join(spun["drawn"]),
             f"calls at the top: layers={asked.get('layers')} place={asked.get('place')}; "
             f"every layer: layers={answered.get('layers')}")
     first, same, new = spun["serial-frames"]
     M.judge(labels[3], None not in (first, same, new) and same == first and new > same,
             f"frames before {first}, after the same serial {same}, after a new serial {new}")
+    _judge_record_mark(labels[4], spun)
+
+
+def _judge_record_mark(label: str, spun: dict[str, Any]) -> None:
+    if "record-blocked" in spun:
+        M.block(label, str(spun["record-blocked"]))
+        return
+    shown, gone, blink = spun["record-on"], spun["record-off"], spun["record-blink"]
+    unjudged = [f"{name}: {box}" for name, box in (("on", shown), ("off", gone))
+                if isinstance(box, str)] + [str(n) for n in blink if isinstance(n, str)]
+    if unjudged:
+        M.block(label, "; ".join(unjudged))
+        return
+    d, w, h = shown
+    x0, y0, x1, y1 = d.box
+    corner = (d.changed > 0 and x0 / w > BAND_BOTTOM_FROM and y1 / h < BAND_TOP_TO
+              and (x1 - x0) / w <= CORNER_WIDEST)
+    M.judge(label, corner and gone[0].changed == 0 and 0 in blink and any(n > 0 for n in blink),
+            f"mark box (left, top, right, bottom as shares of the window) "
+            f"{tuple(round(v, 3) for v in (x0 / w, y0 / h, x1 / w, y1 / h))}, {d.changed} pixels "
+            f"over the edge alone; {gone[0].changed} once the recording ended; pixels changed in "
+            f"{BLINK_SAMPLES} captures {BLINK_GAP_S} s apart while it blinks: {blink}")
 
 
 @M.section("R", "protocol 3's layers, drawn into the window and never into the evidence",

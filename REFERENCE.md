@@ -55,8 +55,9 @@ Over the edge the window can also show, each layer on unless `start`'s `overlay`
 - **`keys`**: the keys held down, as keycaps.
 - **`pointer`**: the guest's mouse pointer.
 - **`pause`**: a mark while the session holds the machine stopped.
+- **`record`**: a red mark in the top right corner, blinking once a second, while `record` or `audio_record` runs: a dot with REC for video, a dot with a note for sound, both when both run. It leaves when the recording ends, and a capture that could not be turned off keeps it, because that one still records.
 
-`place` puts the captions at the `top` or the `bottom`, or `auto`, on the band of the picture that shows less. A build that predates the captions draws the edge and the pointer only, and the `overlay` of `start` and `status` names each layer it cannot draw and why. `build_check` says which layers a build draws before any session starts.
+`place` puts the captions at the `top` or the `bottom`, or `auto`, on the band of the picture that shows less. A build that predates the captions draws the edge and the pointer only, one that predates the record mark draws every layer but that one, and the `overlay` of `start` and `status` names each layer it cannot draw and why. `build_check` says which layers a build draws before any session starts.
 
 The emulator draws all of it after a frame is handed to capture, so no capture shows it and no tool that reads the screen sees it.
 

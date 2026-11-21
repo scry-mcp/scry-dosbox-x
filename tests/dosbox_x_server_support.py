@@ -25,6 +25,7 @@ from scry_core import (
     screen_map,
 )
 from scry_core import log_wait as core_wait
+from scry_core import overlay as ov
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 from window_double import window_if
@@ -60,17 +61,24 @@ def _log_wait_as_guest(self: Any, pattern: str, seconds: float, channel: str, ma
     return got
 
 
+def _layers_of(found: list[str]) -> list[ov.Layer]:
+    """Every layer, from a faked build that has the command."""
+    return list(ov.LAYERS) if "PRESENCE" in found else []
+
+
 def stub_build(monkeypatch: pytest.MonkeyPatch, debugger_headless: bool = True,
                commands: tuple[str, ...] = binaries.COMMANDS) -> None:
     """What a faked build carries, read at `start` off a path that holds no file."""
     monkeypatch.setattr(binaries, "debugger_headless", lambda _b: debugger_headless)
     monkeypatch.setattr(binaries, "debugger_commands", lambda _b: list(commands))
+    monkeypatch.setattr(binaries, "presence_layers", lambda _b, found: _layers_of(found))
 
 
 def stubbed_build() -> Any:
     """`stub_build` for a case with no monkeypatch at hand."""
     return mock.patch.multiple(binaries, debugger_headless=lambda _b: True,
-                               debugger_commands=lambda _b: list(binaries.COMMANDS))
+                               debugger_commands=lambda _b: list(binaries.COMMANDS),
+                               presence_layers=lambda _b, found: _layers_of(found))
 
 class RunStateOnly:
     """A fake's debugger channel: `RUNSTATE` answered from the fake's own `run_state`, else its

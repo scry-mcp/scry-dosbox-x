@@ -13,7 +13,7 @@ import json
 import socket
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from pathlib import Path
 from typing import Any, cast
 
@@ -74,9 +74,10 @@ class _Session:
 
 def _shown(*answers: tuple[bool, list[str]], asked: bool = True, shared: bool = True,
            commands: frozenset[str] = frozenset({"PRESENCE"}), version: int = 2,
-           overlay: ov.Overlay = ov.OVERLAY) -> tuple[presence.Shown, _Session]:
+           overlay: ov.Overlay = ov.OVERLAY,
+           drawn: Collection[str] = ov.LAYERS) -> tuple[presence.Shown, _Session]:
     s = _Session(*answers, commands=commands, version=version)
-    return dpresence.open_shown(s, asked, shared, overlay), s
+    return dpresence.open_shown(s, asked, shared, overlay, drawn), s
 
 
 DRAWN = (True, CAPTURED["protocol2"]["drawn"])
@@ -236,7 +237,8 @@ def test_a_start_plan_lights_the_window_while_it_runs(monkeypatch: pytest.Monkey
         def wake(self) -> None:
             """No repaint waits here."""
 
-    def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay) -> presence.Shown:
+    def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay,
+            drawn: Collection[str]) -> presence.Shown:
         return presence.Presence.open(Shows(), ())
 
     from scry_dosbox_x import sequence
@@ -320,7 +322,9 @@ def test_a_build_names_its_version_in_the_bare_answer() -> None:
 
 # ----------------------------------------------------------------------- protocol 3
 
+#: What a build of protocol 3 draws before the record mark.
 ALL = ("edge", "pointer", "keys", "calls", "pause")
+NO_RECORD = ov.Overlay(record=False)
 #: The words of the layers protocol 3 added to the look, in the order the adapter sends them.
 PROTOCOL_3_LOOK = ("caption_text_rgb", "caption_alpha", "keycap_rgb", "keycap_text_rgb",
                    "keycap_alpha", "scroll_cps")
@@ -334,10 +338,10 @@ def _caption(text: str = "registers", serial: int = 1) -> overlay_timeline.Capti
     return overlay_timeline.Caption(text, "read", 0x5AC8FA, serial)
 
 
-def _adapter(version: int = 3, overlay: ov.Overlay = ov.OVERLAY,
+def _adapter(version: int = 3, overlay: ov.Overlay = ov.OVERLAY, drawn: Collection[str] = ALL,
              ) -> tuple[dpresence.ChannelAdapter, _Session]:
     channel = _Session(DRAWN_3, DRAWN_3, DRAWN_3, DRAWN_3, version=version)
-    return dpresence.ChannelAdapter(channel, overlay=overlay), channel
+    return dpresence.ChannelAdapter(channel, overlay=overlay, drawn=drawn), channel
 
 
 def _words(line: str) -> dict[str, str]:
@@ -445,6 +449,93 @@ def test_a_layer_not_asked_sends_no_word_of_its_own() -> None:
     assert "keys=" not in channel.sent[0] and "caption=" not in channel.sent[0]
 
 
+@pytest.mark.parametrize("recording", ["none", "video", "audio", "both"])
+def test_a_build_with_the_record_mark_is_told_what_is_recorded_and_how_the_mark_looks(
+        recording: presence.Recording) -> None:
+    adapter, channel = _adapter(drawn=ov.LAYERS)
+    adapter.show("held", _payload(layers=ov.LAYERS, recording=recording))
+    sent = _words(channel.sent[0])
+    assert sent["layers"] == ",".join(ov.LAYERS) and sent["rec"] == recording
+    assert (sent["record_rgb"], sent["record_blink_s"]) == (
+        f"{presence.LOOK.record_rgb:06X}", f"{presence.LOOK.record_blink_s:g}")
+
+
+def test_a_layer_not_asked_still_tells_a_build_with_the_record_mark_nothing_is_recorded() -> None:
+    adapter, channel = _adapter(overlay=NO_RECORD, drawn=ov.LAYERS)
+    adapter.show("held", _payload())
+    sent = _words(channel.sent[0])
+    assert sent["layers"] == ",".join(ALL) and sent["rec"] == "none"
+
+
+def test_a_build_of_protocol_3_without_the_record_mark_is_sent_no_word_it_rejects() -> None:
+    adapter, channel = _adapter(drawn=ALL)
+    adapter.show("held", _payload(layers=ov.LAYERS, recording="video"))
+    line = channel.sent[0]
+    assert "record" not in line and "rec=" not in line, line
+    assert _words(line)["layers"] == ",".join(ALL)
+
+
+def test_what_a_build_without_the_record_mark_refuses_is_never_sent_to_it() -> None:
+    """The refusals are 158f511fa's own, captured; a delivery that carried a word of them would
+    lose the whole line."""
+    refused = CAPTURED["protocol3"]
+    argument = [refused[key][0].removeprefix("PRESENCE does not know the argument ")
+                for key in ("refused_record_word", "refused_record_look")]
+    layer = refused["refused_record_layer"][0].split()[1].removeprefix("layers=")
+    assert argument == ["rec", "record_rgb"] and layer.endswith(",record"), refused
+    adapter, channel = _adapter(drawn=ALL)
+    adapter.show("held", _payload(layers=ov.LAYERS, recording="both"))
+    sent = _words(channel.sent[0])
+    assert not set(argument) & set(sent) and "record" not in sent["layers"].split(","), sent
+
+
+def test_the_overlay_of_a_build_with_the_record_mark_draws_it_as_its_answer_says() -> None:
+    recorded = CAPTURED["protocol3_record"]
+    assert dpresence.build_version(recorded["bare"]) == 3
+    assert "record" in _words(recorded["bare"][0])["layers"].split(",")
+    adapter, _ = _adapter(drawn=ov.LAYERS)
+    adapter.show("held", _payload(layers=ov.LAYERS))
+    adapter.answer = recorded["drawn"][0]
+    assert adapter.overlay_reply() == {"layers": list(ov.LAYERS), "place": "bottom"}
+
+
+def test_the_overlay_names_each_layer_the_build_is_not_drawing_and_not_only_the_record() -> None:
+    adapter, channel = _adapter(drawn=("edge", "pointer"))
+    adapter.show("held", _payload(layers=ov.LAYERS))
+    assert _words(channel.sent[0])["layers"] == "edge,pointer"
+    said = adapter.overlay_reply()
+    assert set(said["lacking"]) == {"keys", "calls", "pause", "record"}, said
+
+
+def test_a_start_hands_the_layers_its_build_draws_to_the_presence(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import dosbox_x_server_support as support
+    from dosbox_x_server_support import _start_on_a_booted_fake
+
+    from scry_dosbox_x import state as dstate
+    handed: list[Collection[str]] = []
+
+    def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay,
+            drawn: Collection[str]) -> presence.Shown:
+        handed.append(drawn)
+        return presence.Shown()
+    monkeypatch.setattr(dpresence, "open_shown", lit)
+    dstate.STATE.session = None
+    out = _start_on_a_booted_fake(tmp_path, monkeypatch)
+    monkeypatch.setattr(support, "_layers_of", lambda _found: list(ALL))
+    dstate.STATE.session = None
+    _start_on_a_booted_fake(tmp_path, monkeypatch)
+    assert out["status"] == "ok" and handed[0] == list(ov.LAYERS) and handed[1] == list(ALL), handed
+
+
+def test_the_overlay_of_a_build_without_the_record_mark_names_it_lacking() -> None:
+    adapter, _ = _adapter(drawn=ALL)
+    adapter.show("held", _payload())
+    said = adapter.overlay_reply()
+    assert said["layers"] == list(ALL) and set(said["lacking"]) == {"record"}, said
+    assert "predates the record mark" in said["lacking"]["record"], said
+
+
 @pytest.mark.parametrize("state, paused, version, word", [
     ("held", True, 3, "paused"), ("acting", True, 3, "acting"), ("held", False, 3, "held"),
     ("held", True, 2, "held")])
@@ -475,7 +566,7 @@ def test_a_start_asked_for_no_pointer_never_draws_one() -> None:
 
 
 def test_the_overlay_of_a_build_of_protocol_3_is_what_its_answer_draws_and_lacks() -> None:
-    adapter, _ = _adapter()
+    adapter, _ = _adapter(overlay=NO_RECORD)
     adapter.show("held", _payload())
     assert adapter.overlay_reply() == {"layers": list(ALL), "place": "bottom"}
     adapter.answer = CAPTURED["protocol3"]["undrawable"][0]
@@ -490,18 +581,18 @@ def test_the_overlay_of_a_build_of_protocol_2_names_the_layers_it_lacks() -> Non
     adapter.show("held", _payload())
     said = adapter.overlay_reply()
     assert said["layers"] == ["edge", "pointer"] and said["place"] == "auto", said
-    assert set(said["lacking"]) == {"calls", "keys", "pause"}
+    assert set(said["lacking"]) == {"calls", "keys", "pause", "record"}
     assert "version 2" in said["lacking"]["calls"], said
 
 
 def test_a_layer_not_asked_is_not_named_lacking_on_a_build_of_protocol_2() -> None:
     adapter, _ = _adapter(version=2, overlay=ov.Overlay(calls=False, pause=False))
     adapter.show("held", _payload())
-    assert set(adapter.overlay_reply()["lacking"]) == {"keys"}
+    assert set(adapter.overlay_reply()["lacking"]) == {"keys", "record"}
 
 
 def test_start_and_status_say_the_overlay_only_of_a_presence_drawn() -> None:
-    drawn, _ = _shown(DRAWN_3, version=3)
+    drawn, _ = _shown(DRAWN_3, version=3, overlay=NO_RECORD)
     assert dpresence.overlay_shown(drawn)["overlay"]["layers"] == list(ALL)
     drawn.close()
     for none in (presence.Shown(), _shown(shared=False)[0], _shown(commands=frozenset())[0]):
@@ -645,7 +736,8 @@ def test_a_start_lights_the_pause_mark_of_a_machine_it_leaves_stopped(
     from scry_dosbox_x import state as dstate
     told: list[bool] = []
 
-    def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay) -> presence.Shown:
+    def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay,
+            drawn: Collection[str]) -> presence.Shown:
         class Told(presence.Shown):
             def paused(self, stopped: bool) -> None:
                 told.append(stopped)
@@ -686,7 +778,7 @@ def _presence_status(shown: presence.Shown) -> dict[str, Any]:
 
 
 def test_status_says_the_overlay_beside_the_presence_while_it_is_drawn() -> None:
-    shown, _ = _shown(DRAWN_3, version=3, overlay=ov.Overlay(keys=False))
+    shown, _ = _shown(DRAWN_3, version=3, overlay=ov.Overlay(keys=False, record=False))
     said = _presence_status(shown)
     assert said["presence"] is True
     assert said["overlay"] == {"layers": ["edge", "pointer", "calls", "pause"], "place": "bottom"}
@@ -700,17 +792,18 @@ def test_the_start_reply_and_the_status_reply_say_the_overlay(
 
     from scry_dosbox_x import state as dstate
     real = dpresence.open_shown
-    monkeypatch.setattr(dpresence, "open_shown", lambda session, asked, shared, overlay: real(
-        _Session(DRAWN_3, version=3), asked, True, overlay))
+    monkeypatch.setattr(
+        dpresence, "open_shown", lambda session, asked, shared, overlay, drawn: real(
+            _Session(DRAWN_3, version=3), asked, True, overlay, ALL))
     dstate.STATE.session = None
-    out = _start_on_a_booted_fake(tmp_path, monkeypatch, overlay={"keys": False})
+    out = _start_on_a_booted_fake(tmp_path, monkeypatch, overlay={"keys": False, "record": False})
     assert out["status"] == "ok" and out["presence"] is True, out
     assert out["overlay"] == {"layers": ["edge", "pointer", "calls", "pause"], "place": "bottom"}
     held = cast(Any, dstate.STATE.session).presence
     held.close()
     dstate.STATE.session = None
     live: Any = install()
-    live.presence = _shown(DRAWN_3, version=3)[0]
+    live.presence = _shown(DRAWN_3, version=3, overlay=NO_RECORD)[0]
     said = server.status()
     assert said["presence"] is True and said["overlay"]["layers"] == list(ALL), said
     live.presence.close()
@@ -720,7 +813,7 @@ def test_the_start_reply_and_the_status_reply_say_the_overlay(
 def test_what_the_overlay_asked_reaches_the_command_through_the_first_delivery() -> None:
     shown, channel = _shown(DRAWN_3, version=3, overlay=ov.Overlay(calls=False, place="top"))
     sent = _words(channel.sent[0])
-    assert sent["layers"] == "edge,pointer,keys,pause" and sent["place"] == "top"
+    assert sent["layers"] == "edge,pointer,keys,pause,record" and sent["place"] == "top"
     shown.close()
 
 

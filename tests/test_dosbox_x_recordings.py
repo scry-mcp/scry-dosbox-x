@@ -10,6 +10,7 @@ import os
 import struct
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
@@ -18,6 +19,7 @@ from channel_double import REAL_STOP, Machine, Stop, session_over
 from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 from scry_core import cancel, roster
 from scry_core.file_names import written_as
+from scry_core.presence import Shown
 
 from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import capture_files, recordings, retrace, server, summaries
@@ -392,6 +394,85 @@ def test_a_run_that_made_no_progress_keeps_its_refusal_and_names_the_file(
     got = cast(dict[str, Any], server.audio_record(frames=2))
     assert got["status"] == "INVALID" and got["code"] == "no_progress", got
     assert got["samples"] == 1344 and Path(got["path"]).is_file()
+
+
+# ----------------------------------------------------------------- the presence's record mark
+
+class _Marks:
+    """What the presence is told: the writer's `recording`, in order."""
+
+    def __init__(self) -> None:
+        self.told: list[tuple[str, bool]] = []
+
+    def recording(self, kind: str, on: bool) -> None:
+        self.told.append((kind, on))
+
+    def __getattr__(self, _name: str) -> Callable[..., None]:
+        """Every other report of the session (a call, a pause) is not what this watches."""
+        return lambda *_a, **_k: None
+
+
+def _marked(tmp_path: Path, **over: Any) -> tuple[Machine, _Marks]:
+    machine = live(tmp_path, **over)
+    marks = _Marks()
+    cast(Any, dstate.STATE.session).presence = Shown(held=cast(Any, marks))
+    return machine, marks
+
+
+@pytest.mark.parametrize(("tool", "args", "frames", "kind"), [
+    ("record", {}, 2, "video"), ("audio_record", {}, 2, "audio"),
+    ("audio_record", {"kind": "dro"}, 8, "audio"), ("audio_record", {"kind": "mid"}, 8, "audio")])
+def test_a_recording_tells_the_presence_when_it_starts_and_when_it_ends(
+        tmp_path: Path, tool: str, args: dict[str, Any], frames: int, kind: str) -> None:
+    _, marks = _marked(tmp_path, frames=frames)
+    _ok(getattr(server, tool)(frames=frames, **args))
+    assert marks.told == [(kind, True), (kind, False)]
+
+
+def test_a_run_that_raised_still_tells_the_presence_the_recording_ended(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _, marks = _marked(tmp_path)
+
+    def broken(*_: object) -> dict[str, Any]:
+        raise RuntimeError("the channel went away mid-run")
+    monkeypatch.setattr(retrace, "run_for", broken)
+    with pytest.raises(RuntimeError):
+        recordings.recording(cast(Any, dstate.STATE.session), "record", "VIDEO", 2, None, 10.0,
+                             lambda *_: None)
+    assert marks.told == [("video", True), ("video", False)]
+
+
+def test_a_capture_that_stays_on_keeps_the_mark_because_it_still_records(
+        tmp_path: Path) -> None:
+    machine, marks = _marked(tmp_path)
+    machine.hooks["CAPTURE"] = lambda body: (
+        (False, [f"DEBUG: CAPTURE {body.split()[1]} did not turn OFF"])
+        if body.endswith(" OFF") else None)
+    _ok(server.audio_record(frames=2))
+    assert marks.told == [("audio", True)]
+
+
+def test_a_recording_of_another_sound_kind_does_not_end_the_mark_of_one_left_on(
+        tmp_path: Path) -> None:
+    machine, marks = _marked(tmp_path, frames=10)
+    broken = [True]
+    machine.hooks["CAPTURE"] = lambda body: (
+        (False, [f"DEBUG: CAPTURE {body.split()[1]} did not turn OFF"])
+        if broken[0] and body.endswith("WAV OFF") else None)
+    _ok(server.audio_record(frames=2))
+    broken[0] = False
+    _ok(server.audio_record(frames=8, kind="dro"))
+    assert ("audio", False) not in marks.told, marks.told
+
+
+def test_a_capture_that_could_not_be_turned_on_never_shows_the_mark(tmp_path: Path) -> None:
+    machine, marks = _marked(tmp_path)
+    machine.hooks["CAPTURE"] = lambda body: (
+        (False, [f"DEBUG: CAPTURE {body.split()[1]} did not turn ON"])
+        if body.endswith(" ON") else None)
+    got = cast(dict[str, Any], server.audio_record(frames=2))
+    assert got["status"] == "INVALID", got
+    assert ("audio", True) not in marks.told, marks.told
 
 
 # ------------------------------------------------------------------- captures and one line

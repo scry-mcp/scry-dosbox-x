@@ -9,13 +9,14 @@ import time
 from pathlib import Path
 from typing import Any
 
-from scry_core import cancel, prose, wav
+from scry_core import cancel, presence, prose, wav
 from scry_core.reply_contract import Invalid, unavailable
 
 from scry_dosbox_x import capture_files as files
 from scry_dosbox_x import collect as dcollect
 from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import paths, retrace
+from scry_dosbox_x import presence as dpresence
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
 
@@ -186,14 +187,23 @@ def recording(session: ds.Session, tool: str, kind: str, frames: int, dest: Path
                       "capture off")
     ended, closed, why, cut = True, None, "", None
     began = time.time()
+    shown = dpresence.of(session)
+    mark: presence.Kind = "video" if kind == VIDEO else "audio"
+    # A capture of the same mark kind left on by an earlier run keeps the mark through this one.
+    other_on = any(on for other, (on, _path) in _states(listed).items()
+                  if other != kind and (other == VIDEO) == (kind == VIDEO))
     try:
         _toggle(session, kind, True)
+        shown.recording(mark, True)
         ran = retrace.run_for(session, frames, 0, seconds, progress)
     finally:
         # Shielded: after a cancel the turn-off's own poll would raise and abandon its answer.
         with cancel.shielded():
             try:
                 closed, cut = _toggle(session, kind, False)
+                # A capture that stays on keeps the mark: it still records.
+                if not other_on:
+                    shown.recording(mark, False)
             except Invalid as e:
                 ended, why = False, str(e)
     own: dict[str, Any] = {"kind": EXTENSION[kind], "frames": frames,

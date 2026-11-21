@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import json
+from collections.abc import Collection
 from pathlib import Path
 from typing import Any
 
@@ -132,7 +133,8 @@ def test_a_profile_sets_the_overlay_as_the_object_it_is_and_the_start_judges_it_
     stored(tmp_path, {"overlay": {"calls": False, "place": "top"}})
     seen: list[ov.Overlay] = []
 
-    def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay) -> Any:
+    def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay,
+            drawn: Collection[str]) -> Any:
         seen.append(overlay)
         return dpresence.NEVER_DRAWN
     monkeypatch.setattr(dpresence, "open_shown", lit)
@@ -158,7 +160,8 @@ def test_a_kept_recipe_holds_the_overlay_as_json_and_only_when_it_is_not_the_def
         documents = [c.document for c in dstate.STATE.drafts.kept.values()]
         if kept:
             assert documents and documents[0]["overlay"] == {
-                "calls": False, "keys": True, "pointer": True, "pause": True, "place": "auto"}
+                "calls": False, "keys": True, "pointer": True, "pause": True, "record": True,
+                "place": "auto"}
             json.dumps(documents[0])
         else:
             assert all("overlay" not in d for d in documents), documents

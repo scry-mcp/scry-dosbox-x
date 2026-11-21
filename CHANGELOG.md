@@ -5,10 +5,12 @@ What a client of the server notices.
 ## Unreleased
 
 - `start` takes `overlay`, which layers the window shows over the edge: a caption naming each
-  call, the keys held, the pointer and a mark while the machine is stopped, each on by default,
-  and where the captions go. `start` and `status` answer `overlay` with the layers drawn and,
+  call, the keys held, the pointer, a mark while the machine is stopped and a blinking mark in
+  the top right corner while `record` or `audio_record` runs, each on by default, and where the
+  captions go. `start` and `status` answer `overlay` with the layers drawn and,
   for each the build cannot draw, why; `build_check` lists the layers a build draws as
-  `presence_layers`. A build that draws only the edge and the pointer keeps drawing them.
+  `presence_layers`. A build that draws only the edge and the pointer keeps drawing them, and one that predates
+  the record mark draws every layer but that one.
 - Every demo is shown moving: a `loop.webp` beside its README replaces `loop.mp4`. It holds up
   to three moments of the demo's own run, scaled up so its pixels stay sharp. A moment is cut
   from a `record` call or, in Minesweeper and the two Deluxe Paint demos, from the video of a

@@ -102,7 +102,7 @@ It is refused while a session is open: reading the version starts a second emula
 
 `tools` lists this server's tools by name.
 
-`presence_layers` lists the layers of `start`'s `overlay` the build can draw: all five, or the border and the pointer from an older build. It is left out without the `PRESENCE` command.
+`presence_layers` lists the layers of `start`'s `overlay` the build draws: all six, five before the record mark, or the border and the pointer from an older build. It is left out without the `PRESENCE` command.
 
 </details>
 
@@ -140,7 +140,7 @@ start(conf="", cwd="", session_seconds=null, shared=false, display=null, fullscr
     flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="",
     plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null,
     presence=true,
-    overlay={"calls": true, "keys": true, "pointer": true, "pause": true, "place": "auto"},
+    overlay={"calls": true, "keys": true, "pointer": true, "pause": true, "record": true, "place": "auto"},
     dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program",
     profile="")
 ```
@@ -234,7 +234,7 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
 - `binary` (string, default `""`): The DOSBox-X to run: an executable, or on macOS a `.app` bundle holding one. Left empty, `DOSBOX_X_BINARY`, else the `dosbox-x` on the PATH.
 - `background` (boolean, optional): `true` opens the window behind your other windows and leaves the keyboard focus where it is; `false` opens it in front. Left out, behind unless `shared`.
 - `presence` (boolean, default `true`): Draws a border around the emulator's window while the session is open, brighter while a call runs the machine. `false` leaves it off.
-- `overlay` (any, default `{"calls": true, "keys": true, "pointer": true, "pause": true, "place": "auto"}`): The layers drawn over the border, each on unless `false`: `calls` names each call, `keys` the keys held, `pointer` the pointer, `pause` a stopped machine. `place` is `top`, `bottom`, `auto`.
+- `overlay` (any, default `{"calls": true, "keys": true, "pointer": true, "pause": true, "record": true, "place": "auto"}`): Layers over the border, each on unless `false`: `calls` names each call, `keys` keys held, `pointer` the pointer, `pause` a stopped machine, `record` a recording. `place`: `top`, `bottom`, `auto`.
 - `dos_calls` (boolean, default `false`): `true` records every DOS call (INT 21h) the program makes, for `log(channel="dos")`. It needs a build whose debugger has `DOSTRACE`.
 - `log_categories` (object, optional): DOSBox-X's own `[log]` categories, each with its level, written into `logfile`. It needs `logfile`.
 - `guest_files` (array of string, optional): Up to 16 files on the host that the program is expected to leave. `guest_file` and `close` say what became of each.
@@ -478,7 +478,7 @@ background: Launch behind, keeping the caller's focus, or in front; omitted it i
 
 presence: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
 
-overlay: Layers drawn over the presence edge, each on by default: `calls` a caption naming each call and its arguments, abbreviated (paths by their last name); `keys` the keys or fields held down; `pointer` the guest's mouse pointer; `pause` a mark while the session holds the machine stopped. `place`: where the captions go, `top`, `bottom`, or `auto`, the band of the picture that shows less. Ignored with `presence=false`.
+overlay: Layers drawn over the presence edge, each on by default: `calls` a caption naming each call and its arguments, abbreviated (paths by their last name); `keys` the keys or fields held down; `pointer` the guest's mouse pointer; `pause` a mark while the session holds the machine stopped; `record` a blinking mark while it records video or audio. `place`: where the captions go, `top`, `bottom`, or `auto`, the band of the picture that shows less. Ignored with `presence=false`.
 ```
 
 </details>

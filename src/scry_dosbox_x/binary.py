@@ -63,6 +63,9 @@ HEADLESS_MARK = b"\0debugger headless\0"
 #: A key only a `PRESENCE` of protocol 3 parses, held as a literal of its own: the build draws
 #: captions, keycaps and a pause mark. The file answers before a session starts.
 PRESENCE_OVERLAY_MARK = b"\0keycap_text_rgb\0"
+#: A key only a `PRESENCE` that draws the record mark parses; a build of protocol 3 without it
+#: rejects the layer word `record` and the words of its look.
+PRESENCE_RECORD_MARK = b"\0record_blink_s\0"
 
 
 def command_mark(name: str) -> bytes:
@@ -70,6 +73,7 @@ def command_mark(name: str) -> bytes:
 
 
 MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK, PRESENCE_OVERLAY_MARK,
+         PRESENCE_RECORD_MARK,
          *(command_mark(n) for n in COMMANDS))
 
 
@@ -109,12 +113,16 @@ def debugger_commands(binary: str) -> list[str]:
             if _carries(binary, command_mark(name), f"the `{name}` command")]
 
 
-def presence_layers(binary: str, found: list[str]) -> list[str]:
+def presence_layers(binary: str, found: list[str]) -> list[ov.Layer]:
     """The layers of `overlay` the build's `PRESENCE` draws; none without the command."""
     if "PRESENCE" not in found:
         return []
-    return list(ov.LAYERS if _carries(binary, PRESENCE_OVERLAY_MARK, "the presence overlay")
-                else ("edge", "pointer"))
+    drawn: set[ov.Layer] = {"edge", "pointer"}
+    if _carries(binary, PRESENCE_OVERLAY_MARK, "the presence overlay"):
+        drawn |= {"keys", "calls", "pause"}
+        if _carries(binary, PRESENCE_RECORD_MARK, "the presence record mark"):
+            drawn.add("record")
+    return [layer for layer in ov.LAYERS if layer in drawn]
 
 
 def debugger_commands_missing(found: list[str]) -> list[dict[str, object]]:

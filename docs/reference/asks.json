@@ -51,7 +51,7 @@
     "It is refused while a session is open: reading the version starts a second emulator, which a build that does not know the option runs until the check gives up. The answer is about the build, never about a reading, and `debugger` is always `true`: a build without one is refused."
    ],
    "why_more": [
-    "`tools` lists this server's tools by name.\n\n`presence_layers` lists the layers of `start`'s `overlay` the build can draw: all five, or the border and the pointer from an older build. It is left out without the `PRESENCE` command."
+    "`tools` lists this server's tools by name.\n\n`presence_layers` lists the layers of `start`'s `overlay` the build draws: all six, five before the record mark, or the border and the pointer from an older build. It is left out without the `PRESENCE` command."
    ],
    "related": [
     "start",
@@ -105,7 +105,7 @@
     "binary": "The DOSBox-X to run: an executable, or on macOS a `.app` bundle holding one. Left empty, `DOSBOX_X_BINARY`, else the `dosbox-x` on the PATH.",
     "background": "`true` opens the window behind your other windows and leaves the keyboard focus where it is; `false` opens it in front. Left out, behind unless `shared`.",
     "presence": "Draws a border around the emulator's window while the session is open, brighter while a call runs the machine. `false` leaves it off.",
-    "overlay": "The layers drawn over the border, each on unless `false`: `calls` names each call, `keys` the keys held, `pointer` the pointer, `pause` a stopped machine. `place` is `top`, `bottom`, `auto`.",
+    "overlay": "Layers over the border, each on unless `false`: `calls` names each call, `keys` keys held, `pointer` the pointer, `pause` a stopped machine, `record` a recording. `place`: `top`, `bottom`, `auto`.",
     "dos_calls": "`true` records every DOS call (INT 21h) the program makes, for `log(channel=\"dos\")`. It needs a build whose debugger has `DOSTRACE`.",
     "log_categories": "DOSBox-X's own `[log]` categories, each with its level, written into `logfile`. It needs `logfile`.",
     "guest_files": "Up to 16 files on the host that the program is expected to leave. `guest_file` and `close` say what became of each.",
