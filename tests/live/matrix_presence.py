@@ -127,7 +127,7 @@ def _put(adapter: dpresence.ChannelAdapter, state: str) -> int | None:
         ok_, lines = _debugger().exec("PRESENCE off")
         adapter.answer = lines[0] if ok_ and lines else ""
     else:
-        adapter.show(state)  # type: ignore[arg-type]
+        adapter.show(state, presence.Payload())  # type: ignore[arg-type]
     time.sleep(QUIET_S)
     return _frame_count(adapter)
 
@@ -324,8 +324,7 @@ def _pointer_difference(mode_key: str | None, x: int, y: int
     answer = adapter.answer if adapter is not None else ""
     # The control: the same screen with the pointer off.
     if adapter is not None and shown.held is not None:
-        adapter.pointer = False
-        shown.held.redeliver()
+        adapter.show("held", presence.Payload())
     time.sleep(QUIET_S)
     hidden = _settled("pointer-off")
     if isinstance(hidden, str) or isinstance(after, str):

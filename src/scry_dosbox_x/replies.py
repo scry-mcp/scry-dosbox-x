@@ -8,6 +8,7 @@ from scry_core import media_replies, tool_replies
 from scry_core import promote as core_promote
 from scry_core import sequence_account as account
 from scry_core.instruction import StopInstruction
+from scry_core.overlay import OverlayReply
 from scry_core.reply_contract import OmitEmpty, When
 from scry_core.reply_schema import RunEnvelope
 from typing_extensions import TypedDict
@@ -77,6 +78,7 @@ class BuildCheckReply(DosboxEnvelope, total=False):
     debugger_commands: Annotated[list[Any], OmitEmpty]
     debugger_commands_missing: Annotated[list[Any], OmitEmpty]
     heavy_debug: Required[bool]
+    presence_layers: Annotated[list[str], OmitEmpty]
     tools: list[Any]
     version: Required[str | dict[str, Any]]
 
@@ -554,6 +556,7 @@ class StartReply(WindowRefused, account.SequenceFields, tool_replies.ProfileRefu
     log_categories: dict[str, Any]
     logfile: str
     operations: list[Any]
+    overlay: Annotated[OverlayReply, When("with a session whose presence is drawn")]
     pid: Annotated[int, When("under `start`")]
     presence: bool | dict[str, Any]
     ready_after_s: float
@@ -591,6 +594,7 @@ class StatusReply(DosboxEnvelope, total=False):
     cpu_mode: Annotated[str | dict[str, Any], When("with a session")]
     declarations: Annotated[dict[str, Any], When("with a session")]
     elapsed_s: Annotated[float, When("with a session")]
+    overlay: Annotated[OverlayReply, When("with a session whose presence is drawn")]
     pc: Annotated[str | dict[str, Any], When("with a session")]
     pending: Required[dict[str, Any]]
     pid: Annotated[int, When("with a session")]

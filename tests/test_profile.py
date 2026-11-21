@@ -120,3 +120,46 @@ def test_a_key_no_start_takes_is_refused_by_name(tmp_path: Path,
 def test_start_with_no_conf_and_no_profile_is_refused_naming_the_argument() -> None:
     with pytest.raises(ds.Invalid, match="conf"):
         lifecycle.required(conf="", cwd="/guest", session_seconds=30)
+
+
+def test_a_profile_sets_the_overlay_as_the_object_it_is_and_the_start_judges_it_as_the_model(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from dosbox_x_server_support import _start_on_a_booted_fake
+    from scry_core import overlay as ov
+
+    from scry_dosbox_x import presence as dpresence
+    from scry_dosbox_x import state as dstate
+    stored(tmp_path, {"overlay": {"calls": False, "place": "top"}})
+    seen: list[ov.Overlay] = []
+
+    def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay) -> Any:
+        seen.append(overlay)
+        return dpresence.NEVER_DRAWN
+    monkeypatch.setattr(dpresence, "open_shown", lit)
+    dstate.STATE.session = None
+    out = _start_on_a_booted_fake(tmp_path, monkeypatch, profile=str(tmp_path / ".scry" / "start"
+                                                                  / "guest.json"))
+    assert out["status"] == "ok", out
+    assert "overlay" in out["profile"]["supplied"], out["profile"]
+    assert seen == [ov.Overlay(calls=False, place="top")]
+    dstate.STATE.session = None
+
+
+def test_a_kept_recipe_holds_the_overlay_as_json_and_only_when_it_is_not_the_default(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from dosbox_x_server_support import _start_on_a_booted_fake
+
+    from scry_dosbox_x import state as dstate
+    for asked, kept in (({"calls": False}, True), ({}, False)):
+        dstate.STATE.session = None
+        dstate.STATE.drafts = type(dstate.STATE.drafts)()
+        out = _start_on_a_booted_fake(tmp_path, monkeypatch, overlay=asked)
+        assert out["status"] == "ok", out
+        documents = [c.document for c in dstate.STATE.drafts.kept.values()]
+        if kept:
+            assert documents and documents[0]["overlay"] == {
+                "calls": False, "keys": True, "pointer": True, "pause": True, "place": "auto"}
+            json.dumps(documents[0])
+        else:
+            assert all("overlay" not in d for d in documents), documents
+    dstate.STATE.session = None

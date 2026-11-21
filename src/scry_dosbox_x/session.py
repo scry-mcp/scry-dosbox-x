@@ -30,6 +30,7 @@ from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import grammar, paths, stub_link
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import pointer as dpointer
+from scry_dosbox_x import presence as dpresence
 from scry_dosbox_x import process as dprocess
 from scry_dosbox_x import program as dprogram
 
@@ -367,12 +368,15 @@ class Session(dprocess.Process):
         if not self._at_debugger:
             self.stop_count += 1
             self._surveyed = None
+            dpresence.of(self).paused(True)
         self._at_debugger = True
         self._run_unknown = False
 
     def forget_stop(self) -> None:
         """The machine was released, or was seen running."""
         self.fired_entry = None
+        if self._at_debugger:
+            dpresence.of(self).paused(False)
         self._at_debugger = False
         self._surveyed = None
         self._run_unknown = False

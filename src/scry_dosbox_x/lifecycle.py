@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import log_marks, narrowing, project_store, session_block, window_size
+from scry_core import overlay as ov
 from scry_core import reply_contract as contract
 from scry_core import window as core_window
 
@@ -116,6 +117,7 @@ def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
           program: str, logfile: str, capture_video: bool, captures_dir: str,
           plan: list[dict[str, Any]] | None, settle_seconds: float | None, input_port: int,
           state_dir: str, binary: str, background: bool | None, presence: bool,
+          overlay: ov.Overlay,
           dos_calls: bool, log_categories: dict[str, str] | None, guest_files: list[str] | None,
           progress: ds.Progress, ops: Callable[[], sequence.Ops], *, symbols: str = "",
           base_from: str = start_symbols.PROGRAM, display: int | None = None,
@@ -123,6 +125,7 @@ def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
     """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`."""
     required(conf, cwd, session_seconds)
     assert session_seconds is not None
+    layers = dpresence.overlay_of(overlay)
     # Paths first: refused before anything acts (an expired session closed, symbols forgotten).
     cwd_given = paths.absolute("cwd", cwd)
     conf_path = paths.absolute("conf", conf)
@@ -250,7 +253,8 @@ def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
                         proved = core_window.observe(session.pid, where)
                 seen = {"window": proved.block()}
         finally:    # the live session a refusal leaves carries the presence it was asked for
-            session.presence = dpresence.open_shown(session, presence, shared)
+            session.presence = dpresence.open_shown(session, presence, shared, layers)
+            session.presence.paused(session.parked)
     commands: dict[str, Any] = ({"debugger_commands": sorted(session.commands)}
                                 if session.commands else {})
     channels: dict[str, Any] = {}
@@ -274,6 +278,7 @@ def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
                        input_port=contract.or_unavailable(session.launch.input_port,
                                                           "no input route was opened"),
                        background=launch.background, presence=dpresence.of(session).reply(),
+                       **dpresence.overlay_shown(dpresence.of(session)),
                        **seen, **channels, **rearm,
                        **holding,
                        **_notes(launch))
@@ -319,6 +324,14 @@ def presence_shown(session: ds.Session) -> bool | dict[str, Any]:
     if not session.alive():
         return contract.unavailable("the session's emulator has ended")
     return dpresence.of(session).reply()
+
+
+def presence_facts(session: ds.Session) -> dict[str, Any]:
+    """`status`' `presence`, and its `overlay` while the presence is drawn."""
+    facts: dict[str, Any] = {"presence": presence_shown(session)}
+    if session.alive():
+        facts |= dpresence.overlay_shown(dpresence.of(session))
+    return facts
 
 
 CLOSE_HOW = ("close(detail=True) keeps the emulator's last words on a clean quit too; once a close "

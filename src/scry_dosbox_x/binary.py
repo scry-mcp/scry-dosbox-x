@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 from scry_core import binaries
+from scry_core import overlay as ov
 from scry_core.reply_contract import Invalid
 
 #: `ps` shows this name when `start` gets no `binary`.
@@ -43,7 +44,7 @@ DISABLES = {
     "STEPIN": ("step",),
     "SAVESTATE": ("state_write",),
     "LOADSTATE": ("state_write",),
-    "PRESENCE": ("the presence indicator",),
+    "PRESENCE": ("the presence edge and overlay",),
     "VGAMEMDUMP": ("screen_view and screen_signature in a planar, unchained or linear mode",),
     "BPIF": ("regpoint_add",),
     "CAPTURE": ("record", "audio_record"),
@@ -59,13 +60,16 @@ USAGE_MARKS = {name: b"\0DEBUG: " + name.encode() + b" usage: " for name in ("CA
 USAGE_MARKS |= {"PIC": b"\0MASKIRQ\0", "A20": b"A20 gate is %s"}
 #: The debugger with no screen, which needs no terminal or console.
 HEADLESS_MARK = b"\0debugger headless\0"
+#: A word only a `PRESENCE` of protocol 3 parses: the build draws captions, keycaps, a pause mark.
+PRESENCE_OVERLAY_MARK = b"\0cap_scale\0"
 
 
 def command_mark(name: str) -> bytes:
     return USAGE_MARKS.get(name, b"\0" + name.encode() + b"\0")
 
 
-MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK, *(command_mark(n) for n in COMMANDS))
+MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK, PRESENCE_OVERLAY_MARK,
+         *(command_mark(n) for n in COMMANDS))
 
 
 _marks_seen: dict[tuple[str, int, int], frozenset[bytes]] = {}
@@ -102,6 +106,14 @@ def debugger_commands(binary: str) -> list[str]:
     """Which of `COMMANDS` the build's debugger parses, in `COMMANDS`' order."""
     return [name for name in COMMANDS
             if _carries(binary, command_mark(name), f"the `{name}` command")]
+
+
+def presence_layers(binary: str, found: list[str]) -> list[str]:
+    """The layers of `overlay` the build's `PRESENCE` draws; none without the command."""
+    if "PRESENCE" not in found:
+        return []
+    return list(ov.LAYERS if _carries(binary, PRESENCE_OVERLAY_MARK, "the presence overlay")
+                else ("edge", "pointer"))
 
 
 def debugger_commands_missing(found: list[str]) -> list[dict[str, object]]:

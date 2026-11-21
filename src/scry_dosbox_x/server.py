@@ -82,6 +82,7 @@ from scry_core import (  # noqa: E402
     screen_map,
     signalled_end,
 )
+from scry_core import overlay as scry_overlay  # noqa: E402
 from scry_core import presence as scry_presence  # noqa: E402
 from scry_core import promote as core_promote  # noqa: E402
 from scry_core import (
@@ -156,7 +157,8 @@ def build_check(binary: str = "") -> dict[str, Any]:
     Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` and a freeze
     watch need it), `debugger_commands` (which of {DEBUGGER_COMMANDS} the build's debugger has;
     omitted when none), `debugger_commands_missing` (each one it lacks, with the tools that
-    command disables; omitted when none is missing).
+    command disables; omitted when none is missing), `presence_layers` (the layers of `start`'s
+    `overlay` its `PRESENCE` draws; omitted without the command).
     """
     if binary:          # the shape first, as every path's, whatever the session is
         paths.absolute("binary", binary)
@@ -180,6 +182,8 @@ def build_check(binary: str = "") -> dict[str, Any]:
     commands: dict[str, Any] = {"debugger_commands": found} if found else {}
     if absent := binaries.debugger_commands_missing(found):
         commands["debugger_commands_missing"] = absent
+    if layers := binaries.presence_layers(resolved.path, found):
+        commands["presence_layers"] = layers
     return st.reply(**dlaunch.binary_facts(resolved, binaries.VERSION_TIMEOUT_S), debugger=True,
                     heavy_debug=binaries.heavy_debug(resolved.path), **commands,
                     tools=registered_tools())
@@ -210,6 +214,8 @@ def start(conf: str = "", cwd: str = "",
               "Launch behind, keeping the caller's focus, or in front; omitted it is behind "
               "unless `shared`."))] = None,
           presence: Annotated[bool, Field(description=scry_presence.ARGUMENT)] = True,
+          overlay: Annotated[scry_overlay.Overlay,
+                             Field(description=scry_overlay.ARGUMENT)] = scry_overlay.OVERLAY,
           dos_calls: bool = False,
           log_categories: dict[Annotated[str, vocab.enum(dlaunch.LOG_CATEGORIES)],
                                Annotated[str, vocab.enum(dlaunch.LOG_LEVELS)]] | None = None,
@@ -279,14 +285,19 @@ def start(conf: str = "", cwd: str = "",
         params, block = lifecycle.with_profile(profile, keys=_PROFILE_KEYS, arguments=params,
                                                given=given.names() or ())
     params.pop("profile")
+    # A profile holds the object where a call holds the model.
+    params["overlay"] = dpresence.overlay_of(params["overlay"])
     # Around the launch: a `plan` runs inside it, and one of its `add` steps names a map by the
     # guest this call starts and keeps it in the project that guest runs in.
     with mpromote.launching(params, str(block["file"]) if block is not None else ""):
         reply = lifecycle.start(**params, progress=bridge(ctx), ops=_step_ops)
-    return mpromote.after_start(reply, params, block=block, defaults=_START_DEFAULTS)
+    # A kept recipe is JSON: the model is its object.
+    kept = {**params, "overlay": params["overlay"].model_dump()}
+    return mpromote.after_start(reply, kept, block=block, defaults=_START_DEFAULTS)
 
 
 _PROFILE_KEYS, _START_DEFAULTS = project_store.start_arguments(start)
+_START_DEFAULTS["overlay"] = scry_overlay.OVERLAY.model_dump()
 
 
 @tool("The session's window", summary=core_window.summary)
@@ -326,7 +337,7 @@ def status() -> dict[str, Any]:
         running.drain_if_stopped(STATE.session)   # `status` asks for no session, but uses one
         stopped = STATE.session.parked            # what the drain's own reading left
     shown: dict[str, Any] = ({} if STATE.session is None
-                             else {"presence": lifecycle.presence_shown(STATE.session)})
+                             else lifecycle.presence_facts(STATE.session))
     outside = ("" if STATE.session is None or STATE.session.alive()
                else STATE.session.outside_kill_note())
     return st.reply(**st.process_facts(), last_stop=STATE.dated(),
@@ -1597,8 +1608,11 @@ def send_keys(keys: list[str],
     Reference: REFERENCE.md, Input and the screen.
     """
     # The input tools ask the run state themselves: a silent answer there means nothing was sent.
-    return inputs.send_keys(live(probe=False), keys, modifiers, expect or None, seconds,
+    sent = inputs.send_keys(live(probe=False), keys, modifiers, expect or None, seconds,
                             bridge(ctx), action)
+    if sent.get("delivered") is not False:
+        dpresence.keys_sent(dpresence.of(STATE.session), keys, modifiers or (), action)
+    return sent
 
 
 @tool("Send mouse input", summary=one_line.send_mouse, on_cancel="none")
@@ -1651,7 +1665,7 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
     # Read off the state, not `live()`: a session that died after the move went in must not
     # cost the caller the reply that says it was delivered.
     if moved.get("delivered") is not False:
-        dpresence.pointer_moved(dpresence.of(STATE.session))
+        dpresence.mouse_sent(dpresence.of(STATE.session), moved, x, y, button or None, action)
     return moved
 
 

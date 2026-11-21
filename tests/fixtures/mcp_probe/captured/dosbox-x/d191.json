@@ -1,0 +1,36 @@
+{
+ "task": {
+  "id": "d191",
+  "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 900 seconds, watched in a window. Keep the edge, but leave out the captions that name each call.",
+  "tool": "start",
+  "args": {
+   "conf": "{anchor}opt/dosfury/fury.conf",
+   "cwd": "{anchor}opt/dosfury",
+   "session_seconds": 900,
+   "shared": true,
+   "overlay": {
+    "calls": false
+   }
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "d191: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"overlay\": {\"calls\": false}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d191: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"overlay\": {\"calls\": false}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d191: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"overlay\": {\"calls\": false}}}"
+   ],
+   "right": true
+  }
+ ]
+}

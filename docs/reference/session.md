@@ -72,7 +72,7 @@ The build has the debugger, and it has heavy debugging, the option `trace` needs
 - `debugger_commands`: The optional debugger commands the build has; several tools need one. Left out when it has none.
 - `debugger_commands_missing`: Each command the build lacks (`command`) with the tools that stop working without it (`disables`). Left out when none is missing.
 
-<details><summary>All 8 reply fields</summary>
+<details><summary>All 9 reply fields</summary>
 
 - `binary` (string)
 - `binary_origin` (string)
@@ -80,6 +80,7 @@ The build has the debugger, and it has heavy debugging, the option `trace` needs
 - `debugger_commands` (array)
 - `debugger_commands_missing` (array)
 - `heavy_debug` (boolean)
+- `presence_layers` (array of string)
 - `tools` (array)
 - `version` (string or object)
 
@@ -101,6 +102,8 @@ It is refused while a session is open: reading the version starts a second emula
 
 `tools` lists this server's tools by name.
 
+`presence_layers` lists the layers of `start`'s `overlay` the build can draw: all five, or the border and the pointer from an older build. It is left out without the `PRESENCE` command.
+
 </details>
 
 ### Related tools
@@ -120,7 +123,8 @@ the PATH's `dosbox-x`; a named build that fails is refused.
 Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` and a freeze
 watch need it), `debugger_commands` (which of `RUNSTATE`, `STEPIN`, `SAVESTATE`, `LOADSTATE`, `PRESENCE`, `VGAMEMDUMP`, `BPIF`, `CAPTURE`, `TAP`, `PORTINFO`, `DOSTRACE`, `PIC`, `A20`, `MEMDUMPLIN` the build's debugger has;
 omitted when none), `debugger_commands_missing` (each one it lacks, with the tools that
-command disables; omitted when none is missing).
+command disables; omitted when none is missing), `presence_layers` (the layers of `start`'s
+`overlay` its `PRESENCE` draws; omitted without the command).
 ```
 
 </details>
@@ -135,8 +139,10 @@ Start DOSBox-X from your conf file and leave the machine stopped at the debugger
 start(conf="", cwd="", session_seconds=null, shared=false, display=null, fullscreen=null, size=null,
     flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="",
     plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null,
-    presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="",
-    base_from="program", profile="")
+    presence=true,
+    overlay={"calls": true, "keys": true, "pointer": true, "pause": true, "place": "auto"},
+    dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program",
+    profile="")
 ```
 
 ### Try it
@@ -228,6 +234,7 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
 - `binary` (string, default `""`): The DOSBox-X to run: an executable, or on macOS a `.app` bundle holding one. Left empty, `DOSBOX_X_BINARY`, else the `dosbox-x` on the PATH.
 - `background` (boolean, optional): `true` opens the window behind your other windows and leaves the keyboard focus where it is; `false` opens it in front. Left out, behind unless `shared`.
 - `presence` (boolean, default `true`): Draws a border around the emulator's window while the session is open, brighter while a call runs the machine. `false` leaves it off.
+- `overlay` (any, default `{"calls": true, "keys": true, "pointer": true, "pause": true, "place": "auto"}`): The layers drawn over the border, each on unless `false`: `calls` names each call, `keys` the keys held, `pointer` the pointer, `pause` a stopped machine. `place` is `top`, `bottom`, `auto`.
 - `dos_calls` (boolean, default `false`): `true` records every DOS call (INT 21h) the program makes, for `log(channel="dos")`. It needs a build whose debugger has `DOSTRACE`.
 - `log_categories` (object, optional): DOSBox-X's own `[log]` categories, each with its level, written into `logfile`. It needs `logfile`.
 - `guest_files` (array of string, optional): Up to 16 files on the host that the program is expected to leave. `guest_file` and `close` say what became of each.
@@ -244,7 +251,7 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
 - `kept`: Says that this start's arguments were saved as a start profile for `promote`, the tool that writes one into your repository's `.scry/` folder.
 - `start`: With `plan`: the start's own fields sit here, beside the plan's account of its steps.
 
-<details><summary>All 56 reply fields</summary>
+<details><summary>All 57 reply fields</summary>
 
 - `activation` (string)
 - `asked_display` (integer)
@@ -288,6 +295,7 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
 - `log_categories` (object)
 - `logfile` (string)
 - `operations` (array)
+- `overlay` (object)
 - `pid` (integer)
 - `presence` (boolean or object)
 - `ready_after_s` (number)
@@ -390,7 +398,7 @@ On Windows a start in front brings its window forward once it is up, and `window
 - A file a tool reads must be a regular file, never a folder. A tool never writes over a file unless its entry says it replaces one, as `logfile` does.
 - `logfile` is written under a name of lowercase words joined by hyphens, as every file the server writes, so a capital or a `%` in it is replaced.
 - At `debug` a `log_categories` category can write a line per event: `files` writes one per read once the `[log]` setting `fileio` is on. Turn on only what the question needs.
-- The border never changes another reply: a failure to draw it shows only in `presence`, in `start` and `status`.
+- The border never changes another reply: a failure to draw it shows only in `presence`, in `start` and `status`; `overlay` says which of its layers are drawn.
 - While the debugger does not answer, the border is not redrawn. It catches up once a call is answered.
 
 </details>
@@ -469,6 +477,8 @@ captures_dir: Where the emulator writes a capture it takes itself; empty, `captu
 background: Launch behind, keeping the caller's focus, or in front; omitted it is behind unless `shared`.
 
 presence: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
+
+overlay: Layers drawn over the presence edge, each on by default: `calls` a caption naming each call and its arguments, abbreviated (paths by their last name); `keys` the keys or fields held down; `pointer` the guest's mouse pointer; `pause` a mark while the session holds the machine stopped. `place`: where the captions go, `top`, `bottom`, or `auto`, the band of the picture that shows less. Ignored with `presence=false`.
 ```
 
 </details>
@@ -556,7 +566,7 @@ Takes no argument.
 - `pending`: What waits for the next stop: `arm`, the breakpoints declared while the program ran; a `disarm` count; and whether a `symbols_load` or a `base_remeasure` is queued.
 - `symbols_held`: Present while a `start` symbol table waits for its program: its `path`, its `base_from` and `waiting_for`, the program's file name.
 
-<details><summary>All 18 reply fields</summary>
+<details><summary>All 19 reply fields</summary>
 
 - `bound_s` (number)
 - `bundle` (string)
@@ -568,6 +578,7 @@ Takes no argument.
 - `cpu_mode` (string or object)
 - `declarations` (object)
 - `elapsed_s` (number)
+- `overlay` (object)
 - `pc` (string or object)
 - `pending` (object)
 - `pid` (integer)
@@ -596,6 +607,7 @@ At a stop it also sets the breakpoints that were declared while the program ran,
 - `program` is read at the stops that answer a call, never while the program runs, so a session that never stops never learns it.
 
 - `presence` is `true` when the border is drawn, `false` when it was asked off, or the reason it is not drawn.
+- `overlay` comes with a drawn border: the `layers` drawn, the `place` of the captions and, per layer the build cannot draw, `lacking` with the reason.
 - `declarations` counts the server's own saved `breakpoints`, `watches` and `regpoints` (stops on a register condition).
 - `last_stop` also carries `stop_seq` and `wall_at`.
 - `pid`, `conf`, `conf_digest`, `watched`, `bound_s`, `elapsed_s`, `captures`, `state_dir` and `bundle` describe the process, as `start` set it up.

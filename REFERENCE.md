@@ -49,7 +49,16 @@ A session is one DOSBox-X that `start` launches, stopped at its debugger, and th
 
 While a session is live the emulator's window has an orange edge, so a person at the computer knows it is in use. It is bright while a call that can change the program is in progress, and dim otherwise, even over a program `resume` left running. Once `send_mouse` has moved the program's pointer, an orange pointer marks it.
 
-The emulator draws both after a frame is handed to capture, so no capture shows them and no tool that reads the screen sees them.
+Over the edge the window can also show, each layer on unless `start`'s `overlay` turns it off:
+
+- **`calls`**: a caption naming each call and its arguments, shortened (a path by its last name), tinted by what the call did.
+- **`keys`**: the keys held down, as keycaps.
+- **`pointer`**: the guest's mouse pointer.
+- **`pause`**: a mark while the session holds the machine stopped.
+
+`place` puts the captions at the `top` or the `bottom`, or `auto`, on the band of the picture that shows less. A build that predates the captions draws the edge and the pointer only, and the `overlay` of `start` and `status` names each layer it cannot draw and why. `build_check` says which layers a build draws before any session starts.
+
+The emulator draws all of it after a frame is handed to capture, so no capture shows it and no tool that reads the screen sees it.
 
 The tools: [Session](docs/reference/session.md).
 
@@ -382,7 +391,7 @@ Some tools need a debugger command a build may lack. `build_check` and `start` l
 | `RUNSTATE` | Whether the program is stopped, and the frame count behind each stop's `frame` and `perform`'s `until_frame` | `run_to`, `run_for`, `trace`, `screen_wait`, `record`, `audio_record`, `step(mode="over")`, `resume` with `seconds`, input to a stopped machine, any reading after a `resume` |
 | `STEPIN` | One instruction run | `step` |
 | `SAVESTATE`, `LOADSTATE` | A saved state | `state_write` |
-| `PRESENCE` | The orange edge | the edge itself |
+| `PRESENCE` | The orange edge, the pointer and, from a build that has them, the captions, keycaps and pause mark | the edge, and `start`'s `overlay` |
 | `BPIF` | A stop on a register condition | `regpoint_add` |
 | `VGAMEMDUMP` | Video memory as the card holds it | `screen_view`, `screen_signature` in a planar, unchained or linear mode |
 | `CAPTURE` | A sound or video capture between stops | `record`, `audio_record` |

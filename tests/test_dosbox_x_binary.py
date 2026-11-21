@@ -162,3 +162,26 @@ def test_a_bare_pic_or_a20_word_in_a_build_is_not_the_debuggers_command(tmp_path
     carries = tmp_path / "dosbox-x"
     carries.write_bytes(b"\0MASKIRQ\0\0ACKIRQ\0 A20 gate is %s\n")
     assert {"PIC", "A20"} <= set(binaries.debugger_commands(str(carries)))
+
+
+@pytest.mark.parametrize("marks, layers", [
+    (b"\0PRESENCE\0", ["edge", "pointer"]),
+    (b"\0PRESENCE\0\0layers\0\0cap_scale\0", ["edge", "pointer", "keys", "calls", "pause"]),
+    (b"\0cap_scale\0", []),
+    (b"a word of a build that has no command", []),
+])
+def test_the_layers_a_build_draws_are_read_off_the_literal_of_protocol_3(
+        tmp_path: Path, marks: bytes, layers: list[str]) -> None:
+    mine = tmp_path / "dosbox-x"
+    mine.write_bytes(marks)
+    assert binaries.presence_layers(str(mine), binaries.debugger_commands(str(mine))) == layers
+
+
+@pytest.mark.parametrize("commands, layers", [(["PRESENCE"], ["edge", "pointer"]), (["PIC"], None)])
+def test_build_check_lists_the_layers_the_build_draws_and_omits_them_without_the_command(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, commands: list[str],
+        layers: list[str] | None) -> None:
+    mine = build(tmp_path)
+    monkeypatch.setattr(binaries, "debugger_commands", lambda _path: commands)
+    got = cast(dict[str, Any], server.build_check(binary=str(mine)))
+    assert got.get("presence_layers") == layers, got

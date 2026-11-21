@@ -51,7 +51,7 @@
     "It is refused while a session is open: reading the version starts a second emulator, which a build that does not know the option runs until the check gives up. The answer is about the build, never about a reading, and `debugger` is always `true`: a build without one is refused."
    ],
    "why_more": [
-    "`tools` lists this server's tools by name."
+    "`tools` lists this server's tools by name.\n\n`presence_layers` lists the layers of `start`'s `overlay` the build can draw: all five, or the border and the pointer from an older build. It is left out without the `PRESENCE` command."
    ],
    "related": [
     "start",
@@ -105,6 +105,7 @@
     "binary": "The DOSBox-X to run: an executable, or on macOS a `.app` bundle holding one. Left empty, `DOSBOX_X_BINARY`, else the `dosbox-x` on the PATH.",
     "background": "`true` opens the window behind your other windows and leaves the keyboard focus where it is; `false` opens it in front. Left out, behind unless `shared`.",
     "presence": "Draws a border around the emulator's window while the session is open, brighter while a call runs the machine. `false` leaves it off.",
+    "overlay": "The layers drawn over the border, each on unless `false`: `calls` names each call, `keys` the keys held, `pointer` the pointer, `pause` a stopped machine. `place` is `top`, `bottom`, `auto`.",
     "dos_calls": "`true` records every DOS call (INT 21h) the program makes, for `log(channel=\"dos\")`. It needs a build whose debugger has `DOSTRACE`.",
     "log_categories": "DOSBox-X's own `[log]` categories, each with its level, written into `logfile`. It needs `logfile`.",
     "guest_files": "Up to 16 files on the host that the program is expected to leave. `guest_file` and `close` say what became of each.",
@@ -159,7 +160,7 @@
     "**What else the reply says.**",
     "- `captures_dir` and `state_dir` are created with their parents. `state_dir` in the reply is the folder in use.\n- `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background` and `presence` say what the launch used.\n- A `version` the build would not give is `available: false` with a `why`, and never fails the start.\n- `rearm_refused` says why saved raw breakpoints could not be set again.\n- No free drive letter for the input helper is refused before anything starts.",
     "**Files, the emulator's log and the border.**",
-    "- A file a tool reads must be a regular file, never a folder. A tool never writes over a file unless its entry says it replaces one, as `logfile` does.\n- `logfile` is written under a name of lowercase words joined by hyphens, as every file the server writes, so a capital or a `%` in it is replaced.\n- At `debug` a `log_categories` category can write a line per event: `files` writes one per read once the `[log]` setting `fileio` is on. Turn on only what the question needs.\n- The border never changes another reply: a failure to draw it shows only in `presence`, in `start` and `status`.\n- While the debugger does not answer, the border is not redrawn. It catches up once a call is answered."
+    "- A file a tool reads must be a regular file, never a folder. A tool never writes over a file unless its entry says it replaces one, as `logfile` does.\n- `logfile` is written under a name of lowercase words joined by hyphens, as every file the server writes, so a capital or a `%` in it is replaced.\n- At `debug` a `log_categories` category can write a line per event: `files` writes one per read once the `[log]` setting `fileio` is on. Turn on only what the question needs.\n- The border never changes another reply: a failure to draw it shows only in `presence`, in `start` and `status`; `overlay` says which of its layers are drawn.\n- While the debugger does not answer, the border is not redrawn. It catches up once a call is answered."
    ],
    "related": [
     "build_check",
@@ -201,7 +202,7 @@
    ],
    "why_more": [
     "- `conf_changed_on_disk`: the conf file changed since `start`. It is `false` too when the file is gone.\n- `image_changed_on_disk`: the executable the loaded symbol table was checked against was written since, as a rebuild under an open session does.\n- `output_bytes_dropped`: the emulator printed more than the server keeps.\n- `program`: the program that ran inside DOS is gone. It is `state: exited` with `name` and `seen_by`, or `state: fault` with `fault`, the message DJGPP writes as a program dies.\n- `program` is read at the stops that answer a call, never while the program runs, so a session that never stops never learns it.",
-    "- `presence` is `true` when the border is drawn, `false` when it was asked off, or the reason it is not drawn.\n- `declarations` counts the server's own saved `breakpoints`, `watches` and `regpoints` (stops on a register condition).\n- `last_stop` also carries `stop_seq` and `wall_at`.\n- `pid`, `conf`, `conf_digest`, `watched`, `bound_s`, `elapsed_s`, `captures`, `state_dir` and `bundle` describe the process, as `start` set it up."
+    "- `presence` is `true` when the border is drawn, `false` when it was asked off, or the reason it is not drawn.\n- `overlay` comes with a drawn border: the `layers` drawn, the `place` of the captions and, per layer the build cannot draw, `lacking` with the reason.\n- `declarations` counts the server's own saved `breakpoints`, `watches` and `regpoints` (stops on a register condition).\n- `last_stop` also carries `stop_seq` and `wall_at`.\n- `pid`, `conf`, `conf_digest`, `watched`, `bound_s`, `elapsed_s`, `captures`, `state_dir` and `bundle` describe the process, as `start` set it up."
    ],
    "related": [
     "start",
