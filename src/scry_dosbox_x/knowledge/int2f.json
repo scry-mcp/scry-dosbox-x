@@ -23,7 +23,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0800",
           "cites": "    case 0x0800:    /* DRIVER.SYS function */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K D-2F0800",
+            "line": "INT 2F U - DRIVER.SYS support - INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0800",
+            "line": "    case 0x0800:    /* DRIVER.SYS function */"
+          }
+        ],
+        "digest": "6f6a667306267d2df99859bbf1d43ba1ac9d54acba009b59ae50bb737b730aa4"
+      }
     },
     {
       "key": "0x2F/0x08/0x01",
@@ -42,7 +57,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0801",
           "cites": "    case 0x0801:    /* DRIVER.SYS function */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K D-2F0801",
+            "line": "INT 2F U - DRIVER.SYS support - ADD NEW BLOCK DEVICE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0801",
+            "line": "    case 0x0801:    /* DRIVER.SYS function */"
+          }
+        ],
+        "digest": "2d8f981fb9959dfe37de8130b1df080a8c00f56eacf84eebc2dafba281f765b1"
+      }
     },
     {
       "key": "0x2F/0x08/0x02",
@@ -61,7 +91,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0802",
           "cites": "    case 0x0802:    /* DRIVER.SYS function */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K D-2F0802",
+            "line": "INT 2F U - DRIVER.SYS support - EXECUTE DEVICE DRIVER REQUEST"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0802",
+            "line": "    case 0x0802:    /* DRIVER.SYS function */"
+          }
+        ],
+        "digest": "ff0e3a664e588ef5ca4426d4e13c79bad52872bab81ff9b25d94800b6b7aadea"
+      }
     },
     {
       "key": "0x2F/0x08/0x03",
@@ -80,7 +125,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0803",
           "cites": "    case 0x0803:    /* DRIVER.SYS function */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K D-2F0803",
+            "line": "INT 2F U - DOS 4.0+ DRIVER.SYS support - GET DRIVE DATA TABLE LIST"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x0803",
+            "line": "    case 0x0803:    /* DRIVER.SYS function */"
+          }
+        ],
+        "digest": "dd3fb8283ccb701ca34e76a2635d36032a1355221435b5b31c3c95a17887e11d"
+      }
     },
     {
       "key": "0x2F/0x10/0x00",
@@ -98,7 +158,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1000",
           "cites": "    case 0x1000:    /* SHARE.EXE installation check */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K f-2F1000",
+            "line": "INT 2F - SHARE - INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1000",
+            "line": "    case 0x1000:    /* SHARE.EXE installation check */"
+          }
+        ],
+        "digest": "fba48e74e3ae2a644cf1bae50b63712e389cf093975a3874fa7887f6935c232a"
+      }
     },
     {
       "key": "0x2F/0x12/0x16",
@@ -117,7 +192,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1216",
           "cites": "\tcase 0x1216:\t/* GET ADDRESS OF SYSTEM FILE TABLE ENTRY */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K D-2F1216",
+            "line": "INT 2F U - DOS 3.0+ internal - GET ADDRESS OF SYSTEM FILE TABLE ENTRY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1216",
+            "line": "\tcase 0x1216:\t/* GET ADDRESS OF SYSTEM FILE TABLE ENTRY */"
+          }
+        ],
+        "digest": "b1cd9547c9fa56340282f8d5f054ba51d42c9ebbcea9f3eecdecb38cd9eec6e2"
+      }
     },
     {
       "key": "0x2F/0x13/0x00",
@@ -130,7 +220,18 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1300",
           "cites": "    case 0x1300:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1300",
+            "line": "    case 0x1300:"
+          }
+        ],
+        "digest": "232a3ff093cd5a17ef21076e7ff0420b8d337cd86467f6197ee538ed5badda00"
+      }
     },
     {
       "key": "0x2F/0x13/0x02",
@@ -143,7 +244,18 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1302",
           "cites": "    case 0x1302:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1302",
+            "line": "    case 0x1302:"
+          }
+        ],
+        "digest": "af4b0a0c36fd4ab0ec794ccf563795224801d8647b1668b430ac0e6042454c3f"
+      }
     },
     {
       "key": "0x2F/0x16/0x00",
@@ -161,7 +273,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1600",
           "cites": "    case 0x1600:    /* Windows enhanced mode installation check */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F1600",
+            "line": "INT 2F - MS Windows - WINDOWS ENHANCED MODE INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1600",
+            "line": "    case 0x1600:    /* Windows enhanced mode installation check */"
+          }
+        ],
+        "digest": "7538495a94ccf023b43a37f98264b6dcbd89095bfded0232a8efd5dc84443e2d"
+      }
     },
     {
       "key": "0x2F/0x16/0x05",
@@ -179,7 +306,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1605",
           "cites": "\tcase 0x1605:\t/* Windows init broadcast */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F1605",
+            "line": "INT 2F C - MS Windows - WINDOWS ENHANCED MODE & 286 DOSX INIT BROADCAST"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1605",
+            "line": "\tcase 0x1605:\t/* Windows init broadcast */"
+          }
+        ],
+        "digest": "50a184c384263f41da2f871cbd77b8b14b0ab4d3baf584ffeae9fd5e303f2b5c"
+      }
     },
     {
       "key": "0x2F/0x16/0x06",
@@ -197,7 +339,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1606",
           "cites": "\tcase 0x1606:\t/* Windows exit broadcast */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F1606",
+            "line": "INT 2F C - MS Windows - WINDOWS ENHANCED MODE & 286 DOSX EXIT BROADCAST"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1606",
+            "line": "\tcase 0x1606:\t/* Windows exit broadcast */"
+          }
+        ],
+        "digest": "fc4c1fd9cf61bd66457bd841d72e44eb0313344ce526f4a245a4fc4d0f59fe3f"
+      }
     },
     {
       "key": "0x2F/0x16/0x07",
@@ -233,7 +390,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x160A",
           "cites": "\tcase 0x160A:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F160A",
+            "line": "INT 2F - MS Windows 3.1 - IDENTIFY WINDOWS VERSION AND TYPE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x160A",
+            "line": "\tcase 0x160A:"
+          }
+        ],
+        "digest": "460b1616bfb4ad68eb898e71738d683f954f9c225d5330a27cbd7835b478f9c5"
+      }
     },
     {
       "key": "0x2F/0x16/0x11",
@@ -251,7 +423,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1611",
           "cites": "    case 0x1611:    /* Get shell parameters */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L D-2F1611",
+            "line": "INT 2F U - MS-DOS 7 kernel - GET SHELL PARAMETERS"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1611",
+            "line": "    case 0x1611:    /* Get shell parameters */"
+          }
+        ],
+        "digest": "86123b36a34ded4019ae8ad414e08887e2eab0c799a7a607ff308bc67c272c4c"
+      }
     },
     {
       "key": "0x2F/0x16/0x12",
@@ -270,7 +457,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1612",
           "cites": "    case 0x1612:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L D-2F1612",
+            "line": "INT 2F U - MS-DOS 7 kernel - GET ???"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1612",
+            "line": "    case 0x1612:"
+          }
+        ],
+        "digest": "f36508dd137cfcfa91e40468a6862501ebe683224e336757bcaf5b859afbd892"
+      }
     },
     {
       "key": "0x2F/0x16/0x13",
@@ -289,7 +491,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1613",
           "cites": "    case 0x1613:    /* Get SYSTEM.DAT path */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L D-2F1613",
+            "line": "INT 2F - MS-DOS 7 kernel - GET SYSTEM.DAT (REGISTRY FILE) PATHNAME"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1613",
+            "line": "    case 0x1613:    /* Get SYSTEM.DAT path */"
+          }
+        ],
+        "digest": "6f4166832b8dae46cfa44ef773bb3e5254e31ec27ed2fd0dcfcd26cbfb38ba44"
+      }
     },
     {
       "key": "0x2F/0x16/0x14",
@@ -326,7 +543,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1680",
           "cites": "\tcase 0x1680:\t/*  RELEASE CURRENT VIRTUAL MACHINE TIME-SLICE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F1680",
+            "line": "INT 2F - MS Windows, DPMI, various - RELEASE CURRENT VIRTUAL MACHINE TIME-SLICE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1680",
+            "line": "\tcase 0x1680:\t/*  RELEASE CURRENT VIRTUAL MACHINE TIME-SLICE */"
+          }
+        ],
+        "digest": "c12efa14771a4c672d7f9b66fda95f619f2361e5da04188459d51dbd1882f544"
+      }
     },
     {
       "key": "0x2F/0x16/0x89",
@@ -344,7 +576,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1689",
           "cites": "\tcase 0x1689:\t/*  Kernel IDLE CALL */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F1689",
+            "line": "INT 2F U - MS Windows 3.0+ - KERNEL IDLE CALL"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1689",
+            "line": "\tcase 0x1689:\t/*  Kernel IDLE CALL */"
+          }
+        ],
+        "digest": "fa0d3164b650a3949acca645386460bce0bcbd579a05ee393e41e905103f5d30"
+      }
     },
     {
       "key": "0x2F/0x16/0x8F",
@@ -380,7 +627,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1700",
           "cites": "\tcase 0x1700:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F1700",
+            "line": "INT 2F - MS Windows \"WINOLDAP\" - IDENTIFY WinOldAp VERSION"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1700",
+            "line": "\tcase 0x1700:"
+          }
+        ],
+        "digest": "157d63fd0fda9ddc46d92cdf557984e8723d5ef2c6518c6de5ec2d3492aa92a9"
+      }
     },
     {
       "key": "0x2F/0x17/0x01",
@@ -398,7 +660,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1701",
           "cites": "\tcase 0x1701:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F1701",
+            "line": "INT 2F - MS Windows \"WINOLDAP\" - OPEN CLIPBOARD"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1701",
+            "line": "\tcase 0x1701:"
+          }
+        ],
+        "digest": "2cfb03eeb9c3912038870a810cfc92a720bcedca9284f6ff165df184b853db58"
+      }
     },
     {
       "key": "0x2F/0x17/0x02",
@@ -416,7 +693,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1702",
           "cites": "\tcase 0x1702:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F1702",
+            "line": "INT 2F - MS Windows \"WINOLDAP\" - EMPTY CLIPBOARD"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1702",
+            "line": "\tcase 0x1702:"
+          }
+        ],
+        "digest": "ee2ba7eac4b9da710c15080a5c5859e978d04ad955332e2614b8836747fbd5de"
+      }
     },
     {
       "key": "0x2F/0x17/0x03",
@@ -435,7 +727,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1703",
           "cites": "\tcase 0x1703:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F1703",
+            "line": "INT 2F - MS Windows \"WINOLDAP\" - SET CLIPBOARD DATA"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1703",
+            "line": "\tcase 0x1703:"
+          }
+        ],
+        "digest": "95eefee1cdb816713cbc0ce54968df3699576b2ac25605f73397dac6ad157c60"
+      }
     },
     {
       "key": "0x2F/0x17/0x04",
@@ -471,7 +778,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1705",
           "cites": "\tcase 0x1705:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F1705",
+            "line": "INT 2F - MS Windows \"WINOLDAP\" - GET CLIPBOARD DATA"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1705",
+            "line": "\tcase 0x1705:"
+          }
+        ],
+        "digest": "b787b79aa9c44bed4ed44ee3aad233e7e7171c3de548c8e84dd036f041ef1450"
+      }
     },
     {
       "key": "0x2F/0x17/0x08",
@@ -489,7 +811,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1708",
           "cites": "\tcase 0x1708:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F1708",
+            "line": "INT 2F - MS Windows \"WINOLDAP\" - CloseClipboard"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1708",
+            "line": "\tcase 0x1708:"
+          }
+        ],
+        "digest": "c425cec22f2ce8e8d2ef43ad0ccd02abbecd457bf46ef5390ba96f593a68c423"
+      }
     },
     {
       "key": "0x2F/0x1A/0x00",
@@ -507,7 +844,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1a00",
           "cites": "    case 0x1a00:    /* ANSI.SYS installation check (MS-DOS 4.0 or higher) */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L V-2F1A00",
+            "line": "INT 2F - DOS 4.0+ ANSI.SYS - INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x1a00",
+            "line": "    case 0x1a00:    /* ANSI.SYS installation check (MS-DOS 4.0 or higher) */"
+          }
+        ],
+        "digest": "340abe4f2fe04258d6d593a0fc3200601d8ef2d1a5ef3679d82c05f3b2b0ff0c"
+      }
     },
     {
       "key": "0x2F/0x46/0x80",
@@ -525,7 +877,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4680",
           "cites": "    case 0x4680:    /* Windows v3.0 check */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L W-2F4680",
+            "line": "INT 2F U - MS Windows v3.0 - INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4680",
+            "line": "    case 0x4680:    /* Windows v3.0 check */"
+          }
+        ],
+        "digest": "01d9be5929b44ffb0d0c426e63d1bb83a154f2f64351c8ff0c8f40b42fc90369"
+      }
     },
     {
       "key": "0x2F/0x4A/0x01",
@@ -543,7 +910,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a01",
           "cites": "\tcase 0x4a01: {\t/* Query free hma space */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L D-2F4A01",
+            "line": "INT 2F - DOS 5+ - QUERY FREE HMA SPACE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a01",
+            "line": "\tcase 0x4a01: {\t/* Query free hma space */"
+          }
+        ],
+        "digest": "3dad761163c0b341498f45edb6cc60de6470ad532d84527d8b5137db49c7b023"
+      }
     },
     {
       "key": "0x2F/0x4A/0x02",
@@ -561,7 +943,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a02",
           "cites": "\tcase 0x4a02: {\t/* ALLOCATE HMA SPACE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L D-2F4A02",
+            "line": "INT 2F - DOS 5+ - ALLOCATE HMA SPACE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a02",
+            "line": "\tcase 0x4a02: {\t/* ALLOCATE HMA SPACE */"
+          }
+        ],
+        "digest": "d6d200c37fbc76d0ff4c9e1385f9096f7335c85463b2001a3e5a05cb5daee770"
+      }
     },
     {
       "key": "0x2F/0x4A/0x10",
@@ -580,7 +977,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a10",
           "cites": "    case 0x4a10: { /* Microsoft SmartDrive (SMARTDRV) API */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L c-2F4A10BX0000@1",
+            "line": "INT 2F - SMARTDRV v4.00+ - INSTALLATION CHECK AND HIT RATIOS"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a10",
+            "line": "    case 0x4a10: { /* Microsoft SmartDrive (SMARTDRV) API */"
+          }
+        ],
+        "digest": "69322d9fa2ab4644b72eed949fee94b59f3c88c48871a024db8a91b34c0687d4"
+      }
     },
     {
       "key": "0x2F/0x4A/0x11",
@@ -599,7 +1011,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a11",
           "cites": "    case 0x4a11: { /* Microsoft DoubleSpace (DBLSPACE.BIN) API */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L k-2F4A11BX0000",
+            "line": "INT 2F - DBLSPACE.BIN - \"GetVersion\" - INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a11",
+            "line": "    case 0x4a11: { /* Microsoft DoubleSpace (DBLSPACE.BIN) API */"
+          }
+        ],
+        "digest": "297c0508a11ac9401c5a945877d9f7d75607f567c79146291aaff2b468ce9b9f"
+      }
     },
     {
       "key": "0x2F/0x4A/0x16",
@@ -618,7 +1045,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a16",
           "cites": "    case 0x4a16:    /* Open bootlog */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L D-2F4A16",
+            "line": "INT 2F U - Windows95 - OPEN BOOT LOG"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a16",
+            "line": "    case 0x4a16:    /* Open bootlog */"
+          }
+        ],
+        "digest": "f92d6bbc92577f2f2da1eb4ae429d12c6c3284d8044792f3636d3a9e9f273d89"
+      }
     },
     {
       "key": "0x2F/0x4A/0x17",
@@ -637,7 +1079,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a17",
           "cites": "    case 0x4a17:    /* Write bootlog */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L D-2F4A17",
+            "line": "INT 2F U - Windows95 - WRITE TO BOOT LOG"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a17",
+            "line": "    case 0x4a17:    /* Write bootlog */"
+          }
+        ],
+        "digest": "a8bf10a843b60b8b5bab53e9b36a8d8d6db6ddb47d1d2e3c135dbde9dfc2dc95"
+      }
     },
     {
       "key": "0x2F/0x4A/0x18",
@@ -656,7 +1113,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a18",
           "cites": "    case 0x4a18:    /* Close bootlog */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L D-2F4A18",
+            "line": "INT 2F U - Windows95 - CLOSE BOOT LOG"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a18",
+            "line": "    case 0x4a18:    /* Close bootlog */"
+          }
+        ],
+        "digest": "3a4894db62c89949301311c6356c5eafb45c9d99ee9d17c5257b7cbaab3fa57b"
+      }
     },
     {
       "key": "0x2F/0x4A/0x33",
@@ -674,7 +1146,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a33",
           "cites": "\tcase 0x4a33:\t/* Check MS-DOS Version 7 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L D-2F4A33",
+            "line": "INT 2F - Windows95 - CHECK MS-DOS VERSION 7"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0x4a33",
+            "line": "\tcase 0x4a33:\t/* Check MS-DOS Version 7 */"
+          }
+        ],
+        "digest": "4a854e0bca3633a2cd2b8c6be8d32b367e6a9384401b307db2defe4981d05059"
+      }
     },
     {
       "key": "0x2F/0xB8/0x00",
@@ -692,7 +1179,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0xb800",
           "cites": "\tcase 0xb800:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t// Network - installation check"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.M N-2FB800",
+            "line": "INT 2F - NETWORK - INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0xb800",
+            "line": "\tcase 0xb800:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t// Network - installation check"
+          }
+        ],
+        "digest": "e8bed930cd3c8cfbc40bd83ec35bc1c8957d7060fdbf91f48f683ad95b497928"
+      }
     },
     {
       "key": "0x2F/0xB8/0x09",
@@ -710,7 +1212,22 @@
           "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0xb809",
           "cites": "\tcase 0xb809:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t// Network - get version"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.M N-2FB809@1",
+            "line": "INT 2F - NETWORK - LANtastic, NetWare Lite - GET VERSION"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_misc.cpp DOS_MultiplexFunctions case 0xb809",
+            "line": "\tcase 0xb809:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t// Network - get version"
+          }
+        ],
+        "digest": "690c9f48cceb2851677e7bf5cfc7b0758149e4065a628a35522349f2913a0c36"
+      }
     },
     {
       "key": "0x2F/0x43/0x00",
@@ -728,7 +1245,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp multiplex_xms case 0x4300",
           "cites": "\tcase 0x4300:\t\t\t\t\t/* XMS installed check */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L m-2F4300",
+            "line": "INT 2F - EXTENDED MEMORY SPECIFICATION (XMS) v2+ - INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp multiplex_xms case 0x4300",
+            "line": "\tcase 0x4300:\t\t\t\t\t/* XMS installed check */"
+          }
+        ],
+        "digest": "2230c86934c0cda1a34330731b70354415c22c1f34cad23bf1d5f7fb366fb0ac"
+      }
     },
     {
       "key": "0x2F/0x43/0x10",
@@ -746,7 +1278,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp multiplex_xms case 0x4310",
           "cites": "\tcase 0x4310:\t\t\t\t\t/* XMS handler seg:offset */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L m-2F4310@1",
+            "line": "INT 2F - EXTENDED MEMORY SPECIFICATION (XMS) v2+ - GET DRIVER ADDRESS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp multiplex_xms case 0x4310",
+            "line": "\tcase 0x4310:\t\t\t\t\t/* XMS handler seg:offset */"
+          }
+        ],
+        "digest": "d0726aacc393f61dd22d49c4df442f61bde3206af09efd4103544e8532cad124"
+      }
     },
     {
       "key": "0x2F/0x15/0x00",
@@ -765,7 +1312,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1500",
           "cites": "\t\tcase 0x1500:\t/* Install check */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F1500BX0000",
+            "line": "INT 2F - CD-ROM - INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1500",
+            "line": "\t\tcase 0x1500:\t/* Install check */"
+          }
+        ],
+        "digest": "ab70d8c7895f0ee8a4134c5852db06799140d59a932de7a23858defcc3645f47"
+      }
     },
     {
       "key": "0x2F/0x15/0x01",
@@ -783,7 +1345,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1501",
           "cites": "\t\tcase 0x1501:\t/* Get cdrom driver info */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F1501",
+            "line": "INT 2F - CD-ROM - GET DRIVE DEVICE LIST"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1501",
+            "line": "\t\tcase 0x1501:\t/* Get cdrom driver info */"
+          }
+        ],
+        "digest": "4a242e832bc0877f88fe78d6fcd952d5f54c9fb53a7bb4d6d03b451511563e20"
+      }
     },
     {
       "key": "0x2F/0x15/0x02",
@@ -801,7 +1378,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1502",
           "cites": "\t\tcase 0x1502:\t/* Get Copyright filename */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F1502",
+            "line": "INT 2F - CD-ROM - GET COPYRIGHT FILE NAME"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1502",
+            "line": "\t\tcase 0x1502:\t/* Get Copyright filename */"
+          }
+        ],
+        "digest": "9965ef422771fa465ea580d2f36a4c0bf61df77a791e43325076b1807d96dc6a"
+      }
     },
     {
       "key": "0x2F/0x15/0x03",
@@ -819,7 +1411,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1503",
           "cites": "\t\tcase 0x1503:\t/* Get Abstract filename */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F1503",
+            "line": "INT 2F - CD-ROM - GET ABSTRACT FILE NAME"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1503",
+            "line": "\t\tcase 0x1503:\t/* Get Abstract filename */"
+          }
+        ],
+        "digest": "a9664fb2c72cc39eec0c0ce9ce2cbd9f7d142d49a8c5d0facae8bd6c7f0a8e77"
+      }
     },
     {
       "key": "0x2F/0x15/0x04",
@@ -837,7 +1444,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1504",
           "cites": "\t\tcase 0x1504:\t/* Get Documentation filename */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F1504",
+            "line": "INT 2F - CD-ROM - GET BIBLIOGRAPHIC DOC FILE NAME"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1504",
+            "line": "\t\tcase 0x1504:\t/* Get Documentation filename */"
+          }
+        ],
+        "digest": "8e203c3e4848be87a07ddd9d43622ca36d69ae8089d424381a7a33367092a62f"
+      }
     },
     {
       "key": "0x2F/0x15/0x05",
@@ -856,7 +1478,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1505",
           "cites": "\t\tcase 0x1505: {\t// read vtoc"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F1505",
+            "line": "INT 2F - CD-ROM - READ VTOC"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1505",
+            "line": "\t\tcase 0x1505: {\t// read vtoc"
+          }
+        ],
+        "digest": "34e9a1ad87308df049b1e2bc1689b3cecadb61a17edacc4980f657b9abd0d6c3"
+      }
     },
     {
       "key": "0x2F/0x15/0x06",
@@ -874,7 +1511,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1506",
           "cites": "\t\tcase 0x1506:\t/* Debugging on */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F1506",
+            "line": "INT 2F - CD-ROM - TURN DEBUGGING ON"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1506",
+            "line": "\t\tcase 0x1506:\t/* Debugging on */"
+          }
+        ],
+        "digest": "0a2f43db2568e709d4f3513dcc1c6f9cbfe89afc5187893ed2e37648d43da9d3"
+      }
     },
     {
       "key": "0x2F/0x15/0x07",
@@ -892,7 +1544,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1507",
           "cites": "\t\tcase 0x1507:\t/* Debugging off */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F1507",
+            "line": "INT 2F - CD-ROM - TURN DEBUGGING OFF"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1507",
+            "line": "\t\tcase 0x1507:\t/* Debugging off */"
+          }
+        ],
+        "digest": "96c11ea628df5a0d679fbc72d5bfee656c89fefec2611b78a7169401dfd6b7da"
+      }
     },
     {
       "key": "0x2F/0x15/0x08",
@@ -911,7 +1578,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1508",
           "cites": "\t\tcase 0x1508: {\t// read sectors"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F1508",
+            "line": "INT 2F - CD-ROM - ABSOLUTE DISK READ"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1508",
+            "line": "\t\tcase 0x1508: {\t// read sectors"
+          }
+        ],
+        "digest": "dd3ac7fe0965970c06da47f353198552127356233de52f013921f735e8fca73c"
+      }
     },
     {
       "key": "0x2F/0x15/0x09",
@@ -929,7 +1611,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1509",
           "cites": "\t\tcase 0x1509:\t// write sectors - not supported"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F1509",
+            "line": "INT 2F - CD-ROM - ABSOLUTE DISK WRITE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1509",
+            "line": "\t\tcase 0x1509:\t// write sectors - not supported"
+          }
+        ],
+        "digest": "0f831f274537a4c26904c9c2d9dd397814b9488a9f7bd54c921c458903eac161"
+      }
     },
     {
       "key": "0x2F/0x15/0x0A",
@@ -947,7 +1644,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150A",
           "cites": "\t\tcase 0x150A:\t/* Reserved */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F150A",
+            "line": "INT 2F - CD-ROM - RESERVED"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150A",
+            "line": "\t\tcase 0x150A:\t/* Reserved */"
+          }
+        ],
+        "digest": "915b45c17c46635f2c6b0b04862076efc007b3699a05e96037a8c2342113b9a3"
+      }
     },
     {
       "key": "0x2F/0x15/0x0B",
@@ -965,7 +1677,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150B",
           "cites": "\t\tcase 0x150B:\t/* Valid CDROM drive ? */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F150B",
+            "line": "INT 2F - CD-ROM v2.00+ - DRIVE CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150B",
+            "line": "\t\tcase 0x150B:\t/* Valid CDROM drive ? */"
+          }
+        ],
+        "digest": "50457b485aa92d0b1b63e2efc6e1f8b953ad740a1ee5585ce8251bda208e54a1"
+      }
     },
     {
       "key": "0x2F/0x15/0x0C",
@@ -983,7 +1710,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150C",
           "cites": "\t\tcase 0x150C:\t/* Get MSCDEX Version */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F150CBX0000",
+            "line": "INT 2F - CD-ROM v2.00+ - GET MSCDEX.EXE VERSION (GET VERSION)"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150C",
+            "line": "\t\tcase 0x150C:\t/* Get MSCDEX Version */"
+          }
+        ],
+        "digest": "b2b5903ffee94a0c3a769a0945b5affcfc830b0830d51e59a40914227e15ef3a"
+      }
     },
     {
       "key": "0x2F/0x15/0x0D",
@@ -1001,7 +1743,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150D",
           "cites": "\t\tcase 0x150D:\t/* Get drives */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F150D",
+            "line": "INT 2F - CD-ROM v2.00+ - GET CD-ROM DRIVE LETTERS"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150D",
+            "line": "\t\tcase 0x150D:\t/* Get drives */"
+          }
+        ],
+        "digest": "bf617e994d038e759bb54fb7e74a1f277a66c06327547093f1a14fc3f2def114"
+      }
     },
     {
       "key": "0x2F/0x15/0x0E",
@@ -1020,7 +1777,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150E",
           "cites": "\t\tcase 0x150E:\t/* Get/Set Volume Descriptor Preference */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F150E",
+            "line": "INT 2F - CD-ROM v2.00+ - GET/SET VOLUME DESCRIPTOR PREFERENCE"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150E",
+            "line": "\t\tcase 0x150E:\t/* Get/Set Volume Descriptor Preference */"
+          }
+        ],
+        "digest": "bf4c59c98a68983b46b4867682d9f5ed56258d142b5b29f8ae2fd300261c31c3"
+      }
     },
     {
       "key": "0x2F/0x15/0x0F",
@@ -1039,7 +1811,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150F",
           "cites": "\t\tcase 0x150F: {\t// Get directory entry"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F150F",
+            "line": "INT 2F - CD-ROM v2.00+ - GET DIRECTORY ENTRY"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x150F",
+            "line": "\t\tcase 0x150F: {\t// Get directory entry"
+          }
+        ],
+        "digest": "977d2e2f13888096600fe057a023ab46219daf4e9d5f437c848040ac0a3af2ec"
+      }
     },
     {
       "key": "0x2F/0x15/0x10",
@@ -1057,7 +1844,22 @@
           "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1510",
           "cites": "\t\tcase 0x1510:\t/* Device driver request */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.K d-2F1510",
+            "line": "INT 2F - CD-ROM v2.10+ - SEND DEVICE DRIVER REQUEST"
+          },
+          {
+            "ref": "dosbox-x:src/dos/dos_mscdex.cpp MSCDEX_Handler case 0x1510",
+            "line": "\t\tcase 0x1510:\t/* Device driver request */"
+          }
+        ],
+        "digest": "e60394559a8f9c5b1d4197f004a405d523c71f8f23a5f65b10b1d7d074267318"
+      }
     }
   ]
 }

@@ -23,7 +23,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x0",
           "cites": "    case 0x0: /* Reset disk */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B B-1300",
+            "line": "INT 13 - DISK - RESET DISK SYSTEM"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x0",
+            "line": "    case 0x0: /* Reset disk */"
+          }
+        ],
+        "digest": "4cd88c63a43cc0f869f430c28ce82a0a7e4b836583b16b72486904ff8f82e6a1"
+      }
     },
     {
       "key": "0x13/0x01",
@@ -41,7 +56,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x1",
           "cites": "    case 0x1: /* Get status of last operation */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B B-1301",
+            "line": "INT 13 - DISK - GET STATUS OF LAST OPERATION"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x1",
+            "line": "    case 0x1: /* Get status of last operation */"
+          }
+        ],
+        "digest": "544430105c0086d64952977f287f39e84bb6957e750ab97ecd15df84dfd57255"
+      }
     },
     {
       "key": "0x13/0x02",
@@ -77,7 +107,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x3",
           "cites": "    case 0x3: /* Write sectors */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B B-1303",
+            "line": "INT 13 - DISK - WRITE DISK SECTOR(S)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x3",
+            "line": "    case 0x3: /* Write sectors */"
+          }
+        ],
+        "digest": "6ff56b4deb5d6a125bc9c2c1feb995c6a80677e0c28247a381ada93f86450978"
+      }
     },
     {
       "key": "0x13/0x04",
@@ -96,7 +141,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x04",
           "cites": "    case 0x04: /* Verify sectors */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B B-1304",
+            "line": "INT 13 - DISK - VERIFY DISK SECTOR(S)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x04",
+            "line": "    case 0x04: /* Verify sectors */"
+          }
+        ],
+        "digest": "359e6c9f9bfbc326e707e345d2e05527636831ed90ce0d36574a938e0c4dcbdc"
+      }
     },
     {
       "key": "0x13/0x05",
@@ -187,7 +247,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x0C",
           "cites": "    case 0x0C: /* Seek to cylinder (hard disk) */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B B-130C",
+            "line": "INT 13 - HARD DISK - SEEK TO CYLINDER"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x0C",
+            "line": "    case 0x0C: /* Seek to cylinder (hard disk) */"
+          }
+        ],
+        "digest": "3fd1cbc76811a24aea54152cbac54fc4b64f7425b1c50bafe2d89890a43ecbec"
+      }
     },
     {
       "key": "0x13/0x11",
@@ -205,7 +280,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x11",
           "cites": "    case 0x11: /* Recalibrate drive */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B B-1311",
+            "line": "INT 13 - HARD DISK - RECALIBRATE DRIVE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x11",
+            "line": "    case 0x11: /* Recalibrate drive */"
+          }
+        ],
+        "digest": "c8bada69df1d05641996454f9863ab91075fec3ffcdf255ca72ede9ca8d99ae2"
+      }
     },
     {
       "key": "0x13/0x15",
@@ -223,7 +313,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x15",
           "cites": "    case 0x15: /* Get disk type */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B B-1315",
+            "line": "INT 13 - DISK - GET DISK TYPE (XT 1986/1/10 or later,XT286,AT,PS)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x15",
+            "line": "    case 0x15: /* Get disk type */"
+          }
+        ],
+        "digest": "e4796ce10515c2695eb71d6710816867fef73e99c9a93d7f7d2d7f76b87fb65b"
+      }
     },
     {
       "key": "0x13/0x16",
@@ -241,7 +346,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x16",
           "cites": "    case 0x16: /* Detect disk change (apparently added to XT BIOSes in 1986 according to RBIL) */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B B-1316",
+            "line": "INT 13 - FLOPPY DISK - DETECT DISK CHANGE (XT 1986/1/10 or later,XT286,AT,PS)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x16",
+            "line": "    case 0x16: /* Detect disk change (apparently added to XT BIOSes in 1986 according to RBIL) */"
+          }
+        ],
+        "digest": "eb6ae41626bfe691ae8307f54742f0c17b4a7f3a12e5adb110711287852b7473"
+      }
     },
     {
       "key": "0x13/0x17",
@@ -260,7 +380,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x17",
           "cites": "    case 0x17: /* Set disk type for format */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B B-1317",
+            "line": "INT 13 - FLOPPY DISK - SET DISK TYPE FOR FORMAT (AT,PS)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x17",
+            "line": "    case 0x17: /* Set disk type for format */"
+          }
+        ],
+        "digest": "e881f7eef768f5735e541833cd7727a245b19142b3b0bbd6977c6cfc758d5c41"
+      }
     },
     {
       "key": "0x13/0x41",
@@ -279,7 +414,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x41",
           "cites": "    case 0x41: /* Check Extensions Present */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B d-1341--BX55AA",
+            "line": "INT 13 - IBM/MS INT 13 Extensions - INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x41",
+            "line": "    case 0x41: /* Check Extensions Present */"
+          }
+        ],
+        "digest": "94cb6360140c2fd426abf1a4c62a70095d6daffd1243cb051694941188c3b71a"
+      }
     },
     {
       "key": "0x13/0x42",
@@ -317,7 +467,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x43",
           "cites": "    case 0x43: { /* Extended Write Sectors to Drive */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B d-1343",
+            "line": "INT 13 - IBM/MS INT 13 Extensions - EXTENDED WRITE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x43",
+            "line": "    case 0x43: { /* Extended Write Sectors to Drive */"
+          }
+        ],
+        "digest": "f135fa53a3365374f0f017f7b0ccb0a3a9807086a6bd24347b216215ad6751d8"
+      }
     },
     {
       "key": "0x13/0x44",
@@ -336,7 +501,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x44",
           "cites": "    case 0x44: /* Extended Verify Sectors [http://www.ctyme.com/intr/rb-0711.htm] */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B d-1344",
+            "line": "INT 13 - IBM/MS INT 13 Extensions - VERIFY SECTORS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x44",
+            "line": "    case 0x44: /* Extended Verify Sectors [http://www.ctyme.com/intr/rb-0711.htm] */"
+          }
+        ],
+        "digest": "df8db9d242a026e27c1b475e4b90b484a4d0d5270c9b0c142a4a15dea0839902"
+      }
     },
     {
       "key": "0x13/0x47",
@@ -354,7 +534,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x47",
           "cites": "    case 0x47: { /* Extended Seek */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B d-1347",
+            "line": "INT 13 - IBM/MS INT 13 Extensions - EXTENDED SEEK"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x47",
+            "line": "    case 0x47: { /* Extended Seek */"
+          }
+        ],
+        "digest": "4203ac29f67d9f310905e2c4cd5d0097f3c2909370e570ebadb5f5ebae5f81d7"
+      }
     },
     {
       "key": "0x13/0x48",
@@ -373,7 +568,22 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x48",
           "cites": "    case 0x48: { /* get drive parameters */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B d-1348",
+            "line": "INT 13 - IBM/MS INT 13 Extensions - GET DRIVE PARAMETERS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x48",
+            "line": "    case 0x48: { /* get drive parameters */"
+          }
+        ],
+        "digest": "cc0aefd3331822253ae628ad9640f61e05d50d41ef2ab5b18f9fe0661447c641"
+      }
     },
     {
       "key": "0x13/0x4B",
@@ -386,7 +596,18 @@
           "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x4B",
           "cites": "    case 0x4B: /* Terminate disk emulation or get emulation status */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios_int13.cpp INT13_DiskHandler case 0x4B",
+            "line": "    case 0x4B: /* Terminate disk emulation or get emulation status */"
+          }
+        ],
+        "digest": "9d641713ceba6ffc21211534509a2f9381d014031fa1e2913eb2631b6e48b9da"
+      }
     }
   ]
 }

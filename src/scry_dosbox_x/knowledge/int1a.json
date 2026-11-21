@@ -22,7 +22,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x00",
           "cites": "    case 0x00:  /* Get System time */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D B-1A00",
+            "line": "INT 1A - TIME - GET SYSTEM TIME"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x00",
+            "line": "    case 0x00:  /* Get System time */"
+          }
+        ],
+        "digest": "86aeb1dccb37cd30b4bf89ab653f009a927e8e4304d15f2100a01adfdca948b7"
+      }
     },
     {
       "key": "0x1A/0x01",
@@ -41,7 +56,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x01",
           "cites": "    case 0x01:  /* Set System time */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D B-1A01",
+            "line": "INT 1A - TIME - SET SYSTEM TIME"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x01",
+            "line": "    case 0x01:  /* Set System time */"
+          }
+        ],
+        "digest": "d87d819efc241489cfcd2ce832ec43c18307eb0d35aa5f0ecc1f0951c9a02437"
+      }
     },
     {
       "key": "0x1A/0x02",
@@ -134,7 +164,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x80",
           "cites": "    case 0x80:  /* Pcjr Setup Sound Multiplexer */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D s-1A80",
+            "line": "INT 1A - PCjr, Tandy 2500???, Tandy 1000SL/TL - SET UP SOUND MULTIPLEXOR"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x80",
+            "line": "    case 0x80:  /* Pcjr Setup Sound Multiplexer */"
+          }
+        ],
+        "digest": "25551c7b73e8c0de4522d0b1c7c9b772c2d73a7b47b6db23d7e11949011e77ed"
+      }
     },
     {
       "key": "0x1A/0x81",
@@ -147,7 +192,18 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x81",
           "cites": "    case 0x81:  /* Tandy sound system check */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x81",
+            "line": "    case 0x81:  /* Tandy sound system check */"
+          }
+        ],
+        "digest": "b7a744d3e2ee8296c42d18e1d9f8dd571a9933ec14ce949caba3e2ba9f3ddfdf"
+      }
     },
     {
       "key": "0x1A/0x82",
@@ -165,7 +221,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x82",
           "cites": "    case 0x82:  /* Tandy sound system start recording */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D s-1A82",
+            "line": "INT 1A - Tandy 2500???, Tandy 1000SL/TL - DIGITAL SOUND - RECORD SOUND"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x82",
+            "line": "    case 0x82:  /* Tandy sound system start recording */"
+          }
+        ],
+        "digest": "c0b57fb1886b7d104c2ab4d692af398b2594549d4ab558673bba542d18a27fe3"
+      }
     },
     {
       "key": "0x1A/0x83",
@@ -183,7 +254,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x83",
           "cites": "    case 0x83:  /* Tandy sound system start playback */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D s-1A83",
+            "line": "INT 1A - Tandy 2500, Tandy 1000L series - START PLAYING DIGITAL SOUND"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x83",
+            "line": "    case 0x83:  /* Tandy sound system start playback */"
+          }
+        ],
+        "digest": "62a2b60ceed6a614aeb4956e064aa32d7ba2281d8f2d518f6d304d848374e685"
+      }
     },
     {
       "key": "0x1A/0x84",
@@ -201,7 +287,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x84",
           "cites": "    case 0x84:  /* Tandy sound system stop playing */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D s-1A84",
+            "line": "INT 1A - Tandy 2500, Tandy 1000L series - STOP PLAYING DIGITAL SOUND"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x84",
+            "line": "    case 0x84:  /* Tandy sound system stop playing */"
+          }
+        ],
+        "digest": "8ff9f2d81e3764d9731d9dc99247da83f8e5168fc3fa3144e98dbbd26b141fcf"
+      }
     },
     {
       "key": "0x1A/0x85",
@@ -219,7 +320,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x85",
           "cites": "    case 0x85:  /* Tandy sound system reset */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D s-1A85",
+            "line": "INT 1A - Tandy 2500, Tandy 1000L series - DIGITAL SOUND???"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0x85",
+            "line": "    case 0x85:  /* Tandy sound system reset */"
+          }
+        ],
+        "digest": "0d0f7a1ae71b79eb70d6b28de475569f9bf6a1d62300578be6e51628b3818a8d"
+      }
     },
     {
       "key": "0x1A/0xB1",
@@ -232,7 +348,18 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1",
           "cites": "    case 0xb1:      /* PCI Bios Calls */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1",
+            "line": "    case 0xb1:      /* PCI Bios Calls */"
+          }
+        ],
+        "digest": "8d0351ac9fc5f24ed8d09a8d53d384409ac14ab575ea2135c2bc902e68487222"
+      }
     },
     {
       "key": "0x1A/0xB1/0x01",
@@ -250,7 +377,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1 case 0x01",
           "cites": "                case 0x01:  // installation check"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.E X-1AB101",
+            "line": "INT 1A - PCI BIOS v2.0c+ - INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT1A_Handler case 0xb1 case 0x01",
+            "line": "                case 0x01:  // installation check"
+          }
+        ],
+        "digest": "113b54782eb942a10f767faffd62eabdf4f2813cddd9a77b523b42e644fc9cc7"
+      }
     },
     {
       "key": "0x1A/0xB1/0x02",

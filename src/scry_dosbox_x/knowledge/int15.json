@@ -23,7 +23,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x06",
           "cites": "    case 0x06:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.B b-1506",
+            "line": "INT 15 - Amstrad PC1512 - GET ROS VERSION NUMBER"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x06",
+            "line": "    case 0x06:"
+          }
+        ],
+        "digest": "606157ba683a1c1bd668610885c91bf32955b5914b6ee33e4beef2f8b1c849ef"
+      }
     },
     {
       "key": "0x15/0x24",
@@ -41,7 +56,18 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x24",
           "cites": "    case 0x24:      //A20 stuff"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x24",
+            "line": "    case 0x24:      //A20 stuff"
+          }
+        ],
+        "digest": "b167fe42eb3c1785291ad0d25c14d4297a2c397cbf67a88ca219f5bc1ac5a97d"
+      }
     },
     {
       "key": "0x15/0x24/0x00",
@@ -60,7 +86,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x24 case 0x00",
           "cites": "        case 0: //Disable a20"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C b-152400",
+            "line": "INT 15 - SYSTEM - later PS/2s - DISABLE A20 GATE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x24 case 0x00",
+            "line": "        case 0: //Disable a20"
+          }
+        ],
+        "digest": "578b7ccbc7d9a56eebf6137ac6da7e25438e29cd1c276d569731d66f3a71df25"
+      }
     },
     {
       "key": "0x15/0x24/0x01",
@@ -79,7 +120,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x24 case 0x01",
           "cites": "        case 1: //Enable a20"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C b-152401",
+            "line": "INT 15 - SYSTEM - later PS/2s - ENABLE A20 GATE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x24 case 0x01",
+            "line": "        case 1: //Enable a20"
+          }
+        ],
+        "digest": "d43c1fbe5700b2cb0725904934c1b20bcbc10093e20c8364b4eaafa3c490845d"
+      }
     },
     {
       "key": "0x15/0x24/0x02",
@@ -98,7 +154,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x24 case 0x02",
           "cites": "        case 2: //Query a20"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C b-152402",
+            "line": "INT 15 - SYSTEM - later PS/2s - GET A20 GATE STATUS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x24 case 0x02",
+            "line": "        case 2: //Query a20"
+          }
+        ],
+        "digest": "859419e9f61feab33a2ed4d1d27917b83f99f19415ebb34241bae2c1a7fe392f"
+      }
     },
     {
       "key": "0x15/0x24/0x03",
@@ -116,7 +187,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x24 case 0x03",
           "cites": "        case 3: //Get a20 support"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C b-152403",
+            "line": "INT 15 - SYSTEM - later PS/2s - QUERY A20 GATE SUPPORT"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x24 case 0x03",
+            "line": "        case 3: //Get a20 support"
+          }
+        ],
+        "digest": "0cde292aeb2762cd71c6ee31ce5ae9a1edfb2e7ce5220ce5de4eb1233aef5b8f"
+      }
     },
     {
       "key": "0x15/0xC0",
@@ -138,7 +224,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC0",
           "cites": "    case 0xC0:  /* Get Configuration*/"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C B-15C0",
+            "line": "INT 15 - SYSTEM - GET CONFIGURATION (XT >1986/1/10,AT mdl 3x9,CONV,XT286,PS)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC0",
+            "line": "    case 0xC0:  /* Get Configuration*/"
+          }
+        ],
+        "digest": "d30a1ec841280a545de91d9114223e229896bcb1eed6b71338e0fe2a90302bc4"
+      }
     },
     {
       "key": "0x15/0x4F",
@@ -159,7 +260,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x4f",
           "cites": "    case 0x4f:  /* BIOS - Keyboard intercept */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C B-154F",
+            "line": "INT 15 C - KEYBOARD - KEYBOARD INTERCEPT (AT model 3x9,XT2,XT286,CONV,PS)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x4f",
+            "line": "    case 0x4f:  /* BIOS - Keyboard intercept */"
+          }
+        ],
+        "digest": "03e1776c2b0a09da11ae2e800453771d2a4e6b4044a8576db54a8350265c69a9"
+      }
     },
     {
       "key": "0x15/0x83",
@@ -182,7 +298,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x83",
           "cites": "    case 0x83:  /* BIOS - SET EVENT WAIT INTERVAL */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C B-1583",
+            "line": "INT 15 - BIOS - SET EVENT WAIT INTERVAL (AT,PS50+)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x83",
+            "line": "    case 0x83:  /* BIOS - SET EVENT WAIT INTERVAL */"
+          }
+        ],
+        "digest": "663a64e65d1b9d21d473a084f93af20f84a4d84ea14209343028c36bc8760c25"
+      }
     },
     {
       "key": "0x15/0x84",
@@ -201,7 +332,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x84",
           "cites": "    case 0x84:  /* BIOS - JOYSTICK SUPPORT (XT after 11/8/82,AT,XT286,PS) */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C B-1584",
+            "line": "INT 15 - BIOS - JOYSTICK SUPPORT (XT after 1982/11/8,AT,XT286,PS)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x84",
+            "line": "    case 0x84:  /* BIOS - JOYSTICK SUPPORT (XT after 11/8/82,AT,XT286,PS) */"
+          }
+        ],
+        "digest": "b2a18e45a2747f8d847e2ebfe58b0b6250f858caa45e458cc9d16eedd388147e"
+      }
     },
     {
       "key": "0x15/0x86",
@@ -223,7 +369,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x86",
           "cites": "    case 0x86:  /* BIOS - WAIT (AT,PS) */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C B-1586",
+            "line": "INT 15 - BIOS - WAIT (AT,PS)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x86",
+            "line": "    case 0x86:  /* BIOS - WAIT (AT,PS) */"
+          }
+        ],
+        "digest": "f32f9347df2ecdb7a8353e96ec2c632819ea3373da3f359296b21c19f9daac84"
+      }
     },
     {
       "key": "0x15/0x87",
@@ -247,7 +408,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x87",
           "cites": "    case 0x87:  /* Copy extended memory */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C B-1587",
+            "line": "INT 15 - SYSTEM - COPY EXTENDED MEMORY"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x87",
+            "line": "    case 0x87:  /* Copy extended memory */"
+          }
+        ],
+        "digest": "4b721c51c550c343b9dcfe70b3926a4fc0414476bd9fae4e04c9673fbd8a6f6f"
+      }
     },
     {
       "key": "0x15/0x88",
@@ -270,7 +446,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x88",
           "cites": "    case 0x88:  /* SYSTEM - GET EXTENDED MEMORY SIZE (286+) */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C B-1588",
+            "line": "INT 15 - SYSTEM - GET EXTENDED MEMORY SIZE (286+)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x88",
+            "line": "    case 0x88:  /* SYSTEM - GET EXTENDED MEMORY SIZE (286+) */"
+          }
+        ],
+        "digest": "9a334fda9228c1fa7748cc7ea957d2a56aad2082f0c65c37100b67edf065d3bf"
+      }
     },
     {
       "key": "0x15/0x89",
@@ -311,7 +502,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x8A",
           "cites": "    case 0x8A:  /* EXTENDED MEMORY SIZE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C b-158A@2",
+            "line": "INT 15 - Phoenix BIOS v4.0 - GET BIG MEMORY SIZE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x8A",
+            "line": "    case 0x8A:  /* EXTENDED MEMORY SIZE */"
+          }
+        ],
+        "digest": "5add0703d744ed88bfefa18c3706909b31fb1473c347b34b0ff63595ac1a2dc4"
+      }
     },
     {
       "key": "0x15/0x90",
@@ -332,7 +538,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x90",
           "cites": "    case 0x90:  /* OS HOOK - DEVICE BUSY */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C B-1590",
+            "line": "INT 15 - OS HOOK - DEVICE BUSY (AT,PS)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x90",
+            "line": "    case 0x90:  /* OS HOOK - DEVICE BUSY */"
+          }
+        ],
+        "digest": "0f3639851c6b46a5e91b02f9657d8273364b3b9f954296dcc5d96010493b8a38"
+      }
     },
     {
       "key": "0x15/0x91",
@@ -353,7 +574,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x91",
           "cites": "    case 0x91:  /* OS HOOK - DEVICE POST */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C B-1591",
+            "line": "INT 15 - OS HOOK - DEVICE POST (AT,PS)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x91",
+            "line": "    case 0x91:  /* OS HOOK - DEVICE POST */"
+          }
+        ],
+        "digest": "a1f6c905869085bc0d6f0b511993d9a9e57acc48fa75a3d3c26d474ceb326af0"
+      }
     },
     {
       "key": "0x15/0xC2",
@@ -370,7 +606,18 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2",
           "cites": "    case 0xc2:  /* BIOS PS2 Pointing Device Support */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2",
+            "line": "    case 0xc2:  /* BIOS PS2 Pointing Device Support */"
+          }
+        ],
+        "digest": "3cfc24b7e4e1876aefcbae65cc2f0f715b1ce25cc2ea0c3696adc99e6d938068"
+      }
     },
     {
       "key": "0x15/0xC2/0x00",
@@ -407,7 +654,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2 case 0x01",
           "cites": "                case 0x01:      // reset"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C M-15C201",
+            "line": "INT 15 - SYSTEM - POINTING DEVICE BIOS INTERFACE (PS) - RESET"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2 case 0x01",
+            "line": "                case 0x01:      // reset"
+          }
+        ],
+        "digest": "f56dfdd53c19fbce2826bc2cdf4621f05cee73d632648042a3e1b513fbd7d254"
+      }
     },
     {
       "key": "0x15/0xC2/0x02",
@@ -425,7 +687,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2 case 0x02",
           "cites": "                case 0x02: {        // set sampling rate"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C M-15C202",
+            "line": "INT 15 - SYSTEM - POINTING DEVICE BIOS INTERFACE (PS) - SET SAMPLING RATE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2 case 0x02",
+            "line": "                case 0x02: {        // set sampling rate"
+          }
+        ],
+        "digest": "1a127dc049fd709a09910ac4564d906d194682a8b8c70105407dfba70058be5b"
+      }
     },
     {
       "key": "0x15/0xC2/0x03",
@@ -443,7 +720,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2 case 0x03",
           "cites": "                case 0x03:      // set resolution"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C M-15C203",
+            "line": "INT 15 - SYSTEM - POINTING DEVICE BIOS INTERFACE (PS) - SET RESOLUTION"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2 case 0x03",
+            "line": "                case 0x03:      // set resolution"
+          }
+        ],
+        "digest": "8237d0c58f2d33d14129eb4f2f2c8b7cc586b464a2840453efddd669a7b44409"
+      }
     },
     {
       "key": "0x15/0xC2/0x04",
@@ -461,7 +753,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2 case 0x04",
           "cites": "                case 0x04:      // get type"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C M-15C204",
+            "line": "INT 15 - SYSTEM - POINTING DEVICE BIOS INTERFACE (PS) - GET TYPE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2 case 0x04",
+            "line": "                case 0x04:      // get type"
+          }
+        ],
+        "digest": "a5e6caa85c9e526bb85a2ebe4ea1f08423643dfce872d7c7b55ce168191516ea"
+      }
     },
     {
       "key": "0x15/0xC2/0x05",
@@ -517,7 +824,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2 case 0x07",
           "cites": "                case 0x07:      // set callback"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C M-15C207",
+            "line": "INT 15 - SYSTEM - POINTING DEVICE BIOS INTERFACE (PS) - SET DEVICE HANDLER ADDR"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xC2 case 0x07",
+            "line": "                case 0x07:      // set callback"
+          }
+        ],
+        "digest": "6e9a45c069b414cc5f35a2e7f6c5ef346023618591e1b5299c4f2e3a637a4393"
+      }
     },
     {
       "key": "0x15/0xC3",
@@ -536,7 +858,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xc3",
           "cites": "    case 0xc3:      /* set carry flag so BorlandRTM doesn't assume a VECTRA/PS2 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C B-15C3",
+            "line": "INT 15 - SYSTEM - ENABLE/DISABLE WATCHDOG TIMEOUT (PS50+)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xc3",
+            "line": "    case 0xc3:      /* set carry flag so BorlandRTM doesn't assume a VECTRA/PS2 */"
+          }
+        ],
+        "digest": "87e4be45052f6fc08ba80be2af5f8c70c23edc7e30702bd1c5aafd8085d8aeeb"
+      }
     },
     {
       "key": "0x15/0xC4",
@@ -555,7 +892,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xc4",
           "cites": "    case 0xc4:  /* BIOS POS Program option Select */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C B-15C4",
+            "line": "INT 15 - SYSTEM - PROGRAMMABLE OPTION SELECT (PS50+)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xc4",
+            "line": "    case 0xc4:  /* BIOS POS Program option Select */"
+          }
+        ],
+        "digest": "35f775dc8f987efdbf612e4e73def4136ce01664f517d37ce5068ddf12c09efc"
+      }
     },
     {
       "key": "0x15/0x53",
@@ -572,7 +924,18 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53",
           "cites": "    case 0x53: // APM BIOS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53",
+            "line": "    case 0x53: // APM BIOS"
+          }
+        ],
+        "digest": "926378c10937e1dc8d3bb5346d598d8f02e70778164a7ba21412e061425a827c"
+      }
     },
     {
       "key": "0x15/0x53/0x00",
@@ -590,7 +953,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x00",
           "cites": "                case 0x00: // installation check"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-155300",
+            "line": "INT 15 - Advanced Power Management v1.0+ - INSTALLATION CHECK"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x00",
+            "line": "                case 0x00: // installation check"
+          }
+        ],
+        "digest": "836dcebe7df0096d8b5e966a25d2315c88f4dc0628d5910b8b08b94d90d70b24"
+      }
     },
     {
       "key": "0x15/0x53/0x01",
@@ -608,7 +986,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x01",
           "cites": "                case 0x01: // connect real mode interface"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-155301",
+            "line": "INT 15 - Advanced Power Management v1.0+ - CONNECT REAL-MODE INTERFACE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x01",
+            "line": "                case 0x01: // connect real mode interface"
+          }
+        ],
+        "digest": "c10563d52019c3d25e3c734a9e2d48d97786bd8a1e63a88f50abb4fbc267fa4c"
+      }
     },
     {
       "key": "0x15/0x53/0x02",
@@ -626,7 +1019,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x02",
           "cites": "                case 0x02: // connect 16-bit protected mode interface"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-155302",
+            "line": "INT 15 R - Advanced Power Management v1.0+ - CONNECT 16-BIT PROTMODE INTERFACE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x02",
+            "line": "                case 0x02: // connect 16-bit protected mode interface"
+          }
+        ],
+        "digest": "a81a536e63a371f9654bb96d44941eebd906d21c0679479f366992271f454611"
+      }
     },
     {
       "key": "0x15/0x53/0x03",
@@ -644,7 +1052,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x03",
           "cites": "                case 0x03: // connect 32-bit protected mode interface"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-155303",
+            "line": "INT 15 - Advanced Power Management v1.0+ - CONNECT 32-BIT PROTMODE INTERFACE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x03",
+            "line": "                case 0x03: // connect 32-bit protected mode interface"
+          }
+        ],
+        "digest": "7fcc652a95b1b22315f2a86f472225cfc2963ce77ddf30c7381f49535cb57d12"
+      }
     },
     {
       "key": "0x15/0x53/0x04",
@@ -662,7 +1085,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x04",
           "cites": "                case 0x04: // DISCONNECT INTERFACE"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-155304",
+            "line": "INT 15 - Advanced Power Management v1.0+ - DISCONNECT INTERFACE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x04",
+            "line": "                case 0x04: // DISCONNECT INTERFACE"
+          }
+        ],
+        "digest": "a0993ae8604642418cde42c7bf821605fba191a285259edd32eac5b116523a23"
+      }
     },
     {
       "key": "0x15/0x53/0x05",
@@ -680,7 +1118,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x05",
           "cites": "                case 0x05: // CPU IDLE"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-155305",
+            "line": "INT 15 - Advanced Power Management v1.0+ - CPU IDLE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x05",
+            "line": "                case 0x05: // CPU IDLE"
+          }
+        ],
+        "digest": "1585712c82121b661bf47d2932047fa2094a85791ccfb08f66dab7028f396634"
+      }
     },
     {
       "key": "0x15/0x53/0x06",
@@ -698,7 +1151,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x06",
           "cites": "                case 0x06: // CPU BUSY"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-155306",
+            "line": "INT 15 - Advanced Power Management v1.0+ - CPU BUSY"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x06",
+            "line": "                case 0x06: // CPU BUSY"
+          }
+        ],
+        "digest": "cdb109be7474412111aac6b187bfddd5e12dca50a10500111f28fc5f81f49e54"
+      }
     },
     {
       "key": "0x15/0x53/0x07",
@@ -736,7 +1204,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x08",
           "cites": "                case 0x08: // ENABLE/DISABLE POWER MANAGEMENT"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-155308",
+            "line": "INT 15 - Advanced Power Management v1.0+ - ENABLE/DISABLE POWER MANAGEMENT"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x08",
+            "line": "                case 0x08: // ENABLE/DISABLE POWER MANAGEMENT"
+          }
+        ],
+        "digest": "2261d572d69528d7ff2dd34a232d40af9463085b9365493666505dc175564044"
+      }
     },
     {
       "key": "0x15/0x53/0x0A",
@@ -754,7 +1237,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x0A",
           "cites": "                case 0x0a: // GET POWER STATUS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-15530A",
+            "line": "INT 15 - Advanced Power Management v1.0+ - GET POWER STATUS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x0A",
+            "line": "                case 0x0a: // GET POWER STATUS"
+          }
+        ],
+        "digest": "837d2f75df6870e0aedfb94cbffaa4cec69f4b562a8e1122a6ce8dade2693a3d"
+      }
     },
     {
       "key": "0x15/0x53/0x0B",
@@ -772,7 +1270,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x0B",
           "cites": "                case 0x0b: // GET PM EVENT"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-15530B",
+            "line": "INT 15 - Advanced Power Management v1.0+ - GET POWER MANAGEMENT EVENT"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x0B",
+            "line": "                case 0x0b: // GET PM EVENT"
+          }
+        ],
+        "digest": "7b95425a8a8f21bb066eff37110ba9e487474deb2a1437c1a76c12d5fc4b9153"
+      }
     },
     {
       "key": "0x15/0x53/0x0D",
@@ -790,7 +1303,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x0D",
           "cites": "                case 0x0d:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-15530D",
+            "line": "INT 15 - Advanced Power Management v1.1+ - EN/DISABLE DEVICE POWER MANAGEMENT"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x0D",
+            "line": "                case 0x0d:"
+          }
+        ],
+        "digest": "db7c1031062b122164441e7371ec51bf3e098e746e521e262321cf9b95bc8910"
+      }
     },
     {
       "key": "0x15/0x53/0x0E",
@@ -809,7 +1337,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x0E",
           "cites": "                case 0x0e:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-15530E",
+            "line": "INT 15 - Advanced Power Management v1.1+ - DRIVER VERSION"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x0E",
+            "line": "                case 0x0e:"
+          }
+        ],
+        "digest": "8d9b0552c0537eeefe0736dad96c5d5bec2574ebb948cb2933a591f2fb258ba3"
+      }
     },
     {
       "key": "0x15/0x53/0x0F",
@@ -827,7 +1370,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x0F",
           "cites": "                case 0x0f:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-15530F",
+            "line": "INT 15 - Advanced Power Management v1.1+ - ENGAGE/DISENGAGE POWER MANAGEMENT"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x0F",
+            "line": "                case 0x0f:"
+          }
+        ],
+        "digest": "371f5e74c2d0caa2a2d78235860e2b9c1aec0858d6ffd4c565846ca18d4e9e7d"
+      }
     },
     {
       "key": "0x15/0x53/0x10",
@@ -846,7 +1404,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x10",
           "cites": "                case 0x10:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-155310",
+            "line": "INT 15 - Advanced Power Management v1.2 - GET CAPABILITIES"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x10",
+            "line": "                case 0x10:"
+          }
+        ],
+        "digest": "85b04105294a3612459c1488c859da676c65e93c1d2a7b8c57885fb8ae0939f7"
+      }
     },
     {
       "key": "0x15/0x53/0x13",
@@ -865,7 +1438,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x13",
           "cites": "                case 0x13://enable/disable/query timer based requests"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C p-155313",
+            "line": "INT 15 - Advanced Power Management v1.2 - ENABLE/DISABLE TIMER-BASED REQUESTS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x53 case 0x13",
+            "line": "                case 0x13://enable/disable/query timer based requests"
+          }
+        ],
+        "digest": "430652037ac7a94d7adba36641d34aaf95cad5287002d189b68287ce665fdf7b"
+      }
     },
     {
       "key": "0x15/0xE8",
@@ -878,7 +1466,18 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xE8",
           "cites": "    case 0xe8:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xE8",
+            "line": "    case 0xe8:"
+          }
+        ],
+        "digest": "f164e2e97a0b3786857d7a4228ef730c59c7405ece39667cf93f70a63e43a784"
+      }
     },
     {
       "key": "0x15/0xE8/0x01",
@@ -901,7 +1500,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xE8 case 0x01",
           "cites": "            case 0x01: { /* E801: memory size */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D b-15E801",
+            "line": "INT 15 - Phoenix BIOS v4.0 - GET MEMORY SIZE FOR >64M CONFIGURATIONS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0xE8 case 0x01",
+            "line": "            case 0x01: { /* E801: memory size */"
+          }
+        ],
+        "digest": "bd9be9e6b5c7efba68d800f1488382fabd9b91240d42321291769384f6f3ca60"
+      }
     },
     {
       "key": "0x15/0xE8/0x20",
@@ -943,7 +1557,22 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x50",
           "cites": "    case 0x50: // DOS/V - FONT SUBSYSTEM ACCESS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.C J-1550",
+            "line": "INT 15 - DOS/V - FONT SUBSYSTEM ACCESS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x50",
+            "line": "    case 0x50: // DOS/V - FONT SUBSYSTEM ACCESS"
+          }
+        ],
+        "digest": "d97e018158f52786efaea3c79468f95d5ee380f805f058e9489c14652b3a4990"
+      }
     },
     {
       "key": "0x15/0x49",
@@ -956,7 +1585,18 @@
           "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x49",
           "cites": "    case 0x49: // Far East MS-DOS - GET BIOS TYPE"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios.cpp INT15_Handler case 0x49",
+            "line": "    case 0x49: // Far East MS-DOS - GET BIOS TYPE"
+          }
+        ],
+        "digest": "52b67e730731a584392ae6aa9619f91528f1a534916b2ba23f5cda4445ee79d7"
+      }
     }
   ]
 }

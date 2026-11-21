@@ -2220,7 +2220,18 @@
           "ref": "rbil61:INTERRUP.G #01680 64h (100) (DOS 4.0+,NetWare4) open semaphore limit exceeded",
           "cites": " 64h (100) (DOS 4.0+,NetWare4) open semaphore limit exceeded"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 64h (100) (DOS 4.0+,NetWare4) open semaphore limit exceeded",
+            "line": " 64h (100) (DOS 4.0+,NetWare4) open semaphore limit exceeded"
+          }
+        ],
+        "digest": "2564b48c1f51d6b31f00744f6c7a5c603e3cfa7f481048406553259756b5f3e2"
+      }
     },
     {
       "key": "101",
@@ -2233,7 +2244,18 @@
           "ref": "rbil61:INTERRUP.G #01680 65h (101) (DOS 4.0+,NetWare4) exclusive semaphore",
           "cites": " 65h (101) (DOS 4.0+,NetWare4) exclusive semaphore is already owned"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 65h (101) (DOS 4.0+,NetWare4) exclusive semaphore",
+            "line": " 65h (101) (DOS 4.0+,NetWare4) exclusive semaphore is already owned"
+          }
+        ],
+        "digest": "29849f21d6197af41a25db822d42fa74299b4e6c101e2b314051cfe4f025c533"
+      }
     },
     {
       "key": "102",
@@ -2246,7 +2268,18 @@
           "ref": "rbil61:INTERRUP.G #01680 66h (102) (DOS 4.0+,NetWare4) semaphore was set",
           "cites": " 66h (102) (DOS 4.0+,NetWare4) semaphore was set when close attempted"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 66h (102) (DOS 4.0+,NetWare4) semaphore was set",
+            "line": " 66h (102) (DOS 4.0+,NetWare4) semaphore was set when close attempted"
+          }
+        ],
+        "digest": "c6dd72ec8d737805bdac600b2f3996068f92848195dc955bce3affad8389ceca"
+      }
     },
     {
       "key": "103",
@@ -2259,7 +2292,18 @@
           "ref": "rbil61:INTERRUP.G #01680 67h (103) (DOS 4.0+,NetWare4) too many exclusive",
           "cites": " 67h (103) (DOS 4.0+,NetWare4) too many exclusive semaphore requests"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 67h (103) (DOS 4.0+,NetWare4) too many exclusive",
+            "line": " 67h (103) (DOS 4.0+,NetWare4) too many exclusive semaphore requests"
+          }
+        ],
+        "digest": "9776bc5a3eb7337f296fda6beed216d178779c3381d39ffce70b18aae99c88da"
+      }
     },
     {
       "key": "104",
@@ -2272,7 +2316,18 @@
           "ref": "rbil61:INTERRUP.G #01680 68h (104) (DOS 4.0+,NetWare4) operation invalid",
           "cites": " 68h (104) (DOS 4.0+,NetWare4) operation invalid from interrupt handler"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 68h (104) (DOS 4.0+,NetWare4) operation invalid",
+            "line": " 68h (104) (DOS 4.0+,NetWare4) operation invalid from interrupt handler"
+          }
+        ],
+        "digest": "155dad0e6026d05039ab1c39d41ae449348702a5b55a0997a9ac6086f819176b"
+      }
     },
     {
       "key": "105",
@@ -2285,7 +2340,18 @@
           "ref": "rbil61:INTERRUP.G #01680 69h (105)",
           "cites": " 69h (105) (DOS 4.0+,NetWare4) semaphore owner died"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 69h (105)",
+            "line": " 69h (105) (DOS 4.0+,NetWare4) semaphore owner died"
+          }
+        ],
+        "digest": "bfe0b34b7c7f68864d9dbe30d701f3cfa3eb13a695203809f25600a0ad117b1e"
+      }
     },
     {
       "key": "106",
@@ -2298,7 +2364,18 @@
           "ref": "rbil61:INTERRUP.G #01680 6Ah (106)",
           "cites": " 6Ah (106) (DOS 4.0+,NetWare4) semaphore limit exceeded"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 6Ah (106)",
+            "line": " 6Ah (106) (DOS 4.0+,NetWare4) semaphore limit exceeded"
+          }
+        ],
+        "digest": "77f2f37aa5bbb6f3901a52160f09ea2af9f7b013a42e7d15aa2f8ae23a9a274b"
+      }
     },
     {
       "key": "107",
@@ -2311,7 +2388,18 @@
           "ref": "rbil61:INTERRUP.G #01680 6Bh (107)",
           "cites": " 6Bh (107) (DOS 4.0+,NetWare4) insert drive B: disk into A: / disk changed"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 6Bh (107)",
+            "line": " 6Bh (107) (DOS 4.0+,NetWare4) insert drive B: disk into A: / disk changed"
+          }
+        ],
+        "digest": "f7294e7812639482123631906e0af323e7ce2d9f1428abc9b4244896d808ca9c"
+      }
     },
     {
       "key": "108",
@@ -2324,7 +2412,18 @@
           "ref": "rbil61:INTERRUP.G #01680 6Ch (108)",
           "cites": " 6Ch (108) (DOS 4.0+,NetWare4) drive locked by another process"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 6Ch (108)",
+            "line": " 6Ch (108) (DOS 4.0+,NetWare4) drive locked by another process"
+          }
+        ],
+        "digest": "f857190d21910b1949c19be7b482a5fd98469ff05dbd69fa51319a5c1de5903b"
+      }
     },
     {
       "key": "109",
@@ -2337,7 +2436,18 @@
           "ref": "rbil61:INTERRUP.G #01680 6Dh (109)",
           "cites": " 6Dh (109) (DOS 4.0+,NetWare4) broken pipe"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 6Dh (109)",
+            "line": " 6Dh (109) (DOS 4.0+,NetWare4) broken pipe"
+          }
+        ],
+        "digest": "2d5c7476e344eca85e7803371e24544e0df448206862e89b398df3fa7291239c"
+      }
     },
     {
       "key": "110",
@@ -2350,7 +2460,18 @@
           "ref": "rbil61:INTERRUP.G #01680 6Eh (110)",
           "cites": " 6Eh (110) (DOS 5.0+,NetWare4) pipe open/create failed"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 6Eh (110)",
+            "line": " 6Eh (110) (DOS 5.0+,NetWare4) pipe open/create failed"
+          }
+        ],
+        "digest": "bb2235760b367260e6354dc0aa4c096cdda6d559ee8abeecac2487d106896f06"
+      }
     },
     {
       "key": "111",
@@ -2363,7 +2484,18 @@
           "ref": "rbil61:INTERRUP.G #01680 6Fh (111)",
           "cites": " 6Fh (111) (DOS 5.0+,NetWare4) pipe buffer overflowed"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 6Fh (111)",
+            "line": " 6Fh (111) (DOS 5.0+,NetWare4) pipe buffer overflowed"
+          }
+        ],
+        "digest": "e8d47a42ee0a1163bfe5ad09c995c6bfa2acc1a71d67172704f5ee45cd558e00"
+      }
     },
     {
       "key": "112",
@@ -2376,7 +2508,18 @@
           "ref": "rbil61:INTERRUP.G #01680 70h (112)",
           "cites": " 70h (112) (DOS 5.0+,NetWare4) disk full"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 70h (112)",
+            "line": " 70h (112) (DOS 5.0+,NetWare4) disk full"
+          }
+        ],
+        "digest": "e54e10f1041daab5a2c1990cdc0dc6534ad8c80478e89d230e91f8cdda513965"
+      }
     },
     {
       "key": "113",
@@ -2389,7 +2532,18 @@
           "ref": "rbil61:INTERRUP.G #01680 71h (113)",
           "cites": " 71h (113) (DOS 5.0+,NetWare4) no more search handles"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 71h (113)",
+            "line": " 71h (113) (DOS 5.0+,NetWare4) no more search handles"
+          }
+        ],
+        "digest": "195471cb9311f2dceab8c5b18e867d4f6e4d28b678efdf65f60327ea89a2e122"
+      }
     },
     {
       "key": "114",
@@ -2402,7 +2556,18 @@
           "ref": "rbil61:INTERRUP.G #01680 72h (114)",
           "cites": " 72h (114) (DOS 5.0+,NetWare4) invalid target handle for dup2"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 72h (114)",
+            "line": " 72h (114) (DOS 5.0+,NetWare4) invalid target handle for dup2"
+          }
+        ],
+        "digest": "f3c305fba30d21287130e394b8075bb986b41230f759082177b0de30a20fe48a"
+      }
     },
     {
       "key": "115",
@@ -2415,7 +2580,18 @@
           "ref": "rbil61:INTERRUP.G #01680 73h (115)",
           "cites": " 73h (115) (DOS 5.0+,NetWare4) bad user virtual address / protection violation"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 73h (115)",
+            "line": " 73h (115) (DOS 5.0+,NetWare4) bad user virtual address / protection violation"
+          }
+        ],
+        "digest": "2cd4856de027d7bf93212b205577124a95c45041a49d2e1a2524dc04ab0db6d2"
+      }
     },
     {
       "key": "116",
@@ -2428,7 +2604,18 @@
           "ref": "rbil61:INTERRUP.G #01680 74h (116) (DOS 5.0+) VIOKBD request",
           "cites": " 74h (116) (DOS 5.0+) VIOKBD request"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 74h (116) (DOS 5.0+) VIOKBD request",
+            "line": " 74h (116) (DOS 5.0+) VIOKBD request"
+          }
+        ],
+        "digest": "6d7c59acc88f70025378bdda4c8690fc0bb35fca9c70e74d906ea49115da5a0c"
+      }
     },
     {
       "key": "117",
@@ -2441,7 +2628,18 @@
           "ref": "rbil61:INTERRUP.G #01680 75h (117)",
           "cites": " 75h (117) (DOS 5.0+,NetWare4) unknown category code for IOCTL"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 75h (117)",
+            "line": " 75h (117) (DOS 5.0+,NetWare4) unknown category code for IOCTL"
+          }
+        ],
+        "digest": "e812c93736119a077e0d2c9be6b1d59f75c6d23c8bdfcceb1ff05a884f6bf1cb"
+      }
     },
     {
       "key": "118",
@@ -2454,7 +2652,18 @@
           "ref": "rbil61:INTERRUP.G #01680 76h (118)",
           "cites": " 76h (118) (DOS 5.0+,NetWare4) invalid value for verify flag"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 76h (118)",
+            "line": " 76h (118) (DOS 5.0+,NetWare4) invalid value for verify flag"
+          }
+        ],
+        "digest": "95c91276b072552bb84b5ebf7c679f5dac2d49a9ef1700a74b7fe2d0bf8f689b"
+      }
     },
     {
       "key": "119",
@@ -2467,7 +2676,18 @@
           "ref": "rbil61:INTERRUP.G #01680 77h (119)",
           "cites": " 77h (119) (DOS 5.0+,NetWare4) level four driver not found by DOS IOCTL"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 77h (119)",
+            "line": " 77h (119) (DOS 5.0+,NetWare4) level four driver not found by DOS IOCTL"
+          }
+        ],
+        "digest": "300ae49a63c6f981edb4d51eb0653e44992bec858a9c566cc73bb0f29f5ad9c9"
+      }
     },
     {
       "key": "120",
@@ -2480,7 +2700,18 @@
           "ref": "rbil61:INTERRUP.G #01680 78h (120)",
           "cites": " 78h (120) (DOS 5.0+,NetWare4) invalid / unimplemented function number"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 78h (120)",
+            "line": " 78h (120) (DOS 5.0+,NetWare4) invalid / unimplemented function number"
+          }
+        ],
+        "digest": "5b045478fb76c747ab9971bc1b14167a1af4cf1863735f46fd4108ae97ac08ac"
+      }
     },
     {
       "key": "121",
@@ -2493,7 +2724,18 @@
           "ref": "rbil61:INTERRUP.G #01680 79h (121)",
           "cites": " 79h (121) (DOS 5.0+,NetWare4) semaphore timeout"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 79h (121)",
+            "line": " 79h (121) (DOS 5.0+,NetWare4) semaphore timeout"
+          }
+        ],
+        "digest": "73e7ca8e888bf1a8a9dd3cc9acc234f4b8ede25a786edcc7d89e3bc529d81855"
+      }
     },
     {
       "key": "122",
@@ -2506,7 +2748,18 @@
           "ref": "rbil61:INTERRUP.G #01680 7Ah (122)",
           "cites": " 7Ah (122) (DOS 5.0+,NetWare4) buffer too small to hold return data"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 7Ah (122)",
+            "line": " 7Ah (122) (DOS 5.0+,NetWare4) buffer too small to hold return data"
+          }
+        ],
+        "digest": "e972f96194f3364101a20ed96a3facd30b8f00e0bec1217684358eb3ad4c29fc"
+      }
     },
     {
       "key": "123",
@@ -2519,7 +2772,18 @@
           "ref": "rbil61:INTERRUP.G #01680 7Bh (123)",
           "cites": " 7Bh (123) (DOS 5.0+,NetWare4) invalid character or bad file-system name"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 7Bh (123)",
+            "line": " 7Bh (123) (DOS 5.0+,NetWare4) invalid character or bad file-system name"
+          }
+        ],
+        "digest": "c9ef75716214885949e2992b02707b3d6c459ebba559670b4d221f5740a217b4"
+      }
     },
     {
       "key": "124",
@@ -2532,7 +2796,18 @@
           "ref": "rbil61:INTERRUP.G #01680 7Ch (124)",
           "cites": " 7Ch (124) (DOS 5.0+,NetWare4) unimplemented information level"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 7Ch (124)",
+            "line": " 7Ch (124) (DOS 5.0+,NetWare4) unimplemented information level"
+          }
+        ],
+        "digest": "59aa1ce04ad99674359fb8216a6ffbcdcb9a2e896ec6817a1191c366d238f1a0"
+      }
     },
     {
       "key": "125",
@@ -2545,7 +2820,18 @@
           "ref": "rbil61:INTERRUP.G #01680 7Dh (125)",
           "cites": " 7Dh (125) (DOS 5.0+,NetWare4) no volume label found"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 7Dh (125)",
+            "line": " 7Dh (125) (DOS 5.0+,NetWare4) no volume label found"
+          }
+        ],
+        "digest": "2c54608d8a57a8b245da31bca80d702285ceb0d9b4d707fd22124c096c7a3ea6"
+      }
     },
     {
       "key": "126",
@@ -2558,7 +2844,18 @@
           "ref": "rbil61:INTERRUP.G #01680 7Eh (126)",
           "cites": " 7Eh (126) (DOS 5.0+,NetWare4) module handle not found"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 7Eh (126)",
+            "line": " 7Eh (126) (DOS 5.0+,NetWare4) module handle not found"
+          }
+        ],
+        "digest": "52f39e1a9bde1269cd5d89bfef2e99a0c9b1240c8a01c0259bee0e53cc7507b7"
+      }
     },
     {
       "key": "127",
@@ -2571,7 +2868,18 @@
           "ref": "rbil61:INTERRUP.G #01680 7Fh (127)",
           "cites": " 7Fh (127) (DOS 5.0+,NetWare4) procedure address not found"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 7Fh (127)",
+            "line": " 7Fh (127) (DOS 5.0+,NetWare4) procedure address not found"
+          }
+        ],
+        "digest": "c7add499200c308df095bd1621dd4faf03ff8118ebe7789b49f65e275584e2fa"
+      }
     },
     {
       "key": "128",
@@ -2584,7 +2892,18 @@
           "ref": "rbil61:INTERRUP.G #01680 80h (128)",
           "cites": " 80h (128) (DOS 5.0+,NetWare4) CWait found no children"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 80h (128)",
+            "line": " 80h (128) (DOS 5.0+,NetWare4) CWait found no children"
+          }
+        ],
+        "digest": "bd1cb381f5289fda09e3687d1f1b3d5da6308c5e7fa33f49a05b3d9e879a0c0d"
+      }
     },
     {
       "key": "129",
@@ -2597,7 +2916,18 @@
           "ref": "rbil61:INTERRUP.G #01680 81h (129)",
           "cites": " 81h (129) (DOS 5.0+,NetWare4) CWait children still running"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 81h (129)",
+            "line": " 81h (129) (DOS 5.0+,NetWare4) CWait children still running"
+          }
+        ],
+        "digest": "2457d297d31f5a92c4bf6bc883a1d59c37e8177bc0e548bde2f92da1023f50a3"
+      }
     },
     {
       "key": "130",
@@ -2610,7 +2940,18 @@
           "ref": "rbil61:INTERRUP.G #01680 82h (130)",
           "cites": " 82h (130) (DOS 5.0+,NetWare4) invalid operation for direct disk-access handle"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 82h (130)",
+            "line": " 82h (130) (DOS 5.0+,NetWare4) invalid operation for direct disk-access handle"
+          }
+        ],
+        "digest": "f249e1622c2c3bc538e6025d97701bd79f6b5dc44878b369e9762c9a754b3a12"
+      }
     },
     {
       "key": "131",
@@ -2623,7 +2964,18 @@
           "ref": "rbil61:INTERRUP.G #01680 83h (131)",
           "cites": " 83h (131) (DOS 5.0+,NetWare4) attempted seek to negative offset"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 83h (131)",
+            "line": " 83h (131) (DOS 5.0+,NetWare4) attempted seek to negative offset"
+          }
+        ],
+        "digest": "8aa3d94aafdd225c74e4359cb2f589797e5ee9f5294ead60c02ca5139a6de8a8"
+      }
     },
     {
       "key": "132",
@@ -2636,7 +2988,18 @@
           "ref": "rbil61:INTERRUP.G #01680 84h (132)",
           "cites": " 84h (132) (DOS 5.0+,NetWare4) attempted to seek on device or pipe"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 84h (132)",
+            "line": " 84h (132) (DOS 5.0+,NetWare4) attempted to seek on device or pipe"
+          }
+        ],
+        "digest": "5f53a79b1169c9abdff79f30e20b92c16ab4db801ffddee93a6bf11a66d770df"
+      }
     },
     {
       "key": "133",
@@ -2649,7 +3012,18 @@
           "ref": "rbil61:INTERRUP.G #01680 85h (133)",
           "cites": " 85h (133) (DOS 5.0+,NetWare4) drive already has JOINed drives"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 85h (133)",
+            "line": " 85h (133) (DOS 5.0+,NetWare4) drive already has JOINed drives"
+          }
+        ],
+        "digest": "a369586890c2aafd034188e815ce67638c7bef3593bc62e6d6618efe95c8a9d0"
+      }
     },
     {
       "key": "134",
@@ -2662,7 +3036,18 @@
           "ref": "rbil61:INTERRUP.G #01680 86h (134)",
           "cites": " 86h (134) (DOS 5.0+,NetWare4) drive is already JOINed"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 86h (134)",
+            "line": " 86h (134) (DOS 5.0+,NetWare4) drive is already JOINed"
+          }
+        ],
+        "digest": "87bf0fc5d6a75bfafd18dcc0da92427e66f937de88b78ce01bf8cfbfb5bf1d51"
+      }
     },
     {
       "key": "135",
@@ -2675,7 +3060,18 @@
           "ref": "rbil61:INTERRUP.G #01680 87h (135)",
           "cites": " 87h (135) (DOS 5.0+,NetWare4) drive is already SUBSTed"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 87h (135)",
+            "line": " 87h (135) (DOS 5.0+,NetWare4) drive is already SUBSTed"
+          }
+        ],
+        "digest": "5ab1f6a86dffef31f3bba396a2f1872995c1dbb936b83b8d2c2e644efab7c886"
+      }
     },
     {
       "key": "136",
@@ -2688,7 +3084,18 @@
           "ref": "rbil61:INTERRUP.G #01680 88h (136)",
           "cites": " 88h (136) (DOS 5.0+,NetWare4) can not delete drive which is not JOINed"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 88h (136)",
+            "line": " 88h (136) (DOS 5.0+,NetWare4) can not delete drive which is not JOINed"
+          }
+        ],
+        "digest": "246a5ea0c903b6a50b85a1e0dca748ca0c17c2130999d2d1a91925b982bdfe32"
+      }
     },
     {
       "key": "137",
@@ -2701,7 +3108,18 @@
           "ref": "rbil61:INTERRUP.G #01680 89h (137)",
           "cites": " 89h (137) (DOS 5.0+,NetWare4) can not delete drive which is not SUBSTed"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 89h (137)",
+            "line": " 89h (137) (DOS 5.0+,NetWare4) can not delete drive which is not SUBSTed"
+          }
+        ],
+        "digest": "dc85a6ddc20f868875f4c99e82f70fb0cd63ac314c5f56eba61880053c794cf3"
+      }
     },
     {
       "key": "138",
@@ -2714,7 +3132,18 @@
           "ref": "rbil61:INTERRUP.G #01680 8Ah (138)",
           "cites": " 8Ah (138) (DOS 5.0+,NetWare4) can not JOIN to a JOINed drive"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 8Ah (138)",
+            "line": " 8Ah (138) (DOS 5.0+,NetWare4) can not JOIN to a JOINed drive"
+          }
+        ],
+        "digest": "50342401ba690a48cbe6bc01dc5d6198eb91a8bd3061812d0577f632588100fa"
+      }
     },
     {
       "key": "139",
@@ -2727,7 +3156,18 @@
           "ref": "rbil61:INTERRUP.G #01680 8Bh (139)",
           "cites": " 8Bh (139) (DOS 5.0+,NetWare4) can not SUBST to a SUBSTed drive"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 8Bh (139)",
+            "line": " 8Bh (139) (DOS 5.0+,NetWare4) can not SUBST to a SUBSTed drive"
+          }
+        ],
+        "digest": "b67ce3f12aae9117ee889327b0dddc830d2f2a8feebc8314902c53dcbe80bc17"
+      }
     },
     {
       "key": "140",
@@ -2740,7 +3180,18 @@
           "ref": "rbil61:INTERRUP.G #01680 8Ch (140)",
           "cites": " 8Ch (140) (DOS 5.0+,NetWare4) can not JOIN to a SUBSTed drive"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 8Ch (140)",
+            "line": " 8Ch (140) (DOS 5.0+,NetWare4) can not JOIN to a SUBSTed drive"
+          }
+        ],
+        "digest": "0cd571412b54c1fdd7158f3ef1d392f6341d7c36a4345dc7fc98ccd0dc4177cc"
+      }
     },
     {
       "key": "141",
@@ -2753,7 +3204,18 @@
           "ref": "rbil61:INTERRUP.G #01680 8Dh (141)",
           "cites": " 8Dh (141) (DOS 5.0+,NetWare4) can not SUBST to a JOINed drive"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 8Dh (141)",
+            "line": " 8Dh (141) (DOS 5.0+,NetWare4) can not SUBST to a JOINed drive"
+          }
+        ],
+        "digest": "67ae884097be153057dc7568afde5383ccb0a2b3d0368a6d14db32f91b475e47"
+      }
     },
     {
       "key": "142",
@@ -2766,7 +3228,18 @@
           "ref": "rbil61:INTERRUP.G #01680 8Eh (142)",
           "cites": " 8Eh (142) (DOS 5.0+,NetWare4) drive is busy"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 8Eh (142)",
+            "line": " 8Eh (142) (DOS 5.0+,NetWare4) drive is busy"
+          }
+        ],
+        "digest": "f72ce1cfc450406fa00ebea38bea832577795acc1c813716ca6b0f32b3d8f625"
+      }
     },
     {
       "key": "143",
@@ -2779,7 +3252,18 @@
           "ref": "rbil61:INTERRUP.G #01680 8Fh (143)",
           "cites": " 8Fh (143) (DOS 5.0+,NetWare4) can not JOIN/SUBST to same drive"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 8Fh (143)",
+            "line": " 8Fh (143) (DOS 5.0+,NetWare4) can not JOIN/SUBST to same drive"
+          }
+        ],
+        "digest": "5823d841e9d1bfa23dae928d9bc002e1997aef6c69e0883a0d48777c7588af6f"
+      }
     },
     {
       "key": "144",
@@ -2792,7 +3276,18 @@
           "ref": "rbil61:INTERRUP.G #01680 90h (144)",
           "cites": " 90h (144) (DOS 5.0+,NetWare4) directory must not be root directory"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 90h (144)",
+            "line": " 90h (144) (DOS 5.0+,NetWare4) directory must not be root directory"
+          }
+        ],
+        "digest": "e14fdab42213d0bc7df62eb2cf8642bb5c798ebe7cc30bd145b4907fcbda2aac"
+      }
     },
     {
       "key": "145",
@@ -2805,7 +3300,18 @@
           "ref": "rbil61:INTERRUP.G #01680 91h (145)",
           "cites": " 91h (145) (DOS 5.0+,NetWare4) can only JOIN to empty directory"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 91h (145)",
+            "line": " 91h (145) (DOS 5.0+,NetWare4) can only JOIN to empty directory"
+          }
+        ],
+        "digest": "db71efb94a4f586920c6eb847f6a6e4dd63b2dc478dc3cc3bfc40c5dec789916"
+      }
     },
     {
       "key": "146",
@@ -2818,7 +3324,18 @@
           "ref": "rbil61:INTERRUP.G #01680 92h (146)",
           "cites": " 92h (146) (DOS 5.0+,NetWare4) path is already in use for SUBST"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 92h (146)",
+            "line": " 92h (146) (DOS 5.0+,NetWare4) path is already in use for SUBST"
+          }
+        ],
+        "digest": "568a7d5ec016103d900e7f590fb45a4e14a74ac6dd0a52f41865b6220e1cf794"
+      }
     },
     {
       "key": "147",
@@ -2831,7 +3348,18 @@
           "ref": "rbil61:INTERRUP.G #01680 93h (147)",
           "cites": " 93h (147) (DOS 5.0+,NetWare4) path is already in use for JOIN"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 93h (147)",
+            "line": " 93h (147) (DOS 5.0+,NetWare4) path is already in use for JOIN"
+          }
+        ],
+        "digest": "d7c47a7496aaa1ed04fc151ad174befdc484c07dd7ca897e3cd5ebd6e4729d6c"
+      }
     },
     {
       "key": "148",
@@ -2844,7 +3372,18 @@
           "ref": "rbil61:INTERRUP.G #01680 94h (148)",
           "cites": " 94h (148) (DOS 5.0+,NetWare4) path is in use by another process"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 94h (148)",
+            "line": " 94h (148) (DOS 5.0+,NetWare4) path is in use by another process"
+          }
+        ],
+        "digest": "c7b5e68599fb2d1b27b135fe6aae3d72772e1c8deb1cc6d0ed4d4e95193f6938"
+      }
     },
     {
       "key": "149",
@@ -2857,7 +3396,18 @@
           "ref": "rbil61:INTERRUP.G #01680 95h (149)",
           "cites": " 95h (149) (DOS 5.0+,NetWare4) directory previously SUBSTituted"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 95h (149)",
+            "line": " 95h (149) (DOS 5.0+,NetWare4) directory previously SUBSTituted"
+          }
+        ],
+        "digest": "f909b0c5de8ed8c07a016d37e277b367d703a200a262615aa30376be96e9dcb7"
+      }
     },
     {
       "key": "150",
@@ -2870,7 +3420,18 @@
           "ref": "rbil61:INTERRUP.G #01680 96h (150)",
           "cites": " 96h (150) (DOS 5.0+,NetWare4) system trace error"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 96h (150)",
+            "line": " 96h (150) (DOS 5.0+,NetWare4) system trace error"
+          }
+        ],
+        "digest": "eb209bfcd12107484b7807bbec96de9684a1c236c5fcab5e4cc3a97c2d156820"
+      }
     },
     {
       "key": "151",
@@ -2883,7 +3444,18 @@
           "ref": "rbil61:INTERRUP.G #01680 97h (151)",
           "cites": " 97h (151) (DOS 5.0+,NetWare4) invalid event count for DosMuxSemWait"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 97h (151)",
+            "line": " 97h (151) (DOS 5.0+,NetWare4) invalid event count for DosMuxSemWait"
+          }
+        ],
+        "digest": "6d12bbc680b598c977822455402baa83c8e9117666036949289302b14a31767c"
+      }
     },
     {
       "key": "152",
@@ -2896,7 +3468,18 @@
           "ref": "rbil61:INTERRUP.G #01680 98h (152)",
           "cites": " 98h (152) (DOS 5.0+,NetWare4) too many waiting on mutex"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 98h (152)",
+            "line": " 98h (152) (DOS 5.0+,NetWare4) too many waiting on mutex"
+          }
+        ],
+        "digest": "cc8f9b1ef38cd46495341db06b79bcbf683ad5df94009009161467f19bf08790"
+      }
     },
     {
       "key": "153",
@@ -2909,7 +3492,18 @@
           "ref": "rbil61:INTERRUP.G #01680 99h (153)",
           "cites": " 99h (153) (DOS 5.0+,NetWare4) invalid list format"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 99h (153)",
+            "line": " 99h (153) (DOS 5.0+,NetWare4) invalid list format"
+          }
+        ],
+        "digest": "5610fe2685748e5714a56c56ba9017ae58cf6f5f84bb981140d8284d1ba485e1"
+      }
     },
     {
       "key": "154",
@@ -2922,7 +3516,18 @@
           "ref": "rbil61:INTERRUP.G #01680 9Ah (154)",
           "cites": " 9Ah (154) (DOS 5.0+,NetWare4) volume label too large"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 9Ah (154)",
+            "line": " 9Ah (154) (DOS 5.0+,NetWare4) volume label too large"
+          }
+        ],
+        "digest": "64e868573fa6d0118b7fba9d747f4ab0f254e08c7a2e061d41f048fe6db570e8"
+      }
     },
     {
       "key": "155",
@@ -2935,7 +3540,18 @@
           "ref": "rbil61:INTERRUP.G #01680 9Bh (155)",
           "cites": " 9Bh (155) (DOS 5.0+,NetWare4) unable to create another TCB"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 9Bh (155)",
+            "line": " 9Bh (155) (DOS 5.0+,NetWare4) unable to create another TCB"
+          }
+        ],
+        "digest": "ca40c1d4424f35c1411f5db679cf590f8c60ecc495ab4dc1f45c102fe0752f39"
+      }
     },
     {
       "key": "156",
@@ -2948,7 +3564,18 @@
           "ref": "rbil61:INTERRUP.G #01680 9Ch (156)",
           "cites": " 9Ch (156) (DOS 5.0+,NetWare4) signal refused"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 9Ch (156)",
+            "line": " 9Ch (156) (DOS 5.0+,NetWare4) signal refused"
+          }
+        ],
+        "digest": "4f7d68c61a3049533a21993737d7d30f7cffb33b906635956987d6e4a91db34d"
+      }
     },
     {
       "key": "157",
@@ -2961,7 +3588,18 @@
           "ref": "rbil61:INTERRUP.G #01680 9Dh (157)",
           "cites": " 9Dh (157) (DOS 5.0+,NetWare4) segment discarded"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 9Dh (157)",
+            "line": " 9Dh (157) (DOS 5.0+,NetWare4) segment discarded"
+          }
+        ],
+        "digest": "b2542459e5bef2d3e2382417b4b77c3bf6de351c029a679825ca7b4051a5632d"
+      }
     },
     {
       "key": "158",
@@ -2974,7 +3612,18 @@
           "ref": "rbil61:INTERRUP.G #01680 9Eh (158)",
           "cites": " 9Eh (158) (DOS 5.0+,NetWare4) segment not locked"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 9Eh (158)",
+            "line": " 9Eh (158) (DOS 5.0+,NetWare4) segment not locked"
+          }
+        ],
+        "digest": "e192bb03849dcd725845fd949d1c9283b34ae08222df7efecf65d78d2796ed02"
+      }
     },
     {
       "key": "159",
@@ -2987,7 +3636,18 @@
           "ref": "rbil61:INTERRUP.G #01680 9Fh (159)",
           "cites": " 9Fh (159) (DOS 5.0+,NetWare4) invalid thread-ID address"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 9Fh (159)",
+            "line": " 9Fh (159) (DOS 5.0+,NetWare4) invalid thread-ID address"
+          }
+        ],
+        "digest": "eb67a9fd10c75d167bebbda041fee72c3fc36e10777c8a5a3beb0fe52ad4050b"
+      }
     },
     {
       "key": "160",
@@ -3000,7 +3660,18 @@
           "ref": "rbil61:INTERRUP.G #01680 A0h (160) (DOS 5.0+) bad arguments",
           "cites": " A0h (160) (DOS 5.0+) bad arguments"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 A0h (160) (DOS 5.0+) bad arguments",
+            "line": " A0h (160) (DOS 5.0+) bad arguments"
+          }
+        ],
+        "digest": "0e176117f31e3115ba8aafc90e9efca32fb765215cb766b355fb4921de8f3616"
+      }
     },
     {
       "key": "161",
@@ -3013,7 +3684,18 @@
           "ref": "rbil61:INTERRUP.G #01680 A1h (161)",
           "cites": " A1h (161) (DOS 5.0+,NetWare4) invalid pathname passed to EXEC"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 A1h (161)",
+            "line": " A1h (161) (DOS 5.0+,NetWare4) invalid pathname passed to EXEC"
+          }
+        ],
+        "digest": "cc997554304a6b70bfac44bcff4757879d240096ab1ec5fd943a4aaef618be3b"
+      }
     },
     {
       "key": "162",
@@ -3026,7 +3708,18 @@
           "ref": "rbil61:INTERRUP.G #01680 A2h (162)",
           "cites": " A2h (162) (DOS 5.0+,NetWare4) signal already pending"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 A2h (162)",
+            "line": " A2h (162) (DOS 5.0+,NetWare4) signal already pending"
+          }
+        ],
+        "digest": "5c1457a5f13b400e6eb98447517215c9f1d9594a3f61e81ffd064a537699ce17"
+      }
     },
     {
       "key": "163",
@@ -3039,7 +3732,18 @@
           "ref": "rbil61:INTERRUP.G #01680 A3h (163) (DOS 5.0+) uncertain media",
           "cites": " A3h (163) (DOS 5.0+) uncertain media"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 A3h (163) (DOS 5.0+) uncertain media",
+            "line": " A3h (163) (DOS 5.0+) uncertain media"
+          }
+        ],
+        "digest": "87b9ad506ad4bedec4422bf1c26e01401c5ff40bcbc44ef000e6f93765f574eb"
+      }
     },
     {
       "key": "164",
@@ -3052,7 +3756,18 @@
           "ref": "rbil61:INTERRUP.G #01680 A4h (164) (DOS 5.0+) maximum",
           "cites": " A4h (164) (DOS 5.0+) maximum number of threads reached"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 A4h (164) (DOS 5.0+) maximum",
+            "line": " A4h (164) (DOS 5.0+) maximum number of threads reached"
+          }
+        ],
+        "digest": "30bc62215273df16aaa8ddf3e292053d7d58f462f1c938f7b561d94e70fc7e63"
+      }
     },
     {
       "key": "165",
@@ -3065,7 +3780,18 @@
           "ref": "rbil61:INTERRUP.G #01680 A5h (165)",
           "cites": " A5h (165) (NetWare4) ERROR_124 mapping"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 A5h (165)",
+            "line": " A5h (165) (NetWare4) ERROR_124 mapping"
+          }
+        ],
+        "digest": "58690c9d4308add91fe8f32367350ed2c6bcd1346b2694a76e1566505d3d58bb"
+      }
     },
     {
       "key": "176",
@@ -3078,7 +3804,18 @@
           "ref": "rbil61:INTERRUP.G #01680 B0h (176)",
           "cites": " B0h (176) (MS-DOS 7.0) volume is not locked"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 B0h (176)",
+            "line": " B0h (176) (MS-DOS 7.0) volume is not locked"
+          }
+        ],
+        "digest": "6bc7bbc5833e8f372d414433aba92bd007a96c7aa1fb02236a9453760652ac4c"
+      }
     },
     {
       "key": "177",
@@ -3091,7 +3828,18 @@
           "ref": "rbil61:INTERRUP.G #01680 B1h (177)",
           "cites": " B1h (177) (MS-DOS 7.0) volume is locked in drive"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 B1h (177)",
+            "line": " B1h (177) (MS-DOS 7.0) volume is locked in drive"
+          }
+        ],
+        "digest": "d32b47cd1fac2ad82b86cf72104e6153c3e69fe0d66ba404218e838afaaf6291"
+      }
     },
     {
       "key": "178",
@@ -3104,7 +3852,18 @@
           "ref": "rbil61:INTERRUP.G #01680 B2h (178)",
           "cites": " B2h (178) (MS-DOS 7.0) volume is not removable"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 B2h (178)",
+            "line": " B2h (178) (MS-DOS 7.0) volume is not removable"
+          }
+        ],
+        "digest": "d45937ab321f6ac977daef27d8cdbaaea07e6a89d3111bea4b07d02960e6f8c7"
+      }
     },
     {
       "key": "180",
@@ -3117,7 +3876,18 @@
           "ref": "rbil61:INTERRUP.G #01680 B4h (180) (MS-DOS 7.0) lock count",
           "cites": " B4h (180) (MS-DOS 7.0) lock count has been exceeded"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 B4h (180) (MS-DOS 7.0) lock count",
+            "line": " B4h (180) (MS-DOS 7.0) lock count has been exceeded"
+          }
+        ],
+        "digest": "7c732aae7ac15961da09be9d2b8365b48e2810fa3d87a92532d761dd6e093b3f"
+      }
     },
     {
       "key": "181",
@@ -3130,7 +3900,18 @@
           "ref": "rbil61:INTERRUP.G #01680 B5h (181) (MS-DOS 7.0) a valid eject",
           "cites": " B5h (181) (MS-DOS 7.0) a valid eject request failed"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 B5h (181) (MS-DOS 7.0) a valid eject",
+            "line": " B5h (181) (MS-DOS 7.0) a valid eject request failed"
+          }
+        ],
+        "digest": "cca5c35ad8e21ff76b431113e8fd94a1c07b282d0150e2845bff059e17cbe116"
+      }
     },
     {
       "key": "182",
@@ -3143,7 +3924,18 @@
           "ref": "rbil61:INTERRUP.G #01680 B6h (182)",
           "cites": " B6h (182) (DOS 5.0+,NetWare4) invalid ordinal"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 B6h (182)",
+            "line": " B6h (182) (DOS 5.0+,NetWare4) invalid ordinal"
+          }
+        ],
+        "digest": "aa24842a51625f8cfd584570c48dab3cdac739aa8bd2c70f92b2fa318d4beffb"
+      }
     },
     {
       "key": "183",
@@ -3156,7 +3948,18 @@
           "ref": "rbil61:INTERRUP.G #01680 B7h (183)",
           "cites": " B7h (183) (DOS 5.0+,NetWare4) shared segment already exists"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 B7h (183)",
+            "line": " B7h (183) (DOS 5.0+,NetWare4) shared segment already exists"
+          }
+        ],
+        "digest": "751d93f53cf29d05b54775ac0d487269d780132cc4edc4319b114378f01040a1"
+      }
     },
     {
       "key": "184",
@@ -3169,7 +3972,18 @@
           "ref": "rbil61:INTERRUP.G #01680 B8h (184)",
           "cites": " B8h (184) (DOS 5.0+,NetWare4) no child process to wait for"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 B8h (184)",
+            "line": " B8h (184) (DOS 5.0+,NetWare4) no child process to wait for"
+          }
+        ],
+        "digest": "ce0a546cc665521090ee572c42ec2dede4d49b3bb1e54ff69a3245224f03dbc0"
+      }
     },
     {
       "key": "185",
@@ -3182,7 +3996,18 @@
           "ref": "rbil61:INTERRUP.G #01680 B9h (185)",
           "cites": " B9h (185) (DOS 5.0+,NetWare4) NoWait specified and child still running"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 B9h (185)",
+            "line": " B9h (185) (DOS 5.0+,NetWare4) NoWait specified and child still running"
+          }
+        ],
+        "digest": "6a78584a3781dd679575710c23ae8b56948a13c4ea889f9af9ffd1a478955c16"
+      }
     },
     {
       "key": "186",
@@ -3195,7 +4020,18 @@
           "ref": "rbil61:INTERRUP.G #01680 BAh (186)",
           "cites": " BAh (186) (DOS 5.0+,NetWare4) invalid flag number"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 BAh (186)",
+            "line": " BAh (186) (DOS 5.0+,NetWare4) invalid flag number"
+          }
+        ],
+        "digest": "26b09854c7ca59c45629acedf6a9f4b597c283ef460bf73021d795abd1cd5054"
+      }
     },
     {
       "key": "187",
@@ -3208,7 +4044,18 @@
           "ref": "rbil61:INTERRUP.G #01680 BBh (187)",
           "cites": " BBh (187) (DOS 5.0+,NetWare4) semaphore does not exist"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 BBh (187)",
+            "line": " BBh (187) (DOS 5.0+,NetWare4) semaphore does not exist"
+          }
+        ],
+        "digest": "74af5943da979522462dfee796e3951d1500600ec394b8d95e5a30e5e7ac13cb"
+      }
     },
     {
       "key": "188",
@@ -3221,7 +4068,18 @@
           "ref": "rbil61:INTERRUP.G #01680 BCh (188)",
           "cites": " BCh (188) (DOS 5.0+,NetWare4) invalid starting code segment"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 BCh (188)",
+            "line": " BCh (188) (DOS 5.0+,NetWare4) invalid starting code segment"
+          }
+        ],
+        "digest": "2c30bff1c30e0acf1893f9b992873f9ba4489bbee6d2c1b524d313d6863857e1"
+      }
     },
     {
       "key": "189",
@@ -3234,7 +4092,18 @@
           "ref": "rbil61:INTERRUP.G #01680 BDh (189)",
           "cites": " BDh (189) (DOS 5.0+,NetWare4) invalid stack segment"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 BDh (189)",
+            "line": " BDh (189) (DOS 5.0+,NetWare4) invalid stack segment"
+          }
+        ],
+        "digest": "56eeee520a853ec168339d202385a36468f2782a10a77116fcc0e49bb2c64b4a"
+      }
     },
     {
       "key": "190",
@@ -3247,7 +4116,18 @@
           "ref": "rbil61:INTERRUP.G #01680 BEh (190)",
           "cites": " BEh (190) (DOS 5.0+,NetWare4) invalid module type (DLL can not be used as"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 BEh (190)",
+            "line": " BEh (190) (DOS 5.0+,NetWare4) invalid module type (DLL can not be used as"
+          }
+        ],
+        "digest": "db3cd127f691c991aae70795aa4c486cf2ba16b9e36084081269dcbb84f244cd"
+      }
     },
     {
       "key": "191",
@@ -3260,7 +4140,18 @@
           "ref": "rbil61:INTERRUP.G #01680 BFh (191)",
           "cites": " BFh (191) (DOS 5.0+,NetWare4) invalid EXE signature"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 BFh (191)",
+            "line": " BFh (191) (DOS 5.0+,NetWare4) invalid EXE signature"
+          }
+        ],
+        "digest": "fd7c375b39aac17059b9246f28bbc10b343ba94fa0a7411e1ef543b3d7ff1034"
+      }
     },
     {
       "key": "192",
@@ -3273,7 +4164,18 @@
           "ref": "rbil61:INTERRUP.G #01680 C0h (192)",
           "cites": " C0h (192) (DOS 5.0+,NetWare4) EXE marked invalid"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 C0h (192)",
+            "line": " C0h (192) (DOS 5.0+,NetWare4) EXE marked invalid"
+          }
+        ],
+        "digest": "f57381a02ed9e00d73aeefb70e926f4db0c5d8cc77c07f8cb40bf7f23790a45e"
+      }
     },
     {
       "key": "193",
@@ -3286,7 +4188,18 @@
           "ref": "rbil61:INTERRUP.G #01680 C1h (193)",
           "cites": " C1h (193) (DOS 5.0+,NetWare4) bad EXE format (e.g. DOS-mode program)"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 C1h (193)",
+            "line": " C1h (193) (DOS 5.0+,NetWare4) bad EXE format (e.g. DOS-mode program)"
+          }
+        ],
+        "digest": "a44757c4631312ba66b06a33637d25521790f1389720994bd3bdddd82286d871"
+      }
     },
     {
       "key": "194",
@@ -3299,7 +4212,18 @@
           "ref": "rbil61:INTERRUP.G #01680 C2h (194)",
           "cites": " C2h (194) (DOS 5.0+,NetWare4) iterated data exceeds 64K"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 C2h (194)",
+            "line": " C2h (194) (DOS 5.0+,NetWare4) iterated data exceeds 64K"
+          }
+        ],
+        "digest": "75098c524054d65e15c34f4249315d45d87685e2d8a9692be9c5e740282b7dcb"
+      }
     },
     {
       "key": "195",
@@ -3312,7 +4236,18 @@
           "ref": "rbil61:INTERRUP.G #01680 C3h (195)",
           "cites": " C3h (195) (DOS 5.0+,NetWare4) invalid minimum allocation size"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 C3h (195)",
+            "line": " C3h (195) (DOS 5.0+,NetWare4) invalid minimum allocation size"
+          }
+        ],
+        "digest": "1bd0ba5ccc039e73196eda5ef17eb4d3567d78cf8c77b8a7c5643388f0b58fc9"
+      }
     },
     {
       "key": "196",
@@ -3325,7 +4260,18 @@
           "ref": "rbil61:INTERRUP.G #01680 C4h (196)",
           "cites": " C4h (196) (DOS 5.0+,NetWare4) dynamic link from invalid Ring"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 C4h (196)",
+            "line": " C4h (196) (DOS 5.0+,NetWare4) dynamic link from invalid Ring"
+          }
+        ],
+        "digest": "c28fbf7a54a3ed128611354ef2ad93f2f07b2eaca11711aaa0c505cdf77136ed"
+      }
     },
     {
       "key": "197",
@@ -3338,7 +4284,18 @@
           "ref": "rbil61:INTERRUP.G #01680 C5h (197)",
           "cites": " C5h (197) (DOS 5.0+,NetWare4) IOPL not enabled"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 C5h (197)",
+            "line": " C5h (197) (DOS 5.0+,NetWare4) IOPL not enabled"
+          }
+        ],
+        "digest": "24ede9640cc051635b8f2b266d159c90d1557219fa8c401abe2f2bd811d87684"
+      }
     },
     {
       "key": "198",
@@ -3351,7 +4308,18 @@
           "ref": "rbil61:INTERRUP.G #01680 C6h (198)",
           "cites": " C6h (198) (DOS 5.0+,NetWare4) invalid segment descriptor privilege level"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 C6h (198)",
+            "line": " C6h (198) (DOS 5.0+,NetWare4) invalid segment descriptor privilege level"
+          }
+        ],
+        "digest": "944a4a747cd8e8229e4f69947e59e471bf6c28ef00b10727a80fd9e17f919485"
+      }
     },
     {
       "key": "199",
@@ -3364,7 +4332,18 @@
           "ref": "rbil61:INTERRUP.G #01680 C7h (199)",
           "cites": " C7h (199) (DOS 5.0+,NetWare4) automatic data segment exceeds 64K"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 C7h (199)",
+            "line": " C7h (199) (DOS 5.0+,NetWare4) automatic data segment exceeds 64K"
+          }
+        ],
+        "digest": "42ceb0cf8ba1dd9ec4410cabce2869dff80b646e48e297a5ef5ac6d07092b161"
+      }
     },
     {
       "key": "200",
@@ -3377,7 +4356,18 @@
           "ref": "rbil61:INTERRUP.G #01680 C8h (200)",
           "cites": " C8h (200) (DOS 5.0+,NetWare4) Ring2 segment must be moveable"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 C8h (200)",
+            "line": " C8h (200) (DOS 5.0+,NetWare4) Ring2 segment must be moveable"
+          }
+        ],
+        "digest": "92bc48ec3c5b65e6d7dcb7e02ad502794931a694d9600b23840a410fa1490d47"
+      }
     },
     {
       "key": "201",
@@ -3390,7 +4380,18 @@
           "ref": "rbil61:INTERRUP.G #01680 C9h (201)",
           "cites": " C9h (201) (DOS 5.0+,NetWare4) relocation chain exceeds segment limit"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 C9h (201)",
+            "line": " C9h (201) (DOS 5.0+,NetWare4) relocation chain exceeds segment limit"
+          }
+        ],
+        "digest": "79c8c0318438d471832cd5f2f3e8486ab2ff52b5b6bb5a56b04961426f3dbe6b"
+      }
     },
     {
       "key": "202",
@@ -3403,7 +4404,18 @@
           "ref": "rbil61:INTERRUP.G #01680 CAh (202)",
           "cites": " CAh (202) (DOS 5.0+,NetWare4) infinite loop in relocation chain"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 CAh (202)",
+            "line": " CAh (202) (DOS 5.0+,NetWare4) infinite loop in relocation chain"
+          }
+        ],
+        "digest": "83af1be1e8d3acdb050d54b5aa2cbb0793a3649e190fd4af68fa7dbc340de1d6"
+      }
     },
     {
       "key": "203",
@@ -3416,7 +4428,18 @@
           "ref": "rbil61:INTERRUP.G #01680 CBh (203)",
           "cites": " CBh (203) (NetWare4) environment variable not found"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 CBh (203)",
+            "line": " CBh (203) (NetWare4) environment variable not found"
+          }
+        ],
+        "digest": "15d97a62b455b2b5edeb3248bcbe982f44e72451c7c9ec80d06507dd317faa42"
+      }
     },
     {
       "key": "204",
@@ -3429,7 +4452,18 @@
           "ref": "rbil61:INTERRUP.G #01680 CCh (204)",
           "cites": " CCh (204) (NetWare4) not current country"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 CCh (204)",
+            "line": " CCh (204) (NetWare4) not current country"
+          }
+        ],
+        "digest": "e48b680c8f894ffab2db4de50b812dffbe466ee52644714be667afaa326e7d55"
+      }
     },
     {
       "key": "205",
@@ -3442,7 +4476,18 @@
           "ref": "rbil61:INTERRUP.G #01680 CDh (205)",
           "cites": " CDh (205) (NetWare4) no signal sent"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 CDh (205)",
+            "line": " CDh (205) (NetWare4) no signal sent"
+          }
+        ],
+        "digest": "ae05322b351e2fb02adc31ef5c59b86fa3c2f202e5b075d08247675538ab8567"
+      }
     },
     {
       "key": "206",
@@ -3455,7 +4500,18 @@
           "ref": "rbil61:INTERRUP.G #01680 CEh (206)",
           "cites": " CEh (206) (NetWare4) file name not 8.3"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 CEh (206)",
+            "line": " CEh (206) (NetWare4) file name not 8.3"
+          }
+        ],
+        "digest": "ec3b13cb23290f136df14f881e1b2fef5a7c6a503f25f6ca3affab38b702087c"
+      }
     },
     {
       "key": "207",
@@ -3468,7 +4524,18 @@
           "ref": "rbil61:INTERRUP.G #01680 CFh (207)",
           "cites": " CFh (207) (NetWare4) Ring2 stack in use"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 CFh (207)",
+            "line": " CFh (207) (NetWare4) Ring2 stack in use"
+          }
+        ],
+        "digest": "9f680c88cb984e337f2b65a5a44ed5f3edaeb705554ee1c3ae707b376aae4c63"
+      }
     },
     {
       "key": "208",
@@ -3481,7 +4548,18 @@
           "ref": "rbil61:INTERRUP.G #01680 D0h (208)",
           "cites": " D0h (208) (NetWare4) meta expansion is too long"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 D0h (208)",
+            "line": " D0h (208) (NetWare4) meta expansion is too long"
+          }
+        ],
+        "digest": "bd229fcf844dc275906b1d4680cac2a738d5a0755713fa8c50bc62174e300ab2"
+      }
     },
     {
       "key": "209",
@@ -3494,7 +4572,18 @@
           "ref": "rbil61:INTERRUP.G #01680 D1h (209)",
           "cites": " D1h (209) (NetWare4) invalid signal number"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 D1h (209)",
+            "line": " D1h (209) (NetWare4) invalid signal number"
+          }
+        ],
+        "digest": "3cea0f9a0fa10ed32279bea5b305799cca5702021cdc40e6b5f2a77bb9b2a7c8"
+      }
     },
     {
       "key": "210",
@@ -3507,7 +4596,18 @@
           "ref": "rbil61:INTERRUP.G #01680 D2h (210)",
           "cites": " D2h (210) (NetWare4) inactive thread"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 D2h (210)",
+            "line": " D2h (210) (NetWare4) inactive thread"
+          }
+        ],
+        "digest": "e62f9a99779db7ef5bb7d79f54d148e4e8a4a8dd7a20b66f5ca2ae0c7b4ead4a"
+      }
     },
     {
       "key": "211",
@@ -3520,7 +4620,18 @@
           "ref": "rbil61:INTERRUP.G #01680 D3h (211)",
           "cites": " D3h (211) (NetWare4) file system information not available"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 D3h (211)",
+            "line": " D3h (211) (NetWare4) file system information not available"
+          }
+        ],
+        "digest": "04cd556f783233f832f46daef1ad8388844aa354321bda498cb8ed1008879d57"
+      }
     },
     {
       "key": "212",
@@ -3533,7 +4644,18 @@
           "ref": "rbil61:INTERRUP.G #01680 D4h (212)",
           "cites": " D4h (212) (NetWare4) locked error"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 D4h (212)",
+            "line": " D4h (212) (NetWare4) locked error"
+          }
+        ],
+        "digest": "f327ff31abefeaf579951285a6e2ea63320b7cf1262804c5b2e3f1290c132c5d"
+      }
     },
     {
       "key": "213",
@@ -3546,7 +4668,18 @@
           "ref": "rbil61:INTERRUP.G #01680 D5h (213)",
           "cites": " D5h (213) (NetWare4) attempted to execute non-family API call in DOS mode"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 D5h (213)",
+            "line": " D5h (213) (NetWare4) attempted to execute non-family API call in DOS mode"
+          }
+        ],
+        "digest": "dcd5c9ec18996889e427f202dd11d76771e9620783c55dcfbc62fbcc8d82fa04"
+      }
     },
     {
       "key": "214",
@@ -3559,7 +4692,18 @@
           "ref": "rbil61:INTERRUP.G #01680 D6h (214)",
           "cites": " D6h (214) (NetWare4) too many modules"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 D6h (214)",
+            "line": " D6h (214) (NetWare4) too many modules"
+          }
+        ],
+        "digest": "d569313e429992ffd90902c21c7a0365b827052268e64623399c84608288f161"
+      }
     },
     {
       "key": "215",
@@ -3572,7 +4716,18 @@
           "ref": "rbil61:INTERRUP.G #01680 D7h (215)",
           "cites": " D7h (215) (NetWare4) nesting not allowed"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 D7h (215)",
+            "line": " D7h (215) (NetWare4) nesting not allowed"
+          }
+        ],
+        "digest": "01cff36972df2a62090ae150034ea542d91bc46e6b9f1606a4b96a88cf24bc8b"
+      }
     },
     {
       "key": "230",
@@ -3585,7 +4740,18 @@
           "ref": "rbil61:INTERRUP.G #01680 E6h (230)",
           "cites": " E6h (230) (NetWare4) non-existent pipe, or bad operation"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 E6h (230)",
+            "line": " E6h (230) (NetWare4) non-existent pipe, or bad operation"
+          }
+        ],
+        "digest": "f4c36b4febc703499fbf24ce505cc412f05750ba5b62a78b4f083f301161aab0"
+      }
     },
     {
       "key": "231",
@@ -3598,7 +4764,18 @@
           "ref": "rbil61:INTERRUP.G #01680 E7h (231)",
           "cites": " E7h (231) (NetWare4) pipe is busy"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 E7h (231)",
+            "line": " E7h (231) (NetWare4) pipe is busy"
+          }
+        ],
+        "digest": "d63c2276ab5454056773e483736d8a7ebad8f6a19b7ba381a3fb6ca6a375c82c"
+      }
     },
     {
       "key": "232",
@@ -3611,7 +4788,18 @@
           "ref": "rbil61:INTERRUP.G #01680 E8h (232)",
           "cites": " E8h (232) (NetWare4) no data available for nonblocking read"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 E8h (232)",
+            "line": " E8h (232) (NetWare4) no data available for nonblocking read"
+          }
+        ],
+        "digest": "0086dea1ccdbd45a225ea0d2b991a741ceb37f1a4e3b1c3dddeddd5cc0894f71"
+      }
     },
     {
       "key": "233",
@@ -3624,7 +4812,18 @@
           "ref": "rbil61:INTERRUP.G #01680 E9h (233)",
           "cites": " E9h (233) (NetWare4) pipe disconnected by server"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 E9h (233)",
+            "line": " E9h (233) (NetWare4) pipe disconnected by server"
+          }
+        ],
+        "digest": "bd9c7a9239afa0268bf7b1f9b35a6c759ef6ab2a1ae7a91ed1c8b738ee598933"
+      }
     },
     {
       "key": "234",
@@ -3637,7 +4836,18 @@
           "ref": "rbil61:INTERRUP.G #01680 EAh (234)",
           "cites": " EAh (234) (NetWare4) more data available"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 EAh (234)",
+            "line": " EAh (234) (NetWare4) more data available"
+          }
+        ],
+        "digest": "4aa4a419e2dd69884f187cd53a22b2ecab431678d9a9570db9ad43cb8915a395"
+      }
     },
     {
       "key": "255",
@@ -3650,7 +4860,18 @@
           "ref": "rbil61:INTERRUP.G #01680 FFh (255)",
           "cites": " FFh (255) (NetWare4) invalid drive"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.G #01680 FFh (255)",
+            "line": " FFh (255) (NetWare4) invalid drive"
+          }
+        ],
+        "digest": "c7bc01846748c173085a3dc940147bfe01fd9f70e087634418ed63e31e9fed11"
+      }
     }
   ]
 }

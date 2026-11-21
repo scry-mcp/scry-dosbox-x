@@ -20,7 +20,18 @@
           "ref": "rbil61:INTERRUP.N E-310000",
           "cites": "INT 31 P - DPMI 0.9+ - ALLOCATE LDT DESCRIPTORS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310000",
+            "line": "INT 31 P - DPMI 0.9+ - ALLOCATE LDT DESCRIPTORS"
+          }
+        ],
+        "digest": "3fbd0496bd6c3f2f004cc8a320b5fe8ea21087c8bea4f61a15aa3ee9fc7fc993"
+      }
     },
     {
       "key": "0x31/0x00/0x01",
@@ -36,7 +47,18 @@
           "ref": "rbil61:INTERRUP.N E-310001",
           "cites": "INT 31 P - DPMI 0.9+ - FREE LDT DESCRIPTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310001",
+            "line": "INT 31 P - DPMI 0.9+ - FREE LDT DESCRIPTOR"
+          }
+        ],
+        "digest": "4186ce1847dc3305314d5027599aa77af59144d76b67f3c72d4bccf9c2507eb6"
+      }
     },
     {
       "key": "0x31/0x00/0x02",
@@ -52,7 +74,18 @@
           "ref": "rbil61:INTERRUP.N E-310002",
           "cites": "INT 31 P - DPMI 0.9+ - SEGMENT TO DESCRIPTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310002",
+            "line": "INT 31 P - DPMI 0.9+ - SEGMENT TO DESCRIPTOR"
+          }
+        ],
+        "digest": "13372a0593b3d8bb0050298ab63b4e3c568e91ec0d16dfc6cbf72abbf9cce0bc"
+      }
     },
     {
       "key": "0x31/0x00/0x03",
@@ -68,7 +101,18 @@
           "ref": "rbil61:INTERRUP.N E-310003",
           "cites": "INT 31 P - DPMI 0.9+ - GET NEXT SELECTOR INCREMENT VALUE"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310003",
+            "line": "INT 31 P - DPMI 0.9+ - GET NEXT SELECTOR INCREMENT VALUE"
+          }
+        ],
+        "digest": "a4f72c85163349c0c631d93617a8df98deb6e813e6f2ecea11de84a14523a9c7"
+      }
     },
     {
       "key": "0x31/0x00/0x04",
@@ -81,7 +125,18 @@
           "ref": "rbil61:INTERRUP.N E-310004",
           "cites": "INT 31 P - DPMI 0.9+ - LOCK SELECTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310004",
+            "line": "INT 31 P - DPMI 0.9+ - LOCK SELECTOR"
+          }
+        ],
+        "digest": "83dfec4e4def8ce84416293325a37ec7888ffacc150be814413e2db6a4c17934"
+      }
     },
     {
       "key": "0x31/0x00/0x05",
@@ -94,7 +149,18 @@
           "ref": "rbil61:INTERRUP.N E-310005",
           "cites": "INT 31 P - DPMI 0.9+ - UNLOCK SELECTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310005",
+            "line": "INT 31 P - DPMI 0.9+ - UNLOCK SELECTOR"
+          }
+        ],
+        "digest": "37d84da1c9cf51eee9186838ec5e8948a4cb6839791b70ee6b174a31cf13322f"
+      }
     },
     {
       "key": "0x31/0x00/0x06",
@@ -110,7 +176,18 @@
           "ref": "rbil61:INTERRUP.N E-310006",
           "cites": "INT 31 P - DPMI 0.9+ - GET SEGMENT BASE ADDRESS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310006",
+            "line": "INT 31 P - DPMI 0.9+ - GET SEGMENT BASE ADDRESS"
+          }
+        ],
+        "digest": "f51096cccabdfe4881cd1aa03557b8c312b9fdeb3649b35e7a78b22536d0dfbb"
+      }
     },
     {
       "key": "0x31/0x00/0x07",
@@ -126,7 +203,18 @@
           "ref": "rbil61:INTERRUP.N E-310007",
           "cites": "INT 31 P - DPMI 0.9+ - SET SEGMENT BASE ADDRESS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310007",
+            "line": "INT 31 P - DPMI 0.9+ - SET SEGMENT BASE ADDRESS"
+          }
+        ],
+        "digest": "711d82f0bbfddad0642880f305a48e92041832927b63c5f1077d3fe02862ca18"
+      }
     },
     {
       "key": "0x31/0x00/0x08",
@@ -139,7 +227,18 @@
           "ref": "rbil61:INTERRUP.N E-310008",
           "cites": "INT 31 P - DPMI 0.9+ - SET SEGMENT LIMIT"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310008",
+            "line": "INT 31 P - DPMI 0.9+ - SET SEGMENT LIMIT"
+          }
+        ],
+        "digest": "0723823f56d4ac0dab41db0eab82ddaffbe12a673994e6c52ad80d3333ae6605"
+      }
     },
     {
       "key": "0x31/0x00/0x09",
@@ -155,7 +254,18 @@
           "ref": "rbil61:INTERRUP.N E-310009",
           "cites": "INT 31 P - DPMI 0.9+ - SET DESCRIPTOR ACCESS RIGHTS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310009",
+            "line": "INT 31 P - DPMI 0.9+ - SET DESCRIPTOR ACCESS RIGHTS"
+          }
+        ],
+        "digest": "5e6358b210b0200f3d8025c7bbda51f76463f81c4ac22989b816c962d861373e"
+      }
     },
     {
       "key": "0x31/0x00/0x0A",
@@ -171,7 +281,18 @@
           "ref": "rbil61:INTERRUP.N E-31000A",
           "cites": "INT 31 P - DPMI 0.9+ - CREATE ALIAS DESCRIPTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-31000A",
+            "line": "INT 31 P - DPMI 0.9+ - CREATE ALIAS DESCRIPTOR"
+          }
+        ],
+        "digest": "15857ddaa9c565e91faa63ff230d1e66f3208c77ff3ea56e29b552428a638ced"
+      }
     },
     {
       "key": "0x31/0x00/0x0B",
@@ -184,7 +305,18 @@
           "ref": "rbil61:INTERRUP.N E-31000B",
           "cites": "INT 31 P - DPMI 0.9+ - GET DESCRIPTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-31000B",
+            "line": "INT 31 P - DPMI 0.9+ - GET DESCRIPTOR"
+          }
+        ],
+        "digest": "b1512dc17c1e7d5d5fd0f8c47451987a1cf199082a211ca727213d968b787772"
+      }
     },
     {
       "key": "0x31/0x00/0x0C",
@@ -197,7 +329,18 @@
           "ref": "rbil61:INTERRUP.N E-31000C",
           "cites": "INT 31 P - DPMI 0.9+ - SET DESCRIPTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-31000C",
+            "line": "INT 31 P - DPMI 0.9+ - SET DESCRIPTOR"
+          }
+        ],
+        "digest": "1b2feaaf2ab10ed80ea8dcbd5cfa6084d23e42f6ea0c0dcb928cadc85d3ce9aa"
+      }
     },
     {
       "key": "0x31/0x00/0x0D",
@@ -213,7 +356,18 @@
           "ref": "rbil61:INTERRUP.N E-31000D",
           "cites": "INT 31 P - DPMI 0.9+ - ALLOCATE SPECIFIC LDT DESCRIPTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-31000D",
+            "line": "INT 31 P - DPMI 0.9+ - ALLOCATE SPECIFIC LDT DESCRIPTOR"
+          }
+        ],
+        "digest": "9322d25c1d9edb9c04ed8b596a238aab43c57245953ab16d22b5a1c90e0516fc"
+      }
     },
     {
       "key": "0x31/0x00/0x0E",
@@ -226,7 +380,18 @@
           "ref": "rbil61:INTERRUP.N E-31000E",
           "cites": "INT 31 P - DPMI 1.0+ - GET MULTIPLE DESCRIPTORS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-31000E",
+            "line": "INT 31 P - DPMI 1.0+ - GET MULTIPLE DESCRIPTORS"
+          }
+        ],
+        "digest": "d5d09d6655115846a05905d1dac3978b31a9e67a40c789bbd193cf63b2b80b81"
+      }
     },
     {
       "key": "0x31/0x00/0x0F",
@@ -239,7 +404,18 @@
           "ref": "rbil61:INTERRUP.N E-31000F",
           "cites": "INT 31 P - DPMI 1.0+ - SET MULTIPLE DESCRIPTORS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-31000F",
+            "line": "INT 31 P - DPMI 1.0+ - SET MULTIPLE DESCRIPTORS"
+          }
+        ],
+        "digest": "2245f9792c93b615eec9d802980883e60485398461e0706bab7f712cbee1f0da"
+      }
     },
     {
       "key": "0x31/0x01/0x00",
@@ -255,7 +431,18 @@
           "ref": "rbil61:INTERRUP.N E-310100",
           "cites": "INT 31 P - DPMI 0.9+ - ALLOCATE DOS MEMORY BLOCK"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310100",
+            "line": "INT 31 P - DPMI 0.9+ - ALLOCATE DOS MEMORY BLOCK"
+          }
+        ],
+        "digest": "1ca5d013161dcb44b27cbd48345f92f58f3cdd57dc7c80e5e378a9fa983f3a96"
+      }
     },
     {
       "key": "0x31/0x01/0x01",
@@ -268,7 +455,18 @@
           "ref": "rbil61:INTERRUP.N E-310101",
           "cites": "INT 31 P - DPMI 0.9+ - FREE DOS MEMORY BLOCK"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310101",
+            "line": "INT 31 P - DPMI 0.9+ - FREE DOS MEMORY BLOCK"
+          }
+        ],
+        "digest": "add641abc0125908412da47560f6283639568e66abadeb3d8f8a5c9e888ec24a"
+      }
     },
     {
       "key": "0x31/0x01/0x02",
@@ -281,7 +479,18 @@
           "ref": "rbil61:INTERRUP.N E-310102",
           "cites": "INT 31 P - DPMI 0.9+ - RESIZE DOS MEMORY BLOCK"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310102",
+            "line": "INT 31 P - DPMI 0.9+ - RESIZE DOS MEMORY BLOCK"
+          }
+        ],
+        "digest": "244eb11c7274ed8ca3d7d59eb78bd7ef14b9cfcd7110c2bcb1abba755b16f3f2"
+      }
     },
     {
       "key": "0x31/0x02/0x00",
@@ -297,7 +506,18 @@
           "ref": "rbil61:INTERRUP.N E-310200",
           "cites": "INT 31 P - DPMI 0.9+ - GET REAL MODE INTERRUPT VECTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310200",
+            "line": "INT 31 P - DPMI 0.9+ - GET REAL MODE INTERRUPT VECTOR"
+          }
+        ],
+        "digest": "63e2d9b8085779f658753ccfc593bf0065d14eb5f1e0ac6f520af7bc0e1a38a6"
+      }
     },
     {
       "key": "0x31/0x02/0x01",
@@ -313,7 +533,18 @@
           "ref": "rbil61:INTERRUP.N E-310201",
           "cites": "INT 31 P - DPMI 0.9+ - SET REAL MODE INTERRUPT VECTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310201",
+            "line": "INT 31 P - DPMI 0.9+ - SET REAL MODE INTERRUPT VECTOR"
+          }
+        ],
+        "digest": "3ac6501acbdfae659a07869e8d385f255fe3ebcf36d554d9a16c604ef88c5f84"
+      }
     },
     {
       "key": "0x31/0x02/0x02",
@@ -329,7 +560,18 @@
           "ref": "rbil61:INTERRUP.N E-310202",
           "cites": "INT 31 P - DPMI 0.9+ - GET PROCESSOR EXCEPTION HANDLER VECTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310202",
+            "line": "INT 31 P - DPMI 0.9+ - GET PROCESSOR EXCEPTION HANDLER VECTOR"
+          }
+        ],
+        "digest": "07822caf11ff5ce2a2b8aa78ffad28cec97d4efca886dff7a2682c559b8f5765"
+      }
     },
     {
       "key": "0x31/0x02/0x03",
@@ -345,7 +587,18 @@
           "ref": "rbil61:INTERRUP.N E-310203",
           "cites": "INT 31 P - DPMI 0.9+ - SET PROCESSOR EXCEPTION HANDLER VECTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310203",
+            "line": "INT 31 P - DPMI 0.9+ - SET PROCESSOR EXCEPTION HANDLER VECTOR"
+          }
+        ],
+        "digest": "280dfe1e94285e38e245813f1552df4e7ae35915097bd181ce53d86714c1ba00"
+      }
     },
     {
       "key": "0x31/0x02/0x04",
@@ -361,7 +614,18 @@
           "ref": "rbil61:INTERRUP.N E-310204",
           "cites": "INT 31 P - DPMI 0.9+ - GET PROTECTED MODE INTERRUPT VECTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310204",
+            "line": "INT 31 P - DPMI 0.9+ - GET PROTECTED MODE INTERRUPT VECTOR"
+          }
+        ],
+        "digest": "99413d35e2f824cb1e2ea32bae09e1cbb25a10568146af1e7a51a6d447e2dbf0"
+      }
     },
     {
       "key": "0x31/0x02/0x05",
@@ -377,7 +641,18 @@
           "ref": "rbil61:INTERRUP.N E-310205",
           "cites": "INT 31 P - DPMI 0.9+ - SET PROTECTED MODE INTERRUPT VECTOR"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310205",
+            "line": "INT 31 P - DPMI 0.9+ - SET PROTECTED MODE INTERRUPT VECTOR"
+          }
+        ],
+        "digest": "b02c56112a257d56a71bcccf7ece4ee991e4d8c7513c258c27b80f785ef6be35"
+      }
     },
     {
       "key": "0x31/0x02/0x10",
@@ -390,7 +665,18 @@
           "ref": "rbil61:INTERRUP.N E-310210",
           "cites": "INT 31 P - DPMI 1.0+ - GET PROTECTED MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310210",
+            "line": "INT 31 P - DPMI 1.0+ - GET PROTECTED MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
+          }
+        ],
+        "digest": "8ecfd14c156bfe6dae72421ecf8bcdee3c39bbc769ce432f454f2cdc4732dc74"
+      }
     },
     {
       "key": "0x31/0x02/0x11",
@@ -403,7 +689,18 @@
           "ref": "rbil61:INTERRUP.N E-310211",
           "cites": "INT 31 P - DPMI 1.0+ - GET REAL MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310211",
+            "line": "INT 31 P - DPMI 1.0+ - GET REAL MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
+          }
+        ],
+        "digest": "6a759316f9aa5cd2cf5082818942ae70734b020897dcac669f52f8635a1033e8"
+      }
     },
     {
       "key": "0x31/0x02/0x12",
@@ -416,7 +713,18 @@
           "ref": "rbil61:INTERRUP.N E-310212",
           "cites": "INT 31 P - DPMI 1.0+ - SET PROTECTED MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310212",
+            "line": "INT 31 P - DPMI 1.0+ - SET PROTECTED MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
+          }
+        ],
+        "digest": "f2d27dcde67e4405addaec44c76cf15fb1d22cb7178be7166796696df62819e8"
+      }
     },
     {
       "key": "0x31/0x02/0x13",
@@ -429,7 +737,18 @@
           "ref": "rbil61:INTERRUP.N E-310213",
           "cites": "INT 31 P - DPMI 1.0+ - SET REAL MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310213",
+            "line": "INT 31 P - DPMI 1.0+ - SET REAL MODE EXTENDED PROCESSOR EXCEPTION HANDLER"
+          }
+        ],
+        "digest": "a265e8736c269e19e7771903ed7ccae8709545bb79c2d539e582acbbd24ac5d9"
+      }
     },
     {
       "key": "0x31/0x03/0x00",
@@ -445,7 +764,18 @@
           "ref": "rbil61:INTERRUP.N E-310300",
           "cites": "INT 31 P - DPMI 0.9+ - SIMULATE REAL MODE INTERRUPT"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310300",
+            "line": "INT 31 P - DPMI 0.9+ - SIMULATE REAL MODE INTERRUPT"
+          }
+        ],
+        "digest": "b2525ba5e5f26905dede5b1fba371a40ae4887d400fbca9bd1385577a72bc763"
+      }
     },
     {
       "key": "0x31/0x03/0x01",
@@ -461,7 +791,18 @@
           "ref": "rbil61:INTERRUP.N E-310301",
           "cites": "INT 31 P - DPMI 0.9+ - CALL REAL MODE PROCEDURE WITH FAR RETURN FRAME"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310301",
+            "line": "INT 31 P - DPMI 0.9+ - CALL REAL MODE PROCEDURE WITH FAR RETURN FRAME"
+          }
+        ],
+        "digest": "2e28dba44be5194e9b78d3e556758d6a30d4733ae8bd2bfa87683f1d747dacda"
+      }
     },
     {
       "key": "0x31/0x03/0x02",
@@ -493,7 +834,18 @@
           "ref": "rbil61:INTERRUP.N E-310303",
           "cites": "INT 31 P - DPMI 0.9+ - ALLOCATE REAL MODE CALLBACK ADDRESS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310303",
+            "line": "INT 31 P - DPMI 0.9+ - ALLOCATE REAL MODE CALLBACK ADDRESS"
+          }
+        ],
+        "digest": "a607c420e816d1e0150b8d760589b217eb206dea7bf45a901a6a9ad85a01e5f8"
+      }
     },
     {
       "key": "0x31/0x03/0x04",
@@ -509,7 +861,18 @@
           "ref": "rbil61:INTERRUP.N E-310304",
           "cites": "INT 31 P - DPMI 0.9+ - FREE REAL MODE CALLBACK ADDRESS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310304",
+            "line": "INT 31 P - DPMI 0.9+ - FREE REAL MODE CALLBACK ADDRESS"
+          }
+        ],
+        "digest": "4db89df36bcc6a473e2572b8a9990adb3e4c9ed751ff5299bd368c6e47071b90"
+      }
     },
     {
       "key": "0x31/0x03/0x05",
@@ -525,7 +888,18 @@
           "ref": "rbil61:INTERRUP.N E-310305",
           "cites": "INT 31 P - DPMI 0.9+ - GET STATE SAVE/RESTORE ADDRESSES"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310305",
+            "line": "INT 31 P - DPMI 0.9+ - GET STATE SAVE/RESTORE ADDRESSES"
+          }
+        ],
+        "digest": "b145ddaaf86cff5c368393b659206efe2cdf3419a110aa4eabbe54bb8e9581c0"
+      }
     },
     {
       "key": "0x31/0x03/0x06",
@@ -541,7 +915,18 @@
           "ref": "rbil61:INTERRUP.N E-310306",
           "cites": "INT 31 P - DPMI 0.9+ - GET RAW MODE SWITCH ADDRESSES"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310306",
+            "line": "INT 31 P - DPMI 0.9+ - GET RAW MODE SWITCH ADDRESSES"
+          }
+        ],
+        "digest": "aa4a0033b4960846b2c34d150097d509b9363bd4f0d8a287bd587cb4f1a9924e"
+      }
     },
     {
       "key": "0x31/0x04/0x00",
@@ -557,7 +942,18 @@
           "ref": "rbil61:INTERRUP.N E-310400",
           "cites": "INT 31 P - DPMI 0.9+ - GET DPMI VERSION"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310400",
+            "line": "INT 31 P - DPMI 0.9+ - GET DPMI VERSION"
+          }
+        ],
+        "digest": "b2849e4756844baed23b47b92f579f1877fe308bdcfffd46de58315bfbd851be"
+      }
     },
     {
       "key": "0x31/0x04/0x01",
@@ -573,7 +969,18 @@
           "ref": "rbil61:INTERRUP.N E-310401",
           "cites": "INT 31 P - DPMI 1.0+ - GET DPMI CAPABILITIES"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310401",
+            "line": "INT 31 P - DPMI 1.0+ - GET DPMI CAPABILITIES"
+          }
+        ],
+        "digest": "f76bbce1540fea048342e56deda7b7733b2964f9d26f8e1b09283fd2640ccd74"
+      }
     },
     {
       "key": "0x31/0x05/0x00",
@@ -589,7 +996,18 @@
           "ref": "rbil61:INTERRUP.N E-310500",
           "cites": "INT 31 P - DPMI 0.9+ - GET FREE MEMORY INFORMATION"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310500",
+            "line": "INT 31 P - DPMI 0.9+ - GET FREE MEMORY INFORMATION"
+          }
+        ],
+        "digest": "d6e3773e5288476aa9c99fc89d141dbc0e992ab3d8b7e58808e35a57bf99d8d9"
+      }
     },
     {
       "key": "0x31/0x05/0x01",
@@ -605,7 +1023,18 @@
           "ref": "rbil61:INTERRUP.N E-310501",
           "cites": "INT 31 P - DPMI 0.9+ - ALLOCATE MEMORY BLOCK"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310501",
+            "line": "INT 31 P - DPMI 0.9+ - ALLOCATE MEMORY BLOCK"
+          }
+        ],
+        "digest": "3c6e2943c50b7ddbed65f57ec239c32c57df52c75d927cdcfe390cd390802a12"
+      }
     },
     {
       "key": "0x31/0x05/0x02",
@@ -618,7 +1047,18 @@
           "ref": "rbil61:INTERRUP.N E-310502",
           "cites": "INT 31 P - DPMI 0.9+ - FREE MEMORY BLOCK"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310502",
+            "line": "INT 31 P - DPMI 0.9+ - FREE MEMORY BLOCK"
+          }
+        ],
+        "digest": "6bf2f97d5492e26a4a95b31426d63246e77f3faf399d5a8c8052848544739273"
+      }
     },
     {
       "key": "0x31/0x05/0x03",
@@ -631,7 +1071,18 @@
           "ref": "rbil61:INTERRUP.N E-310503",
           "cites": "INT 31 P - DPMI 0.9+ - RESIZE MEMORY BLOCK"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310503",
+            "line": "INT 31 P - DPMI 0.9+ - RESIZE MEMORY BLOCK"
+          }
+        ],
+        "digest": "86deb7e5734be3c83ab6e24e12f5aaa657b9b935b21e652c3d92ce62b0438249"
+      }
     },
     {
       "key": "0x31/0x05/0x04",
@@ -647,7 +1098,18 @@
           "ref": "rbil61:INTERRUP.N E-310504",
           "cites": "INT 31 P - DPMI 1.0+ - ALLOCATE LINEAR MEMORY BLOCK"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310504",
+            "line": "INT 31 P - DPMI 1.0+ - ALLOCATE LINEAR MEMORY BLOCK"
+          }
+        ],
+        "digest": "6b6d50d1d51a6c79c6052681713eff383833ba1fc71ad78f37d840d1e0364ab0"
+      }
     },
     {
       "key": "0x31/0x05/0x05",
@@ -660,7 +1122,18 @@
           "ref": "rbil61:INTERRUP.N E-310505",
           "cites": "INT 31 P - DPMI 1.0+ - RESIZE LINEAR MEMORY BLOCK"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310505",
+            "line": "INT 31 P - DPMI 1.0+ - RESIZE LINEAR MEMORY BLOCK"
+          }
+        ],
+        "digest": "cf6d74755c27dc6642bd530b9482d412889ae3dd6a772deb630a8713db5bdea4"
+      }
     },
     {
       "key": "0x31/0x05/0x06",
@@ -673,7 +1146,18 @@
           "ref": "rbil61:INTERRUP.N E-310506",
           "cites": "INT 31 P - DPMI 1.0+ - GET PAGE ATTRIBUTES"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310506",
+            "line": "INT 31 P - DPMI 1.0+ - GET PAGE ATTRIBUTES"
+          }
+        ],
+        "digest": "bf226e124f4a801845b7a23249f04dca4fc87c748faca4ddb94f60effc8ed90e"
+      }
     },
     {
       "key": "0x31/0x05/0x07",
@@ -686,7 +1170,18 @@
           "ref": "rbil61:INTERRUP.N E-310507",
           "cites": "INT 31 P - DPMI 1.0+ - MODIFY PAGE ATTRIBUTES"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310507",
+            "line": "INT 31 P - DPMI 1.0+ - MODIFY PAGE ATTRIBUTES"
+          }
+        ],
+        "digest": "e3902de114cbe2e49ddf0c194b49cac265ca2f2088d56a141bc92d222a329ccf"
+      }
     },
     {
       "key": "0x31/0x05/0x08",
@@ -699,7 +1194,18 @@
           "ref": "rbil61:INTERRUP.N E-310508",
           "cites": "INT 31 P - DPMI 1.0+ - MAP DEVICE IN MEMORY BLOCK"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310508",
+            "line": "INT 31 P - DPMI 1.0+ - MAP DEVICE IN MEMORY BLOCK"
+          }
+        ],
+        "digest": "a7f5c59bdee79567e6905d21af6ee613045dad195a3e02e0c50287cd0cc3cb7a"
+      }
     },
     {
       "key": "0x31/0x05/0x09",
@@ -712,7 +1218,18 @@
           "ref": "rbil61:INTERRUP.N E-310509",
           "cites": "INT 31 P - DPMI 1.0+ - MAP CONVENTIONAL MEMORY IN MEMORY BLOCK"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310509",
+            "line": "INT 31 P - DPMI 1.0+ - MAP CONVENTIONAL MEMORY IN MEMORY BLOCK"
+          }
+        ],
+        "digest": "c37d60f64643ccf20a2f7b3244155f5e0541b4569829244b1e2003f38851577a"
+      }
     },
     {
       "key": "0x31/0x05/0x0A",
@@ -725,7 +1242,18 @@
           "ref": "rbil61:INTERRUP.N E-31050A",
           "cites": "INT 31 P - DPMI 1.0+ - GET MEMORY BLOCK SIZE AND BASE"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-31050A",
+            "line": "INT 31 P - DPMI 1.0+ - GET MEMORY BLOCK SIZE AND BASE"
+          }
+        ],
+        "digest": "f5091c42e53e695ade13768b1c81a8f9a78baf93eaa62e9a0e498cdf98f60029"
+      }
     },
     {
       "key": "0x31/0x05/0x0B",
@@ -738,7 +1266,18 @@
           "ref": "rbil61:INTERRUP.N E-31050B",
           "cites": "INT 31 P - DPMI 1.0+ - GET MEMORY INFORMATION"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-31050B",
+            "line": "INT 31 P - DPMI 1.0+ - GET MEMORY INFORMATION"
+          }
+        ],
+        "digest": "05d839cf1bc1c284b08b359204e6351ac38657171e0c9c3aa844e06949b49d36"
+      }
     },
     {
       "key": "0x31/0x06/0x00",
@@ -751,7 +1290,18 @@
           "ref": "rbil61:INTERRUP.N E-310600",
           "cites": "INT 31 P - DPMI 0.9+ - LOCK LINEAR REGION"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310600",
+            "line": "INT 31 P - DPMI 0.9+ - LOCK LINEAR REGION"
+          }
+        ],
+        "digest": "27ddaeebf342a4df38241889fa3a345904d913bea68fba61cf4262f2d0e9df85"
+      }
     },
     {
       "key": "0x31/0x06/0x01",
@@ -764,7 +1314,18 @@
           "ref": "rbil61:INTERRUP.N E-310601",
           "cites": "INT 31 P - DPMI 0.9+ - UNLOCK LINEAR REGION"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310601",
+            "line": "INT 31 P - DPMI 0.9+ - UNLOCK LINEAR REGION"
+          }
+        ],
+        "digest": "984ba7be0d738110e2fd4804014fd4855c6c361defd6d51f26a181b7c7a2a685"
+      }
     },
     {
       "key": "0x31/0x06/0x02",
@@ -780,7 +1341,18 @@
           "ref": "rbil61:INTERRUP.N E-310602",
           "cites": "INT 31 P - DPMI 0.9+ - MARK REAL MODE REGION AS PAGEABLE"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310602",
+            "line": "INT 31 P - DPMI 0.9+ - MARK REAL MODE REGION AS PAGEABLE"
+          }
+        ],
+        "digest": "af8dc6b9150ae521fa91d50bfe92ad4833ce33e7b9180cdff59d958a2e407fd7"
+      }
     },
     {
       "key": "0x31/0x06/0x03",
@@ -796,7 +1368,18 @@
           "ref": "rbil61:INTERRUP.N E-310603",
           "cites": "INT 31 P - DPMI 0.9+ - RELOCK REAL MODE REGION"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310603",
+            "line": "INT 31 P - DPMI 0.9+ - RELOCK REAL MODE REGION"
+          }
+        ],
+        "digest": "d1b3bdc69df7668b76df7ef200b694080c77a4b443951623968f0e911bb1e1d5"
+      }
     },
     {
       "key": "0x31/0x06/0x04",
@@ -809,7 +1392,18 @@
           "ref": "rbil61:INTERRUP.N E-310604",
           "cites": "INT 31 P - DPMI 0.9+ - GET PAGE SIZE"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310604",
+            "line": "INT 31 P - DPMI 0.9+ - GET PAGE SIZE"
+          }
+        ],
+        "digest": "61674de03c666f67e129ae6c1a15425aa766189ccdbac1a935d41ab853c6bfec"
+      }
     },
     {
       "key": "0x31/0x07/0x02",
@@ -825,7 +1419,18 @@
           "ref": "rbil61:INTERRUP.N E-310702",
           "cites": "INT 31 P - DPMI 0.9+ - MARK PAGE AS DEMAND PAGING CANDIDATE"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310702",
+            "line": "INT 31 P - DPMI 0.9+ - MARK PAGE AS DEMAND PAGING CANDIDATE"
+          }
+        ],
+        "digest": "686af1e97533fa8b395d1f5c1841744aa4f2ff8a15f25870bed4c0f652a2e4e0"
+      }
     },
     {
       "key": "0x31/0x07/0x03",
@@ -838,7 +1443,18 @@
           "ref": "rbil61:INTERRUP.N E-310703",
           "cites": "INT 31 P - DPMI 0.9+ - DISCARD PAGE CONTENTS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310703",
+            "line": "INT 31 P - DPMI 0.9+ - DISCARD PAGE CONTENTS"
+          }
+        ],
+        "digest": "a50b9dae00e8d26483d1e7178a3a02cf006a00c5af01bd19d5ed52162d00146f"
+      }
     },
     {
       "key": "0x31/0x08/0x00",
@@ -854,7 +1470,18 @@
           "ref": "rbil61:INTERRUP.N E-310800",
           "cites": "INT 31 P - DPMI 0.9+ - PHYSICAL ADDRESS MAPPING"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310800",
+            "line": "INT 31 P - DPMI 0.9+ - PHYSICAL ADDRESS MAPPING"
+          }
+        ],
+        "digest": "53830edb1eaed619788fc8ad9587d6459f2522c2923f42b812bcca9a2ce1dd0f"
+      }
     },
     {
       "key": "0x31/0x08/0x01",
@@ -870,7 +1497,18 @@
           "ref": "rbil61:INTERRUP.N E-310801",
           "cites": "INT 31 P - DPMI 1.0+ - FREE PHYSICAL ADDRESS MAPPING"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310801",
+            "line": "INT 31 P - DPMI 1.0+ - FREE PHYSICAL ADDRESS MAPPING"
+          }
+        ],
+        "digest": "927e71eab29efcb50e67c733672df3aa74d7bc3df6deb50cd4f57a652ffed5b5"
+      }
     },
     {
       "key": "0x31/0x09/0x00",
@@ -886,7 +1524,18 @@
           "ref": "rbil61:INTERRUP.N E-310900",
           "cites": "INT 31 P - DPMI 0.9+ - GET AND DISABLE VIRTUAL INTERRUPT STATE"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310900",
+            "line": "INT 31 P - DPMI 0.9+ - GET AND DISABLE VIRTUAL INTERRUPT STATE"
+          }
+        ],
+        "digest": "7d618950a6587da06bcd5e9c45a7ef50cc4a60a2fbe5c445cfa0ea6105ba08c5"
+      }
     },
     {
       "key": "0x31/0x09/0x01",
@@ -902,7 +1551,18 @@
           "ref": "rbil61:INTERRUP.N E-310901",
           "cites": "INT 31 P - DPMI 0.9+ - GET AND ENABLE VIRTUAL INTERRUPT STATE"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310901",
+            "line": "INT 31 P - DPMI 0.9+ - GET AND ENABLE VIRTUAL INTERRUPT STATE"
+          }
+        ],
+        "digest": "635ec610fef95e3498204477d4a7fa1ee19b79cdec798c10929fa1908561dfa8"
+      }
     },
     {
       "key": "0x31/0x09/0x02",
@@ -918,7 +1578,18 @@
           "ref": "rbil61:INTERRUP.N E-310902",
           "cites": "INT 31 P - DPMI 0.9+ - GET VIRTUAL INTERRUPT STATE"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310902",
+            "line": "INT 31 P - DPMI 0.9+ - GET VIRTUAL INTERRUPT STATE"
+          }
+        ],
+        "digest": "2488e1f7a418ffddc21014c7fea9222755fccc4a6fd2fe9154d2370efcd9d041"
+      }
     },
     {
       "key": "0x31/0x0A/0x00",
@@ -934,7 +1605,18 @@
           "ref": "rbil61:INTERRUP.N E-310A00",
           "cites": "INT 31 P - DPMI 0.9+ - GET VENDOR SPECIFIC API ENTRY POINT"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310A00",
+            "line": "INT 31 P - DPMI 0.9+ - GET VENDOR SPECIFIC API ENTRY POINT"
+          }
+        ],
+        "digest": "1b546a48946ebca8e378c25b95c4cdbc897763b6feb14b50f3f05fee73e02c57"
+      }
     },
     {
       "key": "0x31/0x0B/0x00",
@@ -950,7 +1632,18 @@
           "ref": "rbil61:INTERRUP.N E-310B00",
           "cites": "INT 31 P - DPMI 0.9+ - SET DEBUG WATCHPOINT"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310B00",
+            "line": "INT 31 P - DPMI 0.9+ - SET DEBUG WATCHPOINT"
+          }
+        ],
+        "digest": "c67b9e436f8880ba14ca73dea3954ab554f1be48b70476721e87e8a9cc2f7ab7"
+      }
     },
     {
       "key": "0x31/0x0B/0x01",
@@ -966,7 +1659,18 @@
           "ref": "rbil61:INTERRUP.N E-310B01",
           "cites": "INT 31 P - DPMI 0.9+ - CLEAR DEBUG WATCHPOINT"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310B01",
+            "line": "INT 31 P - DPMI 0.9+ - CLEAR DEBUG WATCHPOINT"
+          }
+        ],
+        "digest": "7e478c9ada72517f7ce620019793359f04171c714ac0d12bc7aad233a99672e3"
+      }
     },
     {
       "key": "0x31/0x0B/0x02",
@@ -982,7 +1686,18 @@
           "ref": "rbil61:INTERRUP.N E-310B02",
           "cites": "INT 31 P - DPMI 0.9+ - GET STATE OF DEBUG WATCHPOINT"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310B02",
+            "line": "INT 31 P - DPMI 0.9+ - GET STATE OF DEBUG WATCHPOINT"
+          }
+        ],
+        "digest": "c2696434888e7eb4b4addcd04d293a1002179a2d24e2840e143c7fed7c45158a"
+      }
     },
     {
       "key": "0x31/0x0B/0x03",
@@ -998,7 +1713,18 @@
           "ref": "rbil61:INTERRUP.N E-310B03",
           "cites": "INT 31 P - DPMI 0.9+ - RESET DEBUG WATCHPOINT"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310B03",
+            "line": "INT 31 P - DPMI 0.9+ - RESET DEBUG WATCHPOINT"
+          }
+        ],
+        "digest": "c0b4b48aeb6580e596d726bf5ec539162c0a3b0fa459c086a2984e1e034aa021"
+      }
     },
     {
       "key": "0x31/0x0C/0x00",
@@ -1014,7 +1740,18 @@
           "ref": "rbil61:INTERRUP.N E-310C00",
           "cites": "INT 31 P - DPMI 1.0+ - INSTALL RESIDENT HANDLER INIT CALLBACK"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310C00",
+            "line": "INT 31 P - DPMI 1.0+ - INSTALL RESIDENT HANDLER INIT CALLBACK"
+          }
+        ],
+        "digest": "d220ddb1e40bdda050d5377cd3b77f5fee74b780d31a852c6afaa0442b7a315c"
+      }
     },
     {
       "key": "0x31/0x0C/0x01",
@@ -1030,7 +1767,18 @@
           "ref": "rbil61:INTERRUP.N E-310C01",
           "cites": "INT 31 P - DPMI 1.0+ - TERMINATE AND STAY RESIDENT"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310C01",
+            "line": "INT 31 P - DPMI 1.0+ - TERMINATE AND STAY RESIDENT"
+          }
+        ],
+        "digest": "28bb17d147eb30c6320723ff43c6382869f352f295136736438f59aeabbd3d4a"
+      }
     },
     {
       "key": "0x31/0x0D/0x00",
@@ -1046,7 +1794,18 @@
           "ref": "rbil61:INTERRUP.N E-310D00",
           "cites": "INT 31 P - DPMI 1.0+ - ALLOCATE SHARED MEMORY"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310D00",
+            "line": "INT 31 P - DPMI 1.0+ - ALLOCATE SHARED MEMORY"
+          }
+        ],
+        "digest": "e91033abebf4ded9859a24fee98a8e2b705dc68a936610c68dd4a997e85a11d7"
+      }
     },
     {
       "key": "0x31/0x0D/0x01",
@@ -1059,7 +1818,18 @@
           "ref": "rbil61:INTERRUP.N E-310D01",
           "cites": "INT 31 P - DPMI 1.0+ - FREE SHARED MEMORY"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310D01",
+            "line": "INT 31 P - DPMI 1.0+ - FREE SHARED MEMORY"
+          }
+        ],
+        "digest": "d317251b62fa0e43ec85951308c569deaf09418cf14da3f2182e67679a4ca97a"
+      }
     },
     {
       "key": "0x31/0x0D/0x02",
@@ -1072,7 +1842,18 @@
           "ref": "rbil61:INTERRUP.N E-310D02",
           "cites": "INT 31 P - DPMI 1.0+ - SERIALIZE SHARED MEMORY"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310D02",
+            "line": "INT 31 P - DPMI 1.0+ - SERIALIZE SHARED MEMORY"
+          }
+        ],
+        "digest": "2dbbb067d7f159796a13b93f329c34546d9c29455c0accae352225340acc869c"
+      }
     },
     {
       "key": "0x31/0x0D/0x03",
@@ -1085,7 +1866,18 @@
           "ref": "rbil61:INTERRUP.N E-310D03",
           "cites": "INT 31 P - DPMI 1.0+ - FREE SERIALIZATION ON SHARED MEMORY"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310D03",
+            "line": "INT 31 P - DPMI 1.0+ - FREE SERIALIZATION ON SHARED MEMORY"
+          }
+        ],
+        "digest": "4cb29b58948e79c2252c7a7e76e543f68186fe10f28fbcdd026b6bf583b11cd1"
+      }
     },
     {
       "key": "0x31/0x0E/0x00",
@@ -1098,7 +1890,18 @@
           "ref": "rbil61:INTERRUP.N E-310E00",
           "cites": "INT 31 P - DPMI 1.0+ - GET COPROCESSOR STATUS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310E00",
+            "line": "INT 31 P - DPMI 1.0+ - GET COPROCESSOR STATUS"
+          }
+        ],
+        "digest": "fef12ec8077c7b23f525b7a6918752f522779390cce048c3601a560711d83eb2"
+      }
     },
     {
       "key": "0x31/0x0E/0x01",
@@ -1111,7 +1914,18 @@
           "ref": "rbil61:INTERRUP.N E-310E01",
           "cites": "INT 31 P - DPMI 1.0+ - SET EMULATION"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N E-310E01",
+            "line": "INT 31 P - DPMI 1.0+ - SET EMULATION"
+          }
+        ],
+        "digest": "2a78f20d2efb40f22c89f6242b20c2e1130c9e97acfda28acbe6c78005d72dfe"
+      }
     }
   ]
 }

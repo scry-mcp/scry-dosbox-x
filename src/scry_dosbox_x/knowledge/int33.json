@@ -47,7 +47,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x01",
           "cites": "    case 0x01:  /* MS MOUSE v1.0+ - SHOW MOUSE CURSOR */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330001",
+            "line": "INT 33 - MS MOUSE v1.0+ - SHOW MOUSE CURSOR"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x01",
+            "line": "    case 0x01:  /* MS MOUSE v1.0+ - SHOW MOUSE CURSOR */"
+          }
+        ],
+        "digest": "b5a5a2f9f5950a1ef3ecef06e393168d8593a4e37619fe2009e08081bc503239"
+      }
     },
     {
       "key": "0x33/0x00/0x02",
@@ -68,7 +83,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x02",
           "cites": "    case 0x02:  /* MS MOUSE v1.0+ - HIDE MOUSE CURSOR */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330002",
+            "line": "INT 33 - MS MOUSE v1.0+ - HIDE MOUSE CURSOR"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x02",
+            "line": "    case 0x02:  /* MS MOUSE v1.0+ - HIDE MOUSE CURSOR */"
+          }
+        ],
+        "digest": "018fe790fe587bd209eef28211c553769861bf6860dc5af9b65288009d09b3e6"
+      }
     },
     {
       "key": "0x33/0x00/0x03",
@@ -89,7 +119,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x03",
           "cites": "    case 0x03:  /* MS MOUSE v1.0+ - RETURN POSITION AND BUTTON STATUS */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330003",
+            "line": "INT 33 - MS MOUSE v1.0+ - RETURN POSITION AND BUTTON STATUS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x03",
+            "line": "    case 0x03:  /* MS MOUSE v1.0+ - RETURN POSITION AND BUTTON STATUS */"
+          }
+        ],
+        "digest": "5d451abc34c57a054aadecdea7fbf960263e036afb73568e77186081f253d24e"
+      }
     },
     {
       "key": "0x33/0x00/0x04",
@@ -110,7 +155,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x04",
           "cites": "    case 0x04:  /* MS MOUSE v1.0+ - POSITION MOUSE CURSOR */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330004",
+            "line": "INT 33 - MS MOUSE v1.0+ - POSITION MOUSE CURSOR"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x04",
+            "line": "    case 0x04:  /* MS MOUSE v1.0+ - POSITION MOUSE CURSOR */"
+          }
+        ],
+        "digest": "e53964d26c69ff867ed64b4ec0d998b4d528ef2bfbb7ea41a8b333876bdfa408"
+      }
     },
     {
       "key": "0x33/0x00/0x05",
@@ -131,7 +191,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x05",
           "cites": "    case 0x05:  /* MS MOUSE v1.0+ - RETURN BUTTON PRESS DATA */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330005",
+            "line": "INT 33 - MS MOUSE v1.0+ - RETURN BUTTON PRESS DATA"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x05",
+            "line": "    case 0x05:  /* MS MOUSE v1.0+ - RETURN BUTTON PRESS DATA */"
+          }
+        ],
+        "digest": "bb1b5729115b65cbca54c369ccfc3cd81aa8aa05e9c9a3938cb85976a0a958c5"
+      }
     },
     {
       "key": "0x33/0x00/0x06",
@@ -152,7 +227,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x06",
           "cites": "    case 0x06:  /* MS MOUSE v1.0+ - RETURN BUTTON RELEASE DATA */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330006",
+            "line": "INT 33 - MS MOUSE v1.0+ - RETURN BUTTON RELEASE DATA"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x06",
+            "line": "    case 0x06:  /* MS MOUSE v1.0+ - RETURN BUTTON RELEASE DATA */"
+          }
+        ],
+        "digest": "905b9fb178de2e0132ea918ab6276ea30e3f1704e6e371e71eaee8a25be46534"
+      }
     },
     {
       "key": "0x33/0x00/0x07",
@@ -174,7 +264,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x07",
           "cites": "    case 0x07:  /* MS MOUSE v1.0+ - DEFINE HORIZONTAL CURSOR RANGE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330007",
+            "line": "INT 33 - MS MOUSE v1.0+ - DEFINE HORIZONTAL CURSOR RANGE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x07",
+            "line": "    case 0x07:  /* MS MOUSE v1.0+ - DEFINE HORIZONTAL CURSOR RANGE */"
+          }
+        ],
+        "digest": "5f016a6f8a23275871373fb75c6dc5b9403190bd3017e3d7657a5e744b69f520"
+      }
     },
     {
       "key": "0x33/0x00/0x08",
@@ -196,7 +301,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x08",
           "cites": "    case 0x08:  /* MS MOUSE v1.0+ - DEFINE VERTICAL CURSOR RANGE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330008",
+            "line": "INT 33 - MS MOUSE v1.0+ - DEFINE VERTICAL CURSOR RANGE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x08",
+            "line": "    case 0x08:  /* MS MOUSE v1.0+ - DEFINE VERTICAL CURSOR RANGE */"
+          }
+        ],
+        "digest": "56b23eaa762b8c61808c3c34aa88f3c192d7abad13636b7dd930cf8917c312e4"
+      }
     },
     {
       "key": "0x33/0x00/0x09",
@@ -217,7 +337,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x09",
           "cites": "    case 0x09:  /* MS MOUSE v3.0+ - DEFINE GRAPHICS CURSOR */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330009",
+            "line": "INT 33 - MS MOUSE v3.0+ - DEFINE GRAPHICS CURSOR"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x09",
+            "line": "    case 0x09:  /* MS MOUSE v3.0+ - DEFINE GRAPHICS CURSOR */"
+          }
+        ],
+        "digest": "f5004154b461aae15fd799118b4761dce6ee88cbf8b05c4922d513d1d2dd4946"
+      }
     },
     {
       "key": "0x33/0x00/0x0A",
@@ -259,7 +394,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x0b",
           "cites": "    case 0x0b:  /* MS MOUSE v1.0+ - READ MOTION COUNTERS */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33000B",
+            "line": "INT 33 - MS MOUSE v1.0+ - READ MOTION COUNTERS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x0b",
+            "line": "    case 0x0b:  /* MS MOUSE v1.0+ - READ MOTION COUNTERS */"
+          }
+        ],
+        "digest": "55efa41d98e0709da494ed215ec35fa9eda5a7c2fa7e0d299aeb14c27a889e30"
+      }
     },
     {
       "key": "0x33/0x00/0x0C",
@@ -281,7 +431,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x0c",
           "cites": "    case 0x0c:  /* MS MOUSE v1.0+ - DEFINE INTERRUPT SUBROUTINE PARAMETERS */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33000C",
+            "line": "INT 33 - MS MOUSE v1.0+ - DEFINE INTERRUPT SUBROUTINE PARAMETERS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x0c",
+            "line": "    case 0x0c:  /* MS MOUSE v1.0+ - DEFINE INTERRUPT SUBROUTINE PARAMETERS */"
+          }
+        ],
+        "digest": "40902dd5028e97409740c3a48bc38839391a79a2d1ba0c4b3a8b3bae71e812a9"
+      }
     },
     {
       "key": "0x33/0x00/0x0D",
@@ -302,7 +467,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x0d",
           "cites": "    case 0x0d:  /* MS MOUSE v1.0+ - LIGHT PEN EMULATION ON */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33000D",
+            "line": "INT 33 - MS MOUSE v1.0+ - LIGHT PEN EMULATION ON"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x0d",
+            "line": "    case 0x0d:  /* MS MOUSE v1.0+ - LIGHT PEN EMULATION ON */"
+          }
+        ],
+        "digest": "23fd46c901891fc6dfdeafd5eac52ea1b11b8d538ee6fefab41ebeeeed609427"
+      }
     },
     {
       "key": "0x33/0x00/0x0E",
@@ -323,7 +503,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x0e",
           "cites": "    case 0x0e:  /* MS MOUSE v1.0+ - LIGHT PEN EMULATION OFF */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33000E",
+            "line": "INT 33 - MS MOUSE v1.0+ - LIGHT PEN EMULATION OFF"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x0e",
+            "line": "    case 0x0e:  /* MS MOUSE v1.0+ - LIGHT PEN EMULATION OFF */"
+          }
+        ],
+        "digest": "523f49b641ec6cf8f05a918a8d95b64760afd64c9aa463d7f2eed1fd947c0570"
+      }
     },
     {
       "key": "0x33/0x00/0x0F",
@@ -344,7 +539,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x0f",
           "cites": "    case 0x0f:  /* MS MOUSE v1.0+ - DEFINE MICKEY/PIXEL RATIO */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33000F",
+            "line": "INT 33 - MS MOUSE v1.0+ - DEFINE MICKEY/PIXEL RATIO"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x0f",
+            "line": "    case 0x0f:  /* MS MOUSE v1.0+ - DEFINE MICKEY/PIXEL RATIO */"
+          }
+        ],
+        "digest": "34dc54a05d79f02cc1f16c9fd9306aae0f350470a066c74a2b8155ce16d62168"
+      }
     },
     {
       "key": "0x33/0x00/0x10",
@@ -366,7 +576,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x10",
           "cites": "    case 0x10:  /* MS MOUSE v1.0+ - DEFINE SCREEN REGION FOR UPDATING */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330010@1",
+            "line": "INT 33 - MS MOUSE v1.0+ - DEFINE SCREEN REGION FOR UPDATING"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x10",
+            "line": "    case 0x10:  /* MS MOUSE v1.0+ - DEFINE SCREEN REGION FOR UPDATING */"
+          }
+        ],
+        "digest": "6db90b8bb16801981551a65d63d1fb934162ce7a9422896035584ee7e05197d2"
+      }
     },
     {
       "key": "0x33/0x00/0x11",
@@ -388,7 +613,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x11",
           "cites": "    case 0x11:  /* Genius Mouse 9.06 - GET NUMBER OF BUTTONS */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330011",
+            "line": "INT 33 - Genius Mouse 9.06 - GET NUMBER OF BUTTONS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x11",
+            "line": "    case 0x11:  /* Genius Mouse 9.06 - GET NUMBER OF BUTTONS */"
+          }
+        ],
+        "digest": "9cd1f12d96a750ea8797a847f5615f0404b22c530e6f2e514ec7c0e817b2e287"
+      }
     },
     {
       "key": "0x33/0x00/0x12",
@@ -407,7 +647,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x12",
           "cites": "    case 0x12:  /* MS MOUSE - SET LARGE GRAPHICS CURSOR BLOCK */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330012",
+            "line": "INT 33 - MS MOUSE - SET LARGE GRAPHICS CURSOR BLOCK"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x12",
+            "line": "    case 0x12:  /* MS MOUSE - SET LARGE GRAPHICS CURSOR BLOCK */"
+          }
+        ],
+        "digest": "7dee45ed8e46d85f81ad4b590402c256880f7b6e1eabaad840cc7056326acd42"
+      }
     },
     {
       "key": "0x33/0x00/0x13",
@@ -428,7 +683,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x13",
           "cites": "    case 0x13:  /* MS MOUSE v5.0+ - DEFINE DOUBLE-SPEED THRESHOLD */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330013",
+            "line": "INT 33 - MS MOUSE v5.0+ - DEFINE DOUBLE-SPEED THRESHOLD"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x13",
+            "line": "    case 0x13:  /* MS MOUSE v5.0+ - DEFINE DOUBLE-SPEED THRESHOLD */"
+          }
+        ],
+        "digest": "802c7a9b0b527badc734ee04647f75dc375e065a17afef23fd6efefec8aeede1"
+      }
     },
     {
       "key": "0x33/0x00/0x14",
@@ -449,7 +719,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x14",
           "cites": "    case 0x14:  /* MS MOUSE v3.0+ - EXCHANGE INTERRUPT SUBROUTINES */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330014",
+            "line": "INT 33 - MS MOUSE v3.0+ - EXCHANGE INTERRUPT SUBROUTINES"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x14",
+            "line": "    case 0x14:  /* MS MOUSE v3.0+ - EXCHANGE INTERRUPT SUBROUTINES */"
+          }
+        ],
+        "digest": "c59651b3b0744a8859c1ff468f76eb331d2844632517d33fba7960a749fafde2"
+      }
     },
     {
       "key": "0x33/0x00/0x15",
@@ -467,7 +752,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x15",
           "cites": "    case 0x15:  /* MS MOUSE v6.0+ - RETURN DRIVER STORAGE REQUIREMENTS */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330015",
+            "line": "INT 33 - MS MOUSE v6.0+ - RETURN DRIVER STORAGE REQUIREMENTS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x15",
+            "line": "    case 0x15:  /* MS MOUSE v6.0+ - RETURN DRIVER STORAGE REQUIREMENTS */"
+          }
+        ],
+        "digest": "0f0ba0d7700dbf9e5a1fa2b1dc38de49ba6ad7bfc6d0dac3816d4f23a9407fab"
+      }
     },
     {
       "key": "0x33/0x00/0x16",
@@ -488,7 +788,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x16",
           "cites": "    case 0x16:  /* MS MOUSE v6.0+ - SAVE DRIVER STATE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330016",
+            "line": "INT 33 - MS MOUSE v6.0+ - SAVE DRIVER STATE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x16",
+            "line": "    case 0x16:  /* MS MOUSE v6.0+ - SAVE DRIVER STATE */"
+          }
+        ],
+        "digest": "6338f987071c93cd81b4bc1125a51dd0dd9f0c0608aa2145e1a4e2bd89d30fab"
+      }
     },
     {
       "key": "0x33/0x00/0x17",
@@ -509,7 +824,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x17",
           "cites": "    case 0x17:  /* MS MOUSE v6.0+ - RESTORE DRIVER STATE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330017",
+            "line": "INT 33 - MS MOUSE v6.0+ - RESTORE DRIVER STATE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x17",
+            "line": "    case 0x17:  /* MS MOUSE v6.0+ - RESTORE DRIVER STATE */"
+          }
+        ],
+        "digest": "84c728b4ba0c4fdfad09fb65bc07d2e4867f5ededa0c105246f0cff09be40bfa"
+      }
     },
     {
       "key": "0x33/0x00/0x18",
@@ -528,7 +858,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x18",
           "cites": "    case 0x18:  /* MS MOUSE v6.0+ - SET ALTERNATE MOUSE USER HANDLER */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330018",
+            "line": "INT 33 - MS MOUSE v6.0+ - SET ALTERNATE MOUSE USER HANDLER"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x18",
+            "line": "    case 0x18:  /* MS MOUSE v6.0+ - SET ALTERNATE MOUSE USER HANDLER */"
+          }
+        ],
+        "digest": "2a0d400e011e6d232a9a39dce9a91be29c2f8c0f5ea0fee92eb830be6cc2ae26"
+      }
     },
     {
       "key": "0x33/0x00/0x19",
@@ -547,7 +892,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x19",
           "cites": "    case 0x19:  /* MS MOUSE v6.0+ - RETURN USER ALTERNATE INTERRUPT VECTOR */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330019",
+            "line": "INT 33 - MS MOUSE v6.0+ - RETURN USER ALTERNATE INTERRUPT VECTOR"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x19",
+            "line": "    case 0x19:  /* MS MOUSE v6.0+ - RETURN USER ALTERNATE INTERRUPT VECTOR */"
+          }
+        ],
+        "digest": "1a6aec31e3f2c3a1a12a1d05547fb2ef46a3e8e80fc54074d03fc6aff4d799c5"
+      }
     },
     {
       "key": "0x33/0x00/0x1A",
@@ -568,7 +928,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1a",
           "cites": "    case 0x1a:  /* MS MOUSE v6.0+ - SET MOUSE SENSITIVITY */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33001A",
+            "line": "INT 33 - MS MOUSE v6.0+ - SET MOUSE SENSITIVITY"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1a",
+            "line": "    case 0x1a:  /* MS MOUSE v6.0+ - SET MOUSE SENSITIVITY */"
+          }
+        ],
+        "digest": "e63fe0dcebba15f662e5d797bf3de2819f0cde7ed9050b105a2f55e3ebdef206"
+      }
     },
     {
       "key": "0x33/0x00/0x1B",
@@ -589,7 +964,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1b",
           "cites": "    case 0x1b:  /* MS MOUSE v6.0+ - RETURN MOUSE SENSITIVITY */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33001B",
+            "line": "INT 33 - MS MOUSE v6.0+ - RETURN MOUSE SENSITIVITY"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1b",
+            "line": "    case 0x1b:  /* MS MOUSE v6.0+ - RETURN MOUSE SENSITIVITY */"
+          }
+        ],
+        "digest": "e0c8926eab88f1a4ae7155b1b367851e4e1e96607ec2e26e4864b3cc8c97f59e"
+      }
     },
     {
       "key": "0x33/0x00/0x1C",
@@ -610,7 +1000,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1c",
           "cites": "    case 0x1c:  /* MS MOUSE v6.0+ - SET INTERRUPT RATE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33001C",
+            "line": "INT 33 - MS MOUSE v6.0+ - SET INTERRUPT RATE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1c",
+            "line": "    case 0x1c:  /* MS MOUSE v6.0+ - SET INTERRUPT RATE */"
+          }
+        ],
+        "digest": "63e6332b53c6706768225234314d937cc8051e0c0b57a9a3342b0aeea6dbdf8d"
+      }
     },
     {
       "key": "0x33/0x00/0x1D",
@@ -631,7 +1036,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1d",
           "cites": "    case 0x1d:  /* MS MOUSE v6.0+ - DEFINE DISPLAY PAGE NUMBER */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33001D",
+            "line": "INT 33 - MS MOUSE v6.0+ - DEFINE DISPLAY PAGE NUMBER"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1d",
+            "line": "    case 0x1d:  /* MS MOUSE v6.0+ - DEFINE DISPLAY PAGE NUMBER */"
+          }
+        ],
+        "digest": "aed9c22dc0c6618e521a03c42deb3c13c303114e44533b0ee9b28fe2dd53b016"
+      }
     },
     {
       "key": "0x33/0x00/0x1E",
@@ -652,7 +1072,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1e",
           "cites": "    case 0x1e:  /* MS MOUSE v6.0+ - RETURN DISPLAY PAGE NUMBER */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33001E",
+            "line": "INT 33 - MS MOUSE v6.0+ - RETURN DISPLAY PAGE NUMBER"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1e",
+            "line": "    case 0x1e:  /* MS MOUSE v6.0+ - RETURN DISPLAY PAGE NUMBER */"
+          }
+        ],
+        "digest": "ed968c5926fd6cc3c29f38f6746957c5dee6ad12914588cfadf56cb9a0129d0f"
+      }
     },
     {
       "key": "0x33/0x00/0x1F",
@@ -674,7 +1109,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1f",
           "cites": "    case 0x1f:  /* MS MOUSE v6.0+ - DISABLE MOUSE DRIVER */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33001F",
+            "line": "INT 33 - MS MOUSE v6.0+ - DISABLE MOUSE DRIVER"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x1f",
+            "line": "    case 0x1f:  /* MS MOUSE v6.0+ - DISABLE MOUSE DRIVER */"
+          }
+        ],
+        "digest": "11b8d78df6aa534c07c6ce94185f3575af07b1dabd226585008b03b0044764ff"
+      }
     },
     {
       "key": "0x33/0x00/0x20",
@@ -695,7 +1145,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x20",
           "cites": "    case 0x20:  /* MS MOUSE v6.0+ - ENABLE MOUSE DRIVER */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330020",
+            "line": "INT 33 - MS MOUSE v6.0+ - ENABLE MOUSE DRIVER"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x20",
+            "line": "    case 0x20:  /* MS MOUSE v6.0+ - ENABLE MOUSE DRIVER */"
+          }
+        ],
+        "digest": "39f7c630bb9976ab569a1688219cee49b8bc9cf6da9c692506d65ca69835225c"
+      }
     },
     {
       "key": "0x33/0x00/0x21",
@@ -738,7 +1203,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x22",
           "cites": "    case 0x22:  /* MS MOUSE v6.0+ - SET LANGUAGE FOR MESSAGES */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330022",
+            "line": "INT 33 - MS MOUSE v6.0+ - SET LANGUAGE FOR MESSAGES"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x22",
+            "line": "    case 0x22:  /* MS MOUSE v6.0+ - SET LANGUAGE FOR MESSAGES */"
+          }
+        ],
+        "digest": "bd9766bd5809aa9bfe93b817598292b2b0c106c630cbe853312387b924346814"
+      }
     },
     {
       "key": "0x33/0x00/0x23",
@@ -760,7 +1240,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x23",
           "cites": "    case 0x23:  /* MS MOUSE v6.0+ - GET LANGUAGE FOR MESSAGES */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330023",
+            "line": "INT 33 - MS MOUSE v6.0+ - GET LANGUAGE FOR MESSAGES"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x23",
+            "line": "    case 0x23:  /* MS MOUSE v6.0+ - GET LANGUAGE FOR MESSAGES */"
+          }
+        ],
+        "digest": "f1b358d5d5c4d6c731380770de6bb00084e6de0830552286a4b4abbc22b5e779"
+      }
     },
     {
       "key": "0x33/0x00/0x24",
@@ -781,7 +1276,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x24",
           "cites": "    case 0x24:  /* MS MOUSE v6.26+ - GET SOFTWARE VERSION, MOUSE TYPE, AND IRQ NUMBER */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330024BX0000",
+            "line": "INT 33 - MS MOUSE v6.26+ - GET SOFTWARE VERSION, MOUSE TYPE, AND IRQ NUMBER"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x24",
+            "line": "    case 0x24:  /* MS MOUSE v6.26+ - GET SOFTWARE VERSION, MOUSE TYPE, AND IRQ NUMBER */"
+          }
+        ],
+        "digest": "cac13e2949d1fe0558626b449ba4002270b775956f6e97dad29ac7c9b6ba3788"
+      }
     },
     {
       "key": "0x33/0x00/0x25",
@@ -799,7 +1309,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x25",
           "cites": "    case 0x25:  /* MS MOUSE v6.26+ - GET GENERAL DRIVER INFORMATION */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330025",
+            "line": "INT 33 - MS MOUSE v6.26+ - GET GENERAL DRIVER INFORMATION"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x25",
+            "line": "    case 0x25:  /* MS MOUSE v6.26+ - GET GENERAL DRIVER INFORMATION */"
+          }
+        ],
+        "digest": "13f4f8bad6905dc543d4d697110bbb748dff1a9f03c3befca36909e77c23a079"
+      }
     },
     {
       "key": "0x33/0x00/0x26",
@@ -818,7 +1343,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x26",
           "cites": "    case 0x26:  /* MS MOUSE v6.26+ - GET MAXIMUM VIRTUAL COORDINATES */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330026@1",
+            "line": "INT 33 - MS MOUSE v6.26+ - GET MAXIMUM VIRTUAL COORDINATES"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x26",
+            "line": "    case 0x26:  /* MS MOUSE v6.26+ - GET MAXIMUM VIRTUAL COORDINATES */"
+          }
+        ],
+        "digest": "a5c61c834f3dc7b15b863ab6d2ecc7eca57a95637b52ee8099bd5f89750bec82"
+      }
     },
     {
       "key": "0x33/0x00/0x27",
@@ -839,7 +1379,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x27",
           "cites": "    case 0x27:  /* MS MOUSE v7.01+ - GET SCREEN/CURSOR MASKS AND MICKEY COUNTS */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330027",
+            "line": "INT 33 - MS MOUSE v7.01+ - GET SCREEN/CURSOR MASKS AND MICKEY COUNTS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x27",
+            "line": "    case 0x27:  /* MS MOUSE v7.01+ - GET SCREEN/CURSOR MASKS AND MICKEY COUNTS */"
+          }
+        ],
+        "digest": "d9ece63c093d2eb02614c31f624c3b6c552ba4aa16dc64091d5ac86f918330d5"
+      }
     },
     {
       "key": "0x33/0x00/0x28",
@@ -858,7 +1413,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x28",
           "cites": "    case 0x28:  /* MS MOUSE v7.0+ - SET VIDEO MODE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330028",
+            "line": "INT 33 - MS MOUSE v7.0+ - SET VIDEO MODE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x28",
+            "line": "    case 0x28:  /* MS MOUSE v7.0+ - SET VIDEO MODE */"
+          }
+        ],
+        "digest": "c29dd80ce3c7555e65f767aa8ddb599a9df9decef78b866802e89ddcd70ab09d"
+      }
     },
     {
       "key": "0x33/0x00/0x29",
@@ -877,7 +1447,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x29",
           "cites": "    case 0x29: /* MS MOUSE v7.0+ - ENUMERATE VIDEO MODES */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330029",
+            "line": "INT 33 - MS MOUSE v7.0+ - ENUMERATE VIDEO MODES"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x29",
+            "line": "    case 0x29: /* MS MOUSE v7.0+ - ENUMERATE VIDEO MODES */"
+          }
+        ],
+        "digest": "7429f3b4e7deea7247f13a0463a1b872338e59ea9440cea123daba5180b7d55f"
+      }
     },
     {
       "key": "0x33/0x00/0x2A",
@@ -899,7 +1484,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2a",
           "cites": "    case 0x2a:  /* MS MOUSE v7.02+ - GET CURSOR HOT SPOT */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33002A",
+            "line": "INT 33 - MS MOUSE v7.02+ - GET CURSOR HOT SPOT"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2a",
+            "line": "    case 0x2a:  /* MS MOUSE v7.02+ - GET CURSOR HOT SPOT */"
+          }
+        ],
+        "digest": "a1cfe74f390e9eb3d206ddbe9310151fcc34951275ce4a754c50cbdd3979eada"
+      }
     },
     {
       "key": "0x33/0x00/0x2B",
@@ -918,7 +1518,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2b",
           "cites": "    case 0x2b:  /* MS MOUSE v7.0+ - LOAD ACCELERATION PROFILES */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33002B",
+            "line": "INT 33 - MS MOUSE v7.0+ - LOAD ACCELERATION PROFILES"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2b",
+            "line": "    case 0x2b:  /* MS MOUSE v7.0+ - LOAD ACCELERATION PROFILES */"
+          }
+        ],
+        "digest": "356e5fba4bf99e63f38b8444d3eb03b4a037eb0be31dd8314cce9df69b395a0b"
+      }
     },
     {
       "key": "0x33/0x00/0x2C",
@@ -937,7 +1552,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2c",
           "cites": "    case 0x2c:  /* MS MOUSE v7.0+ - GET ACCELERATION PROFILES */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33002C",
+            "line": "INT 33 - MS MOUSE v7.0+ - GET ACCELERATION PROFILES"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2c",
+            "line": "    case 0x2c:  /* MS MOUSE v7.0+ - GET ACCELERATION PROFILES */"
+          }
+        ],
+        "digest": "41a191027a1df38df6c05db8b005932b891ed4d41d4b2ea5110a49adefc87ca8"
+      }
     },
     {
       "key": "0x33/0x00/0x2D",
@@ -956,7 +1586,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2d",
           "cites": "    case 0x2d:  /* MS MOUSE v7.0+ - SELECT ACCELERATION PROFILE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33002D",
+            "line": "INT 33 - MS MOUSE v7.0+ - SELECT ACCELERATION PROFILE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2d",
+            "line": "    case 0x2d:  /* MS MOUSE v7.0+ - SELECT ACCELERATION PROFILE */"
+          }
+        ],
+        "digest": "89d19c85f6929fd447043285ca72ea8b7a25dae8701db3f85f1c226ec2228fa8"
+      }
     },
     {
       "key": "0x33/0x00/0x2E",
@@ -975,7 +1620,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2e",
           "cites": "    case 0x2e:  /* MS MOUSE v8.10+ - SET ACCELERATION PROFILE NAMES */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33002E",
+            "line": "INT 33 - MS MOUSE v8.10+ - SET ACCELERATION PROFILE NAMES"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2e",
+            "line": "    case 0x2e:  /* MS MOUSE v8.10+ - SET ACCELERATION PROFILE NAMES */"
+          }
+        ],
+        "digest": "47d033accbbc83385782368ec0aa22ca31e76724326bf0e4e5552a91dc7f8457"
+      }
     },
     {
       "key": "0x33/0x00/0x2F",
@@ -994,7 +1654,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2f",
           "cites": "    case 0x2f:  /* MS MOUSE v7.02+ - MOUSE HARDWARE RESET */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33002F",
+            "line": "INT 33 - MS MOUSE v7.02+ - MOUSE HARDWARE RESET"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x2f",
+            "line": "    case 0x2f:  /* MS MOUSE v7.02+ - MOUSE HARDWARE RESET */"
+          }
+        ],
+        "digest": "4a08a999e8cb20de05660df0f5766e816c31cd667cd2033111305cf8455ba78e"
+      }
     },
     {
       "key": "0x33/0x00/0x30",
@@ -1016,7 +1691,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x30",
           "cites": "    case 0x30:  /* MS MOUSE v7.04+ - GET/SET BallPoint INFORMATION */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330030",
+            "line": "INT 33 - MS MOUSE v7.04+ - GET/SET BallPoint INFORMATION"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x30",
+            "line": "    case 0x30:  /* MS MOUSE v7.04+ - GET/SET BallPoint INFORMATION */"
+          }
+        ],
+        "digest": "681daad3e47c934b6c79fd28c0f97c271a78ed8d5b9c5dda4cd5ae68767afcc0"
+      }
     },
     {
       "key": "0x33/0x00/0x31",
@@ -1037,7 +1727,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x31",
           "cites": "    case 0x31:  /* MS MOUSE v7.05+ - GET CURRENT MINIMUM/MAXIMUM VIRTUAL COORDINATES */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330031",
+            "line": "INT 33 - MS MOUSE v7.05+ - GET CURRENT MINIMUM/MAXIMUM VIRTUAL COORDINATES"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x31",
+            "line": "    case 0x31:  /* MS MOUSE v7.05+ - GET CURRENT MINIMUM/MAXIMUM VIRTUAL COORDINATES */"
+          }
+        ],
+        "digest": "cb2efb06a4e98caa23841775998d4e671cd0c40b0367d2ca265c68a6187128d0"
+      }
     },
     {
       "key": "0x33/0x00/0x32",
@@ -1075,7 +1780,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x33",
           "cites": "    case 0x33:  /* MS MOUSE v7.05+ - GET SWITCH SETTINGS AND ACCELERATION PROFILE DATA */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330033",
+            "line": "INT 33 - MS MOUSE v7.05+ - GET SWITCH SETTINGS AND ACCELERATION PROFILE DATA"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x33",
+            "line": "    case 0x33:  /* MS MOUSE v7.05+ - GET SWITCH SETTINGS AND ACCELERATION PROFILE DATA */"
+          }
+        ],
+        "digest": "40aa9f345a5ac1f610c613018c45f5eea36424b75bd3ccf9ee31709826716463"
+      }
     },
     {
       "key": "0x33/0x00/0x34",
@@ -1094,7 +1814,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x34",
           "cites": "    case 0x34:  /* MS MOUSE v8.0+ - GET INITIALIZATION FILE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330034",
+            "line": "INT 33 - MS MOUSE v8.0+ - GET INITIALIZATION FILE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x34",
+            "line": "    case 0x34:  /* MS MOUSE v8.0+ - GET INITIALIZATION FILE */"
+          }
+        ],
+        "digest": "f3a6592764f5cfec90c9c23a8bc70032bcc6e726b862872e042755c37a94c679"
+      }
     },
     {
       "key": "0x33/0x00/0x35",
@@ -1113,7 +1848,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x35",
           "cites": "    case 0x35:  /* MS MOUSE v8.10+ - LCD SCREEN LARGE POINTER SUPPORT */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-330035",
+            "line": "INT 33 - MS MOUSE v8.10+ - LCD SCREEN LARGE POINTER SUPPORT"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x35",
+            "line": "    case 0x35:  /* MS MOUSE v8.10+ - LCD SCREEN LARGE POINTER SUPPORT */"
+          }
+        ],
+        "digest": "96de17ff180645ac65c6214fc9adeb614c87f87a314b1e875aa012b7e114d0f4"
+      }
     },
     {
       "key": "0x33/0x00/0x4D",
@@ -1151,7 +1901,22 @@
           "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x6d",
           "cites": "    case 0x6d:  /* MS MOUSE - GET VERSION STRING */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.N M-33006D",
+            "line": "INT 33 - MS MOUSE - GET VERSION STRING"
+          },
+          {
+            "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler case 0x6d",
+            "line": "    case 0x6d:  /* MS MOUSE - GET VERSION STRING */"
+          }
+        ],
+        "digest": "032195761bfd17899d60524c1513f6dcbd87922177a49b5619d6b0c4c7c8f73d"
+      }
     },
     {
       "key": "0x33/0x53/0xC1",

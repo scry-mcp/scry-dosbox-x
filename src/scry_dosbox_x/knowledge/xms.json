@@ -40,7 +40,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x01",
           "cites": "\tcase XMS_ALLOCATE_HIGH_MEMORY:\t\t\t\t\t\t\t\t/* 01 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02751 Call the XMS driver \"Request High Memory Area\"",
+            "line": "Call the XMS driver \"Request High Memory Area\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x01",
+            "line": "\tcase XMS_ALLOCATE_HIGH_MEMORY:\t\t\t\t\t\t\t\t/* 01 */"
+          }
+        ],
+        "digest": "5f43157e3b966c85c54442c1aaa352699999e00a52c9f92b9df3cd38255e483f"
+      }
     },
     {
       "key": "0x43/0x02",
@@ -58,7 +73,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x02",
           "cites": "\tcase XMS_FREE_HIGH_MEMORY:\t\t\t\t\t\t\t\t\t/* 02 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02752 Call the XMS driver \"Release High Memory Area\"",
+            "line": "Call the XMS driver \"Release High Memory Area\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x02",
+            "line": "\tcase XMS_FREE_HIGH_MEMORY:\t\t\t\t\t\t\t\t\t/* 02 */"
+          }
+        ],
+        "digest": "30122043774ef9a1fb14cdc4936a22a6959478faa234e2dd1d211c3edd1567ef"
+      }
     },
     {
       "key": "0x43/0x03",
@@ -76,7 +106,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x03",
           "cites": "\tcase XMS_GLOBAL_ENABLE_A20:\t\t\t\t\t\t\t\t\t/* 03 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02753 Call the XMS driver \"Global enable A20, for using the HMA\"",
+            "line": "Call the XMS driver \"Global enable A20, for using the HMA\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x03",
+            "line": "\tcase XMS_GLOBAL_ENABLE_A20:\t\t\t\t\t\t\t\t\t/* 03 */"
+          }
+        ],
+        "digest": "87344f3aad7d885c7cb5bae60aa5d9efa069a7063b5c6288219a9523b27ad759"
+      }
     },
     {
       "key": "0x43/0x04",
@@ -95,7 +140,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x04",
           "cites": "\tcase XMS_GLOBAL_DISABLE_A20:\t\t\t\t\t\t\t\t/* 04 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02754 Call the XMS driver \"Global disable A20\"",
+            "line": "Call the XMS driver \"Global disable A20\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x04",
+            "line": "\tcase XMS_GLOBAL_DISABLE_A20:\t\t\t\t\t\t\t\t/* 04 */"
+          }
+        ],
+        "digest": "d042de1b44ac5dac1950f9a20afceae721a8d72809e61fb7b8435bcda486d6d3"
+      }
     },
     {
       "key": "0x43/0x05",
@@ -113,7 +173,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x05",
           "cites": "    case XMS_LOCAL_ENABLE_A20:\t\t\t\t\t\t\t\t\t/* 05 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02755 Call the XMS driver \"Local enable A20\"",
+            "line": "Call the XMS driver \"Local enable A20\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x05",
+            "line": "    case XMS_LOCAL_ENABLE_A20:\t\t\t\t\t\t\t\t\t/* 05 */"
+          }
+        ],
+        "digest": "8917d1ddaa50489fb7a8e300a73c88b5dedb076c73d62aa58df79fc1c2c8909d"
+      }
     },
     {
       "key": "0x43/0x06",
@@ -132,7 +207,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x06",
           "cites": "\tcase XMS_LOCAL_DISABLE_A20:\t\t\t\t\t\t\t\t\t/* 06 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02756 Call the XMS driver \"Local disable A20\"",
+            "line": "Call the XMS driver \"Local disable A20\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x06",
+            "line": "\tcase XMS_LOCAL_DISABLE_A20:\t\t\t\t\t\t\t\t\t/* 06 */"
+          }
+        ],
+        "digest": "f8844f8f25675e7101f2b29f6adb5d9bfcc5104fc85229a0f536b0f909a1111d"
+      }
     },
     {
       "key": "0x43/0x07",
@@ -150,7 +240,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x07",
           "cites": "\tcase XMS_QUERY_A20:\t\t\t\t\t\t\t\t\t\t\t/* 07 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02757 Call the XMS driver \"Query A20 state\"",
+            "line": "Call the XMS driver \"Query A20 state\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x07",
+            "line": "\tcase XMS_QUERY_A20:\t\t\t\t\t\t\t\t\t\t\t/* 07 */"
+          }
+        ],
+        "digest": "15e3262e9cfcc4cc660f1b149ab3be85333204bf3bbc1a44021797392b2151fc"
+      }
     },
     {
       "key": "0x43/0x08",
@@ -168,7 +273,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x08",
           "cites": "\tcase XMS_QUERY_FREE_EXTENDED_MEMORY:\t\t\t\t\t\t/* 08 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02758 Call the XMS driver \"Query free extended memory\"",
+            "line": "Call the XMS driver \"Query free extended memory\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x08",
+            "line": "\tcase XMS_QUERY_FREE_EXTENDED_MEMORY:\t\t\t\t\t\t/* 08 */"
+          }
+        ],
+        "digest": "1d5d2474447865bc27719bc74d858d6ed30fe758b34991c5d69ca5ca20b20f6d"
+      }
     },
     {
       "key": "0x43/0x09",
@@ -186,7 +306,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x09",
           "cites": "\tcase XMS_ALLOCATE_EXTENDED_MEMORY:\t\t\t\t\t\t\t/* 09 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02759 Call the XMS driver \"Allocate extended memory block\"",
+            "line": "Call the XMS driver \"Allocate extended memory block\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x09",
+            "line": "\tcase XMS_ALLOCATE_EXTENDED_MEMORY:\t\t\t\t\t\t\t/* 09 */"
+          }
+        ],
+        "digest": "7499308df711722629631fdd800181af316e8eee302e9a8c7b85edde84dfa9ed"
+      }
     },
     {
       "key": "0x43/0x0A",
@@ -204,7 +339,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0a",
           "cites": "\tcase XMS_FREE_EXTENDED_MEMORY:\t\t\t\t\t\t\t\t/* 0a */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02760 Call the XMS driver \"Free extended memory block\"",
+            "line": "Call the XMS driver \"Free extended memory block\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0a",
+            "line": "\tcase XMS_FREE_EXTENDED_MEMORY:\t\t\t\t\t\t\t\t/* 0a */"
+          }
+        ],
+        "digest": "f3eb033e25d48a446a661139f550d7220293c7512ca2aedca39f7b5053aef101"
+      }
     },
     {
       "key": "0x43/0x0B",
@@ -223,7 +373,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0b",
           "cites": "\tcase XMS_MOVE_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t\t/* 0b */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02761 Call the XMS driver \"Move extended memory block\"",
+            "line": "Call the XMS driver \"Move extended memory block\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0b",
+            "line": "\tcase XMS_MOVE_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t\t/* 0b */"
+          }
+        ],
+        "digest": "c68b3a2917ab8b25bf2f49cf7397dcd84bf83549c50e3695cd38d453f58eb2e7"
+      }
     },
     {
       "key": "0x43/0x0C",
@@ -242,7 +407,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0c",
           "cites": "\tcase XMS_LOCK_EXTENDED_MEMORY_BLOCK: {\t\t\t\t\t\t/* 0c */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02762 Call the XMS driver \"Lock extended memory block\"",
+            "line": "Call the XMS driver \"Lock extended memory block\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0c",
+            "line": "\tcase XMS_LOCK_EXTENDED_MEMORY_BLOCK: {\t\t\t\t\t\t/* 0c */"
+          }
+        ],
+        "digest": "555ed88d6341f3513f48eebcd6d6f4ccd9835030ae1c5b32897a9a95502b794c"
+      }
     },
     {
       "key": "0x43/0x0D",
@@ -260,7 +440,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0d",
           "cites": "\tcase XMS_UNLOCK_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t\t/* 0d */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02763 Call the XMS driver \"Unlock extended memory block\"",
+            "line": "Call the XMS driver \"Unlock extended memory block\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0d",
+            "line": "\tcase XMS_UNLOCK_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t\t/* 0d */"
+          }
+        ],
+        "digest": "507835a0ea8470a23a367638edd95784d89e330f6c2631db0af73a784411a7e7"
+      }
     },
     {
       "key": "0x43/0x0E",
@@ -278,7 +473,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0e",
           "cites": "\tcase XMS_GET_EMB_HANDLE_INFORMATION:  \t\t\t\t\t\t/* 0e */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02764 Call the XMS driver \"Get handle information\"",
+            "line": "Call the XMS driver \"Get handle information\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0e",
+            "line": "\tcase XMS_GET_EMB_HANDLE_INFORMATION:  \t\t\t\t\t\t/* 0e */"
+          }
+        ],
+        "digest": "5d3a9c8c5cc40ac02d530e110927def7df14f553e8b8da69cfb0a664bff95c8c"
+      }
     },
     {
       "key": "0x43/0x0F",
@@ -296,7 +506,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0f",
           "cites": "\tcase XMS_RESIZE_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t\t/* 0f */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02765 Call the XMS driver \"Reallocate extended memory block\"",
+            "line": "Call the XMS driver \"Reallocate extended memory block\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x0f",
+            "line": "\tcase XMS_RESIZE_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t\t/* 0f */"
+          }
+        ],
+        "digest": "4ebee9197c54e1ebf36ad9951dd9d175cd182dddb9df27bc00db77ac8c8c691c"
+      }
     },
     {
       "key": "0x43/0x10",
@@ -315,7 +540,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x10",
           "cites": "\tcase XMS_ALLOCATE_UMB: {\t\t\t\t\t\t\t\t\t/* 10 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02766 Call the XMS driver \"Request upper memory block\"",
+            "line": "Call the XMS driver \"Request upper memory block\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x10",
+            "line": "\tcase XMS_ALLOCATE_UMB: {\t\t\t\t\t\t\t\t\t/* 10 */"
+          }
+        ],
+        "digest": "9f1a732b80bd568236190a38f661b496ae48de3338e7809324872fc4dfc6e2c8"
+      }
     },
     {
       "key": "0x43/0x11",
@@ -334,7 +574,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x11",
           "cites": "\tcase XMS_DEALLOCATE_UMB:\t\t\t\t\t\t\t\t\t/* 11 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02767 Call the XMS driver \"Release upper memory block\"",
+            "line": "Call the XMS driver \"Release upper memory block\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x11",
+            "line": "\tcase XMS_DEALLOCATE_UMB:\t\t\t\t\t\t\t\t\t/* 11 */"
+          }
+        ],
+        "digest": "00c5b0612d8af2e421512881d17dff9b282bcb215f937b508a28f6967ae632c7"
+      }
     },
     {
       "key": "0x43/0x88",
@@ -352,7 +607,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x88",
           "cites": "\tcase XMS_QUERY_ANY_FREE_MEMORY:\t\t\t\t\t\t\t\t/* 88 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02771 Call the XMS v3.0 driver \"Query free extended memory\"",
+            "line": "Call the XMS v3.0 driver \"Query free extended memory\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x88",
+            "line": "\tcase XMS_QUERY_ANY_FREE_MEMORY:\t\t\t\t\t\t\t\t/* 88 */"
+          }
+        ],
+        "digest": "ad98bb03cf45009354064ca26911bb46d6a0dcf622bf3ad50ef87ea41b1b6882"
+      }
     },
     {
       "key": "0x43/0x89",
@@ -370,7 +640,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x89",
           "cites": "\tcase XMS_ALLOCATE_ANY_MEMORY:\t\t\t\t\t\t\t\t/* 89 */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02772 Call the XMS v3.0 driver \"Allocate any extended memory\"",
+            "line": "Call the XMS v3.0 driver \"Allocate any extended memory\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x89",
+            "line": "\tcase XMS_ALLOCATE_ANY_MEMORY:\t\t\t\t\t\t\t\t/* 89 */"
+          }
+        ],
+        "digest": "377f4fcb0146a2cad73565fd68a25ce0b944fbbf69f9a6d8c26bf3b218feb05c"
+      }
     },
     {
       "key": "0x43/0x8E",
@@ -388,7 +673,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x8e",
           "cites": "\tcase XMS_GET_EMB_HANDLE_INFORMATION_EXT: {\t\t\t\t\t/* 8e */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02773 Call the XMS v3.0 driver \"Get extended EMB handle information\"",
+            "line": "Call the XMS v3.0 driver \"Get extended EMB handle information\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x8e",
+            "line": "\tcase XMS_GET_EMB_HANDLE_INFORMATION_EXT: {\t\t\t\t\t/* 8e */"
+          }
+        ],
+        "digest": "de078ac3735a3a9821d10c35aa8541eb7bd7ad0068c147635bd68682df396c88"
+      }
     },
     {
       "key": "0x43/0x8F",
@@ -406,7 +706,22 @@
           "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x8f",
           "cites": "\tcase XMS_RESIZE_ANY_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t/* 0x8f */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.L #02774 Call the XMS v3.0 driver \"Reallocate any extended memory block\"",
+            "line": "Call the XMS v3.0 driver \"Reallocate any extended memory block\" function with:"
+          },
+          {
+            "ref": "dosbox-x:src/ints/xms.cpp XMS_Handler case 0x8f",
+            "line": "\tcase XMS_RESIZE_ANY_EXTENDED_MEMORY_BLOCK:\t\t\t\t\t/* 0x8f */"
+          }
+        ],
+        "digest": "51722917e4f394e98bc36f475b319e14eff595aa2160f50ba3ff833a4e02ad43"
+      }
     }
   ]
 }

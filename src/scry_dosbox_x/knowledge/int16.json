@@ -22,7 +22,22 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x00",
           "cites": "    case 0x00: /* GET KEYSTROKE */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D B-1600",
+            "line": "INT 16 - KEYBOARD - GET KEYSTROKE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x00",
+            "line": "    case 0x00: /* GET KEYSTROKE */"
+          }
+        ],
+        "digest": "80b39310816212bb2885e5895bcfd4be8d6bec18fa6f6f2e7e099ef4781666ec"
+      }
     },
     {
       "key": "0x16/0x10",
@@ -40,7 +55,22 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x10",
           "cites": "    case 0x10: /* GET KEYSTROKE (enhanced keyboards only) */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D B-1610",
+            "line": "INT 16 - KEYBOARD - GET ENHANCED KEYSTROKE (enhanced kbd support only)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x10",
+            "line": "    case 0x10: /* GET KEYSTROKE (enhanced keyboards only) */"
+          }
+        ],
+        "digest": "7ae115d7e57097820c81b16bdce745aa6a7b7fc472c7bc6f6f3cf807630f2a36"
+      }
     },
     {
       "key": "0x16/0x01",
@@ -77,7 +107,22 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x11",
           "cites": "    case 0x11: /* CHECK FOR KEYSTROKE (enhanced keyboards only) */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D B-1611",
+            "line": "INT 16 - KEYBOARD - CHECK FOR ENHANCED KEYSTROKE (enh kbd support only)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x11",
+            "line": "    case 0x11: /* CHECK FOR KEYSTROKE (enhanced keyboards only) */"
+          }
+        ],
+        "digest": "44764b0575a3e6a6f02f8da426aa1d8882888d2302271830853025c25ff21756"
+      }
     },
     {
       "key": "0x16/0x02",
@@ -95,7 +140,22 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x02",
           "cites": "    case 0x02:  /* GET SHIFT FLAGS */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D B-1602",
+            "line": "INT 16 - KEYBOARD - GET SHIFT FLAGS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x02",
+            "line": "    case 0x02:  /* GET SHIFT FLAGS */"
+          }
+        ],
+        "digest": "1695e17384a188b1aba2e88a67d3599e7417a5931d28922e932c22d0fa0ef12b"
+      }
     },
     {
       "key": "0x16/0x03",
@@ -132,7 +192,22 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x05",
           "cites": "    case 0x05:  /* STORE KEYSTROKE IN KEYBOARD BUFFER */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D B-1605@1",
+            "line": "INT 16 - KEYBOARD - STORE KEYSTROKE IN KEYBOARD BUFFER (AT/PS w enh keybd only)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x05",
+            "line": "    case 0x05:  /* STORE KEYSTROKE IN KEYBOARD BUFFER */"
+          }
+        ],
+        "digest": "72088e45abaf5e99a0f6c73fd58dee1e05e8b75e5e07cb34bd9c18416212675b"
+      }
     },
     {
       "key": "0x16/0x12",
@@ -150,7 +225,22 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x12",
           "cites": "    case 0x12: /* GET EXTENDED SHIFT STATES */"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D B-1612",
+            "line": "INT 16 - KEYBOARD - GET EXTENDED SHIFT STATES (enh kbd support only)"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x12",
+            "line": "    case 0x12: /* GET EXTENDED SHIFT STATES */"
+          }
+        ],
+        "digest": "c7004da2f4c4a94e0c0b7f6afa21a9ff66d2ed703e1069b4f950c4f2fefd821b"
+      }
     },
     {
       "key": "0x16/0x13",
@@ -200,7 +290,18 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x50",
           "cites": "    case 0x50:// Set/Get JP/US mode in KBD BIOS"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x50",
+            "line": "    case 0x50:// Set/Get JP/US mode in KBD BIOS"
+          }
+        ],
+        "digest": "3b32a14b2d898f8777b38fa8a0cdb3e9d895c82a201bda5bb94eec8b4cb131bf"
+      }
     },
     {
       "key": "0x16/0x50/0x00",
@@ -218,7 +319,22 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x50 case 0x00",
           "cites": "            case 0x00:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D J-165000",
+            "line": "INT 16 - KEYBOARD - AX PC - SET KEYBOARD COUNTRY CODE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x50 case 0x00",
+            "line": "            case 0x00:"
+          }
+        ],
+        "digest": "a2610fd7f3c1b2dacce9de444e2d67e2ef3ebde98d8c10e1fe49c3268b4e6ecd"
+      }
     },
     {
       "key": "0x16/0x50/0x01",
@@ -236,7 +352,22 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x50 case 0x01",
           "cites": "            case 0x01:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D J-165001",
+            "line": "INT 16 - KEYBOARD - AX PC - GET KEYBOARD COUNTRY CODE"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x50 case 0x01",
+            "line": "            case 0x01:"
+          }
+        ],
+        "digest": "137d95dab01b78b4763351a1805fbd339df5c706f921ed71b12c25b746efa52c"
+      }
     },
     {
       "key": "0x16/0x51",
@@ -255,7 +386,22 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x51",
           "cites": "    case 0x51:// Get the shift status"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "rbil61:INTERRUP.D J-1651",
+            "line": "INT 16 - KEYBOARD - AX PC - READ SHIFT KEY STATUS"
+          },
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0x51",
+            "line": "    case 0x51:// Get the shift status"
+          }
+        ],
+        "digest": "38de1f4dca7cbef64a1e7d7f7aa5d7591541d9b4490e767ceb02812fbe10ab80"
+      }
     },
     {
       "key": "0x16/0x55",
@@ -294,7 +440,18 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0xf0",
           "cites": "    case 0xf0:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0xf0",
+            "line": "    case 0xf0:"
+          }
+        ],
+        "digest": "807b396c32d2a908d078f56cd95db4353444633c9745631142e19aa22bebfdfd"
+      }
     },
     {
       "key": "0x16/0xF1",
@@ -307,7 +464,18 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0xf1",
           "cites": "    case 0xf1:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0xf1",
+            "line": "    case 0xf1:"
+          }
+        ],
+        "digest": "c168ec0cab497f282f421dd41ed5c994690c0583369db6f205d0bef9b111db0f"
+      }
     },
     {
       "key": "0x16/0xF2",
@@ -320,7 +488,18 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0xf2",
           "cites": "    case 0xf2:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0xf2",
+            "line": "    case 0xf2:"
+          }
+        ],
+        "digest": "090164f85ba6a7690142485d8695bf9626965605995acd620c298eb9c44fe1ac"
+      }
     },
     {
       "key": "0x16/0xF5",
@@ -333,7 +512,18 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0xf5",
           "cites": "    case 0xf5:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0xf5",
+            "line": "    case 0xf5:"
+          }
+        ],
+        "digest": "15afabfbc65abf58496a5877a41180dc37c1f315b66efd96e5693f1c18df8fec"
+      }
     },
     {
       "key": "0x16/0xF6",
@@ -346,7 +536,18 @@
           "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0xf6",
           "cites": "    case 0xf6:"
         }
-      ]
+      ],
+      "checked": {
+        "by": "phase K3a2c",
+        "writer": "phase K3a2",
+        "against": [
+          {
+            "ref": "dosbox-x:src/ints/bios_keyboard.cpp INT16_Handler case 0xf6",
+            "line": "    case 0xf6:"
+          }
+        ],
+        "digest": "90751398a8f295b30aebe09de168783c5a4435c81d66a03fcf31ef59d8bf8668"
+      }
     }
   ]
 }
