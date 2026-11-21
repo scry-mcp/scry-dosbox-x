@@ -27,3 +27,5 @@ uv run python tools/mapsweep.py --manifest <bench>/real-maps.json --root <where 
 # held seven, and both said "the four Borland maps" over six of them -- a figure in a
 # durable text expires by itself and nobody re-reads it to notice. The sweep PRINTS the
 # denominator on every run (`N of M project(s)`), which cannot go stale.
+
+uv run python tools/knowledge_sources.py --archives <folder holding inter61a.zip to inter61d.zip> --dosbox-x <a DOSBox-X repository that holds the pinned commit>  --  It compares the committed source index (`tests/fixtures/knowledge/sources.json`) and the credit notice beside it with the real sources, which are NOT in this repository: Ralf Brown's list is downloaded and the pinned emulator commit is read from a clone. On the commit path it would be INVALID in every clone without them. What a clone CAN check is `tests/test_dosbox_x_knowledge.py`, which holds every entry to the committed index with no network. A disagreement exits 1 and names the row; nothing read exits 3.

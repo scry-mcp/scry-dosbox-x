@@ -1,0 +1,1861 @@
+{
+  "format": "scry-knowledge-sources/1",
+  "pins": {
+    "dosbox-x": "2a43c7335efd91f87bf5582245abdd5b3f18d5d4",
+    "rbil61": "release 61, 16 July 2000"
+  },
+  "rows": {
+    "dosbox-x:include/dos_inc.h DOSERR_ACCESS_CODE_INVALID": {
+      "line": "#define DOSERR_ACCESS_CODE_INVALID 12",
+      "key": "12"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_ACCESS_DENIED": {
+      "line": "#define DOSERR_ACCESS_DENIED 5",
+      "key": "5"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_DATA_INVALID": {
+      "line": "#define DOSERR_DATA_INVALID 13",
+      "key": "13"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_DRIVE_NOT_READY": {
+      "line": "#define DOSERR_DRIVE_NOT_READY 21",
+      "key": "21"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_ENVIRONMENT_INVALID": {
+      "line": "#define DOSERR_ENVIRONMENT_INVALID 10",
+      "key": "10"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_FILE_ALREADY_EXISTS": {
+      "line": "#define DOSERR_FILE_ALREADY_EXISTS 80",
+      "key": "80"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_FILE_NOT_FOUND": {
+      "line": "#define DOSERR_FILE_NOT_FOUND 2",
+      "key": "2"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_FORMAT_INVALID": {
+      "line": "#define DOSERR_FORMAT_INVALID 11",
+      "key": "11"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_FUNCTION_NUMBER_INVALID": {
+      "line": "#define DOSERR_FUNCTION_NUMBER_INVALID 1",
+      "key": "1"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_INSUFFICIENT_MEMORY": {
+      "line": "#define DOSERR_INSUFFICIENT_MEMORY 8",
+      "key": "8"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_INVALID_DRIVE": {
+      "line": "#define DOSERR_INVALID_DRIVE 15",
+      "key": "15"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_INVALID_HANDLE": {
+      "line": "#define DOSERR_INVALID_HANDLE 6",
+      "key": "6"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_MB_ADDRESS_INVALID": {
+      "line": "#define DOSERR_MB_ADDRESS_INVALID 9",
+      "key": "9"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_MCB_DESTROYED": {
+      "line": "#define DOSERR_MCB_DESTROYED 7",
+      "key": "7"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_NONE": {
+      "line": "#define DOSERR_NONE 0",
+      "key": "0"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_NOT_SAME_DEVICE": {
+      "line": "#define DOSERR_NOT_SAME_DEVICE 17",
+      "key": "17"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_NO_MORE_FILES": {
+      "line": "#define DOSERR_NO_MORE_FILES 18",
+      "key": "18"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_PATH_NOT_FOUND": {
+      "line": "#define DOSERR_PATH_NOT_FOUND 3",
+      "key": "3"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_REMOVE_CURRENT_DIRECTORY": {
+      "line": "#define DOSERR_REMOVE_CURRENT_DIRECTORY 16",
+      "key": "16"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_RESERVED": {
+      "line": "#define DOSERR_RESERVED 14",
+      "key": "14"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_TOO_MANY_OPEN_FILES": {
+      "line": "#define DOSERR_TOO_MANY_OPEN_FILES 4",
+      "key": "4"
+    },
+    "dosbox-x:include/dos_inc.h DOSERR_WRITE_PROTECTED": {
+      "line": "#define DOSERR_WRITE_PROTECTED 19",
+      "key": "19"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x00": {
+      "line": "        case 0x00:      /* Terminate Program */",
+      "key": "0x21/0x00"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x01": {
+      "line": "        case 0x01:      /* Read character from STDIN, with echo */",
+      "key": "0x21/0x01"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x02": {
+      "line": "        case 0x02:      /* Write character to STDOUT */",
+      "key": "0x21/0x02"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x03": {
+      "line": "        case 0x03:      /* Read character from STDAUX */",
+      "key": "0x21/0x03"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x04": {
+      "line": "        case 0x04:      /* Write Character to STDAUX */",
+      "key": "0x21/0x04"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x05": {
+      "line": "        case 0x05:      /* Write Character to PRINTER */",
+      "key": "0x21/0x05"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x06": {
+      "line": "        case 0x06:      /* Direct Console Output / Input */",
+      "key": "0x21/0x06"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x07": {
+      "line": "        case 0x07:      /* Character Input, without echo */",
+      "key": "0x21/0x07"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x08": {
+      "line": "        case 0x08:      /* Direct Character Input, without echo (checks for breaks officially :)*/",
+      "key": "0x21/0x08"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x09": {
+      "line": "        case 0x09:      /* Write string to STDOUT */",
+      "key": "0x21/0x09"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0a": {
+      "line": "        case 0x0a:      /* Buffered Input */",
+      "key": "0x21/0x0A"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0b": {
+      "line": "        case 0x0b:      /* Get STDIN Status */",
+      "key": "0x21/0x0B"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c": {
+      "line": "        case 0x0c:      /* Flush Buffer and read STDIN call */",
+      "key": "0x21/0x0C"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x1": {
+      "line": "                    case 0x1:",
+      "key": "0x21/0x0C/0x01"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x6": {
+      "line": "                    case 0x6:",
+      "key": "0x21/0x0C/0x06"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x7": {
+      "line": "                    case 0x7:",
+      "key": "0x21/0x0C/0x07"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x8": {
+      "line": "                    case 0x8:",
+      "key": "0x21/0x0C/0x08"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0xa": {
+      "line": "                    case 0xa:",
+      "key": "0x21/0x0C/0x0A"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0d": {
+      "line": "        case 0x0d:      /* Disk Reset */",
+      "key": "0x21/0x0D"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0e": {
+      "line": "        case 0x0e:      /* Select Default Drive */",
+      "key": "0x21/0x0E"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0f": {
+      "line": "        case 0x0f:      /* Open File using FCB */",
+      "key": "0x21/0x0F"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x10": {
+      "line": "        case 0x10:      /* Close File using FCB */",
+      "key": "0x21/0x10"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x11": {
+      "line": "        case 0x11:      /* Find First Matching File using FCB */",
+      "key": "0x21/0x11"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x12": {
+      "line": "        case 0x12:      /* Find Next Matching File using FCB */",
+      "key": "0x21/0x12"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x13": {
+      "line": "        case 0x13:      /* Delete File using FCB */",
+      "key": "0x21/0x13"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x14": {
+      "line": "        case 0x14:      /* Sequential read from FCB */",
+      "key": "0x21/0x14"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x15": {
+      "line": "        case 0x15:      /* Sequential write to FCB */",
+      "key": "0x21/0x15"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x16": {
+      "line": "        case 0x16:      /* Create or truncate file using FCB */",
+      "key": "0x21/0x16"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x17": {
+      "line": "        case 0x17:      /* Rename file using FCB */",
+      "key": "0x21/0x17"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x18": {
+      "line": "        case 0x18:      /* NULL Function for CP/M compatibility or Extended rename FCB */",
+      "key": "0x21/0x18"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x19": {
+      "line": "        case 0x19:      /* Get current default drive */",
+      "key": "0x21/0x19"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1a": {
+      "line": "        case 0x1a:      /* Set Disk Transfer Area Address */",
+      "key": "0x21/0x1A"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1b": {
+      "line": "        case 0x1b:      /* Get allocation info for default drive */",
+      "key": "0x21/0x1B"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1c": {
+      "line": "        case 0x1c:      /* Get allocation info for specific drive */",
+      "key": "0x21/0x1C"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1d": {
+      "line": "        case 0x1d:      /* NULL Function for CP/M compatibility or Extended rename FCB */",
+      "key": "0x21/0x1D"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1e": {
+      "line": "        case 0x1e:      /* NULL Function for CP/M compatibility or Extended rename FCB */",
+      "key": "0x21/0x1E"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1f": {
+      "line": "        case 0x1f: /* Get drive parameter block for default drive */",
+      "key": "0x21/0x1F"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x20": {
+      "line": "        case 0x20:      /* NULL Function for CP/M compatibility or Extended rename FCB */",
+      "key": "0x21/0x20"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x21": {
+      "line": "        case 0x21:      /* Read random record from FCB */",
+      "key": "0x21/0x21"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x22": {
+      "line": "        case 0x22:      /* Write random record to FCB */",
+      "key": "0x21/0x22"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x23": {
+      "line": "        case 0x23:      /* Get file size for FCB */",
+      "key": "0x21/0x23"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x24": {
+      "line": "        case 0x24:      /* Set Random Record number for FCB */",
+      "key": "0x21/0x24"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x25": {
+      "line": "        case 0x25:      /* Set Interrupt Vector */",
+      "key": "0x21/0x25"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x26": {
+      "line": "        case 0x26:      /* Create new PSP */",
+      "key": "0x21/0x26"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x27": {
+      "line": "        case 0x27:      /* Random block read from FCB */",
+      "key": "0x21/0x27"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x28": {
+      "line": "        case 0x28:      /* Random Block write to FCB */",
+      "key": "0x21/0x28"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x29": {
+      "line": "        case 0x29:      /* Parse filename into FCB */",
+      "key": "0x21/0x29"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2a": {
+      "line": "        case 0x2a:      /* Get System Date */",
+      "key": "0x21/0x2A"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2b": {
+      "line": "        case 0x2b:      /* Set System Date */",
+      "key": "0x21/0x2B"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2c": {
+      "line": "        case 0x2c: {    /* Get System Time */",
+      "key": "0x21/0x2C"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2d": {
+      "line": "        case 0x2d:      /* Set System Time */",
+      "key": "0x21/0x2D"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2e": {
+      "line": "        case 0x2e:      /* Set Verify flag */",
+      "key": "0x21/0x2E"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2f": {
+      "line": "        case 0x2f:      /* Get Disk Transfer Area */",
+      "key": "0x21/0x2F"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x30": {
+      "line": "        case 0x30:      /* Get DOS Version */",
+      "key": "0x21/0x30"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x31": {
+      "line": "        case 0x31:      /* Terminate and stay resident */",
+      "key": "0x21/0x31"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x32": {
+      "line": "        case 0x32: /* Get drive parameter block for specific drive */",
+      "key": "0x21/0x32"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33": {
+      "line": "        case 0x33:      /* Extended Break Checking */",
+      "key": "0x21/0x33"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 0": {
+      "line": "                case 0:reg_dl=dos.breakcheck;break;         /* Get the breakcheck flag */",
+      "key": "0x21/0x33/0x00"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 1": {
+      "line": "                case 1:dos.breakcheck=(reg_dl>0);break;     /* Set the breakcheck flag */",
+      "key": "0x21/0x33/0x01"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 2": {
+      "line": "                case 2:{bool old=dos.breakcheck;dos.breakcheck=(reg_dl>0);reg_dl=old;}break;",
+      "key": "0x21/0x33/0x02"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 3": {
+      "line": "                case 3: /* Get cpsw */",
+      "key": "0x21/0x33/0x03"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 4": {
+      "line": "                case 4: /* Set cpsw */",
+      "key": "0x21/0x33/0x04"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 5": {
+      "line": "\t\tcase 5:reg_dl=3;break; /* Drive C: (TODO: Make configurable, or else initially set to Z: then re-set to the first drive mounted */",
+      "key": "0x21/0x33/0x05"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 6": {
+      "line": "                case 6:                                         /* Get true version number */",
+      "key": "0x21/0x33/0x06"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 7": {
+      "line": "                case 7:",
+      "key": "0x21/0x33/0x07"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x34": {
+      "line": "        case 0x34:      /* Get INDos Flag */",
+      "key": "0x21/0x34"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x35": {
+      "line": "        case 0x35:      /* Get interrupt vector */",
+      "key": "0x21/0x35"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x36": {
+      "line": "        case 0x36:      /* Get Free Disk Space */",
+      "key": "0x21/0x36"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37": {
+      "line": "        case 0x37:      /* Get/Set Switch char Get/Set Availdev thing */",
+      "key": "0x21/0x37"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 0": {
+      "line": "                case 0:",
+      "key": "0x21/0x37/0x00"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 1": {
+      "line": "                case 1:",
+      "key": "0x21/0x37/0x01"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 2": {
+      "line": "                case 2:",
+      "key": "0x21/0x37/0x02"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 3": {
+      "line": "                case 3:",
+      "key": "0x21/0x37/0x03"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x38": {
+      "line": "        case 0x38:                  /* Set Country Code */",
+      "key": "0x21/0x38"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x39": {
+      "line": "        case 0x39:      /* MKDIR Create directory */",
+      "key": "0x21/0x39"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3a": {
+      "line": "        case 0x3a:      /* RMDIR Remove directory */",
+      "key": "0x21/0x3A"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3b": {
+      "line": "        case 0x3b:      /* CHDIR Set current directory */",
+      "key": "0x21/0x3B"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3c": {
+      "line": "        case 0x3c:      /* CREATE Create or truncate file */",
+      "key": "0x21/0x3C"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3d": {
+      "line": "        case 0x3d:      /* OPEN Open existing file */",
+      "key": "0x21/0x3D"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3e": {
+      "line": "        case 0x3e:      /* CLOSE Close file */",
+      "key": "0x21/0x3E"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3f": {
+      "line": "        case 0x3f:      /* READ Read from file or device */",
+      "key": "0x21/0x3F"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x40": {
+      "line": "        case 0x40:                  /* WRITE Write to file or device */",
+      "key": "0x21/0x40"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x41": {
+      "line": "        case 0x41:                  /* UNLINK Delete file */",
+      "key": "0x21/0x41"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x42": {
+      "line": "        case 0x42:                  /* LSEEK Set current file position */",
+      "key": "0x21/0x42"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43": {
+      "line": "        case 0x43:                  /* Get/Set file attributes */",
+      "key": "0x21/0x43"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43 case 0x00": {
+      "line": "                case 0x00:              /* Get */",
+      "key": "0x21/0x43/0x00"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43 case 0x01": {
+      "line": "                case 0x01:              /* Set */",
+      "key": "0x21/0x43/0x01"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x44": {
+      "line": "        case 0x44:                  /* IOCTL Functions */",
+      "key": "0x21/0x44"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x45": {
+      "line": "        case 0x45:                  /* DUP Duplicate file handle */",
+      "key": "0x21/0x45"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x46": {
+      "line": "        case 0x46:                  /* DUP2,FORCEDUP Force duplicate file handle */",
+      "key": "0x21/0x46"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x47": {
+      "line": "        case 0x47:                  /* CWD Get current directory */",
+      "key": "0x21/0x47"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x48": {
+      "line": "        case 0x48:                  /* Allocate memory */",
+      "key": "0x21/0x48"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x49": {
+      "line": "        case 0x49:                  /* Free memory */",
+      "key": "0x21/0x49"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4a": {
+      "line": "        case 0x4a:                  /* Resize memory block */",
+      "key": "0x21/0x4A"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4b": {
+      "line": "        case 0x4b:                  /* EXEC Load and/or execute program */",
+      "key": "0x21/0x4B"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4c": {
+      "line": "        case 0x4c:                  /* EXIT Terminate with return code */",
+      "key": "0x21/0x4C"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4d": {
+      "line": "        case 0x4d:                  /* Get Return code */",
+      "key": "0x21/0x4D"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4e": {
+      "line": "        case 0x4e: {                /* FINDFIRST Find first matching file */",
+      "key": "0x21/0x4E"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4f": {
+      "line": "        case 0x4f:                  /* FINDNEXT Find next matching file */",
+      "key": "0x21/0x4F"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x50": {
+      "line": "        case 0x50:                  /* Set current PSP */",
+      "key": "0x21/0x50"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x51": {
+      "line": "        case 0x51:                  /* Get current PSP */",
+      "key": "0x21/0x51"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x52": {
+      "line": "        case 0x52: {                /* Get list of lists */",
+      "key": "0x21/0x52"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x53": {
+      "line": "        case 0x53:                  /* Translate BIOS parameter block to drive parameter block */",
+      "key": "0x21/0x53"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x54": {
+      "line": "        case 0x54:                  /* Get verify flag */",
+      "key": "0x21/0x54"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x55": {
+      "line": "        case 0x55:                  /* Create Child PSP*/",
+      "key": "0x21/0x55"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x56": {
+      "line": "        case 0x56:                  /* RENAME Rename file */",
+      "key": "0x21/0x56"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x57": {
+      "line": "        case 0x57:                  /* Get/Set File's Date and Time */",
+      "key": "0x21/0x57"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58": {
+      "line": "        case 0x58:                  /* Get/Set Memory allocation strategy */",
+      "key": "0x21/0x58"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 0": {
+      "line": "                case 0:                 /* Get Strategy */",
+      "key": "0x21/0x58/0x00"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 1": {
+      "line": "                case 1:                 /* Set Strategy */",
+      "key": "0x21/0x58/0x01"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 2": {
+      "line": "                case 2:                 /* Get UMB Link Status */",
+      "key": "0x21/0x58/0x02"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 3": {
+      "line": "                case 3:                 /* Set UMB Link Status */",
+      "key": "0x21/0x58/0x03"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x59": {
+      "line": "        case 0x59:                  /* Get Extended error information */",
+      "key": "0x21/0x59"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5a": {
+      "line": "        case 0x5a:                  /* Create temporary file */",
+      "key": "0x21/0x5A"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5b": {
+      "line": "        case 0x5b:                  /* Create new file */",
+      "key": "0x21/0x5B"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5c": {
+      "line": "        case 0x5c:  {       /* FLOCK File region locking */",
+      "key": "0x21/0x5C"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5d": {
+      "line": "        case 0x5d:                  /* Network Functions */",
+      "key": "0x21/0x5D"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e": {
+      "line": "        case 0x5e:                  /* Network and printer functions */",
+      "key": "0x21/0x5E"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5f": {
+      "line": "        case 0x5f:                  /* Network redirection */",
+      "key": "0x21/0x5F"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x60": {
+      "line": "        case 0x60:                  /* Canonicalize filename or path */",
+      "key": "0x21/0x60"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x61": {
+      "line": "        case 0x61:                  /* Unused (reserved for network use) */",
+      "key": "0x21/0x61"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x62": {
+      "line": "        case 0x62:                  /* Get Current PSP Address */",
+      "key": "0x21/0x62"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x63": {
+      "line": "        case 0x63:                  /* DOUBLE BYTE CHARACTER SET */",
+      "key": "0x21/0x63"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x64": {
+      "line": "        case 0x64:                  /* Set device driver lookahead flag */",
+      "key": "0x21/0x64"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65": {
+      "line": "        case 0x65:                  /* Get extended country information and a lot of other useless shit*/",
+      "key": "0x21/0x65"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x01": {
+      "line": "                    case 0x01:",
+      "key": "0x21/0x65/0x01"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x02": {
+      "line": "                    case 0x02: // Get pointer to uppercase table",
+      "key": "0x21/0x65/0x02"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x03": {
+      "line": "                    case 0x03: // Get pointer to lowercase table",
+      "key": "0x21/0x65/0x03"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x04": {
+      "line": "                    case 0x04: // Get pointer to filename uppercase table",
+      "key": "0x21/0x65/0x04"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x05": {
+      "line": "                    case 0x05: // Get pointer to filename terminator table",
+      "key": "0x21/0x65/0x05"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x06": {
+      "line": "                    case 0x06: // Get pointer to collating sequence table",
+      "key": "0x21/0x65/0x06"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x07": {
+      "line": "                    case 0x07: // Get pointer to double byte char set table",
+      "key": "0x21/0x65/0x07"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x20": {
+      "line": "                    case 0x20: /* Capitalize Character */",
+      "key": "0x21/0x65/0x20"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x21": {
+      "line": "                    case 0x21: /* Capitalize String (cx=length) */",
+      "key": "0x21/0x65/0x21"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x22": {
+      "line": "                    case 0x22: /* Capitalize ASCIZ string */",
+      "key": "0x21/0x65/0x22"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x23": {
+      "line": "                    case 0x23: /* Determine if character represents yes/no response (MS-DOS 4.0+) */",
+      "key": "0x21/0x65/0x23"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66": {
+      "line": "        case 0x66:                  /* Get/Set global code page table  */",
+      "key": "0x21/0x66"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66 case 1": {
+      "line": "                case 1:",
+      "key": "0x21/0x66/0x01"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66 case 2": {
+      "line": "                case 2:",
+      "key": "0x21/0x66/0x02"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x67": {
+      "line": "        case 0x67:                  /* Set handle count */",
+      "key": "0x21/0x67"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x68": {
+      "line": "        case 0x68:                  /* FFLUSH Commit file */",
+      "key": "0x21/0x68"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69": {
+      "line": "        case 0x69:                  /* Get/Set disk serial number */",
+      "key": "0x21/0x69"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69 case 0x00": {
+      "line": "                    case 0x00:              /* Get */",
+      "key": "0x21/0x69/0x00"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69 case 0x01": {
+      "line": "                    case 0x01:              /* Set */",
+      "key": "0x21/0x69/0x01"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6a": {
+      "line": "        case 0x6a:                  /* Commit file */",
+      "key": "0x21/0x6A"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6b": {
+      "line": "        case 0x6b:                  /* NULL Function */",
+      "key": "0x21/0x6B"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6c": {
+      "line": "        case 0x6c:                  /* Extended Open/Create */",
+      "key": "0x21/0x6C"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6d": {
+      "line": "        case 0x6d:                  /* ROM - Find first ROM program */",
+      "key": "0x21/0x6D"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6e": {
+      "line": "        case 0x6e:                  /* ROM - Find next ROM program */",
+      "key": "0x21/0x6E"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6f": {
+      "line": "        case 0x6f:                  /* ROM functions */",
+      "key": "0x21/0x6F"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71": {
+      "line": "        case 0x71:                  /* Unknown probably 4dos detection */",
+      "key": "0x21/0x71"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x39": {
+      "line": "\t\t    case 0x39:              /* LFN MKDIR */",
+      "key": "0x21/0x71/0x39"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x3a": {
+      "line": "\t\t    case 0x3a:              /* LFN RMDIR */",
+      "key": "0x21/0x71/0x3A"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x3b": {
+      "line": "\t\t    case 0x3b:              /* LFN CHDIR */",
+      "key": "0x21/0x71/0x3B"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x41": {
+      "line": "\t\t    case 0x41:              /* LFN UNLINK */",
+      "key": "0x21/0x71/0x41"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x43": {
+      "line": "\t\t    case 0x43:              /* LFN ATTR */",
+      "key": "0x21/0x71/0x43"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x47": {
+      "line": "\t\t    case 0x47:              /* LFN PWD */",
+      "key": "0x21/0x71/0x47"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x4e": {
+      "line": "\t\t    case 0x4e:              /* LFN FindFirst */",
+      "key": "0x21/0x71/0x4E"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x4f": {
+      "line": "\t\t    case 0x4f:              /* LFN FindNext */",
+      "key": "0x21/0x71/0x4F"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x56": {
+      "line": "\t\t    case 0x56:              /* LFN Rename */",
+      "key": "0x21/0x71/0x56"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x60": {
+      "line": "\t\t    case 0x60:              /* LFN GetName */",
+      "key": "0x21/0x71/0x60"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x6c": {
+      "line": "\t\t    case 0x6c:              /* LFN Create */",
+      "key": "0x21/0x71/0x6C"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa0": {
+      "line": "\t\t    case 0xa0:              /* LFN VolInfo */",
+      "key": "0x21/0x71/0xA0"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa1": {
+      "line": "\t\t    case 0xa1:              /* LFN FileClose */",
+      "key": "0x21/0x71/0xA1"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa6": {
+      "line": "\t\t    case 0xa6:              /* LFN GetFileInfoByHandle */",
+      "key": "0x21/0x71/0xA6"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa7": {
+      "line": "\t\t    case 0xa7:              /* LFN TimeConv */",
+      "key": "0x21/0x71/0xA7"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa8": {
+      "line": "\t\t    case 0xa8:              /* LFN GenSFN */",
+      "key": "0x21/0x71/0xA8"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa9": {
+      "line": "\t\t    case 0xa9:              /* LFN Server Create */",
+      "key": "0x21/0x71/0xA9"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xaa": {
+      "line": "\t\t    case 0xaa:              /* LFN Subst */",
+      "key": "0x21/0x71/0xAA"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73": {
+      "line": "\tcase 0x73:",
+      "key": "0x21/0x73"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xE0": {
+      "line": "\tcase 0xE0:",
+      "key": "0x21/0xE0"
+    },
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xEF": {
+      "line": "        case 0xEF:                  /* Used in Ancient Art Of War CGA */",
+      "key": "0x21/0xEF"
+    },
+    "rbil61:INTERRUP.F D-2100": {
+      "line": "INT 21 - DOS 1+ - TERMINATE PROGRAM",
+      "key": "0x21/0x00"
+    },
+    "rbil61:INTERRUP.F D-2101": {
+      "line": "INT 21 - DOS 1+ - READ CHARACTER FROM STANDARD INPUT, WITH ECHO",
+      "key": "0x21/0x01"
+    },
+    "rbil61:INTERRUP.F D-2102": {
+      "line": "INT 21 - DOS 1+ - WRITE CHARACTER TO STANDARD OUTPUT",
+      "key": "0x21/0x02"
+    },
+    "rbil61:INTERRUP.F D-2103": {
+      "line": "INT 21 - DOS 1+ - READ CHARACTER FROM STDAUX",
+      "key": "0x21/0x03"
+    },
+    "rbil61:INTERRUP.F D-2104": {
+      "line": "INT 21 - DOS 1+ - WRITE CHARACTER TO STDAUX",
+      "key": "0x21/0x04"
+    },
+    "rbil61:INTERRUP.F D-2105": {
+      "line": "INT 21 - DOS 1+ - WRITE CHARACTER TO PRINTER",
+      "key": "0x21/0x05"
+    },
+    "rbil61:INTERRUP.F D-2106": {
+      "line": "INT 21 - DOS 1+ - DIRECT CONSOLE OUTPUT",
+      "key": "0x21/0x06"
+    },
+    "rbil61:INTERRUP.F D-2107": {
+      "line": "INT 21 - DOS 1+ - DIRECT CHARACTER INPUT, WITHOUT ECHO",
+      "key": "0x21/0x07"
+    },
+    "rbil61:INTERRUP.F D-2108": {
+      "line": "INT 21 - DOS 1+ - CHARACTER INPUT WITHOUT ECHO",
+      "key": "0x21/0x08"
+    },
+    "rbil61:INTERRUP.F D-2109": {
+      "line": "INT 21 - DOS 1+ - WRITE STRING TO STANDARD OUTPUT",
+      "key": "0x21/0x09"
+    },
+    "rbil61:INTERRUP.F D-210A": {
+      "line": "INT 21 - DOS 1+ - BUFFERED INPUT",
+      "key": "0x21/0x0A"
+    },
+    "rbil61:INTERRUP.F D-210B": {
+      "line": "INT 21 - DOS 1+ - GET STDIN STATUS",
+      "key": "0x21/0x0B"
+    },
+    "rbil61:INTERRUP.F D-210C": {
+      "line": "INT 21 - DOS 1+ - FLUSH BUFFER AND READ STANDARD INPUT",
+      "key": "0x21/0x0C"
+    },
+    "rbil61:INTERRUP.F D-210D": {
+      "line": "INT 21 - DOS 1+ - DISK RESET",
+      "key": "0x21/0x0D"
+    },
+    "rbil61:INTERRUP.F D-210E": {
+      "line": "INT 21 - DOS 1+ - SELECT DEFAULT DRIVE",
+      "key": "0x21/0x0E"
+    },
+    "rbil61:INTERRUP.F D-210F": {
+      "line": "INT 21 - DOS 1+ - OPEN FILE USING FCB",
+      "key": "0x21/0x0F"
+    },
+    "rbil61:INTERRUP.F D-2110": {
+      "line": "INT 21 - DOS 1+ - CLOSE FILE USING FCB",
+      "key": "0x21/0x10"
+    },
+    "rbil61:INTERRUP.F D-2111": {
+      "line": "INT 21 - DOS 1+ - FIND FIRST MATCHING FILE USING FCB",
+      "key": "0x21/0x11"
+    },
+    "rbil61:INTERRUP.F D-2112": {
+      "line": "INT 21 - DOS 1+ - FIND NEXT MATCHING FILE USING FCB",
+      "key": "0x21/0x12"
+    },
+    "rbil61:INTERRUP.F D-2113": {
+      "line": "INT 21 - DOS 1+ - DELETE FILE USING FCB",
+      "key": "0x21/0x13"
+    },
+    "rbil61:INTERRUP.F D-2114": {
+      "line": "INT 21 - DOS 1+ - SEQUENTIAL READ FROM FCB FILE",
+      "key": "0x21/0x14"
+    },
+    "rbil61:INTERRUP.F D-2115": {
+      "line": "INT 21 - DOS 1+ - SEQUENTIAL WRITE TO FCB FILE",
+      "key": "0x21/0x15"
+    },
+    "rbil61:INTERRUP.F D-2116": {
+      "line": "INT 21 - DOS 1+ - CREATE OR TRUNCATE FILE USING FCB",
+      "key": "0x21/0x16"
+    },
+    "rbil61:INTERRUP.F D-2117": {
+      "line": "INT 21 - DOS 1+ - RENAME FILE USING FCB",
+      "key": "0x21/0x17"
+    },
+    "rbil61:INTERRUP.F D-2118": {
+      "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY",
+      "key": "0x21/0x18"
+    },
+    "rbil61:INTERRUP.F D-2119": {
+      "line": "INT 21 - DOS 1+ - GET CURRENT DEFAULT DRIVE",
+      "key": "0x21/0x19"
+    },
+    "rbil61:INTERRUP.F D-211A": {
+      "line": "INT 21 - DOS 1+ - SET DISK TRANSFER AREA ADDRESS",
+      "key": "0x21/0x1A"
+    },
+    "rbil61:INTERRUP.F D-211B": {
+      "line": "INT 21 - DOS 1+ - GET ALLOCATION INFORMATION FOR DEFAULT DRIVE",
+      "key": "0x21/0x1B"
+    },
+    "rbil61:INTERRUP.F D-211C": {
+      "line": "INT 21 - DOS 1+ - GET ALLOCATION INFORMATION FOR SPECIFIC DRIVE",
+      "key": "0x21/0x1C"
+    },
+    "rbil61:INTERRUP.F D-211D": {
+      "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY",
+      "key": "0x21/0x1D"
+    },
+    "rbil61:INTERRUP.F D-211E": {
+      "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY",
+      "key": "0x21/0x1E"
+    },
+    "rbil61:INTERRUP.F D-211F": {
+      "line": "INT 21 - DOS 1+ - GET DRIVE PARAMETER BLOCK FOR DEFAULT DRIVE",
+      "key": "0x21/0x1F"
+    },
+    "rbil61:INTERRUP.F D-2120": {
+      "line": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY",
+      "key": "0x21/0x20"
+    },
+    "rbil61:INTERRUP.F D-2121": {
+      "line": "INT 21 - DOS 1+ - READ RANDOM RECORD FROM FCB FILE",
+      "key": "0x21/0x21"
+    },
+    "rbil61:INTERRUP.F D-2122": {
+      "line": "INT 21 - DOS 1+ - WRITE RANDOM RECORD TO FCB FILE",
+      "key": "0x21/0x22"
+    },
+    "rbil61:INTERRUP.F D-2123": {
+      "line": "INT 21 - DOS 1+ - GET FILE SIZE FOR FCB",
+      "key": "0x21/0x23"
+    },
+    "rbil61:INTERRUP.F D-2124": {
+      "line": "INT 21 - DOS 1+ - SET RANDOM RECORD NUMBER FOR FCB",
+      "key": "0x21/0x24"
+    },
+    "rbil61:INTERRUP.F D-2125": {
+      "line": "INT 21 - DOS 1+ - SET INTERRUPT VECTOR",
+      "key": "0x21/0x25"
+    },
+    "rbil61:INTERRUP.F D-2126": {
+      "line": "INT 21 - DOS 1+ - CREATE NEW PROGRAM SEGMENT PREFIX",
+      "key": "0x21/0x26"
+    },
+    "rbil61:INTERRUP.F D-2127": {
+      "line": "INT 21 - DOS 1+ - RANDOM BLOCK READ FROM FCB FILE",
+      "key": "0x21/0x27"
+    },
+    "rbil61:INTERRUP.F D-2128": {
+      "line": "INT 21 - DOS 1+ - RANDOM BLOCK WRITE TO FCB FILE",
+      "key": "0x21/0x28"
+    },
+    "rbil61:INTERRUP.F D-2129": {
+      "line": "INT 21 - DOS 1+ - PARSE FILENAME INTO FCB",
+      "key": "0x21/0x29"
+    },
+    "rbil61:INTERRUP.F D-212A": {
+      "line": "INT 21 - DOS 1+ - GET SYSTEM DATE",
+      "key": "0x21/0x2A"
+    },
+    "rbil61:INTERRUP.F D-212B": {
+      "line": "INT 21 - DOS 1+ - SET SYSTEM DATE",
+      "key": "0x21/0x2B"
+    },
+    "rbil61:INTERRUP.F D-212C": {
+      "line": "INT 21 - DOS 1+ - GET SYSTEM TIME",
+      "key": "0x21/0x2C"
+    },
+    "rbil61:INTERRUP.F D-212D": {
+      "line": "INT 21 - DOS 1+ - SET SYSTEM TIME",
+      "key": "0x21/0x2D"
+    },
+    "rbil61:INTERRUP.F D-212E--DL00": {
+      "line": "INT 21 - DOS 1+ - SET VERIFY FLAG",
+      "key": "0x21/0x2E"
+    },
+    "rbil61:INTERRUP.F D-212F": {
+      "line": "INT 21 - DOS 2+ - GET DISK TRANSFER AREA ADDRESS",
+      "key": "0x21/0x2F"
+    },
+    "rbil61:INTERRUP.F D-2130": {
+      "line": "INT 21 - DOS 2+ - GET DOS VERSION",
+      "key": "0x21/0x30"
+    },
+    "rbil61:INTERRUP.F D-2131": {
+      "line": "INT 21 - DOS 2+ - TERMINATE AND STAY RESIDENT",
+      "key": "0x21/0x31"
+    },
+    "rbil61:INTERRUP.F D-2132": {
+      "line": "INT 21 - DOS 2+ - GET DOS DRIVE PARAMETER BLOCK FOR SPECIFIC DRIVE",
+      "key": "0x21/0x32"
+    },
+    "rbil61:INTERRUP.F D-2133": {
+      "line": "INT 21 - DOS 2+ - EXTENDED BREAK CHECKING",
+      "key": "0x21/0x33"
+    },
+    "rbil61:INTERRUP.F D-213302": {
+      "line": "INT 21 - DOS 3.x+ internal - GET AND SET EXTENDED CONTROL-BREAK CHECKING STATE",
+      "key": "0x21/0x33/0x02"
+    },
+    "rbil61:INTERRUP.F D-213303": {
+      "line": "INT 21 - DOS 3.4/4.0 - GET CURRENT CPSW STATE",
+      "key": "0x21/0x33/0x03"
+    },
+    "rbil61:INTERRUP.F D-213304": {
+      "line": "INT 21 - DOS 3.4/4.0 - SET CPSW STATE",
+      "key": "0x21/0x33/0x04"
+    },
+    "rbil61:INTERRUP.F D-213305": {
+      "line": "INT 21 - DOS 4.0+ - GET BOOT DRIVE",
+      "key": "0x21/0x33/0x05"
+    },
+    "rbil61:INTERRUP.F D-213306": {
+      "line": "INT 21 - DOS 5+ - GET TRUE VERSION NUMBER",
+      "key": "0x21/0x33/0x06"
+    },
+    "rbil61:INTERRUP.F D-213307": {
+      "line": "INT 21 - Windows95 - SET/CLEAR DOS_FLAG",
+      "key": "0x21/0x33/0x07"
+    },
+    "rbil61:INTERRUP.F D-2134": {
+      "line": "INT 21 - DOS 2+ - GET ADDRESS OF INDOS FLAG",
+      "key": "0x21/0x34"
+    },
+    "rbil61:INTERRUP.F D-2135": {
+      "line": "INT 21 - DOS 2+ - GET INTERRUPT VECTOR",
+      "key": "0x21/0x35"
+    },
+    "rbil61:INTERRUP.F D-2136": {
+      "line": "INT 21 - DOS 2+ - GET FREE DISK SPACE",
+      "key": "0x21/0x36"
+    },
+    "rbil61:INTERRUP.F D-2137": {
+      "line": "INT 21 - DOS 2.x and 3.3+ only - \"AVAILDEV\" - SPECIFY \\DEV\\ PREFIX USE",
+      "key": "0x21/0x37"
+    },
+    "rbil61:INTERRUP.F D-213700": {
+      "line": "INT 21 - DOS 2+ - \"SWITCHAR\" - GET SWITCH CHARACTER",
+      "key": "0x21/0x37/0x00"
+    },
+    "rbil61:INTERRUP.F D-213701": {
+      "line": "INT 21 - DOS 2+ - \"SWITCHAR\" - SET SWITCH CHARACTER",
+      "key": "0x21/0x37/0x01"
+    },
+    "rbil61:INTERRUP.F D-2138": {
+      "line": "INT 21 - DOS 2+ - GET COUNTRY-SPECIFIC INFORMATION",
+      "key": "0x21/0x38"
+    },
+    "rbil61:INTERRUP.F D-2139": {
+      "line": "INT 21 - DOS 2+ - \"MKDIR\" - CREATE SUBDIRECTORY",
+      "key": "0x21/0x39"
+    },
+    "rbil61:INTERRUP.F D-213A": {
+      "line": "INT 21 - DOS 2+ - \"RMDIR\" - REMOVE SUBDIRECTORY",
+      "key": "0x21/0x3A"
+    },
+    "rbil61:INTERRUP.F D-213B": {
+      "line": "INT 21 - DOS 2+ - \"CHDIR\" - SET CURRENT DIRECTORY",
+      "key": "0x21/0x3B"
+    },
+    "rbil61:INTERRUP.F D-213C": {
+      "line": "INT 21 - DOS 2+ - \"CREAT\" - CREATE OR TRUNCATE FILE",
+      "key": "0x21/0x3C"
+    },
+    "rbil61:INTERRUP.F D-213D": {
+      "line": "INT 21 - DOS 2+ - \"OPEN\" - OPEN EXISTING FILE",
+      "key": "0x21/0x3D"
+    },
+    "rbil61:INTERRUP.F D-213E": {
+      "line": "INT 21 - DOS 2+ - \"CLOSE\" - CLOSE FILE",
+      "key": "0x21/0x3E"
+    },
+    "rbil61:INTERRUP.F D-213F": {
+      "line": "INT 21 - DOS 2+ - \"READ\" - READ FROM FILE OR DEVICE",
+      "key": "0x21/0x3F"
+    },
+    "rbil61:INTERRUP.F D-2140": {
+      "line": "INT 21 - DOS 2+ - \"WRITE\" - WRITE TO FILE OR DEVICE",
+      "key": "0x21/0x40"
+    },
+    "rbil61:INTERRUP.F D-2141": {
+      "line": "INT 21 - DOS 2+ - \"UNLINK\" - DELETE FILE",
+      "key": "0x21/0x41"
+    },
+    "rbil61:INTERRUP.F D-2142": {
+      "line": "INT 21 - DOS 2+ - \"LSEEK\" - SET CURRENT FILE POSITION",
+      "key": "0x21/0x42"
+    },
+    "rbil61:INTERRUP.F D-214300": {
+      "line": "INT 21 - DOS 2+ - GET FILE ATTRIBUTES",
+      "key": "0x21/0x43/0x00"
+    },
+    "rbil61:INTERRUP.F D-214301": {
+      "line": "INT 21 - DOS 2+ - \"CHMOD\" - SET FILE ATTRIBUTES",
+      "key": "0x21/0x43/0x01"
+    },
+    "rbil61:INTERRUP.G #01680 00h (0)": {
+      "line": " 00h (0)   no error",
+      "key": "0"
+    },
+    "rbil61:INTERRUP.G #01680 01h (1)": {
+      "line": " 01h (1)   function number invalid",
+      "key": "1"
+    },
+    "rbil61:INTERRUP.G #01680 02h (2)": {
+      "line": " 02h (2)   file not found",
+      "key": "2"
+    },
+    "rbil61:INTERRUP.G #01680 03h (3)": {
+      "line": " 03h (3)   path not found",
+      "key": "3"
+    },
+    "rbil61:INTERRUP.G #01680 04h (4)": {
+      "line": " 04h (4)   too many open files (no handles available)",
+      "key": "4"
+    },
+    "rbil61:INTERRUP.G #01680 05h (5)": {
+      "line": " 05h (5)   access denied",
+      "key": "5"
+    },
+    "rbil61:INTERRUP.G #01680 06h (6)": {
+      "line": " 06h (6)   invalid handle",
+      "key": "6"
+    },
+    "rbil61:INTERRUP.G #01680 07h (7)": {
+      "line": " 07h (7)   memory control block destroyed",
+      "key": "7"
+    },
+    "rbil61:INTERRUP.G #01680 08h (8)": {
+      "line": " 08h (8)   insufficient memory",
+      "key": "8"
+    },
+    "rbil61:INTERRUP.G #01680 09h (9)": {
+      "line": " 09h (9)   memory block address invalid",
+      "key": "9"
+    },
+    "rbil61:INTERRUP.G #01680 0Ah (10)": {
+      "line": " 0Ah (10)  environment invalid (usually >32K in length)",
+      "key": "10"
+    },
+    "rbil61:INTERRUP.G #01680 0Bh (11)": {
+      "line": " 0Bh (11)  format invalid",
+      "key": "11"
+    },
+    "rbil61:INTERRUP.G #01680 0Ch (12)": {
+      "line": " 0Ch (12)  access code invalid",
+      "key": "12"
+    },
+    "rbil61:INTERRUP.G #01680 0Dh (13)": {
+      "line": " 0Dh (13)  data invalid",
+      "key": "13"
+    },
+    "rbil61:INTERRUP.G #01680 0Eh (14)  reserved": {
+      "line": " 0Eh (14)  reserved",
+      "key": "14"
+    },
+    "rbil61:INTERRUP.G #01680 0Fh (15)": {
+      "line": " 0Fh (15)  invalid drive",
+      "key": "15"
+    },
+    "rbil61:INTERRUP.G #01680 10h (16)": {
+      "line": " 10h (16)  attempted to remove current directory",
+      "key": "16"
+    },
+    "rbil61:INTERRUP.G #01680 11h (17)": {
+      "line": " 11h (17)  not same device",
+      "key": "17"
+    },
+    "rbil61:INTERRUP.G #01680 12h (18)": {
+      "line": " 12h (18)  no more files",
+      "key": "18"
+    },
+    "rbil61:INTERRUP.G #01680 13h (19)": {
+      "line": " 13h (19)  disk write-protected",
+      "key": "19"
+    },
+    "rbil61:INTERRUP.G #01680 14h (20)": {
+      "line": " 14h (20)  unknown unit",
+      "key": "20"
+    },
+    "rbil61:INTERRUP.G #01680 15h (21)": {
+      "line": " 15h (21)  drive not ready",
+      "key": "21"
+    },
+    "rbil61:INTERRUP.G #01680 16h (22)": {
+      "line": " 16h (22)  unknown command",
+      "key": "22"
+    },
+    "rbil61:INTERRUP.G #01680 17h (23)": {
+      "line": " 17h (23)  data error (CRC)",
+      "key": "23"
+    },
+    "rbil61:INTERRUP.G #01680 18h (24)": {
+      "line": " 18h (24)  bad request structure length",
+      "key": "24"
+    },
+    "rbil61:INTERRUP.G #01680 19h (25)": {
+      "line": " 19h (25)  seek error",
+      "key": "25"
+    },
+    "rbil61:INTERRUP.G #01680 1Ah (26)": {
+      "line": " 1Ah (26)  unknown media type (non-DOS disk)",
+      "key": "26"
+    },
+    "rbil61:INTERRUP.G #01680 1Bh (27)": {
+      "line": " 1Bh (27)  sector not found",
+      "key": "27"
+    },
+    "rbil61:INTERRUP.G #01680 1Ch (28)": {
+      "line": " 1Ch (28)  printer out of paper",
+      "key": "28"
+    },
+    "rbil61:INTERRUP.G #01680 1Dh (29)": {
+      "line": " 1Dh (29)  write fault",
+      "key": "29"
+    },
+    "rbil61:INTERRUP.G #01680 1Eh (30)": {
+      "line": " 1Eh (30)  read fault",
+      "key": "30"
+    },
+    "rbil61:INTERRUP.G #01680 1Fh (31)": {
+      "line": " 1Fh (31)  general failure",
+      "key": "31"
+    },
+    "rbil61:INTERRUP.G #01680 20h (32)": {
+      "line": " 20h (32)  sharing violation",
+      "key": "32"
+    },
+    "rbil61:INTERRUP.G #01680 21h (33)": {
+      "line": " 21h (33)  lock violation",
+      "key": "33"
+    },
+    "rbil61:INTERRUP.G #01680 22h (34)": {
+      "line": " 22h (34)  disk change invalid (ES:DI -> media ID structure)(see #01681)",
+      "key": "34"
+    },
+    "rbil61:INTERRUP.G #01680 23h (35)  FCB": {
+      "line": " 23h (35)  FCB unavailable",
+      "key": "35"
+    },
+    "rbil61:INTERRUP.G #01680 24h (36)": {
+      "line": " 24h (36)  sharing buffer overflow",
+      "key": "36"
+    },
+    "rbil61:INTERRUP.G #01680 25h (37)": {
+      "line": " 25h (37)  (DOS 4.0+) code page mismatch",
+      "key": "37"
+    },
+    "rbil61:INTERRUP.G #01680 26h (38)": {
+      "line": " 26h (38)  (DOS 4.0+) cannot complete file operation (EOF / out of input)",
+      "key": "38"
+    },
+    "rbil61:INTERRUP.G #01680 27h (39)": {
+      "line": " 27h (39)  (DOS 4.0+) insufficient disk space",
+      "key": "39"
+    },
+    "rbil61:INTERRUP.G #01680 32h (50)": {
+      "line": " 32h (50)  network request not supported",
+      "key": "50"
+    },
+    "rbil61:INTERRUP.G #01680 33h (51)": {
+      "line": " 33h (51)  remote computer not listening",
+      "key": "51"
+    },
+    "rbil61:INTERRUP.G #01680 34h (52)": {
+      "line": " 34h (52)  duplicate name on network",
+      "key": "52"
+    },
+    "rbil61:INTERRUP.G #01680 35h (53)": {
+      "line": " 35h (53)  network name not found",
+      "key": "53"
+    },
+    "rbil61:INTERRUP.G #01680 36h (54)": {
+      "line": " 36h (54)  network busy",
+      "key": "54"
+    },
+    "rbil61:INTERRUP.G #01680 37h (55)": {
+      "line": " 37h (55)  network device no longer exists",
+      "key": "55"
+    },
+    "rbil61:INTERRUP.G #01680 38h (56)": {
+      "line": " 38h (56)  network BIOS command limit exceeded",
+      "key": "56"
+    },
+    "rbil61:INTERRUP.G #01680 39h (57)": {
+      "line": " 39h (57)  network adapter hardware error",
+      "key": "57"
+    },
+    "rbil61:INTERRUP.G #01680 3Ah (58)": {
+      "line": " 3Ah (58)  incorrect response from network",
+      "key": "58"
+    },
+    "rbil61:INTERRUP.G #01680 3Bh (59)": {
+      "line": " 3Bh (59)  unexpected network error",
+      "key": "59"
+    },
+    "rbil61:INTERRUP.G #01680 3Ch (60)": {
+      "line": " 3Ch (60)  incompatible remote adapter",
+      "key": "60"
+    },
+    "rbil61:INTERRUP.G #01680 3Dh (61)": {
+      "line": " 3Dh (61)  print queue full",
+      "key": "61"
+    },
+    "rbil61:INTERRUP.G #01680 3Eh (62)": {
+      "line": " 3Eh (62)  queue not full",
+      "key": "62"
+    },
+    "rbil61:INTERRUP.G #01680 3Fh (63)": {
+      "line": " 3Fh (63)  not enough space to print file",
+      "key": "63"
+    },
+    "rbil61:INTERRUP.G #01680 40h (64)": {
+      "line": " 40h (64)  network name was deleted",
+      "key": "64"
+    },
+    "rbil61:INTERRUP.G #01680 41h (65)": {
+      "line": " 41h (65)  network: Access denied",
+      "key": "65"
+    },
+    "rbil61:INTERRUP.G #01680 42h (66)": {
+      "line": " 42h (66)  network device type incorrect",
+      "key": "66"
+    },
+    "rbil61:INTERRUP.G #01680 43h (67)": {
+      "line": " 43h (67)  network name not found",
+      "key": "67"
+    },
+    "rbil61:INTERRUP.G #01680 44h (68)": {
+      "line": " 44h (68)  network name limit exceeded",
+      "key": "68"
+    },
+    "rbil61:INTERRUP.G #01680 45h (69)": {
+      "line": " 45h (69)  network BIOS session limit exceeded",
+      "key": "69"
+    },
+    "rbil61:INTERRUP.G #01680 46h (70)": {
+      "line": " 46h (70)  temporarily paused",
+      "key": "70"
+    },
+    "rbil61:INTERRUP.G #01680 47h (71)": {
+      "line": " 47h (71)  network request not accepted",
+      "key": "71"
+    },
+    "rbil61:INTERRUP.G #01680 48h (72)": {
+      "line": " 48h (72)  network print/disk redirection paused",
+      "key": "72"
+    },
+    "rbil61:INTERRUP.G #01680 49h (73)": {
+      "line": " 49h (73)  network software not installed",
+      "key": "73"
+    },
+    "rbil61:INTERRUP.G #01680 4Ah (74)": {
+      "line": " 4Ah (74)  unexpected adapter close",
+      "key": "74"
+    },
+    "rbil61:INTERRUP.G #01680 4Bh (75)": {
+      "line": " 4Bh (75)  (LANtastic) password expired",
+      "key": "75"
+    },
+    "rbil61:INTERRUP.G #01680 4Ch (76)": {
+      "line": " 4Ch (76)  (LANtastic) login attempt invalid at this time",
+      "key": "76"
+    },
+    "rbil61:INTERRUP.G #01680 4Dh (77)": {
+      "line": " 4Dh (77)  (LANtastic v3+) disk limit exceeded on network node",
+      "key": "77"
+    },
+    "rbil61:INTERRUP.G #01680 4Eh (78)": {
+      "line": " 4Eh (78)  (LANtastic v3+) not logged in to network node",
+      "key": "78"
+    },
+    "rbil61:INTERRUP.G #01680 50h (80)": {
+      "line": " 50h (80)  file exists",
+      "key": "80"
+    },
+    "rbil61:INTERRUP.G #01680 51h (81)": {
+      "line": " 51h (81)  (undoc) duplicated FCB",
+      "key": "81"
+    },
+    "rbil61:INTERRUP.G #01680 52h (82)": {
+      "line": " 52h (82)  cannot make directory",
+      "key": "82"
+    },
+    "rbil61:INTERRUP.G #01680 53h (83)": {
+      "line": " 53h (83)  fail on INT 24h",
+      "key": "83"
+    },
+    "rbil61:INTERRUP.G #01680 54h (84)": {
+      "line": " 54h (84)  (DOS 3.3+) too many redirections / out of structures",
+      "key": "84"
+    },
+    "rbil61:INTERRUP.G #01680 55h (85)": {
+      "line": " 55h (85)  (DOS 3.3+) duplicate redirection / already assigned",
+      "key": "85"
+    },
+    "rbil61:INTERRUP.G #01680 56h (86)": {
+      "line": " 56h (86)  (DOS 3.3+) invalid password",
+      "key": "86"
+    },
+    "rbil61:INTERRUP.G #01680 57h (87)": {
+      "line": " 57h (87)  (DOS 3.3+) invalid parameter",
+      "key": "87"
+    },
+    "rbil61:INTERRUP.G #01680 58h (88)": {
+      "line": " 58h (88)  (DOS 3.3+) network write fault",
+      "key": "88"
+    },
+    "rbil61:INTERRUP.G #01680 59h (89)": {
+      "line": " 59h (89)  (DOS 4.0+) function not supported on network / no process slots",
+      "key": "89"
+    },
+    "rbil61:INTERRUP.G #01680 5Ah (90)": {
+      "line": " 5Ah (90)  (DOS 4.0+) required system component not installed / not frozen",
+      "key": "90"
+    },
+    "rbil61:INTERRUP.G #01680 5Bh (91)": {
+      "line": " 5Bh (91)  (DOS 4.0+,NetWare4) timer server table overflowed",
+      "key": "91"
+    },
+    "rbil61:INTERRUP.G #01680 5Ch (92)": {
+      "line": " 5Ch (92)  (DOS 4.0+,NetWare4) duplicate in timer service table",
+      "key": "92"
+    },
+    "rbil61:INTERRUP.G #01680 5Dh (93)": {
+      "line": " 5Dh (93)  (DOS 4.0+,NetWare4) no items to work on",
+      "key": "93"
+    },
+    "rbil61:INTERRUP.G #01680 5Fh (95)": {
+      "line": " 5Fh (95)  (DOS 4.0+,NetWare4) interrupted / invalid system call",
+      "key": "95"
+    },
+    "rbil61:INTERRUP.G D-2145": {
+      "line": "INT 21 - DOS 2+ - \"DUP\" - DUPLICATE FILE HANDLE",
+      "key": "0x21/0x45"
+    },
+    "rbil61:INTERRUP.G D-2146": {
+      "line": "INT 21 - DOS 2+ - \"DUP2\", \"FORCEDUP\" - FORCE DUPLICATE FILE HANDLE",
+      "key": "0x21/0x46"
+    },
+    "rbil61:INTERRUP.G D-2147": {
+      "line": "INT 21 - DOS 2+ - \"CWD\" - GET CURRENT DIRECTORY",
+      "key": "0x21/0x47"
+    },
+    "rbil61:INTERRUP.G D-2148": {
+      "line": "INT 21 - DOS 2+ - ALLOCATE MEMORY",
+      "key": "0x21/0x48"
+    },
+    "rbil61:INTERRUP.G D-2149": {
+      "line": "INT 21 - DOS 2+ - FREE MEMORY",
+      "key": "0x21/0x49"
+    },
+    "rbil61:INTERRUP.G D-214A": {
+      "line": "INT 21 - DOS 2+ - RESIZE MEMORY BLOCK",
+      "key": "0x21/0x4A"
+    },
+    "rbil61:INTERRUP.G D-214B": {
+      "line": "INT 21 - DOS 2+ - \"EXEC\" - LOAD AND/OR EXECUTE PROGRAM",
+      "key": "0x21/0x4B"
+    },
+    "rbil61:INTERRUP.G D-214C": {
+      "line": "INT 21 - DOS 2+ - \"EXIT\" - TERMINATE WITH RETURN CODE",
+      "key": "0x21/0x4C"
+    },
+    "rbil61:INTERRUP.G D-214D": {
+      "line": "INT 21 - DOS 2+ - GET RETURN CODE (ERRORLEVEL)",
+      "key": "0x21/0x4D"
+    },
+    "rbil61:INTERRUP.G D-214E": {
+      "line": "INT 21 - DOS 2+ - \"FINDFIRST\" - FIND FIRST MATCHING FILE",
+      "key": "0x21/0x4E"
+    },
+    "rbil61:INTERRUP.G D-214F": {
+      "line": "INT 21 - DOS 2+ - \"FINDNEXT\" - FIND NEXT MATCHING FILE",
+      "key": "0x21/0x4F"
+    },
+    "rbil61:INTERRUP.G D-2150": {
+      "line": "INT 21 - DOS 2+ internal - SET CURRENT PROCESS ID (SET PSP ADDRESS)",
+      "key": "0x21/0x50"
+    },
+    "rbil61:INTERRUP.G D-2151": {
+      "line": "INT 21 - DOS 2+ internal - GET CURRENT PROCESS ID (GET PSP ADDRESS)",
+      "key": "0x21/0x51"
+    },
+    "rbil61:INTERRUP.G D-2152": {
+      "line": "INT 21 U - DOS 2+ internal - \"SYSVARS\" - GET LIST OF LISTS",
+      "key": "0x21/0x52"
+    },
+    "rbil61:INTERRUP.G D-2153": {
+      "line": "INT 21 - DOS 2+ internal - TRANSLATE BIOS PARAMETER BLOCK TO DRIVE PARAM BLOCK",
+      "key": "0x21/0x53"
+    },
+    "rbil61:INTERRUP.G D-2154": {
+      "line": "INT 21 - DOS 2+ - GET VERIFY FLAG",
+      "key": "0x21/0x54"
+    },
+    "rbil61:INTERRUP.G D-2155": {
+      "line": "INT 21 - DOS 2+ internal - CREATE CHILD PSP",
+      "key": "0x21/0x55"
+    },
+    "rbil61:INTERRUP.G D-2156": {
+      "line": "INT 21 - DOS 2+ - \"RENAME\" - RENAME FILE",
+      "key": "0x21/0x56"
+    },
+    "rbil61:INTERRUP.G D-2158@1": {
+      "line": "INT 21 - DOS 2.11+ - GET OR SET MEMORY ALLOCATION STRATEGY",
+      "key": "0x21/0x58"
+    },
+    "rbil61:INTERRUP.G D-2159--BX0000": {
+      "line": "INT 21 - DOS 3.0+ - GET EXTENDED ERROR INFORMATION",
+      "key": "0x21/0x59"
+    },
+    "rbil61:INTERRUP.G D-215A": {
+      "line": "INT 21 - DOS 3.0+ - CREATE TEMPORARY FILE",
+      "key": "0x21/0x5A"
+    },
+    "rbil61:INTERRUP.G D-215B": {
+      "line": "INT 21 - DOS 3.0+ - CREATE NEW FILE",
+      "key": "0x21/0x5B"
+    },
+    "rbil61:INTERRUP.G D-215C": {
+      "line": "INT 21 - DOS 3.0+ - \"FLOCK\" - RECORD LOCKING",
+      "key": "0x21/0x5C"
+    },
+    "rbil61:INTERRUP.H D-2160": {
+      "line": "INT 21 - DOS 3.0+ - \"TRUENAME\" - CANONICALIZE FILENAME OR PATH",
+      "key": "0x21/0x60"
+    },
+    "rbil61:INTERRUP.H D-2161": {
+      "line": "INT 21 - DOS 3.0+ - UNUSED (RESERVED FOR NETWORK USE)",
+      "key": "0x21/0x61"
+    },
+    "rbil61:INTERRUP.H D-2162": {
+      "line": "INT 21 - DOS 3.0+ - GET CURRENT PSP ADDRESS",
+      "key": "0x21/0x62"
+    },
+    "rbil61:INTERRUP.H D-2164": {
+      "line": "INT 21 - DOS 3.2+ internal - SET DEVICE DRIVER LOOKAHEAD FLAG",
+      "key": "0x21/0x64"
+    },
+    "rbil61:INTERRUP.H D-216523": {
+      "line": "INT 21 U - DOS 4.0+ - DETERMINE IF CHARACTER REPRESENTS YES/NO RESPONSE",
+      "key": "0x21/0x65/0x23"
+    },
+    "rbil61:INTERRUP.H D-2165@1": {
+      "line": "INT 21 - DOS 3.3+ - GET EXTENDED COUNTRY INFORMATION",
+      "key": "0x21/0x65"
+    },
+    "rbil61:INTERRUP.H D-216601": {
+      "line": "INT 21 - DOS 3.3+ - GET GLOBAL CODE PAGE TABLE",
+      "key": "0x21/0x66/0x01"
+    },
+    "rbil61:INTERRUP.H D-216602": {
+      "line": "INT 21 - DOS 3.3+ - SET GLOBAL CODE PAGE TABLE",
+      "key": "0x21/0x66/0x02"
+    },
+    "rbil61:INTERRUP.H D-2167": {
+      "line": "INT 21 - DOS 3.3+ - SET HANDLE COUNT",
+      "key": "0x21/0x67"
+    },
+    "rbil61:INTERRUP.H D-2168": {
+      "line": "INT 21 - DOS 3.3+ - \"FFLUSH\" - COMMIT FILE",
+      "key": "0x21/0x68"
+    },
+    "rbil61:INTERRUP.H D-2169": {
+      "line": "INT 21 U - DOS 4.0+ internal - GET/SET DISK SERIAL NUMBER",
+      "key": "0x21/0x69"
+    },
+    "rbil61:INTERRUP.H D-216A": {
+      "line": "INT 21 U - DOS 4.0+ - COMMIT FILE",
+      "key": "0x21/0x6A"
+    },
+    "rbil61:INTERRUP.H D-216B@2": {
+      "line": "INT 21 U - DOS 5+ - NULL FUNCTION",
+      "key": "0x21/0x6B"
+    },
+    "rbil61:INTERRUP.H D-216D": {
+      "line": "INT 21 U - DOS 5+ ROM - FIND FIRST ROM PROGRAM",
+      "key": "0x21/0x6D"
+    },
+    "rbil61:INTERRUP.H D-216E": {
+      "line": "INT 21 U - DOS 5+ ROM - FIND NEXT ROM PROGRAM",
+      "key": "0x21/0x6E"
+    },
+    "rbil61:INTERRUP.H D-2171": {
+      "line": "INT 21 - Windows95 - LONG FILENAME FUNCTIONS",
+      "key": "0x21/0x71"
+    },
+    "rbil61:INTERRUP.H D-217139": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - MAKE DIRECTORY",
+      "key": "0x21/0x71/0x39"
+    },
+    "rbil61:INTERRUP.H D-21713A": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - REMOVE DIRECTORY",
+      "key": "0x21/0x71/0x3A"
+    },
+    "rbil61:INTERRUP.H D-21713B": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - CHANGE DIRECTORY",
+      "key": "0x21/0x71/0x3B"
+    },
+    "rbil61:INTERRUP.H D-217141": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - DELETE FILE",
+      "key": "0x21/0x71/0x41"
+    },
+    "rbil61:INTERRUP.H D-217143": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - EXTENDED GET/SET FILE ATTRIBUTES",
+      "key": "0x21/0x71/0x43"
+    },
+    "rbil61:INTERRUP.H D-217147": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - GET CURRENT DIRECTORY",
+      "key": "0x21/0x71/0x47"
+    },
+    "rbil61:INTERRUP.H D-21714E": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - FIND FIRST MATCHING FILE",
+      "key": "0x21/0x71/0x4E"
+    },
+    "rbil61:INTERRUP.H D-21714F": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - FIND NEXT MATCHING FILE",
+      "key": "0x21/0x71/0x4F"
+    },
+    "rbil61:INTERRUP.H D-217156": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - RENAME FILE",
+      "key": "0x21/0x71/0x56"
+    },
+    "rbil61:INTERRUP.H D-217160CL00": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - \"TRUENAME\" - CANONICALIZE PATH",
+      "key": "0x21/0x71/0x60"
+    },
+    "rbil61:INTERRUP.H D-21716C": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - CREATE OR OPEN FILE",
+      "key": "0x21/0x71/0x6C"
+    },
+    "rbil61:INTERRUP.H D-2171A0": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - GET VOLUME INFORMATION",
+      "key": "0x21/0x71/0xA0"
+    },
+    "rbil61:INTERRUP.H D-2171A1": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - \"FindClose\" - TERMINATE DIRECTORY SEARCH",
+      "key": "0x21/0x71/0xA1"
+    },
+    "rbil61:INTERRUP.H D-2171A6": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - GET FILE INFO BY HANDLE",
+      "key": "0x21/0x71/0xA6"
+    },
+    "rbil61:INTERRUP.H D-2171A7BL00": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - FILE TIME TO DOS TIME",
+      "key": "0x21/0x71/0xA7"
+    },
+    "rbil61:INTERRUP.H D-2171A8": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - GENERATE SHORT FILENAME",
+      "key": "0x21/0x71/0xA8"
+    },
+    "rbil61:INTERRUP.H D-2171A9": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - SERVER CREATE OR OPEN FILE",
+      "key": "0x21/0x71/0xA9"
+    },
+    "rbil61:INTERRUP.H D-2171AABH00": {
+      "line": "INT 21 - Windows95 - LONG FILENAME - CREATE SUBST",
+      "key": "0x21/0x71/0xAA"
+    },
+    "rbil61:INTERRUP.H D-2173": {
+      "line": "INT 21 - MS-DOS 7 - DRIVE LOCKING AND FLUSHING",
+      "key": "0x21/0x73"
+    }
+  },
+  "lists": {
+    "dosbox-x:include/dos_inc.h DOSERR_*": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19",
+      "21",
+      "80"
+    ],
+    "dosbox-x:src/dos/dos.cpp DOS_21Handler": [
+      "0x21/0x00",
+      "0x21/0x01",
+      "0x21/0x02",
+      "0x21/0x03",
+      "0x21/0x04",
+      "0x21/0x05",
+      "0x21/0x06",
+      "0x21/0x07",
+      "0x21/0x08",
+      "0x21/0x09",
+      "0x21/0x0A",
+      "0x21/0x0B",
+      "0x21/0x0C",
+      "0x21/0x0C/0x01",
+      "0x21/0x0C/0x06",
+      "0x21/0x0C/0x07",
+      "0x21/0x0C/0x08",
+      "0x21/0x0C/0x0A",
+      "0x21/0x0D",
+      "0x21/0x0E",
+      "0x21/0x0F",
+      "0x21/0x10",
+      "0x21/0x11",
+      "0x21/0x12",
+      "0x21/0x13",
+      "0x21/0x14",
+      "0x21/0x15",
+      "0x21/0x16",
+      "0x21/0x17",
+      "0x21/0x18",
+      "0x21/0x19",
+      "0x21/0x1A",
+      "0x21/0x1B",
+      "0x21/0x1C",
+      "0x21/0x1D",
+      "0x21/0x1E",
+      "0x21/0x1F",
+      "0x21/0x20",
+      "0x21/0x21",
+      "0x21/0x22",
+      "0x21/0x23",
+      "0x21/0x24",
+      "0x21/0x25",
+      "0x21/0x26",
+      "0x21/0x27",
+      "0x21/0x28",
+      "0x21/0x29",
+      "0x21/0x2A",
+      "0x21/0x2B",
+      "0x21/0x2C",
+      "0x21/0x2D",
+      "0x21/0x2E",
+      "0x21/0x2F",
+      "0x21/0x30",
+      "0x21/0x31",
+      "0x21/0x32",
+      "0x21/0x33",
+      "0x21/0x33/0x00",
+      "0x21/0x33/0x01",
+      "0x21/0x33/0x02",
+      "0x21/0x33/0x03",
+      "0x21/0x33/0x04",
+      "0x21/0x33/0x05",
+      "0x21/0x33/0x06",
+      "0x21/0x33/0x07",
+      "0x21/0x34",
+      "0x21/0x35",
+      "0x21/0x36",
+      "0x21/0x37",
+      "0x21/0x37/0x00",
+      "0x21/0x37/0x01",
+      "0x21/0x37/0x02",
+      "0x21/0x37/0x03",
+      "0x21/0x38",
+      "0x21/0x39",
+      "0x21/0x3A",
+      "0x21/0x3B",
+      "0x21/0x3C",
+      "0x21/0x3D",
+      "0x21/0x3E",
+      "0x21/0x3F",
+      "0x21/0x40",
+      "0x21/0x41",
+      "0x21/0x42",
+      "0x21/0x43",
+      "0x21/0x43/0x00",
+      "0x21/0x43/0x01",
+      "0x21/0x44",
+      "0x21/0x45",
+      "0x21/0x46",
+      "0x21/0x47",
+      "0x21/0x48",
+      "0x21/0x49",
+      "0x21/0x4A",
+      "0x21/0x4B",
+      "0x21/0x4C",
+      "0x21/0x4D",
+      "0x21/0x4E",
+      "0x21/0x4F",
+      "0x21/0x50",
+      "0x21/0x51",
+      "0x21/0x52",
+      "0x21/0x53",
+      "0x21/0x54",
+      "0x21/0x55",
+      "0x21/0x56",
+      "0x21/0x57",
+      "0x21/0x58",
+      "0x21/0x58/0x00",
+      "0x21/0x58/0x01",
+      "0x21/0x58/0x02",
+      "0x21/0x58/0x03",
+      "0x21/0x59",
+      "0x21/0x5A",
+      "0x21/0x5B",
+      "0x21/0x5C",
+      "0x21/0x5D",
+      "0x21/0x5E",
+      "0x21/0x5F",
+      "0x21/0x60",
+      "0x21/0x61",
+      "0x21/0x62",
+      "0x21/0x63",
+      "0x21/0x64",
+      "0x21/0x65",
+      "0x21/0x65/0x01",
+      "0x21/0x65/0x05",
+      "0x21/0x65/0x02",
+      "0x21/0x65/0x04",
+      "0x21/0x65/0x06",
+      "0x21/0x65/0x03",
+      "0x21/0x65/0x07",
+      "0x21/0x65/0x20",
+      "0x21/0x65/0x21",
+      "0x21/0x65/0x22",
+      "0x21/0x65/0x23",
+      "0x21/0x66",
+      "0x21/0x66/0x01",
+      "0x21/0x66/0x02",
+      "0x21/0x67",
+      "0x21/0x68",
+      "0x21/0x69",
+      "0x21/0x69/0x00",
+      "0x21/0x69/0x01",
+      "0x21/0x6A",
+      "0x21/0x6B",
+      "0x21/0x6C",
+      "0x21/0x6D",
+      "0x21/0x6E",
+      "0x21/0x6F",
+      "0x21/0x71",
+      "0x21/0x71/0x39",
+      "0x21/0x71/0x3A",
+      "0x21/0x71/0x3B",
+      "0x21/0x71/0x41",
+      "0x21/0x71/0x43",
+      "0x21/0x71/0x47",
+      "0x21/0x71/0x4E",
+      "0x21/0x71/0x4F",
+      "0x21/0x71/0x56",
+      "0x21/0x71/0x60",
+      "0x21/0x71/0x6C",
+      "0x21/0x71/0xA0",
+      "0x21/0x71/0xA1",
+      "0x21/0x71/0xA6",
+      "0x21/0x71/0xA7",
+      "0x21/0x71/0xA8",
+      "0x21/0x71/0xAA",
+      "0x21/0x71/0xA9",
+      "0x21/0x73",
+      "0x21/0xE0",
+      "0x21/0xEF"
+    ]
+  }
+}

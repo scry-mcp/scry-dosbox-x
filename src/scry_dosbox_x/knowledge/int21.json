@@ -1,0 +1,2939 @@
+{
+  "format": "scry-knowledge/1",
+  "dictionary": "int21",
+  "kind": "call",
+  "scope": "ibm-pc",
+  "covers": "INT 21h, the DOS services: every function and subfunction the emulator's DOS_21Handler has a case for, except the Windows-only named-pipe calls of AH=5Fh.",
+  "complete_against": "dosbox-x:src/dos/dos.cpp DOS_21Handler",
+  "entries": [
+    {
+      "key": "0x21/0x00",
+      "name": "terminate program",
+      "description": "Ends the program with return code 00h; DOS 2+ programs should use AH=4Ch instead.",
+      "behaviour": "CS is the PSP segment. The emulator passes DOS_Terminate the PSP segment it reads from the stack word above the return IP (the caller's CS), with return code 0, and clears the running program's name and arguments. If SP is above 0xFFFA it pops IP, CS and flags and uses the popped CS.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2100",
+          "cites": "INT 21 - DOS 1+ - TERMINATE PROGRAM"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x00",
+          "cites": "        case 0x00:      /* Terminate Program */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x01",
+      "name": "read char echo",
+      "description": "Reads one character from standard input and echoes it to standard output, checking for ^C.",
+      "behaviour": "Returns the character in AL. A ^C (3) runs the break action, and the call returns with no result if the break test then fails. Under DOS 2+ the character is written to STDOUT; when emulating DOS 1 an echo flag is set during the read instead.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2101",
+          "cites": "INT 21 - DOS 1+ - READ CHARACTER FROM STANDARD INPUT, WITH ECHO"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x01",
+          "cites": "        case 0x01:      /* Read character from STDIN, with echo */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x02",
+      "name": "write char",
+      "description": "Writes the character in DL to standard output.",
+      "behaviour": "Returns AL = the character written, although the official docs say nothing is returned. A tab (09h) is expanded to blanks, so AL is 20h in that case. The emulator writes DL to STDOUT and sets AL to 20h when DL is 9, else to DL.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2102",
+          "cites": "INT 21 - DOS 1+ - WRITE CHARACTER TO STANDARD OUTPUT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x02",
+          "cites": "        case 0x02:      /* Write character to STDOUT */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x03",
+      "name": "read aux char",
+      "description": "Reads one character from the auxiliary device, usually the first serial port.",
+      "behaviour": "Returns the character in AL. The emulator reads the port base from the word at 0040:0000; if it is nonzero and the first serial port exists, it writes 3 to base+4 (RTS and DTR on) and waits for a character. Otherwise AL is left unchanged.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2103",
+          "cites": "INT 21 - DOS 1+ - READ CHARACTER FROM STDAUX"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x03",
+          "cites": "        case 0x03:      /* Read character from STDAUX */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x04",
+      "name": "write aux char",
+      "description": "Writes the character in DL to the auxiliary device, usually the first serial port.",
+      "behaviour": "The emulator reads the port base from the word at 0040:0000; if it is nonzero and the first serial port exists, it writes 3 to base+4 (RTS and DTR on), sends DL, then writes 1 to base+4 (RTS off). Otherwise it does nothing.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2104",
+          "cites": "INT 21 - DOS 1+ - WRITE CHARACTER TO STDAUX"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x04",
+          "cites": "        case 0x04:      /* Write Character to STDAUX */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x05",
+      "name": "write printer char",
+      "description": "Writes the character in DL to the standard printer, usually the first parallel port.",
+      "behaviour": "The emulator sends DL to the first of the first three parallel ports that exists, and does nothing if none does.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2105",
+          "cites": "INT 21 - DOS 1+ - WRITE CHARACTER TO PRINTER"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x05",
+          "cites": "        case 0x05:      /* Write Character to PRINTER */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x06",
+      "name": "direct console io",
+      "description": "Writes the character in DL to standard output without checking ^C; with DL=FFh it reads a character instead.",
+      "behaviour": "With DL=FFh: ZF clear and AL = the character, or ZF set and AL=00h if none is available; an overhead delay is simulated. Otherwise DL is written to STDOUT and AL = DL (the docs say nothing is returned). ^C is not checked.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2106",
+          "cites": "INT 21 - DOS 1+ - DIRECT CONSOLE OUTPUT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x06",
+          "cites": "        case 0x06:      /* Direct Console Output / Input */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x07",
+      "name": "direct char input",
+      "description": "Reads one character from standard input without echo and without checking ^C.",
+      "behaviour": "Returns the character in AL. The emulator reads one byte from STDIN into AL and does no break check.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2107",
+          "cites": "INT 21 - DOS 1+ - DIRECT CHARACTER INPUT, WITHOUT ECHO"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x07",
+          "cites": "        case 0x07:      /* Character Input, without echo */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x08",
+      "name": "read char no echo",
+      "description": "Reads one character from standard input without echoing it, checking for ^C.",
+      "behaviour": "Returns the character in AL. A ^C (3) runs the break action, and the call returns with no result if the break test fails; when STDIN is a redirected regular file the ^C byte is skipped and the next one read. At end of input AL is 0.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2108",
+          "cites": "INT 21 - DOS 1+ - CHARACTER INPUT WITHOUT ECHO"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x08",
+          "cites": "        case 0x08:      /* Direct Character Input, without echo (checks for breaks officially :)*/"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x09",
+      "name": "write string",
+      "description": "Writes the '$'-terminated string at DS:DX to standard output.",
+      "behaviour": "Returns AL = 24h, the '$' (the docs say nothing is returned). The emulator writes each byte from DS:DX up to the '$' to STDOUT. It skips the write when the string is one of the Windows-only program notices (such as 'This program cannot be run in DOS mode.') and its winautorun and startquiet settings call for it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2109",
+          "cites": "INT 21 - DOS 1+ - WRITE STRING TO STANDARD OUTPUT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x09",
+          "cites": "        case 0x09:      /* Write string to STDOUT */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x0A",
+      "name": "buffered input",
+      "description": "Reads a line of input into the buffer at DS:DX, whose first byte is its capacity.",
+      "behaviour": "Byte 0 is the maximum size (nothing is read if it is 0), byte 1 receives the count of characters read excluding CR, and the characters follow from byte 2, including the final CR. The emulator echoes each character, handles backspace and rings the bell when full. Redirected input that reaches end of file stops the emulator with an error.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-210A",
+          "cites": "INT 21 - DOS 1+ - BUFFERED INPUT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0a",
+          "cites": "        case 0x0a:      /* Buffered Input */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x0B",
+      "name": "stdin status",
+      "description": "Reports whether a character is waiting on standard input.",
+      "behaviour": "Returns AL=FFh if a character is available and 00h if not. The emulator adds a simulated DOS overhead for timing-sensitive programs.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-210B",
+          "cites": "INT 21 - DOS 1+ - GET STDIN STATUS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0b",
+          "cites": "        case 0x0b:      /* Get STDIN Status */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x0C",
+      "name": "flush and read",
+      "description": "Empties the standard input buffer, then runs the input function AL names.",
+      "behaviour": "AL = 01h, 06h, 07h, 08h or 0Ah selects the input function run after the flush, with the registers it takes; any other AL flushes only, and the emulator returns AL=0. The emulator flushes only when STDIN is the CON device.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-210C",
+          "cites": "INT 21 - DOS 1+ - FLUSH BUFFER AND READ STANDARD INPUT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c",
+          "cites": "        case 0x0c:      /* Flush Buffer and read STDIN call */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x0C/0x01",
+      "name": "flush, read char echo",
+      "description": "Flushes standard input, then runs AH=01h.",
+      "behaviour": "The emulator reads and discards pending STDIN input when STDIN is the CON device, then runs its AH=01h handler with the same registers and restores AH afterwards.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x1",
+          "cites": "                    case 0x1:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x0C/0x06",
+      "name": "flush, direct console",
+      "description": "Flushes standard input, then runs AH=06h.",
+      "behaviour": "The emulator reads and discards pending STDIN input when STDIN is the CON device, then runs its AH=06h handler with the same registers and restores AH afterwards.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x6",
+          "cites": "                    case 0x6:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x0C/0x07",
+      "name": "flush, direct input",
+      "description": "Flushes standard input, then runs AH=07h.",
+      "behaviour": "The emulator reads and discards pending STDIN input when STDIN is the CON device, then runs its AH=07h handler with the same registers and restores AH afterwards.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x7",
+          "cites": "                    case 0x7:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x0C/0x08",
+      "name": "flush, read no echo",
+      "description": "Flushes standard input, then runs AH=08h.",
+      "behaviour": "The emulator reads and discards pending STDIN input when STDIN is the CON device, then runs its AH=08h handler with the same registers and restores AH afterwards.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0x8",
+          "cites": "                    case 0x8:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x0C/0x0A",
+      "name": "flush, buffered input",
+      "description": "Flushes standard input, then runs AH=0Ah.",
+      "behaviour": "The emulator reads and discards pending STDIN input when STDIN is the CON device, then runs its AH=0Ah handler with the same registers and restores AH afterwards.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0c case 0xa",
+          "cites": "                    case 0xa:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x0D",
+      "name": "disk reset",
+      "description": "Asks DOS to write all modified disk buffers to disk.",
+      "behaviour": "The emulator's handler does nothing: no buffer is written, and no register or flag is changed.",
+      "differs": "The list says it writes all modified disk buffers to disk; the emulator's handler does nothing.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-210D",
+          "cites": "INT 21 - DOS 1+ - DISK RESET"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0d",
+          "cites": "        case 0x0d:      /* Disk Reset */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x0E",
+      "name": "set drive",
+      "description": "Makes the drive in DL the default drive and returns how many drives may be valid.",
+      "behaviour": "DL = drive (00h = A:, 01h = B:). The emulator sets the default drive to DL, then returns AL = its maxdrive value (1 if outside 1 to 26), raised to the number of the highest mounted drive.",
+      "differs": "The list gives AL as the greatest of 5, LASTDRIVE and the drives present under DOS 3.0+; the emulator uses its own maxdrive value and the highest mounted drive.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-210E",
+          "cites": "INT 21 - DOS 1+ - SELECT DEFAULT DRIVE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0e",
+          "cites": "        case 0x0e:      /* Select Default Drive */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x0F",
+      "name": "fcb open",
+      "description": "Opens the file named by the unopened FCB at DS:DX.",
+      "behaviour": "DS:DX points at the FCB. The emulator passes DS and DX to DOS_FCBOpen and returns AL=00h on success and FFh on failure.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-210F",
+          "cites": "INT 21 - DOS 1+ - OPEN FILE USING FCB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x0f",
+          "cites": "        case 0x0f:      /* Open File using FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x10",
+      "name": "fcb close",
+      "description": "Closes the file of the opened FCB at DS:DX.",
+      "behaviour": "DS:DX points at the FCB. The emulator passes DS and DX to DOS_FCBClose and returns AL=00h on success and FFh on failure.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2110",
+          "cites": "INT 21 - DOS 1+ - CLOSE FILE USING FCB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x10",
+          "cites": "        case 0x10:      /* Close File using FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x11",
+      "name": "fcb find first",
+      "description": "Finds the first file matching the FCB at DS:DX, which may hold wildcards.",
+      "behaviour": "DS:DX points at the FCB. The emulator passes DS and DX to DOS_FCBFindFirst and returns AL=00h if a match was found and FFh if not.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2111",
+          "cites": "INT 21 - DOS 1+ - FIND FIRST MATCHING FILE USING FCB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x11",
+          "cites": "        case 0x11:      /* Find First Matching File using FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x12",
+      "name": "fcb find next",
+      "description": "Finds the next file matching the search FCB at DS:DX.",
+      "behaviour": "DS:DX points at the FCB. The emulator passes DS and DX to DOS_FCBFindNext and returns AL=00h if a match was found and FFh if not.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2112",
+          "cites": "INT 21 - DOS 1+ - FIND NEXT MATCHING FILE USING FCB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x12",
+          "cites": "        case 0x12:      /* Find Next Matching File using FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x13",
+      "name": "fcb delete",
+      "description": "Deletes the files matching the FCB at DS:DX, which may hold wildcards.",
+      "behaviour": "DS:DX points at the FCB. The emulator passes DS and DX to DOS_FCBDeleteFile and returns AL=00h on success and FFh on failure.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2113",
+          "cites": "INT 21 - DOS 1+ - DELETE FILE USING FCB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x13",
+          "cites": "        case 0x13:      /* Delete File using FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x16",
+      "name": "fcb create",
+      "description": "Creates or truncates the file named by the unopened FCB at DS:DX.",
+      "behaviour": "DS:DX points at the FCB. The emulator passes DS and DX to DOS_FCBCreate and returns AL=00h on success and FFh on failure.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2116",
+          "cites": "INT 21 - DOS 1+ - CREATE OR TRUNCATE FILE USING FCB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x16",
+          "cites": "        case 0x16:      /* Create or truncate file using FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x17",
+      "name": "fcb rename",
+      "description": "Renames the files matching the modified FCB at DS:DX.",
+      "behaviour": "DS:DX points at the FCB. The emulator passes DS and DX to DOS_FCBRenameFile and returns AL=00h on success and FFh on failure.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2117",
+          "cites": "INT 21 - DOS 1+ - RENAME FILE USING FCB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x17",
+          "cites": "        case 0x17:      /* Rename file using FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x14",
+      "name": "fcb sequential read",
+      "description": "Reads the next record of the opened FCB at DS:DX into the disk transfer area.",
+      "behaviour": "DS:DX points at the FCB. AL is the status DOS_FCBRead returns: 00h successful, 01h no data, 03h partial record read.",
+      "differs": "The list also gives 02h, segment wrap in the DTA; the FCB helpers in src/dos/dos_files.cpp (FCB_SUCCESS, FCB_READ_NODATA, FCB_READ_PARTIAL) never return it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2114",
+          "cites": "INT 21 - DOS 1+ - SEQUENTIAL READ FROM FCB FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x14",
+          "cites": "        case 0x14:      /* Sequential read from FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x15",
+      "name": "fcb sequential write",
+      "description": "Writes the record in the disk transfer area to the opened FCB at DS:DX.",
+      "behaviour": "DS:DX points at the FCB. AL is the status DOS_FCBWrite returns: 00h successful, 01h for any failure.",
+      "differs": "The list gives 01h as disk full and also 02h, segment wrap in the DTA; the FCB helpers in src/dos/dos_files.cpp return 01h (FCB_ERR_WRITE) for every failure and never 02h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2115",
+          "cites": "INT 21 - DOS 1+ - SEQUENTIAL WRITE TO FCB FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x15",
+          "cites": "        case 0x15:      /* Sequential write to FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x18",
+      "name": "null: logged drives",
+      "description": "Does nothing: it stands in for the CP/M call for the map of logged drives.",
+      "behaviour": "The emulator sends it to its default case, which sets AL to 00h and logs the call as unhandled.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2118",
+          "cites": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x18",
+          "cites": "        case 0x18:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x19",
+      "name": "get drive",
+      "description": "Returns the current default drive.",
+      "behaviour": "Returns AL = drive (00h = A:, 01h = B:). The emulator reads it with DOS_GetDefaultDrive.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2119",
+          "cites": "INT 21 - DOS 1+ - GET CURRENT DEFAULT DRIVE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x19",
+          "cites": "        case 0x19:      /* Get current default drive */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x1A",
+      "name": "set dta",
+      "description": "Sets the disk transfer area to DS:DX.",
+      "behaviour": "DS:DX points at the new disk transfer area. The emulator stores the segment of DS and the offset DX as the current DTA.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-211A",
+          "cites": "INT 21 - DOS 1+ - SET DISK TRANSFER AREA ADDRESS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1a",
+          "cites": "        case 0x1a:      /* Set Disk Transfer Area Address */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x1B",
+      "name": "drive info default",
+      "description": "Returns the allocation information of the default drive.",
+      "behaviour": "Returns AL = sectors per cluster, CX = bytes per sector, DX = total clusters, and DS:BX -> the media ID byte, as the list gives; AL=FFh if DOS_GetAllocationInfo fails.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-211B",
+          "cites": "INT 21 - DOS 1+ - GET ALLOCATION INFORMATION FOR DEFAULT DRIVE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1b",
+          "cites": "        case 0x1b:      /* Get allocation info for default drive */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x1C",
+      "name": "drive info",
+      "description": "Returns the allocation information of the drive in DL.",
+      "behaviour": "DL = drive (00h = default, 01h = A:). Returns AL = sectors per cluster, CX = bytes per sector, DX = total clusters, and DS:BX -> the media ID byte, as the list gives; AL=FFh if DOS_GetAllocationInfo fails.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-211C",
+          "cites": "INT 21 - DOS 1+ - GET ALLOCATION INFORMATION FOR SPECIFIC DRIVE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1c",
+          "cites": "        case 0x1c:      /* Get allocation info for specific drive */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x1D",
+      "name": "null: read-only drives",
+      "description": "Does nothing: it stands in for the CP/M call for the map of read-only drives.",
+      "behaviour": "The emulator sends it to its default case, which sets AL to 00h and logs the call as unhandled.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-211D",
+          "cites": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1d",
+          "cites": "        case 0x1d:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x1E",
+      "name": "null: file attributes",
+      "description": "Does nothing: it stands in for the CP/M call for setting file attributes.",
+      "behaviour": "The emulator sends it to its default case, which sets AL to 00h and logs the call as unhandled.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-211E",
+          "cites": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1e",
+          "cites": "        case 0x1e:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x20",
+      "name": "null: user number",
+      "description": "Does nothing: it stands in for the CP/M call for getting or setting the user number.",
+      "behaviour": "The emulator sends it to its default case, which sets AL to 00h and logs the call as unhandled.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2120",
+          "cites": "INT 21 - DOS 1+ - NULL FUNCTION FOR CP/M COMPATIBILITY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x20",
+          "cites": "        case 0x20:      /* NULL Function for CP/M compatibility or Extended rename FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x1F",
+      "name": "dpb default drive",
+      "description": "Returns a pointer to the drive parameter block of the default drive.",
+      "behaviour": "The emulator runs the AH=32h code with the default drive: AL=00h and DS:BX -> the block for a mounted drive that is not removable, AL=FFh otherwise.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-211F",
+          "cites": "INT 21 - DOS 1+ - GET DRIVE PARAMETER BLOCK FOR DEFAULT DRIVE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x1f",
+          "cites": "        case 0x1f: /* Get drive parameter block for default drive */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x21",
+      "name": "fcb random read",
+      "description": "Reads the record at the FCB's random record number into the disk transfer area.",
+      "behaviour": "DS:DX points at the opened FCB. AL is the status DOS_FCBRandomRead returns for one record: 00h successful, 01h no data, 03h partial record read. The file position is not updated.",
+      "differs": "The list also gives 02h, segment wrap in the DTA; the FCB helpers in src/dos/dos_files.cpp (FCB_SUCCESS, FCB_READ_NODATA, FCB_READ_PARTIAL) never return it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2121",
+          "cites": "INT 21 - DOS 1+ - READ RANDOM RECORD FROM FCB FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x21",
+          "cites": "        case 0x21:      /* Read random record from FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x22",
+      "name": "fcb random write",
+      "description": "Writes the record in the disk transfer area at the FCB's random record number.",
+      "behaviour": "DS:DX points at the opened FCB. AL is the status DOS_FCBRandomWrite returns for one record: 00h successful, 01h for any failure. The file position is not updated.",
+      "differs": "The list gives 01h as disk full and also 02h, segment wrap in the DTA; the FCB helpers in src/dos/dos_files.cpp return 01h (FCB_ERR_WRITE) for every failure and never 02h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2122",
+          "cites": "INT 21 - DOS 1+ - WRITE RANDOM RECORD TO FCB FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x22",
+          "cites": "        case 0x22:      /* Write random record to FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x23",
+      "name": "fcb file size",
+      "description": "Returns the size of the file named by the unopened FCB at DS:DX.",
+      "behaviour": "AL=00h if DOS_FCBGetFileSize succeeds and FFh if not. On success the list says the FCB's random record field holds the size in records, rounded up to a full record.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2123",
+          "cites": "INT 21 - DOS 1+ - GET FILE SIZE FOR FCB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x23",
+          "cites": "        case 0x23:      /* Get file size for FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x24",
+      "name": "fcb set random record",
+      "description": "Sets the FCB's random record number from its current record.",
+      "behaviour": "DS:DX points at the opened FCB. The emulator passes it to DOS_FCBSetRandomRecord; the list says the result is the random record number for the current record number and record size.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2124",
+          "cites": "INT 21 - DOS 1+ - SET RANDOM RECORD NUMBER FOR FCB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x24",
+          "cites": "        case 0x24:      /* Set Random Record number for FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x25",
+      "name": "set vector",
+      "description": "Sets the interrupt vector AL to the handler at DS:DX.",
+      "behaviour": "AL = interrupt number, DS:DX = the new handler. The emulator stores DS:DX in the vector table with RealSetVec.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2125",
+          "cites": "INT 21 - DOS 1+ - SET INTERRUPT VECTOR"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x25",
+          "cites": "        case 0x25:      /* Set Interrupt Vector */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x26",
+      "name": "new psp",
+      "description": "Creates a new program segment prefix at segment DX.",
+      "behaviour": "The emulator calls DOS_NewPSP with DX and the size of the current PSP, and sets AL to F0h (the list says AL is destroyed).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2126",
+          "cites": "INT 21 - DOS 1+ - CREATE NEW PROGRAM SEGMENT PREFIX"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x26",
+          "cites": "        case 0x26:      /* Create new PSP */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x27",
+      "name": "fcb block read",
+      "description": "Reads CX records from the opened FCB at DS:DX into the disk transfer area.",
+      "behaviour": "AL is the status DOS_FCBRandomRead returns: 00h all records read, 01h no data, 03h partial read. CX is passed by reference and returns the records read. The file position is updated.",
+      "differs": "The list also gives 02h, segment wrap in the DTA; the FCB helpers in src/dos/dos_files.cpp (FCB_SUCCESS, FCB_READ_NODATA, FCB_READ_PARTIAL) never return it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2127",
+          "cites": "INT 21 - DOS 1+ - RANDOM BLOCK READ FROM FCB FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x27",
+          "cites": "        case 0x27:      /* Random block read from FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x28",
+      "name": "fcb block write",
+      "description": "Writes CX records from the disk transfer area to the opened FCB at DS:DX.",
+      "behaviour": "AL is the status DOS_FCBRandomWrite returns: 00h successful, 01h for any failure. CX is passed by reference and returns the records written. The file position is updated.",
+      "differs": "The list gives 01h as disk full or file read-only and also 02h, segment wrap in the DTA; the FCB helpers in src/dos/dos_files.cpp return 01h (FCB_ERR_WRITE) for every failure, never 02h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2128",
+          "cites": "INT 21 - DOS 1+ - RANDOM BLOCK WRITE TO FCB FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x28",
+          "cites": "        case 0x28:      /* Random Block write to FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x29",
+      "name": "fcb parse name",
+      "description": "Parses the filename at DS:SI into an unopened FCB at ES:DI.",
+      "behaviour": "AL = parsing options. The emulator copies up to 1023 bytes from DS:SI, parses them with FCB_Parsename, returns its result in AL (00h no wildcards, 01h wildcards, FFh invalid drive) and advances SI past what was parsed.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2129",
+          "cites": "INT 21 - DOS 1+ - PARSE FILENAME INTO FCB"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x29",
+          "cites": "        case 0x29:      /* Parse filename into FCB */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x2A",
+      "name": "get date",
+      "description": "Returns the DOS system date.",
+      "behaviour": "CX = year, DH = month, DL = day and AL = day of week (0 = Sunday, from Zeller's congruence). The IBM PC path returns the date DOS keeps internally and reads no clock at the call.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-212A",
+          "cites": "INT 21 - DOS 1+ - GET SYSTEM DATE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2a",
+          "cites": "        case 0x2a:      /* Get System Date */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x2B",
+      "name": "set date",
+      "description": "Sets the DOS system date and the BIOS real-time clock date.",
+      "behaviour": "CX = year, DH = month, DL = day. An invalid date (year outside 1980 to 9999, bad month, or a day past the month's end, leap years counted) returns AL=FFh. Otherwise the emulator sets the clock through INT 1Ah AH=05h in BCD, stores the date, returns AL=00h, and switches off host time sync if it was on.",
+      "differs": "The list gives the valid years as 1980 to 2099; the emulator accepts 1980 to 9999.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-212B",
+          "cites": "INT 21 - DOS 1+ - SET SYSTEM DATE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2b",
+          "cites": "        case 0x2b:      /* Set System Date */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x2C",
+      "name": "get time",
+      "description": "Returns the DOS system time.",
+      "behaviour": "CH = hour, CL = minute, DH = second, DL = 1/100 seconds. The emulator reads the tick count with INT 1Ah AH=00h, adds a day when AL reports midnight, converts the ticks to time from the PIT tick rate, and adds a simulated DOS overhead.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-212C",
+          "cites": "INT 21 - DOS 1+ - GET SYSTEM TIME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2c",
+          "cites": "        case 0x2c: {    /* Get System Time */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x2D",
+      "name": "set time",
+      "description": "Sets the DOS system time and the BIOS real-time clock time.",
+      "behaviour": "CH = hour, CL = minute, DH = second, DL = 1/100 seconds. A value out of range (hour over 23, minute or second over 59, hundredths over 99) returns AL=FFh. Otherwise the emulator sets the clock with INT 1Ah AH=03h, sets the tick count with AH=01h, returns AL=00h, and switches off host time sync if it was on.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-212D",
+          "cites": "INT 21 - DOS 1+ - SET SYSTEM TIME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2d",
+          "cites": "        case 0x2d:      /* Set System Time */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x2E",
+      "name": "set verify flag",
+      "description": "Turns write verification on or off.",
+      "behaviour": "AL=01h turns the verify flag on and any other AL turns it off.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-212E--DL00",
+          "cites": "INT 21 - DOS 1+ - SET VERIFY FLAG"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2e",
+          "cites": "        case 0x2e:      /* Set Verify flag */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x2F",
+      "name": "get dta",
+      "description": "Returns the address of the disk transfer area.",
+      "behaviour": "Returns ES:BX = the current DTA.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-212F",
+          "cites": "INT 21 - DOS 2+ - GET DISK TRANSFER AREA ADDRESS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x2f",
+          "cites": "        case 0x2f:      /* Get Disk Transfer Area */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x30",
+      "name": "dos version",
+      "description": "Returns the DOS version the emulator reports.",
+      "behaviour": "AL = major, AH = minor, BL=00h, CX=0000h. With AL=00h on entry, BH = FFh (Microsoft), or 29h when emulating the J-3100. With AL=01h and DOS loaded in the HMA, BH = 10h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2130",
+          "cites": "INT 21 - DOS 2+ - GET DOS VERSION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x30",
+          "cites": "        case 0x30:      /* Get DOS Version */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x31",
+      "name": "keep resident",
+      "description": "Ends the program with return code AL, leaving DX paragraphs resident.",
+      "behaviour": "The emulator resizes the PSP's memory block to DX paragraphs, then terminates the program as a TSR with AL as the return code. It never returns and does not set the carry flag. If the PSP's block is marked free it is first marked allocated to the PSP.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2131",
+          "cites": "INT 21 - DOS 2+ - TERMINATE AND STAY RESIDENT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x31",
+          "cites": "        case 0x31:      /* Terminate and stay resident */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x32",
+      "name": "dpb specific drive",
+      "description": "Returns a pointer to the drive parameter block of the drive in DL.",
+      "behaviour": "DL = drive (00h = default, 01h = A:). AL=00h and DS:BX -> the block for a mounted drive that is not removable; AL=FFh otherwise. The emulator fills the block's free-cluster word when it holds FFFFh.",
+      "differs": "The list gives FFh for an invalid or network drive; the emulator also gives it for a removable drive.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2132",
+          "cites": "INT 21 - DOS 2+ - GET DOS DRIVE PARAMETER BLOCK FOR SPECIFIC DRIVE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x32",
+          "cites": "        case 0x32: /* Get drive parameter block for specific drive */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x33",
+      "name": "break checking",
+      "description": "Gets or sets extended break checking, among other subfunctions chosen by AL.",
+      "behaviour": "AL = 00h to 07h selects the subfunction; any other AL returns AL=FFh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2133",
+          "cites": "INT 21 - DOS 2+ - EXTENDED BREAK CHECKING"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33",
+          "cites": "        case 0x33:      /* Extended Break Checking */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x33/0x00",
+      "name": "get break state",
+      "description": "Returns the extended break checking state.",
+      "behaviour": "Returns DL = the break check flag the emulator holds.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 0",
+          "cites": "                case 0:reg_dl=dos.breakcheck;break;         /* Get the breakcheck flag */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x33/0x01",
+      "name": "set break state",
+      "description": "Sets the extended break checking state.",
+      "behaviour": "DL = new state: the flag is set when DL is above 0. Nothing is returned.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 1",
+          "cites": "                case 1:dos.breakcheck=(reg_dl>0);break;     /* Set the breakcheck flag */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x33/0x02",
+      "name": "swap break state",
+      "description": "Sets the break checking state and returns the old one.",
+      "behaviour": "DL = new state, set when DL is above 0. Returns DL = the old state.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213302",
+          "cites": "INT 21 - DOS 3.x+ internal - GET AND SET EXTENDED CONTROL-BREAK CHECKING STATE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 2",
+          "cites": "                case 2:{bool old=dos.breakcheck;dos.breakcheck=(reg_dl>0);reg_dl=old;}break;"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x33/0x03",
+      "name": "get cpsw state",
+      "description": "Gets the code-page switching flag, a call that has been a no-op in public DOS releases.",
+      "behaviour": "The emulator logs an error and returns nothing; its code is shared with the set call, AL=04h.",
+      "differs": "The list returns DL = the current CPSW; the emulator returns nothing.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213303",
+          "cites": "INT 21 - DOS 3.4/4.0 - GET CURRENT CPSW STATE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 3",
+          "cites": "                case 3: /* Get cpsw */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x33/0x04",
+      "name": "set cpsw state",
+      "description": "Sets the code-page switching flag, a call that has been a no-op in public DOS releases.",
+      "behaviour": "The emulator logs an error and returns nothing.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213304",
+          "cites": "INT 21 - DOS 3.4/4.0 - SET CPSW STATE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 4",
+          "cites": "                case 4: /* Set cpsw */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x33/0x05",
+      "name": "get boot drive",
+      "description": "Returns the boot drive.",
+      "behaviour": "Returns DL = 3, which is drive C: (1 = A:); the emulator's source marks it as to be made configurable.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213305",
+          "cites": "INT 21 - DOS 4.0+ - GET BOOT DRIVE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 5",
+          "cites": "\t\tcase 5:reg_dl=3;break; /* Drive C: (TODO: Make configurable, or else initially set to Z: then re-set to the first drive mounted */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x33/0x06",
+      "name": "get true version",
+      "description": "Returns the true DOS version, which SETVER cannot change.",
+      "behaviour": "Returns BL = major, BH = minor, DL = revision, and DH = 10h when DOS is in the HMA, else 00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213306",
+          "cites": "INT 21 - DOS 5+ - GET TRUE VERSION NUMBER"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 6",
+          "cites": "                case 6:                                         /* Get true version number */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x33/0x07",
+      "name": "set dos_flag",
+      "description": "Sets or clears bit 5 of the Windows 95 DOS_FLAG.",
+      "behaviour": "The emulator does nothing for it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213307",
+          "cites": "INT 21 - Windows95 - SET/CLEAR DOS_FLAG"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x33 case 7",
+          "cites": "                case 7:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x34",
+      "name": "indos flag",
+      "description": "Returns the address of the InDOS flag.",
+      "behaviour": "Returns ES = DOS_SDA_SEG and BX = DOS_SDA_OFS + 1, the emulator's swappable data area.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2134",
+          "cites": "INT 21 - DOS 2+ - GET ADDRESS OF INDOS FLAG"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x34",
+          "cites": "        case 0x34:      /* Get INDos Flag */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x35",
+      "name": "get vector",
+      "description": "Returns the interrupt vector AL.",
+      "behaviour": "Returns ES:BX = the vector, read from the interrupt vector table at AL times 4.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2135",
+          "cites": "INT 21 - DOS 2+ - GET INTERRUPT VECTOR"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x35",
+          "cites": "        case 0x35:      /* Get interrupt vector */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x36",
+      "name": "free space",
+      "description": "Returns the free and total space of the drive in DL.",
+      "behaviour": "DL = drive (00h = default, 01h = A:). Returns AX = sectors per cluster, BX = free clusters, CX = bytes per sector, DX = total clusters, or AX=FFFFh for an invalid drive.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2136",
+          "cites": "INT 21 - DOS 2+ - GET FREE DISK SPACE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x36",
+          "cites": "        case 0x36:      /* Get Free Disk Space */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x37",
+      "name": "switch char",
+      "description": "Gets or sets the switch character and the \\DEV\\ prefix flag, by AL.",
+      "behaviour": "AL = 00h to 03h selects the subfunction. For any other AL the emulator's handler changes no register.",
+      "differs": "The list returns AL=FFh for an unsupported subfunction; the emulator returns nothing for an AL above 03h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2137",
+          "cites": "INT 21 - DOS 2.x and 3.3+ only - \"AVAILDEV\" - SPECIFY \\DEV\\ PREFIX USE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37",
+          "cites": "        case 0x37:      /* Get/Set Switch char Get/Set Availdev thing */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x37/0x00",
+      "name": "get switch char",
+      "description": "Returns the character that introduces command switches.",
+      "behaviour": "Returns AL=00h and DL=2Fh ('/'), always.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213700",
+          "cites": "INT 21 - DOS 2+ - \"SWITCHAR\" - GET SWITCH CHARACTER"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 0",
+          "cites": "                case 0:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x37/0x01",
+      "name": "set switch char",
+      "description": "Sets the switch character.",
+      "behaviour": "The emulator logs the attempt, changes nothing and returns AL=00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213701",
+          "cites": "INT 21 - DOS 2+ - \"SWITCHAR\" - SET SWITCH CHARACTER"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 1",
+          "cites": "                case 1:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x37/0x02",
+      "name": "get availdev flag",
+      "description": "Returns whether the \\DEV\\ prefix of device names is optional.",
+      "behaviour": "Returns AL=00h and DL=FFh: the prefix is optional.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 2",
+          "cites": "                case 2:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x37/0x03",
+      "name": "set availdev flag",
+      "description": "Sets whether the \\DEV\\ prefix of device names is optional.",
+      "behaviour": "The emulator logs the attempt, changes nothing and returns AL=00h.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x37 case 3",
+          "cites": "                case 3:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x38",
+      "name": "country info",
+      "description": "Gets the country information, or sets the country code.",
+      "behaviour": "With AL=00h it copies the country table (0x18 bytes) to DS:DX, returns AL = country number (FFh if it is above 254) and BX = country number, CF clear. With DX=FFFFh it sets the country to AL (to BX if AL=FFh), returns AX=0, CF clear. Anything else sets CF.",
+      "differs": "The list defines AL=01h to FEh as a specific country and AL=FFh with BX; the emulator serves only AL=00h and DX=FFFFh, and sets CF for the rest.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2138",
+          "cites": "INT 21 - DOS 2+ - GET COUNTRY-SPECIFIC INFORMATION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x38",
+          "cites": "        case 0x38:                  /* Set Country Code */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x39",
+      "name": "mkdir",
+      "description": "Creates the directory named by the ASCIZ path at DS:DX.",
+      "behaviour": "CF clear and AX=0005h on success; CF set and AX = the DOS error code on failure. The emulator forces short names for the call.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2139",
+          "cites": "INT 21 - DOS 2+ - \"MKDIR\" - CREATE SUBDIRECTORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x39",
+          "cites": "        case 0x39:      /* MKDIR Create directory */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x3A",
+      "name": "rmdir",
+      "description": "Removes the directory named by the ASCIZ path at DS:DX.",
+      "behaviour": "CF clear and AX=0005h on success; CF set and AX = the DOS error code on failure. The emulator forces short names for the call.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213A",
+          "cites": "INT 21 - DOS 2+ - \"RMDIR\" - REMOVE SUBDIRECTORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3a",
+          "cites": "        case 0x3a:      /* RMDIR Remove directory */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x3B",
+      "name": "chdir",
+      "description": "Makes the directory named by the ASCIZ path at DS:DX the current directory.",
+      "behaviour": "CF clear and AX=0000h on success; CF set and AX = the DOS error code on failure.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213B",
+          "cites": "INT 21 - DOS 2+ - \"CHDIR\" - SET CURRENT DIRECTORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3b",
+          "cites": "        case 0x3b:      /* CHDIR Set current directory */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x3C",
+      "name": "create file",
+      "description": "Creates or truncates the file named by the ASCIZ path at DS:DX, with attributes CX.",
+      "behaviour": "On success CF is clear and AX = the new file handle. On failure CF is set and AX = the DOS error code. The emulator forces short names for the call.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213C",
+          "cites": "INT 21 - DOS 2+ - \"CREAT\" - CREATE OR TRUNCATE FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3c",
+          "cites": "        case 0x3c:      /* CREATE Create or truncate file */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x3D",
+      "name": "open file",
+      "description": "Opens the existing file named by the ASCIZ path at DS:DX, with the access mode in AL.",
+      "behaviour": "On success CF is clear and AX = the file handle. On failure CF is set and AX = the DOS error code. The emulator tries the name as a short name first and, if that fails with long file names enabled, once more as typed.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213D",
+          "cites": "INT 21 - DOS 2+ - \"OPEN\" - OPEN EXISTING FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3d",
+          "cites": "        case 0x3d:      /* OPEN Open existing file */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x3E",
+      "name": "close file",
+      "description": "Closes the file handle in BX.",
+      "behaviour": "On success CF is clear; the emulator passes AL to DOS_CloseFile, which stores the handle's reference count from before the close there, so AL is changed. On failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213E",
+          "cites": "INT 21 - DOS 2+ - \"CLOSE\" - CLOSE FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3e",
+          "cites": "        case 0x3e:      /* CLOSE Close file */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x3F",
+      "name": "read file",
+      "description": "Reads CX bytes from the handle in BX into the buffer at DS:DX.",
+      "behaviour": "On success CF is clear and AX = the bytes read. On failure CF is set and AX = the DOS error code. A read that would pass the end of the 64 KB segment from an offset not a multiple of 16 is cut to 10000h minus that offset's low four bits (MS-DOS 5.0 behaviour).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-213F",
+          "cites": "INT 21 - DOS 2+ - \"READ\" - READ FROM FILE OR DEVICE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x3f",
+          "cites": "        case 0x3f:      /* READ Read from file or device */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x40",
+      "name": "write file",
+      "description": "Writes CX bytes from the buffer at DS:DX to the handle in BX.",
+      "behaviour": "On success CF is clear and AX = the bytes written. On failure CF is set and AX = the DOS error code. A write past the end of the 64 KB segment is cut as AH=3Fh cuts a read; a closed handle gives error 6; 'Packed file is corrupt' written to handle 2 can be swallowed.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2140",
+          "cites": "INT 21 - DOS 2+ - \"WRITE\" - WRITE TO FILE OR DEVICE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x40",
+          "cites": "        case 0x40:                  /* WRITE Write to file or device */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x41",
+      "name": "delete file",
+      "description": "Deletes the file named by the ASCIZ path at DS:DX.",
+      "behaviour": "On success CF is clear. On failure CF is set and AX = the DOS error code. The emulator forces short names for the call.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2141",
+          "cites": "INT 21 - DOS 2+ - \"UNLINK\" - DELETE FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x41",
+          "cites": "        case 0x41:                  /* UNLINK Delete file */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x42",
+      "name": "seek",
+      "description": "Moves the file position of the handle in BX by the signed offset CX:DX from the origin in AL.",
+      "behaviour": "AL = 00h start, 01h current position, 02h end. On success CF is clear and DX:AX = the new position. On failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-2142",
+          "cites": "INT 21 - DOS 2+ - \"LSEEK\" - SET CURRENT FILE POSITION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x42",
+          "cites": "        case 0x42:                  /* LSEEK Set current file position */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x43",
+      "name": "file attributes",
+      "description": "Gets (AL=00h) or sets (AL=01h) the attributes of the file named by the ASCIZ path at DS:DX.",
+      "behaviour": "Any other AL logs an error, returns AX=0001h and sets CF.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43",
+          "cites": "        case 0x43:                  /* Get/Set file attributes */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x43/0x00",
+      "name": "get attributes",
+      "description": "Returns the attributes of the file named by the ASCIZ path at DS:DX.",
+      "behaviour": "On success CF is clear, CX = the attributes and AX = the same value (undocumented in the emulator's source). On failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-214300",
+          "cites": "INT 21 - DOS 2+ - GET FILE ATTRIBUTES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43 case 0x00",
+          "cites": "                case 0x00:              /* Get */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x43/0x01",
+      "name": "set attributes",
+      "description": "Sets the attributes of the file named by the ASCIZ path at DS:DX to CX.",
+      "behaviour": "On success CF is clear and AX = 0202h (destroyed). On failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.F D-214301",
+          "cites": "INT 21 - DOS 2+ - \"CHMOD\" - SET FILE ATTRIBUTES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x43 case 0x01",
+          "cites": "                case 0x01:              /* Set */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x44",
+      "name": "ioctl",
+      "description": "Device control: AL selects the subfunction, BX holds the handle.",
+      "behaviour": "The emulator hands the call to DOS_IOCTL. CF is clear on success; on failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x44",
+          "cites": "        case 0x44:                  /* IOCTL Functions */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x45",
+      "name": "dup handle",
+      "description": "Duplicates the file handle in BX.",
+      "behaviour": "On success CF is clear and AX = the new handle. On failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2145",
+          "cites": "INT 21 - DOS 2+ - \"DUP\" - DUPLICATE FILE HANDLE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x45",
+          "cites": "        case 0x45:                  /* DUP Duplicate file handle */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x46",
+      "name": "dup2",
+      "description": "Makes the handle in CX a duplicate of the handle in BX, closing CX if open.",
+      "behaviour": "On success CF is clear and AX = CX, which the emulator's source notes not all sources agree on. On failure CF is set and AX = the DOS error code.",
+      "differs": "The list returns no value in AX; the emulator returns AX = CX.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2146",
+          "cites": "INT 21 - DOS 2+ - \"DUP2\", \"FORCEDUP\" - FORCE DUPLICATE FILE HANDLE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x46",
+          "cites": "        case 0x46:                  /* DUP2,FORCEDUP Force duplicate file handle */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x47",
+      "name": "get cwd",
+      "description": "Returns the current directory of the drive in DL.",
+      "behaviour": "DL = drive (00h = default, 01h = A:), DS:SI -> buffer. On success the emulator writes the ASCIZ path there, CF is clear and AX=0100h. On failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2147",
+          "cites": "INT 21 - DOS 2+ - \"CWD\" - GET CURRENT DIRECTORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x47",
+          "cites": "        case 0x47:                  /* CWD Get current directory */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x48",
+      "name": "alloc memory",
+      "description": "Allocates BX paragraphs of memory.",
+      "behaviour": "On success CF is clear and AX = the segment of the block. On failure CF is set, AX = the DOS error code and BX = the size of the largest available block.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2148",
+          "cites": "INT 21 - DOS 2+ - ALLOCATE MEMORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x48",
+          "cites": "        case 0x48:                  /* Allocate memory */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x49",
+      "name": "free memory",
+      "description": "Frees the memory block at segment ES.",
+      "behaviour": "On success CF is clear. On failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2149",
+          "cites": "INT 21 - DOS 2+ - FREE MEMORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x49",
+          "cites": "        case 0x49:                  /* Free memory */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x4A",
+      "name": "resize memory",
+      "description": "Resizes the block at segment ES to BX paragraphs.",
+      "behaviour": "On success CF is clear and AX = ES. On failure CF is set and AX = the DOS error code; BX = the largest size available, except after error 7, when it is not changed.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214A",
+          "cites": "INT 21 - DOS 2+ - RESIZE MEMORY BLOCK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4a",
+          "cites": "        case 0x4a:                  /* Resize memory block */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x4B",
+      "name": "exec",
+      "description": "Loads and optionally runs a program: AL = type, DS:DX = ASCIZ program name, ES:BX = parameter block.",
+      "behaviour": "The emulator passes the name, the parameter block and AL to DOS_Execute. If it fails, CF is set and AX = the DOS error code. On success it records the program name and command tail of the running program.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214B",
+          "cites": "INT 21 - DOS 2+ - \"EXEC\" - LOAD AND/OR EXECUTE PROGRAM"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4b",
+          "cites": "        case 0x4b:                  /* EXEC Load and/or execute program */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x4C",
+      "name": "exit",
+      "description": "Ends the program with return code AL.",
+      "behaviour": "The emulator terminates the current PSP with AL as the return code, clears the running program's name and arguments, and sets AX=3E01h for the parent, as the source comment says real MS-DOS appears to return on leaving AH=4Bh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214C",
+          "cites": "INT 21 - DOS 2+ - \"EXIT\" - TERMINATE WITH RETURN CODE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4c",
+          "cites": "        case 0x4c:                  /* EXIT Terminate with return code */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x4D",
+      "name": "get return code",
+      "description": "Returns the return code and the termination type of the last child.",
+      "behaviour": "Returns AL = return code and AH = termination type, CF clear. The emulator keeps both and does not clear them.",
+      "differs": "The list says the stored return code is cleared once read; the emulator's handler does not clear it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214D",
+          "cites": "INT 21 - DOS 2+ - GET RETURN CODE (ERRORLEVEL)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4d",
+          "cites": "        case 0x4d:                  /* Get Return code */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x4E",
+      "name": "find first",
+      "description": "Finds the first file matching the ASCIZ spec at DS:DX with attribute mask CX.",
+      "behaviour": "On success CF is clear and AX=0000h (undocumented), and the DTA holds the find data. On failure CF is set and AX = the DOS error code; unless long names are on, a bad path is reported first.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214E",
+          "cites": "INT 21 - DOS 2+ - \"FINDFIRST\" - FIND FIRST MATCHING FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4e",
+          "cites": "        case 0x4e: {                /* FINDFIRST Find first matching file */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x4F",
+      "name": "find next",
+      "description": "Finds the next file of the search the DTA holds.",
+      "behaviour": "On success CF is clear and AX=0000h (undocumented). On failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214F",
+          "cites": "INT 21 - DOS 2+ - \"FINDNEXT\" - FIND NEXT MATCHING FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4f",
+          "cites": "        case 0x4f:                  /* FINDNEXT Find next matching file */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x50",
+      "name": "set psp",
+      "description": "Sets the current process, by the segment of its PSP in BX.",
+      "behaviour": "The emulator stores BX as the current PSP segment.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2150",
+          "cites": "INT 21 - DOS 2+ internal - SET CURRENT PROCESS ID (SET PSP ADDRESS)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x50",
+          "cites": "        case 0x50:                  /* Set current PSP */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x51",
+      "name": "get psp",
+      "description": "Returns the segment of the current process's PSP.",
+      "behaviour": "Returns BX = the current PSP segment.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2151",
+          "cites": "INT 21 - DOS 2+ internal - GET CURRENT PROCESS ID (GET PSP ADDRESS)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x51",
+          "cites": "        case 0x51:                  /* Get current PSP */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x52",
+      "name": "list of lists",
+      "description": "Returns a pointer to the DOS list of lists.",
+      "behaviour": "Returns ES:BX = the emulator's DOS info block. Before returning it sets the block's device count to 2 floppies plus the run of mounted non-removable drives from C: on.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2152",
+          "cites": "INT 21 U - DOS 2+ internal - \"SYSVARS\" - GET LIST OF LISTS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x52",
+          "cites": "        case 0x52: {                /* Get list of lists */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x53",
+      "name": "bpb to dpb",
+      "description": "Translates the BIOS parameter block at DS:SI into the drive parameter block at ES:BP.",
+      "behaviour": "The emulator fills the block's sector, cluster, FAT, root directory, first data sector, highest cluster and media fields from the BPB, in the DOS 4+ layout or the earlier one by the version it reports, sets the free-cluster search start to 0 and the free clusters to FFFFh (unknown), and returns no error.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2153",
+          "cites": "INT 21 - DOS 2+ internal - TRANSLATE BIOS PARAMETER BLOCK TO DRIVE PARAM BLOCK"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x53",
+          "cites": "        case 0x53:                  /* Translate BIOS parameter block to drive parameter block */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x54",
+      "name": "get verify flag",
+      "description": "Returns the state of the verify flag.",
+      "behaviour": "Returns AL=01h if the emulator's verify flag is on, else 00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2154",
+          "cites": "INT 21 - DOS 2+ - GET VERIFY FLAG"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x54",
+          "cites": "        case 0x54:                  /* Get verify flag */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x55",
+      "name": "child psp",
+      "description": "Creates a child program segment prefix at segment DX.",
+      "behaviour": "SI = the value for the memory size field. The emulator calls DOS_ChildPSP with DX and SI, makes DX the current PSP, and sets AL to F0h (destroyed).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2155",
+          "cites": "INT 21 - DOS 2+ internal - CREATE CHILD PSP"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x55",
+          "cites": "        case 0x55:                  /* Create Child PSP*/"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x56",
+      "name": "rename",
+      "description": "Renames the file or directory named by the ASCIZ path at DS:DX to the ASCIZ path at ES:DI.",
+      "behaviour": "On success CF is clear. On failure CF is set and AX = the DOS error code. The emulator forces short names for the call.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2156",
+          "cites": "INT 21 - DOS 2+ - \"RENAME\" - RENAME FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x56",
+          "cites": "        case 0x56:                  /* RENAME Rename file */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x57",
+      "name": "file time",
+      "description": "Gets (AL=00h) or sets (AL=01h) the time and date stamps of the file handle in BX.",
+      "behaviour": "AL=00h returns CX and DX, CF clear; AL=01h sets them from CX and DX. On failure CF is set and AX = the DOS error code. Any other AL is logged and changes nothing.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x57",
+          "cites": "        case 0x57:                  /* Get/Set File's Date and Time */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x58",
+      "name": "alloc strategy",
+      "description": "Gets or sets the memory allocation strategy, or the UMB link state, by AL.",
+      "behaviour": "AL = 00h to 03h selects the subfunction. Any other AL logs an error, returns AX=0001h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2158@1",
+          "cites": "INT 21 - DOS 2.11+ - GET OR SET MEMORY ALLOCATION STRATEGY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58",
+          "cites": "        case 0x58:                  /* Get/Set Memory allocation strategy */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x58/0x00",
+      "name": "get alloc strategy",
+      "description": "Returns the memory allocation strategy.",
+      "behaviour": "Returns AX = DOS_GetMemAllocStrategy and CF clear.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 0",
+          "cites": "                case 0:                 /* Get Strategy */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x58/0x01",
+      "name": "set alloc strategy",
+      "description": "Sets the memory allocation strategy to BX.",
+      "behaviour": "On success CF is clear; if DOS_SetMemAllocStrategy refuses BX, AX=0001h and CF is set.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 1",
+          "cites": "                case 1:                 /* Set Strategy */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x58/0x02",
+      "name": "get umb link",
+      "description": "Returns whether the upper memory blocks are linked into the DOS memory chain.",
+      "behaviour": "Returns AL = 01h if linked, else 00h, and CF clear.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 2",
+          "cites": "                case 2:                 /* Get UMB Link Status */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x58/0x03",
+      "name": "set umb link",
+      "description": "Links the upper memory blocks into the DOS memory chain, or unlinks them, by BX.",
+      "behaviour": "On success CF is clear; if DOS_LinkUMBsToMemChain refuses BX, AX=0001h and CF is set.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x58 case 3",
+          "cites": "                case 3:                 /* Set UMB Link Status */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x59",
+      "name": "extended error",
+      "description": "Returns the extended information of the last DOS error.",
+      "behaviour": "Returns AX = the last error code, BH = 08h (not found) for file not found and path not found, else 00h (unspecified), BL = 01h (retry), CH = 00h (unknown locus), CF clear. BX on entry is ignored.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-2159--BX0000",
+          "cites": "INT 21 - DOS 3.0+ - GET EXTENDED ERROR INFORMATION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x59",
+          "cites": "        case 0x59:                  /* Get Extended error information */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x5A",
+      "name": "create temp file",
+      "description": "Creates a file with a unique name in the directory the ASCIZ path at DS:DX names.",
+      "behaviour": "On success CF is clear, AX = the file handle and the generated name is written back at DS:DX. On failure CF is set and AX = the DOS error code. CX is not read.",
+      "differs": "The list takes the attributes in CX; the emulator's handler does not pass CX to DOS_CreateTempFile.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-215A",
+          "cites": "INT 21 - DOS 3.0+ - CREATE TEMPORARY FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5a",
+          "cites": "        case 0x5a:                  /* Create temporary file */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x5B",
+      "name": "create new file",
+      "description": "Creates the file named by the ASCIZ path at DS:DX, failing if it exists.",
+      "behaviour": "CX = attributes. If the file can be opened, the emulator closes it and fails with error 80. Otherwise CF is clear and AX = the handle, or on failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-215B",
+          "cites": "INT 21 - DOS 3.0+ - CREATE NEW FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5b",
+          "cites": "        case 0x5b:                  /* Create new file */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x5C",
+      "name": "record locking",
+      "description": "Locks (AL=00h) or unlocks (AL=01h) a region of the file handle in BX.",
+      "behaviour": "CX:DX = start offset, SI:DI = length. If the emulator's file sharing is not enabled it fails with error 1; otherwise DOS_LockFile decides, and on success AX=0 and CF is clear. On failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-215C",
+          "cites": "INT 21 - DOS 3.0+ - \"FLOCK\" - RECORD LOCKING"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5c",
+          "cites": "        case 0x5c:  {       /* FLOCK File region locking */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x5D",
+      "name": "network functions",
+      "description": "Remote server call (AL=00h) or get the swappable data area (AL=06h).",
+      "behaviour": "AL=00h loads AX, BX, CX, DX, SI, DI, DS and ES from the register block at DS:DX and runs the handler again. AL=06h returns DS:SI -> the DOS data area, CX = its swap size, DX = 001Ah, CF clear. Any other AL is logged as unsupported.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5d",
+          "cites": "        case 0x5d:                  /* Network Functions */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x5E",
+      "name": "network printer fns",
+      "description": "Gets the machine name (AL=00h) when a network redirector is available.",
+      "behaviour": "On success it writes the host name, padded with spaces to 15 characters, at DS:DX, returns CX=01FFh and clears CF. If AL is not 00h, or no redirector answers, it returns AL=01h and sets CF.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5e",
+          "cites": "        case 0x5e:                  /* Network and printer functions */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x5F",
+      "name": "network redirection",
+      "description": "Network redirection calls, selected by AL.",
+      "behaviour": "The emulator returns AX=0001h and sets CF (failure). Only Windows builds serve a few named-pipe subfunctions first.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x5f",
+          "cites": "        case 0x5f:                  /* Network redirection */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x60",
+      "name": "truename",
+      "description": "Canonicalizes the ASCIZ name at DS:SI into the 128-byte buffer at ES:DI.",
+      "behaviour": "On success CF is clear and the canonical ASCIZ name is written at ES:DI. On failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2160",
+          "cites": "INT 21 - DOS 3.0+ - \"TRUENAME\" - CANONICALIZE FILENAME OR PATH"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x60",
+          "cites": "        case 0x60:                  /* Canonicalize filename or path */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x61",
+      "name": "unused network",
+      "description": "Does nothing: reserved for network use.",
+      "behaviour": "The emulator sends it to its default case, which sets AL to 00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2161",
+          "cites": "INT 21 - DOS 3.0+ - UNUSED (RESERVED FOR NETWORK USE)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x61",
+          "cites": "        case 0x61:                  /* Unused (reserved for network use) */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x62",
+      "name": "get psp",
+      "description": "Returns the segment of the current process's PSP.",
+      "behaviour": "Returns BX = the current PSP segment.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2162",
+          "cites": "INT 21 - DOS 3.0+ - GET CURRENT PSP ADDRESS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x62",
+          "cites": "        case 0x62:                  /* Get Current PSP Address */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x63",
+      "name": "get dbcs table",
+      "description": "Returns the double-byte character set table.",
+      "behaviour": "With AL=00h and a table present: DS:SI -> the table (offset 2 past its start), AL=00h, CF clear. Otherwise AL=FFh and CF is untouched.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x63",
+          "cites": "        case 0x63:                  /* DOUBLE BYTE CHARACTER SET */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x64",
+      "name": "driver lookahead",
+      "description": "Sets the device driver lookahead flag.",
+      "behaviour": "The emulator logs the call and does nothing.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2164",
+          "cites": "INT 21 - DOS 3.2+ internal - SET DEVICE DRIVER LOOKAHEAD FLAG"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x64",
+          "cites": "        case 0x64:                  /* Set device driver lookahead flag */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65",
+      "name": "extended country info",
+      "description": "Returns extended country information or capitalizes text, by AL.",
+      "behaviour": "With CX below 5, AL up to 07h fails with error 1 and CF set. AL = 01h to 07h returns country information or a table pointer at ES:DI; AL = 20h to 23h capitalizes or classifies a character. Any other AL stops the emulator with an error.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2165@1",
+          "cites": "INT 21 - DOS 3.3+ - GET EXTENDED COUNTRY INFORMATION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65",
+          "cites": "        case 0x65:                  /* Get extended country information and a lot of other useless shit*/"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65/0x01",
+      "name": "get intl info",
+      "description": "Returns the general internationalization information at ES:DI.",
+      "behaviour": "ES:DI gets AL, then 0026h, then the country number; if CX > 6 the loaded code page follows, and if CX > 8 the country table is copied after it, with CX returned as at most 29h. CF is clear. With CX below 5 it fails: error 1, CF set.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x01",
+          "cites": "                    case 0x01:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65/0x05",
+      "name": "filename term table",
+      "description": "Returns a pointer to the filename terminator table.",
+      "behaviour": "Writes AL and a far pointer to the table at ES:DI and returns CX=5, CF clear. With CX below 5 it fails: error 1, CF set.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x05",
+          "cites": "                    case 0x05: // Get pointer to filename terminator table"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65/0x02",
+      "name": "uppercase table",
+      "description": "Returns a pointer to the uppercase table.",
+      "behaviour": "Writes AL and a far pointer to the table at ES:DI (an identity table in UTF-8 names mode) and returns CX=5, CF clear. With CX below 5 it fails: error 1, CF set.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x02",
+          "cites": "                    case 0x02: // Get pointer to uppercase table"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65/0x04",
+      "name": "filename upcase table",
+      "description": "Returns a pointer to the filename uppercase table.",
+      "behaviour": "Writes AL and a far pointer to the table at ES:DI (an identity table in UTF-8 names mode) and returns CX=5, CF clear. It is the same code as AL=02h. With CX below 5 it fails: error 1, CF set.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x04",
+          "cites": "                    case 0x04: // Get pointer to filename uppercase table"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65/0x06",
+      "name": "collating table",
+      "description": "Returns a pointer to the collating sequence table.",
+      "behaviour": "Writes AL and a far pointer to the table at ES:DI and returns CX=5, CF clear. With CX below 5 it fails: error 1, CF set.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x06",
+          "cites": "                    case 0x06: // Get pointer to collating sequence table"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65/0x03",
+      "name": "lowercase table",
+      "description": "Returns a pointer to the lowercase table.",
+      "behaviour": "The emulator returns the double-byte character set table where one exists: AL and its far pointer at ES:DI, CX=5, CF clear. Without one it writes nothing and leaves CF alone. With CX below 5 it fails: error 1, CF set.",
+      "differs": "The list says AL=03h returns the lowercase table; the emulator shares the code of AL=07h and returns the double-byte table.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x03",
+          "cites": "                    case 0x03: // Get pointer to lowercase table"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65/0x07",
+      "name": "dbcs table",
+      "description": "Returns a pointer to the double-byte character set table.",
+      "behaviour": "Writes AL and a far pointer to the table at ES:DI and returns CX=5, CF clear, when a table exists; otherwise it writes nothing and leaves CF alone. With CX below 5 it fails: error 1, CF set.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x07",
+          "cites": "                    case 0x07: // Get pointer to double byte char set table"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65/0x20",
+      "name": "capitalize char",
+      "description": "Capitalizes the character in DL.",
+      "behaviour": "Returns DL = the uppercase character, CF clear. In UTF-8 names mode a character from 80h up is left as it is.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x20",
+          "cites": "                    case 0x20: /* Capitalize Character */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65/0x21",
+      "name": "capitalize string",
+      "description": "Capitalizes the CX characters at DS:DX in place.",
+      "behaviour": "CF is clear. A length over the emulator's copy buffer stops the emulator with an error. In UTF-8 names mode a character from 80h up is left as it is.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x21",
+          "cites": "                    case 0x21: /* Capitalize String (cx=length) */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65/0x22",
+      "name": "capitalize asciiz",
+      "description": "Capitalizes the ASCIZ string at DS:DX in place.",
+      "behaviour": "CF is clear. A string over the emulator's copy buffer stops the emulator with an error. In UTF-8 names mode a character from 80h up is left as it is.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x22",
+          "cites": "                    case 0x22: /* Capitalize ASCIZ string */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x65/0x23",
+      "name": "yes/no character",
+      "description": "Classifies the character in DL as yes, no or neither.",
+      "behaviour": "Returns AX = 1 if DL, lowercased, is the yes character, 0 if it is the no character, 2 otherwise, CF clear. FORMAT.COM and FDISK.EXE rely on it.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-216523",
+          "cites": "INT 21 U - DOS 4.0+ - DETERMINE IF CHARACTER REPRESENTS YES/NO RESPONSE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x65 case 0x23",
+          "cites": "                    case 0x23: /* Determine if character represents yes/no response (MS-DOS 4.0+) */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x66",
+      "name": "code page table",
+      "description": "Gets (AL=01h) or sets (AL=02h) the global code page.",
+      "behaviour": "Any other AL sets error 1: AX=0001h and CF set.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66",
+          "cites": "        case 0x66:                  /* Get/Set global code page table  */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x66/0x01",
+      "name": "get code page",
+      "description": "Returns the active and the system code page.",
+      "behaviour": "Returns BX = DX = the loaded code page, CF clear.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-216601",
+          "cites": "INT 21 - DOS 3.3+ - GET GLOBAL CODE PAGE TABLE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66 case 1",
+          "cites": "                case 1:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x66/0x02",
+      "name": "set code page",
+      "description": "Sets the active code page to BX.",
+      "behaviour": "It works only with TrueType output, a supported code page, and a machine that is not PC-98, JEGA or DOS/V; otherwise AX=0002h and CF is set. On success the emulator reloads its language, fonts and drives and CF is clear.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-216602",
+          "cites": "INT 21 - DOS 3.3+ - SET GLOBAL CODE PAGE TABLE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x66 case 2",
+          "cites": "                case 2:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x67",
+      "name": "set handle count",
+      "description": "Sets the size of the process's file handle table to BX.",
+      "behaviour": "On success CF is clear; otherwise AX = the error PSP.SetNumFiles returns and CF is set.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2167",
+          "cites": "INT 21 - DOS 3.3+ - SET HANDLE COUNT"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x67",
+          "cites": "        case 0x67:                  /* Set handle count */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x68",
+      "name": "commit file",
+      "description": "Writes the buffered data of a file to disk.",
+      "behaviour": "The emulator flushes the handle in BL, not BX. On success AH=68h and CF is clear. On failure CF is set and AX = the DOS error code.",
+      "differs": "The list takes the handle in BX; the emulator's handler reads it from BL.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2168",
+          "cites": "INT 21 - DOS 3.3+ - \"FFLUSH\" - COMMIT FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x68",
+          "cites": "        case 0x68:                  /* FFLUSH Commit file */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x69",
+      "name": "disk serial number",
+      "description": "Gets (AL=00h) or sets (AL=01h) the serial number of the disk in BL.",
+      "behaviour": "The emulator rewrites the call as the generic block device IOCTL (AX=440Dh, CH=08h, CL=66h to get, 46h to set), runs it, and restores CX. Any other AL stops the emulator with an error.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2169",
+          "cites": "INT 21 U - DOS 4.0+ internal - GET/SET DISK SERIAL NUMBER"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69",
+          "cites": "        case 0x69:                  /* Get/Set disk serial number */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x69/0x00",
+      "name": "get serial number",
+      "description": "Gets the disk serial number.",
+      "behaviour": "The emulator turns it into the IOCTL AX=440Dh with CH=08h and CL=66h and runs it, then restores CX.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69 case 0x00",
+          "cites": "                    case 0x00:              /* Get */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x69/0x01",
+      "name": "set serial number",
+      "description": "Sets the disk serial number.",
+      "behaviour": "The emulator turns it into the IOCTL AX=440Dh with CH=08h and CL=46h and runs it, then restores CX.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x69 case 0x01",
+          "cites": "                    case 0x01:              /* Set */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x6A",
+      "name": "commit file 6Ah",
+      "description": "Writes the buffered data of a file to disk, as AH=68h.",
+      "behaviour": "The emulator runs the AH=68h code: it flushes the handle in BL, then AH=68h and CF clear on success.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-216A",
+          "cites": "INT 21 U - DOS 4.0+ - COMMIT FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6a",
+          "cites": "        case 0x6a:                  /* Commit file */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x6B",
+      "name": "null function",
+      "description": "Does nothing.",
+      "behaviour": "The emulator sends it to its default case, which sets AL to 00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-216B@2",
+          "cites": "INT 21 U - DOS 5+ - NULL FUNCTION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6b",
+          "cites": "        case 0x6b:                  /* NULL Function */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x6C",
+      "name": "extended open",
+      "description": "Opens or creates the file named by the ASCIZ path at DS:SI.",
+      "behaviour": "BX = mode, CX = attributes and DX = action go to DOS_OpenFileExtended. On success CF is clear, AX = the handle, and CX is also set by DOS_OpenFileExtended. On failure CF is set and AX = the DOS error code.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6c",
+          "cites": "        case 0x6c:                  /* Extended Open/Create */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x6D",
+      "name": "find first rom",
+      "description": "Finds the first ROM program: not implemented.",
+      "behaviour": "The emulator logs that it is not implemented and sends it to its default case, which sets AL to 00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-216D",
+          "cites": "INT 21 U - DOS 5+ ROM - FIND FIRST ROM PROGRAM"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6d",
+          "cites": "        case 0x6d:                  /* ROM - Find first ROM program */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x6E",
+      "name": "find next rom",
+      "description": "Finds the next ROM program: not implemented.",
+      "behaviour": "The emulator logs that it is not implemented and sends it to its default case, which sets AL to 00h.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-216E",
+          "cites": "INT 21 U - DOS 5+ ROM - FIND NEXT ROM PROGRAM"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6e",
+          "cites": "        case 0x6e:                  /* ROM - Find next ROM program */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x6F",
+      "name": "rom functions",
+      "description": "ROM functions: not implemented.",
+      "behaviour": "The emulator logs that it is not implemented and sends it to its default case, which sets AL to 00h.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x6f",
+          "cites": "        case 0x6f:                  /* ROM functions */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71",
+      "name": "long filename fns",
+      "description": "Windows 95 long file name functions, selected by AL.",
+      "behaviour": "With long file names off the emulator returns AX=7100h and sets CF. If the name is not valid UTF-8 in UTF-8 mode it returns AX=0002h and sets CF. An AL it has no routine for returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2171",
+          "cites": "INT 21 - Windows95 - LONG FILENAME FUNCTIONS"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71",
+          "cites": "        case 0x71:                  /* Unknown probably 4dos detection */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0x39",
+      "name": "lfn mkdir",
+      "description": "Makes a directory from the ASCIZ long name at DS:DX.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_7139 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-217139",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - MAKE DIRECTORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x39",
+          "cites": "\t\t    case 0x39:              /* LFN MKDIR */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0x3A",
+      "name": "lfn rmdir",
+      "description": "Removes the directory named by the ASCIZ long name at DS:DX.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_713a routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-21713A",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - REMOVE DIRECTORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x3a",
+          "cites": "\t\t    case 0x3a:              /* LFN RMDIR */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0x3B",
+      "name": "lfn chdir",
+      "description": "Makes the directory named by the ASCIZ long name at DS:DX current.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_713b routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-21713B",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - CHANGE DIRECTORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x3b",
+          "cites": "\t\t    case 0x3b:              /* LFN CHDIR */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0x41",
+      "name": "lfn delete",
+      "description": "Deletes the file named by the ASCIZ long name at DS:DX.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_7141 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-217141",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - DELETE FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x41",
+          "cites": "\t\t    case 0x41:              /* LFN UNLINK */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0x43",
+      "name": "lfn attributes",
+      "description": "Gets or sets the extended attributes of the file named at DS:DX.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_7143 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-217143",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - EXTENDED GET/SET FILE ATTRIBUTES"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x43",
+          "cites": "\t\t    case 0x43:              /* LFN ATTR */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0x47",
+      "name": "lfn get cwd",
+      "description": "Returns the current directory of the drive in DL.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_7147 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-217147",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - GET CURRENT DIRECTORY"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x47",
+          "cites": "\t\t    case 0x47:              /* LFN PWD */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0x4E",
+      "name": "lfn find first",
+      "description": "Finds the first file matching a long-name spec.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_714e routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-21714E",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - FIND FIRST MATCHING FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x4e",
+          "cites": "\t\t    case 0x4e:              /* LFN FindFirst */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0x4F",
+      "name": "lfn find next",
+      "description": "Finds the next file of the search the handle in BX names.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_714f routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-21714F",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - FIND NEXT MATCHING FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x4f",
+          "cites": "\t\t    case 0x4f:              /* LFN FindNext */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0x56",
+      "name": "lfn rename",
+      "description": "Renames a file or directory; long names are allowed.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_7156 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-217156",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - RENAME FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x56",
+          "cites": "\t\t    case 0x56:              /* LFN Rename */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0x6C",
+      "name": "lfn create or open",
+      "description": "Creates or opens a file by long name.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_716c routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-21716C",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - CREATE OR OPEN FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x6c",
+          "cites": "\t\t    case 0x6c:              /* LFN Create */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0xA0",
+      "name": "lfn volume info",
+      "description": "Returns information about the volume whose root the ASCIZ name at DS:DX gives.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_71a0 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2171A0",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - GET VOLUME INFORMATION"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa0",
+          "cites": "\t\t    case 0xa0:              /* LFN VolInfo */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0xA1",
+      "name": "lfn find close",
+      "description": "Ends the directory search the handle in BX names.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_71a1 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2171A1",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - \"FindClose\" - TERMINATE DIRECTORY SEARCH"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa1",
+          "cites": "\t\t    case 0xa1:              /* LFN FileClose */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0xA6",
+      "name": "lfn file info by handle",
+      "description": "Returns information about the file handle in BX.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_71a6 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2171A6",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - GET FILE INFO BY HANDLE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa6",
+          "cites": "\t\t    case 0xa6:              /* LFN GetFileInfoByHandle */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0xA8",
+      "name": "lfn short name",
+      "description": "Generates a short filename from the long one at DS:SI.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_71a8 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2171A8",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - GENERATE SHORT FILENAME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa8",
+          "cites": "\t\t    case 0xa8:              /* LFN GenSFN */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0x60",
+      "name": "lfn truename",
+      "description": "Canonicalizes a path, or gets the short or long form of a name, by CL.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_7160 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-217160CL00",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - \"TRUENAME\" - CANONICALIZE PATH"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0x60",
+          "cites": "\t\t    case 0x60:              /* LFN GetName */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0xA7",
+      "name": "lfn time convert",
+      "description": "Converts between a file time and a DOS time, by BL.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_71a7 routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2171A7BL00",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - FILE TIME TO DOS TIME"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa7",
+          "cites": "\t\t    case 0xa7:              /* LFN TimeConv */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0xAA",
+      "name": "lfn subst",
+      "description": "Creates, terminates or queries a SUBST, by BH.",
+      "behaviour": "With long file names on, the emulator runs its DOS_Int21_71aa routine, unless the name is not valid UTF-8 in UTF-8 mode, which returns AX=0002h with CF set. With them off it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2171AABH00",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - CREATE SUBST"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xaa",
+          "cites": "\t\t    case 0xaa:              /* LFN Subst */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x71/0xA9",
+      "name": "lfn server create",
+      "description": "Creates or opens a file by long name, for a network server.",
+      "behaviour": "The emulator treats it as unimplemented: it returns AX=7100h and sets CF.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2171A9",
+          "cites": "INT 21 - Windows95 - LONG FILENAME - SERVER CREATE OR OPEN FILE"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x71 case 0xa9",
+          "cites": "\t\t    case 0xa9:              /* LFN Server Create */"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0x73",
+      "name": "fat32 and drive calls",
+      "description": "MS-DOS 7 drive locking and flushing, and the FAT32 calls, by AL.",
+      "behaviour": "Below DOS 7 it returns AX=7300h and sets CF. AL=00h with CL below 2 returns AL=CL, AH=00h, CF clear; AL=02h returns the extended DPB of a FAT32 drive, AL=03h the extended free space, and AL=05h with CX=FFFFh (DOS 7.10+) a FAT32 disk read or write. Anything else sets CF and AX=FFFFh.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.H D-2173",
+          "cites": "INT 21 - MS-DOS 7 - DRIVE LOCKING AND FLUSHING"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x73",
+          "cites": "\tcase 0x73:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0xE0",
+      "name": "unhandled e0h",
+      "description": "An AH value the emulator lists by itself and handles as an unhandled call.",
+      "behaviour": "It falls to the emulator's default case, which sets AL to 00h.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xE0",
+          "cites": "\tcase 0xE0:"
+        }
+      ]
+    },
+    {
+      "key": "0x21/0xEF",
+      "name": "ancient art cga",
+      "description": "An AH value the emulator's source names as used by Ancient Art Of War in its CGA version.",
+      "behaviour": "It falls to the emulator's default case, which sets AL to 00h.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0xEF",
+          "cites": "        case 0xEF:                  /* Used in Ancient Art Of War CGA */"
+        }
+      ]
+    }
+  ]
+}

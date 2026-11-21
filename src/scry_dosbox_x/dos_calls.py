@@ -16,6 +16,7 @@ from scry_core.progress import Ticker
 from scry_core.reply_contract import Invalid
 
 from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import knowledge
 from scry_dosbox_x import logs as dlogs
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
@@ -34,33 +35,6 @@ RETURN = re.compile(r"^R N=(\d+) T=([0-9.]+) AX=([0-9A-F]{4}) BX=([0-9A-F]{4}) "
 CAP = re.compile(r"^X ROWS_MAX=(\d+)$")
 MODES = {"R": "real", "V": "v86", "P": "protected"}
 
-#: What each INT 21h function is called, by AH.
-FUNCTIONS = {
-    0x00: "terminate", 0x01: "read char", 0x02: "write char", 0x06: "console io",
-    0x07: "read char raw", 0x08: "read char", 0x09: "write string", 0x0A: "read line",
-    0x0B: "input status", 0x0C: "flush input", 0x0E: "set drive", 0x19: "get drive",
-    0x1A: "set dta", 0x25: "set vector", 0x2A: "get date", 0x2B: "set date", 0x2C: "get time",
-    0x2D: "set time", 0x2F: "get dta", 0x30: "version", 0x31: "keep resident",
-    0x33: "ctrl-break", 0x35: "get vector", 0x36: "free space", 0x39: "mkdir", 0x3A: "rmdir",
-    0x3B: "chdir", 0x3C: "create", 0x3D: "open", 0x3E: "close", 0x3F: "read", 0x40: "write",
-    0x41: "delete", 0x42: "seek", 0x43: "attributes", 0x44: "ioctl", 0x45: "dup", 0x46: "dup2",
-    0x47: "get cwd", 0x48: "alloc", 0x49: "free", 0x4A: "resize", 0x4B: "exec", 0x4C: "exit",
-    0x4D: "exit code", 0x4E: "find first", 0x4F: "find next", 0x50: "set psp", 0x51: "get psp",
-    0x52: "list of lists", 0x56: "rename", 0x57: "file time", 0x58: "alloc strategy",
-    0x59: "extended error", 0x5A: "temp file", 0x5B: "create new", 0x62: "get psp",
-    0x65: "country info", 0x67: "handles", 0x68: "commit", 0x6C: "extended open",
-    0x71: "long names",
-}
-#: DOS's error codes, which a handle-era call (AH 38h and up) returns in AX with carry set.
-ERRORS = {
-    1: "invalid function", 2: "file not found", 3: "path not found", 4: "too many open files",
-    5: "access denied", 6: "invalid handle", 7: "memory blocks destroyed",
-    8: "insufficient memory", 9: "invalid memory block", 10: "bad environment",
-    11: "bad format", 12: "invalid access", 13: "invalid data", 15: "invalid drive",
-    16: "current directory", 17: "not same device", 18: "no more files",
-    19: "write protected", 32: "sharing violation", 33: "lock violation", 80: "file exists",
-    82: "cannot make directory",
-}
 #: The first function that reports failure by the carry: older ones answer in AL.
 CARRY_ERA = 0x38
 POLL_S = 0.05
@@ -94,6 +68,18 @@ class Trace:
     matched: dict[str, tuple[int, list[dict[str, Any]]]] = field(default_factory=dict)
 
 
+def function_name(ah: int) -> str:
+    """What INT 21h function `ah` is called in the base, or "unnamed"."""
+    named = knowledge.base().get("call", f"0x21/0x{ah:02X}", knowledge.SCOPE)
+    return named.name if named is not None else "unnamed"
+
+
+def error_name(code: int) -> str:
+    """What DOS error `code` is called in the base, or "unnamed"."""
+    named = knowledge.base().get("error", str(code), knowledge.SCOPE)
+    return named.name if named is not None else "unnamed"
+
+
 def _regs(names: tuple[str, ...], values: tuple[str, ...]) -> dict[str, str]:
     return {n: f"0x{v}" for n, v in zip(names, values, strict=True)}
 
@@ -124,7 +110,7 @@ def _entry(found: re.Match[str]) -> dict[str, Any]:
     call: dict[str, Any] = {
         "n": int(g[0]), "time_s": _seconds(g[1]), "cpu_mode": MODES[g[2]],
         "caller": f"{g[3]}:{g[4]}", "psp": f"0x{g[5]}", "function": f"0x{ah:02X}",
-        "name": FUNCTIONS.get(ah, "unnamed"),
+        "name": function_name(ah),
         "in": _regs(("ax", "bx", "cx", "dx", "si", "di", "ds", "es"), g[6:14]),
         "returned": False, "switched": False,
     }
@@ -144,7 +130,7 @@ def _returned(call: dict[str, Any], found: re.Match[str]) -> None:
     ah = int(call["function"], 16)
     if call["out"]["cf"] and ah >= CARRY_ERA:
         code = int(g[2], 16)
-        call["error"] = {"code": code, "name": ERRORS.get(code, "unnamed")}
+        call["error"] = {"code": code, "name": error_name(code)}
 
 
 def read(trace: Trace) -> Trace:

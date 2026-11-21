@@ -26,7 +26,7 @@ def _read(path: Path) -> dos.Trace:
 def test_each_call_is_paired_with_its_return_and_the_missing_file_carries_error_2() -> None:
     calls = {c.get("file"): c for c in _read(TRACE).calls if c.get("file")}
     found, missing = calls["IN.TXT"], calls["MISSING.TXT"]
-    assert found["name"] == "open" and found["out"] == {
+    assert found["name"] == "open file" and found["out"] == {
         "ax": "0x0005", "bx": "0xFEA5", "cx": "0x00FF", "dx": "0x0198", "cf": 0}, found
     assert "error" not in found and found["caller"] == "08BC:011F" and found["psp"] == "0x08BC"
     assert missing["error"] == {"code": 2, "name": "file not found"}, missing
@@ -48,7 +48,7 @@ def test_a_call_that_does_not_return_to_its_caller_says_so_and_claims_no_result(
 
 def test_a_call_made_inside_another_returns_before_it() -> None:
     by = {c["n"]: c for c in _read(TRACE).calls}
-    close = next(c for c in by.values() if c["name"] == "close" and c["psp"] == "0x08BC"
+    close = next(c for c in by.values() if c["name"] == "close file" and c["psp"] == "0x08BC"
                  and c["n"] > 20)
     inner = [by[close["n"] + 1], by[close["n"] + 2]]
     assert [c["name"] for c in inner] == ["get date", "get time"], inner

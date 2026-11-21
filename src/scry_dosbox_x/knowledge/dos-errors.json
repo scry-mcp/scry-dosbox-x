@@ -1,0 +1,1212 @@
+{
+  "format": "scry-knowledge/1",
+  "dictionary": "dos-errors",
+  "kind": "error",
+  "scope": "ibm-pc",
+  "covers": "DOS extended error codes: the codes the emulator names with DOSERR_ defines and the list's table of error codes up to 95.",
+  "complete_against": "dosbox-x:include/dos_inc.h DOSERR_*",
+  "entries": [
+    {
+      "key": "0",
+      "name": "no error",
+      "description": "DOS extended error code 0: no error.",
+      "behaviour": "It is the code of no failure: the emulator's AH=3Bh returns AX=0000h with CF clear on success, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 00h (0)",
+          "cites": " 00h (0)   no error"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_NONE",
+          "cites": "#define DOSERR_NONE 0"
+        }
+      ]
+    },
+    {
+      "key": "1",
+      "name": "invalid function",
+      "description": "DOS extended error code 1: function number invalid.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors. Among other places the emulator sets it for AH=5Ch when file sharing is off, for AH=65h with AL up to 07h and CX below 5, and for an unsupported AH=66h subfunction.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 01h (1)",
+          "cites": " 01h (1)   function number invalid"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_FUNCTION_NUMBER_INVALID",
+          "cites": "#define DOSERR_FUNCTION_NUMBER_INVALID 1"
+        }
+      ]
+    },
+    {
+      "key": "2",
+      "name": "file not found",
+      "description": "DOS extended error code 2: file not found.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors. AH=59h reports it with error class 08h (not found).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 02h (2)",
+          "cites": " 02h (2)   file not found"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_FILE_NOT_FOUND",
+          "cites": "#define DOSERR_FILE_NOT_FOUND 2"
+        }
+      ]
+    },
+    {
+      "key": "3",
+      "name": "path not found",
+      "description": "DOS extended error code 3: path not found.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors. AH=59h reports it with error class 08h (not found).",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 03h (3)",
+          "cites": " 03h (3)   path not found"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_PATH_NOT_FOUND",
+          "cites": "#define DOSERR_PATH_NOT_FOUND 3"
+        }
+      ]
+    },
+    {
+      "key": "4",
+      "name": "too many open files",
+      "description": "DOS extended error code 4: too many open files (no handles available).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 04h (4)",
+          "cites": " 04h (4)   too many open files (no handles available)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_TOO_MANY_OPEN_FILES",
+          "cites": "#define DOSERR_TOO_MANY_OPEN_FILES 4"
+        }
+      ]
+    },
+    {
+      "key": "5",
+      "name": "access denied",
+      "description": "DOS extended error code 5: access denied.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 05h (5)",
+          "cites": " 05h (5)   access denied"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_ACCESS_DENIED",
+          "cites": "#define DOSERR_ACCESS_DENIED 5"
+        }
+      ]
+    },
+    {
+      "key": "6",
+      "name": "invalid handle",
+      "description": "DOS extended error code 6: invalid handle.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors. The emulator sets it when AH=3Fh or AH=40h gets a handle that is not an open file.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 06h (6)",
+          "cites": " 06h (6)   invalid handle"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_INVALID_HANDLE",
+          "cites": "#define DOSERR_INVALID_HANDLE 6"
+        }
+      ]
+    },
+    {
+      "key": "7",
+      "name": "memory block destroyed",
+      "description": "DOS extended error code 7: memory control block destroyed.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 07h (7)",
+          "cites": " 07h (7)   memory control block destroyed"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_MCB_DESTROYED",
+          "cites": "#define DOSERR_MCB_DESTROYED 7"
+        }
+      ]
+    },
+    {
+      "key": "8",
+      "name": "insufficient memory",
+      "description": "DOS extended error code 8: insufficient memory.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 08h (8)",
+          "cites": " 08h (8)   insufficient memory"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_INSUFFICIENT_MEMORY",
+          "cites": "#define DOSERR_INSUFFICIENT_MEMORY 8"
+        }
+      ]
+    },
+    {
+      "key": "9",
+      "name": "invalid block address",
+      "description": "DOS extended error code 9: memory block address invalid.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 09h (9)",
+          "cites": " 09h (9)   memory block address invalid"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_MB_ADDRESS_INVALID",
+          "cites": "#define DOSERR_MB_ADDRESS_INVALID 9"
+        }
+      ]
+    },
+    {
+      "key": "10",
+      "name": "invalid environment",
+      "description": "DOS extended error code 10: environment invalid (usually over 32K in length).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 0Ah (10)",
+          "cites": " 0Ah (10)  environment invalid (usually >32K in length)"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_ENVIRONMENT_INVALID",
+          "cites": "#define DOSERR_ENVIRONMENT_INVALID 10"
+        }
+      ]
+    },
+    {
+      "key": "11",
+      "name": "invalid format",
+      "description": "DOS extended error code 11: format invalid.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 0Bh (11)",
+          "cites": " 0Bh (11)  format invalid"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_FORMAT_INVALID",
+          "cites": "#define DOSERR_FORMAT_INVALID 11"
+        }
+      ]
+    },
+    {
+      "key": "12",
+      "name": "invalid access code",
+      "description": "DOS extended error code 12: access code invalid.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 0Ch (12)",
+          "cites": " 0Ch (12)  access code invalid"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_ACCESS_CODE_INVALID",
+          "cites": "#define DOSERR_ACCESS_CODE_INVALID 12"
+        }
+      ]
+    },
+    {
+      "key": "13",
+      "name": "invalid data",
+      "description": "DOS extended error code 13: data invalid.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 0Dh (13)",
+          "cites": " 0Dh (13)  data invalid"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_DATA_INVALID",
+          "cites": "#define DOSERR_DATA_INVALID 13"
+        }
+      ]
+    },
+    {
+      "key": "14",
+      "name": "reserved",
+      "description": "DOS extended error code 14: reserved; PTS-DOS 6.51+ and S/DOS 1.0+ give it as fixup overflow.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors. The emulator also defines it as DOSERR_FIXUP_OVERFLOW.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 0Eh (14)  reserved",
+          "cites": " 0Eh (14)  reserved"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_RESERVED",
+          "cites": "#define DOSERR_RESERVED 14"
+        }
+      ]
+    },
+    {
+      "key": "15",
+      "name": "invalid drive",
+      "description": "DOS extended error code 15: invalid drive.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 0Fh (15)",
+          "cites": " 0Fh (15)  invalid drive"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_INVALID_DRIVE",
+          "cites": "#define DOSERR_INVALID_DRIVE 15"
+        }
+      ]
+    },
+    {
+      "key": "16",
+      "name": "remove current dir",
+      "description": "DOS extended error code 16: attempted to remove current directory.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 10h (16)",
+          "cites": " 10h (16)  attempted to remove current directory"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_REMOVE_CURRENT_DIRECTORY",
+          "cites": "#define DOSERR_REMOVE_CURRENT_DIRECTORY 16"
+        }
+      ]
+    },
+    {
+      "key": "17",
+      "name": "not same device",
+      "description": "DOS extended error code 17: not same device.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 11h (17)",
+          "cites": " 11h (17)  not same device"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_NOT_SAME_DEVICE",
+          "cites": "#define DOSERR_NOT_SAME_DEVICE 17"
+        }
+      ]
+    },
+    {
+      "key": "18",
+      "name": "no more files",
+      "description": "DOS extended error code 18: no more files.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 2.0+ errors.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 12h (18)",
+          "cites": " 12h (18)  no more files"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_NO_MORE_FILES",
+          "cites": "#define DOSERR_NO_MORE_FILES 18"
+        }
+      ]
+    },
+    {
+      "key": "19",
+      "name": "write protected",
+      "description": "DOS extended error code 19: disk write-protected.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 13h (19)",
+          "cites": " 13h (19)  disk write-protected"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_WRITE_PROTECTED",
+          "cites": "#define DOSERR_WRITE_PROTECTED 19"
+        }
+      ]
+    },
+    {
+      "key": "20",
+      "name": "unknown unit",
+      "description": "DOS extended error code 20: unknown unit.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 14h (20)",
+          "cites": " 14h (20)  unknown unit"
+        }
+      ]
+    },
+    {
+      "key": "21",
+      "name": "drive not ready",
+      "description": "DOS extended error code 21: drive not ready.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 15h (21)",
+          "cites": " 15h (21)  drive not ready"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_DRIVE_NOT_READY",
+          "cites": "#define DOSERR_DRIVE_NOT_READY 21"
+        }
+      ]
+    },
+    {
+      "key": "22",
+      "name": "unknown command",
+      "description": "DOS extended error code 22: unknown command.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 16h (22)",
+          "cites": " 16h (22)  unknown command"
+        }
+      ]
+    },
+    {
+      "key": "23",
+      "name": "data error (crc)",
+      "description": "DOS extended error code 23: data error (CRC).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 17h (23)",
+          "cites": " 17h (23)  data error (CRC)"
+        }
+      ]
+    },
+    {
+      "key": "24",
+      "name": "bad request length",
+      "description": "DOS extended error code 24: bad request structure length.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 18h (24)",
+          "cites": " 18h (24)  bad request structure length"
+        }
+      ]
+    },
+    {
+      "key": "25",
+      "name": "seek error",
+      "description": "DOS extended error code 25: seek error.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 19h (25)",
+          "cites": " 19h (25)  seek error"
+        }
+      ]
+    },
+    {
+      "key": "26",
+      "name": "unknown media type",
+      "description": "DOS extended error code 26: unknown media type (non-DOS disk).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 1Ah (26)",
+          "cites": " 1Ah (26)  unknown media type (non-DOS disk)"
+        }
+      ]
+    },
+    {
+      "key": "27",
+      "name": "sector not found",
+      "description": "DOS extended error code 27: sector not found.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 1Bh (27)",
+          "cites": " 1Bh (27)  sector not found"
+        }
+      ]
+    },
+    {
+      "key": "28",
+      "name": "printer out of paper",
+      "description": "DOS extended error code 28: printer out of paper.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 1Ch (28)",
+          "cites": " 1Ch (28)  printer out of paper"
+        }
+      ]
+    },
+    {
+      "key": "29",
+      "name": "write fault",
+      "description": "DOS extended error code 29: write fault.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 1Dh (29)",
+          "cites": " 1Dh (29)  write fault"
+        }
+      ]
+    },
+    {
+      "key": "30",
+      "name": "read fault",
+      "description": "DOS extended error code 30: read fault.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 1Eh (30)",
+          "cites": " 1Eh (30)  read fault"
+        }
+      ]
+    },
+    {
+      "key": "31",
+      "name": "general failure",
+      "description": "DOS extended error code 31: general failure.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 1Fh (31)",
+          "cites": " 1Fh (31)  general failure"
+        }
+      ]
+    },
+    {
+      "key": "32",
+      "name": "sharing violation",
+      "description": "DOS extended error code 32: sharing violation.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 20h (32)",
+          "cites": " 20h (32)  sharing violation"
+        }
+      ]
+    },
+    {
+      "key": "33",
+      "name": "lock violation",
+      "description": "DOS extended error code 33: lock violation.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 21h (33)",
+          "cites": " 21h (33)  lock violation"
+        }
+      ]
+    },
+    {
+      "key": "34",
+      "name": "invalid disk change",
+      "description": "DOS extended error code 34: disk change invalid.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 22h (34)",
+          "cites": " 22h (34)  disk change invalid (ES:DI -> media ID structure)(see #01681)"
+        }
+      ]
+    },
+    {
+      "key": "35",
+      "name": "fcb unavailable",
+      "description": "DOS extended error code 35: FCB unavailable; PTS-DOS 6.51+ and S/DOS 1.0+ give it as bad FAT.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 23h (35)  FCB",
+          "cites": " 23h (35)  FCB unavailable"
+        }
+      ]
+    },
+    {
+      "key": "36",
+      "name": "sharing buffer overflow",
+      "description": "DOS extended error code 36: sharing buffer overflow.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 24h (36)",
+          "cites": " 24h (36)  sharing buffer overflow"
+        }
+      ]
+    },
+    {
+      "key": "37",
+      "name": "code page mismatch",
+      "description": "DOS extended error code 37: code page mismatch (DOS 4.0+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 25h (37)",
+          "cites": " 25h (37)  (DOS 4.0+) code page mismatch"
+        }
+      ]
+    },
+    {
+      "key": "38",
+      "name": "cannot complete file op",
+      "description": "DOS extended error code 38: cannot complete file operation: EOF or out of input (DOS 4.0+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 26h (38)",
+          "cites": " 26h (38)  (DOS 4.0+) cannot complete file operation (EOF / out of input)"
+        }
+      ]
+    },
+    {
+      "key": "39",
+      "name": "insufficient disk space",
+      "description": "DOS extended error code 39: insufficient disk space (DOS 4.0+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the DOS 3.0+ errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 27h (39)",
+          "cites": " 27h (39)  (DOS 4.0+) insufficient disk space"
+        }
+      ]
+    },
+    {
+      "key": "50",
+      "name": "net request unsupported",
+      "description": "DOS extended error code 50: network request not supported.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 32h (50)",
+          "cites": " 32h (50)  network request not supported"
+        }
+      ]
+    },
+    {
+      "key": "51",
+      "name": "remote not listening",
+      "description": "DOS extended error code 51: remote computer not listening.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 33h (51)",
+          "cites": " 33h (51)  remote computer not listening"
+        }
+      ]
+    },
+    {
+      "key": "52",
+      "name": "duplicate net name",
+      "description": "DOS extended error code 52: duplicate name on network.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 34h (52)",
+          "cites": " 34h (52)  duplicate name on network"
+        }
+      ]
+    },
+    {
+      "key": "53",
+      "name": "net name not found",
+      "description": "DOS extended error code 53: network name not found.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 35h (53)",
+          "cites": " 35h (53)  network name not found"
+        }
+      ]
+    },
+    {
+      "key": "54",
+      "name": "network busy",
+      "description": "DOS extended error code 54: network busy.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 36h (54)",
+          "cites": " 36h (54)  network busy"
+        }
+      ]
+    },
+    {
+      "key": "55",
+      "name": "net device gone",
+      "description": "DOS extended error code 55: network device no longer exists.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 37h (55)",
+          "cites": " 37h (55)  network device no longer exists"
+        }
+      ]
+    },
+    {
+      "key": "56",
+      "name": "netbios limit exceeded",
+      "description": "DOS extended error code 56: network BIOS command limit exceeded.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 38h (56)",
+          "cites": " 38h (56)  network BIOS command limit exceeded"
+        }
+      ]
+    },
+    {
+      "key": "57",
+      "name": "net adapter hw error",
+      "description": "DOS extended error code 57: network adapter hardware error.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 39h (57)",
+          "cites": " 39h (57)  network adapter hardware error"
+        }
+      ]
+    },
+    {
+      "key": "58",
+      "name": "bad net response",
+      "description": "DOS extended error code 58: incorrect response from network.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 3Ah (58)",
+          "cites": " 3Ah (58)  incorrect response from network"
+        }
+      ]
+    },
+    {
+      "key": "59",
+      "name": "unexpected net error",
+      "description": "DOS extended error code 59: unexpected network error.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 3Bh (59)",
+          "cites": " 3Bh (59)  unexpected network error"
+        }
+      ]
+    },
+    {
+      "key": "60",
+      "name": "incompatible adapter",
+      "description": "DOS extended error code 60: incompatible remote adapter.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 3Ch (60)",
+          "cites": " 3Ch (60)  incompatible remote adapter"
+        }
+      ]
+    },
+    {
+      "key": "61",
+      "name": "print queue full",
+      "description": "DOS extended error code 61: print queue full.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 3Dh (61)",
+          "cites": " 3Dh (61)  print queue full"
+        }
+      ]
+    },
+    {
+      "key": "62",
+      "name": "queue not full",
+      "description": "DOS extended error code 62: queue not full.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 3Eh (62)",
+          "cites": " 3Eh (62)  queue not full"
+        }
+      ]
+    },
+    {
+      "key": "63",
+      "name": "no space to print file",
+      "description": "DOS extended error code 63: not enough space to print file.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 3Fh (63)",
+          "cites": " 3Fh (63)  not enough space to print file"
+        }
+      ]
+    },
+    {
+      "key": "64",
+      "name": "net name deleted",
+      "description": "DOS extended error code 64: network name was deleted.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 40h (64)",
+          "cites": " 40h (64)  network name was deleted"
+        }
+      ]
+    },
+    {
+      "key": "65",
+      "name": "net access denied",
+      "description": "DOS extended error code 65: network: access denied; also codepage switching not possible (DOS 3.0+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 41h (65)",
+          "cites": " 41h (65)  network: Access denied"
+        }
+      ]
+    },
+    {
+      "key": "66",
+      "name": "net device type wrong",
+      "description": "DOS extended error code 66: network device type incorrect.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 42h (66)",
+          "cites": " 42h (66)  network device type incorrect"
+        }
+      ]
+    },
+    {
+      "key": "67",
+      "name": "net name not found",
+      "description": "DOS extended error code 67: network name not found.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 43h (67)",
+          "cites": " 43h (67)  network name not found"
+        }
+      ]
+    },
+    {
+      "key": "68",
+      "name": "net name limit",
+      "description": "DOS extended error code 68: network name limit exceeded.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 44h (68)",
+          "cites": " 44h (68)  network name limit exceeded"
+        }
+      ]
+    },
+    {
+      "key": "69",
+      "name": "net session limit",
+      "description": "DOS extended error code 69: network BIOS session limit exceeded.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 45h (69)",
+          "cites": " 45h (69)  network BIOS session limit exceeded"
+        }
+      ]
+    },
+    {
+      "key": "70",
+      "name": "temporarily paused",
+      "description": "DOS extended error code 70: temporarily paused.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 46h (70)",
+          "cites": " 46h (70)  temporarily paused"
+        }
+      ]
+    },
+    {
+      "key": "71",
+      "name": "request not accepted",
+      "description": "DOS extended error code 71: network request not accepted.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 47h (71)",
+          "cites": " 47h (71)  network request not accepted"
+        }
+      ]
+    },
+    {
+      "key": "72",
+      "name": "net redirect paused",
+      "description": "DOS extended error code 72: network print or disk redirection paused.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 48h (72)",
+          "cites": " 48h (72)  network print/disk redirection paused"
+        }
+      ]
+    },
+    {
+      "key": "73",
+      "name": "net software missing",
+      "description": "DOS extended error code 73: network software not installed; LANtastic: invalid network version.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 49h (73)",
+          "cites": " 49h (73)  network software not installed"
+        }
+      ]
+    },
+    {
+      "key": "74",
+      "name": "net adapter closed",
+      "description": "DOS extended error code 74: unexpected adapter close; LANtastic: account expired.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 4Ah (74)",
+          "cites": " 4Ah (74)  unexpected adapter close"
+        }
+      ]
+    },
+    {
+      "key": "75",
+      "name": "password expired",
+      "description": "DOS extended error code 75: password expired (LANtastic).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 4Bh (75)",
+          "cites": " 4Bh (75)  (LANtastic) password expired"
+        }
+      ]
+    },
+    {
+      "key": "76",
+      "name": "login not allowed now",
+      "description": "DOS extended error code 76: login attempt invalid at this time (LANtastic).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 4Ch (76)",
+          "cites": " 4Ch (76)  (LANtastic) login attempt invalid at this time"
+        }
+      ]
+    },
+    {
+      "key": "77",
+      "name": "net disk limit",
+      "description": "DOS extended error code 77: disk limit exceeded on network node (LANtastic v3+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 4Dh (77)",
+          "cites": " 4Dh (77)  (LANtastic v3+) disk limit exceeded on network node"
+        }
+      ]
+    },
+    {
+      "key": "78",
+      "name": "not logged in",
+      "description": "DOS extended error code 78: not logged in to network node (LANtastic v3+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the OEM network errors reported through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 4Eh (78)",
+          "cites": " 4Eh (78)  (LANtastic v3+) not logged in to network node"
+        }
+      ]
+    },
+    {
+      "key": "80",
+      "name": "file exists",
+      "description": "DOS extended error code 80: file exists.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it after the errors reportable through INT 24. The emulator sets it for AH=5Bh when the file can be opened.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 50h (80)",
+          "cites": " 50h (80)  file exists"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:include/dos_inc.h DOSERR_FILE_ALREADY_EXISTS",
+          "cites": "#define DOSERR_FILE_ALREADY_EXISTS 80"
+        }
+      ]
+    },
+    {
+      "key": "81",
+      "name": "duplicated fcb",
+      "description": "DOS extended error code 81: duplicated FCB (undocumented).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it after the errors reportable through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 51h (81)",
+          "cites": " 51h (81)  (undoc) duplicated FCB"
+        }
+      ]
+    },
+    {
+      "key": "82",
+      "name": "cannot make directory",
+      "description": "DOS extended error code 82: cannot make directory.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it after the errors reportable through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 52h (82)",
+          "cites": " 52h (82)  cannot make directory"
+        }
+      ]
+    },
+    {
+      "key": "83",
+      "name": "fail on int 24h",
+      "description": "DOS extended error code 83: fail on INT 24h.",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it after the errors reportable through INT 24.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 53h (83)",
+          "cites": " 53h (83)  fail on INT 24h"
+        }
+      ]
+    },
+    {
+      "key": "84",
+      "name": "too many redirections",
+      "description": "DOS extended error code 84: too many redirections or out of structures (DOS 3.3+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the network-related errors that INT 24 does not report.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 54h (84)",
+          "cites": " 54h (84)  (DOS 3.3+) too many redirections / out of structures"
+        }
+      ]
+    },
+    {
+      "key": "85",
+      "name": "duplicate redirection",
+      "description": "DOS extended error code 85: duplicate redirection or already assigned (DOS 3.3+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the network-related errors that INT 24 does not report.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 55h (85)",
+          "cites": " 55h (85)  (DOS 3.3+) duplicate redirection / already assigned"
+        }
+      ]
+    },
+    {
+      "key": "86",
+      "name": "invalid password",
+      "description": "DOS extended error code 86: invalid password (DOS 3.3+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the network-related errors that INT 24 does not report.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 56h (86)",
+          "cites": " 56h (86)  (DOS 3.3+) invalid password"
+        }
+      ]
+    },
+    {
+      "key": "87",
+      "name": "invalid parameter",
+      "description": "DOS extended error code 87: invalid parameter (DOS 3.3+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the network-related errors that INT 24 does not report.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 57h (87)",
+          "cites": " 57h (87)  (DOS 3.3+) invalid parameter"
+        }
+      ]
+    },
+    {
+      "key": "88",
+      "name": "network write fault",
+      "description": "DOS extended error code 88: network write fault (DOS 3.3+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the network-related errors that INT 24 does not report.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 58h (88)",
+          "cites": " 58h (88)  (DOS 3.3+) network write fault"
+        }
+      ]
+    },
+    {
+      "key": "89",
+      "name": "function unsupported",
+      "description": "DOS extended error code 89: function not supported on network, or no process slots available (DOS 4.0+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the network-related errors that INT 24 does not report.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 59h (89)",
+          "cites": " 59h (89)  (DOS 4.0+) function not supported on network / no process slots"
+        }
+      ]
+    },
+    {
+      "key": "90",
+      "name": "component not installed",
+      "description": "DOS extended error code 90: required system component not installed or not frozen (DOS 4.0+).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the network-related errors that INT 24 does not report.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 5Ah (90)",
+          "cites": " 5Ah (90)  (DOS 4.0+) required system component not installed / not frozen"
+        }
+      ]
+    },
+    {
+      "key": "91",
+      "name": "timer table overflow",
+      "description": "DOS extended error code 91: timer server table overflowed (DOS 4.0+, NetWare4).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the network-related errors that INT 24 does not report.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 5Bh (91)",
+          "cites": " 5Bh (91)  (DOS 4.0+,NetWare4) timer server table overflowed"
+        }
+      ]
+    },
+    {
+      "key": "92",
+      "name": "duplicate timer entry",
+      "description": "DOS extended error code 92: duplicate in timer service table (DOS 4.0+, NetWare4).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the network-related errors that INT 24 does not report.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 5Ch (92)",
+          "cites": " 5Ch (92)  (DOS 4.0+,NetWare4) duplicate in timer service table"
+        }
+      ]
+    },
+    {
+      "key": "93",
+      "name": "no items to work on",
+      "description": "DOS extended error code 93: no items to work on (DOS 4.0+, NetWare4).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the network-related errors that INT 24 does not report.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 5Dh (93)",
+          "cites": " 5Dh (93)  (DOS 4.0+,NetWare4) no items to work on"
+        }
+      ]
+    },
+    {
+      "key": "95",
+      "name": "interrupted",
+      "description": "DOS extended error code 95: interrupted or invalid system call (DOS 4.0+, NetWare4).",
+      "behaviour": "A failing DOS call returns it in AX with CF set, and AH=59h returns the last error code in AX. The list gives it among the network-related errors that INT 24 does not report.",
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G #01680 5Fh (95)",
+          "cites": " 5Fh (95)  (DOS 4.0+,NetWare4) interrupted / invalid system call"
+        }
+      ]
+    }
+  ]
+}
