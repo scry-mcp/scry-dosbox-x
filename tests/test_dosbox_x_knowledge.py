@@ -91,8 +91,8 @@ def test_the_dictionaries_load_whole() -> None:
     base = pc.base()
     assert not (base.file_faults or base.entry_faults or base.load_faults)
     assert {d.dictionary for d in base.dictionaries} == {
-        "int21", "dos-errors", "int10", "int13", "int15", "int16", "int1a", "int2f", "int31", "int33",
-        "int67", "xms"}
+        "int21", "dos-errors", "int10", "int13", "int15", "int16", "int1a", "int2f", "int31",
+        "int33", "int67", "xms"}
 
 
 def test_a_cited_line_that_does_not_hash_to_the_digest_is_not_the_row(
