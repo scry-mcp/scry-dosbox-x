@@ -4,6 +4,9 @@ What a client of the server notices.
 
 ## Unreleased
 
+- `send_keys` and `send_mouse` sent to a running guest answer `frame_before` and `frame_after`,
+  the display frames the input went in between, read from `RUNSTATE` without stopping the guest.
+  A build whose `RUNSTATE` prints no frame count says why instead.
 - The `dos` channel of `log` and `log_wait` names the INT 21h function and the DOS error of each
   call from a knowledge base of dictionaries that cite Ralf Brown's interrupt list and DOSBox-X's
   source. It names only what a second check against that source confirmed; any other function or

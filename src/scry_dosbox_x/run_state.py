@@ -171,9 +171,16 @@ def take_run_state(session: ds.Session, ok: bool, lines: list[str]) -> bool:
 
 def frame_at_stop(session: ds.Session) -> int | dict[str, Any]:
     """The display frame a stopped machine is in, asked of `RUNSTATE`, or why there is none."""
+    return frame_now(session)
+
+
+def frame_now(session: ds.Session, *, unless_silent: bool = False) -> int | dict[str, Any]:
+    """The display frame the machine is in, running or stopped, asked of `RUNSTATE`, which
+    answers while the guest runs and does not stop it; or why there is none. `unless_silent`
+    sends nothing on a channel whose last request went unanswered."""
     if not session.has(dbg.RUNSTATE):
         return contract.unavailable(f"this build's debugger has no `{dbg.RUNSTATE}`")
-    take_run_state(session, *dbg.exec_lines(session, dbg.RUNSTATE))
+    take_run_state(session, *dbg.exec_lines(session, dbg.RUNSTATE, unless_silent=unless_silent))
     return contract.or_unavailable(session.frames, dbg.NO_FRAMES_WHY)
 
 

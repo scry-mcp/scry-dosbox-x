@@ -2703,6 +2703,7 @@
     "posted": "How many keys were sent into the program. `bytes` is how many scan-code bytes they made, and `frames` how many commands the helper took.",
     "route": "Which way the input went in: always `guest` here, through the helper inside DOS.",
     "polls": "From a stopped machine, how many frames it ran while the keys went in. The reply then also carries the stop it was left at.",
+    "frame_after": "While the guest runs, the display frame right after the input went in; `frame_before` is the one before. Unavailable, with why, when `RUNSTATE` prints no frame count.",
     "delivered": "Only on a send that failed: `false` when nothing went in and the call can be sent again, `true` when part of it did."
    },
    "refuses": [
@@ -2781,10 +2782,10 @@
    "returns": {
     "pointer": "Where the pointer ended: `screen` in screen units, `mouse` in the driver's coordinates with its range, the `buttons` held and the `bios_mode`.",
     "arrived": "Whether the pointer is on the point asked for. It comes only when something could check that: the program's own pointer, or `units=\"mouse\"`.",
-    "driver_arrived": "In place of `arrived` for a plain screen move: whether the mouse driver's pointer got there. A program with a pointer of its own may not have followed.",
-    "asked": "When the pointer did not get there, the driver coordinates that were sent.",
+    "driver_arrived": "In place of `arrived` for a plain screen move: whether the driver's pointer got there, which a program with its own pointer may not follow. `asked` holds what was sent.",
     "motion": "`true` when the move also went in as mouse motion, which a program that reads motion needs. Otherwise it says why not.",
-    "verify": "Whether the program reacted, as in [`send_keys`](#send_keys)."
+    "verify": "Whether the program reacted, as in [`send_keys`](#send_keys).",
+    "frame_after": "While the guest runs, the display frame right after the input went in; `frame_before` is the one before. Unavailable, with why, when `RUNSTATE` prints no frame count."
    },
    "refuses": [
     "No move and no button, or `x` without `y` (`bad_argument`).",

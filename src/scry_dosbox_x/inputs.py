@@ -542,7 +542,8 @@ def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | No
     verification impossible is refused before the post, which cannot be taken back.
     """
     try:
-        return _verify(session, kind, post, expect, seconds, progress, fields, parked, first_key)
+        return _verify(session, kind, post if parked is not None else _framed(session, post),
+                       expect, seconds, progress, fields, parked, first_key)
     except Delivered as e:
         if e.went_in == 0:
             return _not_sent(kind, e.cause, **fields, **e.fields)
@@ -551,6 +552,23 @@ def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | No
         return st.reply(status="INVALID", code=e.code, **fields, **e.fields, delivered=True,
                         verify={"checked": False, "why": "the send failed part-way"},
                         message=message)
+
+
+def _framed(session: ds.Session, post: Any) -> Callable[[], dict[str, Any]]:
+    """`post` for a running guest, with the frames it was sent between: the machine is never
+    stopped to read them, and a reading that fails costs the reply its frame, not the input."""
+    def counted() -> dict[str, Any]:
+        before = _frame_read(session)
+        fields: dict[str, Any] = post()
+        return {**fields, "frame_before": before, "frame_after": _frame_read(session)}
+    return counted
+
+
+def _frame_read(session: ds.Session) -> int | dict[str, Any]:
+    try:
+        return rs.frame_now(session, unless_silent=True)
+    except ds.Invalid as e:
+        return unavailable(str(e))
 
 
 def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,

@@ -95,9 +95,10 @@ Reply, 7 of 9 fields:
 - `posted`: How many keys were sent into the program. `bytes` is how many scan-code bytes they made, and `frames` how many commands the helper took.
 - `route`: Which way the input went in: always `guest` here, through the helper inside DOS.
 - `polls`: From a stopped machine, how many frames it ran while the keys went in. The reply then also carries the stop it was left at.
+- `frame_after`: While the guest runs, the display frame right after the input went in; `frame_before` is the one before. Unavailable, with why, when `RUNSTATE` prints no frame count.
 - `delivered`: Only on a send that failed: `false` when nothing went in and the call can be sent again, `true` when part of it did.
 
-<details><summary>All 19 reply fields</summary>
+<details><summary>All 21 reply fields</summary>
 
 - `cause` (string)
 - `regpoint_hit` (object)
@@ -110,6 +111,8 @@ Reply, 7 of 9 fields:
 - `regs` (object)
 - `stop_seq` (integer)
 - `watches` (array)
+- `frame_after` (integer or object)
+- `frame_before` (integer or object)
 - `bytes` (integer)
 - `delivered` (boolean)
 - `frames` (integer)
@@ -216,8 +219,9 @@ Refused: an unknown key or modifier, `seconds` without `expect`, no stub, a stop
 machine on a build with no `RUNSTATE` (`no_channel`).
 
 Reply: `route`, `posted`, `bytes`, `frames` (stub commands, a BIOS tick apart), `verify`
-(`verdict` `TARGET` or `TIMEOUT`, `seen`); from a stopped machine `polls` and the stop
-it was left at (the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause`, `regpoint_hit` (a registerpoint stopped it) and `e9`).
+(`verdict` `TARGET` or `TIMEOUT`, `seen`); from a running guest `frame_before` and
+`frame_after`, the display frames it went in between; from a stopped machine `polls` and
+the stop it was left at (the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause`, `regpoint_hit` (a registerpoint stopped it) and `e9`).
 
 Reference: REFERENCE.md, Input and the screen.
 ```
@@ -322,12 +326,12 @@ The pointer went to the centre of `court`: pixel 240,100 of a 320x200 screen, 48
 
 - `pointer`: Where the pointer ended: `screen` in screen units, `mouse` in the driver's coordinates with its range, the `buttons` held and the `bios_mode`.
 - `arrived`: Whether the pointer is on the point asked for. It comes only when something could check that: the program's own pointer, or `units="mouse"`.
-- `driver_arrived`: In place of `arrived` for a plain screen move: whether the mouse driver's pointer got there. A program with a pointer of its own may not have followed.
-- `asked`: When the pointer did not get there, the driver coordinates that were sent.
+- `driver_arrived`: In place of `arrived` for a plain screen move: whether the driver's pointer got there, which a program with its own pointer may not follow. `asked` holds what was sent.
 - `motion`: `true` when the move also went in as mouse motion, which a program that reads motion needs. Otherwise it says why not.
 - `verify`: Whether the program reacted, as in [`send_keys`](#send_keys).
+- `frame_after`: While the guest runs, the display frame right after the input went in; `frame_before` is the one before. Unavailable, with why, when `RUNSTATE` prints no frame count.
 
-<details><summary>All 27 reply fields</summary>
+<details><summary>All 29 reply fields</summary>
 
 - `cause` (string)
 - `regpoint_hit` (object)
@@ -340,6 +344,8 @@ The pointer went to the centre of `court`: pixel 240,100 of a 320x200 screen, 48
 - `regs` (object)
 - `stop_seq` (integer)
 - `watches` (array)
+- `frame_after` (integer or object)
+- `frame_before` (integer or object)
 - `action` (string)
 - `arrived` (boolean)
 - `asked` (object)
@@ -466,7 +472,7 @@ no `screen_map_find` match (`needs_call`); an unknown control (`unknown_ref`).
 Reply: `route`, `pointer`, `arrived` (the program's pointer read, or `units="mouse"`; else
 `driver_arrived` and `asked`: only the driver is known), `motion` (a move reached the motion
 counters too), `verify`; with `target`: `target`, `screen`, `identified_at_stop`; from a
-stopped machine, `send_keys`' `polls` and stop.
+running guest and from a stopped machine, `send_keys`' frames, and its `polls` and stop.
 
 Reference: REFERENCE.md, Input and the screen.
 ```

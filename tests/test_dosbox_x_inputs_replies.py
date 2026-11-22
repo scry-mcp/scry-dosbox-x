@@ -5,6 +5,7 @@ and the progress a mouse wait is given, and the stub's refusal before anything i
 from __future__ import annotations
 
 import asyncio
+import itertools
 import re
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,6 +15,7 @@ import pytest
 from dosbox_x_server_support import _names, clean_session  # noqa: F401
 from scry_core.reply_contract import unavailable
 
+from scry_dosbox_x import debugger as dbg
 from scry_dosbox_x import inputs, retrace, run_state, server, summaries, taps
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
@@ -46,6 +48,75 @@ def test_a_key_with_no_expect_says_what_would_confirm_it(tmp_path: Path) -> None
     assert got["verify"]["why"] == (
         "no `expect` was given, so the reply says what went into the guest and NOT that the "
         "program took it; pass expect=<E9 pattern> to confirm its reaction"), got["verify"]
+
+
+def test_a_key_sent_to_a_running_guest_says_the_frames_it_was_sent_between(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    fake.runstate_frames = itertools.count(100)
+    got = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert (got["frame_before"], got["frame_after"]) == (100, 101), got
+
+
+def test_a_mouse_event_sent_to_a_running_guest_says_the_frames_it_was_sent_between(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    fake.runstate_frames = itertools.count(100)
+    got = inputs.send_mouse(fake, None, None, "left", "click", "screen", None, None)  # type: ignore[arg-type]
+    assert (got["frame_before"], got["frame_after"]) == (100, 101), got
+
+
+def test_a_build_that_prints_no_frame_count_says_why_there_is_none_for_a_running_guest(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    got = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert got["frame_before"] == got["frame_after"] == unavailable(dbg.NO_FRAMES_WHY), got
+
+
+def test_a_build_with_no_run_state_command_says_so_for_the_frames_of_a_running_guest(
+        tmp_path: Path) -> None:
+    """As the real reply of a build without `RUNSTATE` carried it."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    fake.commands = frozenset(fake.commands - {dbg.RUNSTATE})
+    got = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    why = {"available": False, "why": "this build's debugger has no `RUNSTATE`"}
+    assert got["frame_before"] == got["frame_after"] == why, got
+
+
+def test_a_frame_that_cannot_be_read_costs_the_reply_its_frame_and_not_the_key(
+        tmp_path: Path) -> None:
+    def unanswered() -> int:
+        raise ds.Invalid("unexpected_answer", "the debugger said nothing")
+
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    fake.runstate_frames = iter(unanswered, None)
+    got = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert got["status"] == "ok" and got["posted"] == 1, got
+    assert got["frame_before"] == unavailable("the debugger said nothing"), got
+
+
+def test_the_frames_of_a_running_guest_are_not_asked_of_a_channel_that_went_unanswered(
+        tmp_path: Path) -> None:
+    """A silent channel would cost a full wait per read, and the input is already in."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    fake.runstate_frames = itertools.count(100)
+    fake.runstate_asks = []
+    server.send_keys(keys=["a"])
+    assert fake.runstate_asks == [True, True], fake.runstate_asks
+
+
+def test_a_key_sent_to_a_stopped_machine_names_no_frame_it_was_sent_between(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path, watched=True)
+    fake.runstate_frames = itertools.count(100)
+    got = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert "frame_before" not in got and "frame_after" not in got, got
 
 
 def test_a_stop_during_the_wait_keeps_the_echo_and_the_waits_own_words(tmp_path: Path) -> None:

@@ -452,6 +452,7 @@ class ScreenWaitReply(DosboxEnvelope, tool_replies.StopWaitFields, total=False):
 
 
 FROM_A_STOPPED_MACHINE = When("from a stopped machine")
+FROM_A_RUNNING_MACHINE = When("from a running machine")
 A_REGPOINT_STOPPED_IT = When("a registerpoint stopped it")
 
 
@@ -470,7 +471,13 @@ class ParkedPost(TypedDict, total=False):
     watches: Annotated[list[Any], FROM_A_STOPPED_MACHINE]
 
 
-class SendKeysReply(DosboxEnvelope, ParkedPost, total=False):
+class RunningPost(TypedDict, total=False):
+    """What an input sent to a running guest adds: the display frames it was sent between."""
+    frame_after: Annotated[int | dict[str, Any], FROM_A_RUNNING_MACHINE]
+    frame_before: Annotated[int | dict[str, Any], FROM_A_RUNNING_MACHINE]
+
+
+class SendKeysReply(DosboxEnvelope, ParkedPost, RunningPost, total=False):
     bytes: Required[int]
     delivered: bool
     frames: Required[int]
@@ -482,7 +489,7 @@ class SendKeysReply(DosboxEnvelope, ParkedPost, total=False):
     polls: Annotated[int, When("stopped machine")]
 
 
-class SendMouseReply(DosboxEnvelope, ParkedPost, total=False):
+class SendMouseReply(DosboxEnvelope, ParkedPost, RunningPost, total=False):
     action: str
     arrived: Annotated[bool, When("the program's pointer read")]
     asked: Annotated[dict[str, Any], When("else")]

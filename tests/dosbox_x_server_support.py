@@ -13,7 +13,7 @@ import shutil
 import sys
 import tempfile
 import textwrap
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -83,7 +83,8 @@ def stubbed_build() -> Any:
 class RunStateOnly:
     """A fake's debugger channel: `RUNSTATE` answered from the fake's own `run_state`, else its
     `at_debugger`, which is what the real stop wait polls; any other request is a fake that fell
-    behind."""
+    behind. A fake's `runstate_frames`, an iterator, is the frame count each answer prints; with
+    none the build prints no `frames=`."""
 
     def __init__(self, fake: Any) -> None:
         self.fake = fake
@@ -91,9 +92,13 @@ class RunStateOnly:
     def request(self, command: str, seconds: float = 5.0,
                 poll: Any = None, *, unless_silent: bool = False) -> tuple[bool, list[str]]:
         assert command == "EXEC RUNSTATE", f"the fake's channel takes only RUNSTATE: {command!r}"
+        if (asks := getattr(self.fake, "runstate_asks", None)) is not None:
+            asks.append(unless_silent)
         stopped = getattr(self.fake, "run_state", self.fake.at_debugger)()
         state = "stopped" if stopped else "running"
-        return True, [f"DEBUG: RUNSTATE {state} cycles=0 ms=0.000000000"]
+        frames = getattr(self.fake, "runstate_frames", None)
+        counted = "" if frames is None else f" frames={next(frames)}"
+        return True, [f"DEBUG: RUNSTATE {state} cycles=0 ms=0.000000000{counted}"]
 
 
 class SessionGates:
@@ -101,6 +106,8 @@ class SessionGates:
 
     driver_range: dict[str, int] | None = None
     pointer_owed = ds.Session.pointer_owed
+    runstate_frames: Iterator[int] | None = None
+    runstate_asks: list[bool] | None = None
 
     def watch_program(self) -> None:
         """The program watch reads the debugger, which this double has no channel to."""

@@ -117,6 +117,16 @@ def test_a_moment_of_the_session_video_starts_where_the_step_before_it_ended() -
     assert decorated.starts(demo, run, [motion.Cut(Path("v.avi"), 35, 90)]) == [94]
 
 
+def test_a_moment_after_an_input_to_a_running_guest_starts_where_that_input_ended() -> None:
+    demo = Demo(name="t", root=ROOT, server=["x"], alt="a", video=lambda run: ROOT,
+                steps=[_step("a", "start"), _step("b", "send_keys"), _step("c", "perform")],
+                moments=[Moment("b", "c", "C.")])
+    run = Run(dir=ROOT, replies={"a": Reply({"frame": 10}),
+                                 "b": Reply({"frame_before": 390, "frame_after": 400}),
+                                 "c": Reply({"frame": 599})})
+    assert decorated.starts(demo, run, [motion.Cut(Path("v.avi"), 35, 90)]) == [365]
+
+
 def test_a_moment_with_no_frame_counted_before_it_cannot_be_placed() -> None:
     demo = Demo(name="t", root=ROOT, server=["x"], alt="a", video=lambda run: ROOT,
                 steps=[_step("a", "start"), _step("b", "perform")],

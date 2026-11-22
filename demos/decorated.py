@@ -122,7 +122,7 @@ def starts(demo: core.Demo, run: core.Run, cuts: Sequence[motion.Cut]) -> list[i
     ended: dict[str, int] = {}
     for step in demo.steps:
         reply = run.replies.get(step.name)
-        frame = None if reply is None else core.last_under(reply.data, core.FRAME_KEY)
+        frame = core.counted(reply)[1]
         if frame is not None or ended:
             ended[step.name] = frame if frame is not None else list(ended.values())[-1]
     found = []
