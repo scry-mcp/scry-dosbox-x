@@ -8,6 +8,7 @@ from pathlib import Path
 
 import knowledge_sources as tool
 import pytest
+import scry_core
 from scry_core import conformance
 from scry_core.knowledge import (
     Base,
@@ -16,8 +17,10 @@ from scry_core.knowledge import (
     SecondCheck,
     SourceIndex,
     Support,
+    read_index,
     read_lock,
     read_second_check,
+    shared,
 )
 
 from scry_dosbox_x import dos_calls
@@ -25,6 +28,7 @@ from scry_dosbox_x import knowledge as pc
 from scry_dosbox_x.knowledge.support import PINS, SUPPORT
 
 ROOT = Path(__file__).resolve().parent.parent
+CORE_INDEX = Path(scry_core.__file__).parent / "knowledge_index"
 INDEX = ROOT / "tests" / "fixtures" / "knowledge" / "sources.json"
 LOCK = ROOT / "src" / "scry_dosbox_x" / "knowledge.lock.json"
 SECOND_CHECK = ROOT / "src" / "scry_dosbox_x" / "knowledge.second-check.json"
@@ -56,16 +60,20 @@ class PcKnowledge:
         return SUPPORT
 
     def base(self, fts5: bool | None = None) -> Base:
-        return Base.load("scry_dosbox_x", fts5=fts5, pins=PINS, confirmation=pc.confirmation())
+        return pc.load(fts5)
 
     def sources(self) -> SourceIndex:
-        return committed_index(self.base())
+        own, core = committed_index(self.base()), read_index(CORE_INDEX / "shared.json")
+        return SourceIndex({**core.rows, **own.rows}, {**core.lists, **own.lists},
+                           {**core.pins, **own.pins})
 
     def lock(self) -> Lock:
-        return read_lock(LOCK)
+        held = {id_: locked for lock in shared.locks() for id_, locked in lock.checked.items()}
+        return Lock({**held, **read_lock(LOCK).checked})
 
     def second_check(self) -> SecondCheck:
-        return read_second_check(SECOND_CHECK)
+        return SecondCheck({**shared.second_check().confirmed,
+                            **read_second_check(SECOND_CHECK).confirmed})
 
     def code_scopes(self) -> tuple[str, ...]:
         return (pc.SCOPE,)
@@ -116,7 +124,10 @@ def test_an_error_the_base_does_not_serve_is_its_number(code: int) -> None:
 def test_the_dictionaries_load_whole() -> None:
     base = pc.base()
     assert not (base.file_faults or base.entry_faults or base.load_faults)
-    assert {d.dictionary for d in base.dictionaries} == {
+    core = Path(scry_core.__file__).parent / "knowledge"
+    shared_names = {d.dictionary for d in Base.load(core / "chips", core / "cpus").dictionaries}
+    assert shared_names
+    assert {d.dictionary for d in base.dictionaries} == shared_names | {
         "int21", "dos-errors", "int10", "int13", "int15", "int16", "int1a", "int2f", "int31",
         "int33", "int67", "xms"}
 
