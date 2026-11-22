@@ -4,6 +4,8 @@ A symbol table gives names to the addresses of a program: its routines and its v
 
 Here `symbols_load` loads the table from a text file your toolchain writes, and `symbols_find` looks a name or an address up in it. `start` can load one too, with its `symbols` argument.
 
+`knowledge_find` asks the [knowledge base](../../REFERENCE.md#knowledge-base) what a number is called.
+
 <!-- scry-reference:begin symbols_load -->
 ## `symbols_load`
 
@@ -513,7 +515,7 @@ One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X d
 
 ### Why it works this way
 
-The base serves an entry only once a second check confirmed it against the source, and an answer says where it was read. A key whose entry is held back says so (`unconfirmed`) and stays a number. The base is the server's own copy: it answers while the program runs.
+Each entry was checked against its source, and an answer says where it was read. A key the base has not confirmed answers `unconfirmed` and stays a number. The base is the server's own copy: it answers while the program runs.
 
 ### Related tools
 
@@ -551,7 +553,7 @@ Reply: `query`, `scope`, `entries_total`, `entries`, `truncated`, `examined`, `s
 
 Scopes: am9517a, chip, ibm-pc, ins8250, mc146818, mc6845, pic8259, saa1099, sn76496, ym3812, ymf262, z80.
 
-Reference: REFERENCE.md, Names for numbers.
+Reference: REFERENCE.md, Knowledge base.
 ```
 
 </details>

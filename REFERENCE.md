@@ -21,7 +21,7 @@ A path in an example that starts with `./` stands for the folder of your clone, 
 - [Run](docs/reference/run.md): The tools that let the program run and stop it again. [`run_to`](docs/reference/run.md#run_to), [`run_for`](docs/reference/run.md#run_for), [`trace`](docs/reference/run.md#trace), [`screen_wait`](docs/reference/run.md#screen_wait), [`step`](docs/reference/run.md#step), [`resume`](docs/reference/run.md#resume), [`wait`](docs/reference/run.md#wait), [`stop`](docs/reference/run.md#stop)
 - [Breakpoints](docs/reference/breakpoints.md): Breakpoints and watches the server saves by name and sets again in later sessions. [`breakpoint_at`](docs/reference/breakpoints.md#breakpoint_at), [`breakpoint_interrupt`](docs/reference/breakpoints.md#breakpoint_interrupt), [`regpoint_add`](docs/reference/breakpoints.md#regpoint_add), [`watch_add`](docs/reference/breakpoints.md#watch_add), [`declaration_list`](docs/reference/breakpoints.md#declaration_list), [`declaration_clear`](docs/reference/breakpoints.md#declaration_clear)
 - [States](docs/reference/states.md): Saved states: the whole emulated machine written to a file, listed, and loaded back. [`state_list`](docs/reference/states.md#state_list), [`state_write`](docs/reference/states.md#state_write)
-- [Names](docs/reference/names.md): Symbol names for addresses: load your program's symbol table, then look up a name or an address in it. [`symbols_load`](docs/reference/names.md#symbols_load), [`symbols_find`](docs/reference/names.md#symbols_find), [`knowledge_find`](docs/reference/names.md#knowledge_find)
+- [Names](docs/reference/names.md): Load your program's symbol table, look up a name or an address, and ask the knowledge base what a number is called. [`symbols_load`](docs/reference/names.md#symbols_load), [`symbols_find`](docs/reference/names.md#symbols_find), [`knowledge_find`](docs/reference/names.md#knowledge_find)
 - [Comments](docs/reference/comments.md): Notes on addresses of the program, saved with the breakpoints and shown in the disassembly. [`comment_list`](docs/reference/comments.md#comment_list), [`comment_write`](docs/reference/comments.md#comment_write)
 - [Input](docs/reference/input.md): Sending keys, mouse buttons and pointer moves to the DOS program, and checking that it reacted. [`send_keys`](docs/reference/input.md#send_keys), [`send_mouse`](docs/reference/input.md#send_mouse)
 - [Captures](docs/reference/captures.md): Saving the screen and the sound to files: a still, a series of frames, a video, a recording, and the list of them. [`captures`](docs/reference/captures.md#captures), [`capture_frame`](docs/reference/captures.md#capture_frame), [`series_capture`](docs/reference/captures.md#series_capture), [`snapshot`](docs/reference/captures.md#snapshot), [`record`](docs/reference/captures.md#record), [`audio_record`](docs/reference/captures.md#audio_record)
@@ -185,6 +185,24 @@ An address argument, `ref` in most tools, is a symbol of your program or a `SEG:
 A segmented address is `SSSS:OOOOOOOO`, under `seg_off`, or `address` in a stop's `instruction`. A linear one is `addr`: `0x` and eight digits. `pc` is segmented, with `cpu_mode` beside it.
 
 A `ref` you give is matched and saved in upper case, as `SSSS:OOOO` up to `FFFF` and `SSSS:OOOOOOOO` past it: `814:10b` is `0814:010B`. One spelling stays the debugger's own, a breakpoint as its `BPLIST` shows it: `run_to`'s `target`, a row's `entry`.
+
+The tools: [Names](docs/reference/names.md).
+
+## Knowledge base
+
+A reply and a caption call a number by its name where the server knows one, so you do not look it up. A caption reads `exit (0x4C)`; a reply's `names` field gives the number and its name.
+
+- **What it answers.** DOS, BIOS and driver calls, by interrupt and function; the DOS error codes; and the registers and commands of the chips both servers share. A number it has no entry for stays a number.
+- **Each entry is checked against its source.** It cites the lines it was read from: the interrupt list's section, DOSBox-X's own handler, or both. Checked against its source is not complete: an entry says what its source says.
+- **Where the reply says it.** `names` lists each named number with its `field`, its `kind`, its `name` and the `id` of its entry; `names_cut` counts what did not fit. The one-line `summary` carries the same names, and a call's own arguments are named under `given.<argument>`.
+- **`names=false` on `start`** leaves replies bare and a disassembled line with no note. It is a start profile key like any other, and the window's captions keep their names.
+- **`knowledge_find`** asks the base directly: by `id`, by `kind` and `key`, or by words. It needs no session and answers while the program runs. `status` counts the entries it serves, in `knowledge`.
+- **A disassembled line's note.** `disassemble` gains `line_notes` for each line whose instruction states what the base names, and a stop's instruction gains `note`, with `int 21h` named from the registers. Your own comments stay apart.
+- **The log of DOS calls.** The `dos` channel of `log` and `log_wait` names each call and each error the same way.
+
+Where the base is going: an entry states the documented behaviour, with what DOSBox-X does as a note beside it where the two differ. Today an entry's `behaviour` is what DOSBox-X does, and its fields will change with this.
+
+The DOS and BIOS entries are checked against [Ralf Brown's Interrupt List](https://www.cs.cmu.edu/~ralf/files.html), with thanks. The list's page holds it and its licence.
 
 The tools: [Names](docs/reference/names.md).
 

@@ -8,18 +8,19 @@ What a client of the server notices.
   the display frames the input went in between, read from `RUNSTATE` without stopping the guest.
   A build whose `RUNSTATE` prints no frame count says why instead.
 - The `dos` channel of `log` and `log_wait` names the INT 21h function and the DOS error of each
-  call from a knowledge base of dictionaries that cite Ralf Brown's interrupt list and DOSBox-X's
-  source. It names only what a second check against that source confirmed; any other function or
-  error shows as its number, as `0x3D` and `2`, so a pattern for it is its number.
+  call from the knowledge base. Each entry is checked against [Ralf Brown's Interrupt
+  List](https://www.cs.cmu.edu/~ralf/files.html) and DOSBox-X's source. A function or error the
+  base has no entry for shows as its number (`0x3D`, `2`), so a pattern for it is its number.
 - A reply names the numbers it shows. Its `names` field says what each number is called, its
   `summary` carries the name beside the number, and a window caption reads `name (number)`: an
-  interrupt breakpoint names the call it waits for, a port or a vector is named once the base
-  holds it, and a symbol you typed as a ref names the address the table places it at.
+  interrupt breakpoint names the call it waits for, a port or a vector is named where the base
+  has an entry for it, and a symbol you typed as a ref names the address the table places it at.
   `start(names=false)` turns the reply's names off for that session; the captions keep theirs.
-- `knowledge_find` answers what a number is called and what the server knows of it: a DOS or BIOS
-  call or a DOS error, by key, id or words, with the source line each answer was read from. A key
-  whose entry exists but is not confirmed says so, and stays a number. `status` carries how many
-  entries are served and how many are held back.
+- `knowledge_find` answers what a number is called, by key, id or words: a DOS or BIOS call or a
+  DOS error, with the source line each answer was read from. A key the base has no checked entry
+  for stays a number. `status` carries `knowledge`, the entries the base serves.
+- The reference has a Knowledge base section: what the base answers, that each entry is checked
+  against its source, and where the base is going.
 - A disassembled line and the instruction of a stop carry a `note` where the base names what the
   instruction states: `int 21h` is named at a stop, from the registers, and a port written in
   `dx` too. A comment you wrote stays beside it, apart.
