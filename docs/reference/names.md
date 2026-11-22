@@ -548,7 +548,7 @@ Reply: `query`, `scope`, `entries_total`, `entries`, `truncated`, `examined`, `s
 `held_back`; nothing matched: no entry, `nearest` and a `note`: it stays a number.
 `unconfirmed` lists ids held back.
 
-Scopes: ibm-pc.
+Scopes: am9517a, chip, ibm-pc, ins8250, mc146818, mc6845, pic8259, saa1099, sn76496, ym3812, ymf262, z80.
 
 Reference: REFERENCE.md, Names for numbers.
 ```
