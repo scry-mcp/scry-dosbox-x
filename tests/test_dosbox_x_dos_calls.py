@@ -26,11 +26,16 @@ def _read(path: Path) -> dos.Trace:
 def test_each_call_is_paired_with_its_return_and_the_missing_file_carries_error_2() -> None:
     calls = {c.get("file"): c for c in _read(TRACE).calls if c.get("file")}
     found, missing = calls["IN.TXT"], calls["MISSING.TXT"]
-    assert found["name"] == "open file" and found["out"] == {
+    assert found["name"] == "0x3D" and found["out"] == {
         "ax": "0x0005", "bx": "0xFEA5", "cx": "0x00FF", "dx": "0x0198", "cf": 0}, found
     assert "error" not in found and found["caller"] == "08BC:011F" and found["psp"] == "0x08BC"
-    assert missing["error"] == {"code": 2, "name": "file not found"}, missing
-    assert missing["line"].endswith("MISSING.TXT -> error 2 file not found"), missing["line"]
+    assert missing["error"] == {"code": 2, "name": "2"}, missing
+    assert missing["line"].endswith("0x3D MISSING.TXT -> error 2"), missing["line"]
+
+
+def test_a_confirmed_call_is_named_in_its_row_and_its_line() -> None:
+    close = next(c for c in _read(TRACE).calls if c["function"] == "0x3E")
+    assert close["name"] == "close file" and " 0x3E close file " in close["line"], close
 
 
 def test_a_call_is_timed_in_seconds_on_run_for_s_clock() -> None:
@@ -79,7 +84,7 @@ def test_a_trace_cut_at_its_bound_says_so(tmp_path: Path) -> None:
     path.write_bytes(TRACE.read_bytes() + b"X ROWS_MAX=1000000\n")
     install()
     dstate.STATE.dos_calls = dos.Trace(path)
-    got = cast(dict[str, Any], server.log(pattern="open", channel="dos"))
+    got = cast(dict[str, Any], server.log(pattern="0x3D", channel="dos"))
     assert got["status"] == "ok" and "stopped at its" in got["note"], got
 
 
@@ -157,7 +162,7 @@ def test_a_pattern_cached_before_the_window_moved_answers_only_with_held_calls(
 def test_log_on_the_dos_channel_filters_and_keeps_the_newest() -> None:
     install()
     dstate.STATE.dos_calls = dos.Trace(TRACE)
-    got = cast(dict[str, Any], server.log(pattern="open", channel="dos", limit=1))
+    got = cast(dict[str, Any], server.log(pattern="0x3D", channel="dos", limit=1))
     assert got["status"] == "ok" and got["lines_total"] == 2 and got["truncated"] is True, got
     assert [c["file"] for c in got["calls"]] == ["MISSING.TXT"], got["calls"]
 

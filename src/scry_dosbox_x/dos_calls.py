@@ -69,15 +69,17 @@ class Trace:
 
 
 def function_name(ah: int) -> str:
-    """What INT 21h function `ah` is called in the base, or "unnamed"."""
+    """What INT 21h function `ah` is called in the base, or its number when the base holds no
+    confirmed entry for it."""
     named = knowledge.base().get("call", f"0x21/0x{ah:02X}", knowledge.SCOPE)
-    return named.name if named is not None else "unnamed"
+    return named.name if named is not None else f"0x{ah:02X}"
 
 
 def error_name(code: int) -> str:
-    """What DOS error `code` is called in the base, or "unnamed"."""
+    """What DOS error `code` is called in the base, or its number when the base holds no
+    confirmed entry for it."""
     named = knowledge.base().get("error", str(code), knowledge.SCOPE)
-    return named.name if named is not None else "unnamed"
+    return named.name if named is not None else str(code)
 
 
 def _regs(names: tuple[str, ...], values: tuple[str, ...]) -> dict[str, str]:
@@ -97,11 +99,16 @@ def _render(call: dict[str, Any]) -> str:
     elif call["switched"]:
         result = "did not return to its caller"
     elif "error" in call:
-        result = f"error {call['error']['code']} {call['error']['name']}"
+        result = f"error {_named(call['error']['code'], call['error']['name'])}"
     else:
         result = f"AX={call['out']['ax']}"
-    return (f"#{call['n']} {call['caller']} psp {call['psp']} {call['function']} {call['name']}"
-            f"{file} -> {result}")
+    return (f"#{call['n']} {call['caller']} psp {call['psp']} "
+            f"{_named(call['function'], call['name'])}{file} -> {result}")
+
+
+def _named(number: object, name: str) -> str:
+    """`number name`, or the number alone when it stands for its own name."""
+    return str(number) if name == str(number) else f"{number} {name}"
 
 
 def _entry(found: re.Match[str]) -> dict[str, Any]:

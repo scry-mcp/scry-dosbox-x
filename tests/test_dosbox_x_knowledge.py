@@ -9,7 +9,16 @@ from pathlib import Path
 import knowledge_sources as tool
 import pytest
 from scry_core import conformance
-from scry_core.knowledge import Base, Lock, Row, SourceIndex, Support, read_lock
+from scry_core.knowledge import (
+    Base,
+    Lock,
+    Row,
+    SecondCheck,
+    SourceIndex,
+    Support,
+    read_lock,
+    read_second_check,
+)
 
 from scry_dosbox_x import dos_calls
 from scry_dosbox_x import knowledge as pc
@@ -27,7 +36,8 @@ def committed_index(base: Base) -> SourceIndex:
     marker no entry can quote when it does not: the contract's "quotes it character for
     character" then judges the digest."""
     doc = json.loads(INDEX.read_text(encoding="utf-8"))
-    cited = {src.ref: src.cites for entry in base.entries() for src in entry.sources}
+    cited = {src.ref: src.cites for entry in base.unfiltered().entries()
+             for src in entry.sources}
     rows: dict[str, Row] = {}
     for ref, raw in doc["rows"].items():
         line = raw.get("line")
@@ -46,13 +56,16 @@ class PcKnowledge:
         return SUPPORT
 
     def base(self, fts5: bool | None = None) -> Base:
-        return Base.load("scry_dosbox_x", fts5=fts5, pins=PINS)
+        return Base.load("scry_dosbox_x", fts5=fts5, pins=PINS, confirmation=pc.confirmation())
 
     def sources(self) -> SourceIndex:
         return committed_index(self.base())
 
     def lock(self) -> Lock:
         return read_lock(LOCK)
+
+    def second_check(self) -> SecondCheck:
+        return read_second_check(SECOND_CHECK)
 
     def code_scopes(self) -> tuple[str, ...]:
         return (pc.SCOPE,)
@@ -65,36 +78,39 @@ class TestPcKnowledge(conformance.KnowledgeContract):
 
 
 def test_the_second_check_names_only_entries_still_sealed_at_the_digest_it_confirmed() -> None:
-    rows = json.loads(SECOND_CHECK.read_text(encoding="utf-8"))["checked"]
-    sealed = {entry.id: entry.checked for entry in PcKnowledge().base().entries()}
+    rows = read_second_check(SECOND_CHECK).confirmed
+    sealed = {entry.id: entry.checked for entry in PcKnowledge().base().unfiltered().entries()}
     assert rows
     for entry_id, row in rows.items():
         check = sealed.get(entry_id)
-        assert check is not None and check.digest == row["digest"], entry_id
+        assert check is not None and check.digest == row.digest, entry_id
 
 
 def test_the_pins_of_the_index_are_the_ones_the_server_declares() -> None:
     assert dict(PcKnowledge().sources().pins) == PINS
 
 
-@pytest.mark.parametrize(("ah", "name"), [(0x4C, "exit"), (0x3D, "open file"), (0x2C, "get time"),
+@pytest.mark.parametrize(("ah", "name"), [(0x4C, "exit"), (0x2C, "get time"),
                                           (0x71, "long filename fns"), (0xEF, "ancient art cga")])
 def test_a_dos_function_is_named_from_the_base(ah: int, name: str) -> None:
     assert dos_calls.function_name(ah) == name
 
 
-def test_a_function_the_base_does_not_hold_stays_unnamed() -> None:
-    assert dos_calls.function_name(0x72) == "unnamed"
+@pytest.mark.parametrize(("ah", "number"), [(0x3D, "0x3D"), (0x72, "0x72")])
+def test_a_function_the_base_does_not_serve_is_its_number(ah: int, number: str) -> None:
+    """0x3D has an entry the second check has not confirmed; 0x72 has none."""
+    assert dos_calls.function_name(ah) == number
 
 
-@pytest.mark.parametrize(("code", "name"), [(2, "file not found"), (5, "access denied"),
-                                            (80, "file exists"), (95, "interrupted")])
+@pytest.mark.parametrize(("code", "name"), [(0, "no error"), (100, "open semaphore limit")])
 def test_a_dos_error_is_named_from_the_base(code: int, name: str) -> None:
     assert dos_calls.error_name(code) == name
 
 
-def test_an_error_the_base_does_not_hold_stays_unnamed() -> None:
-    assert dos_calls.error_name(79) == "unnamed"
+@pytest.mark.parametrize("code", [2, 79])
+def test_an_error_the_base_does_not_serve_is_its_number(code: int) -> None:
+    """2 has an entry the second check has not confirmed; 79 has none."""
+    assert dos_calls.error_name(code) == str(code)
 
 
 def test_the_dictionaries_load_whole() -> None:
