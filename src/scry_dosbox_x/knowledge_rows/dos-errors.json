@@ -1,0 +1,540 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "dos-errors",
+ "kind": "error",
+ "scope": "ibm-pc",
+ "covers": "DOS extended error codes 1 to 10, from the list's table of extended error codes.",
+ "source": "official",
+ "entries": [
+  {
+   "key": "1",
+   "name": "function invalid",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8140"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "446"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 01h (1) is function number invalid.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8140",
+       "sha": "1bc31b884fc64e46d2453ee9badc7ca08eb0971a1d84e42073152dac6fdec1e7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_FUNCTION_NUMBER_INVALID, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "446",
+       "sha": "aa4b845788c353930f1432ddc837ec025ae59d6f16bcb6aaf0f22c4459433f65"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "2",
+   "name": "file not found",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8141"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "447"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 02h (2) is file not found.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8141",
+       "sha": "bb7688c3a8854339a8431876d09f4efe2a1d809168494932ed8561056178f69d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_FILE_NOT_FOUND, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "447",
+       "sha": "f1c0f2167d8c5117753e164bc81a89c0a9648eb73b327db8b762ad44d04f625b"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "3",
+   "name": "path not found",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8142"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "448"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 03h (3) is path not found.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8142",
+       "sha": "d54f97ba56ab47c41405f64548e06faeaf892a655cfbfea19c587d45daeabf95"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_PATH_NOT_FOUND, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "448",
+       "sha": "25e09a51edda25ab68f0dcf509d6e7ec412e6e5ca61bcb8a300d06e0d1614568"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "4",
+   "name": "too many open files",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8143"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "449"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 04h (4) is too many open files, no handles available.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8143",
+       "sha": "d8151061e9a510a578539b6dcf02d9a05b590c341364e794ecf25703334983d7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_TOO_MANY_OPEN_FILES, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "449",
+       "sha": "a59cda1e778886e5d47901979039b1e6db83b8d44ca9fe54226c1f9deca28e2a"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "5",
+   "name": "access denied",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8144"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "450"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 05h (5) is access denied.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8144",
+       "sha": "1a595faf6cbd001ea415b2c60f866a3ab37d5fab9ce37142e045e4508a120892"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_ACCESS_DENIED, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "450",
+       "sha": "0e0eb99f6cea9ecfa5b4d04944a7a8008f13eb4f4c41d13a8c66a5fe4abb3a5c"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "6",
+   "name": "invalid handle",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8145"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "451"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 06h (6) is invalid handle.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8145",
+       "sha": "eedc4f53ee4ea37d56673707b88b28ebfef139e5e074b4f5b2eb8e91c47fd9a7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_INVALID_HANDLE, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "451",
+       "sha": "6205784eb6e1cafeac269c007f1f34880a5166c45584a69a29ce29bb321de026"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "7",
+   "name": "mcb destroyed",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8146"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "452"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 07h (7) is memory control block destroyed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8146",
+       "sha": "312e40d697191df672ca7ff3f8c61af51e15a6b9c1ed8de15874990b36981974"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_MCB_DESTROYED, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "452",
+       "sha": "9bb5d5ddb6f3c620acac71a21870837c1c7d7856d17fff1e9eaa401f97c924e1"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "8",
+   "name": "insufficient memory",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8147"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "453"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 08h (8) is insufficient memory.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8147",
+       "sha": "8eba7de400eee1f2a5484d4affcfedf3198a232ac93f629625d8cc57b9aea9dd"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_INSUFFICIENT_MEMORY, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "453",
+       "sha": "ba1bd97391c8c37f4c8df56a49746ab16017b5c0dcecd946d4fa0836bc65bfee"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "9",
+   "name": "invalid block address",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8148"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "454"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 09h (9) is memory block address invalid.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8148",
+       "sha": "47266264ad27bc24acabbd402636d2fed94467df45e785aabc7ade5a76e0ed74"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_MB_ADDRESS_INVALID, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "454",
+       "sha": "ada751168b223bdaa0c42a29ed321ec94f815d557b60a6273d53727489cf521b"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "10",
+   "name": "invalid environment",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8149"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "455"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "In the DOS 2.0 table of extended error codes, code 0Ah (10) is environment invalid, usually over 32K in length.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8149",
+       "sha": "af859dd930bd52e50b05245e08a22787fff050937cd0562c359e127ef2cbc759"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_ENVIRONMENT_INVALID, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "455",
+       "sha": "ea8e917077bff7f911f12216700de786810226f06b3295da8fc7a293470c6093"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  }
+ ]
+}

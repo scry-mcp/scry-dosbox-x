@@ -1,0 +1,2222 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "int10",
+ "kind": "call",
+ "scope": "ibm-pc",
+ "covers": "INT 10h AH=12h, the alternate function select of the video BIOS: the call and its variants chosen by BL.",
+ "source": "official",
+ "engine": [
+  "IO_Write",
+  "IO_Read",
+  "DOSV_CheckCJKVideoMode",
+  "DOSV_OffCursor",
+  "J3_IsJapanese",
+  "J3_OffCursor",
+  "INT10_SetCurMode"
+ ],
+ "entries": [
+  {
+   "key": "0x10/0x12",
+   "name": "alternate select",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12"
+     ],
+     "preamble": true
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Alternate function select: BL picks the function, and only an EGA, VGA or MCGA machine answers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "464-466",
+       "sha": "594181d3a3676a24053744fa4b092a8fd907a5639190788d8a1986b1f6f2fba5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A BL that no variant handles leaves AL set to 0, except on an EGA machine.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "697-700",
+       "sha": "e33bb271463938292743841d320f2c2279ac4b097a3ac035416e3bd1ba0d98b6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With BH=55h on an ATI VGA, BL up to 6 is looked at first: 2 stores a status in AL, 6 sets ES:BP to fixed values, the rest are logged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "468-479",
+       "sha": "cc72581147815a33b9d25279852f1f71aade6b77f966c098aec1f6e39a298796"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "480-491",
+       "sha": "cb24fd0cfab2c069ab3a7324755fcea09910d25d27bf24fa09b317e9a6c2cca8"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "492-496",
+       "sha": "92ac9c4198a678dcd840f3de38f9cfe70a47205b2666b62bd422d283bd652855"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "497-506",
+       "sha": "b8be65cc5d9e72f1e4ffdcbdffe42de2ef0caac9b10a127b4c7e3baadb12f61d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Before the dispatch the cursor of the DOS-V or Japanese display is turned off and the current mode is read from the BIOS data.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "70-72",
+       "sha": "781b484f31ebd9e8a68c23918e339933b943e07b4cb649b0cc7baae747a2cfe9"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 10h handler reaches it by its case 0x12; BL then picks the variant.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "464",
+       "sha": "2e576bfea15d6d9612a61b411bb738bf1b8665b9469e9d4ef2f1ca00b122c8e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "508",
+       "sha": "5e5b431b04ff9ec9fc1b90b6684ae55cfc12a465652c2318a5202a83e87359a8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "509-556",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x10/0x12/BL=0x10"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "557-558",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x10/0x12/BL=0x20"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "559-595",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x10/0x12/BL=0x30"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "596-609",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x10/0x12/BL=0x31"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "610-616",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x10/0x12/BL=0x32"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "617-630",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x10/0x12/BL=0x33"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "631-644",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x10/0x12/BL=0x34"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "645-649",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x10/0x12/BL=0x35"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "650-667",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x10/0x12/BL=0x36"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "74",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "668-696",
+     "as": "build"
+    }
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "Not applicable: the DOSBox-X source header cites no document."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 BIOS Interface Technical Reference is named by third-party pages; no maker-hosted copy was seen."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "Not searched in this run."
+    },
+    {
+     "where": "archive-org",
+     "gave": "One search listed a scan of System BIOS for IBM PC XT AT; no scan of a VGA BIOS interface manual."
+    },
+    {
+     "where": "index",
+     "gave": "One web search listed mirrors of Ralf Brown's list and a VGABIOS.TXT; no maker document for the family dispatch."
+    }
+   ]
+  },
+  {
+   "key": "0x10/0x12/BL=0x10",
+   "name": "get EGA info",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x10"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x10"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3091-3135"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Alternate function select, get EGA information, on PS, EGA, VGA and MCGA.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3092",
+       "sha": "3e73f2ba7c899382d86655d59074280ec890e4efaec451e65680148d79ba96c1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BL",
+     "of": "doc",
+     "text": "BL is 10h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3094",
+       "sha": "12a317587db6cf1fad68328d628d38064dc9e1c7dce059f9be85c5397088e72b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BH",
+     "of": "doc",
+     "text": "BH is the video state: 00h color mode in effect, I/O port 3Dxh; 01h mono mode, port 3Bxh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3095-3097",
+       "sha": "c07d86c2c5ba6898f6a793fe925e680643090325c675aa076ab00c89887a1f30"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BL",
+     "of": "doc",
+     "text": "BL is the installed memory: 00h 64K, 01h 128K, 02h 192K, 03h 256K.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3098",
+       "sha": "89094a939b70dcf358181620d7dab6fbdfa9fc0a2f82d7786d9b8c797e3c33ba"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CH",
+     "of": "doc",
+     "text": "CH holds the feature connector bits.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3099",
+       "sha": "70908fc521e498721ac14c876df073debac201212dd9dc62bb42505c857808f9"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out CL",
+     "of": "doc",
+     "text": "CL holds the switch settings.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3100",
+       "sha": "91a66bc556ca91f112d6afadc238499557ca72d1365178ae8430291b8c919193"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "doc",
+     "text": "With BH set to FFh before the call, BH comes back unchanged if no EGA or later card is present.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3102-3104",
+       "sha": "f816744ad3554c1cd9a6da24591042447b8b8bb05e4527cf0ac2af450a01ce8b"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out CH",
+     "of": "doc",
+     "text": "Feature connector bits 0 to 3 are the FEAT 1 and FEAT 0 lines in states 2 and 1; bits 4-7 are unused.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3112-3116",
+       "sha": "a8256a5e4a52efe60eee950bf31d1c6ab824879515d86e5c5664bc664129695c"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out CL",
+     "of": "doc",
+     "text": "Switch setting bits 0 to 3 are switches 1 to 4 OFF; bits 4-7 are unused.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3120-3124",
+       "sha": "834855c508f829301ab8756d88793b0a5a179bd1eef8affc46f7cb0b1c69e68a"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "out CL",
+     "of": "doc",
+     "text": "Switch setting values 00h to 0Bh name the primary and secondary display of the original EGA or VGA.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3127-3135",
+       "sha": "0e72cba974f5baa5cc8a5185de445554eca97fab3ee63a34ec7aac842f9b9094"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an MCGA machine the call is not answered: BH, BL and CX stay as they were.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "511-522",
+       "sha": "e895607e849681433c90bbc646af0c7ce98d86c8c93e5650b8666ec89bc88e22"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 10h handler reaches it by its case 0x12 and then by BL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "464",
+       "sha": "2e576bfea15d6d9612a61b411bb738bf1b8665b9469e9d4ef2f1ca00b122c8e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "509",
+       "sha": "91940b22839d34a736538da972876b23741467593208a7f60a8a3b7d9a7bbeaa"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "64-507",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x10/0x12"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3091",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3093",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3101",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3105-3107",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3108",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3110-3111",
+     "as": "layout"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3118-3119",
+     "as": "layout"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3126",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "539",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "540-552",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "554",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "553",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "510",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "553-554",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "554",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "553",
+     "as": "agrees",
+     "row": "10"
+    }
+   ]
+  },
+  {
+   "key": "0x10/0x12/BL=0x20",
+   "name": "alternate prtsc",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x20"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x20"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3161-3170"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Alternate function select, alternate print screen, on PS, EGA, VGA and MCGA.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3162",
+       "sha": "038ae1ce5cecc9dc6449253603369de4fadebc1e44ac35e2c13cebaa47d0ca76"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BL",
+     "of": "doc",
+     "text": "BL is 20h, to select the alternate print screen routine.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3164",
+       "sha": "38a3fcf62a4d050c82cba30d587c4131155b5a53f890401d9758582b63f18fba"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out none",
+     "of": "doc",
+     "text": "Nothing is returned.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3165",
+       "sha": "d0b820d4a4f84b5fbd6655ba40efab42243fd5dbe441228ba745413913b0b47f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "does",
+     "of": "doc",
+     "text": "It installs a PrtSc routine from the video card's BIOS in place of the ROM BIOS one, which does not understand screens of other than 25 lines.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3166-3168",
+       "sha": "1e2aa2f7abff185055d2fc89ec42403287e7eb0e655d8398fc622a97017fd134"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "doc",
+     "text": "Some adapters disable print screen instead of enhancing it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3169",
+       "sha": "76a763c90aec0b200a34fb0b1a37012a15486813163395189b4a26b4cbbb9780"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "No print screen routine is installed: the case does nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "557",
+       "sha": "212c937704e993d378628bdb32e4ed3fcf166f7bc94777227da89123d35c43a6"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 10h handler reaches it by its case 0x12 and then by BL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "464",
+       "sha": "2e576bfea15d6d9612a61b411bb738bf1b8665b9469e9d4ef2f1ca00b122c8e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "557",
+       "sha": "212c937704e993d378628bdb32e4ed3fcf166f7bc94777227da89123d35c43a6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "64-507",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x10/0x12"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3161",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3163",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3170",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x10/0x12/BL=0x30",
+   "name": "vertical resolution",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x30"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x30"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3178-3189"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Alternate function select, select vertical resolution, on VGA.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3179",
+       "sha": "026cf373c5aa9f65d08e0092a283f3b0709b823ea8c72c5e035a1d553a3ba296"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BL",
+     "of": "doc",
+     "text": "BL is 30h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3181",
+       "sha": "309e0d1e83d2b95ecf6c58613ea3e084d6a66bd86b02c3f4a204ce0735cce889"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL is the vertical resolution: 00h 200 scan lines, 01h 350, 02h 400.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3182-3185",
+       "sha": "4e98897f515e4107cf1fc9909ef1f97296af0d1614c0e24a6fab08e6315fd6ca"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is 12h if the function is supported.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3186",
+       "sha": "1307f3f63086520a7fb9c4cfa4d52927329dfa89abe58bf612f9037d83f9d8a3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "does",
+     "of": "doc",
+     "text": "It sets the number of scan lines used to display text modes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3187",
+       "sha": "7c7c6f827b2c33929f2cf88a5bc22529457ea6c98c039437f3c2cd7c27578017"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "doc",
+     "text": "The resolution takes effect on the next mode set.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3188",
+       "sha": "8e1740e5568c710359534fca09450568d12d4602f5cecededf964684d74420ce"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a machine that is not VGA architecture the call does nothing and AL is unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "561",
+       "sha": "568e3bff7cdba947fc9e3a2a75b14af5f4bea08358588a177e83359cf5a0bc9c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With an SVGA card an AL above 2 returns AL=0 and changes nothing else.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "563-568",
+       "sha": "aad2028ca58a0e1fb2f8f9052ebcedefb95125224c842599c05775d45f4439a2"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With no SVGA card an AL above 2 acts as 0 but leaves the mode-set bit.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "586-589",
+       "sha": "4c623c5682c2257c951dfce586da1792ce66498e77b1cfa356d259ab2eef93b4"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The call reads the mode-set control and the video switches bytes of the BIOS data first.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "569-570",
+       "sha": "277c9510b2314bf5dff71d8c5cab075aa227819b223df04bcbfa35727759af16"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 10h handler reaches it by its case 0x12 and then by BL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "464",
+       "sha": "2e576bfea15d6d9612a61b411bb738bf1b8665b9469e9d4ef2f1ca00b122c8e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "559",
+       "sha": "a6d58849d0a819885b61c3de112340dc492b68257b11823fff1c4d1d125f40a4"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "64-507",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x10/0x12"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3178",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3180",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3189",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "571-585",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "593",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "591-592",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "591",
+     "as": "agrees",
+     "row": "6"
+    }
+   ]
+  },
+  {
+   "key": "0x10/0x12/BL=0x31",
+   "name": "palette loading",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x31"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x31"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3190-3200"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Alternate function select, palette loading, on VGA and MCGA.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3191",
+       "sha": "c3c807b1daaef614e0c73dfe53aee0feb0587ba19af1fc4d38fdf01b56a6af42"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BL",
+     "of": "doc",
+     "text": "BL is 31h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3193",
+       "sha": "d89d887199864214f9af30eabff046a4c1b0db4c386ae554e5cc5e41482a9746"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL is the new state: 00h enable default palette loading, 01h disable it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3194-3196",
+       "sha": "954c7c0b9c829f5d24cb1f3ee72a51f4e09df033195c5d98ab1739ba046f733b"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is 12h if the function is supported.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3197",
+       "sha": "1307f3f63086520a7fb9c4cfa4d52927329dfa89abe58bf612f9037d83f9d8a3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "does",
+     "of": "doc",
+     "text": "It specifies whether a default palette is loaded when the display mode is set.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3198-3199",
+       "sha": "4b5df4faeed79ba16eb20f6a43d5686a7b95b884fdc48fec1ccc44c1b0c5d7be"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a machine that is not VGA architecture the call does nothing and AL is unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "598",
+       "sha": "568e3bff7cdba947fc9e3a2a75b14af5f4bea08358588a177e83359cf5a0bc9c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "An AL above 1 returns AL=0, an invalid subfunction, and changes nothing else.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "600-603",
+       "sha": "e9cfa9e5ba16c896d46395f82502af8d8b0c6c35fb409d855cc0c5348a9aeb1e"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With a Tseng ET4000 card only bit 0 of AL counts.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "599",
+       "sha": "ef5e278056802214902b46657e3d32a3ba8486919cde8b891bc718e56e4217d3"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 10h handler reaches it by its case 0x12 and then by BL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "464",
+       "sha": "2e576bfea15d6d9612a61b411bb738bf1b8665b9469e9d4ef2f1ca00b122c8e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "596",
+       "sha": "e30a79375d8d3b04da0c6d95141ecbaf2f890705dc6a18551273de7a59535647"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "64-507",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x10/0x12"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3190",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3192",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3200",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "605",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "607",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "604-606",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x10/0x12/BL=0x32",
+   "name": "video addressing",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x32"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x32"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3201-3210"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Alternate function select, video addressing, on VGA and MCGA.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3202",
+       "sha": "8cba15144cd033ca161379d5f57d1270266127d7a3ba3172766edfba1d30aa01"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BL",
+     "of": "doc",
+     "text": "BL is 32h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3204",
+       "sha": "4e9d20cbde31b581a229789d6a81136ece7e49472a356484b20f012411d487b1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL is the new state: 00h enable video addressing, 01h disable it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3205-3207",
+       "sha": "2b40f826f8200264017fbb7256196a883bec7fca465219bb0c6876ba4301c818"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is 12h if the function is supported.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3208",
+       "sha": "1307f3f63086520a7fb9c4cfa4d52927329dfa89abe58bf612f9037d83f9d8a3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "does",
+     "of": "doc",
+     "text": "It specifies whether the CPU can reach video memory and the adapter's I/O registers.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3209-3210",
+       "sha": "73dd1ac2dd3feabf68618b4c574af9b41ccf717e7de5ef9823b073206450a0ed"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "The AL state is only checked, never applied: the call logs that it is not handled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "612",
+       "sha": "c80505e38e2a1b9c9070125ab065096b4b8153ba8bd9b551743b22cda32ffa7e"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "7",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "The CPU's access to video memory and the I/O registers is not changed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "612",
+       "sha": "c80505e38e2a1b9c9070125ab065096b4b8153ba8bd9b551743b22cda32ffa7e"
+      }
+     ],
+     "row": "5"
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a machine that is not VGA architecture the call does nothing and AL is unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "611",
+       "sha": "568e3bff7cdba947fc9e3a2a75b14af5f4bea08358588a177e83359cf5a0bc9c"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With a Tseng ET4000 card only bit 0 of AL counts.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "613",
+       "sha": "ef5e278056802214902b46657e3d32a3ba8486919cde8b891bc718e56e4217d3"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 10h handler reaches it by its case 0x12 and then by BL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "464",
+       "sha": "2e576bfea15d6d9612a61b411bb738bf1b8665b9469e9d4ef2f1ca00b122c8e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "610",
+       "sha": "018ad5daa2e6005baa50bdcf834eaf8dc578f32d182263c7c0e45076925982fd"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "64-507",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x10/0x12"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3201",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3203",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "614-615",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x10/0x12/BL=0x33",
+   "name": "gray-scale summing",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x33"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x33"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3211-3221"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Alternate function select, gray-scale summing, on VGA and MCGA.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3212",
+       "sha": "d657130091a2d9dfd9c630e4a3f8aed80dc6d349a9d0169e4b3face464028102"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BL",
+     "of": "doc",
+     "text": "BL is 33h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3214",
+       "sha": "1a8ed80dd65f9c9f898ba8ea05ad2933b629bcc47ada823e0ff609fe0a06ca8d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL is the new state: 00h enable gray-scale summing, 01h disable it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3215-3217",
+       "sha": "e7e5f3ca6fb523d162d1ebec9cbfa2624c469a6e336fea69976c53d1d43521cd"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is 12h if the function is supported.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3218",
+       "sha": "1307f3f63086520a7fb9c4cfa4d52927329dfa89abe58bf612f9037d83f9d8a3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "does",
+     "of": "doc",
+     "text": "It specifies whether colors are converted to gray scale when palette or color registers are loaded.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3219-3220",
+       "sha": "49887c06fb6cc6b0c9c38c2ea624a6feb5a6734647cdeadc4fcf022f8b9895bb"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a machine that is not VGA architecture the call does nothing and AL is unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "619",
+       "sha": "568e3bff7cdba947fc9e3a2a75b14af5f4bea08358588a177e83359cf5a0bc9c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "An AL above 1 returns AL=0, an invalid subfunction, and changes nothing else.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "621-624",
+       "sha": "dd59a386fdf6fcd0df63bafa95628f215e02c79a3817c4e38d1132903649f363"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With a Tseng ET4000 card only bit 0 of AL counts.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "620",
+       "sha": "ef5e278056802214902b46657e3d32a3ba8486919cde8b891bc718e56e4217d3"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 10h handler reaches it by its case 0x12 and then by BL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "464",
+       "sha": "2e576bfea15d6d9612a61b411bb738bf1b8665b9469e9d4ef2f1ca00b122c8e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "617",
+       "sha": "2f705bff0aaefb7898ec6588ba6fcf20c7e45734110a6d9554fc2a37d2b8547d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "64-507",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x10/0x12"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3211",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3213",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3221",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "626",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "628",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "625-627",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x10/0x12/BL=0x34",
+   "name": "cursor emulation",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x34"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x34"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3222-3232"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Alternate function select, cursor emulation, on VGA.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3223",
+       "sha": "c121fa12ac57cefc338f6343cffff3c68c141138b10e5d0ea84d761ac453c93c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BL",
+     "of": "doc",
+     "text": "BL is 34h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3225",
+       "sha": "35bed1a61c3809828a48c4d96688db2b4cf36054a9111a2d60a516e936871771"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL is the new state: 00h enable alphanumeric cursor emulation, 01h disable it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3226-3228",
+       "sha": "a884f8f73c27e881213319ee8172c47c50a1796af7e71d26586699bbefd94933"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is 12h if the function is supported.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3229",
+       "sha": "1307f3f63086520a7fb9c4cfa4d52927329dfa89abe58bf612f9037d83f9d8a3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "does",
+     "of": "doc",
+     "text": "It specifies whether the BIOS remaps the cursor start and end by the character height in text modes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3230-3231",
+       "sha": "3e7d6cd021ea7fa8866dd1fb2c84c73bd7e1e5013384978b7df3d3dc3c6ca39a"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a machine that is not VGA architecture the call does nothing and AL is unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "634",
+       "sha": "568e3bff7cdba947fc9e3a2a75b14af5f4bea08358588a177e83359cf5a0bc9c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "An AL above 1 returns AL=0, an invalid subfunction, and changes nothing else.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "636-639",
+       "sha": "dd59a386fdf6fcd0df63bafa95628f215e02c79a3817c4e38d1132903649f363"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With a Tseng ET4000 card only bit 0 of AL counts.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "635",
+       "sha": "ef5e278056802214902b46657e3d32a3ba8486919cde8b891bc718e56e4217d3"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 10h handler reaches it by its case 0x12 and then by BL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "464",
+       "sha": "2e576bfea15d6d9612a61b411bb738bf1b8665b9469e9d4ef2f1ca00b122c8e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "631",
+       "sha": "376400e69a19495010a6c78c9442f93e546f9745a85c7a573d91e519959cbfe1"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "64-507",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x10/0x12"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3222",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3224",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3232",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "640-641",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "642",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "640-641",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x10/0x12/BL=0x35",
+   "name": "display switch",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x35"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x35"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3233-3247"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Alternate function select, display-switch interface, on PS.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3234",
+       "sha": "2b7401e79b5ea19c41443dfe63a58a687af9b089e485f01cc3e7c5a2cd662248"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BL",
+     "of": "doc",
+     "text": "BL is 35h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3236",
+       "sha": "5e17819e09981ef48664a39e490c16e0b6a642e68b99b6832262b6ec226b381b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL is the subfunction: 00h initial adapter video off, 01h initial planar video on, 02h active video off, 03h inactive video on, 80h undocumented.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3237-3242",
+       "sha": "0863b385e1724f49233370e40fb0d323c6c811101e0ca0870e7d3538606554a7"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "in ES:DX",
+     "of": "doc",
+     "text": "ES:DX points to a 128-byte save area when AL is 00h to 03h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3243",
+       "sha": "5432f9d1f4fb467d67fcec58cf1041bf341e03ce9361d449eb28415f4fee58f4"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is 12h if the function is supported.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3244",
+       "sha": "1307f3f63086520a7fb9c4cfa4d52927329dfa89abe58bf612f9037d83f9d8a3"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "does",
+     "of": "doc",
+     "text": "It switches between two video adapters whose addresses may conflict.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3245-3246",
+       "sha": "eddec4c257c04f709112f35c5de5674f5824aa585c27186c8ee11a94786f9e10"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "No subfunction is carried out: the call logs that it is not handled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "647",
+       "sha": "c80505e38e2a1b9c9070125ab065096b4b8153ba8bd9b551743b22cda32ffa7e"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "8",
+     "on": "in ES:DX",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "The save area at ES:DX is never read or written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "647",
+       "sha": "c80505e38e2a1b9c9070125ab065096b4b8153ba8bd9b551743b22cda32ffa7e"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "9",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "No adapter is switched.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "647",
+       "sha": "c80505e38e2a1b9c9070125ab065096b4b8153ba8bd9b551743b22cda32ffa7e"
+      }
+     ],
+     "row": "6"
+    },
+    {
+     "n": "10",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a machine that is not VGA architecture the call does nothing and AL is unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "646",
+       "sha": "568e3bff7cdba947fc9e3a2a75b14af5f4bea08358588a177e83359cf5a0bc9c"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 10h handler reaches it by its case 0x12 and then by BL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "464",
+       "sha": "2e576bfea15d6d9612a61b411bb738bf1b8665b9469e9d4ef2f1ca00b122c8e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "645",
+       "sha": "021ec998a89d36b51381f4b57f765184c3a42241377d528fe19fc2eb839fc07c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "64-507",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x10/0x12"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3233",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3235",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3247",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "648",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x10/0x12/BL=0x36",
+   "name": "refresh control",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x36"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "function": "INT10_Handler",
+     "case": [
+      "0x12",
+      "0x36"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3248-3265"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Alternate function select, video refresh control, on PS and VGA.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3249",
+       "sha": "a5d8c8e9b9915f46cc6390d296de94491f53764469f61d99c970d8a13e5ceead"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BL",
+     "of": "doc",
+     "text": "BL is 36h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3251",
+       "sha": "3a277b3e1b08e5ccd641d683867d405e98cc9a1258ec151a778281268c49224c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL is the new state: 00h enable refresh, 01h disable it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3252-3254",
+       "sha": "698c507cbc2331ff37e72ccc2f4aa231ca2383d7d077276b9601b34d69898499"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is 12h if the function is supported.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3255",
+       "sha": "1307f3f63086520a7fb9c4cfa4d52927329dfa89abe58bf612f9037d83f9d8a3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "does",
+     "of": "doc",
+     "text": "It specifies whether video memory is displayed; disabling refresh blanks the screen.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3256-3257",
+       "sha": "ca9f4b359b059391b0085a0ba5462b1f9d74cf13635da6fbb5c512bb56163544"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "doc",
+     "text": "With refresh disabled the whole screen shows the color of DAC register 00h, so to blank it set that to black first.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.A",
+       "lines": "3258-3261",
+       "sha": "030eb8bb7be5f1a81d280b2ad277cd05038b26bfc547e42ef68e4acedca4bd96"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a machine that is not VGA architecture the call does nothing and AL is unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "651",
+       "sha": "568e3bff7cdba947fc9e3a2a75b14af5f4bea08358588a177e83359cf5a0bc9c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With an S3 Trio card an AL above 1 returns AL=0 and changes nothing else.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "652-655",
+       "sha": "ff4f33c75bf3fb374b4d41b8046331b08c191d2bc41d3aff769940f620f497df"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The call reads sequencer register 1, changes its bit 5 and writes it back.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "656-657",
+       "sha": "9b3480e5af9afcacdc4560a98b1dbeb65983a4db58f8d76e7c896c37d4dfb15a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "662-663",
+       "sha": "89d52b001e42ccacbef1bb16b79f00d1f8d4b1411c638b8b54b4bbb5e3bd4dd5"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 10h handler reaches it by its case 0x12 and then by BL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "464",
+       "sha": "2e576bfea15d6d9612a61b411bb738bf1b8665b9469e9d4ef2f1ca00b122c8e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/int10.cpp",
+       "lines": "650",
+       "sha": "c3495323a17aeaff824f4c97e5fbd1cbb9fa61feecc481cf77bfad78d8dbb44a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "64-507",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x10/0x12"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "508",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3248",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3250",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3262-3264",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.A",
+     "lines": "3265",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "659-660",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "665",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "659-660",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/int10.cpp",
+     "lines": "663",
+     "as": "agrees",
+     "row": "6"
+    }
+   ]
+  }
+ ]
+}
