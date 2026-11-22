@@ -61,6 +61,7 @@ def test_send_keys_reaches_the_running_guest_and_it_acts(
         f"reach the running program. {sent.get('message')}")
     assert sent["posted"] == 1 and sent["route"] == "guest", sent
     assert sent["verify"]["seen"] is True and re.search(KEY_MARK, sent["verify"]["line"]), sent
+    _frames_went_by(sent)
 
     # Control: from byte 0 the stale cue line would match; from the mark it misses.
     missed = cast(dict[str, Any], server.send_keys(keys=["f11"], expect=KEY_MARK, seconds=3))
@@ -141,12 +142,16 @@ def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
     _start(tmp_path, monkeypatch)
     server.resume()
     _input_loop_live()
+    ended = 0
     for x, y in CLICKS:
         got = cast(dict[str, Any], server.send_mouse(x=x, y=y, units="mouse", button="left",
                                                      expect=MOUSE_MARK, seconds=10))
         assert got["status"] == "ok" and got["arrived"] is True, got
         assert got["pointer"]["mouse"]["x"] == x and got["pointer"]["mouse"]["y"] == y, got
         assert _guest_xy(got["verify"]["line"]) == (x, y), got["verify"]
+        began, ended_at = _frames_went_by(got)
+        assert began >= ended, f"this click began at frame {began}, before the last ended: {ended}"
+        ended = ended_at
     # An unmapped VESA mode: a named control is refused before anything is sent.
     from scry_core import screen_map
 
@@ -169,6 +174,14 @@ def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
     said = cast(dict[str, Any], server.log(pattern=r"STUB  \. scry device=present",
                                            channel="guest"))
     assert said["status"] == "ok" and said["lines_total"] >= 1, said
+
+def _frames_went_by(sent: dict[str, Any]) -> tuple[int, int]:
+    """A post to a running guest names the display frames it went in between: counts the
+    emulator advanced, never a stand-in."""
+    before, after = sent["frame_before"], sent["frame_after"]
+    assert type(before) is int and type(after) is int and 0 < before <= after, sent
+    return before, after
+
 
 def _guest_xy(line: str) -> tuple[int, int]:
     m = re.search(r"x=(\d+) y=(\d+)", line)

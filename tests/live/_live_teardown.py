@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
-from scry_core import app_launch, guardian
+from scry_core import app_launch, guardian, screen_map
+from scry_core import promote as core_promote
 
 from scry_dosbox_x import process as dprocess
 from scry_dosbox_x import server
@@ -54,6 +55,10 @@ def no_session_left_behind(tmp_path: Path,
                            monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     # Declarations persist to disk keyed by conf and would re-arm at the next start.
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
+    # What the server keeps across sessions by design, so no case meets another's.
+    monkeypatch.setattr(dstate.STATE, "drafts", core_promote.Drafts())
+    monkeypatch.setattr(dstate.STATE, "maps", screen_map.Maps())
+    monkeypatch.setattr(dstate.STATE, "names", True)
     _drop()
     yield
     _drop()

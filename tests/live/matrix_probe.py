@@ -147,6 +147,9 @@ _WITHOUT_SESSION: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
                     "build_check docstring: about the build, answers with no session"),
     "status": (lambda r: ok(r) and no_session(r),
                "status docstring: `alive: false` when there is none, under status ok"),
+    "knowledge_find": (lambda r: ok(r) and [e["name"] for e in r["entries"]] == ["exit"]
+                       and no_session(r),
+                       REF_DOC + "Names: `knowledge_find` needs no session"),
     "promote": (lambda r: refused(r, "bad_argument") and no_session(r),
                 "promote docstring: a recipe path outside the store is refused"),
     "close": (lambda r: ok(r) and r.get("closed") is False and r.get("ended_by") == "none",
