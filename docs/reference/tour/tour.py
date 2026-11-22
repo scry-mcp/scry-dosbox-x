@@ -466,16 +466,34 @@ def written(reply: Reply, run: Run) -> str:
     return "the game's quit flag set"
 
 
-def armed(reply: Reply, run: Run) -> str:
-    expect(reply["armed"] is True, f"armed {reply['armed']}")
-    return f"armed as {reply['ref']}"
+def exit_armed(reply: Reply, run: Run) -> str:
+    expect(reply["armed"] is True and [n["name"] for n in reply["names"]] == ["exit"],
+           f"armed {reply['armed']}, names {reply['names']}")
+    return f"armed as {reply['ref']}, which the reply names exit"
+
+
+def base_exit(reply: Reply, run: Run) -> str:
+    entry = reply["entries"][0]
+    expect(reply["entries_total"] == 1 and entry["id"] == "ibm-pc:call:0x21/0x4C",
+           f"entries {reply['entries']}")
+    return f"the base names INT 21h AH=4Ch {entry['name']}, read at {entry['sources'][-1]['ref']}"
 
 
 def leaving(reply: Reply, run: Run) -> str:
     where = reply["instruction"]
-    got = (reply["verdict"], where["text"], where["symbol"], int(reply["regs"]["EAX"], 16))
-    expect(got == ("OTHER_STOP", "int 0x21", "main_loop", 0x4C00), f"stopped as {got}")
-    return "stopped at the game's own exit call, INT 21h with AX 4C00h"
+    got = (reply["verdict"], where["text"], where["symbol"], int(reply["regs"]["EAX"], 16),
+           where.get("note"), where.get("note_live"))
+    expect(got == ("OTHER_STOP", "int 0x21", "main_loop", 0x4C00, "exit (0x4C)", True),
+           f"stopped as {got}")
+    return "stopped at the game's own exit call, INT 21h with AX 4C00h, which the base names exit"
+
+
+def exit_listing(reply: Reply, run: Run) -> str:
+    last = len(reply["lines"]) - 1
+    expect(reply["lines"][last].endswith("int 0x21")
+           and reply["line_notes"] == [{"line": last, "note": "exit (0x4C)", "live": True}],
+           f"notes {reply.get('line_notes')}")
+    return "the exit call's line carries its note, named from the registers of the stop"
 
 
 def all_present(reply: Reply, run: Run) -> str:
@@ -542,6 +560,7 @@ STEPS = [
                           "length": (BRICKS / "BRICKS.COM").stat().st_size}, text_found),
     Step("comment", "comment_write", {"method": "add", "ref": "brick_hit", "text": COMMENT},
          says("a comment on brick_hit"), volatile={**STAMPS, **STORE}),
+    Step("base", "knowledge_find", {"kind": "call", "key": "0x21/0x4C"}, base_exit),
     Step("listing", "disassemble", {"ref": "brick_hit", "length": 12}, listed),
     Step("comments", "comment_list", {}, commented, volatile={**STAMPS, **STORE}),
     Step("scan", "scan", {"method": "start", "ref": "row_colours", "cell_bytes": 1,
@@ -640,8 +659,9 @@ STEPS = [
     Step("restored", "read_memory", {"ref": "score", "length": 2},
          worth(SCORE_AT_THIRD, "the third brick is not counted yet, as when the state was saved")),
     Step("quit", "write", {"ref": "quit", "data_hex": "01"}, written),
-    Step("exit", "breakpoint_interrupt", {"number": "0x21", "ah": "0x4C"}, armed),
+    Step("exit", "breakpoint_interrupt", {"number": "0x21", "ah": "0x4C"}, exit_armed),
     Step("leaving", "resume", {"seconds": WAIT_S}, leaving, volatile=AFTER_PLAY),
+    Step("exit listing", "disassemble", {"ref": "main_loop", "length": 35}, exit_listing),
     Step("captures", "captures", {}, all_present,
          volatile={"bytes": "a compressed file is the size the host's zlib makes it, and the "
                             "replay document carries the host's paths"}),
