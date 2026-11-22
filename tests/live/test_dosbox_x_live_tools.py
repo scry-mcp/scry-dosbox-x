@@ -266,13 +266,14 @@ def test_debug_hands_back_its_output_and_says_whether_it_kept_all_of_it() -> Non
     assert reply["status"] == "ok", reply
     assert reply["command"] == "BPLIST"
     assert "Breakpoint list" in str(reply["output"])
-    output, chars = str(reply["output"]), cast(int, reply["output_chars"])
-    assert len(output) <= DEBUG_CAP
-    assert reply.get("clipped", False) is (chars > DEBUG_CAP), (
-        f"clipped={reply['clipped']} with {chars} characters against a {DEBUG_CAP} cap")
-    if not reply.get("clipped", False):
-        assert chars == len(output), (
-            f"output_chars {chars} is not the length of an unclipped output ({len(output)})")
+    output = str(reply["output"])
+    assert reply["clipped"] is False and len(output) <= DEBUG_CAP, reply
+    assert "output_chars" not in reply and "output_path" not in reply, (
+        f"an unclipped output carries the clip's fields: {reply}")
+    long = cast(dict[str, Any], server.debug(command="HELP"))
+    assert long["clipped"] is True and len(str(long["output"])) <= DEBUG_CAP, long
+    assert cast(int, long["output_chars"]) > DEBUG_CAP, long
+    assert len(Path(str(long["output_path"])).read_text()) == long["output_chars"], long
     resumed = cast(dict[str, Any], server.resume(detail=True))
     assert resumed.get("clipped", False) is (
         cast(int, resumed["output_chars"]) > SMALL_CAP), resumed["output_chars"]

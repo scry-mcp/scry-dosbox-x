@@ -10,7 +10,7 @@
   "Run": "The tools that let the program run and stop it again.",
   "Breakpoints": "Breakpoints and watches the server saves by name and sets again in later sessions.",
   "States": "Saved states: the whole emulated machine written to a file, listed, and loaded back.",
-  "Names": "Symbol names for addresses: load your program's symbol table, then look up a name or an address in it.",
+  "Names": "Load your program's symbol table, look up a name or an address, and ask the knowledge base what a number is called.",
   "Comments": "Notes on addresses of the program, saved with the breakpoints and shown in the disassembly.",
   "Input": "Sending keys, mouse buttons and pointer moves to the DOS program, and checking that it reacted.",
   "Captures": "Saving the screen and the sound to files: a still, a series of frames, a video, a recording, and the list of them.",
@@ -3647,7 +3647,7 @@
     "An `id` or a `device` the base does not hold (`unknown_ref`)."
    ],
    "why": [
-    "The base serves an entry only once a second check confirmed it against the source, and an answer says where it was read. A key whose entry is held back says so (`unconfirmed`) and stays a number. The base is the server's own copy: it answers while the program runs."
+    "Each entry was checked against its source, and an answer says where it was read. A key the base has not confirmed answers `unconfirmed` and stays a number. The base is the server's own copy: it answers while the program runs."
    ],
    "related": [
     "symbols_find",
