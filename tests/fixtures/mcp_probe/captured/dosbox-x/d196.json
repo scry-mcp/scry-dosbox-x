@@ -1,0 +1,40 @@
+{
+ "task": {
+  "id": "d196",
+  "prompt": "In the ibm-pc system, what is the video BIOS call INT 10h with AH=01h called?",
+  "tool": "knowledge_find",
+  "args": {
+   "kind": "call",
+   "key": {
+    "any_of": [
+     "0x10/0x01"
+    ]
+   },
+   "scope": "ibm-pc"
+  },
+  "grammar": [
+   "call",
+   "ibm-pc"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "d196: {\"tool\": \"knowledge_find\", \"args\": {\"kind\": \"call\", \"key\": \"0x10/0x01\", \"scope\": \"ibm-pc\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d196: {\"tool\": \"knowledge_find\", \"args\": {\"kind\": \"call\", \"key\": \"0x10/0x01\", \"scope\": \"ibm-pc\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d196: {\"tool\": \"knowledge_find\", \"args\": {\"kind\": \"call\", \"key\": \"0x10/0x01\", \"scope\": \"ibm-pc\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

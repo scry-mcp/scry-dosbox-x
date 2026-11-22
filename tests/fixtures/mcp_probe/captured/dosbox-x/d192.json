@@ -1,0 +1,33 @@
+{
+ "task": {
+  "id": "d192",
+  "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 900 seconds, with nobody watching. I will read every reply as plain numbers, so no reply should call a number by a name.",
+  "tool": "start",
+  "args": {
+   "conf": "{anchor}opt/dosfury/fury.conf",
+   "cwd": "{anchor}opt/dosfury",
+   "session_seconds": 900,
+   "names": false
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "d192: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"names\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d192: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"names\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d192: {\"tool\": \"start\", \"args\": {\"conf\": \"{anchor}opt/dosfury/fury.conf\", \"cwd\": \"{anchor}opt/dosfury\", \"session_seconds\": 900, \"names\": false}}"
+   ],
+   "right": true
+  }
+ ]
+}

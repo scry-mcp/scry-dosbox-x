@@ -1,0 +1,34 @@
+{
+ "task": {
+  "id": "d197",
+  "prompt": "List the registers of the device adlib.",
+  "tool": "knowledge_find",
+  "args": {
+   "kind": "register",
+   "device": "adlib"
+  },
+  "grammar": [
+   "register"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "d197: {\"tool\": \"knowledge_find\", \"args\": {\"kind\": \"register\", \"device\": \"adlib\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d197: {\"tool\": \"knowledge_find\", \"args\": {\"kind\": \"register\", \"device\": \"adlib\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d197: {\"tool\": \"knowledge_find\", \"args\": {\"kind\": \"register\", \"device\": \"adlib\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

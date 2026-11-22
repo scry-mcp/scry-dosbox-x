@@ -1,0 +1,36 @@
+{
+ "task": {
+  "id": "d195",
+  "prompt": "Which entries of the knowledge base mention a handle? List at most 5.",
+  "tool": "knowledge_find",
+  "args": {
+   "text": {
+    "any_of": [
+     "handle",
+     "handle*"
+    ]
+   },
+   "limit": 5
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "d195: {\"tool\": \"knowledge_find\", \"args\": {\"text\": \"handle\", \"limit\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d195: {\"tool\": \"knowledge_find\", \"args\": {\"text\": \"handle*\", \"limit\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d195: {\"tool\": \"knowledge_find\", \"args\": {\"text\": \"handle\", \"limit\": 5}}"
+   ],
+   "right": true
+  }
+ ]
+}

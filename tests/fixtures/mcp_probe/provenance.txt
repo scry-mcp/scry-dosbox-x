@@ -2,3 +2,4 @@ What these are: the answers of a cheap model (haiku) to the probe's tasks, kept 
 `scry_core.probe --capture` from a probe run, one file per task under `captured/<server>/`. The
 probe test re-judges each against today's tools, so a capture records an answer once given; it is
 not a reply of the emulator.
+The captures of d152 and d192 to d197 are answers of sonnet at low effort.

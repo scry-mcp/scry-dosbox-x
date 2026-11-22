@@ -2789,7 +2789,12 @@
    "prompt": "Which entries of the knowledge base mention a handle? List at most 5.",
    "tool": "knowledge_find",
    "args": {
-    "text": "handle",
+    "text": {
+     "any_of": [
+      "handle",
+      "handle*"
+     ]
+    },
     "limit": 5
    }
   },

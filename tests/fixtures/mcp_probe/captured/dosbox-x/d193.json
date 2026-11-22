@@ -1,0 +1,38 @@
+{
+ "task": {
+  "id": "d193",
+  "prompt": "What does the BIOS return for INT 15h with AH=88h?",
+  "tool": "knowledge_find",
+  "args": {
+   "kind": "call",
+   "key": {
+    "any_of": [
+     "0x15/0x88"
+    ]
+   }
+  },
+  "grammar": [
+   "call"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "d193: {\"tool\": \"knowledge_find\", \"args\": {\"kind\": \"call\", \"key\": \"0x15/0x88\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d193: {\"tool\": \"knowledge_find\", \"args\": {\"kind\": \"call\", \"key\": \"0x15/0x88\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d193: {\"tool\": \"knowledge_find\", \"args\": {\"kind\": \"call\", \"key\": \"0x15/0x88\"}}"
+   ],
+   "right": true
+  }
+ ]
+}
