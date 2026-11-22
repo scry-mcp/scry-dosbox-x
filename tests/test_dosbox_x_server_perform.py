@@ -1142,6 +1142,9 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
         def at_debugger(self) -> bool:
             return False
 
+        def has(self, command: str) -> bool:
+            return False
+
         def send_commands(self, commands: list[bytes]) -> list[str]:
             return []
 

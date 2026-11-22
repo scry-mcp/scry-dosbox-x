@@ -1622,7 +1622,7 @@ def send_keys(keys: list[str],
     machine on a build with no `RUNSTATE` (`no_channel`).
 
     Reply: `route`, `posted`, `bytes`, `frames` (stub commands, a BIOS tick apart), `verify`
-    (`verdict` `TARGET` or `TIMEOUT`, `seen`); from a running guest `frame_before` and
+    (`verdict` `TARGET` or `TIMEOUT`, `seen`); from a running machine `frame_before` and
     `frame_after`, the display frames it went in between; from a stopped machine `polls` and
     the stop it was left at ({STOP_FIELDS}).
 
@@ -1666,7 +1666,7 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
     Reply: `route`, `pointer`, `arrived` (the program's pointer read, or `units="mouse"`; else
     `driver_arrived` and `asked`: only the driver is known), `motion` (a move reached the motion
     counters too), `verify`; with `target`: `target`, `screen`, `identified_at_stop`; from a
-    running guest and from a stopped machine, `send_keys`' frames, and its `polls` and stop.
+    running and from a stopped machine, `send_keys`' frames, and its `polls` and stop.
 
     Reference: REFERENCE.md, Input and the screen.
     """
