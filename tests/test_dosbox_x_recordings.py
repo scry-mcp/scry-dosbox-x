@@ -12,6 +12,7 @@ import sys
 import time
 from collections.abc import Callable
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
@@ -24,6 +25,10 @@ from scry_core.presence import Shown
 from scry_dosbox_x import binary as binaries
 from scry_dosbox_x import capture_files, recordings, retrace, server, summaries
 from scry_dosbox_x import captures as caps
+from scry_dosbox_x import debugger as dbg
+from scry_dosbox_x import presence as dpresence
+from scry_dosbox_x import program as dprogram
+from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
 
 CAPTURES = Path(__file__).parent / "fixtures" / "captures"
@@ -440,6 +445,42 @@ def test_a_run_that_raised_still_tells_the_presence_the_recording_ended(
         recordings.recording(cast(Any, dstate.STATE.session), "record", "VIDEO", 2, None, 10.0,
                              lambda *_: None)
     assert marks.told == [("video", True), ("video", False)]
+
+
+@pytest.mark.parametrize(("capture_video", "told"), [(True, [("video", True)]), (False, [])])
+def test_a_session_started_with_capture_video_shows_the_mark_from_its_start(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capture_video: bool,
+        told: list[tuple[str, bool]]) -> None:
+    from dosbox_x_server_support import _start_on_a_booted_fake
+    class Drawn(_Marks):
+        def reply(self) -> bool:
+            return True
+
+    marks = Drawn()
+    monkeypatch.setattr(dpresence, "open_shown", lambda *_a, **_k: Shown(held=cast(Any, marks)))
+    started = _start_on_a_booted_fake(tmp_path, monkeypatch, capture_video=capture_video,
+                                      program="G.COM")
+    assert started["status"] == "ok", started
+    assert marks.told == told
+
+
+@pytest.mark.parametrize(("capture_video", "ended", "told"), [
+    (True, None, []), (True, {"state": "exited"}, [("video", False)]),
+    (False, {"state": "exited"}, [])])
+def test_the_mark_of_a_capture_video_session_ends_with_the_program_it_wraps(
+        monkeypatch: pytest.MonkeyPatch, capture_video: bool, ended: dict[str, Any] | None,
+        told: list[tuple[str, bool]]) -> None:
+    marks = _Marks()
+    stand = SimpleNamespace(
+        launch=SimpleNamespace(capture_video=capture_video), presence=Shown(held=cast(Any, marks)),
+        listing=lambda *_: "", _text_rows=lambda: None, _expected=lambda: "G", _ran=lambda: False)
+    monkeypatch.setattr(dbg, "psp", lambda _s: 1)
+
+    def observed(watch: Any, *_a: Any) -> None:
+        watch.ended = ended
+    monkeypatch.setattr(dprogram, "observe", observed)
+    ds.Session.watch_program(cast(Any, stand))
+    assert marks.told == told
 
 
 def test_a_capture_that_stays_on_keeps_the_mark_because_it_still_records(

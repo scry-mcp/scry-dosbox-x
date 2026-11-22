@@ -22,7 +22,8 @@ What a client of the server notices.
   `dx` too. A comment you wrote stays beside it, apart.
 - `start` takes `overlay`, which layers the window shows over the edge: a caption naming each
   call, the keys held, the pointer, a mark while the machine is stopped and a blinking mark in
-  the top right corner while `record` or `audio_record` runs, each on by default, and where the
+  the top right corner while `record` or `audio_record` runs, or while a session started with
+  `capture_video` records its program, each on by default, and where the
   captions go. `start` and `status` answer `overlay` with the layers drawn and,
   for each the build cannot draw, why; `build_check` lists the layers a build draws as
   `presence_layers`. A build that draws only the edge and the pointer keeps drawing them, and one that predates

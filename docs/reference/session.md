@@ -225,7 +225,7 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
 - `break_on_int3` (boolean, default `false`): `true` also stops at the program's own `int 3`, where a program marks a break. The stop at the debugger's first prompt still comes first.
 - `program` (string, default `""`): A program to run inside DOS once the conf's `[autoexec]` has finished. Left empty, none.
 - `logfile` (string, default `""`): A file that receives what the program writes to port `0xE9`, its own debug log, which `log` and `log_wait` read. A file already there is overwritten.
-- `capture_video` (boolean, default `false`): `true` records the run of `program` as video. It needs `program`.
+- `capture_video` (boolean, default `false`): `true` records the run of `program` as video, and the window shows the record mark until the program ends. It needs `program`.
 - `captures_dir` (string, default `""`): Where the emulator writes a capture it takes itself. Left empty, `capture` under the working directory.
 - `plan` (array of object, optional): A list of calls to run right after the start, each `{"op": <tool>, ...arguments}`, run as `perform` runs a list.
 - `settle_seconds` (number (>= 0, <= 600.0), optional): How long each wait of the `plan` may take, in seconds. Left out, 30.

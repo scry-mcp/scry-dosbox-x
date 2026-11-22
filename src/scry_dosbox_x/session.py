@@ -443,12 +443,16 @@ class Session(dprocess.Process):
         """Fold this stop's DOS process into the program watch, once per reply that reports a
         stop (never per frame of a run). A reading that fails adds nothing: the reply has its own
         refusal for a channel that is gone."""
+        watch = dprogram.watch_of(self)
         try:
-            dprogram.observe(dprogram.watch_of(self), dbg.psp(self),
+            dprogram.observe(watch, dbg.psp(self),
                              lambda: self.listing("DOS MCBS"), self._text_rows,
                              self._expected(), self._ran)
         except Invalid:
             return
+        if watch.ended is not None and self.launch.capture_video:
+            # The capture ends with the program it wraps.
+            dpresence.of(self).recording("video", False)
 
     def _expected(self) -> str | None:
         """The program `start` ran, by the name its memory blocks carry."""
