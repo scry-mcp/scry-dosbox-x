@@ -100,3 +100,8 @@ def test_disassemble_lists_its_notes_apart_from_its_lines() -> None:
     dstate.STATE.session = cast(ds.Session, s2)
     plain = code.disassemble(cast(ds.Session, s2), "0814:0100", 3)
     assert "line_notes" not in plain, plain
+
+
+def test_a_register_the_debugger_did_not_print_as_hex_is_left_out() -> None:
+    assert line_notes.live_registers({"EAX": "zz", "EDX": "000003C8"}) == {"DX": 0x3C8}
+    assert line_notes.of_listing(_insns(EXIT), LOAD, {"CS": "0814", "EIP": "?"}) == []
