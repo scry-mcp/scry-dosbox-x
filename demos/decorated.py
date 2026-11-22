@@ -6,10 +6,8 @@ Pillow and numpy (scry-core's `decorate` extra) are loaded only while a loop is 
 
 from __future__ import annotations
 
-import contextlib
-from collections.abc import Callable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import replace
-from pathlib import Path
 from typing import Any
 
 from scry_core import demo as core
@@ -116,16 +114,6 @@ def passes(document: Mapping[str, Any], demo: core.Demo) -> list[dict[str, Any]]
     return shown
 
 
-def _drawing() -> Any:
-    """`scry_core.decorate`, which needs the extra; `Invalid` naming it when it is not installed."""
-    try:
-        from scry_core import decorate
-    except ImportError as e:
-        raise Invalid("a demo's loop is decorated with Pillow and numpy, scry-core's `decorate` "
-                      "extra: install it (`uv sync --extra decorate`)") from e
-    return decorate
-
-
 def starts(demo: core.Demo, run: core.Run, cuts: Sequence[motion.Cut]) -> list[int]:
     """The emulator frame each cut's recording shows at its frame 0. A `record` step's recording
     begins where its reply began; a moment of the session's own video begins where the step
@@ -134,7 +122,7 @@ def starts(demo: core.Demo, run: core.Run, cuts: Sequence[motion.Cut]) -> list[i
     ended: dict[str, int] = {}
     for step in demo.steps:
         reply = run.replies.get(step.name)
-        frame = None if reply is None else core._last(reply.data, core.FRAME_KEY)
+        frame = None if reply is None else core.last_under(reply.data, core.FRAME_KEY)
         if frame is not None or ended:
             ended[step.name] = frame if frame is not None else list(ended.values())[-1]
     found = []
@@ -157,7 +145,7 @@ def decorator(demo: core.Demo, run: core.Run, document: Mapping[str, Any],
               layers: Sequence[ov.Layer], cuts: Sequence[motion.Cut]) -> motion.Decorator:
     """What `motion.build` draws each of `cuts` with."""
     declared(layers)
-    decorate = _drawing()
+    from scry_core import decorate  # the `decorate` extra: only the making of a loop needs it
     style = decorate.Style.of(ov.Overlay(calls="calls" in layers, keys="keys" in layers,
                                          pointer="pointer" in layers, pause=False, record=False))
     first = starts(demo, run, cuts)
@@ -170,44 +158,13 @@ def decorator(demo: core.Demo, run: core.Run, document: Mapping[str, Any],
     return each
 
 
-@contextlib.contextmanager
-def _replaced(owner: Any, name: str, value: Any) -> Iterator[None]:
-    old = getattr(owner, name)
-    setattr(owner, name, value)
-    try:
-        yield
-    finally:
-        setattr(owner, name, old)
-
-
 def prepared(demo: core.Demo) -> core.Demo:
     """`demo` with the input its steps send named for its timeline."""
     return replace(demo, steps=fired(demo.steps))
 
 
 def main(demo: core.Demo, layers: Sequence[ov.Layer], argv: Sequence[str] | None = None) -> int:
-    """The demo's command line with its loop drawn in `layers`; the runner has no seam for a
-    decorator, so for the run it is handed this module's."""
+    """The demo's command line with its loop drawn in `layers`."""
     declared(layers)
-    real_execute, real_build = core.execute, motion.build
-
-    def execute(demo_: core.Demo, run: core.Run, transcript: Path,
-                update_readme: bool = False) -> int:
-        if update_readme and demo_.moments:
-            _drawing()  # before the emulator runs, not after
-
-        def build(cuts: Sequence[motion.Cut], work: Path,
-                  decorate: motion.Decorator | None = None) -> motion.Built:
-            # The runner names its files from the transcript's stem and exports no name for it.
-            written = core._beside(transcript).timeline
-            if not written.is_file():
-                raise Invalid(f"the run wrote no timeline at {written}, and a clip is decorated "
-                              "only from its run's timeline")
-            document = timeline.loads(written.read_text(encoding="utf-8"))
-            return real_build(cuts, work, decorator(demo_, run, document, layers, cuts))
-
-        with _replaced(motion, "build", build):
-            return real_execute(demo_, run, transcript, update_readme)
-
-    with _replaced(core, "execute", execute):
-        return core.main(prepared(demo), argv)
+    return core.main(replace(prepared(demo), decorator=lambda demo_, run, document: decorator(
+        demo_, run, document, layers, core.cuts(demo_, run))), argv)

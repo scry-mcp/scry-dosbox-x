@@ -391,6 +391,7 @@ by address, the symbol's fields and `delta`. INVALID: no table.
 
 </details>
 <!-- scry-reference:end symbols_find -->
+
 <!-- scry-reference:begin knowledge_find -->
 ## `knowledge_find`
 

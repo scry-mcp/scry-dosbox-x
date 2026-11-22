@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from demo_transcripts import timeline_of  # noqa: E402
+from scry_core.committed_run import timeline_of
 from scry_core.demo import Reply, Step
 
 from demos import decorated
