@@ -1,0 +1,246 @@
+{
+  "version": 3,
+  "server": "dosbox-x",
+  "steps": [
+    {
+      "op": "run_to",
+      "ref": "Draw_High_Scores_Screen",
+      "control": "Check_Money25",
+      "seconds": 120,
+      "recorded": {
+        "verdict": "TARGET"
+      }
+    },
+    {
+      "op": "breakpoint_at",
+      "ref": "Check_Money100"
+    },
+    {
+      "op": "screen_wait",
+      "screen": "hiscores",
+      "on_breakpoint": "Check_Money100",
+      "seconds": 120,
+      "recorded": {
+        "verdict": "TARGET"
+      }
+    },
+    {
+      "op": "declaration_clear",
+      "kind": "breakpoint",
+      "all": true
+    },
+    {
+      "op": "screen_map_find",
+      "recorded": {
+        "matched": true,
+        "screen": "hiscores"
+      }
+    },
+    {
+      "op": "read_memory",
+      "ref": "Credits",
+      "length": 2,
+      "recorded": {
+        "hex": "0000"
+      }
+    },
+    {
+      "op": "send_keys",
+      "keys": [
+        "tab"
+      ]
+    },
+    {
+      "op": "breakpoint_at",
+      "ref": "Check_Money100"
+    },
+    {
+      "op": "screen_wait",
+      "screen": "insert",
+      "on_breakpoint": "Check_Money100",
+      "seconds": 120,
+      "recorded": {
+        "verdict": "TARGET"
+      }
+    },
+    {
+      "op": "declaration_clear",
+      "kind": "breakpoint",
+      "all": true
+    },
+    {
+      "op": "screen_map_find",
+      "recorded": {
+        "matched": true,
+        "screen": "insert"
+      }
+    },
+    {
+      "op": "read_memory",
+      "ref": "Credits",
+      "length": 2,
+      "recorded": {
+        "hex": "0300"
+      }
+    },
+    {
+      "op": "send_keys",
+      "keys": [
+        "1"
+      ]
+    },
+    {
+      "op": "run_to",
+      "ref": "Level_Write",
+      "control": "Check_Money25",
+      "seconds": 120,
+      "recorded": {
+        "verdict": "TARGET"
+      }
+    },
+    {
+      "op": "breakpoint_at",
+      "ref": "Check_Money100"
+    },
+    {
+      "op": "screen_wait",
+      "screen": "level",
+      "on_breakpoint": "Check_Money100",
+      "seconds": 120,
+      "recorded": {
+        "verdict": "TARGET"
+      }
+    },
+    {
+      "op": "declaration_clear",
+      "kind": "breakpoint",
+      "all": true
+    },
+    {
+      "op": "screen_map_find",
+      "recorded": {
+        "matched": true,
+        "screen": "level"
+      }
+    },
+    {
+      "op": "read_memory",
+      "ref": "Credits",
+      "length": 2,
+      "recorded": {
+        "hex": "0200"
+      }
+    },
+    {
+      "op": "read_memory",
+      "ref": "Stage_Act",
+      "length": 2,
+      "recorded": {
+        "hex": "0000"
+      }
+    },
+    {
+      "op": "breakpoint_at",
+      "ref": "Check_Money100"
+    },
+    {
+      "op": "screen_wait",
+      "screen": "play",
+      "on_breakpoint": "Check_Money100",
+      "condition": "d@Player1 == 0x30001",
+      "seconds": 120,
+      "recorded": {
+        "verdict": "TARGET"
+      }
+    },
+    {
+      "op": "declaration_clear",
+      "kind": "breakpoint",
+      "all": true
+    },
+    {
+      "op": "screen_map_find",
+      "recorded": {
+        "matched": true,
+        "screen": "play"
+      }
+    },
+    {
+      "op": "read_memory",
+      "ref": "Player1",
+      "length": 12,
+      "recorded": {
+        "hex": "010003000100000003000000"
+      }
+    },
+    {
+      "op": "send_keys",
+      "keys": [
+        "right"
+      ]
+    },
+    {
+      "op": "run_to",
+      "ref": "Gest_Scores",
+      "control": "Check_Money25",
+      "seconds": 120,
+      "recorded": {
+        "verdict": "TARGET"
+      }
+    },
+    {
+      "op": "read_memory",
+      "ref": "Player1",
+      "length": 12,
+      "recorded": {
+        "hex": "010004000100000003000000"
+      }
+    },
+    {
+      "op": "send_keys",
+      "keys": [
+        "space"
+      ]
+    },
+    {
+      "op": "run_to",
+      "ref": "Gest_Scores",
+      "control": "Check_Money25",
+      "seconds": 120,
+      "recorded": {
+        "verdict": "TARGET"
+      }
+    },
+    {
+      "op": "read_memory",
+      "ref": "Player1",
+      "length": 12,
+      "recorded": {
+        "hex": "010004000200000003000000"
+      }
+    },
+    {
+      "op": "send_keys",
+      "keys": [
+        "up"
+      ]
+    },
+    {
+      "op": "run_to",
+      "ref": "Gest_Scores",
+      "control": "Check_Money25",
+      "seconds": 120,
+      "recorded": {
+        "verdict": "TARGET"
+      }
+    },
+    {
+      "op": "read_memory",
+      "ref": "Player1",
+      "length": 12,
+      "recorded": {
+        "hex": "010004000200040003000200"
+      }
+    }
+  ]
+}

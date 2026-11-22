@@ -4,6 +4,7 @@ committed runs of the demos, which stand in for an emulator."""
 from __future__ import annotations
 
 import importlib
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -23,9 +24,20 @@ def _module(name: str) -> Any:
     return importlib.import_module(f"demos.{name}.demo")
 
 
+SAVED_LIST = ROOT / "tests" / "fixtures" / "perform" / "saved-list.json"
+
+
+def _replayed(args: Any, reply: Reply) -> list[Any]:
+    return decorated.pressed("perform", {**args, "path": str(SAVED_LIST)}, reply)
+
+
 def _timeline(name: str) -> dict[str, Any]:
-    return timeline_of(decorated.prepared(_module(name).DEMO),
-                       ROOT / "demos" / name / "TRANSCRIPT.md")
+    """The committed run's timeline. A transcript hides the host path a `perform` replays, so
+    the one step that replays a saved list is given the list."""
+    demo = decorated.prepared(_module(name).DEMO)
+    steps = [replace(step, events=_replayed) if (name, step.name) == ("lineup", "script") else step
+             for step in demo.steps]
+    return timeline_of(replace(demo, steps=steps), ROOT / "demos" / name / "TRANSCRIPT.md")
 
 
 def _events(name: str, step: str) -> list[dict[str, Any]]:
@@ -54,6 +66,13 @@ def test_modifiers_go_down_before_the_keys_and_come_up_after_them() -> None:
     held = [(e["name"], e["down"]) for e in _events("dpaint", "word") if e["kind"] == "key"]
     assert held[:2] == [("shift", True), ("s", True)] and held[-2:] == [("s", False),
                                                                         ("shift", False)]
+
+
+def test_a_perform_fed_by_a_path_gives_the_events_of_the_steps_the_file_holds() -> None:
+    """The reply shows the list's first rows, which hold two of its five keys."""
+    sent = [(e["name"], e["down"]) for e in _events("lineup", "script") if e["kind"] == "key"]
+    assert sent == [(key, down) for key in ("tab", "1") for down in (True, False)]
+    assert all(type(e["frame"]) is int for e in _events("lineup", "script"))
 
 
 def test_a_key_held_down_goes_down_in_one_call_and_up_in_a_later_one() -> None:

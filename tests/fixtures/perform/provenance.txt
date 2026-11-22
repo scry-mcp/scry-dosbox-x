@@ -1,0 +1,2 @@
+saved-list.json: a `perform` document as a game's own store keeps it, copied unchanged. A demo
+replays it by `path`, so its steps are in this file and not in the transcript's call.

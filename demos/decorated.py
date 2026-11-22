@@ -11,7 +11,7 @@ from dataclasses import replace
 from typing import Any
 
 from scry_core import demo as core
-from scry_core import motion, timeline
+from scry_core import motion, recording, timeline
 from scry_core import overlay as ov
 from scry_core.verdict import Invalid
 
@@ -41,10 +41,12 @@ def declared(layers: Sequence[ov.Layer]) -> None:
 def _ops(tool: str, args: Mapping[str, Any], reply: Mapping[str, Any]
          ) -> list[tuple[str, Mapping[str, Any], Mapping[str, Any]]]:
     """The inputs a call made, each with its own arguments and reply: the call itself, or the
-    steps a `perform` or the `act` of a `drive` ran."""
+    steps a `perform` (given inline or by the `path` of the document that holds them) or the `act`
+    of a `drive` ran."""
     if tool in ("send_keys", "send_mouse"):
         return [(tool, args, reply)]
-    steps = args.get("steps" if tool == "perform" else "act") or []
+    steps = (recording.read_document(args["path"])["steps"] if tool == "perform" and "path" in args
+             else args.get("steps" if tool == "perform" else "act") or [])
     ran = reply.get("ran") if tool == "perform" else (reply.get("act") or {}).get("ran")
     found = []
     for at, got in enumerate(ran if isinstance(ran, list) else []):  # hidden in a transcript
