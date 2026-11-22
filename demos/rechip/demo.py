@@ -19,12 +19,12 @@ from scry_core.demo import (
     Run,
     Step,
     expect,
-    main,
     recording,
     window_args,
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
+from demos import decorated  # noqa: E402
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
     NORMAL_CORE,
@@ -41,6 +41,8 @@ from demos.host import (  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
+#: The layers that exist for this demo: its calls and the keys it sends.
+LAYERS = decorated.CALLS_AND_KEYS
 #: What the built copy holds: the start profile, the DEV build and the conf the profile names.
 PROFILE = Path(".scry/start/dev.json")
 SYMBOLS = Path("build/RECHIPD.SYM")
@@ -266,4 +268,4 @@ DEMO = Demo(
 
 if __name__ == "__main__":
     isolated_store("rechip")
-    sys.exit(main(DEMO))
+    sys.exit(decorated.main(DEMO, LAYERS))

@@ -10,11 +10,12 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import recording
-from scry_core.demo import DISPLAY, Demo, Reply, Run, Step, expect, main, window_args
+from scry_core.demo import DISPLAY, Demo, Reply, Run, Step, expect, window_args
 from scry_core.game_demo import Binding, Press, map_load
 from scry_core.games import lineup
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
+from demos import decorated  # noqa: E402
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
     NORMAL_CORE,
@@ -31,6 +32,8 @@ from demos.host import (  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
+#: The layers that exist for this demo: its calls and the keys it sends.
+LAYERS = decorated.CALLS_AND_KEYS
 #: What the game's copy holds: the program and its symbols, then what its store declares.
 EXE, MAP = Path("EXES/LINEUP.EXE"), Path("EXES/LINEUP.MAP")
 PROFILE = Path(".scry/start/dos.json")
@@ -156,4 +159,4 @@ DEMO = Demo(
 
 if __name__ == "__main__":
     isolated_store("lineup")
-    sys.exit(main(DEMO))
+    sys.exit(decorated.main(DEMO, LAYERS))

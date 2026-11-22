@@ -17,6 +17,7 @@ summary that raised over a field a reply did not carry would turn an answer into
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -457,6 +458,23 @@ def _parked(reply: dict[str, Any]) -> str:
     frame = reply.get("frame")
     return f", {_said(reply['polls'], 'frame')}" + (
         f" to frame {frame}" if isinstance(frame, int) else "")
+
+
+_POINTER_AT = re.compile(r"\bpointer at (\d+),(\d+)")
+_TO_FRAME = re.compile(r"\bto frame (\d+)")
+
+
+def pointer_in(summary: str) -> tuple[int, int] | None:
+    """The place `send_mouse` says it left the pointer at, read back from its summary; the only
+    place a step of a `perform` that kept summaries holds it."""
+    found = _POINTER_AT.search(summary)
+    return (int(found[1]), int(found[2])) if found else None
+
+
+def frame_in(summary: str) -> int | None:
+    """The frame an input to a stopped machine says it left it at, read back from its summary."""
+    found = _TO_FRAME.findall(summary)
+    return int(found[-1]) if found else None
 
 
 def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:

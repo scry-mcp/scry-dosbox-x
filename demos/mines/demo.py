@@ -29,11 +29,11 @@ from scry_core.demo import (
     Reply,
     Run,
     Step,
-    main,
     window_args,
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
+from demos import decorated  # noqa: E402
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
     RETRACE_STOP,
@@ -50,6 +50,8 @@ from demos.host import (  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
+#: The layers that exist for this demo: its calls and the mouse it sends.
+LAYERS = decorated.CALLS_AND_POINTER
 #: These mirror mines.asm: a beginner's board, its cells' size, and where the pointer waits
 #: while a screen is read, off every region the map signs.
 ROWS, COLS, MINES, CELL = 9, 9, 10, 24
@@ -369,4 +371,4 @@ DEMO = Demo(
 
 if __name__ == "__main__":
     isolated_store("mines")
-    sys.exit(main(DEMO))
+    sys.exit(decorated.main(DEMO, LAYERS))

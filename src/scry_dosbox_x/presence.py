@@ -9,7 +9,7 @@ announces protocol 2 is sent only what protocol 2 parses; the layers it lacks ar
 
 from __future__ import annotations
 
-from collections.abc import Callable, Collection, Iterable
+from collections.abc import Callable, Collection, Iterable, Mapping
 from typing import Any, Protocol
 
 from pydantic import ValidationError
@@ -240,37 +240,49 @@ def overlay_of(value: object) -> ov.Overlay:
                       f"(top, bottom or auto)") from None
 
 
-def keys_sent(shown: presence.Shown, keys: Iterable[str], modifiers: Iterable[str],
-              action: str) -> None:
-    """Report a `send_keys` that went in: the modifiers and the keys held by `press` and `down`,
-    let go by `press` and `up`."""
+def key_edges(keys: Iterable[str], modifiers: Iterable[str], action: str
+              ) -> list[tuple[str, bool]]:
+    """What a `send_keys` does to the keycaps, in order: the modifiers and the keys held by
+    `press` and `down`, let go by `press` and `up`."""
     names = [name.lower() for name in (*modifiers, *keys)]
-    if action != "up":
-        for name in names:
-            shown.key(name, True)
-    if action != "down":
-        for name in reversed(names):
-            shown.key(name, False)
+    return ([(name, True) for name in names] if action != "up" else []) + (
+        [(name, False) for name in reversed(names)] if action != "down" else [])
 
 
-def mouse_sent(shown: presence.Shown, reply: dict[str, Any], x: int | None, y: int | None,
-               button: str | None, action: str) -> None:
-    """Report a `send_mouse` that went in: the pointer where the driver now reports it, else
-    where it was sent, then the button's presses."""
-    where: dict[str, Any] = {}
+def button_edges(action: str) -> list[bool]:
+    """What a `send_mouse`'s `action` does to its button: pressed by `click` and `down`, released
+    by `click` and `up`."""
+    return ([True] if action != "up" else []) + ([False] if action != "down" else [])
+
+
+def pointer_where(reply: Mapping[str, Any], x: int | None, y: int | None) -> tuple[int, int]:
+    """Where a `send_mouse` left the pointer: where the driver reports it, else where it was
+    sent."""
+    where: Mapping[str, Any] = {}
     pointer = reply.get("pointer")
     if isinstance(pointer, dict):
         screen = pointer.get("screen")
         mouse = pointer.get("mouse")
         where = screen if isinstance(screen, dict) and "x" in screen else (
             mouse if isinstance(mouse, dict) else {})
-    shown.moved(int(where.get("x", x or 0)), int(where.get("y", y or 0)))
+    return int(where.get("x", x or 0)), int(where.get("y", y or 0))
+
+
+def keys_sent(shown: presence.Shown, keys: Iterable[str], modifiers: Iterable[str],
+              action: str) -> None:
+    """Report a `send_keys` that went in."""
+    for name, down in key_edges(keys, modifiers, action):
+        shown.key(name, down)
+
+
+def mouse_sent(shown: presence.Shown, reply: dict[str, Any], x: int | None, y: int | None,
+               button: str | None, action: str) -> None:
+    """Report a `send_mouse` that went in: the pointer, then the button's presses."""
+    shown.moved(*pointer_where(reply, x, y))
     if button is None:
         return
-    if action != "up":
-        shown.button(button, True)
-    if action != "down":
-        shown.button(button, False)
+    for down in button_edges(action):
+        shown.button(button, down)
 
 
 def overlay_shown(shown: presence.Shown) -> dict[str, Any]:
