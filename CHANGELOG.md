@@ -5,10 +5,21 @@ What a client of the server notices.
 ## Unreleased
 
 - The `dos` channel of `log` and `log_wait` names the INT 21h function and the DOS error of each
-  call from dictionaries that cite Ralf Brown's interrupt list and DOSBox-X's source, and the
-  names are fuller: `open file` where it said `open`. Every function the emulator's handler has a
-  case for has a name, and so has every error code the emulator defines and every one the
-  list's table gives, up to 255.
+  call from a knowledge base of dictionaries that cite Ralf Brown's interrupt list and DOSBox-X's
+  source. It names only what a second check against that source confirmed; any other function or
+  error shows as its number, as `0x3D` and `2`, so a pattern for it is its number.
+- A reply names the numbers it shows. Its `names` field says what each number is called, its
+  `summary` carries the name beside the number, and a window caption reads `name (number)`: an
+  interrupt breakpoint names the call it waits for, a port or a vector is named once the base
+  holds it, and a symbol you typed as a ref names the address the table places it at.
+  `start(names=false)` turns the reply's names off for that session; the captions keep theirs.
+- `knowledge_find` answers what a number is called and what the server knows of it: a DOS or BIOS
+  call or a DOS error, by key, id or words, with the source line each answer was read from. A key
+  whose entry exists but is not confirmed says so, and stays a number. `status` carries how many
+  entries are served and how many are held back.
+- A disassembled line and the instruction of a stop carry a `note` where the base names what the
+  instruction states: `int 21h` is named at a stop, from the registers, and a port written in
+  `dx` too. A comment you wrote stays beside it, apart.
 - `start` takes `overlay`, which layers the window shows over the edge: a caption naming each
   call, the keys held, the pointer, a mark while the machine is stopped and a blinking mark in
   the top right corner while `record` or `audio_record` runs, each on by default, and where the

@@ -82,13 +82,13 @@ TAP_PAIR, TAP_R_POLL = "0814:013C", "0814:0129"
            "package's DOS guest", X_CELLS)
 def section_x() -> None:
     boot_dosio(dosio_dir(), dos_calls=True)
-    opened = _calls(r"open ")
+    opened = _calls(r"0x3D ")
     mine = [c for c in opened if c.get("file") in ("IN.TXT", "MISSING.TXT")]
     missing = next((c for c in mine if c.get("file") == "MISSING.TXT"), {})
     found = next((c for c in mine if c.get("file") == "IN.TXT"), {})
     M.judge(X_CELLS[0].label, len(mine) == 2 and found.get("returned") is True
             and "error" not in found and (found.get("out") or {}).get("cf") == 0
-            and missing.get("error") == {"code": 2, "name": "file not found"},
+            and missing.get("error") == {"code": 2, "name": "2"},
             str(mine)[:140])
     psp = str(found.get("psp"))
     shell = [c for c in _calls("exec") if str(c.get("file", "")).upper().endswith("DOSIO.COM")]

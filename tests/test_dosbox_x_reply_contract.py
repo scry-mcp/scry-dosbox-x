@@ -92,6 +92,8 @@ def test_every_tool_answers_the_contract_with_no_machine(
                 "perform_export": "bad_argument", "screen_map_write": "needs_call",
                 # reads a host file, no machine: one `start` did not fingerprint is refused
                 "guest_file": "bad_argument",
+                # asks nothing of a machine: with nothing to look up, its own judge refuses
+                "knowledge_find": "bad_argument",
                 **dict.fromkeys(media_tools.IMAGE_TOOLS + media_tools.AUDIO_TOOLS,
                                 "bad_argument")}.get(name, "no_session")
     contract.check_refusal(name, reply, expected)

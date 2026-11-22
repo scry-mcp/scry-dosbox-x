@@ -33,8 +33,8 @@ SETTLE_DEFAULT_S = 30.0
 #: for the next stop. Membership is proven per tool against a live session; `symbols_load` is
 #: out because without a `base` it measures one off the machine.
 RUNNING_OK_OPS = frozenset({
-    "status", "log", "log_wait", "symbols_find", "comment_list", "comment_write",
-    "breakpoint_at", "breakpoint_interrupt", "regpoint_add", "declaration_list",
+    "status", "log", "log_wait", "symbols_find", "knowledge_find", "comment_list",
+    "comment_write", "breakpoint_at", "breakpoint_interrupt", "regpoint_add", "declaration_list",
     "declaration_clear",
     "watch_add", "captures", "capture_frame", "series_capture", "send_keys", "send_mouse",
     "state_write", "state_list", "snapshot", "stop", "wait", "screen_map_write", "guest_file",

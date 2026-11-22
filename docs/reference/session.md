@@ -141,8 +141,8 @@ start(conf="", cwd="", session_seconds=null, shared=false, display=null, fullscr
     plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null,
     presence=true,
     overlay={"calls": true, "keys": true, "pointer": true, "pause": true, "record": true, "place": "auto"},
-    dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program",
-    profile="")
+    names=true, dos_calls=false, log_categories=null, guest_files=null, symbols="",
+    base_from="program", profile="")
 ```
 
 ### Try it
@@ -235,6 +235,7 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
 - `background` (boolean, optional): `true` opens the window behind your other windows and leaves the keyboard focus where it is; `false` opens it in front. Left out, behind unless `shared`.
 - `presence` (boolean, default `true`): Draws a border around the emulator's window while the session is open, brighter while a call runs the machine. `false` leaves it off.
 - `overlay` (any, default `{"calls": true, "keys": true, "pointer": true, "pause": true, "record": true, "place": "auto"}`): Layers over the border, each on unless `false`: `calls` names each call, `keys` keys held, `pointer` the pointer, `pause` a stopped machine, `record` a recording. `place`: `top`, `bottom`, `auto`.
+- `names` (boolean, default `true`): `false` leaves a reply's numbers bare, with no `names` field, no name in its summary and no note on a disassembled line; the window's captions still name them.
 - `dos_calls` (boolean, default `false`): `true` records every DOS call (INT 21h) the program makes, for `log(channel="dos")`. It needs a build whose debugger has `DOSTRACE`.
 - `log_categories` (object, optional): DOSBox-X's own `[log]` categories, each with its level, written into `logfile`. It needs `logfile`.
 - `guest_files` (array of string, optional): Up to 16 files on the host that the program is expected to leave. `guest_file` and `close` say what became of each.
@@ -479,6 +480,8 @@ background: Launch behind, keeping the caller's focus, or in front; omitted it i
 presence: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
 
 overlay: Layers drawn over the presence edge, each on by default: `calls` a caption naming each call and its arguments, abbreviated (paths by their last name); `keys` the keys or fields held down; `pointer` the guest's mouse pointer; `pause` a mark while the session holds the machine stopped; `record` a blinking mark while it records video or audio. `place`: where the captions go, `top`, `bottom`, or `auto`, the band of the picture that shows less. Ignored with `presence=false`.
+
+names: Name the numbers a reply shows: a port, interrupt, address or key gets its name in the reply's `names`, its summary and a disassembled line's note. `false` leaves replies bare; the window's captions keep their names.
 ```
 
 </details>
@@ -560,13 +563,13 @@ Takes no argument.
 ### What comes back
 
 - `last_stop`: Where the machine last stopped: its `pc` and `cause`, and `since_s`, how long ago. Unavailable, with why, when there is no stop to report.
-- `pc`: Where the machine stands now (`SSSS:OOOOOOOO`), read from the registers: a `set_register` moving `CS:IP` shows here, not in `last_stop`. While running, unavailable; `last_stop.pc` answers.
-- `cpu_mode`: `real`, `protected`, `paged` or `VM86`, read at a stop. Unavailable while the program runs.
+- `pc`: Where the machine stands now (`SSSS:OOOOOOOO`), read from the registers, so a `set_register` on `CS:IP` shows here; `cpu_mode` is beside it. Unavailable while running.
 - `stopped_on_its_own`: Present when the machine had stopped and no call had reported it yet. `status` records that stop as the last one.
 - `pending`: What waits for the next stop: `arm`, the breakpoints declared while the program ran; a `disarm` count; and whether a `symbols_load` or a `base_remeasure` is queued.
 - `symbols_held`: Present while a `start` symbol table waits for its program: its `path`, its `base_from` and `waiting_for`, the program's file name.
+- `knowledge`: How many entries the base serves (`served`) and holds back as not confirmed (`held_back`).
 
-<details><summary>All 19 reply fields</summary>
+<details><summary>All 21 reply fields</summary>
 
 - `bound_s` (number)
 - `bundle` (string)
@@ -578,6 +581,8 @@ Takes no argument.
 - `cpu_mode` (string or object)
 - `declarations` (object)
 - `elapsed_s` (number)
+- `knowledge` (Counts)
+- `names_failed` (object)
 - `overlay` (OverlayReply)
 - `pc` (string or object)
 - `pending` (object)

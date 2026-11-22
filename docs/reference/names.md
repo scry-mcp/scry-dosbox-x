@@ -391,3 +391,167 @@ by address, the symbol's fields and `delta`. INVALID: no table.
 
 </details>
 <!-- scry-reference:end symbols_find -->
+<!-- scry-reference:begin knowledge_find -->
+## `knowledge_find`
+
+Ask what a number is called on this machine and what the server knows about it: a DOS or BIOS call, a DOS error.
+
+```text
+knowledge_find(id="", kind="", key="", text="", device="", scope="", limit=10)
+```
+
+### Try it
+
+On [Bricks](../../demos/bricks/README.md), the game this repository builds. The base needs no session for what it holds.
+
+Ask:
+
+> What does INT 21h with AH=4Ch do?
+
+Call:
+
+```text
+knowledge_find(kind="call", key="0x21/0x4C")
+```
+
+Reply, 3 of 10 fields:
+
+```json
+{
+  "summary": "kind call key 0x21/0x4C: exit",
+  "entries_total": 1,
+  "examined": 518
+}
+```
+
+One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X does when it is taken, and its source lines. `served` and `held_back` count what the base serves and holds back.
+
+<details><summary>The whole reply</summary>
+
+```json
+{
+  "summary": "kind call key 0x21/0x4C: exit",
+  "status": "ok",
+  "query": {"kind": "call", "key": "0x21/0x4C"},
+  "scope": ["ibm-pc"],
+  "entries_total": 1,
+  "entries": [
+    {
+      "id": "ibm-pc:call:0x21/0x4C",
+      "kind": "call",
+      "key": "0x21/0x4C",
+      "name": "exit",
+      "scope": "ibm-pc",
+      "description": "Ends the program with return code AL.",
+      "behaviour": "The emulator terminates the current PSP with AL as the return code, clears the running program's name and arguments, and sets AX=3E01h for the parent, as the source comment says real MS-DOS appears to return on leaving AH=4Bh.",
+      "checked": true,
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214C",
+          "cites": "INT 21 - DOS 2+ - \"EXIT\" - TERMINATE WITH RETURN CODE",
+          "url": "https://www.cs.cmu.edu/~ralf/files.html"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4c",
+          "cites": "        case 0x4c:                  /* EXIT Terminate with return code */",
+          "url": "https://github.com/joncampbell123/dosbox-x/blob/2a43c7335efd91f87bf5582245abdd5b3f18d5d4/src/dos/dos.cpp"
+        }
+      ]
+    }
+  ],
+  "truncated": false,
+  "examined": 518,
+  "served": 630,
+  "held_back": 235
+}
+```
+
+</details>
+
+### Arguments
+
+- `id` (string, default `""`): An entry's id, as another reply cites it, such as `ibm-pc:call:0x21/0x4C`. Answers that entry whole.
+- `kind` (one of `""`, `"vector"`, `"call"`, `"error"`, `"port"`, `"irq"`, `"memory"`, `"input"`, `"device"`, `"register"`, `"command"`, default `""`): What the number is: `vector`, `call`, `error`, `port`, `irq`, `memory`, `input`, `device`, `register` or `command`. Left empty, every kind.
+- `key` (string, default `""`): The number as a reply prints it: a call is `INT/AH` or `INT/AH/AL`, such as `0x21/0x4C`.
+- `text` (string, default `""`): Words looked for in names, aliases, descriptions and behaviour. A word ending in `*` matches by prefix.
+- `device` (string, default `""`): A device's key: everything that belongs to it.
+- `scope` (string, default `""`): `ibm-pc`, the only system this server names. Left empty, all.
+- `limit` (integer, default `10`): How many entries are listed: 1 to 50. Left out, 10.
+
+### What comes back
+
+- `entries`: Rows with `id`, `kind`, `key`, `name`; one match, or an `id`, answers whole with `description`, `behaviour` and `sources`.
+- `entries_total`: How many entries matched.
+- `examined`: How many entries were searched, so a zero says what it is a zero of.
+- `held_back`: How many entries exist and are not confirmed, so are not served.
+- `unconfirmed`: The ids of the held-back entries the question matched.
+- `nearest`: When nothing matched: the entries next to the number or the words.
+
+<details><summary>All 10 reply fields</summary>
+
+- `entries` (array of object)
+- `entries_total` (integer)
+- `examined` (integer)
+- `held_back` (integer)
+- `nearest` (array of object)
+- `query` (object)
+- `scope` (array of string)
+- `served` (integer)
+- `truncated` (boolean)
+- `unconfirmed` (array of string)
+
+</details>
+
+### What it refuses
+
+- None of `id`, `kind`, `key`, `text`, `device` (`bad_argument`).
+- A `key` that is no number of that `kind`, or a `scope` the server does not hold (`bad_argument`).
+- An `id` or a `device` the base does not hold (`unknown_ref`).
+
+### Why it works this way
+
+The base serves an entry only once a second check confirmed it against the source, and an answer says where it was read. A key whose entry is held back says so (`unconfirmed`) and stays a number. The base is the server's own copy: it answers while the program runs.
+
+### Related tools
+
+- [`symbols_find`](#symbols_find)
+- [`interrupt_vectors`](machine.md#interrupt_vectors)
+- [`disassemble`](read.md#disassemble)
+- [`breakpoint_interrupt`](breakpoints.md#breakpoint_interrupt)
+
+<details><summary>The contract your client receives</summary>
+
+```text
+What a number is called on this machine, and what the base knows of it: a port, interrupt
+vector, DOS or BIOS call, IRQ, memory address, input, device, its registers and commands. One
+match, or an `id`, answers the whole entry (`description`, `behaviour`, `sources`); more,
+rows. No session is needed except for a device by tag, inputs and memory.
+
+`id`: an entry's id. `kind`: `vector`, `call`, `error`, `port`, `irq`, `memory`, `input`,
+`device`, `register` or `command`; empty searches all. `key`: the number as a reply prints it,
+or a range. `text`: words in names, aliases, descriptions; `*` ends a prefix. `device`: all of
+that device. `scope`: the system, cpu or device; empty, the live session's. `limit` 1..50.
+
+Examples: `key=0x3C8`; `kind=port key=0x3C0..0x3CF`; `kind=vector key=0xFFF8 scope=<scope>`;
+`kind=call key=0x21/0x4C`, its variant by a register `kind=call key=0x10/0x12/BL=0x36`;
+a running machine's device by tag `kind=device key=:maincpu`; its registers
+`kind=register device=<device>`; `text=palette*`.
+
+Refused (INVALID): nothing to look up, a bad `key`, or a `scope` it lacks
+(`bad_argument`; `6809` is read as `m6809`); an `id` or `device` it
+lacks (`unknown_ref`); a kind it holds none of (`no_channel`); a tag or live kind with no
+session (`no_session`).
+
+Reply: `query`, `scope`, `entries_total`, `entries`, `truncated`, `examined`, `served`,
+`held_back`; nothing matched: no entry, `nearest` and a `note`: it stays a number.
+`unconfirmed` lists ids held back.
+
+Scopes: ibm-pc.
+
+Reference: REFERENCE.md, Names for numbers.
+```
+
+</details>
+<!-- scry-reference:end knowledge_find -->

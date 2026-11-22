@@ -1,0 +1,51 @@
+{
+  "format": "scry-knowledge/1",
+  "dictionary": "ports",
+  "kind": "port",
+  "scope": "ibm-pc",
+  "covers": "FIXTURE of the namer's tests: three ports, one told apart by direction",
+  "complete_against": "dosbox-x:src/hardware/vga_dac.cpp IO_Register*",
+  "entries": [
+    {
+      "key": "0x3C8",
+      "name": "dac write index",
+      "description": "Selects the palette entry the next data writes reach.",
+      "behaviour": "A write selects an entry.",
+      "access": "write",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/hardware/vga_dac.cpp VGA_SetupDAC 0x3c8",
+          "cites": "\t\tIO_RegisterWriteHandler(0x3c8,write_p3c8,IO_MB);"
+        }
+      ]
+    },
+    {
+      "key": "0x3C8",
+      "name": "dac read index",
+      "description": "Gives the palette entry the next data reads reach.",
+      "behaviour": "A read gives the entry.",
+      "access": "read",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/hardware/vga_dac.cpp VGA_SetupDAC 0x3c8",
+          "cites": "\t\tIO_RegisterReadHandler(0x3c8,read_p3c8,IO_MB);"
+        }
+      ]
+    },
+    {
+      "key": "0x60",
+      "name": "keyboard data",
+      "description": "The keyboard controller's data port.",
+      "behaviour": "A read gives the last scancode.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/hardware/keyboard.cpp KEYBOARD_Init 0x60",
+          "cites": "\t\tIO_RegisterReadHandler(0x60,read_p60,IO_MB);"
+        }
+      ]
+    }
+  ]
+}

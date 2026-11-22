@@ -2160,18 +2160,18 @@
     "pattern": {
      "regex": {
       "lines": [
-       "#17 08BC:011F psp 0x08BC 0x3D open IN.TXT -> AX=0x0005",
-       "#18 08BC:012D psp 0x08BC 0x3F read -> AX=0x0004",
-       "#19 08BC:0131 psp 0x08BC 0x3E close -> AX=0x3E01",
-       "#20 08BC:0139 psp 0x08BC 0x3D open MISSING.TXT -> error 2 file not found",
-       "#21 08BC:0157 psp 0x08BC 0x3C create OUT.TXT -> AX=0x0005",
-       "#22 08BC:016D psp 0x08BC 0x40 write -> AX=0x0004",
-       "#23 08BC:0171 psp 0x08BC 0x3E close -> AX=0x3E01"
+       "#17 08BC:011F psp 0x08BC 0x3D IN.TXT -> AX=0x0005",
+       "#18 08BC:012D psp 0x08BC 0x3F read file -> AX=0x0004",
+       "#19 08BC:0131 psp 0x08BC 0x3E close file -> AX=0x3E01",
+       "#20 08BC:0139 psp 0x08BC 0x3D MISSING.TXT -> error 2",
+       "#21 08BC:0157 psp 0x08BC 0x3C create file OUT.TXT -> AX=0x0005",
+       "#22 08BC:016D psp 0x08BC 0x40 -> AX=0x0004",
+       "#23 08BC:0171 psp 0x08BC 0x3E close file -> AX=0x3E01"
       ],
       "hits": [
        3
       ],
-      "example": "open .* -> error",
+      "example": "0x3D .* -> error",
       "also": [
        0
       ]
@@ -2748,6 +2748,80 @@
      "calls": false
     }
    }
+  },
+  {
+   "id": "d192",
+   "prompt": "Open a DOSBox-X session from {anchor}opt/dosfury/fury.conf, working directory {anchor}opt/dosfury, bounded to 900 seconds, with nobody watching. I will read every reply as plain numbers, so no reply should call a number by a name.",
+   "tool": "start",
+   "args": {
+    "conf": "{anchor}opt/dosfury/fury.conf",
+    "cwd": "{anchor}opt/dosfury",
+    "session_seconds": 900,
+    "names": false
+   }
+  },
+  {
+   "id": "d193",
+   "prompt": "What does the BIOS return for INT 15h with AH=88h?",
+   "tool": "knowledge_find",
+   "args": {
+    "kind": "call",
+    "key": {
+     "any_of": [
+      "0x15/0x88"
+     ]
+    }
+   },
+   "grammar": [
+    "call"
+   ]
+  },
+  {
+   "id": "d194",
+   "prompt": "Show me the whole entry the base holds under the id ibm-pc:call:0x2F/0x16/0x80.",
+   "tool": "knowledge_find",
+   "args": {
+    "id": "ibm-pc:call:0x2F/0x16/0x80"
+   }
+  },
+  {
+   "id": "d195",
+   "prompt": "Which entries of the knowledge base mention a handle? List at most 5.",
+   "tool": "knowledge_find",
+   "args": {
+    "text": "handle",
+    "limit": 5
+   }
+  },
+  {
+   "id": "d196",
+   "prompt": "In the ibm-pc system, what is the video BIOS call INT 10h with AH=01h called?",
+   "tool": "knowledge_find",
+   "args": {
+    "kind": "call",
+    "key": {
+     "any_of": [
+      "0x10/0x01"
+     ]
+    },
+    "scope": "ibm-pc"
+   },
+   "grammar": [
+    "call",
+    "ibm-pc"
+   ]
+  },
+  {
+   "id": "d197",
+   "prompt": "List the registers of the device adlib.",
+   "tool": "knowledge_find",
+   "args": {
+    "kind": "register",
+    "device": "adlib"
+   },
+   "grammar": [
+    "register"
+   ]
   }
  ]
 }

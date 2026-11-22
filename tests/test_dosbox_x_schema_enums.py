@@ -11,6 +11,7 @@ import re
 from typing import Any
 
 import pytest
+import test_dosbox_x_envelope_seam
 from scry_core import media_tools, screen_map
 from scry_core import scan_vocabulary as words
 from scry_core import vocabulary as vocab
@@ -129,6 +130,16 @@ def test_a_ranged_argument_publishes_its_judges_bounds(tool: str, arg: str, lo: 
     assert (prop.get("minimum"), prop.get("maximum")) == (lo, hi), prop
 
 
+#: Published by a tool scry-core registers, whose own judge words its refusal and whose own tests
+#: hold the pair: `scry_core.knowledge_tool.judge`.
+SHARED_JUDGE = {("knowledge_find", "kind")}
+
+
+def test_the_shared_judge_refuses_a_kind_outside_the_enum_it_publishes() -> None:
+    reply = test_dosbox_x_envelope_seam._call("knowledge_find", {"kind": "zz"})[1]
+    assert reply.get("code") == "bad_argument" and "kind='zz'" in reply["message"], reply
+
+
 def test_every_wait_publishes_the_one_bound_and_nothing_publishes_what_no_row_holds() -> None:
     with pytest.raises(Invalid):
         vocab.check_wait(0)            # the judge refuses the floor the schema leaves open
@@ -151,4 +162,5 @@ def test_every_wait_publishes_the_one_bound_and_nothing_publishes_what_no_row_ho
                 ranges.add((tool, arg))
     assert waits, "no wait was found: the schema read examined nothing"
     assert ranges == {(t, a) for t, a, _, _ in RANGES}
-    assert enums == {(t, a) for t, a, _ in CLOSED} | {(t, a) for t, a, _ in FOLDED}
+    assert enums == ({(t, a) for t, a, _ in CLOSED} | {(t, a) for t, a, _ in FOLDED}
+                     | SHARED_JUDGE)

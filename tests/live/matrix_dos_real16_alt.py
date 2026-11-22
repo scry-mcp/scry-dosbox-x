@@ -126,7 +126,7 @@ def _sound_files(psp: int, control: str) -> None:
     game's PSP, none refused by DOS."""
     opened: list[dict[str, Any]] = []
     for _ in range(5):
-        opened = M.call(server.log, channel="dos", pattern=r"open AUDIO\\",
+        opened = M.call(server.log, channel="dos", pattern=r"0x3D AUDIO\\",
                         limit=400).get("calls") or []
         if opened:
             break

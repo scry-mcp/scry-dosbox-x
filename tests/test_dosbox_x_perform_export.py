@@ -136,7 +136,8 @@ DECLARED = {
     "promote": "drop",
     "guest_file": ("state",),
     **dict.fromkeys(("declaration_list", "build_check", "call_stack", "captures",
-                     "comment_list", "disassemble", "find", "log", "log_wait", "state_list",
+                     "comment_list", "disassemble", "find", "knowledge_find", "log", "log_wait",
+                     "state_list",
                      "status", "symbols_find"), "drop"),
 }
 

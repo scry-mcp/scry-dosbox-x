@@ -21,7 +21,8 @@ def test_every_tool_publishes_each_field_as_its_value_or_unavailable() -> None:
 
 def test_a_real_tools_reply_with_a_field_its_model_does_not_name_fails() -> None:
     reply_schema.check("status", {"status": "ok", "cpu_mode": "real", "pending": {},
-                                  "presence": False, "last_stop": {}})
+                                  "presence": False, "last_stop": {},
+                                  "knowledge": {"served": 0, "held_back": 0}})
     with pytest.raises(ValueError):
         reply_schema.check("status", {"status": "ok", "alive": False, "stray": 1})
 

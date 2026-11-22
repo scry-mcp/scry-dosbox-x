@@ -17,6 +17,7 @@ from typing import Any
 
 from scry_core import (
     judges,
+    knowledge_tool,
     log_marks,
     media_tools,
     narrowing,
@@ -700,6 +701,7 @@ BY_OP: dict[str, Check] = {
     "memdump": _memdump,
     "write": _write, "set_register": _set_register,
     "symbols_load": _symbols_load, "symbols_find": _symbols_find,
+    "knowledge_find": knowledge_tool.judge,
     "capture_frame": _capture_frame, "find": _find,
     "debug": _debug, "interrupt_vectors": _interrupt_vectors,
     "palette": _palette, "screen_view": _screen_view, "screen_wait": _screen_wait,

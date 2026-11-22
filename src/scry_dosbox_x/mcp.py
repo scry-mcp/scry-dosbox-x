@@ -14,6 +14,7 @@ from scry_core import strict_arguments as strict
 
 from scry_dosbox_x import arming, checks, docs, folds, running, sequence, trace
 from scry_dosbox_x import captures as caps
+from scry_dosbox_x import naming as dnaming
 from scry_dosbox_x import presence as dpresence
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
@@ -50,7 +51,7 @@ ROSTER = roster.Roster(families=(
     ("Breakpoints", ("breakpoint_at", "breakpoint_interrupt", "regpoint_add", "watch_add",
                       "declaration_list", "declaration_clear")),
     ("States", ("state_list", "state_write")),
-    ("Names", ("symbols_load", "symbols_find")),
+    ("Names", ("symbols_load", "symbols_find", "knowledge_find")),
     ("Comments", ("comment_list", "comment_write")),
     ("Input", ("send_keys", "send_mouse")),
     ("Captures", ("captures", "capture_frame", "series_capture", "snapshot", "record",
@@ -77,6 +78,8 @@ mcp = envelope.Envelope(
         'is a symbol or a `SEG:OFF`. A cancel ends a call as its bound would; the next reply\n'
         'says `cancelled`.\n'
         'FOR A VALUE: `registers`, `read_memory`, `memdump`, `log`; `debug` last.\n\n'
+        'NAMES: a reply names the numbers it shows, in `names` and in its `summary`;\n'
+        '`knowledge_find` says what a number is.\n\n'
         'EVERY REPLY carries `summary`, `status` (`ok`, or `INVALID` with `code` and `message`)\n'
         "and `session` (`altered` after a write); a diagnostic left out is empty, and\n"
         "`omitted` names what was not sent.\n"
@@ -222,7 +225,7 @@ BOUNDARY = boundary.Boundary(
     session_block=st.session_block, take_cancelled=STATE.take_cancelled,
     keep_cancelled=_keep_cancelled, doc=docs.filled, give_back=_keep_accounts,
     recorder=RECORDER,
-    listener=presence.Slot(_session_presence))
+    listener=presence.Slot(_session_presence), namer=dnaming.GUARD, names_on=lambda: STATE.names)
 
 
 def tool(

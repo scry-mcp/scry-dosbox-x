@@ -567,7 +567,7 @@ def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
     # declarations: that write is the declaring call's, not the reader's (owner's call).
     assert read_only == {"status", "log", "log_wait", "registers", "read_memory", "find",
                          "disassemble", "call_stack",
-                         "symbols_find",
+                         "symbols_find", "knowledge_find",
                          "declaration_list", "captures", "build_check", "state_list",
                          "comment_list", "screen_signature", "screen_map_find", "guest_file",
                          "audio_compare"}, read_only

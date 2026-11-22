@@ -32,9 +32,10 @@ def test_the_dos_guest_through_the_machine_tools_and_its_channels(tmp_path: Path
                      logfile=str(tmp_path / "s.log"), presence=False))
     assert _ok(server.run_for(milliseconds=3000))["verdict"] == "ELAPSED"
     missing = _ok(server.log(pattern="MISSING", channel="dos"))["calls"]
-    assert missing[0]["error"] == {"code": 2, "name": "file not found"}, missing
+    assert missing[0]["error"] == {"code": 2, "name": "2"}, missing
     psp = missing[0]["psp"][2:]
-    assert _ok(server.log_wait(pattern=r"open IN\.TXT", channel="dos", seconds=5))["already"]
+    assert _ok(server.log_wait(pattern=r"0x3D IN\.TXT", channel="dos", seconds=5))["already"]
+    assert _ok(server.knowledge_find(kind="call", key="0x21/0x4C"))["entries"][0]["name"] == "exit"
     assert _ok(server.port(method="read", port=0x21))["value"].startswith("0x")
     assert _ok(server.pic(method="read"))["irqs"][2]["cascade"] is True
     assert isinstance(_ok(server.a20(method="read"))["enabled"], bool)

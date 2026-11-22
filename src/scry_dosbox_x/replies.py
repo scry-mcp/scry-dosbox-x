@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any, Required
+from typing import Annotated, Any, NotRequired, Required
 
-from scry_core import media_replies, tool_replies
+from scry_core import knowledge_tool, media_replies, tool_replies
 from scry_core import promote as core_promote
 from scry_core import sequence_account as account
 from scry_core.instruction import StopInstruction
@@ -20,6 +20,7 @@ class DosboxInstruction(StopInstruction):
     bytes_from: str
     code_bits: int
     flow: str
+    note_live: NotRequired[bool]
 
 
 class DosboxEnvelope(RunEnvelope, total=False):
@@ -148,6 +149,7 @@ class DisassembleReply(DosboxEnvelope, total=False):
     flow: Required[list[Any]]
     flow_source: Required[str]
     length: int
+    line_notes: Annotated[list[Any], When("the base names an operand")]
     lines: Required[list[Any]]
     ref: Required[str]
     resolved: Annotated[list[Any], When("with symbols loaded")]
@@ -594,6 +596,8 @@ class StatusReply(DosboxEnvelope, total=False):
     cpu_mode: Annotated[str | dict[str, Any], When("with a session")]
     declarations: Annotated[dict[str, Any], When("with a session")]
     elapsed_s: Annotated[float, When("with a session")]
+    knowledge: Required[knowledge_tool.Counts]
+    names_failed: Annotated[dict[str, Any], When("a namer failed")]
     overlay: Annotated[OverlayReply, When("with a session whose presence is drawn")]
     pc: Annotated[str | dict[str, Any], When("with a session")]
     pending: Required[dict[str, Any]]
@@ -879,6 +883,7 @@ MODELS: dict[str, type] = {
     "step": StepReply,
     "stop": StopReply,
     "symbols_find": SymbolsFindReply,
+    "knowledge_find": knowledge_tool.KnowledgeFindReply,
     "symbols_load": SymbolsLoadReply,
     "trace": TraceReply,
     "watch_add": WatchAddReply,

@@ -940,6 +940,55 @@
    "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off"
   }
  },
+ "knowledge_find": {
+  "from": "docs/reference/tour/tour.py: step `base`, run in process because it needs no machine; the tour's next run replaces it",
+  "call": {
+   "kind": "call",
+   "key": "0x21/0x4C"
+  },
+  "reply": {
+   "summary": "kind call key 0x21/0x4C: exit",
+   "status": "ok",
+   "query": {
+    "kind": "call",
+    "key": "0x21/0x4C"
+   },
+   "scope": [
+    "ibm-pc"
+   ],
+   "entries_total": 1,
+   "entries": [
+    {
+     "id": "ibm-pc:call:0x21/0x4C",
+     "kind": "call",
+     "key": "0x21/0x4C",
+     "name": "exit",
+     "scope": "ibm-pc",
+     "description": "Ends the program with return code AL.",
+     "behaviour": "The emulator terminates the current PSP with AL as the return code, clears the running program's name and arguments, and sets AX=3E01h for the parent, as the source comment says real MS-DOS appears to return on leaving AH=4Bh.",
+     "checked": true,
+     "sources": [
+      {
+       "role": "documentation",
+       "ref": "rbil61:INTERRUP.G D-214C",
+       "cites": "INT 21 - DOS 2+ - \"EXIT\" - TERMINATE WITH RETURN CODE",
+       "url": "https://www.cs.cmu.edu/~ralf/files.html"
+      },
+      {
+       "role": "emulator",
+       "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4c",
+       "cites": "        case 0x4c:                  /* EXIT Terminate with return code */",
+       "url": "https://github.com/joncampbell123/dosbox-x/blob/2a43c7335efd91f87bf5582245abdd5b3f18d5d4/src/dos/dos.cpp"
+      }
+     ]
+    }
+   ],
+   "truncated": false,
+   "examined": 518,
+   "served": 630,
+   "held_back": 235
+  }
+ },
  "log": {
   "from": "docs/reference/tour/TRANSCRIPT.md: call 66",
   "call": {

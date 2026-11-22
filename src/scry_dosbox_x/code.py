@@ -19,7 +19,7 @@ from typing import Any
 
 from scry_core.reply_contract import unavailable
 
-from scry_dosbox_x import disasm, grammar, machine, placement
+from scry_dosbox_x import disasm, grammar, line_notes, machine, placement
 from scry_dosbox_x import dump as dumping
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as st
@@ -258,6 +258,8 @@ def disassemble(session: ds.Session, ref: str, length: int,
         "flow": [i.flow for i in insns], "flow_source": disasm.SOURCE}
     if STATE.table:
         reply["resolved"] = resolve(segs, seg, insns)
+    if named := line_notes.of_listing(insns, seg, segs.registers):
+        reply["line_notes"] = named
     return reply
 
 
@@ -284,6 +286,7 @@ def stop_instruction(session: ds.Session, where: dict[str, str],
                                "bytes_from": "memory"}
     if text := _note_at(*_comments_at(segs, cs, notes), eip):
         picture["comment"] = text
+    line_notes.on_instruction(picture, insn, registers)
     return {"instruction": {**picture, **_stop_symbol(segs, cs, eip)}}
 
 

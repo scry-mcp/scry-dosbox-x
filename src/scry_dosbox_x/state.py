@@ -109,6 +109,9 @@ class State:
         self.applied_last: dict[str, Any] = {}
         self.found_stop_last: dict[str, Any] = {}
         self.cancelled: cancel.Cancelled | None = None
+        # Whether replies name their numbers: `start`'s `names`, kept after `close` so the closing
+        # reply is judged as the session was.
+        self.names = True
         self.e9_offset = 0
         # Process-lived, so a path handed back still opens after `close`.
         self.scratch: Path | None = None

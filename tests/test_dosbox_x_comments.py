@@ -1030,7 +1030,7 @@ def test_each_reply_opens_with_its_one_line(tmp_path: Path) -> None:
     install()
     probe_table()
     assert ok(server.comment_write("add", ref="start", text="a"))["summary"] == \
-        "comment_write add: start at 0x0000824b, stored"
+        "comment_write add: start at 0x0000824b (start), stored"
     assert ok(server.comment_write("add", ref="nowhere", text="b"))["summary"] == \
         "comment_write add: nowhere at unresolved, stored"
     assert ok(server.comment_list())["summary"] == "comment_list: 2 comments"
@@ -1038,7 +1038,7 @@ def test_each_reply_opens_with_its_one_line(tmp_path: Path) -> None:
     assert ok(server.comment_write("save", dest=str(dest)))["summary"] == \
         f"comment_write save: 2 comments to {dest}"
     assert ok(server.comment_write("delete", ref="start"))["summary"] == \
-        "comment_write delete: start at 0x0000824b deleted"
+        "comment_write delete: start at 0x0000824b (start) deleted"
     assert ok(server.comment_write("load", path=str(dest)))["summary"] == \
         "comment_write load: 2 read, 1 added, 0 replaced"
 

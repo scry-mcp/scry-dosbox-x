@@ -292,19 +292,20 @@ Four 16-bit instructions from `brick_hit`; the first ends with the comment writt
 ### What comes back
 
 - `lines`: One x86 instruction a line: `SSSS:OOOOOOOO`, its bytes, its text. A line with a comment ends ` // <text>`.
-- `flow`: One word per line: `call`, `branch`, `return`, `sequential` or `unknown`.
-- `flow_source`: What classified the lines: `capstone`, the decoder.
+- `flow`: One word per line: `call`, `branch`, `return`, `sequential` or `unknown`, as the decoder (`flow_source`, `capstone`) classified it.
 - `code_bits`: 16 or 32, the width the code was decoded in. `code_bits_from` says where that width was read.
 - `resolved`: Only with symbols loaded: each direct call or branch target and memory operand, with its address and nearest symbol. Rows carry `line`, `operand`, `kind`, `register`, `seg_off`, `addr`, `symbol` and `delta`.
 - `seg_off`: The address `ref` resolved to, as segment and offset.
+- `line_notes`: Where the base names an operand: `line`, `note`, and `live` when a register named it. A person's comment stays on its line.
 
-<details><summary>All 9 reply fields</summary>
+<details><summary>All 10 reply fields</summary>
 
 - `code_bits` (integer)
 - `code_bits_from` (string)
 - `flow` (array)
 - `flow_source` (string)
 - `length` (integer)
+- `line_notes` (array)
 - `lines` (array)
 - `ref` (string)
 - `resolved` (array)

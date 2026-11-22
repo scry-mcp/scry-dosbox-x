@@ -70,6 +70,7 @@ from pydantic import Field
 from scry_core import (  # noqa: E402
     given,
     judges,
+    knowledge_tool,
     log_marks,
     media_tools,
     methods,
@@ -82,6 +83,7 @@ from scry_core import (  # noqa: E402
     screen_map,
     signalled_end,
 )
+from scry_core import naming as scry_naming  # noqa: E402
 from scry_core import overlay as scry_overlay  # noqa: E402
 from scry_core import presence as scry_presence  # noqa: E402
 from scry_core import promote as core_promote  # noqa: E402
@@ -130,8 +132,10 @@ from scry_dosbox_x import dos_calls as dos_calls_trace  # noqa: E402
 from scry_dosbox_x import dump as dumping  # noqa: E402
 from scry_dosbox_x import find as finder  # noqa: E402
 from scry_dosbox_x import guest_files as guest  # noqa: E402
+from scry_dosbox_x import knowledge as dknowledge  # noqa: E402
 from scry_dosbox_x import launch as dlaunch  # noqa: E402
 from scry_dosbox_x import logs as dlogs  # noqa: E402
+from scry_dosbox_x import naming as dnaming  # noqa: E402
 from scry_dosbox_x import presence as dpresence  # noqa: E402
 from scry_dosbox_x import process as dprocess
 from scry_dosbox_x import promote as mpromote  # noqa: E402
@@ -216,6 +220,7 @@ def start(conf: str = "", cwd: str = "",
           presence: Annotated[bool, Field(description=scry_presence.ARGUMENT)] = True,
           overlay: Annotated[scry_overlay.Overlay,
                              Field(description=scry_overlay.ARGUMENT)] = scry_overlay.OVERLAY,
+          names: scry_naming.Switch = True,
           dos_calls: bool = False,
           log_categories: dict[Annotated[str, vocab.enum(dlaunch.LOG_CATEGORIES)],
                                Annotated[str, vocab.enum(dlaunch.LOG_LEVELS)]] | None = None,
@@ -287,12 +292,18 @@ def start(conf: str = "", cwd: str = "",
     params.pop("profile")
     # A profile holds the object where a call holds the model.
     params["overlay"] = dpresence.overlay_of(params["overlay"])
+    names_on = params.pop("names")
     # Around the launch: a `plan` runs inside it, and one of its `add` steps names a map by the
     # guest this call starts and keeps it in the project that guest runs in.
-    with mpromote.launching(params, str(block["file"]) if block is not None else ""):
-        reply = lifecycle.start(**params, progress=bridge(ctx), ops=_step_ops)
+    before, STATE.names = STATE.names, bool(names_on)
+    try:
+        with mpromote.launching(params, str(block["file"]) if block is not None else ""):
+            reply = lifecycle.start(**params, progress=bridge(ctx), ops=_step_ops)
+    except BaseException:
+        STATE.names = before
+        raise
     # A kept recipe is JSON: the model is its object.
-    kept = {**params, "overlay": params["overlay"].model_dump()}
+    kept = {**params, "names": names_on, "overlay": params["overlay"].model_dump()}
     return mpromote.after_start(reply, kept, block=block, defaults=_START_DEFAULTS)
 
 
@@ -340,9 +351,13 @@ def status() -> dict[str, Any]:
                              else lifecycle.presence_facts(STATE.session))
     outside = ("" if STATE.session is None or STATE.session.alive()
                else STATE.session.outside_kill_note())
+    failed = dnaming.GUARD.failed()
+    names_failed: dict[str, Any] = {} if failed is None else {"names_failed": dict(failed)}
     return st.reply(**st.process_facts(), last_stop=STATE.dated(),
                     pending=STATE.pending_summary(),
+                    knowledge=knowledge_tool.counts(dknowledge.base()),
                     **running.status_facts(STATE.session, stopped), **shown,
+                    **names_failed,
                     **({"note": outside} if outside else {}))
 
 
@@ -1206,6 +1221,10 @@ def symbols_find(name: str = "", offset: judges.NumberArg | None = None,
     live()
     return placement.find(name or None, None if offset is None else checks.number("offset", offset),
                           section, linear, limit)
+
+
+knowledge_find = knowledge_tool.register(tool, lambda fields: st.reply(**fields),
+                                         dknowledge.base())
 
 
 # ------------------------------------------------------------------------------- comments

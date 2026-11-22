@@ -1,0 +1,23 @@
+{
+  "format": "scry-knowledge/1",
+  "dictionary": "vectors",
+  "kind": "vector",
+  "scope": "ibm-pc",
+  "covers": "FIXTURE of the namer's tests: one interrupt vector",
+  "complete_against": "dosbox-x:src/ints/mouse.cpp INT33_Handler",
+  "entries": [
+    {
+      "key": "0x33",
+      "name": "mouse driver",
+      "description": "The mouse driver's entry.",
+      "behaviour": "Calls pick a function by AX.",
+      "sources": [
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler",
+          "cites": "static Bitu INT33_Handler(void) {"
+        }
+      ]
+    }
+  ]
+}

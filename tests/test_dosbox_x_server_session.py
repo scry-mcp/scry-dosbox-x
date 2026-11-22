@@ -326,7 +326,8 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
         "run_to", "run_for", "trace", "breakpoint_at", "watch_add", "declaration_list",
         "declaration_clear",
         "state_write", "state_list", "snapshot", "captures", "capture_frame", "build_check",
-        "symbols_load", "symbols_find", "send_keys", "send_mouse", "perform", "perform_export",
+        "symbols_load", "symbols_find", "knowledge_find", "send_keys", "send_mouse", "perform",
+        "perform_export",
         "drive", "comment_list", "comment_write", "series_capture", "image_compare",
         "audio_compare", "screen_map_find", "screen_map_write", "record", "audio_record", "port",
         "pic", "a20",
@@ -1486,8 +1487,8 @@ def test_status_pc_is_where_the_machine_is_now_after_a_command_moved_it(tmp_path
 
 
 def test_every_tool_is_summarised_by_its_own_line() -> None:
+    from scry_core import knowledge_tool, screen_map
     from scry_core import promote as core_promote
-    from scry_core import screen_map
     from scry_core import window as core_window
     lines = dosbox_mcp.BOUNDARY.summaries
     folded = {"comment_write": folds.COMMENT, "screen_map_write": folds.MAP, "scan": folds.SCAN,
@@ -1511,6 +1512,8 @@ def test_every_tool_is_summarised_by_its_own_line() -> None:
             assert lines[name] is core_promote.promote_line, name
         elif name == "window":
             assert lines[name] is core_window.summary, name
+        elif name == "knowledge_find":
+            assert lines[name] is knowledge_tool.summary, name
         else:
             assert lines[name].__name__ == name, (name, lines[name])
 

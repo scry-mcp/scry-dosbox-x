@@ -185,6 +185,7 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
         "state_list": {}, "breakpoint_interrupt": {"number": 0x21},
         "regpoint_add": {"condition": "AX==13"},
         "symbols_load": {"path": str(source)}, "symbols_find": {"name": "x"},
+        "knowledge_find": {"key": "0x21", "kind": "call"},
         "machine_map": {}, "interrupt_vectors": {}, "palette": {}, "screen_view": {},
         "screen_signature": {}, "breakpoint_at": {"ref": "0000:0400"},
         "declaration_list breakpoint": {},
