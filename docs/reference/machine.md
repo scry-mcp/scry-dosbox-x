@@ -484,13 +484,14 @@ matching lines counted by first word.
 `since_mark` (a byte position, from a `mark`) reads only what follows. Needs a session with
 `logfile`. `dos`, the guest's INT 21h calls and no other interrupt, instead needs a session
 started with `dos_calls`, matches `pattern` against each call's `line` (`#20 08BC:0139 psp
-0x08BC 0x3D open MISSING.TXT -> error 2 file not found`), counts calls where the others count
+0x08BC 0x3D MISSING.TXT -> error 2`), counts calls where the others count
 lines (the matches among the calls the server holds), and takes no `since_mark` or `labels`;
 past those, `calls_dropped` says how many of the oldest went. Works on a running guest.
 
 Reply: `channel`, `lines` (not on `dos`), `lines_total`, `truncated`, `labels`, `pattern`,
 `note`; on the DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`,
-`caller`, `psp`, `function`, `name`, `file`, `in`, `out`, `error`, `returned`, `returned_s`,
+`caller`, `psp`, `function`, `name` (its number where the base has no confirmed name),
+`file`, `in`, `out`, `error`, `returned`, `returned_s`,
 `switched`, `line`), and `calls_dropped` (on `dos`, past the calls held). INVALID with `code`:
 no `logfile`, no log yet, no guest instrumentation, `limit` out of range, an empty or bad
 pattern, an unknown channel (`process` is refused by name), a `since_mark` naming no

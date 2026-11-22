@@ -75,6 +75,8 @@ Every reply has the same outer fields, whichever tool answers, so you read any a
 - `omitted` (array of string)
 - `how` (string)
 - `note` (string)
+- `names` (array of NameItem)
+- `names_cut` (integer)
 - `cancelled` (object)
 - `session` (object)
 - `answers_while_running` (array)
