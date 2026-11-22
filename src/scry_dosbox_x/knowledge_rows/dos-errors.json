@@ -2,6 +2,7 @@
  "format": "scry-knowledge/2",
  "dictionary": "dos-errors",
  "kind": "error",
+ "title": "DOS extended error codes 1 to 10",
  "scope": "ibm-pc",
  "covers": "DOS extended error codes 1 to 10, from the list's table of extended error codes.",
  "source": "official",

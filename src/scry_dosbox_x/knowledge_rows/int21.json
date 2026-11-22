@@ -2,6 +2,7 @@
  "format": "scry-knowledge/2",
  "dictionary": "int21",
  "kind": "call",
+ "title": "INT 21h, fifteen DOS file and device calls",
  "scope": "ibm-pc",
  "covers": "INT 21h, the DOS services the pilot writes: file calls and IOCTL subfunctions.",
  "source": "official",
@@ -11,6 +12,7 @@
  "engine": [
   "CallRWIODeviceFunction",
   "Close",
+  "CloseFiles",
   "DOSV_CheckCJKVideoMode",
   "DOSV_OffCursor",
   "DOS_BreakAction",
@@ -23,6 +25,8 @@
   "FileOpen",
   "FileUnlink",
   "FindFirst",
+  "GetInformation",
+  "GetStatus",
   "INT10_SetCurMode",
   "IO_Read",
   "IO_Write",
@@ -42,7 +46,8 @@
   "Seek",
   "Write",
   "diskio_delay_drive",
-  "diskio_delay_handle"
+  "diskio_delay_handle",
+  "sSave"
  ],
  "entries": [
   {
@@ -78,7 +83,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "Create temporary file, a DOS 3.0 call: makes a file with a unique name.",
+     "text": "Create temporary file, a DOS 3.0 call.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -104,7 +109,7 @@
      "n": "3",
      "on": "in DS:DX",
      "of": "doc",
-     "text": "DS:DX points to an ASCIZ path ending in a backslash, with room for 13 more bytes.",
+     "text": "DS:DX points to an ASCIZ path ending in a backslash.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -141,9 +146,29 @@
     },
     {
      "n": "6",
+     "on": "out CF=1",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "On failure CF is set and AX is the DOS error code the create left, which can also be 0x02 file not found.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2714-2716",
+       "sha": "19bf67ac2222d5e67e5d9aa355278e00431a03140a51290499c2d621ebdc7230"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1328-1329",
+       "sha": "283e58f980a89a67e75f91314c5e3eeaa8cde831f7b6f8a278e0e771ded7c398"
+      }
+     ]
+    },
+    {
+     "n": "7",
      "on": "does",
      "of": "doc",
-     "text": "The name is unique and the file must be deleted explicitly.",
+     "text": "The generated name is unique.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -153,7 +178,7 @@
      ]
     },
     {
-     "n": "7",
+     "n": "8",
      "on": "when",
      "of": "doc",
      "text": "MS-DOS 3.0 to 4.0 name the file in hex digits from the date and time; MS-DOS 6 and later use letters A to P.",
@@ -166,7 +191,7 @@
      ]
     },
     {
-     "n": "8",
+     "n": "9",
      "on": "when",
      "of": "doc",
      "text": "MS-DOS 5.0 inserts a missing trailing backslash, so an empty path makes a file in the root.",
@@ -179,10 +204,10 @@
      ]
     },
     {
-     "n": "9",
+     "n": "10",
      "on": "when",
      "of": "doc",
-     "text": "MS-DOS 5.00 revisions A and B and PC-DOS 5.00 revision A hang when the root directory is full.",
+     "text": "MS-DOS 5.00 revisions A and B and PC-DOS 5.00 revision A reportedly hang when the root directory is full.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -192,10 +217,10 @@
      ]
     },
     {
-     "n": "10",
+     "n": "11",
      "on": "when",
      "of": "doc",
-     "text": "MS-DOS 6.2x hangs when the path holds two consecutive separators.",
+     "text": "MS-DOS 6.2x reportedly hangs when the path holds two consecutive separators.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -205,7 +230,7 @@
      ]
     },
     {
-     "n": "11",
+     "n": "12",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -219,11 +244,11 @@
      ]
     },
     {
-     "n": "12",
+     "n": "13",
      "on": "in CX",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "CX is never passed on: the file is always created with attribute 0.",
+     "text": "The file is always created with attribute 0x00, whatever CX holds.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -234,26 +259,26 @@
      "row": "2"
     },
     {
-     "n": "13",
-     "on": "when",
-     "of": "dosbox-x",
-     "vs": "differs",
-     "text": "The name is eight random letters A to Z in every DOS version, never hex digits.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_files.cpp",
-       "lines": "1906-1909",
-       "sha": "763fef2f0bf3b271261e9a0dea3721dd651453c279a27c22988f21d9b7b97976"
-      }
-     ],
-     "row": "7"
-    },
-    {
      "n": "14",
      "on": "when",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "A failing create returns false at once with the error code set; nothing here loops on it.",
+     "text": "The name is eight random letters A to Z in every DOS version.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1906-1907",
+       "sha": "e0abcc93b11399e6b662d1f328762576757322ddfc2212d9188dc26ecc5e11f7"
+      }
+     ],
+     "row": "8"
+    },
+    {
+     "n": "15",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A failing create returns false at once with the error code left set.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -261,10 +286,10 @@
        "sha": "42d41675324d90c07cb3eb47de9a563ce2850104bfe3b36752a4ce5ab3b7bf55"
       }
      ],
-     "row": "9"
+     "row": "10"
     },
     {
-     "n": "15",
+     "n": "16",
      "on": "when",
      "of": "dosbox-x",
      "vs": "differs",
@@ -276,10 +301,10 @@
        "sha": "35299fe4694d1925c17cc8996ccb1d15af8939f7232ee724514073f8a73886ed"
       }
      ],
-     "row": "10"
+     "row": "11"
     },
     {
-     "n": "16",
+     "n": "17",
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
@@ -347,38 +372,44 @@
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2709",
-     "as": "agrees",
-     "row": "3"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2711-2713",
      "as": "agrees",
      "row": "4"
     },
     {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2714-2716",
-     "as": "agrees",
-     "row": "5"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1901-1903",
-     "as": "agrees",
-     "row": "6"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1886-1898",
-     "as": "agrees",
-     "row": "8"
-    },
-    {
      "ref": "dosbox-x:src/dos/dos_files.cpp",
      "lines": "1915",
      "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2709",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1886-1897",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1903-1905",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1908-1911",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1886-1897",
+     "as": "agrees",
+     "row": "9"
     }
    ]
   },
@@ -470,6 +501,21 @@
     },
     {
      "n": "5",
+     "on": "in CX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "A CX with bit 4 (directory) set is refused with error 0x05 access denied.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1313-1316",
+       "sha": "2b6d2f78e1264650b48b92f8214c248d94b83873d1c7ca4ee2e6233f0119a7aa"
+      }
+     ]
+    },
+    {
+     "n": "6",
      "on": "in DS:DX",
      "of": "doc",
      "text": "DS:DX points to an ASCIZ filename.",
@@ -482,10 +528,10 @@
      ]
     },
     {
-     "n": "6",
+     "n": "7",
      "on": "out CF=0",
      "of": "doc",
-     "text": "On success CF is clear and AX holds the file handle.",
+     "text": "On success CF is clear.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -495,10 +541,23 @@
      ]
     },
     {
-     "n": "7",
+     "n": "8",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On success AX holds the file handle.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "6444-6445",
+       "sha": "b6933c4374329dd339e6e9ef2f3d3a975c2dd3c96b1f85f0b243ccba9a7c4f5b"
+      }
+     ]
+    },
+    {
+     "n": "9",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 03h, 04h or 05h.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -508,7 +567,20 @@
      ]
     },
     {
-     "n": "8",
+     "n": "10",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "6446-6447",
+       "sha": "87c8dc27aebbd9e7234fde8593a428f37a8159ed1b38e15ffdf22daa9703be9f"
+      }
+     ]
+    },
+    {
+     "n": "11",
      "on": "does",
      "of": "doc",
      "text": "A file that already exists is truncated to zero length.",
@@ -521,7 +593,7 @@
      ]
     },
     {
-     "n": "9",
+     "n": "12",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -535,16 +607,16 @@
      ]
     },
     {
-     "n": "10",
+     "n": "13",
      "on": "out CF=1",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "AX is the DOS error code left behind, which can also be 02h file not found.",
+     "text": "AX is the DOS error code left behind, which can also be 0x02 file not found.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2009-2010",
-       "sha": "d42b90831fe4353675cf571c49e3077413aa7587a26c5a06442616f545635320"
+       "lines": "2009",
+       "sha": "d658e89a90b248935fc1ea29357a6723642d9d73f6553518452b210dd3a4013a"
       },
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -552,10 +624,10 @@
        "sha": "283e58f980a89a67e75f91314c5e3eeaa8cde831f7b6f8a278e0e771ded7c398"
       }
      ],
-     "row": "7"
+     "row": "10"
     },
     {
-     "n": "11",
+     "n": "14",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -569,7 +641,7 @@
      ]
     },
     {
-     "n": "12",
+     "n": "15",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -583,7 +655,7 @@
      ]
     },
     {
-     "n": "13",
+     "n": "16",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -597,11 +669,11 @@
      ]
     },
     {
-     "n": "14",
+     "n": "17",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A free slot of the file table is searched for; a full table fails with 04h.",
+     "text": "A free slot of the file table is searched for; a full table fails with 0x04.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -611,11 +683,11 @@
      ]
     },
     {
-     "n": "17",
+     "n": "18",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The handle comes from the process's own table, and a full one fails with 04h.",
+     "text": "The handle comes from the process's own table, and a full one fails with 0x04.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -625,11 +697,11 @@
      ]
     },
     {
-     "n": "15",
+     "n": "19",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A failed create by the drive that is not access denied or write protected is 03h or 02h.",
+     "text": "A failed create by the drive that is not access denied or write protected is 0x03 or 0x02.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -639,11 +711,11 @@
      ]
     },
     {
-     "n": "16",
+     "n": "20",
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The call forces short names and may unmask IRQ 0 for the disk delay.",
+     "text": "While it runs the call forces short names, and it ORs the disk delay flag into unmask_irq0.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -699,7 +771,7 @@
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2004-2005",
      "as": "agrees",
-     "row": "5"
+     "row": "6"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -708,33 +780,9 @@
      "row": "2"
     },
     {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1317",
-     "as": "agrees",
-     "row": "8"
-    },
-    {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2008",
      "as": "structure"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2006-2007",
-     "as": "agrees",
-     "row": "6"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1313-1316",
-     "as": "agrees",
-     "row": "4"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1317",
-     "as": "agrees",
-     "row": "3"
     },
     {
      "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -765,6 +813,36 @@
      "ref": "dosbox-x:src/dos/dos_files.cpp",
      "lines": "1287-1292",
      "as": "build"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1317",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2007",
+     "as": "unfollowed",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2010",
+     "as": "unfollowed",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1317",
+     "as": "unfollowed",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2005",
+     "as": "unfollowed",
+     "row": "8"
     }
    ]
   },
@@ -838,22 +916,22 @@
     },
     {
      "n": "4",
-     "on": "in CL",
+     "on": "out CF=0",
      "of": "doc",
-     "text": "CL is an attribute mask of the files to look for, in a server call only.",
+     "text": "On success CF is clear.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
-       "lines": "6469",
-       "sha": "132f3f82a7d56c8f308b3460d488a5239e184dd4b36ba079e0d8769734fd6d1a"
+       "lines": "6470-6471",
+       "sha": "b6933c4374329dd339e6e9ef2f3d3a975c2dd3c96b1f85f0b243ccba9a7c4f5b"
       }
      ]
     },
     {
      "n": "5",
-     "on": "out CF=0",
+     "on": "out AX",
      "of": "doc",
-     "text": "On success CF is clear and AX holds the file handle.",
+     "text": "On success AX holds the file handle.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -866,7 +944,7 @@
      "n": "6",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds 01h, 02h, 03h, 04h, 05h, 0Ch or 56h.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -877,6 +955,19 @@
     },
     {
      "n": "7",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "6472-6473",
+       "sha": "6b447e8f074ca5649616639b975b5a7782d9346f6ff608debc7586dafed6e073"
+      }
+     ]
+    },
+    {
+     "n": "8",
      "on": "does",
      "of": "doc",
      "text": "The file pointer is set to the start of the file.",
@@ -889,7 +980,7 @@
      ]
     },
     {
-     "n": "8",
+     "n": "9",
      "on": "when",
      "of": "doc",
      "text": "If SHARE or a network is loaded the open may fail because the file is already open, by the sharing modes.",
@@ -898,19 +989,6 @@
        "ref": "rbil61:INTERRUP.F",
        "lines": "6475-6477",
        "sha": "195014699eb8ffac143fa485723880b78cca60785e4da971ee2a1cb4e48afd9f"
-      }
-     ]
-    },
-    {
-     "n": "9",
-     "on": "when",
-     "of": "doc",
-     "text": "Handles inherited from a parent also inherit its sharing and access restrictions.",
-     "quotes": [
-      {
-       "ref": "rbil61:INTERRUP.F",
-       "lines": "6478-6479",
-       "sha": "70a77c49917e4ca581881d8f5deb720b9255b8aff3a3af284b8353cdb4f85de5"
       }
      ]
     },
@@ -969,6 +1047,21 @@
     {
      "n": "14",
      "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "13",
+     "text": "Value 3 of the access mode is refused by the local drive with error 0x0C access code invalid.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/drive_local.cpp",
+       "lines": "1667-1669",
+       "sha": "b8cccb119a56b8230e66c37eff317bdeed62173abd6ff0b06418c32a5818a14f"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "in AL",
      "of": "doc",
      "text": "Bit 3 is reserved and zero.",
      "quotes": [
@@ -980,7 +1073,27 @@
      ]
     },
     {
-     "n": "15",
+     "n": "16",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "15",
+     "text": "A set bit 3 reaches the local drive, which reads the low four bits as the access mode: 0x08 and up fail with 0x0C.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/drive_local.cpp",
+       "lines": "1662",
+       "sha": "206b12bc12d35577c479efe075273407921efdc80565c64260f4ae02700313dd"
+      },
+      {
+       "ref": "dosbox-x:src/dos/drive_local.cpp",
+       "lines": "1667-1669",
+       "sha": "b8cccb119a56b8230e66c37eff317bdeed62173abd6ff0b06418c32a5818a14f"
+      }
+     ]
+    },
+    {
+     "n": "17",
      "on": "in AL",
      "of": "doc",
      "text": "From DOS 3.0 bits 6-4 select the sharing mode: 0 compatibility, 1 deny all, 2 deny write, 3 deny read, 4 deny none.",
@@ -993,7 +1106,27 @@
      ]
     },
     {
-     "n": "16",
+     "n": "18",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "17",
+     "text": "The local drive keeps only the low four bits of AL as the access mode; bits 6 to 4 reach the host only with the share option on, under Windows.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/drive_local.cpp",
+       "lines": "1662",
+       "sha": "206b12bc12d35577c479efe075273407921efdc80565c64260f4ae02700313dd"
+      },
+      {
+       "ref": "dosbox-x:src/dos/drive_local.cpp",
+       "lines": "1693-1696",
+       "sha": "2c1efd151de7a45585bc1490876ed1ea0dbb24ea7db7fb45711ad23bec8caf67"
+      }
+     ]
+    },
+    {
+     "n": "19",
      "on": "in AL",
      "of": "doc",
      "text": "Sharing mode 7 is the network FCB, only during a server call.",
@@ -1006,7 +1139,22 @@
      ]
     },
     {
-     "n": "17",
+     "n": "20",
+     "on": "in AL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "19",
+     "text": "The local drive reads sharing mode 7 like any other value of bits 6 to 4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/drive_local.cpp",
+       "lines": "1696",
+       "sha": "72b78e22b1e88b8a22770f909c01732ae340c4f6744a088ab009e6e2dffb19fb"
+      }
+     ]
+    },
+    {
+     "n": "21",
      "on": "in AL",
      "of": "doc",
      "text": "Bit 7 set makes the file private to the process and not inherited by children.",
@@ -1019,7 +1167,7 @@
      ]
     },
     {
-     "n": "18",
+     "n": "22",
      "on": "when",
      "of": "doc",
      "text": "In DOS 2 to 6.22 a second open succeeds, fails with 05h or raises INT 24, by the first and second sharing modes.",
@@ -1047,10 +1195,10 @@
      ]
     },
     {
-     "n": "19",
+     "n": "23",
      "on": "when",
      "of": "doc",
-     "text": "In DOS 7.x the table adds a reading-without-time-update access, and its outcomes differ from DOS 6.22.",
+     "text": "In DOS 7.x the sharing table adds an access that reads without updating the access time.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -1075,7 +1223,7 @@
      ]
     },
     {
-     "n": "22",
+     "n": "24",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -1089,25 +1237,25 @@
      ]
     },
     {
-     "n": "24",
+     "n": "25",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A directory or volume-label name fails with 05h access denied.",
+     "text": "A directory or volume-label name fails with 0x05 access denied.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
-       "lines": "1356-1358",
-       "sha": "1daed5d32a377e00da392fa124ba4eeb2ccfcc00f9e8501125b6ec433aa2119a"
+       "lines": "1354-1358",
+       "sha": "9ce2cfe4cfc690c1b54eb9ea4b8a7213edf1c4f5c3dbb335bd041e5c538986c3"
       }
      ]
     },
     {
-     "n": "25",
+     "n": "26",
      "on": "when",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "A failed open of a file that exists gives 05h when the mode is not read only; no other sharing conflict is tested here.",
+     "text": "A failed open of a file that exists gives error 0x05 whenever the mode is not read only.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -1115,14 +1263,14 @@
        "sha": "d4839472927fd3be965ac64a24ed6f1c91af4cc84c11ec2a8420ce44e438394e"
       }
      ],
-     "row": "8"
+     "row": "9"
     },
     {
-     "n": "26",
+     "n": "27",
      "on": "when",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "With the share option on, a failed open of an existing file on a local directory drive also gives 05h.",
+     "text": "With the share option on, a failed open of an existing file on a local directory drive also gives 0x05.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -1133,52 +1281,7 @@
      "row": "11"
     },
     {
-     "n": "27",
-     "on": "when",
-     "of": "dosbox-x",
-     "vs": "absent",
-     "text": "The open applies no sharing table of its own and raises no INT 24.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_files.cpp",
-       "lines": "1407-1408",
-       "sha": "8da0d88f88bf286de716c5f27f383cad885519e9cc164f6e077bc30d30c64487"
-      }
-     ],
-     "row": "18"
-    },
-    {
      "n": "28",
-     "on": "when",
-     "of": "dosbox-x",
-     "vs": "absent",
-     "text": "The open applies no DOS 7.x sharing table of its own.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_files.cpp",
-       "lines": "1407-1408",
-       "sha": "8da0d88f88bf286de716c5f27f383cad885519e9cc164f6e077bc30d30c64487"
-      }
-     ],
-     "row": "19"
-    },
-    {
-     "n": "29",
-     "on": "in AL",
-     "of": "dosbox-x",
-     "vs": "absent",
-     "text": "Value 3 of the access mode has no special handling and no redirector is called.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_files.cpp",
-       "lines": "1407-1408",
-       "sha": "8da0d88f88bf286de716c5f27f383cad885519e9cc164f6e077bc30d30c64487"
-      }
-     ],
-     "row": "13"
-    },
-    {
-     "n": "34",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -1212,7 +1315,7 @@
      ]
     },
     {
-     "n": "37",
+     "n": "29",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -1226,11 +1329,11 @@
      ]
     },
     {
-     "n": "38",
+     "n": "30",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A free slot of the file table is searched for; a full table fails with 04h.",
+     "text": "A free slot of the file table is searched for; a full table fails with 0x04.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -1240,11 +1343,11 @@
      ]
     },
     {
-     "n": "39",
+     "n": "31",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The handle comes from the process's own table, and a full one fails with 04h.",
+     "text": "The handle comes from the process's own table, and a full one fails with 0x04.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -1254,12 +1357,17 @@
      ]
     },
     {
-     "n": "40",
+     "n": "32",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A drive that fails with 0Ch access code invalid ends the open with that code; the error code is restored.",
+     "text": "The error code is cleared before the drive opens the file and restored after; error 0x0C from the drive ends the open with that code.",
      "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1407-1408",
+       "sha": "8da0d88f88bf286de716c5f27f383cad885519e9cc164f6e077bc30d30c64487"
+      },
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
        "lines": "1411-1412",
@@ -1268,22 +1376,7 @@
      ]
     },
     {
-     "n": "45",
-     "on": "when",
-     "of": "dosbox-x",
-     "vs": "absent",
-     "text": "The open records no restriction of its own for a child to inherit; AL goes to the drive as given.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_files.cpp",
-       "lines": "1415-1417",
-       "sha": "afed057d717204357a305991d0c8de55ce57e8f4b9a490131e437dfd33360911"
-      }
-     ],
-     "row": "9"
-    },
-    {
-     "n": "46",
+     "n": "33",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -1297,11 +1390,11 @@
      ]
     },
     {
-     "n": "41",
+     "n": "34",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A failed open of a file that exists but is write-protected is 05h, else 03h or 02h.",
+     "text": "When that 0x05 test fails, the error is 0x03 if the path does not exist and 0x02 otherwise.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -1311,7 +1404,7 @@
      ]
     },
     {
-     "n": "42",
+     "n": "35",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -1319,17 +1412,17 @@
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2082-2084",
-       "sha": "5fd63da63442e14e48d56df3ba619c0f33ae962ba462aa1b5736af9426d4ee7a"
+       "lines": "2082",
+       "sha": "30cdebdb0749caffacdf02076a35282ed36db0e69e354dbc1e1da3d9b16e3037"
       }
      ]
     },
     {
-     "n": "43",
+     "n": "36",
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The call forces short names for the first try and may unmask IRQ 0 for the disk delay.",
+     "text": "The call forces short names for the first try and ORs the disk delay flag into unmask_irq0.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -1343,6 +1436,11 @@
       },
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2078",
+       "sha": "dd89e9a18c3b07fb9fba0f7c34245feb9eaa212ad29374a99fb79e555d6c29bd"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
        "lines": "2081",
        "sha": "dd89e9a18c3b07fb9fba0f7c34245feb9eaa212ad29374a99fb79e555d6c29bd"
       },
@@ -1350,6 +1448,20 @@
        "ref": "dosbox-x:src/dos/dos.cpp",
        "lines": "2090",
        "sha": "dd89e9a18c3b07fb9fba0f7c34245feb9eaa212ad29374a99fb79e555d6c29bd"
+      }
+     ]
+    },
+    {
+     "n": "37",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A successful open adds a reference to the file, stores its slot in the process table unless it is an FCB open, and records the drive.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1415-1417",
+       "sha": "afed057d717204357a305991d0c8de55ce57e8f4b9a490131e437dfd33360911"
       }
      ]
     }
@@ -1435,66 +1547,6 @@
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2069",
-     "as": "agrees",
-     "row": "4"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2077-2079",
-     "as": "agrees",
-     "row": "5"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2086-2087",
-     "as": "agrees",
-     "row": "6"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1354",
-     "as": "agrees",
-     "row": "10"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2069",
-     "as": "agrees",
-     "row": "12"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1409-1410",
-     "as": "agrees",
-     "row": "7"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2069",
-     "as": "agrees",
-     "row": "14"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2069",
-     "as": "agrees",
-     "row": "15"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2069",
-     "as": "agrees",
-     "row": "16"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2069",
-     "as": "agrees",
-     "row": "17"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2018-2019",
      "as": "build"
     },
@@ -1552,6 +1604,84 @@
      "ref": "dosbox-x:src/dos/dos_files.cpp",
      "lines": "1427",
      "as": "structure"
+    },
+    {
+     "ref": "rbil61:INTERRUP.F",
+     "lines": "6469",
+     "as": "elsewhere",
+     "owner": "ibm-pc:call:0x21/0x5D/0x00"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2079",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2084",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2087",
+     "as": "unfollowed",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2086",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1409-1410",
+     "as": "unfollowed",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1409",
+     "as": "unfollowed",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1409",
+     "as": "unfollowed",
+     "row": "12"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1409",
+     "as": "unfollowed",
+     "row": "21"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1409",
+     "as": "unfollowed",
+     "row": "22"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1409",
+     "as": "unfollowed",
+     "row": "23"
+    },
+    {
+     "ref": "rbil61:INTERRUP.F",
+     "lines": "6478-6479",
+     "as": "elsewhere",
+     "owner": "ibm-pc:call:0x21/0x4B"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2069",
+     "as": "unfollowed",
+     "row": "5"
     }
    ]
   },
@@ -1614,7 +1744,7 @@
      "n": "3",
      "on": "out CF=0",
      "of": "doc",
-     "text": "On success CF is clear and AX is destroyed.",
+     "text": "On success CF is clear.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -1625,9 +1755,22 @@
     },
     {
      "n": "4",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On success AX is destroyed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "6595-6596",
+       "sha": "92b10e943a2cf0dd6c120ac92339d107d77a7d6d2e4531a0cede169aa84313a4"
+      }
+     ]
+    },
+    {
+     "n": "5",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 06h.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -1637,7 +1780,20 @@
      ]
     },
     {
-     "n": "5",
+     "n": "6",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "6597-6598",
+       "sha": "3d3d3b5b3f4991aaaa4f56ad889668718719493bc444c8f0d739fdc57915fa65"
+      }
+     ]
+    },
+    {
+     "n": "7",
      "on": "does",
      "of": "doc",
      "text": "A file that was written gets its pending writes done, its time and date stamps set to now and its directory entry updated.",
@@ -1650,7 +1806,7 @@
      ]
     },
     {
-     "n": "6",
+     "n": "8",
      "on": "when",
      "of": "doc",
      "text": "Recent versions of DOS preserve AH, because some versions of Multiplan depended on it.",
@@ -1663,7 +1819,7 @@
      ]
     },
     {
-     "n": "7",
+     "n": "9",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -1677,7 +1833,7 @@
      ]
     },
     {
-     "n": "8",
+     "n": "10",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -1696,11 +1852,11 @@
      ]
     },
     {
-     "n": "9",
+     "n": "11",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The file's drive is read before the close, for the disk delay.",
+     "text": "The file's drive is read before the close and handed to the disk delay afterwards.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -1715,11 +1871,11 @@
      ]
     },
     {
-     "n": "10",
+     "n": "12",
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The call may unmask IRQ 0 for the disk delay.",
+     "text": "The call ORs the disk delay flag into unmask_irq0.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -1729,11 +1885,11 @@
      ]
     },
     {
-     "n": "11",
+     "n": "13",
      "on": "out CF=1",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A handle beyond the table or with no open file fails with 06h.",
+     "text": "A handle beyond the table or with no open file fails with 0x06.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -1748,7 +1904,7 @@
      ]
     },
     {
-     "n": "12",
+     "n": "14",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -1767,23 +1923,19 @@
      ]
     },
     {
-     "n": "13",
-     "on": "out CF=0",
+     "n": "15",
+     "on": "out AX",
      "of": "dosbox-x",
-     "vs": "extra",
-     "text": "AL returns the reference count the file had before the close, plus nothing else.",
+     "vs": "differs",
+     "text": "On success AL is set to the reference count the file had before the close.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
        "lines": "2135",
        "sha": "7b84d5da6abe499f09569783a6c3cfd6559cbfb9979c9bafb847780cb6eef555"
-      },
-      {
-       "ref": "dosbox-x:src/dos/dos_files.cpp",
-       "lines": "1235",
-       "sha": "dcfea627b5bd09018fa6bbda3a6bf0d6d6211e8c02dbaa0906efe5bb672a17cd"
       }
-     ]
+     ],
+     "row": "4"
     }
    ],
    "closed": [
@@ -1821,24 +1973,6 @@
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2136",
-     "as": "agrees",
-     "row": "3"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2137-2139",
-     "as": "agrees",
-     "row": "4"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1218-1222",
-     "as": "agrees",
-     "row": "5"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2113-2121",
      "as": "build"
     },
@@ -1859,9 +1993,33 @@
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2129",
+     "lines": "2136",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2139",
+     "as": "unfollowed",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2137-2138",
      "as": "agrees",
      "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1218-1222",
+     "as": "unfollowed",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2135-2136",
+     "as": "agrees",
+     "row": "8"
     }
    ]
   },
@@ -1950,7 +2108,7 @@
      "n": "5",
      "on": "out CF=0",
      "of": "doc",
-     "text": "On success CF is clear and AX holds the bytes actually read, 0 at end of file before the call.",
+     "text": "On success CF is clear.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -1961,9 +2119,35 @@
     },
     {
      "n": "6",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On success AX holds the bytes actually read.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "6611-6612",
+       "sha": "a5496c33222eb1e447ad6ca702dae5157a1aadeb7b62e80e41b0b21bc8aaa0af"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is 0 at end of file before the call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "6611-6612",
+       "sha": "a5496c33222eb1e447ad6ca702dae5157a1aadeb7b62e80e41b0b21bc8aaa0af"
+      }
+     ]
+    },
+    {
+     "n": "8",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 05h or 06h.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -1973,7 +2157,20 @@
      ]
     },
     {
-     "n": "7",
+     "n": "9",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "6613-6614",
+       "sha": "c10f513746e6912b984c938496e49778f4f1c2690f5c316d17142d31002528e7"
+      }
+     ]
+    },
+    {
+     "n": "10",
      "on": "does",
      "of": "doc",
      "text": "Data is read from the current file position, which is updated after a successful read.",
@@ -1986,7 +2183,7 @@
      ]
     },
     {
-     "n": "8",
+     "n": "11",
      "on": "does",
      "of": "doc",
      "text": "AX may be smaller than the request in CX when a partial read happened.",
@@ -1999,7 +2196,7 @@
      ]
     },
     {
-     "n": "9",
+     "n": "12",
      "on": "when",
      "of": "doc",
      "text": "Reading from CON stops at the first CR.",
@@ -2012,7 +2209,7 @@
      ]
     },
     {
-     "n": "10",
+     "n": "13",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -2026,11 +2223,11 @@
      ]
     },
     {
-     "n": "11",
+     "n": "14",
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The call may unmask IRQ 0 for the disk delay.",
+     "text": "The call ORs the disk delay flag into unmask_irq0.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2040,7 +2237,7 @@
      ]
     },
     {
-     "n": "12",
+     "n": "15",
      "on": "in CX",
      "of": "dosbox-x",
      "vs": "extra",
@@ -2054,11 +2251,11 @@
      ]
     },
     {
-     "n": "13",
+     "n": "16",
      "on": "out CF=1",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "An invalid or closed handle sets error 06h.",
+     "text": "An invalid or closed handle sets error 0x06.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2078,7 +2275,7 @@
      ]
     },
     {
-     "n": "14",
+     "n": "17",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -2092,7 +2289,7 @@
      ]
     },
     {
-     "n": "15",
+     "n": "18",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -2100,17 +2297,17 @@
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2223-2231",
-       "sha": "4a647076afb59024efd4a2d8000899101046f65bc03fd352f2533803e44c86ac"
+       "lines": "2223-2227",
+       "sha": "7929b4a58b87479bd1f70da7345d32b34745f39debd52ae31fd2ec7877031667"
       }
      ]
     },
     {
-     "n": "16",
+     "n": "19",
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The echo flag is set during the read for the console.",
+     "text": "The echo flag is set during the read and cleared at the end of the call.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2125,7 +2322,7 @@
      ]
     },
     {
-     "n": "17",
+     "n": "20",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -2179,18 +2376,6 @@
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2193",
-     "as": "agrees",
-     "row": "3"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2194",
-     "as": "agrees",
-     "row": "4"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2192",
      "as": "structure"
     },
@@ -2198,36 +2383,6 @@
      "ref": "dosbox-x:src/dos/dos_files.cpp",
      "lines": "1095",
      "as": "structure"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2199-2200",
-     "as": "agrees",
-     "row": "5"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2232-2235",
-     "as": "agrees",
-     "row": "6"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1115-1118",
-     "as": "agrees",
-     "row": "8"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1116",
-     "as": "agrees",
-     "row": "7"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1116",
-     "as": "agrees",
-     "row": "9"
     },
     {
      "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -2253,6 +2408,78 @@
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2201-2220",
      "as": "build"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2147-2148",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2193-2194",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2221",
+     "as": "unfollowed",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2199-2200",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1116",
+     "as": "unfollowed",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2230",
+     "as": "unfollowed",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2234",
+     "as": "unfollowed",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2228-2229",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2232-2233",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1116",
+     "as": "unfollowed",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1116",
+     "as": "unfollowed",
+     "row": "12"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1116-1118",
+     "as": "unfollowed",
+     "row": "11"
     }
    ]
   },
@@ -2341,7 +2568,7 @@
      "n": "5",
      "on": "out CF=0",
      "of": "doc",
-     "text": "On success CF is clear and AX holds the number of bytes actually written.",
+     "text": "On success CF is clear.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -2352,9 +2579,22 @@
     },
     {
      "n": "6",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On success AX holds the number of bytes actually written.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "6999-7000",
+       "sha": "63a05d817fdd01e05af9fc7b00efecdb8e6ad81b6221ecb6420798c899b44687"
+      }
+     ]
+    },
+    {
+     "n": "7",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 05h or 06h.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -2364,7 +2604,20 @@
      ]
     },
     {
-     "n": "7",
+     "n": "8",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "7001-7002",
+       "sha": "c10f513746e6912b984c938496e49778f4f1c2690f5c316d17142d31002528e7"
+      }
+     ]
+    },
+    {
+     "n": "9",
      "on": "when",
      "of": "doc",
      "text": "With CX zero nothing is written and the file is truncated or extended to the current position.",
@@ -2377,7 +2630,7 @@
      ]
     },
     {
-     "n": "8",
+     "n": "10",
      "on": "does",
      "of": "doc",
      "text": "Data is written at the current file position, which is updated after a successful write.",
@@ -2390,7 +2643,7 @@
      ]
     },
     {
-     "n": "9",
+     "n": "11",
      "on": "when",
      "of": "doc",
      "text": "On FAT32 a file must be opened with AX=6C00h and the extended size flag to grow past 2 GB, else the write fails with 05h.",
@@ -2403,7 +2656,7 @@
      ]
     },
     {
-     "n": "10",
+     "n": "12",
      "on": "does",
      "of": "doc",
      "text": "AX below CX on return is usually caused by a full disk.",
@@ -2416,7 +2669,7 @@
      ]
     },
     {
-     "n": "11",
+     "n": "13",
      "on": "when",
      "of": "doc",
      "text": "In DOS 5.0 to 6.0 a zero-byte write that extends the file seems to succeed even when the disk is too full.",
@@ -2429,7 +2682,7 @@
      ]
     },
     {
-     "n": "12",
+     "n": "14",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -2443,7 +2696,7 @@
      ]
     },
     {
-     "n": "13",
+     "n": "15",
      "on": "when",
      "of": "dosbox-x",
      "vs": "absent",
@@ -2451,14 +2704,14 @@
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2286",
-       "sha": "a4971087c06ac1f87c5f4c204e51f44a37b1d1b8200e5cdd6d34a704fb41b673"
+       "lines": "2285-2289",
+       "sha": "2a9c11cc1dc60fbcb28b15fe09a9c1025e8ffe6131dbb6733b9d064ea15b2574"
       }
      ],
-     "row": "9"
+     "row": "11"
     },
     {
-     "n": "14",
+     "n": "16",
      "on": "when",
      "of": "dosbox-x",
      "vs": "differs",
@@ -2470,14 +2723,14 @@
        "sha": "64a268f3ed473cd28f5fda87f781643bd2ebb89900e50c295d73a5c9f6c8dbb0"
       }
      ],
-     "row": "11"
+     "row": "13"
     },
     {
-     "n": "15",
+     "n": "17",
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The call may unmask IRQ 0 for the disk delay.",
+     "text": "The call ORs the disk delay flag into unmask_irq0.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2487,7 +2740,7 @@
      ]
     },
     {
-     "n": "16",
+     "n": "18",
      "on": "in CX",
      "of": "dosbox-x",
      "vs": "extra",
@@ -2495,13 +2748,13 @@
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2252-2257",
-       "sha": "87ddcf8e7cc236b694dae2408dc99c8271463e0fd6779ebe350c125181ce273e"
+       "lines": "2253-2257",
+       "sha": "c7cad7b4c1803dd82f462bb539f869614a337a0a21e0ac5d3784c0ae570f7735"
       }
      ]
     },
     {
-     "n": "17",
+     "n": "19",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -2515,11 +2768,11 @@
      ]
     },
     {
-     "n": "18",
+     "n": "20",
      "on": "out CF=1",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "An invalid or closed handle sets error 06h.",
+     "text": "An invalid or closed handle sets error 0x06.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2539,7 +2792,7 @@
      ]
     },
     {
-     "n": "19",
+     "n": "21",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -2553,7 +2806,7 @@
      ]
     },
     {
-     "n": "20",
+     "n": "22",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -2561,13 +2814,13 @@
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2287",
-       "sha": "a417eb9304ce7904286468cafdded86db7e5fbc74ec2090121120e704a28071b"
+       "lines": "2286-2287",
+       "sha": "6c6b754587188b4a259ca02ce0b8585f43ee2f85b7777183983548144d84f7c9"
       }
      ]
     },
     {
-     "n": "21",
+     "n": "23",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -2623,43 +2876,7 @@
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2260",
      "as": "agrees",
-     "row": "3"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2260",
-     "as": "agrees",
      "row": "4"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2291-2293",
-     "as": "agrees",
-     "row": "5"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2294-2297",
-     "as": "agrees",
-     "row": "6"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1152",
-     "as": "agrees",
-     "row": "7"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1152",
-     "as": "agrees",
-     "row": "8"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2292",
-     "as": "agrees",
-     "row": "10"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2690,6 +2907,54 @@
      "ref": "dosbox-x:src/dos/dos_files.cpp",
      "lines": "1142-1144",
      "as": "log"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2242-2252",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2293",
+     "as": "unfollowed",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2291-2292",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2296",
+     "as": "unfollowed",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2294-2295",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1152",
+     "as": "unfollowed",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1152",
+     "as": "unfollowed",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1152",
+     "as": "unfollowed",
+     "row": "12"
     }
    ]
   },
@@ -2750,22 +3015,22 @@
     },
     {
      "n": "3",
-     "on": "in CL",
+     "on": "out CF=0",
      "of": "doc",
-     "text": "CL is the attribute mask for deletion, in a server call only.",
+     "text": "On success CF is clear.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
-       "lines": "7142",
-       "sha": "ad5879925e09060705563a53f3bf27cd3b80e1f751624586fa66df31531fb5b6"
+       "lines": "7143-7144",
+       "sha": "3f0370f70f5c94c02eed90036160b38ed56f09f2e1a6b3b89ec60f998acc2dbd"
       }
      ]
     },
     {
      "n": "4",
-     "on": "out CF=0",
+     "on": "out AX",
      "of": "doc",
-     "text": "On success CF is clear; AX is destroyed in DOS 3.3 and AL seems to be the drive of the deleted file.",
+     "text": "On success AX is destroyed in DOS 3.3 and AL seems to be the drive of the deleted file.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -2778,7 +3043,7 @@
      "n": "5",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 02h, 03h or 05h.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -2789,6 +3054,19 @@
     },
     {
      "n": "6",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "7145-7146",
+       "sha": "5c1cbbd863e78bd46094aea7a361cf08bba8dc9d14768f2d5619468c1d9b4064"
+      }
+     ]
+    },
+    {
+     "n": "7",
      "on": "when",
      "of": "doc",
      "text": "From DOS 3.1 wildcards are allowed through AX=5D00h with a canonical filespec, and only files matching the mask in CL are deleted.",
@@ -2801,7 +3079,7 @@
      ]
     },
     {
-     "n": "7",
+     "n": "8",
      "on": "does",
      "of": "doc",
      "text": "DOS does not erase the file's data; the file only becomes inaccessible because its FAT chain is cleared.",
@@ -2814,7 +3092,22 @@
      ]
     },
     {
-     "n": "8",
+     "n": "9",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "8",
+     "text": "The local drive deletes the host file with an unlink, so the data goes with the file.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/drive_local.cpp",
+       "lines": "1815",
+       "sha": "1323b425e9236b375f32c8e00db9775b847ff5c75564232cc9c32751dd8c0136"
+      }
+     ]
+    },
+    {
+     "n": "10",
      "on": "when",
      "of": "doc",
      "text": "Deleting an open file may corrupt the filesystem; unless SHARE is loaded DOS does not close its handles.",
@@ -2827,7 +3120,22 @@
      ]
     },
     {
-     "n": "9",
+     "n": "11",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "10",
+     "text": "When the host refuses to delete a file this process has open, the local drive closes its handles on it and deletes it again.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/drive_local.cpp",
+       "lines": "1831-1842",
+       "sha": "f5a96a325796770572078eeb3949c04264f643f3f0542d89daa6adb3b5884a6f"
+      }
+     ]
+    },
+    {
+     "n": "12",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -2841,11 +3149,11 @@
      ]
     },
     {
-     "n": "10",
+     "n": "13",
      "on": "out CF=1",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "A failed delete can also return 13h write protected, which the drive left.",
+     "text": "A failed delete can also return 0x13 write protected, which the drive left.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -2858,10 +3166,10 @@
        "sha": "aaab06a64004a7f9cd7623ea88fac89ff6e4bd073727a49f90a6441c9ebf1524"
       }
      ],
-     "row": "5"
+     "row": "6"
     },
     {
-     "n": "11",
+     "n": "14",
      "on": "when",
      "of": "dosbox-x",
      "vs": "differs",
@@ -2878,14 +3186,14 @@
        "sha": "d5125ab1d9a2a261edcee7308ddd914269f82b815ea2b159c4b68f2fcb7998b8"
       }
      ],
-     "row": "6"
+     "row": "7"
     },
     {
-     "n": "12",
+     "n": "15",
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The call forces short names, may unmask IRQ 0, and delays for the disk after a successful delete.",
+     "text": "The call forces short names, ORs the disk delay flag into unmask_irq0, and delays for the disk after a successful delete.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2894,13 +3202,13 @@
       },
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2305",
-       "sha": "62a994f553d2c5a3d87bff35a6160675f8199262039a163435229a77a4053c21"
+       "lines": "2303",
+       "sha": "03543ce8a03f976ec20d49c199f7aa553f8b5579351833e5590687454e539f2f"
       },
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2303",
-       "sha": "03543ce8a03f976ec20d49c199f7aa553f8b5579351833e5590687454e539f2f"
+       "lines": "2304-2305",
+       "sha": "f5d918f98c56945b69cfb1e1c73b4575e23028b4685398bf2e3f9eec951bde97"
       },
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2910,11 +3218,11 @@
      ]
     },
     {
-     "n": "13",
+     "n": "16",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A device name fails with 05h access denied.",
+     "text": "A device name fails with 0x05 access denied.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -2924,7 +3232,7 @@
      ]
     },
     {
-     "n": "14",
+     "n": "17",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -2938,11 +3246,11 @@
      ]
     },
     {
-     "n": "15",
+     "n": "18",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "A read-only file cannot be deleted: the delete fails with 05h, unless the name has wildcards.",
+     "text": "A read-only file cannot be deleted: the delete fails with 0x05, unless the name has wildcards.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -2952,11 +3260,11 @@
      ]
     },
     {
-     "n": "16",
+     "n": "19",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The drive's own delete decides the result; AL is set to the drive number on success.",
+     "text": "The drive's own delete decides the result.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -2966,7 +3274,7 @@
      ]
     },
     {
-     "n": "17",
+     "n": "20",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -3050,32 +3358,8 @@
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2304",
-     "as": "agrees",
-     "row": "3"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1524-1525",
-     "as": "agrees",
-     "row": "4"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2307-2310",
      "as": "structure"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2304",
-     "as": "agrees",
-     "row": "7"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2304",
-     "as": "agrees",
-     "row": "8"
     },
     {
      "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -3091,6 +3375,30 @@
      "ref": "dosbox-x:src/dos/dos_files.cpp",
      "lines": "1506-1510",
      "as": "build"
+    },
+    {
+     "ref": "rbil61:INTERRUP.F",
+     "lines": "7142",
+     "as": "elsewhere",
+     "owner": "ibm-pc:call:0x21/0x5D/0x00"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2306",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1524-1525",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2309",
+     "as": "unfollowed",
+     "row": "5"
     }
    ]
   },
@@ -3140,7 +3448,7 @@
      "n": "2",
      "on": "in AL",
      "of": "doc",
-     "text": "AL is the origin of the move: 00h start of file, 01h current position, 02h end of file.",
+     "text": "AL is the origin of the move.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -3151,6 +3459,19 @@
     },
     {
      "n": "3",
+     "on": "in AL",
+     "of": "doc",
+     "text": "The origins are 00h start of file, 01h current position and 02h end of file.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "7174-7177",
+       "sha": "f8de92c24490d9da3631a801b9a9473658f479a344a5762ec5ef089765cccc88"
+      }
+     ]
+    },
+    {
+     "n": "4",
      "on": "in BX",
      "of": "doc",
      "text": "BX holds the file handle.",
@@ -3163,7 +3484,7 @@
      ]
     },
     {
-     "n": "4",
+     "n": "5",
      "on": "in CX:DX",
      "of": "doc",
      "text": "CX:DX is the signed offset from the origin.",
@@ -3176,10 +3497,10 @@
      ]
     },
     {
-     "n": "5",
+     "n": "6",
      "on": "out CF=0",
      "of": "doc",
-     "text": "On success CF is clear and DX:AX holds the new position in bytes from the start.",
+     "text": "On success CF is clear.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -3189,10 +3510,23 @@
      ]
     },
     {
-     "n": "6",
+     "n": "7",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On success DX:AX holds the new position in bytes from the start.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "7180-7181",
+       "sha": "cfde059f7a76122492a6166b82579929eb19f07e775685c9e38053a270795c58"
+      }
+     ]
+    },
+    {
+     "n": "8",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 01h or 06h.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -3202,10 +3536,23 @@
      ]
     },
     {
-     "n": "7",
+     "n": "9",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.F",
+       "lines": "7182-7183",
+       "sha": "921d684f611f121de616356e37ad77a05406e3ae6c6f5158d4abe686469119d3"
+      }
+     ]
+    },
+    {
+     "n": "10",
      "on": "when",
      "of": "doc",
-     "text": "For origins 01h and 02h the position may go before the start of the file with no error; later I/O then fails.",
+     "text": "For origins 01h and 02h the position may go before the start of the file with no error, except under Windows NT; later I/O then fails.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.F",
@@ -3215,7 +3562,7 @@
      ]
     },
     {
-     "n": "8",
+     "n": "11",
      "on": "when",
      "of": "doc",
      "text": "A position beyond the end of file extends it on the next write; on FAT32 a file needs the extended size flag past 2 GB.",
@@ -3228,7 +3575,7 @@
      ]
     },
     {
-     "n": "9",
+     "n": "12",
      "on": "when",
      "of": "doc",
      "text": "In some versions of DOS, seeking to grow a file from zero to a large size can corrupt the FAT.",
@@ -3241,7 +3588,7 @@
      ]
     },
     {
-     "n": "10",
+     "n": "13",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -3255,26 +3602,11 @@
      ]
     },
     {
-     "n": "11",
-     "on": "when",
-     "of": "dosbox-x",
-     "vs": "differs",
-     "text": "The result of the seek comes from the file's own seek; nothing in the call can corrupt the FAT.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_files.cpp",
-       "lines": "1178",
-       "sha": "2f02ca00a840d11686217cf767b852b25820f2c19e7282fc9d8f69f5fc32e204"
-      }
-     ],
-     "row": "9"
-    },
-    {
-     "n": "12",
+     "n": "14",
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The call may unmask IRQ 0 for the disk delay, which follows a successful seek.",
+     "text": "The call ORs the disk delay flag into unmask_irq0, and a successful seek is followed by a disk delay.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -3289,11 +3621,11 @@
      ]
     },
     {
-     "n": "13",
+     "n": "15",
      "on": "out CF=1",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "An invalid or closed handle sets error 06h.",
+     "text": "An invalid or closed handle sets error 0x06.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -3339,43 +3671,7 @@
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2317",
      "as": "agrees",
-     "row": "2"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2317",
-     "as": "agrees",
-     "row": "3"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2317",
-     "as": "agrees",
      "row": "4"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2318-2319",
-     "as": "agrees",
-     "row": "5"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2323",
-     "as": "agrees",
-     "row": "6"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2317",
-     "as": "agrees",
-     "row": "7"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2317",
-     "as": "agrees",
-     "row": "8"
     },
     {
      "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -3396,6 +3692,66 @@
      "ref": "dosbox-x:src/dos/dos_files.cpp",
      "lines": "1174-1176",
      "as": "log"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2317",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1178",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2316-2317",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2321",
+     "as": "unfollowed",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2318-2319",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2324",
+     "as": "unfollowed",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2323",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1178",
+     "as": "unfollowed",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1178",
+     "as": "unfollowed",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1178",
+     "as": "unfollowed",
+     "row": "12"
     }
    ]
   },
@@ -3469,6 +3825,31 @@
     },
     {
      "n": "4",
+     "on": "out none",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "A process that is its own parent returns before closing anything; otherwise control goes to the parent's INT 22 address, and the handler sets AX to 0x3E01 and ends normally.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "118",
+       "sha": "d49e57427c663d648185c61424df2337a021e7381191a312a251a8fb58a1bfe9"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "150-152",
+       "sha": "e25379323ebfefed659d79a5332ae780eff09b6cec9abd521248e13c1e717123"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2507-2516",
+       "sha": "573f0ad317244040efbeaaaae7d39137e8cf87f09ae636041d970c5ff1aa6f73"
+      }
+     ]
+    },
+    {
+     "n": "5",
      "on": "does",
      "of": "doc",
      "text": "Unless the process is its own parent, all its open files are closed.",
@@ -3481,7 +3862,7 @@
      ]
     },
     {
-     "n": "5",
+     "n": "6",
      "on": "does",
      "of": "doc",
      "text": "Unless the process is its own parent, all the memory belonging to it is freed.",
@@ -3495,19 +3876,6 @@
     },
     {
      "n": "7",
-     "on": "when",
-     "of": "doc",
-     "text": "All network file locks should be removed before the call.",
-     "quotes": [
-      {
-       "ref": "rbil61:INTERRUP.G",
-       "lines": "6170",
-       "sha": "8af84e33b62349ce48e8dce291034fec5330afd93521ffeb4f921b493fd4209f"
-      }
-     ]
-    },
-    {
-     "n": "8",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -3521,11 +3889,11 @@
      ]
     },
     {
-     "n": "9",
+     "n": "8",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The return code and the termination type, exit or TSR, are stored for AH=4Dh.",
+     "text": "The return code and the termination type, exit or TSR, are stored in the DOS state.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_execute.cpp",
@@ -3535,21 +3903,21 @@
      ]
     },
     {
-     "n": "10",
+     "n": "9",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The AMIS UTF-8 providers are told the process ended.",
+     "text": "The UTF-8 modes of the AMIS providers are told that the process ended.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_execute.cpp",
-       "lines": "120-121",
-       "sha": "cf9c726fab5f8f156c689171ab09f170599f2b85bcf2daf69e42e89ca7feb306"
+       "lines": "119-121",
+       "sha": "29e40122b6f4859abcc84044c51abfa670d47da00c287bc64feafe8ebaba550a"
       }
      ]
     },
     {
-     "n": "11",
+     "n": "10",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -3563,7 +3931,7 @@
      ]
     },
     {
-     "n": "12",
+     "n": "11",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -3587,7 +3955,7 @@
      ]
     },
     {
-     "n": "13",
+     "n": "12",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -3606,7 +3974,7 @@
      ]
     },
     {
-     "n": "14",
+     "n": "13",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -3630,7 +3998,7 @@
      ]
     },
     {
-     "n": "15",
+     "n": "14",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -3640,20 +4008,6 @@
        "ref": "dosbox-x:src/dos/dos.cpp",
        "lines": "2497-2501",
        "sha": "b9fa233371a8531f74b4a3bf397b5cd4ee022841f83bf4a7bb68ca5d42412430"
-      }
-     ]
-    },
-    {
-     "n": "16",
-     "on": "does",
-     "of": "dosbox-x",
-     "vs": "extra",
-     "text": "The call leaves AX at 3E01h, as a program that needs a nonzero AL expects.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2507-2516",
-       "sha": "573f0ad317244040efbeaaaae7d39137e8cf87f09ae636041d970c5ff1aa6f73"
       }
      ]
     }
@@ -3692,33 +4046,27 @@
      "row": "2"
     },
     {
-     "ref": "dosbox-x:src/dos/dos_execute.cpp",
-     "lines": "150-152",
-     "as": "agrees",
-     "row": "3"
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2502-2506",
+     "as": "build"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6170",
+     "as": "elsewhere",
+     "owner": "ibm-pc:call:0x21/0x5C"
     },
     {
      "ref": "dosbox-x:src/dos/dos_execute.cpp",
-     "lines": "118-124",
-     "as": "agrees",
-     "row": "4"
+     "lines": "123-124",
+     "as": "unfollowed",
+     "row": "5"
     },
     {
      "ref": "dosbox-x:src/dos/dos_execute.cpp",
      "lines": "157",
-     "as": "agrees",
-     "row": "5"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2496",
-     "as": "agrees",
-     "row": "7"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2502-2506",
-     "as": "build"
+     "as": "unfollowed",
+     "row": "6"
     }
    ]
   },
@@ -3778,14 +4126,14 @@
     },
     {
      "n": "2",
-     "on": "in AL",
+     "on": "in CX",
      "of": "doc",
-     "text": "AL is a special flag for APPEND, used after INT 2F AX=B711h.",
+     "text": "CX is the file attribute mask.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
-       "lines": "6207",
-       "sha": "4c8e982c1b32373617e45ae00f6127b038af8b155adc624cb964b8b0d1399e86"
+       "lines": "6208",
+       "sha": "ece8a22701ea1d6c55d8fdc8ee5c4d128c779f52d33cfaa20f09acbd4d5102c3"
       }
      ]
     },
@@ -3793,7 +4141,7 @@
      "n": "3",
      "on": "in CX",
      "of": "doc",
-     "text": "CX is the file attribute mask; bits 0 and 5 are ignored.",
+     "text": "Bits 0 and 5 of the mask are ignored.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -3806,7 +4154,7 @@
      "n": "4",
      "on": "in DS:DX",
      "of": "doc",
-     "text": "DS:DX points to an ASCIZ file specification that may hold a path and wildcards.",
+     "text": "DS:DX points to an ASCIZ file specification.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -3819,7 +4167,7 @@
      "n": "5",
      "on": "out CF=0",
      "of": "doc",
-     "text": "On success CF is clear and the DTA is filled with a FindFirst data block.",
+     "text": "On success CF is clear.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -3830,9 +4178,22 @@
     },
     {
      "n": "6",
+     "on": "out DTA",
+     "of": "doc",
+     "text": "On success the DTA is filled with a FindFirst data block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6211-6212",
+       "sha": "886c5aa48ba1e206798aeecfc62eff340c59a4ade4f59c2f002e0a79877681d8"
+      }
+     ]
+    },
+    {
+     "n": "7",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 02h, 03h or 12h.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -3842,7 +4203,20 @@
      ]
     },
     {
-     "n": "7",
+     "n": "8",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6213-6214",
+       "sha": "bfb42e86b1b946a81fe406d6d45231c6daca62dc7b904c6fc4a350d3a1bf8238"
+      }
+     ]
+    },
+    {
+     "n": "9",
      "on": "does",
      "of": "doc",
      "text": "For attributes other than 08h, files with at most the given mix of hidden, system and directory attributes are returned.",
@@ -3855,7 +4229,7 @@
      ]
     },
     {
-     "n": "8",
+     "n": "10",
      "on": "when",
      "of": "doc",
      "text": "In DOS 2.x searching for attribute 08h, volume label, also returns normal files.",
@@ -3868,7 +4242,7 @@
      ]
     },
     {
-     "n": "9",
+     "n": "11",
      "on": "when",
      "of": "doc",
      "text": "In DOS 3.0 and later searching for attribute 08h returns only the volume label, if any.",
@@ -3881,10 +4255,10 @@
      ]
     },
     {
-     "n": "10",
+     "n": "12",
      "on": "does",
      "of": "doc",
-     "text": "The call also succeeds for the name of a character device without wildcards.",
+     "text": "The call also succeeds for the name of a character device.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -3894,7 +4268,7 @@
      ]
     },
     {
-     "n": "11",
+     "n": "13",
      "on": "when",
      "of": "doc",
      "text": "DOS 2.x returns, for a device name, attribute 00h, size 0 and the current date and time.",
@@ -3907,7 +4281,7 @@
      ]
     },
     {
-     "n": "12",
+     "n": "14",
      "on": "when",
      "of": "doc",
      "text": "DOS 3.0 and later return attribute 40h and the current date and time for a device name.",
@@ -3920,20 +4294,7 @@
      ]
     },
     {
-     "n": "13",
-     "on": "when",
-     "of": "doc",
-     "text": "After INT 2F AX=B711h the name at DS:DX is overwritten with the found path, or prepended to the filespec when AL is not 0.",
-     "quotes": [
-      {
-       "ref": "rbil61:INTERRUP.G",
-       "lines": "6224-6227",
-       "sha": "d0fc983410abe88a99d7044ac4e8710c8922b20ce2249ac3b51102faccf25bdb"
-      }
-     ]
-    },
-    {
-     "n": "14",
+     "n": "15",
      "on": "when",
      "of": "doc",
      "text": "Under DOS 3.x and 4.x a second search for a device name with the volume-label bit fails without an intervening search.",
@@ -3946,7 +4307,7 @@
      ]
     },
     {
-     "n": "15",
+     "n": "16",
      "on": "out DTA",
      "of": "doc",
      "text": "In PC-DOS 3.10 and 4.01 and MS-DOS 3.2, 3.3 and 5.0 the block holds the drive at 00h, the 11-byte template at 01h and the attributes at 0Ch.",
@@ -3959,7 +4320,7 @@
      ]
     },
     {
-     "n": "16",
+     "n": "17",
      "on": "out DTA",
      "of": "doc",
      "text": "In DOS 2.x the block holds the attributes at 00h, the drive at 01h and the 11-byte template at 02h.",
@@ -3972,7 +4333,7 @@
      ]
     },
     {
-     "n": "17",
+     "n": "18",
      "on": "out DTA",
      "of": "doc",
      "text": "In DOS 2.x and most 3.x the block holds an entry count at 0Dh, a pointer to the DTA at 0Fh and a cluster number at 13h.",
@@ -3985,7 +4346,7 @@
      ]
     },
     {
-     "n": "18",
+     "n": "19",
      "on": "out DTA",
      "of": "doc",
      "text": "In PC-DOS 4.01 and MS-DOS 3.2, 3.3 and 5.0 the block holds an entry count at 0Dh, a cluster number at 0Fh and 4 reserved bytes at 11h.",
@@ -3998,7 +4359,7 @@
      ]
     },
     {
-     "n": "19",
+     "n": "20",
      "on": "out DTA",
      "of": "doc",
      "text": "In all versions the block holds at 15h the attribute, 16h the time, 18h the date, 1Ah the size and 1Eh the ASCIZ name.",
@@ -4011,37 +4372,7 @@
      ]
     },
     {
-     "n": "38",
-     "on": "in AL",
-     "of": "dosbox-x",
-     "vs": "absent",
-     "text": "AL is never read: the call keeps no APPEND flag.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2525",
-       "sha": "6b5bee101080f6bf7f09c32c9e2d8fd70ff9a99e7a0a6be1289197578b8ab018"
-      }
-     ],
-     "row": "2"
-    },
-    {
-     "n": "39",
-     "on": "when",
-     "of": "dosbox-x",
-     "vs": "absent",
-     "text": "The name at DS:DX is only read: it is never overwritten with a found path.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2525",
-       "sha": "6b5bee101080f6bf7f09c32c9e2d8fd70ff9a99e7a0a6be1289197578b8ab018"
-      }
-     ],
-     "row": "13"
-    },
-    {
-     "n": "20",
+     "n": "21",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -4055,11 +4386,11 @@
      ]
     },
     {
-     "n": "21",
+     "n": "22",
      "on": "when",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "A search for exactly attribute 08h, except on a CD-ROM, goes down the volume-label path whatever the version.",
+     "text": "A search for exactly attribute 0x08, except on a CD-ROM, goes down the volume-label path whatever the version.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -4072,14 +4403,14 @@
        "sha": "35f6d4f8230bd4166b8fbfa6034d3def9c61c6bee16bdc4570618b81c2500d44"
       }
      ],
-     "row": "8"
+     "row": "10"
     },
     {
-     "n": "22",
+     "n": "23",
      "on": "when",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "The test for exactly attribute 08h comes before the device check, so such a search with a device name is a label search.",
+     "text": "The test for exactly attribute 0x08 comes before the device check, so such a search with a device name is a label search.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -4087,10 +4418,10 @@
        "sha": "9449662b42088d858d57dc69abaffc818c244553f9e295c0e32a6f6714a2d9b9"
       }
      ],
-     "row": "14"
+     "row": "15"
     },
     {
-     "n": "23",
+     "n": "24",
      "on": "when",
      "of": "dosbox-x",
      "vs": "differs",
@@ -4102,49 +4433,39 @@
        "sha": "9b75fe9d50c0723d4939cd62cae6d9dc9e8cb9e7957ee21725f41d90d1fb35a5"
       }
      ],
-     "row": "12"
+     "row": "14"
     },
     {
-     "n": "24",
+     "n": "25",
      "on": "when",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "A device name returns attribute 40h with size, date and time all zero, not the current time.",
+     "text": "A device name returns DOS_ATTR_DEVICE as the attribute, with size, date and time all zero, not the current time.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
        "lines": "1043",
        "sha": "f50935c2bd351bcaddc3299a4987010fb9f93bc12e3881580771c6cdc4baac7f"
-      }
-     ],
-     "row": "11"
-    },
-    {
-     "n": "25",
-     "on": "out DTA",
-     "of": "dosbox-x",
-     "vs": "differs",
-     "text": "The block follows one layout whatever the version: the 3.2 and 5.0 one with a drive number from 1 at 00h.",
-     "quotes": [
+      },
       {
-       "ref": "dosbox-x:include/dos_inc.h",
-       "lines": "709-712",
-       "sha": "ffd9dda66773c2c15951be9c04fb6d9121010b9a38757377d2eb4bbba720c6a7"
+       "ref": "dosbox-x:include/dos_system.h",
+       "lines": "53",
+       "sha": "f560a762174b318d362db6ca36e30b26bc592c00b6aaeaae5ea4643a6fc64e2f"
       }
      ],
-     "row": "16"
+     "row": "13"
     },
     {
      "n": "26",
      "on": "out DTA",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "At 0Dh is a directory search ID and at 0Fh a 32-bit cluster number, for several searches at once.",
+     "text": "The block has one layout whatever the version: the drive first, then the 8-byte name pattern, the 3-byte extension pattern and the attribute mask.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
-       "lines": "713-715",
-       "sha": "c673eafe94111d181c55336050cf3ea7227e30c59b338637c4cd6b7eba3d2220"
+       "lines": "708-712",
+       "sha": "d8a5a03c971b1327815ba3069440c93b34065e624073b682c346bdacfd304e0b"
       }
      ],
      "row": "17"
@@ -4154,22 +4475,47 @@
      "on": "out DTA",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "At 0Dh is a directory search ID and at 0Fh a 32-bit cluster number, with 2 filler bytes at 13h.",
+     "text": "At 0x0D is a directory search ID and at 0x0F a 32-bit cluster number, for several searches at once.",
      "quotes": [
       {
        "ref": "dosbox-x:include/dos_inc.h",
-       "lines": "713-715",
-       "sha": "c673eafe94111d181c55336050cf3ea7227e30c59b338637c4cd6b7eba3d2220"
+       "lines": "713-714",
+       "sha": "f2337fb6cca7b95dc03a6a0c1750483773e9c319140f0b06221b4e157d8b57ce"
+      },
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "722-723",
+       "sha": "ea537dd6586818659473f279e031ed76eb7e824e73f33654b2d756dfb911e818"
       }
      ],
      "row": "18"
     },
     {
      "n": "28",
+     "on": "out DTA",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "At 0x0D is a directory search ID and at 0x0F a 32-bit cluster number, with 2 filler bytes at 0x13.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "713-715",
+       "sha": "c673eafe94111d181c55336050cf3ea7227e30c59b338637c4cd6b7eba3d2220"
+      },
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "722-724",
+       "sha": "56a040a7727dc54509e218cd019004297f7b135a3e903339dcc8e8ad33f5a1d0"
+      }
+     ],
+     "row": "19"
+    },
+    {
+     "n": "29",
      "on": "when",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The path is checked part by part before the search when long names are off, and a bad part gives 03h or 12h.",
+     "text": "The path is checked part by part before the search when long names are off, and a bad part gives 0x03 or 0x12.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -4204,7 +4550,7 @@
      ]
     },
     {
-     "n": "29",
+     "n": "30",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -4233,11 +4579,11 @@
      ]
     },
     {
-     "n": "30",
+     "n": "31",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The search is split into a directory and a pattern; a trailing backslash fails with 12h, and CD-ROM names are special.",
+     "text": "The search is split into a directory and a pattern; a trailing backslash fails with 0x12, and CD-ROM names are special.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -4262,11 +4608,11 @@
      ]
     },
     {
-     "n": "31",
+     "n": "32",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "An FCB search of the CHKDSK program drops the directory attribute; the drive, DTA and device name are set up.",
+     "text": "An FCB search of the CHKDSK program drops the directory attribute; the drive and the search fields of the DTA are set up.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_files.cpp",
@@ -4277,21 +4623,11 @@
        "ref": "dosbox-x:src/dos/dos_files.cpp",
        "lines": "1035-1037",
        "sha": "ba4d6b02ee7267549300c2c7faf511f232f375bc3b76b3ed5cc9f22af78ef5fc"
-      },
-      {
-       "ref": "dosbox-x:src/dos/dos_files.cpp",
-       "lines": "1040-1041",
-       "sha": "756b3a148cf22b8b189d0de66f061fcf4967f6259435903dcf857eeca2153b74"
-      },
-      {
-       "ref": "dosbox-x:src/dos/dos_files.cpp",
-       "lines": "1044-1045",
-       "sha": "6bc7c0c09cec19a78754876e092c231f663b8b5ff704ff084304031062b63f84"
       }
      ]
     },
     {
-     "n": "32",
+     "n": "33",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -4310,7 +4646,7 @@
      ]
     },
     {
-     "n": "33",
+     "n": "34",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -4324,7 +4660,7 @@
      ]
     },
     {
-     "n": "34",
+     "n": "35",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -4338,7 +4674,7 @@
      ]
     },
     {
-     "n": "35",
+     "n": "36",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -4346,13 +4682,13 @@
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
-       "lines": "2526-2530",
-       "sha": "fe2015f882fdaf192124a44f0ebe014a8a216ce3d56562d87b2a16da03c26848"
+       "lines": "2526-2527",
+       "sha": "fd5f714c8388e34c867e23741d762195f44809073dc301cab68348755efaddff"
       }
      ]
     },
     {
-     "n": "36",
+     "n": "37",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -4366,7 +4702,7 @@
      ]
     },
     {
-     "n": "37",
+     "n": "38",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -4381,6 +4717,20 @@
        "ref": "dosbox-x:src/dos/dos_classes.cpp",
        "lines": "549",
        "sha": "d10b36aa74a59bcf4a88185837f658afaf3646eff2bb16c3928d0e9335e945d2"
+      }
+     ]
+    },
+    {
+     "n": "39",
+     "on": "out DTA",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The 11 pattern bytes of the DTA are cleared before the pattern is written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_classes.cpp",
+       "lines": "512",
+       "sha": "215be628da66414c44230761fbe87f4c03f3f3ae73a4e890557b166b2ce8472e"
       }
      ]
     }
@@ -4469,57 +4819,105 @@
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2531",
-     "as": "agrees",
-     "row": "3"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2524",
      "as": "agrees",
      "row": "4"
     },
     {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2532",
-     "as": "agrees",
-     "row": "5"
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6207",
+     "as": "elsewhere",
+     "owner": "ibm-pc:call:0x2F/0xB7/0x11"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6224-6227",
+     "as": "elsewhere",
+     "owner": "ibm-pc:call:0x2F/0xB7/0x11"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2535-2536",
+     "lines": "2531",
      "as": "agrees",
-     "row": "6"
+     "row": "2"
     },
     {
      "ref": "dosbox-x:src/dos/dos_files.cpp",
      "lines": "1053",
-     "as": "agrees",
-     "row": "7"
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2532",
+     "as": "unfollowed",
+     "row": "5"
     },
     {
      "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "985",
+     "lines": "1053",
+     "as": "unfollowed",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2530",
+     "as": "unfollowed",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2536",
+     "as": "unfollowed",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2528-2529",
      "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2535",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1053",
+     "as": "unfollowed",
      "row": "9"
     },
     {
      "ref": "dosbox-x:src/dos/dos_files.cpp",
-     "lines": "1039",
-     "as": "agrees",
-     "row": "10"
+     "lines": "985",
+     "as": "unfollowed",
+     "row": "11"
     },
     {
-     "ref": "dosbox-x:src/dos/dos_classes.cpp",
-     "lines": "512-526",
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1039-1041",
      "as": "agrees",
-     "row": "15"
+     "row": "12"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1044-1045",
+     "as": "agrees",
+     "row": "12"
     },
     {
      "ref": "dosbox-x:src/dos/dos_classes.cpp",
      "lines": "543-548",
-     "as": "agrees",
-     "row": "19"
+     "as": "unfollowed",
+     "row": "20"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "lines": "515-526",
+     "as": "unfollowed",
+     "row": "16"
     }
    ]
   },
@@ -4593,7 +4991,7 @@
      "n": "3",
      "on": "out CF=0",
      "of": "doc",
-     "text": "On success CF is clear, DX holds the device information word and AX is destroyed.",
+     "text": "On success CF is clear.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -4604,9 +5002,35 @@
     },
     {
      "n": "4",
+     "on": "out DX",
+     "of": "doc",
+     "text": "On success DX holds the device information word.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "7-9",
+       "sha": "f1851182144f08ab42956e20ec5412ab37a1d5db465c13e25cb8ff5614eef0a1"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On success AX is destroyed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "7-9",
+       "sha": "f1851182144f08ab42956e20ec5412ab37a1d5db465c13e25cb8ff5614eef0a1"
+      }
+     ]
+    },
+    {
+     "n": "6",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 01h, 05h or 06h.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -4616,7 +5040,20 @@
      ]
     },
     {
-     "n": "5",
+     "n": "7",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "10-11",
+       "sha": "30aabd5b357297b5f4d4b7e210e00bc680bb5eae2ec59f5ac82f50618b3fb85c"
+      }
+     ]
+    },
+    {
+     "n": "8",
      "on": "does",
      "of": "doc",
      "text": "For a character device DH is the high byte of the driver's attribute word.",
@@ -4629,7 +5066,7 @@
      ]
     },
     {
-     "n": "6",
+     "n": "9",
      "on": "out DX",
      "of": "doc",
      "text": "Character device: bit 14 the driver takes IOCTL, 13 output until busy, 11 OPEN and CLOSE; bit 7 set, 6 EOF on input, 5 raw, 4 special via INT 29.",
@@ -4647,7 +5084,7 @@
      ]
     },
     {
-     "n": "7",
+     "n": "10",
      "on": "out DX",
      "of": "doc",
      "text": "For a character device bit 3 is a clock device, 2 the NUL device, 1 standard output and 0 standard input.",
@@ -4660,7 +5097,7 @@
      ]
     },
     {
-     "n": "8",
+     "n": "11",
      "on": "out DX",
      "of": "doc",
      "text": "Bit 8 is unknown and is set by the MS-DOS 6.2x KEYB.",
@@ -4673,7 +5110,7 @@
      ]
     },
     {
-     "n": "9",
+     "n": "12",
      "on": "out DX",
      "of": "doc",
      "text": "For a disk file bit 15 is remote and 14 skips the date and time on close, from DOS 3.0; bit 11 is media not removable.",
@@ -4686,7 +5123,7 @@
      ]
     },
     {
-     "n": "10",
+     "n": "13",
      "on": "out DX",
      "of": "doc",
      "text": "For a disk file bit 8, DOS 4 only, raises INT 24 on a full disk or a read past the end.",
@@ -4699,7 +5136,7 @@
      ]
     },
     {
-     "n": "11",
+     "n": "14",
      "on": "out DX",
      "of": "doc",
      "text": "For a disk file bit 7 is clear, bit 6 means not written, and bits 5-0 hold the drive number, 0 for A:.",
@@ -4712,7 +5149,7 @@
      ]
     },
     {
-     "n": "12",
+     "n": "15",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -4731,87 +5168,7 @@
      ]
     },
     {
-     "n": "13",
-     "on": "out DX",
-     "of": "dosbox-x",
-     "vs": "differs",
-     "text": "For a device the call returns the device's own information word, with a character-device bit added.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "653",
-       "sha": "4815ab59322be426ba234df54eeac51fe688c7bb97457797beaaab190d9f2b84"
-      },
-      {
-       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "656",
-       "sha": "125508a11e7a77c1b721152722176f0171c9d60e61a79abb251b309b4a23de52"
-      }
-     ],
-     "row": "6"
-    },
-    {
-     "n": "14",
-     "on": "out DX",
-     "of": "dosbox-x",
-     "vs": "differs",
-     "text": "For a device the call returns the device's own information word, not computed bits.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "653",
-       "sha": "4815ab59322be426ba234df54eeac51fe688c7bb97457797beaaab190d9f2b84"
-      }
-     ],
-     "row": "7"
-    },
-    {
-     "n": "15",
-     "on": "out DX",
-     "of": "dosbox-x",
-     "vs": "differs",
-     "text": "For a device bit 8 is whatever the device's own information word holds.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "653",
-       "sha": "4815ab59322be426ba234df54eeac51fe688c7bb97457797beaaab190d9f2b84"
-      }
-     ],
-     "row": "8"
-    },
-    {
      "n": "16",
-     "on": "out DX",
-     "of": "dosbox-x",
-     "vs": "differs",
-     "text": "For a file the bits above 4 are the file object's own, not computed here.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "664",
-       "sha": "adb49942110e036106342bbfccbe78971a1e60a3569663a4e852b737b38f8911"
-      }
-     ],
-     "row": "9"
-    },
-    {
-     "n": "17",
-     "on": "out DX",
-     "of": "dosbox-x",
-     "vs": "differs",
-     "text": "For a file bit 8 is the file object's own: no INT 24 is raised by this call.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "664",
-       "sha": "adb49942110e036106342bbfccbe78971a1e60a3569663a4e852b737b38f8911"
-      }
-     ],
-     "row": "10"
-    },
-    {
-     "n": "18",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
@@ -4819,17 +5176,17 @@
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "659-662",
-       "sha": "10368f99bf6f265c1695f0da7e3c72094d904c4b7b8b7c5a98cd3c0f2966e08b"
+       "lines": "658-662",
+       "sha": "5b41b557867882f7318e2f8552472885f39abc854e6a85310283f4584f94e909"
       }
      ]
     },
     {
-     "n": "20",
+     "n": "17",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The DOS-V device handles IAS and MS$KANJI are answered first: both give DX=0080h for 00h; MS$KANJI also answers 02h with CX=4 and fails any other call with AX=1.",
+     "text": "The DOS-V device handles IAS and MS$KANJI are answered first: both give DX=0x0080 for 0x00; MS$KANJI also answers 0x02 with CX=4 and fails any other call with AX=1.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos.cpp",
@@ -4840,6 +5197,20 @@
        "ref": "dosbox-x:src/dos/dos.cpp",
        "lines": "2374-2382",
        "sha": "f991704181c17396aaff36e4605fee66d767f58ec4317f247bc6173ea5063405"
+      }
+     ]
+    },
+    {
+     "n": "18",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The device bit of the handle's information word tells a device from a disk file.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "653",
+       "sha": "4815ab59322be426ba234df54eeac51fe688c7bb97457797beaaab190d9f2b84"
       }
      ]
     }
@@ -4899,30 +5270,6 @@
     },
     {
      "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "666-667",
-     "as": "agrees",
-     "row": "3"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2385-2387",
-     "as": "agrees",
-     "row": "4"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "654",
-     "as": "agrees",
-     "row": "5"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "658",
-     "as": "agrees",
-     "row": "11"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
      "lines": "624-650",
      "as": "preamble",
      "owner": "ibm-pc:call:0x21/0x44"
@@ -4940,7 +5287,80 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "2383-2384",
-     "as": "structure"
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "654-656",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "664",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "666-667",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2387",
+     "as": "unfollowed",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2385-2386",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "654",
+     "as": "unfollowed",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "654",
+     "as": "unfollowed",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "654",
+     "as": "unfollowed",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "664",
+     "as": "unfollowed",
+     "row": "12"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "664",
+     "as": "unfollowed",
+     "row": "13"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "664",
+     "as": "unfollowed",
+     "row": "14"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "654-656",
+     "as": "unfollowed",
+     "row": "8"
     }
    ]
   },
@@ -5001,7 +5421,7 @@
      "n": "2",
      "on": "in BX",
      "of": "doc",
-     "text": "BX holds the handle, which must refer to a character device.",
+     "text": "BX holds the handle.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -5012,9 +5432,22 @@
     },
     {
      "n": "3",
+     "on": "in BX",
+     "of": "doc",
+     "text": "The handle must refer to a character device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "47",
+       "sha": "5f2f8402a3b3d447ed64ce64f14fb3c81370acc53551676263b1223e2e0508de"
+      }
+     ]
+    },
+    {
+     "n": "4",
      "on": "in DX",
      "of": "doc",
-     "text": "DX holds the device information word; DH must be zero for DOS versions before 6.x.",
+     "text": "DX holds the device information word.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -5024,7 +5457,20 @@
      ]
     },
     {
-     "n": "4",
+     "n": "5",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DH must be zero for DOS versions before 6.x.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "48-49",
+       "sha": "af5f8b8c09883886055d2e6be08bdd2a7d43be7644a0ece93c68091956b894e3"
+      }
+     ]
+    },
+    {
+     "n": "6",
      "on": "out CF=0",
      "of": "doc",
      "text": "On success CF is clear.",
@@ -5037,10 +5483,10 @@
      ]
     },
     {
-     "n": "5",
+     "n": "7",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 01h, 05h, 06h or 0Dh.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -5050,7 +5496,20 @@
      ]
     },
     {
-     "n": "6",
+     "n": "8",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "51-52",
+       "sha": "528332d15a777c76575c5ff8a8f31773cddbf412d2ef87f8a167cbb6510e5509"
+      }
+     ]
+    },
+    {
+     "n": "9",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -5069,11 +5528,11 @@
      ]
     },
     {
-     "n": "7",
+     "n": "10",
      "on": "in DX",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "A DH other than zero fails with 0Dh data invalid in every DOS version.",
+     "text": "A DH other than zero fails with 0x0D data invalid in every DOS version.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
@@ -5081,19 +5540,33 @@
        "sha": "7a9e4269d8bf5f69ddccb6771cf9f889774d25f005cb73462647be4432cfe27b"
       }
      ],
-     "row": "3"
+     "row": "5"
     },
     {
-     "n": "8",
+     "n": "11",
      "on": "does",
      "of": "dosbox-x",
      "vs": "extra",
-     "text": "The call sets the device's information word and returns the word's low byte in AL.",
+     "text": "The device's information word is read back and its low byte returned in AL.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "674-675",
-       "sha": "93794504d1d617c1fdfa8bfb6231b5a7a52c0590fdef4b9b86e9fce76675846f"
+       "lines": "675",
+       "sha": "d672bfc3f56514905249800c79f4699cad15eaeff97ac0198f7a5820dad752d0"
+      }
+     ]
+    },
+    {
+     "n": "86",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A handle that is not a device fails with error 0x01 function number invalid.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "676-678",
+       "sha": "7c521c12d508fdef047fb17934b1b0cccb06fb184f8f09054c78462b96db4b82"
       }
      ]
     }
@@ -5148,47 +5621,50 @@
      "owner": "ibm-pc:call:0x21/0x44/0x00"
     },
     {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2383-2384",
-     "as": "structure"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "673",
-     "as": "agrees",
-     "row": "2"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2384",
-     "as": "agrees",
-     "row": "4"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2385-2387",
-     "as": "agrees",
-     "row": "5"
-    },
-    {
      "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
      "lines": "672",
      "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "676",
-     "as": "structure"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "677-678",
-     "as": "structure"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
      "lines": "681",
      "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "627",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "674",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2383-2384",
+     "as": "unfollowed",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2387",
+     "as": "unfollowed",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2385-2386",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "673",
+     "as": "unfollowed",
+     "row": "3"
     }
    ]
   },
@@ -5262,7 +5738,7 @@
      "n": "3",
      "on": "out AL",
      "of": "doc",
-     "text": "On success AL is 00h when not ready, for a device, or at end of file, for a file, and FFh when ready.",
+     "text": "For a device AL is 00h when not ready and FFh when ready.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -5273,6 +5749,19 @@
     },
     {
      "n": "4",
+     "on": "out AL",
+     "of": "doc",
+     "text": "For a file AL is 00h at end of file and FFh when ready.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3526-3529",
+       "sha": "6023c815fef711be91871225d9ab406d3beb654ec63c538f07ceab3a4a5491cd"
+      }
+     ]
+    },
+    {
+     "n": "5",
      "on": "out AH",
      "of": "doc",
      "text": "AH may be destroyed.",
@@ -5285,10 +5774,10 @@
      ]
     },
     {
-     "n": "5",
+     "n": "6",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 01h, 05h, 06h or 0Dh.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -5298,7 +5787,20 @@
      ]
     },
     {
-     "n": "6",
+     "n": "7",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3531-3532",
+       "sha": "528332d15a777c76575c5ff8a8f31773cddbf412d2ef87f8a167cbb6510e5509"
+      }
+     ]
+    },
+    {
+     "n": "8",
      "on": "when",
      "of": "doc",
      "text": "Files may not register as at end of file if they were positioned there by AH=42h.",
@@ -5311,7 +5813,7 @@
      ]
     },
     {
-     "n": "7",
+     "n": "9",
      "on": "when",
      "of": "doc",
      "text": "Under DOS 5.0, on success, AH holds the next character to be read, or 1Ah at end of file.",
@@ -5324,7 +5826,7 @@
      ]
     },
     {
-     "n": "8",
+     "n": "10",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -5343,26 +5845,11 @@
      ]
     },
     {
-     "n": "9",
-     "on": "when",
-     "of": "dosbox-x",
-     "vs": "differs",
-     "text": "A file at its end by AH=42h also reads as at end: the call compares the current position with the end.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "714-718",
-       "sha": "3a9b57fe9610eb8af79d28784d1e5c27738b6d7187590a05458252dc8094845e"
-      }
-     ],
-     "row": "6"
-    },
-    {
-     "n": "10",
+     "n": "12",
      "on": "out AH",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "AH is never set to the next character or to 1Ah: only AL changes.",
+     "text": "AH is never set to the next character or to 0x1A: only AL changes.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
@@ -5370,26 +5857,7 @@
        "sha": "10e0fa08a73f0cd151617165a96e7df8c8d14ecfc63d6f1f343559f16198939f"
       }
      ],
-     "row": "7"
-    },
-    {
-     "n": "11",
-     "on": "does",
-     "of": "dosbox-x",
-     "vs": "extra",
-     "text": "For a file the call seeks to the end to measure, then restores the position.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "710-713",
-       "sha": "dfeef5a4e63ad32d821346fb1174b5a850ef28009c2b38280ede55c0aa9a29ff"
-      },
-      {
-       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "719-720",
-       "sha": "d2353824b999f1c46f0f2926e0bf9c0b2cca75d4f6718b748f3c23927318e1be"
-      }
-     ]
+     "row": "9"
     }
    ],
    "closed": [
@@ -5459,26 +5927,44 @@
     },
     {
      "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "707-708",
-     "as": "agrees",
-     "row": "3"
+     "lines": "709",
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "708",
+     "lines": "707-708",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2387",
+     "as": "unfollowed",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2385-2386",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "714-718",
      "as": "agrees",
      "row": "4"
     },
     {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2385-2387",
-     "as": "agrees",
-     "row": "5"
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "710-713",
+     "as": "unfollowed",
+     "row": "8"
     },
     {
      "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "709",
-     "as": "structure"
+     "lines": "719-720",
+     "as": "unfollowed",
+     "row": "8"
     }
    ]
   },
@@ -5552,7 +6038,7 @@
      "n": "3",
      "on": "out AL",
      "of": "doc",
-     "text": "On success AL is 00h when not ready and FFh when ready.",
+     "text": "On success AL is FFh when ready.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -5563,9 +6049,22 @@
     },
     {
      "n": "4",
+     "on": "out AL",
+     "of": "doc",
+     "text": "On success AL is 00h when not ready.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3545-3548",
+       "sha": "b6c8e7563f17be1e6a5e8701423e1b0112357cbcbc9672139ff9ec2cbedf2a36"
+      }
+     ]
+    },
+    {
+     "n": "5",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 01h, 05h, 06h or 0Dh.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -5575,7 +6074,20 @@
      ]
     },
     {
-     "n": "5",
+     "n": "6",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3549-3550",
+       "sha": "528332d15a777c76575c5ff8a8f31773cddbf412d2ef87f8a167cbb6510e5509"
+      }
+     ]
+    },
+    {
+     "n": "7",
      "on": "when",
      "of": "doc",
      "text": "From DOS 2 files are always ready for output, even with a full disk or no media in the drive.",
@@ -5588,7 +6100,7 @@
      ]
     },
     {
-     "n": "6",
+     "n": "8",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -5603,20 +6115,6 @@
        "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
        "lines": "723",
        "sha": "1f1ba17784fc682c14f7d83332702910a14347f3643d2da2d5757d149e6582c5"
-      }
-     ]
-    },
-    {
-     "n": "7",
-     "on": "does",
-     "of": "dosbox-x",
-     "vs": "extra",
-     "text": "A handle of an external device asks the device for its output status and returns it in AL.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "724-726",
-       "sha": "2518969ff7d1f2104db0cef6b1102b21b1f555811e3db6f3eee7694561e11c0d"
       }
      ]
     }
@@ -5683,26 +6181,38 @@
     },
     {
      "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "729",
+     "lines": "730",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "728-729",
      "as": "agrees",
      "row": "3"
     },
     {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2385-2387",
-     "as": "agrees",
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "724-726",
+     "as": "unfollowed",
      "row": "4"
     },
     {
-     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "729",
-     "as": "agrees",
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2387",
+     "as": "unfollowed",
      "row": "5"
     },
     {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2385-2386",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
      "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-     "lines": "730",
-     "as": "structure"
+     "lines": "728-729",
+     "as": "agrees",
+     "row": "7"
     }
    ]
   },
@@ -5774,9 +6284,9 @@
     },
     {
      "n": "3",
-     "on": "out AX",
+     "on": "out CF=0",
      "of": "doc",
-     "text": "On success CF is clear and AX is the media type: 0000h removable, 0001h fixed.",
+     "text": "On success CF is clear.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -5787,9 +6297,22 @@
     },
     {
      "n": "4",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On success AX is the media type: 0000h removable, 0001h fixed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3559-3560",
+       "sha": "23453f6426dee877004c428bd186aaebea852d1a2a98d48d72de4c66e3792094"
+      }
+     ]
+    },
+    {
+     "n": "5",
      "on": "out CF=1",
      "of": "doc",
-     "text": "On error CF is set and AX holds the error code 01h or 0Fh.",
+     "text": "On error CF is set.",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -5799,7 +6322,20 @@
      ]
     },
     {
-     "n": "5",
+     "n": "6",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3561-3562",
+       "sha": "d43b60e6333aa4bdabcea0d9982db7b1bd754a093f90967f3ba27f298e02ad8b"
+      }
+     ]
+    },
+    {
+     "n": "7",
      "on": "place",
      "of": "dosbox-x",
      "vs": "place",
@@ -5818,33 +6354,24 @@
      ]
     },
     {
-     "n": "6",
+     "n": "8",
      "on": "out AX",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "A removable drive that is not A: or B:, such as a CD-ROM, fails with 01h instead of answering 0000h.",
+     "text": "Only A: and B: answer 0x0000; a removable drive from C: up, such as a CD-ROM, fails with error 0x01, and a fixed one answers 0x0001.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "741-743",
-       "sha": "0ecf0bc4b5d93995c724a889d9ed927db9b2c86627d2239b0d8da2e06173bdac"
+       "lines": "732-735",
+       "sha": "96ba53f25a3a63895cbeacc22f0b9693ddf6e9809566d7f7bcf61c3277df8d13"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "740-743",
+       "sha": "c22e56823e46772a15002e46563ff7c4a9e9a24baa521f995bdd6db64e0233cf"
       }
      ],
-     "row": "3"
-    },
-    {
-     "n": "7",
-     "on": "does",
-     "of": "dosbox-x",
-     "vs": "extra",
-     "text": "Drives A: and B: answer removable when they exist and fail with 0Fh when not; any other drive that is not removable answers fixed.",
-     "quotes": [
-      {
-       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
-       "lines": "733-740",
-       "sha": "db48c8d1c4ceff22551e2b78f696c25f5f91be7007db4bb935e326d2da166246"
-      }
-     ]
+     "row": "4"
     }
    ],
    "closed": [
@@ -5897,26 +6424,39 @@
      "owner": "ibm-pc:call:0x21/0x44/0x00"
     },
     {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2383-2384",
-     "as": "structure"
-    },
-    {
      "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
      "lines": "638-640",
      "as": "agrees",
      "row": "2"
     },
     {
-     "ref": "dosbox-x:src/dos/dos.cpp",
-     "lines": "2385-2387",
-     "as": "agrees",
-     "row": "4"
-    },
-    {
      "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
      "lines": "744-745",
      "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2383-2384",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2387",
+     "as": "unfollowed",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2385-2386",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "736-739",
+     "as": "agrees",
+     "row": "6"
     }
    ]
   }
