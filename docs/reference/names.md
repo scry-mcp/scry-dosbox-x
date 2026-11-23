@@ -423,7 +423,7 @@ Reply, 3 of 10 fields:
 {
   "summary": "kind call key 0x21/0x4C: terminate with code",
   "entries_total": 1,
-  "examined": 25
+  "examined": 350
 }
 ```
 
@@ -611,8 +611,8 @@ One entry matches, so `entries` gives it whole: what Ralf Brown's list says firs
     }
   ],
   "truncated": false,
-  "examined": 25,
-  "served": 54,
+  "examined": 350,
+  "served": 676,
   "held_back": 0
 }
 ```
@@ -697,7 +697,7 @@ Reply: `query`, `scope`, `entries_total`, `entries`, `truncated`, `examined`, `s
 `held_back`; nothing matched: no entry, `nearest` and a `note`: it stays a number.
 `unconfirmed` lists ids held back.
 
-Scopes: none.
+Scopes: am9517a, chip, ibm-pc, ins8250, mc146818, mc6845, pic8259, pit8253, ym3812, ymf262, z80.
 
 Reference: REFERENCE.md, Knowledge base.
 ```

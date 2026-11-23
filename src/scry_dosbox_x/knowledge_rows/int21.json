@@ -22795,6 +22795,3208 @@
      "row": "5"
     }
    ]
+  },
+  {
+   "key": "0x21/0x44/0x00",
+   "name": "ioctl device info",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x44"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x44"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "function": "DOS_IOCTL",
+     "case": [
+      "0x00"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "function": "DOS_IOCTL",
+     "case": [
+      "0x00"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3-43"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IOCTL get device information, a DOS 2 call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "4",
+       "sha": "4ac87ef6ea082b306452c2d7d6614ef7b4ac9eb0f70b748d066578de2101d886"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX holds the handle.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6",
+       "sha": "914aa2d58edebd63cb52a3928b0da534f408e8e47cd5e8b28245d0a1e59f2b74"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "On success CF is clear.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "7-9",
+       "sha": "f1851182144f08ab42956e20ec5412ab37a1d5db465c13e25cb8ff5614eef0a1"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out DX",
+     "of": "doc",
+     "text": "On success DX holds the device information word.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "7-9",
+       "sha": "f1851182144f08ab42956e20ec5412ab37a1d5db465c13e25cb8ff5614eef0a1"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On success AX is destroyed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "7-9",
+       "sha": "f1851182144f08ab42956e20ec5412ab37a1d5db465c13e25cb8ff5614eef0a1"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "On error CF is set.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "10-11",
+       "sha": "30aabd5b357297b5f4d4b7e210e00bc680bb5eae2ec59f5ac82f50618b3fb85c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "10-11",
+       "sha": "30aabd5b357297b5f4d4b7e210e00bc680bb5eae2ec59f5ac82f50618b3fb85c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "does",
+     "of": "doc",
+     "text": "For a character device DH is the high byte of the driver's attribute word.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "12-13",
+       "sha": "85e8def80868329bd357415105cc1c4bb7889a70b6f49b58642b7636e2a950b1"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out DX",
+     "of": "doc",
+     "text": "Character device: bit 14 the driver takes IOCTL, 13 output until busy, 11 OPEN and CLOSE; bit 7 set, 6 EOF on input, 5 raw, 4 special via INT 29.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "22-24",
+       "sha": "298d05213a7b1add591d38558f95ade53790e26b8b9aa444d393d4da93f97750"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "26-29",
+       "sha": "df8b2fbf99fabe3f0fe9b4404f4a901982bb72b8d296e734562dc431912de46e"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "out DX",
+     "of": "doc",
+     "text": "For a character device bit 3 is a clock device, 2 the NUL device, 1 standard output and 0 standard input.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "30-33",
+       "sha": "21947e3e11346c78ff4689402511dbb4413ef461f6ff639a7ba15bc2ba14dcd9"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "out DX",
+     "of": "doc",
+     "text": "Bit 8 is unknown and is set by the MS-DOS 6.2x KEYB.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "25",
+       "sha": "92105b6a7d1b0ddb1ded51dfedc6e3449be528d7231fef3cf3a9fd05b2105b50"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "out DX",
+     "of": "doc",
+     "text": "For a disk file bit 15 is remote and 14 skips the date and time on close, from DOS 3.0; bit 11 is media not removable.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "35-37",
+       "sha": "dba45feb450d68227e6bc013f6e0c77c79e809ed62c1894e0f10c71489bb1f5e"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "out DX",
+     "of": "doc",
+     "text": "For a disk file bit 8, DOS 4 only, raises INT 24 on a full disk or a read past the end.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "38-39",
+       "sha": "330bb7766a3cc6ac096a5241739b8fe60f86ea5281a7822a8731369f6088fe37"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "out DX",
+     "of": "doc",
+     "text": "For a disk file bit 7 is clear, bit 6 means not written, and bits 5-0 hold the drive number, 0 for A:.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "40-42",
+       "sha": "686a580a9a096f1580c091f07a3c1561829059d36ffe2ed22e0f0ea1911056b2"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 21h handler reaches it by its case 0x44 and DOS_IOCTL by its case 0x00.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2361",
+       "sha": "92c0fbc74b98b0a74ffe7fb96c121791a4070909cdffbda9db35d65a26042ba3"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "652",
+       "sha": "3b6f19dc6c709269c461898d16de2545a0619fb2619b8ce77ed3b24af7ee428b"
+      }
+     ]
+    },
+    {
+     "n": "16",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A file whose drive is unknown reports C: as its drive.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "658-662",
+       "sha": "5b41b557867882f7318e2f8552472885f39abc854e6a85310283f4584f94e909"
+      }
+     ]
+    },
+    {
+     "n": "17",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The DOS-V device handles IAS and MS$KANJI are answered first: both give DX=0x0080 for 0x00; MS$KANJI also answers 0x02 with CX=4 and fails any other call with AX=1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2362-2373",
+       "sha": "2aeb0e941262e0aa401b6679dfa1e484fb9f85c095a98398a584df88d8a23010"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2374-2382",
+       "sha": "f991704181c17396aaff36e4605fee66d767f58ec4317f247bc6173ea5063405"
+      }
+     ]
+    },
+    {
+     "n": "18",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The device bit of the handle's information word tells a device from a disk file.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "653",
+       "sha": "4815ab59322be426ba234df54eeac51fe688c7bb97457797beaaab190d9f2b84"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "5",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "14-16",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "17",
+     "as": "see-also"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "19-21",
+     "as": "layout"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "34",
+     "as": "layout"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "43",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1100-1161",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1162",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "627",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "624-650",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21/0x44"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "651",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "657",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2383-2384",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "654-656",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "664",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "666-667",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2387",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2385-2386",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "654",
+     "as": "unfollowed",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "654",
+     "as": "unfollowed",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "654",
+     "as": "unfollowed",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "664",
+     "as": "unfollowed",
+     "row": "12"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "664",
+     "as": "unfollowed",
+     "row": "13"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "664",
+     "as": "unfollowed",
+     "row": "14"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "654-656",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "397",
+     "as": "unseen",
+     "reason": "DOS_SetError, the shared store of the error code a failing call reports"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3073",
+     "as": "unseen",
+     "reason": "stored by another function's case of this handler, not by this call"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "5669",
+     "as": "unseen",
+     "reason": "stored by the long-file-name find function, not by this call"
+    }
+   ]
+  },
+  {
+   "key": "0x21/0x44/0x01",
+   "name": "ioctl set device info",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x44"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x44"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "function": "DOS_IOCTL",
+     "case": [
+      "0x01"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "function": "DOS_IOCTL",
+     "case": [
+      "0x01"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "44-54"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IOCTL set device information, a DOS 2 call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "45",
+       "sha": "97df732f350b7aa00c6fa754728c712f7e2983ee974221cc0d724ea19d1a3c9d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX holds the handle.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "47",
+       "sha": "5f2f8402a3b3d447ed64ce64f14fb3c81370acc53551676263b1223e2e0508de"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in BX",
+     "of": "doc",
+     "text": "The handle must refer to a character device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "47",
+       "sha": "5f2f8402a3b3d447ed64ce64f14fb3c81370acc53551676263b1223e2e0508de"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DX holds the device information word.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "48-49",
+       "sha": "af5f8b8c09883886055d2e6be08bdd2a7d43be7644a0ece93c68091956b894e3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "in DX",
+     "of": "doc",
+     "text": "DH must be zero for DOS versions before 6.x.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "48-49",
+       "sha": "af5f8b8c09883886055d2e6be08bdd2a7d43be7644a0ece93c68091956b894e3"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "On success CF is clear.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "50",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "On error CF is set.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "51-52",
+       "sha": "528332d15a777c76575c5ff8a8f31773cddbf412d2ef87f8a167cbb6510e5509"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "51-52",
+       "sha": "528332d15a777c76575c5ff8a8f31773cddbf412d2ef87f8a167cbb6510e5509"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 21h handler reaches it by its case 0x44 and DOS_IOCTL by its case 0x01.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2361",
+       "sha": "92c0fbc74b98b0a74ffe7fb96c121791a4070909cdffbda9db35d65a26042ba3"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "668",
+       "sha": "749ffb8109168fbde2a605ae173ca97ffeeb05f61c838abc072a7af4e52a2cb7"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "in DX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A DH other than zero fails with 0x0D data invalid in every DOS version.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "669-671",
+       "sha": "7a9e4269d8bf5f69ddccb6771cf9f889774d25f005cb73462647be4432cfe27b"
+      }
+     ],
+     "row": "5"
+    },
+    {
+     "n": "11",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The device's information word is read back and its low byte returned in AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "675",
+       "sha": "d672bfc3f56514905249800c79f4699cad15eaeff97ac0198f7a5820dad752d0"
+      }
+     ]
+    },
+    {
+     "n": "86",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A handle that is not a device fails with error 0x01 function number invalid.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "676-678",
+       "sha": "7c521c12d508fdef047fb17934b1b0cccb06fb184f8f09054c78462b96db4b82"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "44",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "46",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "53",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "54",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1100-1161",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1162",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "624-650",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21/0x44"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "651",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2362-2382",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x21/0x44/0x00"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "672",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "681",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "627",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "674",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2383-2384",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2387",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2385-2386",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "673",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "397",
+     "as": "unseen",
+     "reason": "DOS_SetError, the shared store of the error code a failing call reports"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3073",
+     "as": "unseen",
+     "reason": "stored by another function's case of this handler, not by this call"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "5669",
+     "as": "unseen",
+     "reason": "stored by the long-file-name find function, not by this call"
+    }
+   ]
+  },
+  {
+   "key": "0x21/0x44/0x06",
+   "name": "ioctl input status",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x44"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x44"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "function": "DOS_IOCTL",
+     "case": [
+      "0x06"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "function": "DOS_IOCTL",
+     "case": [
+      "0x06"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3522-3540"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IOCTL get input status, a DOS 2 call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3523",
+       "sha": "559bc1724042c28ee3376b4b6a2c956cc835b6f3a588d7d72a95f5b7d80b51e6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX holds the file handle.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3525",
+       "sha": "ff6663d6a396d8b8d3dd068b76a6fa1af71771a2edb12951e29a25e28a51f884"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AL",
+     "of": "doc",
+     "text": "For a device AL is 00h when not ready and FFh when ready.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3526-3529",
+       "sha": "6023c815fef711be91871225d9ab406d3beb654ec63c538f07ceab3a4a5491cd"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AL",
+     "of": "doc",
+     "text": "For a file AL is 00h at end of file and FFh when ready.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3526-3529",
+       "sha": "6023c815fef711be91871225d9ab406d3beb654ec63c538f07ceab3a4a5491cd"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "AH may be destroyed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3530",
+       "sha": "bff0ba25327177ab2e0ab749bc320f861282bd11c2efbb6612283daa52048bdf"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "On error CF is set.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3531-3532",
+       "sha": "528332d15a777c76575c5ff8a8f31773cddbf412d2ef87f8a167cbb6510e5509"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3531-3532",
+       "sha": "528332d15a777c76575c5ff8a8f31773cddbf412d2ef87f8a167cbb6510e5509"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "doc",
+     "text": "Files may not register as at end of file if they were positioned there by AH=42h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3533",
+       "sha": "975cbdb0c40effabf1ef6af4b1c6202750eea6955bd8738ae6e580d5c78fd0c1"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "when",
+     "of": "doc",
+     "text": "Under DOS 5.0, on success, AH holds the next character to be read, or 1Ah at end of file.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3534-3535",
+       "sha": "bf38c67e42b77f41c8f7b1fef9844a132631186a23a7a8ddea9b69da0b96e7ae"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 21h handler reaches it by its case 0x44 and DOS_IOCTL by its case 0x06.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2361",
+       "sha": "92c0fbc74b98b0a74ffe7fb96c121791a4070909cdffbda9db35d65a26042ba3"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "706",
+       "sha": "2fccba4f3eedc802db7d19028782a4b88de2742e995b5d487a65a59c6687f0d9"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "AH is never set to the next character or to 0x1A: only AL changes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "722",
+       "sha": "10e0fa08a73f0cd151617165a96e7df8c8d14ecfc63d6f1f343559f16198939f"
+      }
+     ],
+     "row": "9"
+    },
+    {
+     "n": "13",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "8",
+     "text": "No line of the case records how the position was set; a file positioned at its end reports end of file.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "706-722",
+       "sha": "a25c79e3e6f4442f9611f30317f5b80e7000f5454e94eeddda0e37f84f6b0ac1"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3522",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3524",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3536",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3537-3539",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3540",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1100-1161",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1162",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "624-650",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21/0x44"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "651",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2362-2382",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x21/0x44/0x00"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2383-2384",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "627",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "709",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "707-708",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2387",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2385-2386",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "714-718",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "397",
+     "as": "unseen",
+     "reason": "DOS_SetError, the shared store of the error code a failing call reports"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3073",
+     "as": "unseen",
+     "reason": "stored by another function's case of this handler, not by this call"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "5669",
+     "as": "unseen",
+     "reason": "stored by the long-file-name find function, not by this call"
+    }
+   ]
+  },
+  {
+   "key": "0x21/0x44/0x07",
+   "name": "ioctl output status",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x44"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x44"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "function": "DOS_IOCTL",
+     "case": [
+      "0x07"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "function": "DOS_IOCTL",
+     "case": [
+      "0x07"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3541-3554"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IOCTL get output status, a DOS 2 call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3542",
+       "sha": "6796e717672da32dab8d41ea0b15bcac8ab9e020b2ded7ee54f11f61c3b64937"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX holds the file handle.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3544",
+       "sha": "ff6663d6a396d8b8d3dd068b76a6fa1af71771a2edb12951e29a25e28a51f884"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AL",
+     "of": "doc",
+     "text": "On success AL is FFh when ready.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3545-3548",
+       "sha": "b6c8e7563f17be1e6a5e8701423e1b0112357cbcbc9672139ff9ec2cbedf2a36"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AL",
+     "of": "doc",
+     "text": "On success AL is 00h when not ready.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3545-3548",
+       "sha": "b6c8e7563f17be1e6a5e8701423e1b0112357cbcbc9672139ff9ec2cbedf2a36"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "On error CF is set.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3549-3550",
+       "sha": "528332d15a777c76575c5ff8a8f31773cddbf412d2ef87f8a167cbb6510e5509"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3549-3550",
+       "sha": "528332d15a777c76575c5ff8a8f31773cddbf412d2ef87f8a167cbb6510e5509"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "doc",
+     "text": "From DOS 2 files are always ready for output, even with a full disk or no media in the drive.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3551-3552",
+       "sha": "544039567a102a8b55c1c317ff4b6cd7f2071221b9cb39f16b2567937a83310f"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 21h handler reaches it by its case 0x44 and DOS_IOCTL by its case 0x07.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2361",
+       "sha": "92c0fbc74b98b0a74ffe7fb96c121791a4070909cdffbda9db35d65a26042ba3"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "723",
+       "sha": "1f1ba17784fc682c14f7d83332702910a14347f3643d2da2d5757d149e6582c5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3541",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3543",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3553",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3554",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1100-1161",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1162",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "624-650",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21/0x44"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "651",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2362-2382",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x21/0x44/0x00"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2383-2384",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "627",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "730",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "728-729",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "724-725",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2387",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2385-2386",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "728-729",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "726",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "397",
+     "as": "unseen",
+     "reason": "DOS_SetError, the shared store of the error code a failing call reports"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3073",
+     "as": "unseen",
+     "reason": "stored by another function's case of this handler, not by this call"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "5669",
+     "as": "unseen",
+     "reason": "stored by the long-file-name find function, not by this call"
+    }
+   ]
+  },
+  {
+   "key": "0x21/0x44/0x08",
+   "name": "ioctl removable check",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x44"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x44"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "function": "DOS_IOCTL",
+     "case": [
+      "0x08"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "function": "DOS_IOCTL",
+     "case": [
+      "0x08"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3555-3569"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "IOCTL check if a block device is removable, a DOS 3.0 call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3556",
+       "sha": "a386be9b0a1c494719c5a482e197c510192a0ce716444bab69f65062e181c45c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BL",
+     "of": "doc",
+     "text": "BL is the drive number: 00h for the default, 01h for A:, and so on.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3558",
+       "sha": "f6c7f9cd9e5a4807daad51a0716e5e0e5f8ac846d251004f34e9bda02bab09c5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "On success CF is clear.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3559-3560",
+       "sha": "23453f6426dee877004c428bd186aaebea852d1a2a98d48d72de4c66e3792094"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On success AX is the media type: 0000h removable, 0001h fixed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3559-3560",
+       "sha": "23453f6426dee877004c428bd186aaebea852d1a2a98d48d72de4c66e3792094"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "On error CF is set.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3561-3562",
+       "sha": "d43b60e6333aa4bdabcea0d9982db7b1bd754a093f90967f3ba27f298e02ad8b"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "3561-3562",
+       "sha": "d43b60e6333aa4bdabcea0d9982db7b1bd754a093f90967f3ba27f298e02ad8b"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 21h handler reaches it by its case 0x44 and DOS_IOCTL by its case 0x08.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2361",
+       "sha": "92c0fbc74b98b0a74ffe7fb96c121791a4070909cdffbda9db35d65a26042ba3"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "731",
+       "sha": "c44cf03e12679516e216118f7e1cb9e0c1bf292d142b0c5a38617bd0ac714016"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Only A: and B: answer 0x0000; a removable drive from C: up, such as a CD-ROM, fails with error 0x01, and a fixed one answers 0x0001.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "732-735",
+       "sha": "96ba53f25a3a63895cbeacc22f0b9693ddf6e9809566d7f7bcf61c3277df8d13"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+       "lines": "740-743",
+       "sha": "c22e56823e46772a15002e46563ff7c4a9e9a24baa521f995bdd6db64e0233cf"
+      }
+     ],
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3555",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3557",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3563-3568",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "3569",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1100-1161",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1162",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "624-650",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21/0x44"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "651",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2362-2382",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x21/0x44/0x00"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "638-640",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "744-745",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2383-2384",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2387",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2385-2386",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_ioctl.cpp",
+     "lines": "736-739",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "397",
+     "as": "unseen",
+     "reason": "DOS_SetError, the shared store of the error code a failing call reports"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3073",
+     "as": "unseen",
+     "reason": "stored by another function's case of this handler, not by this call"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "5669",
+     "as": "unseen",
+     "reason": "stored by the long-file-name find function, not by this call"
+    }
+   ]
+  },
+  {
+   "key": "0x21/0x4C",
+   "name": "terminate with code",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x4c"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x4c"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_execute.cpp",
+     "function": "DOS_Terminate"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6162-6172"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Terminate with a return code, a DOS 2 call (EXIT).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6163",
+       "sha": "e933e1e63010a05b21e4f8ff0b2656f2e09081e60d27f805fc4c8c7e222bea85"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL holds the return code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6165",
+       "sha": "675a59cc66cc48ff88fbe9f31302643c65d8f60e49ca62b802df80cbb5286a6b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out none",
+     "of": "doc",
+     "text": "The call never returns.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6166",
+       "sha": "986614d1a40136956ffa49c08e9c138036c91115620d444c4cc2fd74c512b38b"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out none",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "A process that is its own parent returns before closing anything; otherwise control goes to the parent's INT 22 address, and the handler sets AX to 0x3E01 and ends normally.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "118",
+       "sha": "d49e57427c663d648185c61424df2337a021e7381191a312a251a8fb58a1bfe9"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "150-152",
+       "sha": "e25379323ebfefed659d79a5332ae780eff09b6cec9abd521248e13c1e717123"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2507-2516",
+       "sha": "573f0ad317244040efbeaaaae7d39137e8cf87f09ae636041d970c5ff1aa6f73"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "does",
+     "of": "doc",
+     "text": "Unless the process is its own parent, all its open files are closed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6167-6168",
+       "sha": "0a8f5a0233336f97ee9a0103e4500494c0444d131b0434790de5db060c960e35"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "does",
+     "of": "doc",
+     "text": "Unless the process is its own parent, all the memory belonging to it is freed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6168-6169",
+       "sha": "457efd29425358204b0dfe98fa5c583bceac17ea7e78a86d41bd8e84cc695164"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 21h handler reaches it by its case 0x4c.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2495",
+       "sha": "beec0f6e23cd676489c405eb2356b4d4c90131abc89a30e220a8af67ce8bf43f"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The return code and the termination type, exit or TSR, are stored in the DOS state.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "114-115",
+       "sha": "6da5c7febb1dafc5c306d63add21708f91f92da3f8fa7902bb04c539229639fc"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The UTF-8 modes of the AMIS providers are told that the process ended.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "119-121",
+       "sha": "29e40122b6f4859abcc84044c51abfa670d47da00c287bc64feafe8ebaba550a"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The directory search snapshots of the process are closed with its files.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "125",
+       "sha": "842461a088da7b98b7a40958e4460117e90059d40fef85fe9fbfd48d6155547d"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The parent PSP becomes current and its saved registers and stack are restored, with INT 22's address as the return point.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "129-140",
+       "sha": "5b24cba00c5708dc782debbf9f7e328cbe5e74de656e50c14c1c72e3e0477400"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "141-152",
+       "sha": "a161f7fbd31aaab1981e47cb8601ac72c7958407529da87ea1038cfade34a02d"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "153-155",
+       "sha": "e4aa032df14a81e46eadb03a3bb5828ac3ecab4c6c64cfdc51bfa19469b34592"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The process name is updated and the error code cleared.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "158",
+       "sha": "b127427e153a6082254f46ba3048f70bc4418792643fff4fe6b07a31d1d9ffcc"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "160",
+       "sha": "b88d9cce3e7540c539360cfac6afa3efee1e2ed97468e54db5d3d33e8c3e98fb"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "If the CPU core or cycles were set automatically by the program they are put back, and the title updated.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "162-173",
+       "sha": "59e9fb3216014f10b7a018c2c39b065cb610158c8cdb96a5afa39339508b4a7b"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "174-175",
+       "sha": "9ecd915b7d5572b14e5614a53cf164979b967b36dbac41ece0e42117dc7949f0"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_execute.cpp",
+       "lines": "176-186",
+       "sha": "ea6e04404d46bfa5baa9964aa36e161eac1dbc0293d0db48ad1c3c541ee31602"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A termination inside the INT 23h break handling throws an internal exit.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2497-2501",
+       "sha": "b9fa233371a8531f74b4a3bf397b5cd4ee022841f83bf4a7bb68ca5d42412430"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6162",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6164",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6171-6172",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1100-1161",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1162",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2496",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2502-2506",
+     "as": "build"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6170",
+     "as": "elsewhere",
+     "owner": "ibm-pc:call:0x21/0x5C"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_execute.cpp",
+     "lines": "123-124",
+     "as": "unfollowed",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_execute.cpp",
+     "lines": "157",
+     "as": "unfollowed",
+     "row": "6"
+    }
+   ]
+  },
+  {
+   "key": "0x21/0x4E",
+   "name": "find first file",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x4e"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x4e"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "function": "DOS_FindFirst"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "function": "DOS_FindFirstPathError"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "function": "DOS_DTA::SetupSearch"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "function": "DOS_DTA::SetResult"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6204-6280"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Find the first matching file, a DOS 2 call (FINDFIRST).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6205",
+       "sha": "1c073d683423af6a35245628544f2c1924e63c1a2f804922291365b294269169"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in CX",
+     "of": "doc",
+     "text": "CX is the file attribute mask.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6208",
+       "sha": "ece8a22701ea1d6c55d8fdc8ee5c4d128c779f52d33cfaa20f09acbd4d5102c3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in CX",
+     "of": "doc",
+     "text": "Bits 0 and 5 of the mask are ignored.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6208",
+       "sha": "ece8a22701ea1d6c55d8fdc8ee5c4d128c779f52d33cfaa20f09acbd4d5102c3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "in DS:DX",
+     "of": "doc",
+     "text": "DS:DX points to an ASCIZ file specification.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6210",
+       "sha": "be6e7bd6975b18197b1feff931bb2340ca6a30978d5f9db0a0ab867c8ac0ed4f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "On success CF is clear.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6211-6212",
+       "sha": "886c5aa48ba1e206798aeecfc62eff340c59a4ade4f59c2f002e0a79877681d8"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out DTA",
+     "of": "doc",
+     "text": "On success the DTA is filled with a FindFirst data block.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6211-6212",
+       "sha": "886c5aa48ba1e206798aeecfc62eff340c59a4ade4f59c2f002e0a79877681d8"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "On error CF is set.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6213-6214",
+       "sha": "bfb42e86b1b946a81fe406d6d45231c6daca62dc7b904c6fc4a350d3a1bf8238"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out AX",
+     "of": "doc",
+     "text": "On error AX holds the DOS error code.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6213-6214",
+       "sha": "bfb42e86b1b946a81fe406d6d45231c6daca62dc7b904c6fc4a350d3a1bf8238"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "does",
+     "of": "doc",
+     "text": "For attributes other than 08h, files with at most the given mix of hidden, system and directory attributes are returned.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6215-6217",
+       "sha": "2fa303a983e6c00877e307f187c8700a1f74a7ccfceeea7164e5074bc31279c2"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "when",
+     "of": "doc",
+     "text": "In DOS 2.x searching for attribute 08h, volume label, also returns normal files.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6217-6218",
+       "sha": "77d60be03a7ecaa34080c967a4872e6a35e8cc19a7d1b42224fb4238f444f169"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "when",
+     "of": "doc",
+     "text": "In DOS 3.0 and later searching for attribute 08h returns only the volume label, if any.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6218-6219",
+       "sha": "eeee8b12a1611ceb69f86eeb873b883108b1908ed646c0e2c969573ce74fac23"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "does",
+     "of": "doc",
+     "text": "The call also succeeds for the name of a character device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6220-6221",
+       "sha": "0c46ab777544744921a0523d1179a48b069a63a0d68dbb7f529a8907f393577f"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "when",
+     "of": "doc",
+     "text": "DOS 2.x returns, for a device name, attribute 00h, size 0 and the current date and time.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6221-6222",
+       "sha": "c5ece8102b0eee0915a671b73332182847a95cec609c4f888ecaf6f8f79addbf"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "when",
+     "of": "doc",
+     "text": "DOS 3.0 and later return attribute 40h and the current date and time for a device name.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6222-6223",
+       "sha": "5b5d8a81093e9cfc48f5b93154ed1d08383141b74b1d15f259af464e17aad132"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "when",
+     "of": "doc",
+     "text": "Under DOS 3.x and 4.x a second search for a device name with the volume-label bit fails without an intervening search.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6232-6238",
+       "sha": "7112e99a57dc7aa184b67535c8b43e4fa241d5fdcc79e1a50688c911f4e2eb31"
+      }
+     ]
+    },
+    {
+     "n": "16",
+     "on": "out DTA",
+     "of": "doc",
+     "text": "In PC-DOS 3.10 and 4.01 and MS-DOS 3.2, 3.3 and 5.0 the block holds the drive at 00h, the 11-byte template at 01h and the attributes at 0Ch.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6245-6248",
+       "sha": "88288190c283c29fd9d3836fab1096c672f076e70d28879b9539cb72305f2dd2"
+      }
+     ]
+    },
+    {
+     "n": "17",
+     "on": "out DTA",
+     "of": "doc",
+     "text": "In DOS 2.x the block holds the attributes at 00h, the drive at 01h and the 11-byte template at 02h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6249-6252",
+       "sha": "04d21c86b809163ea9661c34758e37035417cd95e1f223bdd154c20bdae40fa5"
+      }
+     ]
+    },
+    {
+     "n": "18",
+     "on": "out DTA",
+     "of": "doc",
+     "text": "In DOS 2.x and most 3.x the block holds an entry count at 0Dh, a pointer to the DTA at 0Fh and a cluster number at 13h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6256-6259",
+       "sha": "d1de3f64c8d7855f8dff7ec5240739933ce5f0899fc18a1b07b31fa368688c9c"
+      }
+     ]
+    },
+    {
+     "n": "19",
+     "on": "out DTA",
+     "of": "doc",
+     "text": "In PC-DOS 4.01 and MS-DOS 3.2, 3.3 and 5.0 the block holds an entry count at 0Dh, a cluster number at 0Fh and 4 reserved bytes at 11h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6260-6263",
+       "sha": "43cbe430f4c545f545e9efb346817c7c00681e718a38acdcc8e88383e0415208"
+      }
+     ]
+    },
+    {
+     "n": "20",
+     "on": "out DTA",
+     "of": "doc",
+     "text": "In all versions the block holds at 15h the attribute, 16h the time, 18h the date, 1Ah the size and 1Eh the ASCIZ name.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6275-6280",
+       "sha": "d1a82f081e81c442089a43cad9edc5da1f0f91e5fa4521c41af81c0d030b55d7"
+      }
+     ]
+    },
+    {
+     "n": "21",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 21h handler reaches it by its case 0x4e.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2523",
+       "sha": "28845343c07127e183d94a15c7b0f4a80014d0af037f2dcb5ccbeeea474984e2"
+      }
+     ]
+    },
+    {
+     "n": "22",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A search for exactly attribute 0x08, except on a CD-ROM, goes down the volume-label path whatever the version.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "940",
+       "sha": "9449662b42088d858d57dc69abaffc818c244553f9e295c0e32a6f6714a2d9b9"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "983",
+       "sha": "35f6d4f8230bd4166b8fbfa6034d3def9c61c6bee16bdc4570618b81c2500d44"
+      }
+     ],
+     "row": "10"
+    },
+    {
+     "n": "23",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The test for exactly attribute 0x08 comes before the device check, so such a search with a device name is a label search.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "940",
+       "sha": "9449662b42088d858d57dc69abaffc818c244553f9e295c0e32a6f6714a2d9b9"
+      }
+     ],
+     "row": "15"
+    },
+    {
+     "n": "24",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The date and time of a device name are left at zero, with a note to use the current ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1042-1043",
+       "sha": "9b75fe9d50c0723d4939cd62cae6d9dc9e8cb9e7957ee21725f41d90d1fb35a5"
+      }
+     ],
+     "row": "14"
+    },
+    {
+     "n": "25",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A device name returns DOS_ATTR_DEVICE as the attribute, with size, date and time all zero, not the current time.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1043",
+       "sha": "f50935c2bd351bcaddc3299a4987010fb9f93bc12e3881580771c6cdc4baac7f"
+      },
+      {
+       "ref": "dosbox-x:include/dos_system.h",
+       "lines": "53",
+       "sha": "f560a762174b318d362db6ca36e30b26bc592c00b6aaeaae5ea4643a6fc64e2f"
+      }
+     ],
+     "row": "13"
+    },
+    {
+     "n": "26",
+     "on": "out DTA",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The block has one layout whatever the version: the drive first, then the 8-byte name pattern, the 3-byte extension pattern and the attribute mask.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "708-712",
+       "sha": "d8a5a03c971b1327815ba3069440c93b34065e624073b682c346bdacfd304e0b"
+      }
+     ],
+     "row": "17"
+    },
+    {
+     "n": "27",
+     "on": "out DTA",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "At 0x0D is a directory search ID and at 0x0F a 32-bit cluster number, for several searches at once.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "713-714",
+       "sha": "f2337fb6cca7b95dc03a6a0c1750483773e9c319140f0b06221b4e157d8b57ce"
+      },
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "722-723",
+       "sha": "ea537dd6586818659473f279e031ed76eb7e824e73f33654b2d756dfb911e818"
+      }
+     ],
+     "row": "18"
+    },
+    {
+     "n": "28",
+     "on": "out DTA",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "At 0x0D is a directory search ID and at 0x0F a 32-bit cluster number, with 2 filler bytes at 0x13.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "713-715",
+       "sha": "c673eafe94111d181c55336050cf3ea7227e30c59b338637c4cd6b7eba3d2220"
+      },
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "722-724",
+       "sha": "56a040a7727dc54509e218cd019004297f7b135a3e903339dcc8e8ad33f5a1d0"
+      }
+     ],
+     "row": "19"
+    },
+    {
+     "n": "29",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The path is checked part by part before the search when long names are off, and a bad part gives 0x03 or 0x12.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "860-871",
+       "sha": "c1240b95db0c2d9d0145d76fa7207939e0d640acd818e2cfcb2d94d136ba992b"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "872-883",
+       "sha": "54037e060fd3cfc540777201b935ce88643298a870731f281dac41b08d95b4dd"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "884-895",
+       "sha": "5b72973f8836a29bf82ab78d347480326cd5582e54f386c497fd46a0441d85f4"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "896-907",
+       "sha": "ae5c6f0bbf575d36c1eabafcfda9ab2da4a496501037780998da0bc5edda90f5"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "908-919",
+       "sha": "1ba46b604b1fd27def9581a7cdfcf2737e4794d47ff5f5656a4f8ba92dda0132"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "920-923",
+       "sha": "8eb793e744020d2a5ef3614f24450478f735a9a59d48cf0aa3214c76f12c88cc"
+      }
+     ]
+    },
+    {
+     "n": "30",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A volume search takes an optional drive, the label is the root's, and a name of dots or a missing directory fails.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "941-952",
+       "sha": "8cedf82ac2b309d71308a4467b342f79da91b566f9e4f059953f531b7ff65a77"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "953-964",
+       "sha": "61a0d19a186b86cec293e59f93fa48fccc131507d3fe7ee88c672ed75fb8c911"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "965-975",
+       "sha": "b6b2794406621487dc00c0e9679ec81d697cdd7a8967b4c0ab3edf77f6b2889b"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "976-982",
+       "sha": "78af4611bec7460a31f9ba732a570a349431024b7fd996876b59aa69381c7ff4"
+      }
+     ]
+    },
+    {
+     "n": "31",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The search is split into a directory and a pattern; a trailing backslash fails with 0x12, and CD-ROM names are special.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "926-937",
+       "sha": "4ad678fcd6d6cf3b665b6fba583b9d72150a0603b6995c3029bddf41de01a118"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "988-994",
+       "sha": "a6fd3e128d22d85d1c673c3408c4aa86da1747378395bfbbdabf62158d34232e"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1005-1012",
+       "sha": "42e451c82d4c2818867f4265f96de1d87262335c588aa70188ea2eef23bbb1b0"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1013-1020",
+       "sha": "6fbd851db85c59dbc338b703457fbaa076465a9a4ababbc485195aa13c7e3a6a"
+      }
+     ]
+    },
+    {
+     "n": "32",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "An FCB search of the CHKDSK program drops the directory attribute; the drive and the search fields of the DTA are set up.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1028-1033",
+       "sha": "af6b81204f8c5fc9237f8d74821a16b4fd1d2df967d5b74bec70d4f2e35e4285"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1035-1037",
+       "sha": "ba4d6b02ee7267549300c2c7faf511f232f375bc3b76b3ed5cc9f22af78ef5fc"
+      }
+     ]
+    },
+    {
+     "n": "33",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The search is remembered for FindNext in a snapshot, with the drive and a wildcard flag.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "927",
+       "sha": "1ed5668ccb235a360cd07cc600577b858199cefdbf8922b88bd1a8e3e6d1d0a0"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1054-1055",
+       "sha": "398e708ead88f092c810e80464a951d3c2b2d38db783426875cfbfbfeb5ac8e1"
+      }
+     ]
+    },
+    {
+     "n": "34",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The long-name search handles and their drive, attribute and name arrays are set before the DTA fields.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_classes.cpp",
+       "lines": "503-511",
+       "sha": "f3e3c61ca3be46e6fe1e7fd3585aec61f7c6ba46c41be05da71ed6fab6b215d2"
+      }
+     ]
+    },
+    {
+     "n": "35",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On success AX is set to zero, which the source marks undocumented.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2533",
+       "sha": "6980818b9ca4757e81047e6da72c2407d3bd9409c02ac461e704298616076c06"
+      }
+     ]
+    },
+    {
+     "n": "36",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A path error found beforehand, when long names are off, is set and returned.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2526-2527",
+       "sha": "fd5f714c8388e34c867e23741d762195f44809073dc301cab68348755efaddff"
+      }
+     ]
+    },
+    {
+     "n": "37",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The long-name find handle is cleared first.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2525",
+       "sha": "6b5bee101080f6bf7f09c32c9e2d8fd70ff9a99e7a0a6be1289197578b8ab018"
+      }
+     ]
+    },
+    {
+     "n": "38",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The result keeps long and short names too, and the name is padded with spaces to 8 bytes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_classes.cpp",
+       "lines": "531-542",
+       "sha": "36063385e121dccdda5c07703ff7e58ad6e31f8bf91025f8822453c42205a3c8"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_classes.cpp",
+       "lines": "549",
+       "sha": "d10b36aa74a59bcf4a88185837f658afaf3646eff2bb16c3928d0e9335e945d2"
+      }
+     ]
+    },
+    {
+     "n": "39",
+     "on": "out DTA",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The 11 pattern bytes of the DTA are cleared before the pattern is written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_classes.cpp",
+       "lines": "512",
+       "sha": "215be628da66414c44230761fbe87f4c03f3f3ae73a4e890557b166b2ce8472e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6204",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6206",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6209",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6228-6231",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6239",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6240-6241",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "995-1002",
+     "as": "build"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1021-1025",
+     "as": "build"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1048-1052",
+     "as": "build"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1057",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2534",
+     "as": "structure"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6243-6244",
+     "as": "layout"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6253-6255",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6264-6274",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1100-1161",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1162",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2524",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6207",
+     "as": "elsewhere",
+     "owner": "ibm-pc:call:0x2F/0xB7/0x11"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "6224-6227",
+     "as": "elsewhere",
+     "owner": "ibm-pc:call:0x2F/0xB7/0x11"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2531",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1053",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2532",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1053",
+     "as": "unfollowed",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2530",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2536",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2528-2529",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2535",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1053",
+     "as": "unfollowed",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "985",
+     "as": "unfollowed",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1039-1041",
+     "as": "agrees",
+     "row": "12"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1044-1045",
+     "as": "agrees",
+     "row": "12"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "lines": "543-548",
+     "as": "agrees",
+     "row": "20"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_classes.cpp",
+     "lines": "515-526",
+     "as": "agrees",
+     "row": "16"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "397",
+     "as": "unseen",
+     "reason": "DOS_SetError, the shared store of the error code a failing call reports"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3073",
+     "as": "unseen",
+     "reason": "stored by another function's case of this handler, not by this call"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "5669",
+     "as": "unseen",
+     "reason": "stored by the long-file-name find function, not by this call"
+    }
+   ]
+  },
+  {
+   "key": "0x21/0x5A",
+   "name": "create temp file",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x5a"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "function": "DOS_21Handler",
+     "case": [
+      "0x5a"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "function": "DOS_CreateTempFile"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8436-8463"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Create temporary file, a DOS 3.0 call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8437",
+       "sha": "3f7c2ebd5a0182fd90483452508d339257335b19c70b1f597eef74167ca12d65"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in CX",
+     "of": "doc",
+     "text": "CX holds the attribute of the new file.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8439",
+       "sha": "edff07d6f9c2e115b1c2b99f8b5f2a8b26f9535cea4976babe6823540aec8e89"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in DS:DX",
+     "of": "doc",
+     "text": "DS:DX points to an ASCIZ path ending in a backslash.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8440-8441",
+       "sha": "2f4870d3371302e4aca0066d16fd381b3a668247b2b3b7061c33b662b8981f85"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "On success CF is clear, AX holds a read/write handle and DS:DX the path with the generated name added.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8442-8444",
+       "sha": "1043fd411bcd79b1478797dff137028bd253b38ee42fe023d5a1fe70cb5127a0"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "On error CF is set and AX holds the error code 03h, 04h or 05h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8445-8446",
+       "sha": "1a24924ef0a6fda796833a986bee585107e72d6cfef4ee599e6131ed2056f008"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out CF=1",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "On failure CF is set and AX is the DOS error code the create left, which can also be 0x02 file not found.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2714-2716",
+       "sha": "19bf67ac2222d5e67e5d9aa355278e00431a03140a51290499c2d621ebdc7230"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1328-1329",
+       "sha": "283e58f980a89a67e75f91314c5e3eeaa8cde831f7b6f8a278e0e771ded7c398"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "does",
+     "of": "doc",
+     "text": "The generated name is unique.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8447",
+       "sha": "f2c1b409c512124e79f0eedd17e3916e9f5d8290ac191497a8486705da9bc6e1"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "doc",
+     "text": "MS-DOS 3.0 to 4.0 name the file in hex digits from the date and time; MS-DOS 6 and later use letters A to P.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8449-8451",
+       "sha": "3073d84ff67e7ed2fbec31f32a68de005c99214019c742d14b64c4c39690ce3c"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "when",
+     "of": "doc",
+     "text": "MS-DOS 5.0 inserts a missing trailing backslash, so an empty path makes a file in the root.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8452-8454",
+       "sha": "bdd7b4962433c6607b5b6d91eabcb1a5288f2183d5952fc7e048889373df662f"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "when",
+     "of": "doc",
+     "text": "MS-DOS 5.00 revisions A and B and PC-DOS 5.00 revision A reportedly hang when the root directory is full.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8457-8459",
+       "sha": "7e5b12638d4f1b4400e4a8d6d4542d07c00366a590ed14065d5109a5b4614956"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "when",
+     "of": "doc",
+     "text": "MS-DOS 6.2x reportedly hangs when the path holds two consecutive separators.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8460-8462",
+       "sha": "172faaf7563b618fa5565ecd4bf381e40abb52cc8a0365a3aedbada6157d2050"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 21h handler reaches it by its case 0x5a.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2705",
+       "sha": "f0e323361e74edc93be03e5b70b8a52d18caf38fff3d8c4cfc7f0386d35affa5"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "in CX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The file is always created with attribute 0x00, whatever CX holds.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1912",
+       "sha": "ec4d5dd2ec8f38cf331948450fff915d21fd923f7cbd605863677c0da9f0a966"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "14",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The name is eight random letters A to Z in every DOS version.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1906-1907",
+       "sha": "e0abcc93b11399e6b662d1f328762576757322ddfc2212d9188dc26ecc5e11f7"
+      }
+     ],
+     "row": "8"
+    },
+    {
+     "n": "15",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A failing create returns false at once with the error code left set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1913",
+       "sha": "42d41675324d90c07cb3eb47de9a563ce2850104bfe3b36752a4ce5ab3b7bf55"
+      }
+     ],
+     "row": "10"
+    },
+    {
+     "n": "16",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The path is handed to the create as it was read from DS:DX.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2710",
+       "sha": "35299fe4694d1925c17cc8996ccb1d15af8939f7232ee724514073f8a73886ed"
+      }
+     ],
+     "row": "11"
+    },
+    {
+     "n": "17",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The error code is cleared before the create and restored on success.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1899",
+       "sha": "b88d9cce3e7540c539360cfac6afa3efee1e2ed97468e54db5d3d33e8c3e98fb"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_files.cpp",
+       "lines": "1914",
+       "sha": "863873f12c1c44feb9f743a392ca7491b007b353d844491dd9965315343bfa60"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8436",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8438",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8448",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8455-8456",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8463",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1100-1161",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x21"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "1162",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2707",
+     "as": "build"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2718-2722",
+     "as": "build"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2711-2713",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1915",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "2709",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1886-1897",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1903-1905",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1908-1911",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_files.cpp",
+     "lines": "1886-1897",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "397",
+     "as": "unseen",
+     "reason": "DOS_SetError, the shared store of the error code a failing call reports"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "3073",
+     "as": "unseen",
+     "reason": "stored by another function's case of this handler, not by this call"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos.cpp",
+     "lines": "5669",
+     "as": "unseen",
+     "reason": "stored by the long-file-name find function, not by this call"
+    }
+   ]
   }
  ]
 }
