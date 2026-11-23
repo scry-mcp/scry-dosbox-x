@@ -969,7 +969,7 @@
        "n": "1",
        "on": "is",
        "of": "doc",
-       "text": "Terminate with a return code, a DOS 2 call (EXIT).",
+       "text": "Terminate with a return code, a DOS 2+ call (EXIT).",
        "cites": [
         {
          "document": "Ralf Brown's Interrupt List, INTERRUP.G",
@@ -1030,7 +1030,7 @@
        "cites": [
         {
          "document": "Ralf Brown's Interrupt List, INTERRUP.G",
-         "lines": "6168-6169"
+         "lines": "6167-6169"
         }
        ],
        "verdicts": {
@@ -1047,7 +1047,7 @@
        "cites": [
         {
          "file": "src/dos/dos_execute.cpp",
-         "lines": "118"
+         "lines": "118-124"
         },
         {
          "file": "src/dos/dos_execute.cpp",
@@ -1055,7 +1055,7 @@
         },
         {
          "file": "src/dos/dos.cpp",
-         "lines": "2507-2516"
+         "lines": "2507-2517"
         }
        ]
       },
@@ -1107,7 +1107,7 @@
        "cites": [
         {
          "file": "src/dos/dos_execute.cpp",
-         "lines": "125"
+         "lines": "123-126"
         }
        ]
       },
@@ -1154,7 +1154,7 @@
        "on": "does",
        "of": "dosbox-x",
        "vs": "extra",
-       "text": "If the CPU core or cycles were set automatically by the program they are put back, and the title updated.",
+       "text": "If the CPU core or cycles were auto-determined, they are put back, and the title updated.",
        "cites": [
         {
          "file": "src/dos/dos_execute.cpp",
@@ -1175,7 +1175,7 @@
        "on": "does",
        "of": "dosbox-x",
        "vs": "extra",
-       "text": "A termination inside the INT 23h break handling throws an internal exit.",
+       "text": "A termination while an INT 23h break is in progress throws int(9000).",
        "cites": [
         {
          "file": "src/dos/dos.cpp",
@@ -1201,8 +1201,8 @@
     }
    ],
    "truncated": false,
-   "examined": 350,
-   "served": 676,
+   "examined": 668,
+   "served": 994,
    "held_back": 0
   }
  },

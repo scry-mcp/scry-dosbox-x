@@ -423,7 +423,7 @@ Reply, 3 of 10 fields:
 {
   "summary": "kind call key 0x21/0x4C: terminate with code",
   "entries_total": 1,
-  "examined": 350
+  "examined": 668
 }
 ```
 
@@ -450,7 +450,7 @@ One entry matches, so `entries` gives it whole: what Ralf Brown's list says firs
           "n": "1",
           "on": "is",
           "of": "doc",
-          "text": "Terminate with a return code, a DOS 2 call (EXIT).",
+          "text": "Terminate with a return code, a DOS 2+ call (EXIT).",
           "cites": [
             {"document": "Ralf Brown's Interrupt List, INTERRUP.G", "lines": "6163"}
           ]
@@ -491,7 +491,7 @@ One entry matches, so `entries` gives it whole: what Ralf Brown's list says firs
           "of": "doc",
           "text": "Unless the process is its own parent, all the memory belonging to it is freed.",
           "cites": [
-            {"document": "Ralf Brown's Interrupt List, INTERRUP.G", "lines": "6168-6169"}
+            {"document": "Ralf Brown's Interrupt List, INTERRUP.G", "lines": "6167-6169"}
           ],
           "verdicts": {"dosbox-x": "unfollowed"}
         },
@@ -503,9 +503,9 @@ One entry matches, so `entries` gives it whole: what Ralf Brown's list says firs
           "row": "3",
           "text": "A process that is its own parent returns before closing anything; otherwise control goes to the parent's INT 22 address, and the handler sets AX to 0x3E01 and ends normally.",
           "cites": [
-            {"file": "src/dos/dos_execute.cpp", "lines": "118"},
+            {"file": "src/dos/dos_execute.cpp", "lines": "118-124"},
             {"file": "src/dos/dos_execute.cpp", "lines": "150-152"},
-            {"file": "src/dos/dos.cpp", "lines": "2507-2516"}
+            {"file": "src/dos/dos.cpp", "lines": "2507-2517"}
           ]
         },
         {
@@ -545,7 +545,7 @@ One entry matches, so `entries` gives it whole: what Ralf Brown's list says firs
           "vs": "extra",
           "text": "The directory search snapshots of the process are closed with its files.",
           "cites": [
-            {"file": "src/dos/dos_execute.cpp", "lines": "125"}
+            {"file": "src/dos/dos_execute.cpp", "lines": "123-126"}
           ]
         },
         {
@@ -576,7 +576,7 @@ One entry matches, so `entries` gives it whole: what Ralf Brown's list says firs
           "on": "does",
           "of": "dosbox-x",
           "vs": "extra",
-          "text": "If the CPU core or cycles were set automatically by the program they are put back, and the title updated.",
+          "text": "If the CPU core or cycles were auto-determined, they are put back, and the title updated.",
           "cites": [
             {"file": "src/dos/dos_execute.cpp", "lines": "162-173"},
             {"file": "src/dos/dos_execute.cpp", "lines": "174-175"},
@@ -588,7 +588,7 @@ One entry matches, so `entries` gives it whole: what Ralf Brown's list says firs
           "on": "does",
           "of": "dosbox-x",
           "vs": "extra",
-          "text": "A termination inside the INT 23h break handling throws an internal exit.",
+          "text": "A termination while an INT 23h break is in progress throws int(9000).",
           "cites": [
             {"file": "src/dos/dos.cpp", "lines": "2497-2501"}
           ]
@@ -611,8 +611,8 @@ One entry matches, so `entries` gives it whole: what Ralf Brown's list says firs
     }
   ],
   "truncated": false,
-  "examined": 350,
-  "served": 676,
+  "examined": 668,
+  "served": 994,
   "held_back": 0
 }
 ```
