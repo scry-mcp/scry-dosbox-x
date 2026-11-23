@@ -123,6 +123,7 @@ class SessionGates:
         """A fake is stopped as long as its `at_debugger` says."""
 
     # the fields every real session carries, which the server reads directly
+    frames: int | None = None
     stop_count: int | None = 0
     fired_entry: str | None = None
     paging: bool | None = None

@@ -160,6 +160,10 @@ class _Dosbox(executor.SequenceMachine):
                       tail: bool = False) -> executor.Waited:
         return _wait_for_stop(self.session, seconds, progress)
 
+    def frame_now(self) -> int | None:
+        """The display frame the last stop's `RUNSTATE` counted; a running machine has none."""
+        return self.session.frames if self.session.parked else None
+
     def can_be_stopped(self) -> bool:
         return arming.something_can_stop_it()
 
