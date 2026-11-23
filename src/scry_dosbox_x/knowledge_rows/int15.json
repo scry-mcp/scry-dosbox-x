@@ -10965,6 +10965,4787 @@
      "gave": "Ralf Brown's list documents each AX=53xxh call as its own section; it has no section for the AH=53h dispatch itself."
     }
    ]
+  },
+  {
+   "key": "0x15/0x53/0x06",
+   "name": "apm cpu busy",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x06"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x06"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3881-3894"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=5306h is APM CPU busy, from APM v1.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3881",
+       "sha": "f69f3d5f3ef8d4ae750e21b84b3f95e5aee39e7fb528e5f074a1ad1e8c5b7c9a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3883",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3884",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (03h or 0Bh) (see #00473).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3885",
+       "sha": "c8d86efd680d5d092e1562c31947d48bbe0ca52583958a9d33e667c261fe0246"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Call it to ensure that the system runs at full speed even where the BIOS cannot recognize increased activity, especially when interrupts are hooked and not chained to the BIOS.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3886-3889",
+       "sha": "2f6e2ddc81187855c57d3870dd2725bbf6ee7e1b19dd8386d507a0128e05c956"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The call may be made even when the system already runs at full speed, but it then creates unnecessary overhead.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3890-3891",
+       "sha": "1776800979d08e157b492a87f62360ee84a7fffe49743a0ed9dbb8f3acba7b29"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "It should not be called from a hardware interrupt handler, to avoid reentrance problems.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3892-3893",
+       "sha": "9068ceea9fd960ecd2f9aaa6673b0a34ca757b79b5cab4493e2e29a94545fb1c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x53, then by case 0x06 of the dispatch on AL when APMBIOS is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7102-7103",
+       "sha": "d1e0cf1ca89495cd1f1afcf85d590ddd7edf0d4507705034e591205b8f73a488"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7118",
+       "sha": "24e6839b3eebc8614db1d1b075d812079a07db5b8c4619f34e8a6f8acb060353"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7277",
+       "sha": "9c13eff7334ebca379200f89db3c0b42f834496c1b45c8b9d43b273d89076ec8"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores AH 0x03 when the real-mode interface is not connected and otherwise keeps the caller's AH; it never stores AH 0x0B.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7277-7286",
+       "sha": "bf65c589d2baaaccfc1d08ec0b535ecf539f897e2ca71e5d999d392ee72d4411"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "10",
+     "on": "in BX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "This case ignores every input register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7277-7286",
+       "sha": "bf65c589d2baaaccfc1d08ec0b535ecf539f897e2ca71e5d999d392ee72d4411"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3882",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3894",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7277-7281",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7282-7286",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7106-7115",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x53"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0x53/0x07",
+   "name": "apm set power state",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x07"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x07"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3896-3974"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=5307h is APM set power state, from APM v1.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3896",
+       "sha": "6b8d1b5e5f46b7476d15699992268865f5927b833bf52f0eaec2c6c7cebf3e7a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX is a device ID (see #00474).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3898",
+       "sha": "8cfda21f4f6bec8f461e5ca214d1ad9038a1ad5b46ce39faf399ab32d84eaf8b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in CX",
+     "of": "doc",
+     "text": "CX is a system state ID (see #00475).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3899",
+       "sha": "816d8fac9516225ae34a4ffecec18f2df8eebf2bb46aa8fe6861cd323087b602"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3900",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3901",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (01h, 03h, 09h, 0Ah, 0Bh or 60h) (see #00473).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3902",
+       "sha": "90edf33284a2e9f1580c98e0ca29ad496cc59b0c4f4503374438f82075675520"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "It should not be called from within a hardware interrupt handler, to avoid reentrance problems.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3903-3904",
+       "sha": "4a0a85d6c11127a772eefdd2a796956a6d34bf9bccca7b87d5ec56107e54c988"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "APM device IDs: 0000h the system BIOS, 0001h all power-managed devices, 01xxh display (01FFh all), 02xxh secondary storage (02FFh all), 03xxh parallel ports (03FFh all), 04xxh serial ports (04FFh all).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3907-3914",
+       "sha": "1b07bf677ef7db62e5c90e71b2fbf7a547d31f1214e0d4e0fcb4436eb8d80400"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "With APM v1.1 the IDs continue: 05xxh network adapters (05FFh all), 06xxh PCMCIA sockets (06FFh all), 0700h-7FFFh reserved, 80xxh system battery devices (APM v1.2), 8100h-DFFFh and F000h-FFFFh reserved, Exxxh OEM-defined.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3915-3922",
+       "sha": "b53867937fa0da48744405d956478bb9b415782dacab7c362f39559118a01e40"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "APM system state IDs: 0000h ready (not supported for device ID 0001h), 0001h stand-by, 0002h suspend, 0003h off (not supported for 0001h in APM v1.0).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3924-3929",
+       "sha": "e6c6b9877a2de549c218c7b9fe59209201f8d871a9d116d2c9b651c177cee105"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "is",
+     "of": "doc",
+     "text": "APM v1.1 adds state 0004h, the last request processing notification, and 0005h, the last request rejected, both only for device ID 0001h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3930-3932",
+       "sha": "29cc816fd46e04ae88d67d9b8faa348e63b2d21890874590cb52770bb865a6cc"
+      }
+     ]
+    },
+    {
+     "n": "11b",
+     "on": "is",
+     "of": "doc",
+     "text": "The remaining state IDs: 0006h-001Fh reserved system states, 0020h-003Fh OEM system states, 0040h-007Fh OEM device states, 0080h-FFFFh reserved device states.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3933-3936",
+       "sha": "5942532a3b7723703e28a4717d0ede6fa1ae7f1664885e52823884cefc694e73"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "AX=5307h with CX=0001h and BX=0001h puts the whole system into stand-by and returns CF clear.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3938",
+       "sha": "7a46d3a365674e9954a34626a9e02e60545248fa77ebcd91a7d89289c26bc250"
+      },
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3941-3942",
+       "sha": "00ba25275d838cce1df0da5c962a8f0d1efa7a290271332b8beeac9393f668df"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "is",
+     "of": "doc",
+     "text": "Stand-by is normally entered on a stand-by request after the necessary processing, may be entered at the caller's discretion, and is typically exited on an interrupt.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3943-3948",
+       "sha": "7fcb20964281ab184d695e59a6cbbabae47a360e0cca6a612dbe7c985e393558"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "AX=5307h with CX=0002h and BX=0001h suspends the system and returns CF clear after the system is resumed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3951",
+       "sha": "d57edfb3be7a7bab97813aee29a5680311a8573a5b037f955c7288d782856575"
+      },
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3954-3956",
+       "sha": "a8c9431518cd166c53b5d0165a9d39714d7bd8a31ed05ec06d0cc25ebffa322d"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "is",
+     "of": "doc",
+     "text": "Suspend is normally entered on a suspend request after the necessary processing, and may also be entered at the caller's discretion.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3957-3960",
+       "sha": "bd014b0d8d41158e17e11f2c9049029d5fc6289a3981205b00e305b9b8467260"
+      }
+     ]
+    },
+    {
+     "n": "15b",
+     "on": "is",
+     "of": "doc",
+     "text": "It should not be called from within a hardware interrupt handler, and the caller may need to update its date and time because the suspension could be long.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3961-3964",
+       "sha": "c3137a35e687c43c6c232eb5aa67ed9cfd9698cb5a2efa8e48fd106202db479e"
+      }
+     ]
+    },
+    {
+     "n": "16",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "AX=5307h with CX=0003h and BX=0001h (APM v1.2) turns off the system power and returns CF clear after the system is resumed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3967",
+       "sha": "6a9501b4309d0bd93be00e41744319fa03be2ed3290d44e270faba9a8017fadb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3970-3972",
+       "sha": "a8c9431518cd166c53b5d0165a9d39714d7bd8a31ed05ec06d0cc25ebffa322d"
+      }
+     ]
+    },
+    {
+     "n": "17",
+     "on": "is",
+     "of": "doc",
+     "text": "The system is turned off if its power supply supports it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3973",
+       "sha": "900179351a019180a234bd798810c7e9aed435ce6b5f7eab7a98eb758e00f3e9"
+      }
+     ]
+    },
+    {
+     "n": "18",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x53, then by case 0x07 of the dispatch on AL when APMBIOS is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7102-7103",
+       "sha": "d1e0cf1ca89495cd1f1afcf85d590ddd7edf0d4507705034e591205b8f73a488"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7118",
+       "sha": "24e6839b3eebc8614db1d1b075d812079a07db5b8c4619f34e8a6f8acb060353"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7287",
+       "sha": "387425ce73e4016ea56f2301327873b72000f312a0b054c78e0ba93ca773e58c"
+      }
+     ]
+    },
+    {
+     "n": "19",
+     "on": "in BX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case accepts only BX 0x0001 and answers any other device ID with AH 0x09 and CF set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7287-7292",
+       "sha": "c6f9f58878568b950168322038f593fcdc8d27725de0720d2cd8767d3728ac75"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "20",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores AH 0x09, 0x03 or 0x0A; it never stores 0x01, 0x0B or 0x60.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7287-7298",
+       "sha": "206c33e0f0a142ff427e23abafa86bdd8d238d5420113817274757a27c861601"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7299-7310",
+       "sha": "e36bb9ac7067c9bb244af0a7093e04b05972dc117a003530830a62c3b7afd92b"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7311-7322",
+       "sha": "9f1366dd89b8a33bc570286554abe7bf87ea6fd8e9aa8bce780d5f6c8a04bef5"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7323-7330",
+       "sha": "2b23c5b83c815c59e3b6aa576c30119471b8f7154f742920528e5e7492f87345"
+      }
+     ],
+     "row": "6"
+    },
+    {
+     "n": "21",
+     "on": "in CX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case acts on states 1 to 5 only; any other CX stores AH 0x0A and sets CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7287-7298",
+       "sha": "206c33e0f0a142ff427e23abafa86bdd8d238d5420113817274757a27c861601"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7299-7310",
+       "sha": "e36bb9ac7067c9bb244af0a7093e04b05972dc117a003530830a62c3b7afd92b"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7311-7322",
+       "sha": "9f1366dd89b8a33bc570286554abe7bf87ea6fd8e9aa8bce780d5f6c8a04bef5"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7323-7330",
+       "sha": "2b23c5b83c815c59e3b6aa576c30119471b8f7154f742920528e5e7492f87345"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "22",
+     "on": "out CF=0",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "For CX=0x0001 the case calls APM_BeginSuspendedMode, stores AH 0, clears CF and sets APM_ResumeNotificationFromStandby.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7299-7305",
+       "sha": "274058f8f6413a64f4543573e1a59b0f5e2952cc3870b5d139b9f3512f1f6cde"
+      }
+     ]
+    },
+    {
+     "n": "23",
+     "on": "out CF=0",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "For CX=0x0002 the case calls APM_BeginSuspendedMode, stores AH 0, clears CF and sets APM_ResumeNotificationFromSuspend.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7306-7312",
+       "sha": "e6e68973ed351b85c85ca4a885683f0db9bc1f19eaeeb9126ec6c746fd66f3e9"
+      }
+     ]
+    },
+    {
+     "n": "24",
+     "on": "out CF=0",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "For CX=0x0003 the case throws 0 instead of turning the machine off and returning CF clear after a resume.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7313-7314",
+       "sha": "30a728f6d4bcb4913bc72a0ca704885aecba9cd096eb4ce929f70e2fa852d323"
+      }
+     ],
+     "row": "16"
+    },
+    {
+     "n": "25",
+     "on": "out CF=0",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The states 4 and 5 store AH 0 and clear CF, and any other state stores AH 0x0A and sets CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7315-7322",
+       "sha": "41f37c6bbd39a5ae327a16b060d18f8b2db6e5a18112f3c558573fed94cacb94"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7323-7330",
+       "sha": "2b23c5b83c815c59e3b6aa576c30119471b8f7154f742920528e5e7492f87345"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3897",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3905",
+     "as": "see-also"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3937",
+     "as": "layout"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3939-3940",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3949",
+     "as": "see-also"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3950",
+     "as": "layout"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3952-3953",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3965",
+     "as": "see-also"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3966",
+     "as": "layout"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3968-3969",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3974",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7287-7297",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7298-7305",
+     "as": "agrees",
+     "row": "12"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7306-7312",
+     "as": "agrees",
+     "row": "14"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7315-7324",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7106-7115",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x53"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0x53/0x08",
+   "name": "apm enable/disable pm",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x08"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x08"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3976-3994"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=5308h enables or disables APM power management, from APM v1.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3976",
+       "sha": "1809ef609a0dee06a1f95bf3892837cb64000047d4c8921ea233ca84fe24ed9e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX is the device ID for all devices power-managed by APM: 0001h in APM v1.1+, FFFFh in APM v1.0.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3978-3980",
+       "sha": "9043a87441dd70192c16919448721796471127b54c312b0425e9de44bc85ded1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in CX",
+     "of": "doc",
+     "text": "CX is the new state: 0000h disabled, 0001h enabled.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3981-3983",
+       "sha": "4e6dcf115b55c95b1179b6c5d82b875ce28efa78eb4c1b1d3c83769743226ecb"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3984",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3985",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (01h, 03h, 09h, 0Ah or 0Bh) (see #00473).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3986",
+       "sha": "c898c42bdc87ac5b240ccad22fceae0cd950ba3026b2ec91458f41ef4de53f8c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "When power management is disabled the system BIOS will not automatically power down devices, enter stand-by or suspend, or take power-saving actions in response to AX=5305h calls.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3987-3989",
+       "sha": "1b6a7cf6d2d31c1b5aa21a6fd6ac4b8c6bbba790318ddc2ea04c470efc37af3f"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "It should not be called from within a hardware interrupt handler, to avoid reentrance problems.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3990-3991",
+       "sha": "9068ceea9fd960ecd2f9aaa6673b0a34ca757b79b5cab4493e2e29a94545fb1c"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "The APM BIOS should never be both disabled and disengaged at the same time.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3992-3993",
+       "sha": "7b5b4ca6dbfad404fb34d727da3247f203dd34416a8e42bf4ba33303da9e76e2"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x53, then by case 0x08 of the dispatch on AL when APMBIOS is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7102-7103",
+       "sha": "d1e0cf1ca89495cd1f1afcf85d590ddd7edf0d4507705034e591205b8f73a488"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7118",
+       "sha": "24e6839b3eebc8614db1d1b075d812079a07db5b8c4619f34e8a6f8acb060353"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7331",
+       "sha": "9ccec44bfc1bfcf3ee500077ae2b762b1dfb42772fdf2ddf1a921331fe443549"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "in BX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case accepts BX 0x0000 or 0x0001 and answers any other value, FFFFh included, with AH 0x09 and CF set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7332-7339",
+       "sha": "3ca92c6578b5c4f9e862350f545dc898af97f843d8241637dbf24d780ed7e5df"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "12",
+     "on": "in CX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "For CX 0 and 1 the case only logs a message, and any other value stores AH 0x0A and sets CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7341-7346",
+       "sha": "a254501b5ac152394f9b3813cd54769dd2d729f82fb7b8adf7f9b39a435dd8f4"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "13",
+     "on": "out CF=0",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The success path never clears CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7340-7347",
+       "sha": "582cfc2d3890a1d72e7d72192f7b014f51dae303d42b5c378bfc8d7d10f939b9"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "14",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores AH 0x09, 0x03 or 0x0A; it never stores 0x01 or 0x0B.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7331-7339",
+       "sha": "c085dcac0cc1b65898b200958eb419c5886e828269c74d42ac17974ebd350c82"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7340-7347",
+       "sha": "582cfc2d3890a1d72e7d72192f7b014f51dae303d42b5c378bfc8d7d10f939b9"
+      }
+     ],
+     "row": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3977",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3994",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7332-7339",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7106-7115",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x53"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0x53/0x0A",
+   "name": "apm get power status",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x0A"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x0A"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4008-4062"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=530Ah is APM get power status, from APM v1.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4008",
+       "sha": "58aa054658bf2339204b66ac7ea131bec06eb9519671533287f366068fea1d97"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX is a device ID: 0001h for all devices power-managed by APM, 80xxh for a specific battery unit (APM v1.2).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4010-4012",
+       "sha": "0ed5cd9b4f68d01113b7d92de39751bf9df468a8c10cb9ec570b6ce0b5ebefa0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4013",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BH",
+     "of": "doc",
+     "text": "BH is the AC line status: 00h off-line, 01h on-line, 02h on backup power (APM v1.1), FFh unknown.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4014-4019",
+       "sha": "951b17db08fe2b2a34a5186f41e0925d7dcadce4b2cb37d2f497b558f2393450"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out BL",
+     "of": "doc",
+     "text": "BL is the battery status (see #00476).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4020",
+       "sha": "7d4a2a2a57d69727fedfb2b0346e890f087080ce2036df6310368fe105ab14b7"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out CH",
+     "of": "doc",
+     "text": "CH is the battery flag (APM v1.1+) (see #00477).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4021",
+       "sha": "37a60f55eda3cd76eaee97f0f05ebca35589cd090bebc4b29d136119b799e299"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out CL",
+     "of": "doc",
+     "text": "CL is the remaining battery life as a percentage, 00h-64h, or FFh if unknown.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4022-4024",
+       "sha": "fc78f2e5a615eb6c34615b393e5f7edf5e630aed9b8eb6495e149580d4cef122"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out DX",
+     "of": "doc",
+     "text": "DX is the remaining battery life as time (APM v1.1) (see #00478).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4025",
+       "sha": "5d5d6c4d587c25a3e38b5b588b773b7f46609d641041f0910fb9f929e2a45484"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out SI",
+     "of": "doc",
+     "text": "When a specific battery unit is named in BX, SI is the number of battery units installed.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4026-4027",
+       "sha": "a85cd77d1c51ecd11d584f8170f83a0f57176018e6c44871bfe988045735883b"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4028",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (09h or 0Ah) (see #00473).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4029",
+       "sha": "c94020710f745fe693756873c919e68045caa3ea0e8258df6f70471286bde458"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "doc",
+     "text": "It should not be called from a hardware interrupt handler, and it is supported in real mode and in 16-bit and 32-bit protected mode.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4030-4033",
+       "sha": "c705cac9a0cb6ee81a3e607fa9f93440aca03ab14513f233d9214d5cedd9c0fb"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "is",
+     "of": "doc",
+     "text": "APM v1.0+ battery status: 00h high, 01h low, 02h critical, 03h charging, FFh unknown, other values reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4035-4043",
+       "sha": "fefb8b118255a2f2ccd35d84cfb6caae507cf21168d7c6d32b049ca203f71550"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "is",
+     "of": "doc",
+     "text": "APM v1.1+ battery flag: bit 0 high, bit 1 low, bit 2 critical, bit 3 charging.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4045-4050",
+       "sha": "6e3279628fa1ca434805225c00844d9d86cde59a368c1932287075ab6921cbee"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "is",
+     "of": "doc",
+     "text": "APM v1.1+ remaining battery life: bit 15 selects minutes rather than seconds, and bits 14-0 hold the life, all bits set if unknown.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4057-4062",
+       "sha": "01037e2e4a74bdc27a5a465e936e3650c5ef9f03bdf483fc5e97a6ae38b21000"
+      }
+     ]
+    },
+    {
+     "n": "16",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x53, then by case 0x0A of the dispatch on AL when APMBIOS is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7102-7103",
+       "sha": "d1e0cf1ca89495cd1f1afcf85d590ddd7edf0d4507705034e591205b8f73a488"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7118",
+       "sha": "24e6839b3eebc8614db1d1b075d812079a07db5b8c4619f34e8a6f8acb060353"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7348",
+       "sha": "fa68aca70ee7e39431f0139f25a7bca4bbf8e140beefb3663f72b83bab493d50"
+      }
+     ]
+    },
+    {
+     "n": "17",
+     "on": "in BX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "When the interface is connected the case accepts only BX 0x0001 and 0x8001 and answers any other value with AH 0x09; otherwise it stores AH 0x03.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7349-7358",
+       "sha": "bcb8af206fdf9a13667cd8e9d2db175571dd43418ab71b1fdc61a7814138536a"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "18",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores AH 0x03 or 0x09; it never stores 0x0A.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7349-7358",
+       "sha": "bcb8af206fdf9a13667cd8e9d2db175571dd43418ab71b1fdc61a7814138536a"
+      }
+     ],
+     "row": "11"
+    },
+    {
+     "n": "19",
+     "on": "out BH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "On success the case stores BH 0x01, the AC line on-line, and never 0x00, 0x02 or 0xFF; the two error guards return before it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7349-7358",
+       "sha": "bcb8af206fdf9a13667cd8e9d2db175571dd43418ab71b1fdc61a7814138536a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7361",
+       "sha": "034d2c2019d5642d13c8f82618a20e1c51493b6ae55f68c26d1b781c9bcc92fd"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "20",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "On success the case stores BL 0xFF, the unknown battery status, never 0x00 to 0x03; the two error guards return before it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7349-7358",
+       "sha": "bcb8af206fdf9a13667cd8e9d2db175571dd43418ab71b1fdc61a7814138536a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7362",
+       "sha": "00d35e2c71b57242e13c98e39c0aecd8bcdbda2104a128cadd58979496b88655"
+      }
+     ],
+     "row": "5"
+    },
+    {
+     "n": "21",
+     "on": "out CH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "On success the case stores CH 0x80, no system battery, and never sets the high, low, critical or charging bits; the two error guards return before it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7349-7358",
+       "sha": "bcb8af206fdf9a13667cd8e9d2db175571dd43418ab71b1fdc61a7814138536a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7363",
+       "sha": "a80070f8a60c22f786461d9378903966e2ca5dfa30d2c00006d48e95fb79f35d"
+      }
+     ],
+     "row": "6"
+    },
+    {
+     "n": "22",
+     "on": "out CL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "On success the case stores CL 0xFF, the unknown charge, and never a percentage; the two error guards return before it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7349-7358",
+       "sha": "bcb8af206fdf9a13667cd8e9d2db175571dd43418ab71b1fdc61a7814138536a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7364",
+       "sha": "76db13db2a504150d041298452b8ffe7d4f7620312bbb0cc142413cb2d2270cd"
+      }
+     ],
+     "row": "7"
+    },
+    {
+     "n": "23",
+     "on": "out DX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "On success the case stores DX 0xFFFF, the unknown battery life; the two error guards return before it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7349-7358",
+       "sha": "bcb8af206fdf9a13667cd8e9d2db175571dd43418ab71b1fdc61a7814138536a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7365",
+       "sha": "182f1ddd290e04c76beb7695e932d13d9a9a470ee8291f2df99f0ad090237796"
+      }
+     ],
+     "row": "8"
+    },
+    {
+     "n": "24",
+     "on": "out SI",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores SI 0 for both accepted BX values, 0x0001 and 0x8001, so SI is filled even for 0x0001.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7349-7358",
+       "sha": "bcb8af206fdf9a13667cd8e9d2db175571dd43418ab71b1fdc61a7814138536a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7366",
+       "sha": "43ceb91b04f356fad09eb1eb33c3a4ddf60d598c1261bcb685f99eb030c5c94e"
+      }
+     ],
+     "row": "9"
+    },
+    {
+     "n": "14b",
+     "on": "is",
+     "of": "doc",
+     "text": "The flag continues: bit 4 selected battery not present (APM v1.2), bits 5-6 reserved zero, bit 7 no system battery, all bits set if unknown.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4051-4055",
+       "sha": "e02ec851aa18213574816c9e198b67e0c465ec3b7c563591cda0993a42cf2964"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4009",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7349-7358",
+     "as": "agrees",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7361-7368",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7106-7115",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x53"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0x53/0x0B",
+   "name": "apm get pm event",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x0B"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x0B"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4064-4106"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=530Bh is APM get power management event, from APM v1.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4064",
+       "sha": "f38ffae06668bfa2ee456d0215f2b2920ad9ec5b4d4bb0328404c121b0d6f61e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4066",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BX",
+     "of": "doc",
+     "text": "BX is the event code (see #00479).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4067",
+       "sha": "b155e698f18aae72f41dbef9f8a297f61cdf444cf0f519d97b1a8222c1ee77a3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out CX",
+     "of": "doc",
+     "text": "CX is the event information (APM v1.2) when BX is 0003h or 0004h, bit 0 meaning a PCMCIA socket was powered down in suspend.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4068-4069",
+       "sha": "ce1cb8b99fabab94360376d0373223f96be6c1a0aa991abb0883e1e782785c55"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4070",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (03h, 0Bh or 80h) (see #00473).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4071",
+       "sha": "1c816149bfd4cf5ee62f8b6adb97ff3e8eb72c2ce3deb94713063660eb781f99"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Events are notified only when polled, and polling once or twice a second should be sufficient.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4072-4076",
+       "sha": "21e16d6d9311f83bffa679c3c670fe00ce5307474f2e79fbaae81f364a0e4c1d"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "The critical resume notification follows an emergency suspension, and no notification is made for an emergency suspension itself.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4077-4081",
+       "sha": "8e5b39bc4fc3ebab4653f862b29a8f9dea97130379efabdd2787e4a0d7294010"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "It should not be called from within a hardware interrupt handler, to avoid reentrance problems.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4082-4083",
+       "sha": "9068ceea9fd960ecd2f9aaa6673b0a34ca757b79b5cab4493e2e29a94545fb1c"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "APM event codes 0001h-0005h: system stand-by request, system suspend request, normal resume, critical resume, battery low notification.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4086-4092",
+       "sha": "8c2460367b9c86ee3dc726fae5f3f4c9b0172e804d07f994d7a0def5312a2dc3"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "is",
+     "of": "doc",
+     "text": "APM v1.1 event codes 0006h-000Bh: power status change, update time, critical suspend, user standby request, user suspend request, system standby resume.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4093-4099",
+       "sha": "d4d4baf7b076083c4b08630e50d2d6e0d72dfcf94ea68536127438cbf8939451"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "doc",
+     "text": "APM v1.2 adds 000Ch, the capabilities change notification; 000Dh-00FFh are reserved system events, 01xxh device events, 02xxh OEM events and 0300h-FFFFh reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4100-4106",
+       "sha": "52a3b2615a80d0b087ce5e065a5534e4185e6b517744a0b2ca2a2b13264825f7"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x53, then by case 0x0B of the dispatch on AL when APMBIOS is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7102-7103",
+       "sha": "d1e0cf1ca89495cd1f1afcf85d590ddd7edf0d4507705034e591205b8f73a488"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7118",
+       "sha": "24e6839b3eebc8614db1d1b075d812079a07db5b8c4619f34e8a6f8acb060353"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7369",
+       "sha": "0660cc1251b10a54fbc2d07a0e02876b74dea77c6a23a395b59e2c8bdc2e9709"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores AH 0x03 or 0x80; it never stores 0x0B.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7369-7378",
+       "sha": "9d7516e9118912175174ff1a90fdd476cbf5967866b242385bccc0e16b74f63f"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7379-7390",
+       "sha": "99342d49cc6750658a9c550d8aab08f87e963351b701dba81f6d182bcee93da5"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7391-7402",
+       "sha": "9d792dc3deffa585d93fa86cd54978666d6bf7a0377c3262b9b37f62bd9afcdd"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7403-7413",
+       "sha": "eeb2ba8ef606b9fd81f75147fad3279661d677e11a6c267430379ecc4d2030d1"
+      }
+     ],
+     "row": "6"
+    },
+    {
+     "n": "15",
+     "on": "out CX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores CX 0 for every event and never sets bit 0 for a PCMCIA socket.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7376-7387",
+       "sha": "e68c5ec5c75773e38ea8ea48ae9425a87f64d905c4a18390a5ec5b790d5dff89"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7391-7398",
+       "sha": "b7e0352d71e1b510446c8408ef43bb0dc4a3b869d9a1fa027f98185b349a050e"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7401-7408",
+       "sha": "22e29b31a7429cfb8ff35dda27ccf499e4730220fa630c1ff5c6884376e868db"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7410-7413",
+       "sha": "7ea3b58e08b99268ac5b242146587d74f24e03007d4afe1da72ac7b5d2c67c66"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "16",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "For an event the case stores AH 0, which the document does not specify, and clears CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7377-7378",
+       "sha": "5143209ceb0992a6e6f78d1e69d16cc2d5043e3b5fb192551c848ac08cf5a180"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7392-7393",
+       "sha": "c40f2135ecfbf547de2c829d266a08a583a5203b202ad23a37f63a18c38d164a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7402-7403",
+       "sha": "d19313e58b408e74db9ed27283aa652a1a783f0fbbf0e6428592fcfeb89b46dd"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7386",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7396",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7406",
+       "sha": "38af73f25aa776f737fa5b5e47d7cbbeb7e1b8d6d690d0801b0b8f231c042097"
+      }
+     ]
+    },
+    {
+     "n": "17",
+     "on": "out BX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case produces a user suspend request (000Ah) or user standby request (0009h) from the power button, and the normal (0003h) or standby (000Bh) resume from its own state flags.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7380-7384",
+       "sha": "34bbf98baa75d32b56cbcd50e12a1a9184908934b6e55e904bc2b5d30fa00fae"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7394",
+       "sha": "e4db4e9f444e3ec7cc7681edf8d71225acbca6fc5cafafd15812da4ddeedcbea"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7404",
+       "sha": "33bf428345c1eb247c055bff778dc054140f928c4390760209f50c543b1fd621"
+      }
+     ]
+    },
+    {
+     "n": "18",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With no event pending the case stores AH 0x80 and sets CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7410-7413",
+       "sha": "7ea3b58e08b99268ac5b242146587d74f24e03007d4afe1da72ac7b5d2c67c66"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4065",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4084",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7385-7388",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7380-7384",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7106-7115",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x53"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7410-7413",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0x53/0x0D",
+   "name": "apm device pm",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x0D"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x0D"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4117-4128"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=530Dh enables or disables power management for a device, from APM v1.1+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4117",
+       "sha": "6266fc84be0c63197a83e900efbf826670e894bc0ee79ed3a0de1595f36da779"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX is a device ID (see #00474).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4119",
+       "sha": "8cfda21f4f6bec8f461e5ca214d1ad9038a1ad5b46ce39faf399ab32d84eaf8b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in CX",
+     "of": "doc",
+     "text": "CX is the function: 0000h disables power management, 0001h enables it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4120-4122",
+       "sha": "90706ac0203df237f3d4f9b491ad2c3958688ee8992afc28d106c230798f52de"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4123",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4124",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (01h, 03h, 09h, 0Ah or 0Bh) (see #00473).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4125",
+       "sha": "c898c42bdc87ac5b240ccad22fceae0cd950ba3026b2ec91458f41ef4de53f8c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "It specifies whether automatic power management should be active for a given device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4126-4127",
+       "sha": "9f81ef4e8b0ac3b8582f40708810daf9a4ee878d1bd6433a827115cd6eecc50e"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x53, then by case 0x0D of the dispatch on AL when APMBIOS is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7102-7103",
+       "sha": "d1e0cf1ca89495cd1f1afcf85d590ddd7edf0d4507705034e591205b8f73a488"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7118",
+       "sha": "24e6839b3eebc8614db1d1b075d812079a07db5b8c4619f34e8a6f8acb060353"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7414",
+       "sha": "2922eb430e982117fa72c21223577ab97676117fde78bdb13fd043c68c9bf033"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "in BX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case accepts only BX 0x0000 and 0x0001 and answers any other value with AH 0x09 and CF set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7416-7424",
+       "sha": "0e595656cf17ebcd78de34fe31a8ac9a8be62d80b3adc0ef00b71c3d73b7d067"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "10",
+     "on": "in CX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "For CX 0 and 1 the case logs a message and clears CF; it changes no device state.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7425-7432",
+       "sha": "1128615207117fca0093c1dce653ad737979f8a57b134125adb3136721086d4a"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "11",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores AH 0x09, 0x03 or 0x0A; it never stores 0x01 or 0x0B.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7414-7424",
+       "sha": "24232fcf13634e6875dd972ae8a165f8082d35473562e9f4f206b45bb2500050"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7425-7435",
+       "sha": "adf490e2b184b1efa8593bc966e934d7bfda423ad3751bbd9a380c757f5a0676"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7436-7437",
+       "sha": "26b8c32bd60e40dbef49af32c0dd9f9491de6a02f3b5e32400e4f62e79f7fc56"
+      }
+     ],
+     "row": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4118",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4128",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7416-7424",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7427",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7431",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7433-7437",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7106-7115",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x53"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0x53/0x0E",
+   "name": "apm driver version",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x0E"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x0E"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4130-4140"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=530Eh is APM driver version, from APM v1.1+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4130",
+       "sha": "571afc71edd3f73faeaadda90e037e08ec366a362fbe4c85e5c4d6bd7da94abb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX is the device ID of the system BIOS (0000h).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4132",
+       "sha": "84b739f56bdb6634dc207d5b0580ea172091e324d621f9d1486073f7833f8032"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in CH",
+     "of": "doc",
+     "text": "CH is the APM driver major version (BCD).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4133",
+       "sha": "4ae3bc0cb6dc2e4b32c8655aaa4db8bd601f5160d06cec0dc4af690d82af26bc"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "in CL",
+     "of": "doc",
+     "text": "CL is the APM driver minor version (BCD), 02h for APM v1.2.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4134",
+       "sha": "6c588d77bd9885d45f1cc04111c6f0fecc06d8be3d52e22f59daa758335ceb9d"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4135",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the APM connection major version (BCD).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4136",
+       "sha": "000b2e45fec0fb0399a710c0557dc9d1045930fb10f7dad1aa144f80fe68c7d5"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out AL",
+     "of": "doc",
+     "text": "AL is the APM connection minor version (BCD).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4137",
+       "sha": "eaa2fe09de33b7ecc3731cea9d6d7ccf15c377ec6db8ddc630fae59d0ce7679b"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4138",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (03h, 09h or 0Bh) (see #00473).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4139",
+       "sha": "cf91a29f1addc0e5667b36be2fc8527069909b058139953eba23b529e00953fa"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x53, then by case 0x0E of the dispatch on AL when APMBIOS is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7102-7103",
+       "sha": "d1e0cf1ca89495cd1f1afcf85d590ddd7edf0d4507705034e591205b8f73a488"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7118",
+       "sha": "24e6839b3eebc8614db1d1b075d812079a07db5b8c4619f34e8a6f8acb060353"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7438",
+       "sha": "a2619e03edf3a470de651d8d8f0428e683326ee0e0145ed2f6ec567b64452545"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "in BX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case accepts only BX 0 and answers any other value with AH 0x09 and CF set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7440-7443",
+       "sha": "7501ead01f5dcd772f375138c56bc39723f1f8f815c79dd08d525a04a954baf5"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "12",
+     "on": "out AL",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case also logs the negotiated version and stores it in APM_BIOS_connected_minor_version.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7453-7454",
+       "sha": "1426d64e0705981e92bf57502f01a27fb726c3424060756fcd836d4a6780817d"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores AH 0x09, 0x03 or 0x0C; it never stores 0x0B.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7438-7448",
+       "sha": "70a72d89f058f38749a73f0665ee06e7d1ee0290b22df2de83be3e725d57fd88"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7449-7459",
+       "sha": "ed7b9d95d7b3ad5c62a798962d53550c88265c3a2f4dea4e4c39586a0236c62a"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7460-7461",
+       "sha": "26b8c32bd60e40dbef49af32c0dd9f9491de6a02f3b5e32400e4f62e79f7fc56"
+      }
+     ],
+     "row": "9"
+    },
+    {
+     "n": "14",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "APM_BIOS_minor_version is stored by ISAPNP_Cfg_Reset from the apmbios version setting when the BIOS is configured.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "2150",
+       "sha": "9546ce1231e435d2165d7c4733dc39519f3462fa3f7af48a2ac61a94959e4e5b"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "2184-2195",
+       "sha": "6a73703571230c8e52f9219c838df221263429c1a572f34a6d44f42bc870861c"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "2196-2199",
+       "sha": "41f6c6880e1260a4058eac2b40b4317fa62dffe16d3f5f500592d99c1cbc5df2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4131",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4140",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7449",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7450",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7451",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7452-7453",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7455",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7444-7448",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7457-7460",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7106-7115",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x53"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0x53/0x0F",
+   "name": "apm engage/disengage",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x0F"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x0F"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4142-4155"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=530Fh engages or disengages power management, from APM v1.1+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4142",
+       "sha": "2f57530d868f08b936aae5fbc9886653f7bdb8790eea8586ccf34c2b602c2a2c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX is a device ID (see #00474).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4144",
+       "sha": "8cfda21f4f6bec8f461e5ca214d1ad9038a1ad5b46ce39faf399ab32d84eaf8b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in CX",
+     "of": "doc",
+     "text": "CX is the function: 0000h disengages power management, 0001h engages it.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4145-4147",
+       "sha": "89b23712154cec7b5c1b18c24fd3bf975f0b49e99029ce15267201efaad1c2e4"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4148",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4149",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (01h or 09h) (see #00473).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4150",
+       "sha": "bb4ad6654f5b1f97f2e3b13489adec5632e1490eabd2647322b783f784252bfe"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Unlike AX=5308h, this call does not affect the functioning of the APM BIOS, and when cooperative power management is disengaged the BIOS manages the system itself.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4151-4154",
+       "sha": "230d57de89508958b356335429e1b922ce1aab55e1b62513498f5e7458b7c17b"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x53, then by case 0x0F of the dispatch on AL when APMBIOS is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7102-7103",
+       "sha": "d1e0cf1ca89495cd1f1afcf85d590ddd7edf0d4507705034e591205b8f73a488"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7118",
+       "sha": "24e6839b3eebc8614db1d1b075d812079a07db5b8c4619f34e8a6f8acb060353"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7462",
+       "sha": "75eb0393f85175d2fb8eb7c057bc00b71f9347167ce33eb47dca0a1cb87d574a"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "in BX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case accepts only BX 0x0000 and 0x0001 and answers any other value with AH 0x09 and CF set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7463-7471",
+       "sha": "0e595656cf17ebcd78de34fe31a8ac9a8be62d80b3adc0ef00b71c3d73b7d067"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "10",
+     "on": "in CX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "For CX 0 and 1 the case logs a message and clears CF; it changes no device state.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7472-7479",
+       "sha": "8a9ed430d65fbd7c8e8c7f73be02f68ffd2d9f183bdaece2109dfb9372083cd7"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "11",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores AH 0x09, 0x03 or 0x0A; it never stores 0x01.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7462-7471",
+       "sha": "eab0a22d2ee10c0ec717ed35e004f8c81ddca2ed43bd82c2b429d3a2d757610f"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7472-7482",
+       "sha": "3a4dfc711054151f58276942ffaebc9664ba07b23b76357147f0d29e19e8929f"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7483-7484",
+       "sha": "26b8c32bd60e40dbef49af32c0dd9f9491de6a02f3b5e32400e4f62e79f7fc56"
+      }
+     ],
+     "row": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4143",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4155",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7463-7471",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7474",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7478",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7480-7484",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7106-7115",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x53"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0x53/0x10",
+   "name": "apm get capabilities",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x10"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x10"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4157-4185"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=5310h is APM get capabilities, from APM v1.2.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4157",
+       "sha": "1cad16a3c08a4405ea6ba428a723b329011e02b0a641c581a0f9d6c71493a8e7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX is a device ID: 0000h for the APM BIOS, other values reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4159-4161",
+       "sha": "da756930e47b5762305dae8bf98fce8e245d9dc2cd452e917e39835ac3c4ddf0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4162",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BL",
+     "of": "doc",
+     "text": "BL is the number of battery units supported, 00h if there are no system batteries.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4163",
+       "sha": "74bed099ff4eef89b579c9fc17e57a8b7d19641a88bac6f65b58b75fe0947bb6"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CX",
+     "of": "doc",
+     "text": "CX is the capabilities flags (see #00480).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4164",
+       "sha": "fa36382c3ffb9021ef1dd2fb6f72bd4642682a24f4dc7734fe4442c4c8caff00"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4165",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (01h, 09h or 86h) (see #00473).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4166",
+       "sha": "4cea8ec57812cbc3cf7bbbca4c0d92c0734eadb4eae4d8dda3e637ed6a90665c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "doc",
+     "text": "The function is available through the three interfaces and does not require a connection to be established first.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4167-4169",
+       "sha": "802feea1d860a16c3b515835cb6964ac4fc58430779cc417b76822c5d32fa2bf"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out CX",
+     "of": "doc",
+     "text": "It returns the capabilities currently in effect, not settings that take effect only after a restart.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4170-4172",
+       "sha": "e288f004cd833a4c9549d88585ecc215f3efb1465853ceecc1d772404fe86bf1"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "Capability flags: bits 15-8 reserved, bit 7 PCMCIA ring indicator wakes from suspend, bit 6 from standby, bit 5 ring indicator wakes from suspend.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4175-4180",
+       "sha": "f4dac7b78cfa94ce4a636dadb96c3fc7f95d57119588b39168808abe34bbada8"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x53, then by case 0x10 of the dispatch on AL when APMBIOS is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7102-7103",
+       "sha": "d1e0cf1ca89495cd1f1afcf85d590ddd7edf0d4507705034e591205b8f73a488"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7118",
+       "sha": "24e6839b3eebc8614db1d1b075d812079a07db5b8c4619f34e8a6f8acb060353"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7485",
+       "sha": "6133730ded401b61ae7b0f88547cad6aae96919bc72a9af3fa7c330e00ba5c15"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "in BX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case answers any BX other than 0 with AH 0x09 and CF set, including the reserved values.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7491-7495",
+       "sha": "5d6ee98fe4085941ff2d6fc85803753981e6c286e1cd2af820954a6427822089"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "13",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case requires the real-mode interface to be connected and stores AH 0x03 otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7486-7490",
+       "sha": "8f45a56db2707b6b9051a70e95618541b6e7fe6941f02fcd3c5a86246ae5821f"
+      }
+     ],
+     "row": "8"
+    },
+    {
+     "n": "14",
+     "on": "out CX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores CX 3 whatever settings exist, so no pending settings are ever consulted.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7498",
+       "sha": "a8ae90ff21315ad9bbb22738be48c9b9b26607ee74f84e395b023fdaecbd1142"
+      }
+     ],
+     "row": "9"
+    },
+    {
+     "n": "15",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores AH 0x03 or 0x09; it never stores 0x01 or 0x86.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7485-7495",
+       "sha": "0ad27242ce9ba92d6dc258e8ef3f35412c6bbb859e3b7f677dd862afda8be4b1"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7496-7500",
+       "sha": "e16c403cd1f072dfef956cf97e544dd2b87f08d76890df31f2881b7ffe4772bc"
+      }
+     ],
+     "row": "7"
+    },
+    {
+     "n": "10b",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-0: ring indicator wakes from standby, resume timer wakes from suspend and standby, and the system can enter global suspend and standby.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4181-4185",
+       "sha": "65dd7109c92db0798d89e3d737c7299481a2f8f5f13945140005a48b2689a99f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4158",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4173",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7497",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7498",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7499",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7106-7115",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x53"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7486-7495",
+     "as": "agrees",
+     "row": "6"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0x53/0x13",
+   "name": "apm timer requests",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x13"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x53",
+      "0x13"
+     ],
+     "preamble": true
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4231-4247"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=5313h enables, disables or queries timer-based requests, from APM v1.2.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4231",
+       "sha": "508362afbcc9b28909af950b2d07e72e562942f508220d7b4a2217ed16c107f5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX is a device ID: 0000h for the APM BIOS, other values reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4233-4235",
+       "sha": "da756930e47b5762305dae8bf98fce8e245d9dc2cd452e917e39835ac3c4ddf0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in CL",
+     "of": "doc",
+     "text": "CL is the function: 00h disables timer-based requests, 01h enables them, 02h gets their status.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4236-4239",
+       "sha": "e4fc057979315f2f00c0ead4dec822ee12c39f799a49ffc5b8a478b13675689b"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4240",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CX",
+     "of": "doc",
+     "text": "CX is the timer-based requests status: 0000h disabled, 0001h enabled.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4241",
+       "sha": "170e77124e36c762ff383d24c45d10566a998c6c64228eb32992093d5f25fd18"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4242",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (03h, 09h, 0Ah, 0Bh or 86h) (see #00473).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4243",
+       "sha": "b1e95ab24973edf4d9ba2fe60adada7c8fffd6732a42afe5c445eaddd3b7f58d"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "The function is supported through the INT 15, 16-bit protected mode and 32-bit protected mode interfaces.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4244-4245",
+       "sha": "e54d182cb657ebe389a90f324a2b886359459ba8e5cc585f662d141c9616b5ae"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "Some BIOSes set AH on return even when successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "4246",
+       "sha": "16cce4b26b9d5e555e96a7b833192f4eb34d636c90ee84c43de44734103ac08e"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x53, then by case 0x13 of the dispatch on AL when APMBIOS is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7102-7103",
+       "sha": "d1e0cf1ca89495cd1f1afcf85d590ddd7edf0d4507705034e591205b8f73a488"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7118",
+       "sha": "24e6839b3eebc8614db1d1b075d812079a07db5b8c4619f34e8a6f8acb060353"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7501",
+       "sha": "6bf5f09c10e5e649fc5e32eccfa1c4a21bc49e6a39820fdf2e8aeec63b8a1e2e"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "in BX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case answers any BX other than 0 with AH 0x09 and CF set, including the reserved values.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7508-7512",
+       "sha": "5d6ee98fe4085941ff2d6fc85803753981e6c286e1cd2af820954a6427822089"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "12",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores AH 0x03, 0x09 or 0x0A; it never stores 0x0B or 0x86.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7501-7512",
+       "sha": "f9ccd1d54d52c83de312acdde586d978fd79f014b51c064f01459eeae11bb9d3"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7513-7524",
+       "sha": "823d5e8a5b10a55870afa0e70619595819cee4e428d8f9ab3565efa8fb94c766"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7525-7532",
+       "sha": "044f5747bebe07a584aa24d359e23edeb1304adeb790add377d8183af76d10d5"
+      }
+     ],
+     "row": "7"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4232",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "4247",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7514-7517",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7519-7527",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7517",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7519-7527",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7528-7531",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7106-7115",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x53"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0xE8",
+   "name": "memory size e8",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "The DOSBox-X source header cites no document for AH=E8h."
+    },
+    {
+     "where": "maker",
+     "gave": "No maker document describes the AH=E8h dispatch itself; its AL subfunctions are documented separately."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "Not searched for this dispatch."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Not searched for this dispatch."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's list documents the memory sizing under AX=E801h and AX=E820h, and has no section for the AH=E8h dispatch."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0xE8"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0xE8 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7555",
+       "sha": "0176ad416e2ea63a6836bd8f03cc8e36d5089733bba325ab28521a4c0ecad65f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "AL picks the subfunction by a switch on reg_al.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7556",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "An AL no case takes logs an error, stores AH 0x86, sets CF and, on EGA/VGA, CGA or Amstrad machines, clears ZF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7604-7613",
+       "sha": "6296e0c28fbc3e7c22acc67c14ee089a089ff7eb061c7f6ee42649650236e13d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "An unknown AL takes the default arm, which logs the error and answers as an unsupported function.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7604-7609",
+       "sha": "ce0d573d5fed9c5f1a5e425f5e9b98dfc67141bd842982f2b2ebd1dad688cfbb"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7557-7568",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x15/0xE8/0x01"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7569-7603",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x15/0xE8/0x20"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0xE8/0x01",
+   "name": "e801 memory size",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0xE8",
+      "0x01"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "38-57"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=E801h gets the memory size for configurations above 64M, from Phoenix BIOS v4.0.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "38",
+       "sha": "6d9bf7c7e7887f7c235a4cf0258f57fb93b64fd0a85a44d9e4c8585f160e4c1c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "40",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AX",
+     "of": "doc",
+     "text": "AX is the extended memory between 1M and 16M, in K, at most 3C00h (15MB).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "41",
+       "sha": "900a26e4077c1b83122d22b0c72b4ce4b3d1a1602f13e96f2e90939403638d15"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BX",
+     "of": "doc",
+     "text": "BX is the extended memory above 16M, in 64K blocks.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "42",
+       "sha": "8009fe3e0df43ecdecc9d18ef85e914468a6db3045f83abc5ae9af81aca8f29e"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CX",
+     "of": "doc",
+     "text": "CX is the configured memory from 1M to 16M, in K.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "43",
+       "sha": "05ef0e4ba6b4c873c48a105f1fbc4dfb7a7f3b6831c9afd55d0de6c6a10b2827"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out DX",
+     "of": "doc",
+     "text": "DX is the configured memory above 16M, in 64K blocks.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "44",
+       "sha": "dee2bf5e98a850f536f7ae0b2f3bfd22a78fcc9dbc442f61ce23bb04327c659a"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "45",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "It is supported by the A03 level and later XPS P90 BIOSes, the Compaq Contura, DESKPRO/i and LTE Lite 386 ROM BIOS, and AMI BIOSes dated 8/23/94 or later.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "46-49",
+       "sha": "eaa1fa893dfa475ea2496063d96e29aab0e4a60f36bc80cbaf466604ce7c1a75"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "On some systems the BIOS returns AX=BX=0000h, and the caller then uses CX and DX instead.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "50-51",
+       "sha": "186c4d8097f2fcf013818e59be5e89d9d8757d3bae932a7dd391e08b6cd61d7b"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "Windows NT 3.1 and OS/2 v2.11/2.20 use this interface, and newer versions fall back to it when AX=E820h is not supported.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "52-53",
+       "sha": "3ed3310adf641fb42add45c69aae96f42d03f6e9807c8a6c64109730479c288b"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "is",
+     "of": "doc",
+     "text": "MS-DOS 6.0 HIMEM.SYS does not use it on an EISA machine, without a detected Compaq machine, or with the /NOABOVE16 parameter.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "54-56",
+       "sha": "372bcaa3186f5e1843fb8fb50cfc4a4900871ba53290d6fbd007edd589f35d43"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0xE8, then by case 0x01 of the dispatch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7555-7557",
+       "sha": "62827b48a80a9917074aa79d52926927b1f5787232d802c43c580c859ff0f366"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "out AX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case also stores CX with the same value, and caps the size at 3C00h and the block count at 65535.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7558-7561",
+       "sha": "eac5a12cce555502aac630ea0cbb2ddd50e4d1ec94c343fa0934736bc84d4440"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7564",
+       "sha": "13cf85efd7db8704716e687bf3719d71e188c51f336350b26d34337b78709f74"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "out CF=1",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "This case never sets CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7557-7568",
+       "sha": "21930d1659a844c0bda91c86e76a0a20f7fd9b750ca18bc88728acd5c8b560e9"
+      }
+     ],
+     "row": "7"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "39",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "57",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7566",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7561",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7565",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7561",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7565",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0xE8/0x20",
+   "name": "e820 memory map",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0xE8",
+      "0x20"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "69-116"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=E820h gets the system memory map, from newer BIOSes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "69",
+       "sha": "72117843c0b77189283323db94413f07749bf71055543c493ce0765d9b4ad186"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in EAX",
+     "of": "doc",
+     "text": "EAX is 0000E820h on entry.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "71",
+       "sha": "9d81743699be023d07255b187e4966c494a79d57f0cb8d42235ba0bc41cdd0eb"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in EDX",
+     "of": "doc",
+     "text": "EDX is 534D4150h (\"SMAP\").",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "72",
+       "sha": "3444d9bc2e47efbfeba7d032d125097dd08489c81e9189d146b67cd6b1371d69"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "in EBX",
+     "of": "doc",
+     "text": "EBX is the continuation value, or 00000000h to start at the beginning of the map.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "73",
+       "sha": "4d3b067d442b4f1fe2e8a0638933ad84a12e6a8b7f2714295855504545f28780"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "in ECX",
+     "of": "doc",
+     "text": "ECX is the size of the buffer for the result, in bytes, and should be at least 20.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "74",
+       "sha": "8893383329fbeafbee570978b2d17f42414f6a1e7102efa806a049f0854acad9"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "in ES:DI",
+     "of": "doc",
+     "text": "ES:DI points to the buffer for the result (see #00581).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "75",
+       "sha": "126999c7d9a500bf67b4feb725f69a6d0fafc7b70f64b782e5e32a49b6781af3"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "76",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out EAX",
+     "of": "doc",
+     "text": "On success EAX is 534D4150h (\"SMAP\").",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "77",
+       "sha": "9463fde323d708b5766a3e7df64622e8c5fb9838711075678364e87ce86921cb"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out ES:DI",
+     "of": "doc",
+     "text": "The buffer at ES:DI is filled.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "78",
+       "sha": "21f4776b3db5b11718ee93f695fbbf68b057f779215ef8ab7db9193c601327f3"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "out EBX",
+     "of": "doc",
+     "text": "EBX is the next offset from which to copy, or 00000000h when the list is done.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "79",
+       "sha": "7029f39eb6194aadb5bcaa7c4e4829f392cd440f9b08c988a5cb71506d4fdd25"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "out ECX",
+     "of": "doc",
+     "text": "ECX is the actual length returned, in bytes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "80",
+       "sha": "a3f7e6402ee01608fdbfa8cadb2319dd6ef25d2e04acf95d98c810b4ba1cd970"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "81",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (86h) (see #00496 at INT 15/AH=80h).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "82",
+       "sha": "45d7289fcd6420d225e90e4f2a62e3e1c4520b6de0c9b2491f8618b7d0aedd5a"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "is",
+     "of": "doc",
+     "text": "The function came with the Phoenix BIOS v4.0 and is now supported by most newer BIOSes, because Windows uses it to learn the system memory.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "83-85",
+       "sha": "dc4648ae4d0bdc051db6f8ab17b39e1c83a355f59b17586df467b9564bfb883c"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "is",
+     "of": "doc",
+     "text": "At most 20 bytes are transferred at a time, and some BIOSes ignore ECX on entry and always copy 20 bytes.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "86-88",
+       "sha": "3ffd5556b41dc49be399c2311077c8ecaba705cdbeaba8d8ee7fff2ead40b15b"
+      }
+     ]
+    },
+    {
+     "n": "16",
+     "on": "is",
+     "of": "doc",
+     "text": "Some BIOSes expect the high word of EAX to be clear on entry.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "89-90",
+       "sha": "01905bfd36dbd09fd70235714ee08887888a5b3ed89e6c3f5ff0fd81456416ed"
+      }
+     ]
+    },
+    {
+     "n": "17",
+     "on": "is",
+     "of": "doc",
+     "text": "When the function is unsupported, an application should fall back to AX=E802h, AX=E801h and then AH=88h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "91-92",
+       "sha": "a340215ad4e84f19ef7e1a4556f14422391dacd3e1e30cd87cbd56b58d72f5cb"
+      }
+     ]
+    },
+    {
+     "n": "18",
+     "on": "is",
+     "of": "doc",
+     "text": "The BIOS may return a nonzero continuation value and signal the end of the list with CF set on the next call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "93-95",
+       "sha": "f14904c9ec2461f12f0bfbf8e8d924204d0ed8b66c4ff5357feea2f8d4cdbd9c"
+      }
+     ]
+    },
+    {
+     "n": "19",
+     "on": "is",
+     "of": "doc",
+     "text": "The map reports base memory and contiguous ISA/PCI memory as normal, marks unused chipset holes and memory-mapped devices, marks the system BIOS reserved, and omits standard PC ranges.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "96-100",
+       "sha": "2ec972cd83e049cec7b5e497b896ec71d5353c17067dcd7b829c62dc140cfeea"
+      }
+     ]
+    },
+    {
+     "n": "20",
+     "on": "is",
+     "of": "doc",
+     "text": "A descriptor holds a QWORD base address, a QWORD length in bytes and a DWORD range type (see #00581).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "103-107",
+       "sha": "2d5ecb368a1911d21f23870dc213aa76a738e0fdea143d66f4c5acec7014b9ad"
+      }
+     ]
+    },
+    {
+     "n": "21",
+     "on": "is",
+     "of": "doc",
+     "text": "Range types: 01h available memory, 02h reserved, 03h ACPI reclaim memory, 04h ACPI NVS memory, other values undefined and treated as reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.D",
+       "lines": "109-116",
+       "sha": "539f65efca06491e298afbd5df2d5f85cdc5561bdbfbeb800faeba07ec8aeddd"
+      }
+     ]
+    },
+    {
+     "n": "22",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0xE8, then by case 0x20 of the dispatch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7555-7556",
+       "sha": "dff2322d2f016459de02adb4db14c4e851939a6db20bb07acd11bfd22832372d"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7569",
+       "sha": "0db44c3923dc0093b8187f6dd851b56f63e62e39e280953eb15dd03dc478e61a"
+      }
+     ]
+    },
+    {
+     "n": "23",
+     "on": "in EAX",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "This case never reads EAX.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7569-7580",
+       "sha": "37799ea4e74670a73522fd3dc7eecf704e439ee0836ae25017a6af2e4f89dba1"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7581-7592",
+       "sha": "9109f6c6579dcaa33c20f356a25f97584f258655da98660c0ad9b964949d8ba6"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7593-7603",
+       "sha": "e8ccc8a5f54842524e13fb6a6189e8baaaf0ea1403abd8c9b539e1c4ec0fabbf"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "24",
+     "on": "out CF=0",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The success paths never clear CF; only the two error paths set it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7569-7580",
+       "sha": "37799ea4e74670a73522fd3dc7eecf704e439ee0836ae25017a6af2e4f89dba1"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7581-7592",
+       "sha": "9109f6c6579dcaa33c20f356a25f97584f258655da98660c0ad9b964949d8ba6"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7593-7603",
+       "sha": "e8ccc8a5f54842524e13fb6a6189e8baaaf0ea1403abd8c9b539e1c4ec0fabbf"
+      }
+     ],
+     "row": "7"
+    },
+    {
+     "n": "25",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case requires at least 24000 KB of memory, fills three fixed descriptors from E280_table, and wraps EBX to 0 after the last one.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7570-7577",
+       "sha": "67df0fdd5a8b73f3b930cac14a5a6c192ad2d76d88241b6e69dea0d435a4d808"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7588-7590",
+       "sha": "9c96ef9324a1df77c314904aeb7df89e302bf35c716d05c17b011db604fd8555"
+      }
+     ]
+    },
+    {
+     "n": "26",
+     "on": "in EDX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A call whose signature check fails stores EAX 0x8600 and sets CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7598-7601",
+       "sha": "391c5789bd5f80454e2ac9c4416f68c94d0b8016360f183987b3a4741ecbd63b"
+      }
+     ]
+    },
+    {
+     "n": "27",
+     "on": "in EDX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A mismatch of EDX against 534D4150h stores EAX 0x8600 and sets CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7570",
+       "sha": "591569cdd8916dceb23868bec485a1d0ff29e7748a9e68822047e726eec2c456"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7598-7601",
+       "sha": "391c5789bd5f80454e2ac9c4416f68c94d0b8016360f183987b3a4741ecbd63b"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "28",
+     "on": "in ECX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A buffer size below 20 is refused with EAX 0x8600 and CF set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7570",
+       "sha": "591569cdd8916dceb23868bec485a1d0ff29e7748a9e68822047e726eec2c456"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7598-7601",
+       "sha": "391c5789bd5f80454e2ac9c4416f68c94d0b8016360f183987b3a4741ecbd63b"
+      }
+     ],
+     "row": "5"
+    },
+    {
+     "n": "29",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "13",
+     "text": "The signature or size error stores EAX 0x8600, but an exhausted list stores EAX 0x534D4150 with CF set, so AH is 0x86 on one path and 0x53 on the other.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7592-7596",
+       "sha": "401e2dfbc85b66133618d9e1bf0f8ff967d69220205dfc73bf9e46e35908213f"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7598-7601",
+       "sha": "391c5789bd5f80454e2ac9c4416f68c94d0b8016360f183987b3a4741ecbd63b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "70",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.D",
+     "lines": "101",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7576-7586",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7581-7585",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7596",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7581-7585",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7590",
+     "as": "agrees",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7586",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7592-7594",
+     "as": "agrees",
+     "row": "12"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0x50",
+   "name": "dos/v font access",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x50"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3649-3684"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AH=50h is the DOS/V font subsystem access.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3649",
+       "sha": "ac0fe64caf7088d5aed450e1756da5cc9db3728f19009aa02495df3878ec527d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in AL",
+     "of": "doc",
+     "text": "AL selects the function whose address to retrieve: 00h the read-font function, 01h the write-font function.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3651-3653",
+       "sha": "f65cfe45e311fbe37844089414938ce985c1fa11efcea79c9904f5bbf5239ff5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in BL",
+     "of": "doc",
+     "text": "BL is 00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3654",
+       "sha": "c57d5ee51d4830e0f5eb129789356407158e61a1a40df7dc81c1b2a4ef641bf8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "in BH",
+     "of": "doc",
+     "text": "BH is the character size: 00h single-byte, 01h double-byte.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3655",
+       "sha": "e7b8ed103d2a500766cff5bc0e23c6de0060ca329ac786089d4930a72176adb5"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "in DH",
+     "of": "doc",
+     "text": "DH is the width of the character cell.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3656",
+       "sha": "1416ebbe7280803bb7f79ddb4186ddbbaad1aec4c7d5affa3032b6488775b88e"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "in DL",
+     "of": "doc",
+     "text": "DL is the height of the character cell.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3657",
+       "sha": "73de3e28af590406aa40ffc13065aa7e35370159d2b562d36fd5d5a0e290600c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "in BP",
+     "of": "doc",
+     "text": "BP is the code page (see #00470).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3658",
+       "sha": "f7dacff9c861b32dba268a3cbca3da8cfca1e4347fde8f1dbec50fae5dc481ca"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3659",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On success AH is 00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3660",
+       "sha": "ca6acfae32ac1b65fd6efb4a1dacab187de9365305d3e9fbfd278dd55e172ff5"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "out ES:BX",
+     "of": "doc",
+     "text": "ES:BX points to the requested function's address.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3661",
+       "sha": "b140201cb2c551c417e5215dd4513a5c94cd6415a5ab78059c44b108c448ab58"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3662",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is the error code (see #00471).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3663",
+       "sha": "ae6a1875fda655c5e59020a4012b828254c305884727d18752a0bebebce86fef"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "is",
+     "of": "doc",
+     "text": "DOS/V code pages: 0 default, 437 US English, 932 Japanese, 934 Korea, 936 China, 938 Taiwan.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3666-3674",
+       "sha": "08e58a5ca0bfbf377730ad4f452968e2a6843b7659bf06633e1f0d9061389a52"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "is",
+     "of": "doc",
+     "text": "DOS/V error codes: 01h invalid font type in BH, 02h BL not zero, 03h invalid font size, 04h invalid code page, 80h unsupported function (PC), 86h unsupported function (XT).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3676-3684",
+       "sha": "a4228161636371c7cb879efd54d5d74695e242b7a600ab60f365769eb1c69c78"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x50 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7615",
+       "sha": "367c4d63da59313127faa64158fc1baf96f5745b4809e6466978a9a5364198c1"
+      }
+     ]
+    },
+    {
+     "n": "17",
+     "on": "in BP",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case only compares BP with 0 and never reads a code page.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7615-7625",
+       "sha": "10ee822eb61f79427f91d03618cfd91acee73473b60093d0de8f22aa03494b67"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7626-7636",
+       "sha": "1b6a9bd538c1b1bb65b2b887a844af665fb274c0588b7f3052a6d8b40e1412ac"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7637-7647",
+       "sha": "175254d5e29f968d7101659024a34a799a118f17f24cf3d142a1054db6d48db9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7648-7657",
+       "sha": "6894b124354ef27781a5fe44618765db5ef6a463630d49eafa7b9f72b2b1f43b"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7658-7668",
+       "sha": "45bf3c3774a9b5994ea599a35bc5f66fcdd4f6378222f8f01af72e1e14cde109"
+      }
+     ],
+     "row": "7"
+    },
+    {
+     "n": "18",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores AH 0x06 or 0x86; it never stores 0x01 to 0x04 or 0x80.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7615-7626",
+       "sha": "4c277af0354e015ff08e969ca8cfed751c6e4f7d27d9ce697e1cdb959bd71b21"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7627-7638",
+       "sha": "e8271ca32ddff7deea3a82c7d3647731a86bdb2cf4017df028f5a25e508c0f06"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7639-7650",
+       "sha": "7b0a57e44c9e90c50fe637d3889e3482f756870b3e6257fdc63ead46d86e189b"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7651-7662",
+       "sha": "b9043be2076e3b7495df5fc9f34cf5f9b79e157b02cd99759a9d14494ffb3f18"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7663-7668",
+       "sha": "c0050401975196ba2176717cf7781d3ad0e6ac73df631edbdc4516c37c3ddd79"
+      }
+     ],
+     "row": "12"
+    },
+    {
+     "n": "19",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Writing is supported only for the 16x16 and 24x24 sizes; another size stores AH 0x06 and sets CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7646-7655",
+       "sha": "9c5af55f4f3f99e59bcfe55edfbcb6a88b3acc73218b8184a750bbd6f10ab23b"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7656-7662",
+       "sha": "6d854ac04d881bd58a7547ad7b2eb1c71a51747fc3f076050b9d293e64cb6836"
+      }
+     ]
+    },
+    {
+     "n": "20",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Without DOS/V the case stores AH 0x86 and sets CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7616",
+       "sha": "e9124c42ef60aa040da0f418ad95876b45fa3b88746755deb17fe0b9e85d899f"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7663-7668",
+       "sha": "c0050401975196ba2176717cf7781d3ad0e6ac73df631edbdc4516c37c3ddd79"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3650",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3664",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7640",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7645-7650",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7618-7619",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7638-7641",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7620-7624",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7627-7629",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7630-7631",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7641",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7638",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7639-7640",
+     "as": "agrees",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7662",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
+  },
+  {
+   "key": "0x15/0x49",
+   "name": "get bios type",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "function": "INT15_Handler",
+     "case": [
+      "0x49"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3576-3586"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 15h AX=4900h gets the BIOS type of a Far East MS-DOS system.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3576",
+       "sha": "66628ff8f54e8e21a520f55857e4b90bbfe2749cecb8ee33b792819ede0c5e34"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out CF=0",
+     "of": "doc",
+     "text": "CF is clear if successful.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3578",
+       "sha": "dbf76c2bf57ec143570146e738cb37979418b532c74530c8837a30bc6f0f51a5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On success AH is 00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3579",
+       "sha": "ca6acfae32ac1b65fd6efb4a1dacab187de9365305d3e9fbfd278dd55e172ff5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BL",
+     "of": "doc",
+     "text": "BL is the BIOS mode: 00h DOS/V, 01h standard DBCS DOS with hardware DBCS support.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3580-3582",
+       "sha": "6a283e1d4c625581293ff5ecd4c223cc522ee0f688e0d7c951c06d78060eaa2c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF=1",
+     "of": "doc",
+     "text": "CF is set on error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3583",
+       "sha": "61e5b4da8f47a81bf82bbe712b937a630db16cd59505605f33fd228533277225"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out AH",
+     "of": "doc",
+     "text": "On error AH is 86h, function not supported.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3584",
+       "sha": "2a0d370415ce2d3ebee994ed0e51162736183180a820c6ec73978f92795753a7"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "In practice DOS/J returns AH=86h, and AX DOS does not support this call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.C",
+       "lines": "3585",
+       "sha": "978e9258ffe389c943db02afedbf8a7b594508c7e30bb02e769fe8d847b7b03e"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 15h handler reaches it by the case 0x49 of its dispatch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "6705",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7669",
+       "sha": "5b70cf211d2380861b48f5957a70bafc154aa42c4c6ba048175268c93cf259f1"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out BL",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case stores BL 0 and never the DOS/V or DBCS mode distinction, because it always answers DOS/V when the machine is one.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/bios.cpp",
+       "lines": "7670-7677",
+       "sha": "aa112ab7145f63b9d07f548577c05be0fb1a7ab744657da922b53d00ca8ae0d7"
+      }
+     ],
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3577",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.C",
+     "lines": "3586",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7673",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7671",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7675",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "7674-7676",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/bios.cpp",
+     "lines": "6653-6702",
+     "as": "preamble",
+     "owner": "ibm-pc:call:0x15/0x06"
+    }
+   ]
   }
  ],
  "engine": [

@@ -26,7 +26,15 @@
   "PAGING_GuestPageTablesChanged",
   "PAGING_MapPage",
   "XMS_EnableA20",
-  "XMS_GetEnabledA20"
+  "XMS_GetEnabledA20",
+  "CPU_SET_CRX",
+  "CPU_LGDT",
+  "CPU_LIDT",
+  "CPU_JMP",
+  "CPU_SetCPL",
+  "CPU_TSS_ForceBusy",
+  "CPU_LLDT",
+  "CPU_LTR"
  ],
  "entries": [
   {
@@ -7619,6 +7627,2184 @@
     }
    ],
    "closed": []
+  },
+  {
+   "key": "0x67/0xDE",
+   "name": "vcpi",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The INT 67h handler reaches it by case 0xDE of its switch on AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1194",
+       "sha": "b0a48b755f8dde7e06fa4091cfd85aa2c8f1b934772be5c767d475108053d100"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When VCPI is disabled, the case answers EMM_FUNC_NOSUP and logs the refusal.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1194-1198",
+       "sha": "a361640ca95c9d5be964723f2d0999da1430dd461a55b3942a422857237b33f6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The subfunction is selected by a second switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A subfunction with no case of its own is answered with EMM_FUNC_NOSUP after a log line.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1374-1377",
+       "sha": "8168bb91b8c871dc9e7dba6f4ddd1573e4fdc3caac1baac73b804ef4b9c896d7"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A refusal stores EMM_FUNC_NOSUP in AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1197",
+       "sha": "a9727fd1a1a6d06c8442faf7261c132c4fd5bd726904247892c439dbd88c9fe1"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1376",
+       "sha": "a9727fd1a1a6d06c8442faf7261c132c4fd5bd726904247892c439dbd88c9fe1"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "VCPI setup stores the two PIC bases, and the EMS setup stores the protected mode entry point.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1725-1726",
+       "sha": "a6a8552f69b5431bf23cbdabf816bbcdc1ff5f8f75d8556738791a5325adb8c2"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "2048",
+       "sha": "99bf58b5eb8d6d1e607e3c646908c887c9b6624593d8a97b3ef934b227939228"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1200-1208",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x00"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1209-1259",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x01"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1260-1263",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x02"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1264-1267",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x03"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1268-1277",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x04"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1278-1281",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x05"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1282-1309",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x06"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1310-1313",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x07"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1314-1318",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x0A"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1319-1324",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x0B"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1325-1373",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x0C"
+    }
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "Not applicable: MAME does not model INT 67h, and the DOSBox-X case names no document."
+    },
+    {
+     "where": "maker",
+     "gave": "Nothing found: a web search for the VCPI specification returned no document hosted by Phar Lap or Quarterdeck."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "Nothing found: the same search returned no bitsavers page of a VCPI specification."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Nothing found: the same search returned no archive.org copy of a VCPI specification."
+    },
+    {
+     "where": "index",
+     "gave": "Ralf Brown's list documents each DEh subfunction in its own section and has none for the group."
+    }
+   ]
+  },
+  {
+   "key": "0x67/0xDE/0x00",
+   "name": "vcpi install check",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE",
+      "0x00"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7388-7396"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The installation check tells whether VCPI is present.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7388",
+       "sha": "351f568e91019d80f03c68331dbe1b19d24ea0facaf16ef35c1033dd0d372ed0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the status of the call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7390",
+       "sha": "0cca8d365997ca24d94e9c23df6589a4d630f90b9c4a5289a87b3ad363fb6542"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BH",
+     "of": "doc",
+     "text": "On success, BH is the major version number.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7392",
+       "sha": "4d49d3a5fd3b199ddf38e6ade3f98cb6d000e8c2ba143c603465d6d15d3bac2c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out BL",
+     "of": "doc",
+     "text": "On success, BL is the minor version number.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7393",
+       "sha": "efd66cc47657fbb3f18919837354c18ce880c1e4c5615a5d84d99809a888b645"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out AH",
+     "of": "doc",
+     "text": "The status is 00h when VCPI is present and nonzero when it is not.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7391",
+       "sha": "0750c426ce33b1bb78f66d9173faa984efb07f3141c187560801995f99756307"
+      },
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7394",
+       "sha": "fb1a15168acd8a49165dc8f0ae3c0b95b7f87bbadc84c72df200c084bc73a4ef"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The handler reaches it by case 0xDE of its switch on AH, then case 0x00 of its switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1195",
+       "sha": "e4bd6ea5b1c29f110e6b59f4d5a89c409ccde05fa2c38cfd30d1dac3b6965fcc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1200",
+       "sha": "479c41f20e7a1e15656496a13a493f79fc3c3679222e006bae3cf55edafa529e"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The check answers present when CX is 0000h and DI is 0012h, or when the CPU is already in virtual 86 mode.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1201-1208",
+       "sha": "a6a13ec96388d4dce9dfece38463306a07f4a9de8c474f7c132fd70652045547"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7389",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7395",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7396",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1203",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1203",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1204",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1204",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1206",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x67/0xDE/0x01",
+   "name": "vcpi get pm interface",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE",
+      "0x01"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7398-7420"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The call gets the protected mode interface of the VCPI server.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7398",
+       "sha": "ff082e3d27497c7168afc8e5437ff826974388fb0c6ad6fddc6430fabe858e0b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in ES:DI",
+     "of": "doc",
+     "text": "ES:DI points to the 4K page table buffer.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7400",
+       "sha": "69158e7292bcea40bf650fe88c28ab451bc713dc9d5231ba839e6675d4496d38"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in DS:SI",
+     "of": "doc",
+     "text": "DS:SI points to three descriptor table entries in the GDT: the first becomes the code segment descriptor and the other two are for the main control program.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7401-7403",
+       "sha": "6dead0c31da7d2c4926264211f11a462c3b6cb261ea6d1dbb02adc2aaacf4091"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is 00h on success and nonzero on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7404",
+       "sha": "90e6e3887c43d4861563fa0df38d54774ce6d0ccd43abdbec7403a5d879e149f"
+      },
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7407",
+       "sha": "e4476c7da3cf7d982446cfbc529068af66dba6b3f6d68ccf034cf408f743ae20"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out DI",
+     "of": "doc",
+     "text": "On success, DI points to the first unused page table entry in the buffer.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7405",
+       "sha": "2f7ba7734b3cb172cf956447171aaa24343144382ee0146b463c353b0cd818fb"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "out EBX",
+     "of": "doc",
+     "text": "On success, EBX is the protected mode entry point.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7406",
+       "sha": "fd3bc073b82bf2c5200a631c750655c5d5e9d93dc16831d76c79fbeb2c219304"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The protected mode entry point may be called with AX=DE00h through DE05h and AX=DE0Ch.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7408-7410",
+       "sha": "612fd4380203df2966af2bb0975c8418bf2795d0811ab77585933d4d9b069779"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The handler reaches it by case 0xDE of its switch on AH, then case 0x01 of its switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1195",
+       "sha": "e4bd6ea5b1c29f110e6b59f4d5a89c409ccde05fa2c38cfd30d1dac3b6965fcc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1209",
+       "sha": "23df66bb1ca7b7c40f9724eb27c4c1abd25f5c6e85c6db73392d74b435452912"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "in ES:DI",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With no client page directory, the case writes an identity page table for the first megabyte except its last 4K page, which entry FFh maps to page 110h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1217-1226",
+       "sha": "121fe5e9776ccf3dd1a899b979565b3213ccf53cfc9b858144ad9406e4342763"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "in ES:DI",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case points the page frame's four entries at the EMS pages mapped there.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1230-1238",
+       "sha": "bc7f84b61709c15bcdc0c1671ebabb593c0ffda1293f072c3b984fdc4edc541f"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "in DS:SI",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case writes three descriptor table entries at DS:SI: the callback segment as a code segment, then two full-access segments.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1243-1254",
+       "sha": "1b5626b3e4224c9b907db3bf50d67e506e21492a90b074c917b43eb3010e275d"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The entry point returned is the VCPI callback that the EMS setup installs.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1256",
+       "sha": "fac0aebe3d4ae31d2c1c6a6e3209771db2378e28fad43ad31a4ed06fa4291623"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "2048",
+       "sha": "99bf58b5eb8d6d1e607e3c646908c887c9b6624593d8a97b3ef934b227939228"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7399",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7411",
+     "as": "see-also"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7413-7420",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1215",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1246-1254",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1257",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1241",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1256",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1212",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1214",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x67/0xDE/0x02",
+   "name": "vcpi max phys address",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE",
+      "0x02"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7422-7427"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The call gets the highest physical memory address.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7422",
+       "sha": "e110a384809ed640cd11898579395a431c133785f093ed708dfbd37c230a2b94"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is 00h on success and nonzero on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7424",
+       "sha": "90e6e3887c43d4861563fa0df38d54774ce6d0ccd43abdbec7403a5d879e149f"
+      },
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7426",
+       "sha": "c26cc885d5b8332adfe774e10b6cea095bc2d44464782b2633f8a16aae6ba362"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out EDX",
+     "of": "doc",
+     "text": "On success, EDX is the physical address of the highest 4K memory page.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7425",
+       "sha": "4ba6e61ac4f8d44bbdd558f89b405c88419668174422b66a05312a1983a32961"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The handler reaches it by case 0xDE of its switch on AH, then case 0x02 of its switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1195",
+       "sha": "e4bd6ea5b1c29f110e6b59f4d5a89c409ccde05fa2c38cfd30d1dac3b6965fcc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1260",
+       "sha": "530e5078890764af41cf8fd7f9c98a1d088aa4d3be64d53fbbafad98530854ee"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7423",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7427",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1262",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1261",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x67/0xDE/0x03",
+   "name": "vcpi free page count",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE",
+      "0x03"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7429-7437"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The call gets the number of free 4K pages.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7429",
+       "sha": "07dfb5e97c8f16b8f645737431746b5f4d16014525da1ad1b9a8f2f3a6684b55"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is 00h on success and nonzero on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7431",
+       "sha": "90e6e3887c43d4861563fa0df38d54774ce6d0ccd43abdbec7403a5d879e149f"
+      },
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7433",
+       "sha": "c26cc885d5b8332adfe774e10b6cea095bc2d44464782b2633f8a16aae6ba362"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out EDX",
+     "of": "doc",
+     "text": "On success, EDX is the number of free 4K pages.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7432",
+       "sha": "239cb427a038ec8379982593f528e460b62d6a60aae5c352245fea59fe5f1ba7"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The count covers the pages available to all tasks in the system.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7434",
+       "sha": "2daae845281f34adfd6c3247384a3778465430f2303991836139947ad168832f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The function is also available in protected mode through the protected mode entry point.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7435-7436",
+       "sha": "501c045d936bf7bee5db72d2b317c2dfaa96259b75cf452ee6c28da51b3e580e"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The handler reaches it by case 0xDE of its switch on AH, then case 0x03 of its switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1195",
+       "sha": "e4bd6ea5b1c29f110e6b59f4d5a89c409ccde05fa2c38cfd30d1dac3b6965fcc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1264",
+       "sha": "23a7073ed53020315ff426a6e6a54ea83f88b1b8e2ef343249e818d255636785"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7430",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7437",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1266",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1265",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x67/0xDE/0x04",
+   "name": "vcpi allocate page",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE",
+      "0x04"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7439-7448"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The call allocates a 4K page.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7439",
+       "sha": "240ff063b748802029dfb951e518f45cc656c493dfc7dbef42fcd8fbe17d3070"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is 00h on success and nonzero on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7441",
+       "sha": "90e6e3887c43d4861563fa0df38d54774ce6d0ccd43abdbec7403a5d879e149f"
+      },
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7443",
+       "sha": "c26cc885d5b8332adfe774e10b6cea095bc2d44464782b2633f8a16aae6ba362"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out EDX",
+     "of": "doc",
+     "text": "On success, EDX is the physical address of the allocated page.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7442",
+       "sha": "92e98439b21ff218004a4d3cec2661eb5d647f3c6665f3ca4a6fc9144bdd0fc0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The client program is responsible for freeing all memory allocated with this call before terminating.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7444-7445",
+       "sha": "efcbbe4630c52e904ca692822701bfa52a67e799e06e6dc29e5ea9b914913973"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The function is also available in protected mode through the protected mode entry point.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7446-7447",
+       "sha": "501c045d936bf7bee5db72d2b317c2dfaa96259b75cf452ee6c28da51b3e580e"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The handler reaches it by case 0xDE of its switch on AH, then case 0x04 of its switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1195",
+       "sha": "e4bd6ea5b1c29f110e6b59f4d5a89c409ccde05fa2c38cfd30d1dac3b6965fcc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1268",
+       "sha": "b1079522907e74701782c11b501c15c2449dcf4ef8404767a4751e28b942e5de"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When no page can be allocated, the case stores EMM_OUT_OF_LOG in AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1273-1274",
+       "sha": "b601a392f2f1e34e679d3d966745217c71a3624cd033e1e099401aafc8b10d3e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7440",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7448",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1272",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1274",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1271",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1270",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x67/0xDE/0x05",
+   "name": "vcpi free page",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE",
+      "0x05"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7450-7458"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The call frees a 4K page.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7450",
+       "sha": "4df2bc92ca3582e9edf87b13a66023b64726471f2d7c00a24683d865e4dceae1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in EDX",
+     "of": "doc",
+     "text": "EDX is the physical address of the 4K page.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7452",
+       "sha": "3f5df52459121f6aaaba655e676f4382e1c143d3044633f69207b6f073355f07"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is 00h on success and nonzero on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7453-7455",
+       "sha": "d336ef1ec7e9cfd1285d22a8b09d24aa539249aed8260d1ac0631208d949742c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The function is also available in protected mode through the protected mode entry point.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7456-7457",
+       "sha": "4d59b482a99140e4e3927806dc265161239c8c31fed6cbf213aa867ffc10f9dc"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The handler reaches it by case 0xDE of its switch on AH, then case 0x05 of its switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1195",
+       "sha": "e4bd6ea5b1c29f110e6b59f4d5a89c409ccde05fa2c38cfd30d1dac3b6965fcc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1278",
+       "sha": "fabe3521cc3ef08dbc1b051a95ac0220c2362bdf51b14a6ebfcaf25439e63c1f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7451",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7458",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1279",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1280",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x67/0xDE/0x06",
+   "name": "vcpi page phys address",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE",
+      "0x06"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7460-7467"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The call gets the physical address of a page in the first megabyte.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7460",
+       "sha": "57b57ea32ed4300e6f1a612cf567b9902efdf16b4d7526a813f9f11ef266a5f8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in CX",
+     "of": "doc",
+     "text": "CX is the page number, the linear address shifted right 12 bits.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7462",
+       "sha": "fa5014ff7e9a0ef1c5758cdd737a26455ed15230538e25ee8d7a3f58fc369144"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is the status: 00h on success and nonzero for an invalid page number.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7463-7464",
+       "sha": "7cbaff7318f85e8f8d5e6a79ede2f5603cf6e4548c5b3885ee8891a70458c1c4"
+      },
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7466",
+       "sha": "ad2b4121e721521bcad15f5c60117869551ef0fde40f89aeb59dd9765e322f85"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out EDX",
+     "of": "doc",
+     "text": "On success, EDX is the physical address of the page.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7465",
+       "sha": "9b9e3f73e2231f8b31de2f33df3078dec0e8d3485da4047e6dac07409d91f729"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The list recommends 8Bh for an invalid page number.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7466",
+       "sha": "ad2b4121e721521bcad15f5c60117869551ef0fde40f89aeb59dd9765e322f85"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The handler reaches it by case 0xDE of its switch on AH, then case 0x06 of its switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1195",
+       "sha": "e4bd6ea5b1c29f110e6b59f4d5a89c409ccde05fa2c38cfd30d1dac3b6965fcc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1282",
+       "sha": "6ebdef14612daa9f2e289ba87aba409e9b082ac48b68a953eafc4b0b2fd29a48"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "in CX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Inside the page frame, the case picks the mapped page by the quarter of the frame that CX addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1287-1291",
+       "sha": "889c2f7766720d630449fb2ec79216794c109b5f21703327f6dfad129a7de5a8"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out AH",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When that quarter holds no mapped page, the case stores EMM_ILL_PHYS in AH.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1292-1295",
+       "sha": "1e87c04c07ee81e6f65cee0567a59d332e76f07f7661b3576f0f9f38c682e2de"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out EDX",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Outside the page frame, the case returns CX shifted left 12 bits, with no test of the page.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1302-1304",
+       "sha": "04f2d44e21620b9b9b6b51226c6ab9cbfeaf88e2ae087c425ad6fe86229443e0"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7461",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7467",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1287-1288",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1294",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1307",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1300",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1304",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1283",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1296",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x67/0xDE/0x07",
+   "name": "vcpi read cr0",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE",
+      "0x07"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7469-7473"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The call reads control register 0.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7469",
+       "sha": "5f5eb2062f26d11f172b3fa747989e002e32cda2b1eb7e38bab257a6e151044a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is 00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7471",
+       "sha": "4bf0de7b3c6a3020df4a8eeae07c3b7645c0790b13d9653d915d29936e9b448a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out EBX",
+     "of": "doc",
+     "text": "EBX is the value of control register 0.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7472",
+       "sha": "e69e7dc5af94d1123e3494762e7cfbd8e7404adb83742db6c34cb357f28c0f11"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The handler reaches it by case 0xDE of its switch on AH, then case 0x07 of its switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1195",
+       "sha": "e4bd6ea5b1c29f110e6b59f4d5a89c409ccde05fa2c38cfd30d1dac3b6965fcc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1310",
+       "sha": "f35f52ed9e4a3deec733bfa2ef696bbff68b142e23cc9e5990dec67f5236a6e5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7470",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7473",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1311",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1312",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x67/0xDE/0x0A",
+   "name": "vcpi get pic mappings",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE",
+      "0x0A"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7489-7496"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The call gets the 8259 interrupt vector mappings.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7489",
+       "sha": "dc787a16ec2459f3a8010a67ed39956d238cd1c9c4293a8c47abecb10677bb46"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is 00h on success and nonzero on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7491",
+       "sha": "90e6e3887c43d4861563fa0df38d54774ce6d0ccd43abdbec7403a5d879e149f"
+      },
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7494",
+       "sha": "c26cc885d5b8332adfe774e10b6cea095bc2d44464782b2633f8a16aae6ba362"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "out BX",
+     "of": "doc",
+     "text": "On success, BX is the first vector used by the master 8259 (IRQ0).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7492",
+       "sha": "de9cf45fc8da1d28adcbc23ac65219513b2428f8e4142b0884eb508a9b2b98eb"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out CX",
+     "of": "doc",
+     "text": "On success, CX is the first vector used by the slave 8259 (IRQ8).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7493",
+       "sha": "0d7a7e7f4dfca786b1d848380d7ab1ec1e391c37556a3f9cba498731bbf7d404"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "CX is undefined in systems without a slave 8259.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7495",
+       "sha": "2f15859137a338dfcfea95de7f250111540a6db6e233d56337c98bffc1f270a9"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The handler reaches it by case 0xDE of its switch on AH, then case 0x0A of its switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1195",
+       "sha": "e4bd6ea5b1c29f110e6b59f4d5a89c409ccde05fa2c38cfd30d1dac3b6965fcc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1314",
+       "sha": "bb1580181fbc065d202e7b8f129500fe69efa75f52ac3c864d1f5e1e04419797"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "VCPI setup stores 08h as the master PIC base and 70h as the slave PIC base.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1725-1726",
+       "sha": "a6a8552f69b5431bf23cbdabf816bbcdc1ff5f8f75d8556738791a5325adb8c2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7490",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7496",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1317",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1315",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1316",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1321-1322",
+     "as": "parent",
+     "owner": "ibm-pc:call:0x67/0xDE/0x0B"
+    }
+   ]
+  },
+  {
+   "key": "0x67/0xDE/0x0B",
+   "name": "vcpi set pic mappings",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE",
+      "0x0B"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7498-7509"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The call sets the 8259 interrupt vector mappings.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7498",
+       "sha": "ae6c028762f2da02c2fd1daa4e0810c6955e4683ad4c725d679ef41d8cee3cdb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in BX",
+     "of": "doc",
+     "text": "BX is the first vector used by the master 8259.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7500",
+       "sha": "8db8701a80301f57770eeb4764ce615efce1220398b232312286f95a8dc8f5e2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in CX",
+     "of": "doc",
+     "text": "CX is the first vector used by the slave 8259.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7501",
+       "sha": "f7dcd24a1af3e85baa826f1140088c9318fda74e5642d728a64aed083fb80309"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "The call is made with interrupts disabled.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7502",
+       "sha": "0a35f032e5f6d341f1ede0f085d6b1462c6a7ec324b2e44474560823e8523727"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out AH",
+     "of": "doc",
+     "text": "AH is 00h on success and nonzero on failure.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7503-7504",
+       "sha": "9dd42bb04ec50a3e3d0e96c117fc62ea28493b1ff72e02e5b40960f1b3d7a791"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The call only informs the server of a client's change; a client may not change mappings the server or another client changed, and must restore the originals before terminating.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7505-7508",
+       "sha": "a8dbdea08ef2a8e29055b7331b1b2feecc957fd6a46c161a1e3b7624dc090edf"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The handler reaches it by case 0xDE of its switch on AH, then case 0x0B of its switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1195",
+       "sha": "e4bd6ea5b1c29f110e6b59f4d5a89c409ccde05fa2c38cfd30d1dac3b6965fcc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1319",
+       "sha": "fe3f8b5d7dd25b48bb08dc96c0460d72d2067169137ad86931ec4d4e48134d9b"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case clears the interrupt flag itself before storing the mappings.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1320",
+       "sha": "6dadfce921b5084e3131f05239f5daf825ebab226282c6dbdc7e1f3191adc6aa"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "VCPI setup stores 08h as the master PIC base and 70h as the slave PIC base.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1725-1726",
+       "sha": "a6a8552f69b5431bf23cbdabf816bbcdc1ff5f8f75d8556738791a5325adb8c2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7499",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7509",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1321",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1322",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1323",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x67/0xDE/0x0C",
+   "name": "vcpi switch to pmode",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "function": "INT67_Handler",
+     "case": [
+      "0xDE",
+      "0x0C"
+     ]
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7511-7548"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The call switches from virtual 86 mode to protected mode.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7511",
+       "sha": "ae3cb1a628191fd767c4c373c4d88dfa3dff79f1f1d2ba45b20714006964ae53"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in ESI",
+     "of": "doc",
+     "text": "ESI is the linear address in the first megabyte of the values for the system registers.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7513-7514",
+       "sha": "448894780f2bf842483014fa5de1a30ef1fb7ba5912f68152741ca5e60f2c9d3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The call is made with interrupts disabled.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7515",
+       "sha": "0a35f032e5f6d341f1ede0f085d6b1462c6a7ec324b2e44474560823e8523727"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The call returns with interrupts disabled.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7516",
+       "sha": "b59e3938b3898279aa5460d708f8d2e8ef1b1f28e4480fa03f1dc20502f04967"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "does",
+     "of": "doc",
+     "text": "The call loads GDTR, IDTR, LDTR and TR.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7517",
+       "sha": "198e0fcce37e9b21b5e71f5ef5f07848364fb1f3427c8a10ae1ac2793cc722d8"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "SS:ESP must have at least 16 bytes of space, and the entry point is required to set up a new stack before enabling interrupts.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7518-7519",
+       "sha": "69f19807a24b043a329fe4c8bc53aa3be1146610104d0a8f25bb801e9a4dc84e"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "out DS",
+     "of": "doc",
+     "text": "The call destroys DS, ES, FS and GS.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7520",
+       "sha": "41553d84d22614d20b5f589a72d91706cd20c0cc0079f2a167ffe54f1ad3fc75"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "out EAX",
+     "of": "doc",
+     "text": "The call destroys EAX and ESI.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7520",
+       "sha": "41553d84d22614d20b5f589a72d91706cd20c0cc0079f2a167ffe54f1ad3fc75"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "Calling the protected mode entry point with AX=DE0Ch and the registers and stack the note lists switches to virtual 86 mode.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7521-7529",
+       "sha": "dc1e777f7edfe9aec156e85b25a72e055be5355e464d3933065a8170f462bac3"
+      },
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7530-7538",
+       "sha": "9bd2e5d573f27a97b2adea524bcd374b46a5ea46df990fc15b06bf17de81079e"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "The block at ESI holds CR3 at 00h, linear addresses of the GDTR and IDTR values at 04h and 08h, LDTR at 0Ch, TR at 0Eh and CS:EIP at 10h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.P",
+       "lines": "7543-7548",
+       "sha": "55cb44992cb1121334889b03bca1e53d6113a5e5e4a3c72792aab5b27b2e6c7e"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The handler reaches it by case 0xDE of its switch on AH, then case 0x0C of its switch on AL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1006",
+       "sha": "6a131f87ecf4a872048593bcf302841c3f229aac906ccdcc8ee1667edb20f9e4"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1195",
+       "sha": "e4bd6ea5b1c29f110e6b59f4d5a89c409ccde05fa2c38cfd30d1dac3b6965fcc"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1199",
+       "sha": "f83e2c31f49d8b82efaeb657ccabdabfba44101711c22400b9d119704ae089c9"
+      },
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1325",
+       "sha": "97a5d9dfbbb721c217c8c0081c5d0273a8d2cac77304f7959b3fc74a2c5f5a9e"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case clears the interrupt flag itself before loading the tables.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1326",
+       "sha": "6dadfce921b5084e3131f05239f5daf825ebab226282c6dbdc7e1f3191adc6aa"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "13",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The case frees the task state segment's busy bit in the GDT before loading TR.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1351-1353",
+       "sha": "eb743db2984f21f93d5d7c7070e4d83d061d21792e544406789d121da831fb0b"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Before the jump, the case clears the VM and NT flags and sets bits 12 and 13 of the flags.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1369-1370",
+       "sha": "7482c0fd2bb36e28ba63f99fe9c6e1ff3afd4517c384521d74b9a17a55e05a33"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The case jumps to the protected mode entry point instead of returning to the caller.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1371",
+       "sha": "67fc8312cd9ca24b8152418cc88009c75d43dfd769d5ef42329efc288c5822be"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "16",
+     "on": "out EAX",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "The case writes neither EAX nor ESI.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/ints/ems.cpp",
+       "lines": "1325-1373",
+       "sha": "b93c8d0b8e9bef5d0c4c5c69278b5d88044922e988aebb9006b440c52fa85f8a"
+      }
+     ],
+     "row": "8"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7512",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7539",
+     "as": "see-also"
+    },
+    {
+     "ref": "rbil61:INTERRUP.P",
+     "lines": "7541-7542",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1348-1349",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1356-1359",
+     "as": "unfollowed",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1361-1364",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/ints/ems.cpp",
+     "lines": "1347",
+     "as": "structure"
+    }
+   ]
   }
  ]
 }

@@ -11608,6 +11608,11 @@
        "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
        "lines": "915",
        "sha": "7bf2569c45adcd420d0d1723d68331b96ac0556c6342a54d9dc095121a00f364"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "939",
+       "sha": "8c9bae7b998ee1777da388aa8ecf7598c5c5ab1968edd4dc6de53fcaf955d841"
       }
      ]
     },
@@ -11615,14 +11620,19 @@
      "n": "26",
      "on": "out SI:DI",
      "of": "dosbox-x",
-     "vs": "absent",
+     "vs": "differs",
      "row": "23",
-     "text": "The canonical structure has no file version number at 3Eh: the write is 0x40 bytes long.",
+     "text": "The 0x40-byte write sends bytes 3Eh and 3Fh from an uninitialized buffer, so no file version number is stored there and the field carries whatever the buffer held.",
      "quotes": [
       {
        "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
-       "lines": "908-926",
-       "sha": "c4982a93c98f4ab33618ea5772ba772c42fe94b293fc7aa3bee6f52d67ce4830"
+       "lines": "911",
+       "sha": "386b8879d522df9e834b148db95a91bd197a46f801509a6d329cd87be0cc684e"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "924-925",
+       "sha": "f96ab4ab2d9088a244091af861fb31298dbd204cd38ae3dd4886896f67123880"
       }
      ]
     },
@@ -11638,6 +11648,46 @@
        "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
        "lines": "908-926",
        "sha": "c4982a93c98f4ab33618ea5772ba772c42fe94b293fc7aa3bee6f52d67ce4830"
+      }
+     ]
+    },
+    {
+     "n": "28",
+     "on": "in ES:BX",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "The name is read as a length-prefixed string, the byte at ES:BX giving its length and the name starting at the next byte, not as an ASCIZ name.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "842",
+       "sha": "cd62dac8bdcfe641af54b1fe79f33eef9a9cae5fb1b151bb875c2d4c93dcbccd"
+      }
+     ]
+    },
+    {
+     "n": "29",
+     "on": "out SI:DI",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "22",
+     "text": "The 38 bytes at 18h come from readBuf[21] of the directory record, not the name at 33, at most min(name length, 38) of them, with no NUL or fill.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "890",
+       "sha": "6541871c2803ebc0d12286351f1321b548c02cfdee9fb63d6030f79fdd58326b"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "911",
+       "sha": "386b8879d522df9e834b148db95a91bd197a46f801509a6d329cd87be0cc684e"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "924",
+       "sha": "e6f44c73fbd4eb911180b32aaa2525d304559be0708b97070515e20b1659b60d"
       }
      ]
     }
@@ -11707,12 +11757,6 @@
      "ref": "rbil61:INTERRUP.K",
      "lines": "6181",
      "as": "see-also"
-    },
-    {
-     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
-     "lines": "1485",
-     "as": "agrees",
-     "row": "4"
     },
     {
      "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
@@ -11843,13 +11887,350 @@
     },
     {
      "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
-     "lines": "925",
-     "as": "agrees",
-     "row": "22"
+     "lines": "930-932",
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
-     "lines": "930-932",
+     "lines": "1566",
+     "as": "agrees",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "916-925",
+     "as": "agrees",
+     "row": "18"
+    }
+   ]
+  },
+  {
+   "key": "0x2F/0x15/0x10",
+   "name": "cdrom driver request",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "function": "MSCDEX_Handler",
+     "case": [
+      "0x1510"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1485-1487"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "function": "CMscdex::SendDriverRequest"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "6183-6201"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "INT 2Fh AX=1510h sends a device driver request, a CD-ROM v2.10 and later call.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "6183",
+       "sha": "cd7e7f233112a88d597524a1d60d709c94e1be8bb214ce71685c15da3d314ae1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "in CX",
+     "of": "doc",
+     "text": "CX is the CD-ROM drive letter, 0 for A and 1 for B.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "6185",
+       "sha": "76d7367cd7f3f424adab4e62b21671851e72490eaae3b2e6ead3119794e3b883"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "in ES:BX",
+     "of": "doc",
+     "text": "ES:BX points to a CD-ROM device driver request header, described at AX=0802h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "6186",
+       "sha": "ec68318a1a2867e5a6a53682b961fe69591c312841997532163f1a9295d068e7"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is clear if the device driver has been called; the request header at ES:BX tells whether an error occurred and is updated.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "6187-6189",
+       "sha": "ff6c8e32ccc70630e2d74dab7d85d5efa682baa9c612915739919a86fc8df704"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "out CF",
+     "of": "doc",
+     "text": "CF is set if the device driver has not been called, with AX the error code (000Fh invalid drive, 0001h invalid function) and the header unchanged.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "6190-6192",
+       "sha": "9e7dafd90b9ef1726a8de616f8d607b677fd4af29f3a7b6dfdd94881102170ee"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "does",
+     "of": "doc",
+     "text": "MSCDEX initializes the request header's subunit field from the drive number in CX.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "6193-6194",
+       "sha": "842945e1777e90887ba99b532b893d678bcc2c4ee8e98d451f20d9c84094cc4d"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "does",
+     "of": "doc",
+     "text": "MSCDEX v2.21 through v2.25, at least, return error code AX=0001h if nested calls are attempted.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.K",
+       "lines": "6195-6196",
+       "sha": "adc2be935da8528dbb52721723f04717a24e8c42467ce7b6d9868aa3a9de01f1"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The MSCDEX handler reaches it by its case 0x1510.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "1488",
+       "sha": "2489483b6b591e92e0ca367767ff317ac764b45f1ad08bcb0a3f030e87a5dd34"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "1570",
+       "sha": "eeb8ce7348503f36812c12fd2d8782ba6a0ed4d2347afbb359ac55752d9f2d11"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "CF is cleared and the status word written; an unknown function is logged as unsupported and reported done, though the drive's first request reports the error.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "1487",
+       "sha": "d21f85287d71bb3f0e43903023d7c0a38bf40b72336a3c5c472083ef9546d126"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "1452-1458",
+       "sha": "751f057bd21ef0a4ff326403d84570bcc8ee73c95cea485364810fde955a6225"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "1035-1036",
+       "sha": "8cb4fd9a483271321cd87d3ce35861a8f2cc3e8f1ac6cc8ed49b879c09fcc7e4"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "1050",
+       "sha": "4e0f7f1448860c0bc7d13d160d9b2401a8a635c0e2b42a0963361b292e9e612e"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "359",
+       "sha": "6c1511551562bac3db7257ba02192a14c926bdc8ed62fa917abc7eae89c456e6"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "7",
+     "text": "No nesting is counted: every request for a valid drive is sent, and only an unknown drive sets CF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "1019-1027",
+       "sha": "d83caaac81bdcb0196072d073ae94bcc937f26df2745a46f01114b02a8793316"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "1570-1575",
+       "sha": "8b21ab06dddc271e0f7da461bdea9b31e8177a698dd858bee81271e9981bfbf7"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "out CF",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "CF is set with 0x0F in AX for an unknown drive; the invalid function code 0x01h is never stored, and the header is left unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "1020-1021",
+       "sha": "1c295fd1556f30dc48594aa7d6255e9c918216beebbaf481da2ca1016aba5cbb"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "1571-1574",
+       "sha": "3e69fc33d4b1ecd21f641e25021655d3fc0c93921fe97002ef4aee10d7db306a"
+      },
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "461",
+       "sha": "74a4635fe40398642d63f47bda3bcb312e6cd9f721f13cbe63c39f4eee642904"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The request is dispatched to callbacks that DOSBox-X installs in its own emulated device header.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "554-563",
+       "sha": "f6610662714999439c1f6888d0c154224e992addd076f92dd8bbcdfa6816a7b1"
+      },
+      {
+       "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+       "lines": "1025-1026",
+       "sha": "b36b47ca97b80fc8f1b3c0a410b97cda99018aec876294c2af89aba478b67922"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "6184",
+     "as": "key"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "6197-6198",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "6199-6200",
+     "as": "version"
+    },
+    {
+     "ref": "rbil61:INTERRUP.K",
+     "lines": "6201",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1571",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1485",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1023",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1487",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1466-1483",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1469",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1474",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1477",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1479",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1570-1575",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1021",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1026",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/dos/dos_mscdex.cpp",
+     "lines": "1027",
      "as": "structure"
     }
    ]
