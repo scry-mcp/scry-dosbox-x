@@ -2,14 +2,67 @@
  "format": "scry-knowledge/2",
  "dictionary": "dos-errors",
  "kind": "error",
- "title": "DOS extended error codes 1 to 10",
+ "title": "DOS extended error codes",
  "scope": "ibm-pc",
- "covers": "DOS extended error codes 1 to 10, from the list's table of extended error codes.",
+ "covers": "DOS extended error codes, from the list's table of extended error codes.",
  "source": "official",
  "entries": [
   {
+   "key": "0",
+   "name": "no error",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8139"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "445"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 2.0+\", code 00h (0) is listed as \"no error\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8139",
+       "sha": "6677fbe0bc177f1952a709b4025b076c677b36896f3192e92ec1ff787e0afb8a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_NONE, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "445",
+       "sha": "98d4f3d62df1c61d061b8f69a5f75f0e4e518675af92816a1d48972508981240"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
    "key": "1",
-   "name": "function invalid",
+   "name": "invalid function",
    "regions": [
     {
      "ref": "rbil61:INTERRUP.G",
@@ -29,7 +82,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "In the DOS 2.0 table of extended error codes, code 01h (1) is function number invalid.",
+     "text": "Under the heading \"DOS 2.0+\", code 01h (1) is listed as \"function number invalid\".",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -82,7 +135,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "In the DOS 2.0 table of extended error codes, code 02h (2) is file not found.",
+     "text": "Under the heading \"DOS 2.0+\", code 02h (2) is listed as \"file not found\".",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -135,7 +188,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "In the DOS 2.0 table of extended error codes, code 03h (3) is path not found.",
+     "text": "Under the heading \"DOS 2.0+\", code 03h (3) is listed as \"path not found\".",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -188,7 +241,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "In the DOS 2.0 table of extended error codes, code 04h (4) is too many open files, no handles available.",
+     "text": "Under the heading \"DOS 2.0+\", code 04h (4) is listed as \"too many open files (no handles available)\".",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -241,7 +294,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "In the DOS 2.0 table of extended error codes, code 05h (5) is access denied.",
+     "text": "Under the heading \"DOS 2.0+\", code 05h (5) is listed as \"access denied\".",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -294,7 +347,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "In the DOS 2.0 table of extended error codes, code 06h (6) is invalid handle.",
+     "text": "Under the heading \"DOS 2.0+\", code 06h (6) is listed as \"invalid handle\".",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -327,7 +380,7 @@
   },
   {
    "key": "7",
-   "name": "mcb destroyed",
+   "name": "memory block destroyed",
    "regions": [
     {
      "ref": "rbil61:INTERRUP.G",
@@ -347,7 +400,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "In the DOS 2.0 table of extended error codes, code 07h (7) is memory control block destroyed.",
+     "text": "Under the heading \"DOS 2.0+\", code 07h (7) is listed as \"memory control block destroyed\".",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -400,7 +453,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "In the DOS 2.0 table of extended error codes, code 08h (8) is insufficient memory.",
+     "text": "Under the heading \"DOS 2.0+\", code 08h (8) is listed as \"insufficient memory\".",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -453,7 +506,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "In the DOS 2.0 table of extended error codes, code 09h (9) is memory block address invalid.",
+     "text": "Under the heading \"DOS 2.0+\", code 09h (9) is listed as \"memory block address invalid\".",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -506,7 +559,7 @@
      "n": "1",
      "on": "is",
      "of": "doc",
-     "text": "In the DOS 2.0 table of extended error codes, code 0Ah (10) is environment invalid, usually over 32K in length.",
+     "text": "Under the heading \"DOS 2.0+\", code 0Ah (10) is listed as \"environment invalid (usually >32K in length)\".",
      "quotes": [
       {
        "ref": "rbil61:INTERRUP.G",
@@ -531,6 +584,6974 @@
        "ref": "dosbox-x:include/dos_inc.h",
        "lines": "455",
        "sha": "ea8e917077bff7f911f12216700de786810226f06b3295da8fc7a293470c6093"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "11",
+   "name": "invalid format",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8150"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "456"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 2.0+\", code 0Bh (11) is listed as \"format invalid\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8150",
+       "sha": "991065472adce367cc800229989aae6257888defa521dac13e9d3204ddd888a1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_FORMAT_INVALID, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "456",
+       "sha": "492b380402e46a69af03334d055cc3325fe82db4f19af90b9bdaf247c36ea625"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "12",
+   "name": "invalid access code",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8151"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "457"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 2.0+\", code 0Ch (12) is listed as \"access code invalid\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8151",
+       "sha": "742ddc58527f171c69e92072c5757c1cbb0592bccae9dd501920de975d0d6754"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_ACCESS_CODE_INVALID, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "457",
+       "sha": "f19f90776423675e158dca5cedfe88eae32700ab00c37fe84d0a982927c4593b"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "13",
+   "name": "invalid data",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8152"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "458"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 2.0+\", code 0Dh (13) is listed as \"data invalid\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8152",
+       "sha": "0c1aae8c8b83215b2f3457d55ff31103ab24eb1710ab39501527b86ac3611241"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_DATA_INVALID, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "458",
+       "sha": "e9bf0a947d2b4e10c9cc6e1a1454d22772f67fbad8940ab66ccd2a9b81c86222"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "14",
+   "name": "reserved",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8153"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8154"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "459-460"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 2.0+\", code 0Eh (14) is listed as \"reserved\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8153",
+       "sha": "8d8a02d867301f6a6079ccb063258da86ab60ce02875001417a971c1b44838bb"
+      }
+     ],
+     "state": "undetermined"
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the value 14 both DOSERR_RESERVED and DOSERR_FIXUP_OVERFLOW.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "459-460",
+       "sha": "eb9bc2869d7e0a5982812b733181fa44892e57ec67e0165fc01486f1a76f36f2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8154",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "15",
+   "name": "invalid drive",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8155"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "461"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 2.0+\", code 0Fh (15) is listed as \"invalid drive\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8155",
+       "sha": "60df00049044942796e74416d8ea0598ec54759107f96d5dfe511a2ebd1125f6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_INVALID_DRIVE, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "461",
+       "sha": "74a4635fe40398642d63f47bda3bcb312e6cd9f721f13cbe63c39f4eee642904"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "16",
+   "name": "remove current dir",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8156"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "462"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 2.0+\", code 10h (16) is listed as \"attempted to remove current directory\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8156",
+       "sha": "8bf11b6e5128b2fbc3c7ef7ed8ffd81bfdbb21cf5921e5b6d07983dc63112d47"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_REMOVE_CURRENT_DIRECTORY, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "462",
+       "sha": "c6c88319deab13aa23fdbae9ec1d8535194648a7feaea737728222b42ce3d0b6"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "17",
+   "name": "not same device",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8157"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "463"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 2.0+\", code 11h (17) is listed as \"not same device\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8157",
+       "sha": "32d9208eaa18c249b5f855789694ed6a0cff3a9c3e634742ee98a584328391c1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_NOT_SAME_DEVICE, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "463",
+       "sha": "2eb52022de00aae0399d6e0a3d12402211748b6d69b643f8ded19097c65ec245"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "18",
+   "name": "no more files",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8138"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8158"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "464"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 2.0+\", code 12h (18) is listed as \"no more files\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8138",
+       "sha": "807e05040abb916a8a44459650d640b4531415e64cae1f1cc1e274924a76f95e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8158",
+       "sha": "88d5e07c759fa8b802167859295b29ace61a64b607b42fc918e3e7398f56abbf"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_NO_MORE_FILES, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "464",
+       "sha": "9b3d2081a5349f958d9ab8cb23fd9a58ff06c4dd4a3466ae46c5a60bc9eee99b"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "19",
+   "name": "write protected",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8160"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "465"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 13h (19) is listed as \"disk write-protected\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8160",
+       "sha": "78160ce5661e58f75d05b170b0fb90f80df8ba03053ef809905aee29a82454a9"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_WRITE_PROTECTED, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "465",
+       "sha": "4faa1ccc5fbfdd956701d5be7df2799137d25c793597d05428b313bc8104f40a"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "20",
+   "name": "unknown unit",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8161"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 14h (20) is listed as \"unknown unit\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8161",
+       "sha": "e5ff8bcaf99945075346a498c5f603eff3434cc059bd8d3d7e1b75e1a9f2eab4"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "21",
+   "name": "drive not ready",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8162"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "466"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 15h (21) is listed as \"drive not ready\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8162",
+       "sha": "b190d19a61174d0139740e13074698f6134bbf7ed0d63fedd3a888508b3ff5c3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_DRIVE_NOT_READY, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "466",
+       "sha": "71b2374ff90e010d6bc2d52c62098370955cab68117cf291655bc5dab57a5c26"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "22",
+   "name": "unknown command",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8163"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 16h (22) is listed as \"unknown command\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8163",
+       "sha": "b90067168844c371352c9a73239589e90d6806212bbae1e17030d3e11b1a680d"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "23",
+   "name": "data error (crc)",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8164"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 17h (23) is listed as \"data error (CRC)\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8164",
+       "sha": "8130b03d0bc5ab91852314c25e6cef733fc9a6af69f96b49f22fd0c078595494"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "24",
+   "name": "bad request length",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8165"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 18h (24) is listed as \"bad request structure length\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8165",
+       "sha": "c3ddf6944e6a68239730bf071ea1a12c010c6269d2b10669e503a8a74fd3d793"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "25",
+   "name": "seek error",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8166"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 19h (25) is listed as \"seek error\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8166",
+       "sha": "448bb59c0774b51eeef1185094dfadd22a57ccbd00b7050eb360a009fc9675af"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "26",
+   "name": "unknown media type",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8167"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 1Ah (26) is listed as \"unknown media type (non-DOS disk)\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8167",
+       "sha": "26ba5d8f2d56237fbe0b1e50e499a713986591edb141f8f30e34beddede1beed"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "27",
+   "name": "sector not found",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8168"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 1Bh (27) is listed as \"sector not found\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8168",
+       "sha": "2b478be3edec520b235cf08465bd03eb7b9e5a078236d3247b2bee96ec4586db"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "28",
+   "name": "printer out of paper",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8169"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 1Ch (28) is listed as \"printer out of paper\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8169",
+       "sha": "529126afc50c46bfd52bee94fcff9450525f815b31f2b4196d698bc3aa87b4ff"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "29",
+   "name": "write fault",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8170"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 1Dh (29) is listed as \"write fault\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8170",
+       "sha": "744509d03c199f179a54d0cb1783205fbc002cb014c30415d64d5ce02d902d31"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "30",
+   "name": "read fault",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8171"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 1Eh (30) is listed as \"read fault\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8171",
+       "sha": "6cf60f10f3d97c4204e1ef5f64872abeb6187ef35d23f068381be9940f5ef4ea"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "31",
+   "name": "general failure",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8172"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 1Fh (31) is listed as \"general failure\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8172",
+       "sha": "618f462f60cf4d27192d6c4df45f3b41f9d725b2567baf654555ad567d68a33b"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "32",
+   "name": "sharing violation",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8173"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 20h (32) is listed as \"sharing violation\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8173",
+       "sha": "fdfd4898e3b6478dc8262d806711b905a7b48b5325bc3a5e7062d338e93c24f7"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "33",
+   "name": "lock violation",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8174"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 21h (33) is listed as \"lock violation\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8174",
+       "sha": "db5ff6cc1681d8c7b334c57762d721d578e4210f2276b3a9de8ada86fb4d5b5a"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "34",
+   "name": "invalid disk change",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8175"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 22h (34) is listed as \"disk change invalid\", with ES:DI pointing to a media ID structure (see #01681).",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8175",
+       "sha": "461c5bcf330fbf49d56f5ac443d556068e90920a761828b9c3704481faa0d383"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "35",
+   "name": "fcb unavailable",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8176"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8177"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 23h (35) is listed as \"FCB unavailable\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8176",
+       "sha": "10b3675fb967e169799c2a0efe829b8fb9b900790c5165b18d91433338f4a7ce"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8177",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "36",
+   "name": "sharing buffer overflow",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8178"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 24h (36) is listed as \"sharing buffer overflow\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8178",
+       "sha": "38469e0a11b1cf55a7291f85fe2da7e39872e13d6b110005b55f45b14d7d6fbb"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "37",
+   "name": "code page mismatch",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8179"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 25h (37) is listed as \"code page mismatch\", marked DOS 4.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8179",
+       "sha": "3a1e2ebd517362613a23b1d048b80f8eea5fabf11299cf1a1515b49a39f0912a"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "38",
+   "name": "cannot complete file op",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8180"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 26h (38) is listed as \"cannot complete file operation (EOF / out of input)\", marked DOS 4.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8180",
+       "sha": "1065cb029e5fe0716c295a9425c2a24a29bf46045230138b09cbe1720c984e8a"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "39",
+   "name": "insufficient disk space",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8159"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8181"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"DOS 3.0+ (INT 24 errors)\", code 27h (39) is listed as \"insufficient disk space\", marked DOS 4.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8159",
+       "sha": "fff93fd97f4eae7e0beda4d816e69735f9b24ee7e7c11b4bce82f6b82a374133"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8181",
+       "sha": "9c0331baf18bb14edcdb7b708e7b632a1bb488e3b7a15eb7fba12e13745927d2"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "50",
+   "name": "net request unsupported",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8184"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 32h (50) is listed as \"network request not supported\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8184",
+       "sha": "8b182896ec35b310c228ab998ee072bab1e37fd75a5e0fe020d17ac9187f54b2"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "51",
+   "name": "remote not listening",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8185"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 33h (51) is listed as \"remote computer not listening\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8185",
+       "sha": "c20829f72d2fe27327f2ca94eb3cee313110beb84c18f3b6fbeed157ece2770e"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "52",
+   "name": "duplicate net name",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8186"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 34h (52) is listed as \"duplicate name on network\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8186",
+       "sha": "5c6d55167e82bf28c18228e56f58ec28700466ccc0da2636dc70f5be08cd4553"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "53",
+   "name": "net name not found",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8187"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 35h (53) is listed as \"network name not found\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8187",
+       "sha": "5bebbebdc7f201b297dfa9624a22456b8623e0e09bc467cb424e491d0bb8f9e3"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "54",
+   "name": "network busy",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8188"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 36h (54) is listed as \"network busy\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8188",
+       "sha": "57c9f6ded3dbc4c16719b791ac6ab645d3a946a7f494f9235152d429197ae8ee"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "55",
+   "name": "net device gone",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8189"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 37h (55) is listed as \"network device no longer exists\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8189",
+       "sha": "6da505db8a0284e3a245033a0d284e0ae70899fa058c8479df26f406d661950b"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "56",
+   "name": "netbios limit exceeded",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8190"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 38h (56) is listed as \"network BIOS command limit exceeded\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8190",
+       "sha": "f491c0ca6f49ec8d97bc190a8c91e856c958ffad972b482a9f1a1c4b19f83d70"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "57",
+   "name": "net adapter hw error",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8191"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 39h (57) is listed as \"network adapter hardware error\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8191",
+       "sha": "3895ccfd991dc7daa46b4fc1f3df15aedbe07dfb487ef00b0d04669cc05b9412"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "58",
+   "name": "bad net response",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8192"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 3Ah (58) is listed as \"incorrect response from network\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8192",
+       "sha": "2eaec990ff0d52b7e1fbb8ad1d1bd1575b1fff2bf41caf35f4f7dabef6865e75"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "59",
+   "name": "unexpected net error",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8193"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 3Bh (59) is listed as \"unexpected network error\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8193",
+       "sha": "05bb2f3db3bf5cc26e418e3ab09c6871c1ba337353771fc95b0ec8bbbf7fe45e"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "60",
+   "name": "incompatible adapter",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8194"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 3Ch (60) is listed as \"incompatible remote adapter\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8194",
+       "sha": "da869945401e63edfba55577bc51c436d0c3dd434cbbfe716d05b4782efeb8da"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "61",
+   "name": "print queue full",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8195"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 3Dh (61) is listed as \"print queue full\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8195",
+       "sha": "2b234f45b2efd037dff5b620a8551d0c20bd2b021eb1d90c6759583b9ba3b3a0"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "62",
+   "name": "queue not full",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8196"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 3Eh (62) is listed as \"queue not full\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8196",
+       "sha": "d7f45ef22bdf40253f04cadeac7c2f8f0e7b55ac80e393384eefd03f23d90e2c"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "63",
+   "name": "no space to print file",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8197"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 3Fh (63) is listed as \"not enough space to print file\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8197",
+       "sha": "3e2d01ed1fdc45583d9e711e69a4b3a8824fd090d4079949cb96a28dad266883"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "64",
+   "name": "net name deleted",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8198"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 40h (64) is listed as \"network name was deleted\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8198",
+       "sha": "bdaa9c55347d61ceb338fae3021b529183a9468e16172e25e8c5f15ffc1ea08c"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "65",
+   "name": "net access denied",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8199"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8200"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8201"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 41h (65) is listed as \"network: Access denied\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8199",
+       "sha": "b7ad50df068292e1bd3ae2db1a708ff24965fc344a71e55ccf1ec7ad95f449fb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 41h (65) is also listed as \"codepage switching not possible\", marked DOS 3.0+ [maybe 3.3+???].",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8199-8200",
+       "sha": "8ba39fc4c41cba710a0c6e5966cf90ed0d13b580991a91aedfbef46dc246560c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8201",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "66",
+   "name": "net device type wrong",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8202"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 42h (66) is listed as \"network device type incorrect\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8202",
+       "sha": "b38ef78de4bb6809fdb559928d28a41d7401b5a0f4b0edfe6e66eab80e08c2fc"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "67",
+   "name": "net name not found",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8203"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 43h (67) is listed as \"network name not found\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8203",
+       "sha": "eaf3369f7bf003e34ace71d862c9a2e7ab977c0c5d25daaeb64dee8c513602b4"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "68",
+   "name": "net name limit",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8204"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 44h (68) is listed as \"network name limit exceeded\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8204",
+       "sha": "3daf961074e54b078fd16ce605c9ead57ea7cd64704fc6c7d52c01031f9ba05c"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "69",
+   "name": "net session limit",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8205"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 45h (69) is listed as \"network BIOS session limit exceeded\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8205",
+       "sha": "af381a1d4d21833b4afcce5fe7e1d898506d494d6c47002c5a4ba59ec32db89d"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "70",
+   "name": "temporarily paused",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8206"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 46h (70) is listed as \"temporarily paused\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8206",
+       "sha": "1e0dd78f2b7c2640e1c9faed50c23990449047c8fb6c99a9153d3a3053274aab"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "71",
+   "name": "request not accepted",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8207"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 47h (71) is listed as \"network request not accepted\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8207",
+       "sha": "91dadd5dcc01ff2e0c1a15521f2925c4e8daa3ab3a338c2211e71e8dc33009d1"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "72",
+   "name": "net redirect paused",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8208"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 48h (72) is listed as \"network print/disk redirection paused\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8208",
+       "sha": "6ec9f439bda01733c93db7ddccbbfb9e67564f7f9788df977d00ddeb323bfb35"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "73",
+   "name": "net software missing",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8209"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8210"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 49h (73) is listed as \"network software not installed\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8209",
+       "sha": "3c5e752dd4ec43c93d5272103b1ed1a80c059c3f0964ef8d1a94484b1e84ea7c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8210",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "74",
+   "name": "net adapter closed",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8211"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8212"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 4Ah (74) is listed as \"unexpected adapter close\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8211",
+       "sha": "4a6c78e6b492b88a25a808f8965f9f6ff47bcb396fe3b6653138167d3863f0b8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8212",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "75",
+   "name": "password expired",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8213"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 4Bh (75) is listed as \"password expired\", marked LANtastic.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8213",
+       "sha": "9d2e3dd5fadd0565a019e81c1f654e1a547735a9bc2cb80f3d19c81894299047"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "76",
+   "name": "login not allowed now",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8214"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 4Ch (76) is listed as \"login attempt invalid at this time\", marked LANtastic.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8214",
+       "sha": "3cef560de500eedfdf0c8b62b0c75461d2825e38081ef54e16ec1d836a2d3efb"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "77",
+   "name": "net disk limit",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8215"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 4Dh (77) is listed as \"disk limit exceeded on network node\", marked LANtastic v3+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8215",
+       "sha": "80130ff8be9aa6f682b6d6cd6813a24cace76706b5eef32e07dc8e18bd32140e"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "78",
+   "name": "not logged in",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8183"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8216"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"OEM network errors (INT 24)\", code 4Eh (78) is listed as \"not logged in to network node\", marked LANtastic v3+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8183",
+       "sha": "2367af443d49f92108b6600004982ba5af8f1fe8ddbef6b5bfe4aa6637dfcb50"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8216",
+       "sha": "b84ff75bdfac80f0982bfd01ce213f73292421f40168b30e393f57d9cf0df0f2"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "80",
+   "name": "file exists",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8219"
+    },
+    {
+     "ref": "dosbox-x:include/dos_inc.h",
+     "lines": "467"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Code 50h (80) is listed as \"file exists\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8219",
+       "sha": "f00ebdb7d67b38553e1981849957a0a8a3e1a11a021f68eeb715577a75a10828"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The emulator names the code DOSERR_FILE_ALREADY_EXISTS, with the same value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:include/dos_inc.h",
+       "lines": "467",
+       "sha": "5bc4a01d089878d99ae92be67f3338a336c7efabeed7b05ce20746a405ea7692"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "81",
+   "name": "duplicated fcb",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8220"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Code 51h (81) is listed as \"duplicated FCB\", marked undocumented.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8220",
+       "sha": "c6b9e3d8059606419c7773b712cfd2f07c984cc9e430d0452fcdb53a70e08b0c"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "82",
+   "name": "cannot make directory",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8221"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Code 52h (82) is listed as \"cannot make directory\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8221",
+       "sha": "ef649ea6591923e304ce4b848b64e1135dc8b4b651d6ac3cdb0f5c8c3d009f62"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "83",
+   "name": "fail on int 24h",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8222"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Code 53h (83) is listed as \"fail on INT 24h\".",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8222",
+       "sha": "637c322ce8ba2fbfea231f38096aa413b46e782f924441390cc2099c666d9a2f"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "84",
+   "name": "too many redirections",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8224"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 54h (84) is listed as \"too many redirections / out of structures\", marked DOS 3.3+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8224",
+       "sha": "64ed325fc4e4fa2b33f0d93e2fa39026fe234cde0f51e8abdcfa221b39b8eb6d"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "85",
+   "name": "duplicate redirection",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8225"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 55h (85) is listed as \"duplicate redirection / already assigned\", marked DOS 3.3+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8225",
+       "sha": "adb75c9e7d0361d622dd0dc0510cc38aa3ba740154aaf92e8ecf47f6e6ba86e6"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "86",
+   "name": "invalid password",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8226"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 56h (86) is listed as \"invalid password\", marked DOS 3.3+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8226",
+       "sha": "25e2b9cc1b7989796602794a3936202b07e17d807956e87265a1fce1c6e33d4b"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "87",
+   "name": "invalid parameter",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8227"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 57h (87) is listed as \"invalid parameter\", marked DOS 3.3+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8227",
+       "sha": "7bd36fd829a9276047b90242c6672f745fbb4cd8c80792c39eca9f7c88a6be8e"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "88",
+   "name": "network write fault",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8228"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 58h (88) is listed as \"network write fault\", marked DOS 3.3+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8228",
+       "sha": "8238d859501cc57956d10ea59aed6a32f46aae2d6285ef9bdf7638c2c2334272"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "89",
+   "name": "function unsupported",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8229-8230"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 59h (89) is listed as \"function not supported on network / no process slots available\", marked DOS 4.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8229-8230",
+       "sha": "c7fd0bee56d460a1389fc3cd82a9fd1327b6dc3198ee59601600b65bf2d71845"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "90",
+   "name": "component not installed",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8231"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 5Ah (90) is listed as \"required system component not installed / not frozen\", marked DOS 4.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8231",
+       "sha": "0e64c8bf39316a466dab9fb51d62b07c9df7eb5ac5874c2bc9bbe9a9604bbf15"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "91",
+   "name": "timer table overflow",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8232"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 5Bh (91) is listed as \"timer server table overflowed\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8232",
+       "sha": "4b996456a7d0497d7ec48569c47dacd6ed6f23558e32992d82c598800cb93471"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "92",
+   "name": "duplicate timer entry",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8233"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 5Ch (92) is listed as \"duplicate in timer service table\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8233",
+       "sha": "a487c7da33a2c04359ea9f504454148ab74f9c022b8ca6ae1c6ad7522c1ea358"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "93",
+   "name": "no items to work on",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8234"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 5Dh (93) is listed as \"no items to work on\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8234",
+       "sha": "1648c6c394339457aceade7b64d23394dabda2197608a7f25d11c766985e100c"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "95",
+   "name": "interrupted",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8235"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 5Fh (95) is listed as \"interrupted / invalid system call\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8235",
+       "sha": "d7f34765e5b243de7be1694323fa3ac3bbf3ad5c2e094ede8418ec3e0ffee697"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "100",
+   "name": "open semaphore limit",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8236"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8237"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 64h (100) is listed as \"open semaphore limit exceeded\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8237",
+       "sha": "24355275dbd8d320205761385dfcbded2ee1ad7104ebd00980bb3b60b491f6da"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8236",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "101",
+   "name": "semaphore already owned",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8238"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8239"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 65h (101) is listed as \"exclusive semaphore is already owned\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8239",
+       "sha": "e7d96a8fdbebbb04752ce24ac9da2aa84df221c1170352d9ad55ba71a284565f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8238",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "102",
+   "name": "semaphore set at close",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8240"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8241"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 66h (102) is listed as \"semaphore was set when close attempted\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8241",
+       "sha": "af4d813592c401887cb15caf76ffc00caf778685e6ebd210afac48324811b435"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8240",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "103",
+   "name": "too many excl semaphores",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8242"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8243"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 67h (103) is listed as \"too many exclusive semaphore requests\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8243",
+       "sha": "0482a25cfa9dfdf2cd66d197fc97e850bff53a90028f881fdb2c59b1217fa462"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8242",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "104",
+   "name": "invalid from int handler",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8244"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8245"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 68h (104) is listed as \"operation invalid from interrupt handler\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8245",
+       "sha": "cec4d787bcf80a73334cf322f912a15b42dc2fda410dee850383aea03af5d81c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8244",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "105",
+   "name": "semaphore owner died",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8246"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 69h (105) is listed as \"semaphore owner died\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8246",
+       "sha": "bf038e6a40428f819f5ffdde77bdd8d64405d709b7bf4219da057a7d9dc6c9fb"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "106",
+   "name": "semaphore limit exceeded",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8247"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 6Ah (106) is listed as \"semaphore limit exceeded\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8247",
+       "sha": "aef4670decf5e06363bce9b92b93b42aed925cfed7d2a524f3f9915170b5862a"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "107",
+   "name": "insert disk or changed",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8248"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 6Bh (107) is listed as \"insert drive B: disk into A: / disk changed\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8248",
+       "sha": "4fe0e97ac08ce2769ddcc59cc2c345cddf7ca4c0528eaa5da4525dfa426a1b50"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "108",
+   "name": "drive locked",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8249"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 6Ch (108) is listed as \"drive locked by another process\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8249",
+       "sha": "dea87af1e4065e5b5a7fc9ff392ca1db17f3ec9dc72bbfa537068b9cebc298b5"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "109",
+   "name": "broken pipe",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8250"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 6Dh (109) is listed as \"broken pipe\", marked DOS 4.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8250",
+       "sha": "69270bec4be26dd4223fe9fc6669c9cdb4d993f6ae602c826efaa0b0dcc1ac99"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "110",
+   "name": "pipe open failed",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8251"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 6Eh (110) is listed as \"pipe open/create failed\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8251",
+       "sha": "25eb97140fa2aa55f030ffe2a696be64ec5f20f40da53f99faec4c84079adf08"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "111",
+   "name": "pipe buffer overflow",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8252"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 6Fh (111) is listed as \"pipe buffer overflowed\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8252",
+       "sha": "4cd613d3f7d9ef2a67a58b55624cde39ab2030420ab4af4a725cef349661b32e"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "112",
+   "name": "disk full",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8253"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 70h (112) is listed as \"disk full\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8253",
+       "sha": "79637ea02ac629707b25917de7ad74b04800ca56f7e5913887dab1780715e1c8"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "113",
+   "name": "no more search handles",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8254"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 71h (113) is listed as \"no more search handles\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8254",
+       "sha": "73c202bcefcf8defdcd3d50947c197defedb64969dec9d103683727a5554e8be"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "114",
+   "name": "bad dup2 target handle",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8255"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 72h (114) is listed as \"invalid target handle for dup2\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8255",
+       "sha": "bbb05899d65d3a617dd4ad2bc03a1649a35d7f30ebf0f6120a27e3bcb8297a3d"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "115",
+   "name": "bad user address",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8256"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 73h (115) is listed as \"bad user virtual address / protection violation\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8256",
+       "sha": "e061100020a368ba3d5b1ca231a6b7555121451e94127e2710288b828162037d"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "116",
+   "name": "viokbd request",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8257"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8258"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 74h (116) is listed as \"VIOKBD request\", marked DOS 5.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8257",
+       "sha": "4f1a5742006efa2686820662e7ad534de35bbe86d65d9d5e90404880489fed11"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8258",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "117",
+   "name": "unknown IOCTL category",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8259"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 75h (117) is listed as \"unknown category code for IOCTL\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8259",
+       "sha": "0d983fbcfd7c5f123695ff60b9c7eae78174564b06076bcc6c59834e59acfd10"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "118",
+   "name": "invalid verify flag",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8260"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 76h (118) is listed as \"invalid value for verify flag\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8260",
+       "sha": "16d090218b9c282cd4cf46ce7562a0239c2af5f8fd8f14caa79c13325c1ddcfa"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "119",
+   "name": "level 4 driver not found",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8261"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 77h (119) is listed as \"level four driver not found by DOS IOCTL\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8261",
+       "sha": "40b900ed4297099102e02edd577f3e6fc243b2675c0c7ba3bed6c822378960ad"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "120",
+   "name": "function not implemented",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8262"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 78h (120) is listed as \"invalid / unimplemented function number\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8262",
+       "sha": "8ec56988f602c62409ba69c5f8e9582a9735cca3668d8da9a6e7018a4aa47cc9"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "121",
+   "name": "semaphore timeout",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8263"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 79h (121) is listed as \"semaphore timeout\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8263",
+       "sha": "b8fafd1e464471f4adf230081a2a6a049f23e5123ad2f8112f670f78b8b06244"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "122",
+   "name": "buffer too small",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8264"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 7Ah (122) is listed as \"buffer too small to hold return data\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8264",
+       "sha": "64ad3829530589f81f139631af0e674beda32464250d342c6e0b6c4000ddf78c"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "123",
+   "name": "invalid file-system name",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8265"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 7Bh (123) is listed as \"invalid character or bad file-system name\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8265",
+       "sha": "aa04edfab5ac97e7922fbc41a77dcd1e6cef2d90ef0187ee88a833b65b8f33e3"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "124",
+   "name": "info level unimplemented",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8266"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 7Ch (124) is listed as \"unimplemented information level\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8266",
+       "sha": "8b20dc7fb5ebe8cd2802979222cb6857a1adf5a748067ddc50487ad9054b0b5d"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "125",
+   "name": "no volume label",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8267"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 7Dh (125) is listed as \"no volume label found\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8267",
+       "sha": "dcbad8c9ffc65295da80bb98c728dd5fe8036b0badc2abd125f08f3df5ba6bcb"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "126",
+   "name": "module not found",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8268"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 7Eh (126) is listed as \"module handle not found\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8268",
+       "sha": "215f44de9b8343aea46fe1fdc156c4d3aa63d2345938b11f3c6c04a448437ec7"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "127",
+   "name": "procedure not found",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8269"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 7Fh (127) is listed as \"procedure address not found\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8269",
+       "sha": "a2df22f37e520ad0cda55d14ac09e7f19066a1b4bd528b88e49bb7df96063611"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "128",
+   "name": "cwait no children",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8270"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 80h (128) is listed as \"CWait found no children\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8270",
+       "sha": "e06ecadfdf0ee6d643832e95ca4ef8fe98c6c4e7928e069c3ffd9dfa559c5c33"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "129",
+   "name": "cwait children running",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8271"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 81h (129) is listed as \"CWait children still running\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8271",
+       "sha": "e2aa994b57a37b36cee7b9b457e8f58a193d5331d23225ed3c776812a82ee7b7"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "130",
+   "name": "bad direct-disk op",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8272"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 82h (130) is listed as \"invalid operation for direct disk-access handle\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8272",
+       "sha": "6c087904154eda51f39a94cfad0d74171776d53354e714f0a733c8b7ea0c0f02"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "131",
+   "name": "seek to negative offset",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8273"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 83h (131) is listed as \"attempted seek to negative offset\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8273",
+       "sha": "0c62c7eb393d9c6e14c00667bcb19037b55583e75679391027ee4156264d4543"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "132",
+   "name": "seek on device or pipe",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8223"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8274"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"network-related errors (non-INT 24)\", code 84h (132) is listed as \"attempted to seek on device or pipe\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8223",
+       "sha": "156f636915e8a7f3d1cec09ee1c2c8c6ab48f824d53dc26c415d15c8f1376343"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8274",
+       "sha": "0cd8b585abbb639c4e794caeea95151e3597f8309d26c0fcd0dd0c3eb8b2d46a"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "133",
+   "name": "drive has joined drives",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8276"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 85h (133) is listed as \"drive already has JOINed drives\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8276",
+       "sha": "44d066d1e9a556a8db1264d421861bbcf197acc4a2146503e4332f61f77496b9"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "134",
+   "name": "drive already joined",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8277"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 86h (134) is listed as \"drive is already JOINed\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8277",
+       "sha": "077dae7a5f2047f9b896ebc0dafda177c3ef73ff821579c03e0f6c09d10d28cc"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "135",
+   "name": "drive already substed",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8278"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 87h (135) is listed as \"drive is already SUBSTed\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8278",
+       "sha": "99b9e7dd2f6fb5161c14caa127b9897aa6a0b0e0b8c4bef2afc469ac2718cb43"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "136",
+   "name": "drive not joined",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8279"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 88h (136) is listed as \"can not delete drive which is not JOINed\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8279",
+       "sha": "f436a3f4619e7caa94b789a723400c015eba9d6cdaf69b11a46e1c6709a3017f"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "137",
+   "name": "drive not substed",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8280"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 89h (137) is listed as \"can not delete drive which is not SUBSTed\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8280",
+       "sha": "770eadc9e60cedde73d131c2bbff7c497c7437c7aa63befeecf227141b017c50"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "138",
+   "name": "join to joined drive",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8281"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 8Ah (138) is listed as \"can not JOIN to a JOINed drive\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8281",
+       "sha": "c5631d4c2d43d005f34776c7d01ebb715e7dc1c548cda9bc8b025183618dc257"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "139",
+   "name": "subst to substed drive",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8282"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 8Bh (139) is listed as \"can not SUBST to a SUBSTed drive\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8282",
+       "sha": "d9e274ec590d540634d59cb8c277b1842341bc8d2032434b059a3a47ff617c06"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "140",
+   "name": "join to substed drive",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8283"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 8Ch (140) is listed as \"can not JOIN to a SUBSTed drive\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8283",
+       "sha": "11651ba259aa94d8a3e9787b2a3170d417e26f92affbb8023e03a73b004ef88a"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "141",
+   "name": "subst to joined drive",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8284"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 8Dh (141) is listed as \"can not SUBST to a JOINed drive\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8284",
+       "sha": "1a4d11180e349720a1c873d87a69c854550faf70052c28c58951be9022db761d"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "142",
+   "name": "drive busy",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8285"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 8Eh (142) is listed as \"drive is busy\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8285",
+       "sha": "b8e0775823a9011c20cf1c5603ec74be7954ea2bc723d7303cffa0c721032826"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "143",
+   "name": "join/subst to same drive",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8286"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 8Fh (143) is listed as \"can not JOIN/SUBST to same drive\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8286",
+       "sha": "0a53465c6092c121ebd63d38683bce980fc6b1ca614f16cf4a77e461da4b2767"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "144",
+   "name": "directory is root",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8287"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 90h (144) is listed as \"directory must not be root directory\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8287",
+       "sha": "f4c4703abd8d33527f06873a94f349a32c534b76f115406e9c86d48a5e83370b"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "145",
+   "name": "join needs empty dir",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8288"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 91h (145) is listed as \"can only JOIN to empty directory\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8288",
+       "sha": "f09be384f5ae6fa44cc8c449e5033f71b4535aaceb59fa99f446cdf0fe9d1e2a"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "146",
+   "name": "path in use for subst",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8289"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 92h (146) is listed as \"path is already in use for SUBST\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8289",
+       "sha": "d8d17f1eb3a2e08a6f9db8fc344ec4dea2240fe49f57a25fb7d44f479feb04de"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "147",
+   "name": "path in use for join",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8290"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 93h (147) is listed as \"path is already in use for JOIN\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8290",
+       "sha": "ff037a5fd019b4745999205020c1445f586186c3c120d1c36b7da86f939412fa"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "148",
+   "name": "path used by other proc",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8291"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 94h (148) is listed as \"path is in use by another process\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8291",
+       "sha": "cab483d458b7dcf2b1627939d23d13b0da5d569522fea25e00f618f4b471cfdc"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "149",
+   "name": "directory was substed",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8292"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Under the heading \"JOIN/SUBST errors\", code 95h (149) is listed as \"directory previously SUBSTituted\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8292",
+       "sha": "1f075bfb10f01fdef9e474abb855b053c484817081d97411e0ccbd340cf864f3"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "150",
+   "name": "system trace error",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8293"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After the heading \"JOIN/SUBST errors\", code 96h (150) is listed as \"system trace error\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8293",
+       "sha": "5fb113801e649f3b5e4b83aed78b11784fbd6db8e4f2a4c491e735a552f679f9"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "151",
+   "name": "bad muxsemwait count",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8294"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After the heading \"JOIN/SUBST errors\", code 97h (151) is listed as \"invalid event count for DosMuxSemWait\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8294",
+       "sha": "57a6b0425af9ba80d4f942b2cf962ada3fc339ddcd8b5b884f4bb8d7e6bb9b84"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "152",
+   "name": "too many mutex waiters",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8295"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After the heading \"JOIN/SUBST errors\", code 98h (152) is listed as \"too many waiting on mutex\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8295",
+       "sha": "c80c59f523aa1a48a1b618c3451252d3e054ef5616010d4cc41514abb320e6c4"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "153",
+   "name": "invalid list format",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8296"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After the heading \"JOIN/SUBST errors\", code 99h (153) is listed as \"invalid list format\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8296",
+       "sha": "06e96800fff25cb5223ec505d8cf861322d35c2ecfc7a24aade222a8fec7d3b9"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "154",
+   "name": "volume label too large",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8297"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After the heading \"JOIN/SUBST errors\", code 9Ah (154) is listed as \"volume label too large\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8297",
+       "sha": "545b66771fb28f085069afd885c08666b5d41b2d147eb1d560d51e2a4351d183"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "155",
+   "name": "cannot create tcb",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8298"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After the heading \"JOIN/SUBST errors\", code 9Bh (155) is listed as \"unable to create another TCB\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8298",
+       "sha": "cab643cd52be1498a6640e68b7a334f9e682d0f396862ca783e2c022f10d1441"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "156",
+   "name": "signal refused",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8299"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After the heading \"JOIN/SUBST errors\", code 9Ch (156) is listed as \"signal refused\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8299",
+       "sha": "2f8d43b2b563a4f55d7d7d137f69c7acf0c49541c0cf90e62a95016ac17e36a1"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "157",
+   "name": "segment discarded",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8300"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After the heading \"JOIN/SUBST errors\", code 9Dh (157) is listed as \"segment discarded\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8300",
+       "sha": "992b66e5662bb963ac0db221c96d42bdcc09979c9c2da676b94978464abb38ab"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "158",
+   "name": "segment not locked",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8301"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After the heading \"JOIN/SUBST errors\", code 9Eh (158) is listed as \"segment not locked\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8301",
+       "sha": "be62051f8cacf3d5bacc276d84c4c168a6a250db55267c69cc494843fe66c0d2"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "159",
+   "name": "invalid thread id addr",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8275"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8302"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After the heading \"JOIN/SUBST errors\", code 9Fh (159) is listed as \"invalid thread-ID address\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8275",
+       "sha": "e90ef972e8eb56a226faac853a71b9a009dca1a93013340f0e880a8d82a27af8"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8302",
+       "sha": "c44cfdaf0813c74a66bbb40bab70f81ada51cd66ddf36cf3708878ca34340901"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "160",
+   "name": "bad arguments",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8304"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8305"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code A0h (160) is listed as \"bad arguments\", marked DOS 5.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8304",
+       "sha": "c6fe22c6a29031d87d41c12c0425f9fa10b51ed6f3b0cbfd9338c224ac3d7581"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8305",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "161",
+   "name": "invalid exec pathname",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8306"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code A1h (161) is listed as \"invalid pathname passed to EXEC\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8306",
+       "sha": "e790005dffd0a1e07346b91ff495c324a61c46dbc8602fef29aeaaf47c859070"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "162",
+   "name": "signal already pending",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8307"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code A2h (162) is listed as \"signal already pending\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8307",
+       "sha": "cd296b550c178fe1464188b3b8ed34a63e5f1dc3a50143a7a80362d0cb778478"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "163",
+   "name": "uncertain media",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8308"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8309"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code A3h (163) is listed as \"uncertain media\", marked DOS 5.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8308",
+       "sha": "e92532855aad0a891c521fd47dd0a3de25c26b28ab747d878fec00ceb5ed9cae"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8309",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "164",
+   "name": "max threads reached",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8310"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8311"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code A4h (164) is listed as \"maximum number of threads reached\", marked DOS 5.0+.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8310",
+       "sha": "e417fb70d0a22ba10eb5446965b2a38d54d695e4b5e7662162bb320f5bbb77b8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8311",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "165",
+   "name": "error 124 mapping",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8312"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code A5h (165) is listed as \"ERROR_124 mapping\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8312",
+       "sha": "963de00f18ae5d9014df9a046bf1ba703810c4d7d4709a63861456a15df15a16"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "176",
+   "name": "volume not locked",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8313"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code B0h (176) is listed as \"volume is not locked\", marked MS-DOS 7.0.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8313",
+       "sha": "db9b73309ffacfb88364dd39a8d45feb020a7a6aac90a60a5f4333dbb73ddeab"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "177",
+   "name": "volume locked in drive",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8314"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code B1h (177) is listed as \"volume is locked in drive\", marked MS-DOS 7.0.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8314",
+       "sha": "bb19388ac42cba29661697eadcf263c3aabf2febb845e5e84536503331297f50"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "178",
+   "name": "volume not removable",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8315"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code B2h (178) is listed as \"volume is not removable\", marked MS-DOS 7.0.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8315",
+       "sha": "0322934058867ab79a34df771d3e2ad40dfb707861e53cca65ca6ca576c1f815"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "180",
+   "name": "lock count exceeded",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8316"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8317"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code B4h (180) is listed as \"lock count has been exceeded\", marked MS-DOS 7.0.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8316",
+       "sha": "c5b676b60536d5ae7fc96a8b236ede36925af243132be5e93aabce3650fb5b97"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8317",
+     "as": "version"
+    }
+   ]
+  },
+  {
+   "key": "181",
+   "name": "eject request failed",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8318"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8319"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code B5h (181) is listed as \"a valid eject request failed\", marked MS-DOS 7.0.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8318",
+       "sha": "46aee56111a26fa5727a3a3738d5a48b3213bd2130524b49733e286f262a249d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code B5h (181) is also listed as \"invalid call gate\", marked DOS 5.0-6.0 and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8319",
+       "sha": "a1fa4d7e02ff77d36e4d9b3deb5cf2b6eca7bb56f49be8b714562e964b36db35"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "182",
+   "name": "invalid ordinal",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8320"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code B6h (182) is listed as \"invalid ordinal\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8320",
+       "sha": "0a8ddb9d051374dba5678cfd264eac6377898ffd610c001f57f2be302fdedf22"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "183",
+   "name": "shared segment exists",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8321"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code B7h (183) is listed as \"shared segment already exists\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8321",
+       "sha": "f35536c19ccdb57b46d215fc0d0dec278bef098a4ae20027dccc1138a8bda549"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "184",
+   "name": "no child to wait for",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8322"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code B8h (184) is listed as \"no child process to wait for\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8322",
+       "sha": "b1108136e83a0d36746eed5ee2e0338ce7d3d40178086563b38ac5598eb6b1dd"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "185",
+   "name": "nowait child running",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8323"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code B9h (185) is listed as \"NoWait specified and child still running\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8323",
+       "sha": "be62d3372fe9afa1ef46688d4a25ab064b709eba9496b6415e0abca9dcfb64a8"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "186",
+   "name": "invalid flag number",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8324"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code BAh (186) is listed as \"invalid flag number\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8324",
+       "sha": "34f8bafcc8a1d1f24529c7e9f8165365d53d8c1e660f3b5a7d0802b76715e559"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "187",
+   "name": "semaphore missing",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8325"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code BBh (187) is listed as \"semaphore does not exist\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8325",
+       "sha": "6f566c7c11487f5e63594eaff211e0ba7cd5f9b09826315aabe13cd02f4f7818"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "188",
+   "name": "bad start code segment",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8326"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code BCh (188) is listed as \"invalid starting code segment\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8326",
+       "sha": "29b8e4350a732968e7721f9d9684bee7bd87f4b967242dad9ab37f9b31e5e539"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "A report noted in the list says some Microsoft documentation shifts codes BCh (188) through CAh (202) up by one against this list; that is probably a documentation error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8361-8364",
+       "sha": "b48de38ba7a2c61fc22f15ba02f8a35826b546de32552b696cfc6af77b99c58b"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "189",
+   "name": "bad stack segment",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8327"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code BDh (189) is listed as \"invalid stack segment\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8327",
+       "sha": "0fdc5fdab2a5a6409cd5db821013a15b510091740f1a995650d38127e756f76a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "190",
+   "name": "invalid module type",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8328-8329"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code BEh (190) is listed as \"invalid module type (DLL can not be used as application)\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8328-8329",
+       "sha": "af040e0431ee2072d9136ea7b3c9a655ce470020dcccb18c5d1f63f032978595"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "191",
+   "name": "invalid exe signature",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8330"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code BFh (191) is listed as \"invalid EXE signature\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8330",
+       "sha": "96b42137a7e5f65db92d2c335c599b7741f388186ed0e3f9b00039670a5443f2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "192",
+   "name": "exe marked invalid",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8331"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code C0h (192) is listed as \"EXE marked invalid\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8331",
+       "sha": "2504dc84f4b1280d713c5fbd8d1e65452a1bd8c554a721b412506b541a24c061"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "193",
+   "name": "bad exe format",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8332"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code C1h (193) is listed as \"bad EXE format (e.g. DOS-mode program)\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8332",
+       "sha": "6f1f4894d7446bc22bb382952278861eb1bcde7e4310d7fc406bb7073f2c7198"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "194",
+   "name": "iterated data over 64K",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8333"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code C2h (194) is listed as \"iterated data exceeds 64K\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8333",
+       "sha": "f01285da2dd68a3b2efc86edf134b03015641ec0c967efd9d076cdfbccef71a8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "195",
+   "name": "bad minimum allocation",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8334"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code C3h (195) is listed as \"invalid minimum allocation size\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8334",
+       "sha": "6ac6e5269b13d036e30e4080e014d16462df3ed5af85c6537320ff9b5c7a71c4"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "196",
+   "name": "dynlink from bad ring",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8335"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code C4h (196) is listed as \"dynamic link from invalid Ring\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8335",
+       "sha": "1e430385fdf5b7ae3b566708fc391e2937d34f7ac4210b97e27f85b89b4627cb"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "197",
+   "name": "iopl not enabled",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8336"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code C5h (197) is listed as \"IOPL not enabled\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8336",
+       "sha": "cc57a4478acd126bcd89658ad15827b73c8de570659e1b488863115d25bc8ec0"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "198",
+   "name": "bad descriptor priv",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8337"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code C6h (198) is listed as \"invalid segment descriptor privilege level\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8337",
+       "sha": "bc0d205648cdfe2b18a66b4d75f1f31f343cabae8f76ee547bd6fc7a4ceb8cad"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "199",
+   "name": "auto data over 64K",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8338"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code C7h (199) is listed as \"automatic data segment exceeds 64K\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8338",
+       "sha": "aac6feae68958837dbf41ec7e3083c0a66daab70d58a3251b3a8f3b727154e35"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "200",
+   "name": "ring2 segment fixed",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8339"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code C8h (200) is listed as \"Ring2 segment must be moveable\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8339",
+       "sha": "1e95a8dbceb20d2574586db13050825ca85ee5deeed65cff0aeaa49b8605fac6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "201",
+   "name": "relocation chain long",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8340"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code C9h (201) is listed as \"relocation chain exceeds segment limit\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8340",
+       "sha": "7488cdcc2cd1602993f36a34d5eafacb2cc43ef2d53641e89f2575f6755513dc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "202",
+   "name": "relocation loop",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8341"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code CAh (202) is listed as \"infinite loop in relocation chain\", marked DOS 5.0+ and NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8341",
+       "sha": "40d9fdf5a75f017aaa94e256ef1773f427562cb78506563399f108badcfe2286"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8361-8364",
+     "as": "elsewhere",
+     "owner": "ibm-pc:error:188"
+    }
+   ]
+  },
+  {
+   "key": "203",
+   "name": "env variable not found",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8342"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code CBh (203) is listed as \"environment variable not found\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8342",
+       "sha": "54ccd615deb6b5a6e328828fb631f1898d2cd035dcaa984bef9c60e2adf72dc1"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "204",
+   "name": "not current country",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8343"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code CCh (204) is listed as \"not current country\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8343",
+       "sha": "fb02c6b9797a02ba712763cdd62e95a173588a4f278346c39d9a370fb442f2d0"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "205",
+   "name": "no signal sent",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8344"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code CDh (205) is listed as \"no signal sent\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8344",
+       "sha": "5d659cdd0f54682b7f2ef4c81fe839cb5b745fc58dfc2b83cf2b5c292e4c3677"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "206",
+   "name": "file name not 8.3",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8345"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code CEh (206) is listed as \"file name not 8.3\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8345",
+       "sha": "33671488c669d232124c970043b768e91cc5a5759c36ef04b06b434d920f3b05"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "207",
+   "name": "ring2 stack in use",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8346"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code CFh (207) is listed as \"Ring2 stack in use\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8346",
+       "sha": "073a53bb6c7948f01b36bf86e209d6b65cc9e6815ea1973420be4f8f6c381544"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "208",
+   "name": "meta expansion too long",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8347"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code D0h (208) is listed as \"meta expansion is too long\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8347",
+       "sha": "1f5372dc779634bc8cddc064fdb19f8819efaa5a2cf6db536dcb620577292420"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "209",
+   "name": "invalid signal number",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8348"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code D1h (209) is listed as \"invalid signal number\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8348",
+       "sha": "9321fa2b4c3f463199d35c9d3aef97f9ac17dd8b9b51791b1769bfddf6fc1889"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "210",
+   "name": "inactive thread",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8349"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code D2h (210) is listed as \"inactive thread\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8349",
+       "sha": "d2b2b34ef5ecb050e24e8b6ae6b4adc141e80dbc630d5ba135dc047813ca9fa6"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "211",
+   "name": "fs info not available",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8350"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code D3h (211) is listed as \"file system information not available\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8350",
+       "sha": "062c7db9faa1d3d1ed58c77025a2945655e978c948f96f3fd4bb9de69f068eea"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "212",
+   "name": "locked error",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8351"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code D4h (212) is listed as \"locked error\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8351",
+       "sha": "dfda7f62208f1a03d7b04ea7ffbb9a47d8d136157a35542672c7e93d1e1be426"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "213",
+   "name": "non-family api in dos",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8352"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code D5h (213) is listed as \"attempted to execute non-family API call in DOS mode\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8352",
+       "sha": "97b166352a80c8151a7aab2076ee13e05ed547a36b868db04b8e9bca02f8a445"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "214",
+   "name": "too many modules",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8353"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code D6h (214) is listed as \"too many modules\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8353",
+       "sha": "5cda098f544f2465a50f0a08cfe45cf18415cfc014fef851dac3e2cc242c5a1a"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "215",
+   "name": "nesting not allowed",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8354"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code D7h (215) is listed as \"nesting not allowed\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8354",
+       "sha": "c61766a7710c0076de3f2ee2eb1b7b6643f758d8a7dca5b32e099a5403cecca0"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "230",
+   "name": "bad pipe or operation",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8355"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code E6h (230) is listed as \"non-existent pipe, or bad operation\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8355",
+       "sha": "a20b538fae40f966e066e223f641ff15de280650056423dd1abf0f2dcd06c6db"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "231",
+   "name": "pipe busy",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8356"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code E7h (231) is listed as \"pipe is busy\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8356",
+       "sha": "cb6cdc00c0fb4b985b54f6c5abb5543536fcbaab8a665d9cdb2b23164f72baa5"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "232",
+   "name": "no data for nb read",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8357"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code E8h (232) is listed as \"no data available for nonblocking read\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8357",
+       "sha": "0cc5c873cf41e3178c96114efbb33338588c7c24cd773cdd3cb93c37aa3bbb50"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "233",
+   "name": "pipe disconnected",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8358"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code E9h (233) is listed as \"pipe disconnected by server\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8358",
+       "sha": "2fdf595f2cf6ea1e03ce7efbf72a3a75a1817e58ed24a994b04c683d8bf86509"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "234",
+   "name": "more data available",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8359"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code EAh (234) is listed as \"more data available\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8359",
+       "sha": "bb31076939b699cf5aaffadb4fc8e102fe08e461dbf5c95b1dc0e9240b77a750"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "255",
+   "name": "invalid drive",
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8303"
+    },
+    {
+     "ref": "rbil61:INTERRUP.G",
+     "lines": "8360"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "After a separator line of dashes, code FFh (255) is listed as \"invalid drive\", marked NetWare4.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8303",
+       "sha": "73be087e93080f9e436892b7d182df66394bc79dbf5df119d9357df61b1ebbfb"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "8360",
+       "sha": "d72a077701659ec0dbd64d4dcf0608822356eb40b33d4cdfbec79ec3e470b16e"
       }
      ]
     }

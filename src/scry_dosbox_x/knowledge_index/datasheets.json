@@ -1,0 +1,16 @@
+{
+ "format": "scry-knowledge-datasheets/1",
+ "datasheets": {
+  "CyberMan3D-SWIFT.raw.txt": {
+   "title": "Logitech CyberMan 3D SWIFT supplement, version 1.0",
+   "url": "https://bitsavers.org/pdf/logitech/cyberman/CyberMan_3D_SWIFT_Supplement_Ver_1.0_upd_199401.pdf",
+   "archive": "https://ftp.mirrorservice.org/sites/www.bitsavers.org/pdf/logitech/cyberman/CyberMan_3D_SWIFT_Supplement_Ver_1.0_upd_199401.pdf",
+   "class": "maker-guide",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "8bef2f6e2258a4c00a8a16f889ddd52b949122f4d62ed4834d59246aaa06c9e9",
+   "capture": "8a6838474bf3da3ac99176560cb4899ba61d2521488bc4d80605914be0a95ef5"
+  }
+ }
+}
