@@ -17,10 +17,11 @@ What a client of the server notices.
   has an entry for it, and a symbol you typed as a ref names the address the table places it at.
   `start(names=false)` turns the reply's names off for that session; the captions keep theirs.
 - `knowledge_find` answers what a number is called, by key, id or words: a DOS or BIOS call or a
-  DOS error, with the source line each answer was read from. A key the base has no checked entry
-  for stays a number. `status` carries `knowledge`, the entries the base serves.
-- The reference has a Knowledge base section: what the base answers, that each entry is checked
-  against its source, and where the base is going.
+  DOS error. An entry comes as rows: what the documentation says first, each with DOSBox-X's
+  verdict, then DOSBox-X's notes where it does otherwise, each row citing the lines it was read
+  from. `id=<entry>#<n>` answers one row with the links to its lines. A key the base does not
+  answer stays a number, and the `dos` channel shows a function or error so too.
+- The reference has a Knowledge base section: what the base answers and how an entry reads.
 - A disassembled line and the instruction of a stop carry a `note` where the base names what the
   instruction states: `int 21h` is named at a stop, from the registers, and a port written in
   `dx` too. A comment you wrote stays beside it, apart.

@@ -397,7 +397,7 @@ by address, the symbol's fields and `delta`. INVALID: no table.
 <!-- scry-reference:begin knowledge_find -->
 ## `knowledge_find`
 
-Ask what a number is called on this machine and what the server knows about it: a DOS or BIOS call, a DOS error.
+Ask what a number is called on this machine and what its documentation says of it: a DOS or BIOS call, a DOS error.
 
 ```text
 knowledge_find(id="", kind="", key="", text="", device="", scope="", limit=10)
@@ -405,7 +405,7 @@ knowledge_find(id="", kind="", key="", text="", device="", scope="", limit=10)
 
 ### Try it
 
-On [Bricks](../../demos/bricks/README.md), the game this repository builds. The base needs no session for what it holds.
+Any session, or none: the base answers from the server's own files.
 
 Ask:
 
@@ -421,19 +421,19 @@ Reply, 3 of 10 fields:
 
 ```json
 {
-  "summary": "kind call key 0x21/0x4C: exit",
+  "summary": "kind call key 0x21/0x4C: terminate with code",
   "entries_total": 1,
-  "examined": 518
+  "examined": 25
 }
 ```
 
-One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X does when it is taken, and its source lines. `served` and `held_back` count what the base serves and holds back.
+One entry matches, so `entries` gives it whole: what Ralf Brown's list says first, each row with DOSBox-X's verdict, then DOSBox-X's notes. `id=ibm-pc:call:0x21/0x4C#3` answers one row, with links.
 
 <details><summary>The whole reply</summary>
 
 ```json
 {
-  "summary": "kind call key 0x21/0x4C: exit",
+  "summary": "kind call key 0x21/0x4C: terminate with code",
   "status": "ok",
   "query": {"kind": "call", "key": "0x21/0x4C"},
   "scope": ["ibm-pc"],
@@ -443,31 +443,177 @@ One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X d
       "id": "ibm-pc:call:0x21/0x4C",
       "kind": "call",
       "key": "0x21/0x4C",
-      "name": "exit",
+      "name": "terminate with code",
       "scope": "ibm-pc",
-      "description": "Ends the program with return code AL.",
-      "behaviour": "The emulator terminates the current PSP with AL as the return code, clears the running program's name and arguments, and sets AX=3E01h for the parent, as the source comment says real MS-DOS appears to return on leaving AH=4Bh.",
-      "checked": true,
+      "rows": [
+        {
+          "n": "1",
+          "on": "is",
+          "of": "doc",
+          "text": "Terminate with a return code, a DOS 2 call (EXIT).",
+          "cites": [
+            {"document": "Ralf Brown's Interrupt List, INTERRUP.G", "lines": "6163"}
+          ]
+        },
+        {
+          "n": "2",
+          "on": "in AL",
+          "of": "doc",
+          "text": "AL holds the return code.",
+          "cites": [
+            {"document": "Ralf Brown's Interrupt List, INTERRUP.G", "lines": "6165"}
+          ],
+          "verdicts": {"dosbox-x": "as documented"}
+        },
+        {
+          "n": "3",
+          "on": "out none",
+          "of": "doc",
+          "text": "The call never returns.",
+          "cites": [
+            {"document": "Ralf Brown's Interrupt List, INTERRUP.G", "lines": "6166"}
+          ],
+          "verdicts": {"dosbox-x": "differs"}
+        },
+        {
+          "n": "5",
+          "on": "does",
+          "of": "doc",
+          "text": "Unless the process is its own parent, all its open files are closed.",
+          "cites": [
+            {"document": "Ralf Brown's Interrupt List, INTERRUP.G", "lines": "6167-6168"}
+          ],
+          "verdicts": {"dosbox-x": "unfollowed"}
+        },
+        {
+          "n": "6",
+          "on": "does",
+          "of": "doc",
+          "text": "Unless the process is its own parent, all the memory belonging to it is freed.",
+          "cites": [
+            {"document": "Ralf Brown's Interrupt List, INTERRUP.G", "lines": "6168-6169"}
+          ],
+          "verdicts": {"dosbox-x": "unfollowed"}
+        },
+        {
+          "n": "4",
+          "on": "out none",
+          "of": "dosbox-x",
+          "vs": "differs",
+          "row": "3",
+          "text": "A process that is its own parent returns before closing anything; otherwise control goes to the parent's INT 22 address, and the handler sets AX to 0x3E01 and ends normally.",
+          "cites": [
+            {"file": "src/dos/dos_execute.cpp", "lines": "118"},
+            {"file": "src/dos/dos_execute.cpp", "lines": "150-152"},
+            {"file": "src/dos/dos.cpp", "lines": "2507-2516"}
+          ]
+        },
+        {
+          "n": "7",
+          "on": "place",
+          "of": "dosbox-x",
+          "vs": "place",
+          "text": "The INT 21h handler reaches it by its case 0x4c.",
+          "cites": [
+            {"file": "src/dos/dos.cpp", "lines": "2495"}
+          ]
+        },
+        {
+          "n": "8",
+          "on": "does",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "The return code and the termination type, exit or TSR, are stored in the DOS state.",
+          "cites": [
+            {"file": "src/dos/dos_execute.cpp", "lines": "114-115"}
+          ]
+        },
+        {
+          "n": "9",
+          "on": "does",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "The UTF-8 modes of the AMIS providers are told that the process ended.",
+          "cites": [
+            {"file": "src/dos/dos_execute.cpp", "lines": "119-121"}
+          ]
+        },
+        {
+          "n": "10",
+          "on": "does",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "The directory search snapshots of the process are closed with its files.",
+          "cites": [
+            {"file": "src/dos/dos_execute.cpp", "lines": "125"}
+          ]
+        },
+        {
+          "n": "11",
+          "on": "does",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "The parent PSP becomes current and its saved registers and stack are restored, with INT 22's address as the return point.",
+          "cites": [
+            {"file": "src/dos/dos_execute.cpp", "lines": "129-140"},
+            {"file": "src/dos/dos_execute.cpp", "lines": "141-152"},
+            {"file": "src/dos/dos_execute.cpp", "lines": "153-155"}
+          ]
+        },
+        {
+          "n": "12",
+          "on": "does",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "The process name is updated and the error code cleared.",
+          "cites": [
+            {"file": "src/dos/dos_execute.cpp", "lines": "158"},
+            {"file": "src/dos/dos_execute.cpp", "lines": "160"}
+          ]
+        },
+        {
+          "n": "13",
+          "on": "does",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "If the CPU core or cycles were set automatically by the program they are put back, and the title updated.",
+          "cites": [
+            {"file": "src/dos/dos_execute.cpp", "lines": "162-173"},
+            {"file": "src/dos/dos_execute.cpp", "lines": "174-175"},
+            {"file": "src/dos/dos_execute.cpp", "lines": "176-186"}
+          ]
+        },
+        {
+          "n": "14",
+          "on": "does",
+          "of": "dosbox-x",
+          "vs": "extra",
+          "text": "A termination inside the INT 23h break handling throws an internal exit.",
+          "cites": [
+            {"file": "src/dos/dos.cpp", "lines": "2497-2501"}
+          ]
+        }
+      ],
       "sources": [
         {
-          "role": "documentation",
-          "ref": "rbil61:INTERRUP.G D-214C",
-          "cites": "INT 21 - DOS 2+ - \"EXIT\" - TERMINATE WITH RETURN CODE",
+          "where": "Ralf Brown's Interrupt List, INTERRUP.G",
           "url": "https://www.cs.cmu.edu/~ralf/files.html"
         },
         {
-          "role": "emulator",
-          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4c",
-          "cites": "        case 0x4c:                  /* EXIT Terminate with return code */",
+          "where": "src/dos/dos_execute.cpp",
+          "url": "https://github.com/joncampbell123/dosbox-x/blob/2a43c7335efd91f87bf5582245abdd5b3f18d5d4/src/dos/dos_execute.cpp"
+        },
+        {
+          "where": "src/dos/dos.cpp",
           "url": "https://github.com/joncampbell123/dosbox-x/blob/2a43c7335efd91f87bf5582245abdd5b3f18d5d4/src/dos/dos.cpp"
         }
       ]
     }
   ],
   "truncated": false,
-  "examined": 518,
-  "served": 630,
-  "held_back": 235
+  "examined": 25,
+  "served": 54,
+  "held_back": 0
 }
 ```
 
@@ -475,21 +621,20 @@ One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X d
 
 ### Arguments
 
-- `id` (string, default `""`): An entry's id, as another reply cites it, such as `ibm-pc:call:0x21/0x4C`. Answers that entry whole.
+- `id` (string, default `""`): An entry's id, such as `ibm-pc:call:0x21/0x4C`, answers it whole. `<id>#<n>` answers its row `n`, with the link that opens each line it cites.
 - `kind` (one of `""`, `"vector"`, `"call"`, `"error"`, `"port"`, `"irq"`, `"memory"`, `"input"`, `"device"`, `"register"`, `"command"`, default `""`): What the number is: `vector`, `call`, `error`, `port`, `irq`, `memory`, `input`, `device`, `register` or `command`. Left empty, every kind.
 - `key` (string, default `""`): The number as a reply prints it: a call is `INT/AH` or `INT/AH/AL`, such as `0x21/0x4C`.
-- `text` (string, default `""`): Words looked for in names, aliases, descriptions and behaviour. A word ending in `*` matches by prefix.
+- `text` (string, default `""`): Words looked for in names, aliases and the rows' text. A word ending in `*` matches by prefix.
 - `device` (string, default `""`): A device's key: everything that belongs to it.
 - `scope` (string, default `""`): `ibm-pc`, the only system this server names. Left empty, all.
 - `limit` (integer, default `10`): How many entries are listed: 1 to 50. Left out, 10.
 
 ### What comes back
 
-- `entries`: Rows with `id`, `kind`, `key`, `name`; one match, or an `id`, answers whole with `description`, `behaviour` and `sources`.
+- `entries`: One match, or an `id`, gives the entry whole: its `rows`, then `sources`, each place once with its link. More matches list each entry's `id` and `name`.
 - `entries_total`: How many entries matched.
 - `examined`: How many entries were searched, so a zero says what it is a zero of.
-- `held_back`: How many entries exist and are not confirmed, so are not served.
-- `unconfirmed`: The ids of the held-back entries the question matched.
+- `unconfirmed`: Present when entries match that the base holds and does not answer yet: their ids.
 - `nearest`: When nothing matched: the entries next to the number or the words.
 
 <details><summary>All 10 reply fields</summary>
@@ -515,7 +660,7 @@ One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X d
 
 ### Why it works this way
 
-Each entry was checked against its source, and an answer says where it was read. A key the base has not confirmed answers `unconfirmed` and stays a number. The base is the server's own copy: it answers while the program runs.
+A row says what the documentation states, with `verdicts` saying whether DOSBox-X does it; a note (`vs`) says what DOSBox-X does otherwise. Each row's `cites` says where its lines are and never copies them. Past 24 rows the reply is cut, notes first, and says `rows_total`; an entry no official document covers says so in `source`. The base is the server's own copy: it answers while the program runs.
 
 ### Related tools
 
@@ -527,19 +672,20 @@ Each entry was checked against its source, and an answer says where it was read.
 <details><summary>The contract your client receives</summary>
 
 ```text
-What a number is called on this machine, and what the base knows of it: a port, interrupt
-vector, DOS or BIOS call, IRQ, memory address, input, device, its registers and commands. One
-match, or an `id`, answers the whole entry (`description`, `behaviour`, `sources`); more,
-rows. No session is needed except for a device by tag, inputs and memory.
+What a number is called on the machine and what the base knows of it: a port, vector,
+DOS or BIOS call, IRQ, memory address, input, device, register or command. One match, or an
+`id`, answers the entry: its `rows`, the document's first with each emulator's `verdicts`,
+then the emulators' notes (`vs`); `id=<id>#<n>`: a row, with URLs. More: a list. No session
+is needed except for a device by tag, inputs and memory.
 
 `id`: an entry's id. `kind`: `vector`, `call`, `error`, `port`, `irq`, `memory`, `input`,
 `device`, `register` or `command`; empty searches all. `key`: the number as a reply prints it,
-or a range. `text`: words in names, aliases, descriptions; `*` ends a prefix. `device`: all of
+or a range. `text`: words in names, aliases, rows; `*` ends a prefix. `device`: all of
 that device. `scope`: the system, cpu or device; empty, the live session's. `limit` 1..50.
 
-Examples: `key=0x3C8`; `kind=port key=0x3C0..0x3CF`; `kind=vector key=0xFFF8 scope=<scope>`;
-`kind=call key=0x21/0x4C`, its variant by a register `kind=call key=0x10/0x12/BL=0x36`;
-a running machine's device by tag `kind=device key=:maincpu`; its registers
+Examples: `key=0x3C8`; `kind=vector key=0xFFF8 scope=<scope>`; `kind=call key=0x21/0x4C`,
+a variant `kind=call key=0x10/0x12/BL=0x36`;
+a live device by tag `kind=device key=:maincpu`; its registers
 `kind=register device=<device>`; `text=palette*`.
 
 Refused (INVALID): nothing to look up, a bad `key`, or a `scope` it lacks
@@ -551,7 +697,7 @@ Reply: `query`, `scope`, `entries_total`, `entries`, `truncated`, `examined`, `s
 `held_back`; nothing matched: no entry, `nearest` and a `note`: it stays a number.
 `unconfirmed` lists ids held back.
 
-Scopes: am9517a, chip, ibm-pc, ins8250, mc146818, mc6845, pic8259, saa1099, sn76496, ym3812, ymf262, z80.
+Scopes: none.
 
 Reference: REFERENCE.md, Knowledge base.
 ```

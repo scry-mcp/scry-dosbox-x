@@ -476,7 +476,7 @@ def base_exit(reply: Reply, run: Run) -> str:
     entry = reply["entries"][0]
     expect(reply["entries_total"] == 1 and entry["id"] == "ibm-pc:call:0x21/0x4C",
            f"entries {reply['entries']}")
-    return f"the base names INT 21h AH=4Ch {entry['name']}, read at {entry['sources'][-1]['ref']}"
+    return f"the base names INT 21h AH=4Ch {entry['name']}, read in {entry['sources'][0]['where']}"
 
 
 def leaving(reply: Reply, run: Run) -> str:

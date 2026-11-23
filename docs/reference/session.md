@@ -567,7 +567,7 @@ Takes no argument.
 - `stopped_on_its_own`: Present when the machine had stopped and no call had reported it yet. `status` records that stop as the last one.
 - `pending`: What waits for the next stop: `arm`, the breakpoints declared while the program ran; a `disarm` count; and whether a `symbols_load` or a `base_remeasure` is queued.
 - `symbols_held`: Present while a `start` symbol table waits for its program: its `path`, its `base_from` and `waiting_for`, the program's file name.
-- `knowledge`: How many entries the base serves (`served`) and holds back as not confirmed (`held_back`).
+- `knowledge`: How many entries `knowledge_find` answers (`served`), and how many it holds and does not answer yet (`held_back`).
 
 <details><summary>All 21 reply fields</summary>
 

@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "d198",
+  "prompt": "Show me only row 2 of the knowledge base entry ibm-pc:error:5, with the links to its lines.",
+  "tool": "knowledge_find",
+  "args": {
+   "id": "ibm-pc:error:5#2"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "d198: {\"tool\": \"knowledge_find\", \"args\": {\"id\": \"ibm-pc:error:5#2\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d198: {\"tool\": \"knowledge_find\", \"args\": {\"id\": \"ibm-pc:error:5#2\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "d198: {\"tool\": \"knowledge_find\", \"args\": {\"id\": \"ibm-pc:error:5#2\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

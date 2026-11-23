@@ -100,28 +100,30 @@ def test_the_stop_at_the_exit_is_judged_with_its_note(tour: ModuleType, exit_sto
 def test_the_base_step_is_judged_on_the_reply_the_reference_shows(tour: ModuleType) -> None:
     shown = json.loads((DOCS / "reference" / "examples.json").read_text(encoding="utf-8"))
     reply = shown["knowledge_find"]["reply"]
-    assert "exit" in tour.base_exit(reply, None)
+    entry = reply["entries"][0]
+    assert tour.base_exit(reply, None).endswith(
+        f"{entry['name']}, read in {entry['sources'][0]['where']}")
     with pytest.raises(StepFailed):
         tour.base_exit({**reply, "entries_total": 2}, None)
 
 
-def _not_served(text: str) -> list[str]:
-    """The entry ids `text` cites that the base does not serve."""
+def _not_held(text: str) -> list[str]:
+    """The entry ids `text` cites that the base's dictionaries do not hold, served or not."""
     from scry_dosbox_x import knowledge
-    return [cited for cited in ID.findall(text) if knowledge.base().by_id(cited) is None]
+    held = knowledge.base().unfiltered()
+    return [cited for cited in ID.findall(text) if held.by_id(cited) is None]
 
 
-def test_the_tour_and_the_reference_cite_confirmed_entries_only() -> None:
+def test_the_tour_and_the_reference_cite_entries_the_base_holds_only() -> None:
     seen = 0
     for path in [TOUR, *sorted(DOCS.rglob("*.json")), *sorted(DOCS.rglob("*.md")),
                  DOCS.parent / "REFERENCE.md"]:
         text = path.read_text(encoding="utf-8")
         seen += len(ID.findall(text))
-        assert _not_served(text) == [], f"{path.name} cites an entry the base does not serve"
+        assert _not_held(text) == [], f"{path.name} cites an entry the base does not hold"
     assert seen, "INVALID: no entry id was cited, so nothing was judged"
 
 
-def test_a_cited_entry_that_is_held_back_or_absent_fails_the_case() -> None:
-    held, absent = "ibm-pc:call:0x21/0x3D", "ibm-pc:call:0x21/0xFE"
-    assert _not_served(f"`{held}` and `{absent}`, but `ibm-pc:call:0x21/0x4C` is served") == [
-        held, absent]
+def test_a_cited_entry_that_is_absent_fails_the_case() -> None:
+    absent = "ibm-pc:call:0x21/0xFE"
+    assert _not_held(f"`{absent}`, but `ibm-pc:call:0x21/0x4C` is held") == [absent]

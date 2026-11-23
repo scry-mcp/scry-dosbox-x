@@ -29,12 +29,12 @@ def sample() -> naming.DosboxNamer:
 
 
 def test_an_interrupt_is_named_by_its_function() -> None:
-    named = naming.interrupt_call(knowledge.base(), 0x21, {"AX": 0x4C00})
+    named = naming.interrupt_call(knowledge.names_base(), 0x21, {"AX": 0x4C00})
     assert named is not None and (named.name, named.number) == ("exit", "0x21/0x4C")
 
 
 def test_int_43h_is_not_the_xms_driver() -> None:
-    base = knowledge.base()
+    base = knowledge.names_base()
     assert base.get("call", "0x43/0x08", knowledge.SCOPE) is not None
     assert naming.interrupt_call(base, 0x43, {"AH": 0x08}) is None
 
@@ -52,7 +52,7 @@ def test_an_interrupt_breakpoint_that_names_no_call_names_nothing(given: dict[st
 
 def test_a_held_back_call_is_not_named() -> None:
     """INT 21h AH=3Dh has an entry the second check has not confirmed."""
-    assert knowledge.base().by_id("ibm-pc:call:0x21/0x3D") is None
+    assert knowledge.names_base().by_id("ibm-pc:call:0x21/0x3D") is None
     assert naming.NAMER.arguments("breakpoint_interrupt", {"number": 0x21, "ah": 0x3D}) == {}
 
 
@@ -211,7 +211,7 @@ def test_status_counts_what_is_served_and_what_is_held_back() -> None:
     base = knowledge.base()
     got = cast(dict[str, Any], server.status())
     assert got["knowledge"] == {"served": len(base), "held_back": base.held_back}
-    assert got["knowledge"]["held_back"] > 0 and "names_failed" not in got
+    assert "names_failed" not in got
 
 
 def test_status_says_a_namer_failed_and_no_reply_does(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -226,12 +226,3 @@ def test_status_says_a_namer_failed_and_no_reply_does(monkeypatch: pytest.Monkey
     assert "names" not in _reply_to_an_exit_breakpoint()
     got = cast(dict[str, Any], server.status())
     assert got["names_failed"]["last"] == "RuntimeError: no" and got["names_failed"]["count"] > 0
-
-
-def test_knowledge_find_answers_a_confirmed_call_and_says_a_held_back_one_exists() -> None:
-    install()
-    got = cast(dict[str, Any], server.knowledge_find(kind="call", key="0x21/0x4C"))
-    assert [e["id"] for e in got["entries"]] == ["ibm-pc:call:0x21/0x4C"], got
-    held = cast(dict[str, Any], server.knowledge_find(kind="call", key="0x21/0x3D"))
-    assert held["entries"] == [] and held["unconfirmed"] == ["ibm-pc:call:0x21/0x3D"], held
-    assert held["served"] == len(knowledge.base()) and held["held_back"] > 0

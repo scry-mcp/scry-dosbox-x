@@ -193,7 +193,7 @@
     "stopped_on_its_own": "Present when the machine had stopped and no call had reported it yet. `status` records that stop as the last one.",
     "pending": "What waits for the next stop: `arm`, the breakpoints declared while the program ran; a `disarm` count; and whether a `symbols_load` or a `base_remeasure` is queued.",
     "symbols_held": "Present while a `start` symbol table waits for its program: its `path`, its `base_from` and `waiting_for`, the program's file name.",
-    "knowledge": "How many entries the base serves (`served`) and holds back as not confirmed (`held_back`)."
+    "knowledge": "How many entries `knowledge_find` answers (`served`), and how many it holds and does not answer yet (`held_back`)."
    },
    "refuses": [],
    "why": [
@@ -3611,8 +3611,8 @@
    ]
   },
   "knowledge_find": {
-   "what": "Ask what a number is called on this machine and what the server knows about it: a DOS or BIOS call, a DOS error.",
-   "on": "On [Bricks](../../demos/bricks/README.md), the game this repository builds. The base needs no session for what it holds.",
+   "what": "Ask what a number is called on this machine and what its documentation says of it: a DOS or BIOS call, a DOS error.",
+   "on": "Any session, or none: the base answers from the server's own files.",
    "ask": "What does INT 21h with AH=4Ch do?",
    "call": {
     "kind": "call",
@@ -3623,22 +3623,21 @@
     "entries_total",
     "examined"
    ],
-   "reads": "One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X does when it is taken, and its source lines. `served` and `held_back` count what the base serves and holds back.",
+   "reads": "One entry matches, so `entries` gives it whole: what Ralf Brown's list says first, each row with DOSBox-X's verdict, then DOSBox-X's notes. `id=ibm-pc:call:0x21/0x4C#3` answers one row, with links.",
    "arguments": {
-    "id": "An entry's id, as another reply cites it, such as `ibm-pc:call:0x21/0x4C`. Answers that entry whole.",
+    "id": "An entry's id, such as `ibm-pc:call:0x21/0x4C`, answers it whole. `<id>#<n>` answers its row `n`, with the link that opens each line it cites.",
     "kind": "What the number is: `vector`, `call`, `error`, `port`, `irq`, `memory`, `input`, `device`, `register` or `command`. Left empty, every kind.",
     "key": "The number as a reply prints it: a call is `INT/AH` or `INT/AH/AL`, such as `0x21/0x4C`.",
-    "text": "Words looked for in names, aliases, descriptions and behaviour. A word ending in `*` matches by prefix.",
+    "text": "Words looked for in names, aliases and the rows' text. A word ending in `*` matches by prefix.",
     "device": "A device's key: everything that belongs to it.",
     "scope": "`ibm-pc`, the only system this server names. Left empty, all.",
     "limit": "How many entries are listed: 1 to 50. Left out, 10."
    },
    "returns": {
-    "entries": "Rows with `id`, `kind`, `key`, `name`; one match, or an `id`, answers whole with `description`, `behaviour` and `sources`.",
+    "entries": "One match, or an `id`, gives the entry whole: its `rows`, then `sources`, each place once with its link. More matches list each entry's `id` and `name`.",
     "entries_total": "How many entries matched.",
     "examined": "How many entries were searched, so a zero says what it is a zero of.",
-    "held_back": "How many entries exist and are not confirmed, so are not served.",
-    "unconfirmed": "The ids of the held-back entries the question matched.",
+    "unconfirmed": "Present when entries match that the base holds and does not answer yet: their ids.",
     "nearest": "When nothing matched: the entries next to the number or the words."
    },
    "refuses": [
@@ -3647,7 +3646,7 @@
     "An `id` or a `device` the base does not hold (`unknown_ref`)."
    ],
    "why": [
-    "Each entry was checked against its source, and an answer says where it was read. A key the base has not confirmed answers `unconfirmed` and stays a number. The base is the server's own copy: it answers while the program runs."
+    "A row says what the documentation states, with `verdicts` saying whether DOSBox-X does it; a note (`vs`) says what DOSBox-X does otherwise. Each row's `cites` says where its lines are and never copies them. Past 24 rows the reply is cut, notes first, and says `rows_total`; an entry no official document covers says so in `source`. The base is the server's own copy: it answers while the program runs."
    ],
    "related": [
     "symbols_find",

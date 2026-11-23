@@ -53,7 +53,7 @@ def operands(insn: disasm.Insn, registers: Mapping[str, int] | None) -> list[not
 
 def of_insn(insn: disasm.Insn, registers: Mapping[str, int] | None = None) -> notes.Note | None:
     """The base's note for `insn`, or None when it names nothing or the `names` switch is off."""
-    return notes.note(knowledge.base(), knowledge.SCOPE, operands(insn, registers),
+    return notes.note(knowledge.names_base(), knowledge.SCOPE, operands(insn, registers),
                       names_on=STATE.names)
 
 

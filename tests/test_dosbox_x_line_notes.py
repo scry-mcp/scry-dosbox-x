@@ -28,7 +28,7 @@ def _insns(raw: bytes) -> list[disasm.Insn]:
 def ports(monkeypatch: pytest.MonkeyPatch) -> None:
     """A base that holds the VGA DAC's port, which the confirmed base does not yet."""
     held = Base.load(SAMPLE)
-    monkeypatch.setattr(knowledge, "base", lambda: held)
+    monkeypatch.setattr(knowledge, "names_base", lambda: held)
 
 
 def test_an_interrupt_is_named_only_at_the_stop_that_holds_its_function() -> None:

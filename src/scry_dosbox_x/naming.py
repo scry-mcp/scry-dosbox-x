@@ -109,6 +109,6 @@ class DosboxNamer:
         return out
 
 
-NAMER = DosboxNamer(knowledge.base())
+NAMER = DosboxNamer(knowledge.names_base())
 #: The namer as the boundary holds it: a failure gives no names and is counted for `status`.
 GUARD = naming.Guarded(NAMER)
