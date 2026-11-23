@@ -89,7 +89,8 @@ def caption_args(look: presence.Look = presence.LOOK) -> str:
     speed in characters a second and keeps its own fades."""
     return (f"caption_text_rgb={look.caption_text_rgb:06X} caption_alpha={look.caption_alpha:g} "
             f"keycap_rgb={look.keycap_rgb:06X} keycap_text_rgb={look.keycap_text_rgb:06X} "
-            f"keycap_alpha={look.keycap_alpha:g} scroll_cps={look.scroll_cps:g}")
+            f"keycap_alpha={look.keycap_alpha:g} scroll_cps={look.scroll_cps:g} "
+            f"font_share={look.font_share:g}")
 
 
 def record_args(look: presence.Look = presence.LOOK) -> str:

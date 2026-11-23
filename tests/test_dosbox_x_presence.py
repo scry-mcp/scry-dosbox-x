@@ -327,7 +327,7 @@ ALL = ("edge", "pointer", "keys", "calls", "pause")
 NO_RECORD = ov.Overlay(record=False)
 #: The words of the layers protocol 3 added to the look, in the order the adapter sends them.
 PROTOCOL_3_LOOK = ("caption_text_rgb", "caption_alpha", "keycap_rgb", "keycap_text_rgb",
-                   "keycap_alpha", "scroll_cps")
+                   "keycap_alpha", "scroll_cps", "font_share")
 
 
 def _payload(**kw: Any) -> presence.Payload:
@@ -361,7 +361,8 @@ def test_a_build_of_protocol_3_is_sent_the_layers_the_place_and_the_look_it_pars
         "caption_text_rgb": f"{look.caption_text_rgb:06X}",
         "caption_alpha": f"{look.caption_alpha:g}",
         "keycap_rgb": f"{look.keycap_rgb:06X}", "keycap_text_rgb": f"{look.keycap_text_rgb:06X}",
-        "keycap_alpha": f"{look.keycap_alpha:g}", "scroll_cps": f"{look.scroll_cps:g}"}
+        "keycap_alpha": f"{look.keycap_alpha:g}", "scroll_cps": f"{look.scroll_cps:g}",
+        "font_share": f"{look.font_share:g}"}
     assert not {"scroll", "cap_scale", "caption_in", "caption_out"} & sent.keys(), (
         "the fork's own fades stand, and no word is sent that the command does not parse")
 
@@ -677,9 +678,12 @@ def _serving(monkeypatch: pytest.MonkeyPatch) -> _Reports:
 def test_the_servers_input_tools_report_what_they_sent(monkeypatch: pytest.MonkeyPatch) -> None:
     from scry_dosbox_x import inputs
     reports = _serving(monkeypatch)
-    monkeypatch.setattr(inputs, "send_keys", lambda *a, **k: {
-        "status": "ok", "route": "guest", "posted": 1, "bytes": 2, "frames": 2,
-        "verify": {"checked": False, "why": "no expect"}})
+    def _sent(*a: Any, **k: Any) -> dict[str, Any]:
+        if (ready := k.get("on_ready")) is not None:
+            ready()
+        return {"status": "ok", "route": "guest", "posted": 1, "bytes": 2, "frames": 2,
+                "verify": {"checked": False, "why": "no expect"}}
+    monkeypatch.setattr(inputs, "send_keys", _sent)
     monkeypatch.setattr(inputs, "send_mouse", lambda *a, **k: {
         "status": "ok", "delivered": True, "route": "guest", "arrived": True,
         "pointer": {"x": 9, "y": 8, "screen": {"x": 9, "y": 8}},

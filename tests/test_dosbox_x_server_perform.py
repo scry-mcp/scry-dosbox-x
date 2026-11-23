@@ -1125,42 +1125,54 @@ def test_perform_carries_the_clients_context_to_its_wait(
     assert got and got[0].startswith("waiting for the machine to stop")
 
 
+class _KeyRoute:
+    """A running session that takes the keystrokes and answers the `expect` at once."""
+
+    launch = SimpleNamespace(watched=False, input_port=5555, logfile=None)
+    stub_protocol = inputs.STUB_PROTOCOL
+    keys_posted = 1
+    inputs_written = releases_sent = 0
+
+    def e9_mark(self) -> int:
+        return 0
+
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
+    def at_debugger(self) -> bool:
+        return False
+
+    def has(self, command: str) -> bool:
+        return False
+
+    def send_commands(self, commands: list[bytes]) -> list[str]:
+        return []
+
+    log_wait = _log_wait_as_guest
+
+    def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
+                progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        progress(1.0, seconds, "tick")
+        return {"verdict": "TARGET", "line": "READY", "already": False, "lines_total": 1,
+                "lines_before": 0,
+                "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1}
+
+
 def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
-    class _Route:
-        launch = SimpleNamespace(watched=False, input_port=5555, logfile=None)
-        stub_protocol = inputs.STUB_PROTOCOL
-        keys_posted = 1
-        inputs_written = releases_sent = 0
-
-        def e9_mark(self) -> int:
-            return 0
-
-        @property
-        def parked(self) -> bool:
-            return self.at_debugger()
-
-        def at_debugger(self) -> bool:
-            return False
-
-        def has(self, command: str) -> bool:
-            return False
-
-        def send_commands(self, commands: list[bytes]) -> list[str]:
-            return []
-
-        log_wait = _log_wait_as_guest
-
-        def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
-                    progress: ds.Progress = ds.no_progress) -> dict[str, object]:
-            progress(1.0, seconds, "tick")
-            return {"verdict": "TARGET", "line": "READY", "already": False, "lines_total": 1,
-                    "lines_before": 0,
-                    "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1}
-
     ticks: list[str] = []
-    out = inputs.send_keys(_Route(), ["enter"], None, "READY", 2.0,  # type: ignore[arg-type]
+    out = inputs.send_keys(_KeyRoute(), ["enter"], None, "READY", 2.0,  # type: ignore[arg-type]
                            lambda p, t, m: ticks.append(m))
     assert ticks == ["tick"] and out["verify"]["seen"] is True
+
+
+def test_send_keys_reports_the_key_once_the_call_is_accepted() -> None:
+    seen: list[str] = []
+    out = inputs.send_keys(_KeyRoute(), ["enter"], None, "READY", 2.0,  # type: ignore[arg-type]
+                           lambda p, t, m: seen.append("waited"),
+                           on_ready=lambda: seen.append("ready"))
+    assert out["verify"]["seen"] is True
+    assert seen == ["ready", "waited"], "the mark is stamped before the write's frame read"
 
 
 def test_perform_checks_every_steps_arguments_before_any_step_runs(tmp_path: Path) -> None:
