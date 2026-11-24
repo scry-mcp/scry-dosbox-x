@@ -144,12 +144,15 @@ def starts(demo: core.Demo, run: core.Run, cuts: Sequence[motion.Cut]) -> list[i
 
 
 def decorator(demo: core.Demo, run: core.Run, document: Mapping[str, Any],
-              layers: Sequence[ov.Layer], cuts: Sequence[motion.Cut]) -> motion.Decorator:
-    """What `motion.build` draws each of `cuts` with."""
+              layers: Sequence[ov.Layer], cuts: Sequence[motion.Cut],
+              key_names: Mapping[str, str] | None = None) -> motion.Decorator:
+    """What `motion.build` draws each of `cuts` with. A demo may name a key for a person; the
+    clip draws the name, and the live overlay keeps the emulator's own."""
     declared(layers)
     from scry_core import decorate  # the `decorate` extra: only the making of a loop needs it
     style = decorate.Style.of(ov.Overlay(calls="calls" in layers, keys="keys" in layers,
-                                         pointer="pointer" in layers, pause=False, record=False))
+                                         pointer="pointer" in layers, pause=False, record=False),
+                              key_names=dict(key_names or {}))
     first = starts(demo, run, cuts)
     drawn = [decorate.for_loop(one, first, style) for one in passes(document, demo)]
 
@@ -165,8 +168,9 @@ def prepared(demo: core.Demo) -> core.Demo:
     return replace(demo, steps=fired(demo.steps))
 
 
-def main(demo: core.Demo, layers: Sequence[ov.Layer], argv: Sequence[str] | None = None) -> int:
-    """The demo's command line with its loop drawn in `layers`."""
+def main(demo: core.Demo, layers: Sequence[ov.Layer], argv: Sequence[str] | None = None,
+         key_names: Mapping[str, str] | None = None) -> int:
+    """The demo's command line with its loop drawn in `layers`, each key named for a person."""
     declared(layers)
     return core.main(replace(prepared(demo), decorator=lambda demo_, run, document: decorator(
-        demo_, run, document, layers, core.cuts(demo_, run))), argv)
+        demo_, run, document, layers, core.cuts(demo_, run), key_names)), argv)

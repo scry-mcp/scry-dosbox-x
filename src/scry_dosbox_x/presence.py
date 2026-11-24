@@ -5,6 +5,8 @@ It draws into the scaled output after the frame went to capture, so no capture o
 carries it. The pointer appears once the session has moved the guest's mouse. A build that
 announces protocol 2 is sent only what protocol 2 parses; the layers it lacks are named in the
 `overlay` of `start` and `status`; so is a build of protocol 3 that predates the record mark.
+A build of protocol 4 is told each keycap's alpha, so a mark that was let go fades instead of
+vanishing; an older build draws every mark whole.
 """
 
 from __future__ import annotations
@@ -45,6 +47,8 @@ NO_WINDOW = "a session started without `shared` has no window to draw on"
 MIN_VERSION = 2
 #: The version that takes the layers of `overlay`.
 PROTOCOL = 3
+#: The version that draws each keycap at the alpha the server sends, so a mark fades out.
+KEY_FADE_PROTOCOL = 4
 #: The layers a build of protocol 2 draws.
 PROTOCOL_2_LAYERS = frozenset({"edge", "pointer"})
 #: What the command takes of a caption and of the keys, in bytes.
@@ -180,6 +184,11 @@ class ChannelAdapter:
         if "keys" in payload.layers:
             out.append(" keys=" + ",".join(
                 encoded(name, KEY_BYTES) for name in payload.keys[-KEYS_SHOWN:]))
+            shown = payload.keys[-KEYS_SHOWN:]
+            if shown and (self.version or 0) >= KEY_FADE_PROTOCOL:
+                alphas = payload.key_alphas[-len(shown):] or (1.0,) * len(shown)
+                out.append(" key_alpha=" + ",".join(
+                    str(round(100 * alpha)) for alpha in alphas))
         caption = payload.caption if "calls" in payload.layers else None
         held = None if caption is None else (caption.serial, caption.text, caption.rgb)
         if held != self._caption:

@@ -58,8 +58,12 @@ class _Session:
         self.answers = list(answers)
         self.commands = commands
         self.sent: list[str] = []
-        self.bare: tuple[bool, list[str]] = (
-            True, CAPTURED[f"protocol{version}"]["bare_before_output"])
+        # The latest captured build's words at the version this double announces: the fork
+        # appends only its number to the line.
+        source = "protocol2" if version == 2 else "protocol3"
+        line = CAPTURED[source]["bare_before_output"][0]
+        self.bare = (True, [line if version == 3 else
+                            line.replace("version=3", f"version={version}")])
 
     def has(self, command: str) -> bool:
         return command in self.commands
@@ -367,6 +371,20 @@ def test_a_build_of_protocol_3_is_sent_the_layers_the_place_and_the_look_it_pars
         "the fork's own fades stand, and no word is sent that the command does not parse")
 
 
+def test_a_build_of_protocol_4_is_told_each_keycap_s_alpha_and_an_older_one_is_not() -> None:
+    """A mark that was let go fades in the window: the server sends the alpha it is drawn at,
+    which only a build of protocol 4 parses."""
+    payload = _payload(keys=("a", "b"), key_alphas=(1.0, 0.35))
+    four, channel = _adapter(version=4)
+    four.show("held", payload)
+    assert _words(channel.sent[0])["key_alpha"] == "100,35"
+    three, channel = _adapter(version=3)
+    three.show("held", payload)
+    assert "key_alpha" not in _words(channel.sent[0])
+    empty, channel = _adapter(version=4)
+    empty.show("held", _payload())
+    assert "key_alpha" not in _words(channel.sent[0]), "no mark down, no alpha to give"
+
 def test_a_caption_longer_than_the_command_takes_is_cut_to_what_it_takes() -> None:
     adapter, channel = _adapter()
     adapter.show("acting", _payload(caption=_caption("x" * 400)))
@@ -377,7 +395,8 @@ def test_the_caption_is_sent_with_its_tint_percent_encoded_in_one_word() -> None
     adapter, channel = _adapter()
     text = abbreviation.caption("write", {"address": "0x100", "path": "/srv/a/b c.bin"})
     adapter.show("acting", _payload(caption=_caption(text)))
-    assert f"caption={dpresence.encoded(text, 160)} serial=1 tint={_caption().rgb:06X}" in channel.sent[0]
+    tint = f"{_caption().rgb:06X}"
+    assert f"caption={dpresence.encoded(text, 160)} serial=1 tint={tint}" in channel.sent[0]
     assert " " not in dpresence.encoded(text, 160) and "%20" in dpresence.encoded(text, 160)
 
 
@@ -830,7 +849,8 @@ def test_a_call_heard_by_the_presence_is_delivered_as_a_caption() -> None:
     shown.held.began(call)
     shown.held.ended(call, "ok")
     sent = _sent(channel, 2)
-    assert any(" caption=read_memory(ref=0x10) serial=" in line and f" tint={presence.LOOK.band_rgb(presence.LOOK.read_rgb):06X}" in line
+    band = f" tint={presence.LOOK.band_rgb(presence.LOOK.read_rgb):06X}"
+    assert any(" caption=read_memory(ref=0x10) serial=" in line and band in line
                for line in sent), sent
     shown.close()
 
