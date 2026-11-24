@@ -377,7 +377,7 @@ def test_the_caption_is_sent_with_its_tint_percent_encoded_in_one_word() -> None
     adapter, channel = _adapter()
     text = abbreviation.caption("write", {"address": "0x100", "path": "/srv/a/b c.bin"})
     adapter.show("acting", _payload(caption=_caption(text)))
-    assert f"caption={dpresence.encoded(text, 160)} serial=1 tint=5AC8FA" in channel.sent[0]
+    assert f"caption={dpresence.encoded(text, 160)} serial=1 tint={_caption().rgb:06X}" in channel.sent[0]
     assert " " not in dpresence.encoded(text, 160) and "%20" in dpresence.encoded(text, 160)
 
 
@@ -410,7 +410,7 @@ def test_a_call_that_ends_refused_sends_its_caption_again_in_the_refused_tint() 
     adapter.show("acting", _payload(caption=_caption()))
     refused = overlay_timeline.Caption("registers", "refused", 0xFF453A, 1)
     adapter.show("held", _payload(caption=refused))
-    assert "tint=FF453A" in channel.sent[1], channel.sent[1]
+    assert f"tint={refused.rgb:06X}" in channel.sent[1], channel.sent[1]
 
 
 def test_a_caption_that_leaves_is_taken_away_with_an_empty_word_and_only_once() -> None:
@@ -830,7 +830,7 @@ def test_a_call_heard_by_the_presence_is_delivered_as_a_caption() -> None:
     shown.held.began(call)
     shown.held.ended(call, "ok")
     sent = _sent(channel, 2)
-    assert any(" caption=read_memory(ref=0x10) serial=" in line and " tint=5AC8FA" in line
+    assert any(" caption=read_memory(ref=0x10) serial=" in line and f" tint={presence.LOOK.band_rgb(presence.LOOK.read_rgb):06X}" in line
                for line in sent), sent
     shown.close()
 
