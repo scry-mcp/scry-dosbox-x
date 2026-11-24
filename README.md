@@ -258,12 +258,12 @@ Call:
 breakpoint_at(ref="brick_hit")
 ```
 
-Reply, 3 of 10 fields:
+Reply, 3 of 11 fields:
 
 ```json
 {
   "summary": "breakpoint_at brick_hit: armed",
-  "entry": "BP 08DF:02C8",
+  "entry": "BP 08DF:02A5",
   "by": "symbol"
 }
 ```
@@ -286,36 +286,36 @@ Reply, 3 of 16 fields:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002A5",
   "verdict": "OTHER_STOP",
-  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8"
+  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002A5"
 }
 ```
 
 `OTHER_STOP` means the breakpoint stopped the run, not a time limit. `cause` names it; the whole reply also holds `watches`, the score read by its name.
 
-#### 3. Read a value after a saved state is loaded
+#### 3. Hold a value against the program's own writes
 
 Ask:
 
-> Now that the state saved before the left arrow is loaded, read `paddle_x` again.
+> The same ball was just lost again: read `lives` now that `watch_add` freezes it.
 
 Call:
 
 ```text
-read_memory(ref="paddle_x", length=2)
+read_memory(ref="lives", length=1)
 ```
 
-Reply, 2 of 7 fields:
+Reply, 2 of 8 fields:
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08DF:0000061F: dc00",
-  "hex": "dc00"
+  "summary": "read_memory lives: 1 byte at 08DF:000005CB: 03",
+  "hex": "03"
 }
 ```
 
-A saved state is the whole machine, not the game's own save. So the paddle reads where it was before the arrow moved it.
+A freeze is the debugger putting a byte back after every instruction. The game took the life and the status line still reads 3: `frozen_hex` is the value `watch_add` holds.
 <!-- demo-flow:end bricks -->
 
 ## Set up SCRY in your own project

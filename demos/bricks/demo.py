@@ -3,10 +3,13 @@ prompt asks an MCP client to make, each answer checked. `--help` says how to run
 
 It walks a debugger through a game: the first stop inside the program, its symbols placed from
 the segment DOS loaded it at, a breakpoint on the routine every falling brick goes through, the
-score read by name, the paddle moved by the keyboard and by the mouse, and a state saved and
-loaded. The session is windowed so the game can be watched, and nothing in it needs the window:
-`stop` and the saved states go down the debugger channel, the keys and the mouse in inside the
-guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE.
+score read by name, the routine that takes a life, the paddle moved by the keyboard and by the
+mouse, and the same ball lost twice from one saved state, the second time with the lives frozen.
+The session is windowed so the game can be watched, and nothing in it needs the window: the
+saved states go down the debugger channel, the keys and the mouse in inside the guest. The saved
+states need a DOSBox-X that carries SAVESTATE and LOADSTATE, and the freeze a build with heavy
+debugging. Each moment is its own `record`, which runs the machine's frames from where the call
+before it stopped, so a key or the pointer is inside the stretch it shows.
 """
 
 from __future__ import annotations
@@ -16,8 +19,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from scry_core import motion
 from scry_core.demo import (
     DISPLAY,
+    RECORD_SECONDS,
+    RECORD_TOOL,
+    RECORDING_TIMING,
     Demo,
     Moment,
     Reply,
@@ -31,6 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` impor
 from demos import decorated  # noqa: E402
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
+    RETRACE_STOP,
     VOLATILE,
     expect,
     isolated_store,
@@ -50,14 +58,27 @@ LAYERS = decorated.ALL
 #: first brick and its `(6 - row) * 10` points, then PADDLE_HOME and PADDLE_STEP.
 FIRST_ROW, FIRST_COL, FIRST_POINTS = 5, 7, 10
 SECOND_BRICK = (5, 6)
+#: The score once the ball has left the second brick: the breakpoint stops at the routine's
+#: entry, so the second brick's points are counted by the first retrace after it is cleared.
+TWO_POINTS = FIRST_POINTS * 2
 #: Where three retraces after the second brick leave the ball: x, y, dx, dy.
 BALL_AFTER = (188, 82, -2, 2)
 PADDLE_HOME, PADDLE_STEP, RIGHTS, PADDLE_W = 140, 8, 3, 40
 #: Where the demo puts the pointer, in screen pixels: the paddle centres itself under it.
 MOUSE_AT = (240, 100)
-#: The retraces recorded for the loop, which shows less than three seconds of them.
-PLAY_FRAMES = 240
+#: The game's first life, and the state saved with the ball waiting on the paddle.
+LIVES = 3
+STATE = "before_the_miss"
+#: The frames one moment records: about a second and a half at the game's 70 frames a second.
+MOMENT_FRAMES = 110
+#: The frames the breakpoint's moment asks for; the second brick stops it first.
+BRICK_FRAMES = 200
 WAIT_S = 60
+
+
+def video(run: Run) -> Path:
+    """Where the emulator writes a capture; each moment's `record` is moved out of it."""
+    return run.dir / "video"
 
 
 def low_byte(reply: Reply, register: str) -> int:
@@ -70,15 +91,27 @@ def word(reply: Reply) -> int:
     return raw[0] | raw[1] << 8
 
 
+def capture_conf(run: Run) -> Path:
+    """The game's conf with the line that boots the game taken out: the session records itself
+    with `DX-CAPTURE`, which runs the program itself and can hold no second copy."""
+    text = (HERE / "bricks.conf").read_text(encoding="utf-8")
+    kept = [line for line in text.splitlines() if line.strip().casefold() != "bricks.com"]
+    path = run.dir / "bricks-capture.conf"
+    path.write_text("\n".join(kept) + "\n", encoding="utf-8")
+    return path
+
+
 def boot(run: Run) -> dict[str, Any]:
     """A fresh log and state directory of this demo's own under the run's, so nothing an earlier
     run left is counted again (`state_write(method="save")` never overwrites)."""
     (run.dir / "bricks-e9.log").unlink(missing_ok=True)
     states = run.dir / "bricks-states"
     shutil.rmtree(states, ignore_errors=True)
-    return {**window_args(run), "conf": HERE / "bricks.conf", "cwd": HERE, "session_seconds": 900,
+    shutil.rmtree(video(run), ignore_errors=True)
+    return {**window_args(run), "conf": capture_conf(run), "cwd": HERE, "session_seconds": 900,
             "break_on_int3": True, "logfile": run.dir / "bricks-e9.log",
-            "state_dir": states}
+            "state_dir": states, "program": "BRICKS.COM",
+            "captures_dir": video(run)}
 
 
 def at_ready(reply: Reply, run: Run) -> str:
@@ -102,6 +135,29 @@ def at_brick(row: int, col: int, score: int, which: str) -> Any:
     return check
 
 
+def brick_film(run: Run) -> dict[str, Any]:
+    """The breakpoint's moment: `record` runs the ball from the first brick's stop, and the
+    breakpoint stops it at the second brick before the bound."""
+    dest = run.dir / "first-brick.avi"
+    dest.unlink(missing_ok=True)
+    return {"frames": BRICK_FRAMES, "dest": dest, "seconds": RECORD_SECONDS}
+
+
+def brick_filmed(reply: Reply, run: Run) -> str:
+    """The recording ends where the ball meets the second brick, and lasts a moment."""
+    expect(reply.get("verdict") == "OTHER_STOP", f"the recording ended {reply.get('verdict')!r}")
+    expect(str(reply.get("cause", "")).startswith("breakpoint brick_hit "),
+           f"stopped by {reply.get('cause')}")
+    got = (low_byte(reply, "EAX"), low_byte(reply, "EBX"), reply["watches"][0]["value"])
+    expect(got == (*SECOND_BRICK, FIRST_POINTS), f"row, column and score {got}")
+    held, per_second = motion.facts(Path(str(reply["path"])))
+    seconds = held / per_second
+    expect(seconds >= motion.CUT_SECONDS[0] - motion.SLACK_SECONDS,
+           f"the recording lasts {seconds:.2f} s, and a moment lasts at least "
+           f"{motion.CUT_SECONDS[0]:g} s")
+    return f"the fall into the second brick, {held} frames in {seconds:.2f} s"
+
+
 def score_is(points: int) -> Any:
     def check(reply: Reply, run: Run) -> str:
         expect(word(reply) == points, f"score {word(reply)}, not {points}")
@@ -123,28 +179,34 @@ def ball(reply: Reply, run: Run) -> str:
     return f"the ball at ({x}, {y}) moving ({dx:+}, {dy:+})"
 
 
-def keys_taken(reply: Reply, run: Run) -> str:
-    lines = [ln.split(": ", 1)[-1] for ln in reply["looked"]["guest"]["lines"]]
-    expect(lines.count("KEY R") == RIGHTS, f"the game logged {lines}")
-    return f"the game logged {', '.join(lines)}"
+def listing_lives(reply: Reply, run: Run) -> str:
+    lines = [ln.split(maxsplit=2)[-1] for ln in reply["lines"]]
+    expect(any(text.startswith("dec byte") for text in lines), f"lose_life is {lines}")
+    return f"lose_life opens with {lines[0]} and decrements the lives"
 
 
-def stopped(reply: Reply, run: Run) -> str:
-    expect(reply["interrupted"] is True, f"interrupted {reply['interrupted']}")
-    return "stopped through the debugger channel"
+def pinned(reply: Reply, run: Run) -> str:
+    expect((reply["state"], reply["frozen_hex"]) == ("armed", f"{LIVES:02x}"),
+           f"{reply['state']} at {reply.get('frozen_hex')}")
+    return f"the lives pinned at {LIVES}"
 
 
-def paddle(reply: Reply, run: Run) -> str:
-    want = PADDLE_HOME + PADDLE_STEP * RIGHTS
-    expect(word(reply) == want, f"paddle at {word(reply)}, not {want}")
-    return f"the paddle at x {want}: the middle, then {RIGHTS} steps right"
+def lives_are(count: int) -> Any:
+    def check(reply: Reply, run: Run) -> str:
+        got = int(reply["hex"], 16)
+        expect(got == count, f"lives read {got}, not {count}")
+        return f"the lives read {count}"
+    return check
 
 
-def moved(reply: Reply, run: Run) -> str:
+def lost_twice(reply: Reply, run: Run) -> str:
+    lines = [ln.split(": ", 1)[-1] for ln in reply["lines"]]
+    expect(lines.count("LOST") == 2, f"the game logged {lines}")
+    return "the game logged LOST twice: the same ball, lost twice"
+
+
+def mouse_paddle(reply: Reply, run: Run) -> str:
     want = MOUSE_AT[0] - PADDLE_W // 2
-    # Right of where the keys left it by more than a step, so the left arrow that follows can
-    # never be clamped into a no-op that leaves the paddle where the save put it.
-    expect(want > word(run.replies["paddle"]) + PADDLE_STEP, "MOUSE_AT is too far left")
     expect(word(reply) == want, f"the paddle is at {word(reply)}, not centred under the "
                                 f"pointer at {want}")
     return f"the paddle at x {want}, centred under the pointer at pixel {MOUSE_AT[0]}"
@@ -193,9 +255,9 @@ STEPS = [
          shown=("summary", "verdict", "cause"),
          reads=("`OTHER_STOP` means the breakpoint stopped the run, not a time limit. `cause` "
                 "names it; the whole reply also holds `watches`, the score read by its name.")),
-    Step("second brick", "resume", {"seconds": WAIT_S},
-         at_brick(*SECOND_BRICK, FIRST_POINTS, "second")),
-    Step("score", "read_memory", {"ref": "score", "length": 2}, score_is(FIRST_POINTS)),
+    # The breakpoint's moment: the recording runs the ball from the first stop and ends where the
+    # breakpoint stops it again, at the second brick. A code breakpoint is all that can stop it.
+    Step("brick seen", RECORD_TOOL, brick_film, brick_filmed, volatile=RECORDING_TIMING),
     Step("unbreak", "declaration_clear", {"kind": "breakpoint", "all": True}, lambda reply,
          run: "breakpoint cleared"),
     Step("frames", "run_for", {"frames": 3, "seconds": WAIT_S}, frames,
@@ -203,51 +265,85 @@ STEPS = [
                    for key in ("summary", "regs", "instruction", "pc", "cause",
                                "emulated_before_s", "emulated_after_s")}),
     Step("ball", "read_memory", {"ref": "ball_x", "length": 8}, ball),
-    # The picture is taken here, before any input: the game's border breathes a shade a frame, so
-    # a capture after a key lands on a colour the host decided. The recording after it has no
-    # breakpoint left to stop it, and the game plays on from where the recording left it.
+    # The picture is taken here, before any input, from where the ball read left the machine.
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
-    recording("ball in play", PLAY_FRAMES),
-    Step("play", "resume", {}, lambda reply, run: "the game runs"),
-    Step("keys", "drive", {"act": [{"op": "send_keys", "keys": ["right"], "expect": "KEY R",
-                                    "seconds": 10}] * RIGHTS,
-                           "pattern": "KEY|PLAYER"}, keys_taken, volatile=INPUT_TIMING),
-    Step("pause", "stop", {}, stopped, volatile=BREAK_STOP),
-    Step("paddle", "read_memory", {"ref": "paddle_x", "length": 2}, paddle),
-    Step("again", "resume", {}, lambda reply, run: "the game runs"),
-    Step("mouse on", "send_keys", {"keys": ["m"], "expect": "MOUSE ON$", "seconds": 10},
-         seen("M handed the paddle to the mouse: the game logged MOUSE ON"),
-         volatile=INPUT_TIMING),
-    Step("mouse", "send_mouse", {"x": MOUSE_AT[0], "y": MOUSE_AT[1], "expect": "MOUSE$",
-                                 "seconds": 10},
-         pointed, volatile=INPUT_TIMING),
-    Step("mouse off", "send_keys", {"keys": ["m"], "expect": "MOUSE OFF$", "seconds": 10},
-         seen("M took the paddle back, so the pointer moves nothing from here on"),
-         volatile=INPUT_TIMING),
-    Step("mark", "stop", {}, stopped, volatile=BREAK_STOP),
-    Step("before save", "read_memory", {"ref": "paddle_x", "length": 2}, moved),
-    Step("on again", "resume", {}, lambda reply, run: "the game runs"),
-    Step("save", "state_write", {"method": "save", "name": "bricks"},
+    Step("score", "read_memory", {"ref": "score", "length": 2}, score_is(TWO_POINTS)),
+    recording("score seen", MOMENT_FRAMES),
+    # The second act: the routine that takes a life, then the same ball lost twice from one
+    # saved state. The first arrow key is where the game hands the paddle over, so the ball
+    # waits on it and the recording after the keys shows the paddle they moved.
+    Step("lives routine", "disassemble", {"ref": "lose_life", "length": 16}, listing_lives),
+    Step("break lives", "breakpoint_at", {"ref": "lose_life"},
+         lambda reply, run: f"breakpoint {reply['entry']} on lose_life"),
+    Step("key right", "send_keys", {"keys": ["right"], "expect": "KEY R$"},
+         seen("the right arrow took the paddle from the game"), volatile=INPUT_TIMING),
+    Step("key left", "send_keys", {"keys": ["left"], "expect": "KEY L$"},
+         seen("the left arrow moved the paddle back"), volatile=INPUT_TIMING),
+    Step("key right again", "send_keys", {"keys": ["right"], "expect": "KEY R$"},
+         seen("the right arrow moved it again"), volatile=INPUT_TIMING),
+    recording("keys seen", MOMENT_FRAMES),
+    Step("save", "state_write", {"method": "save", "name": STATE},
          lambda reply, run: f"state saved as {Path(str(reply['path'])).name}",
          volatile={"summary": "it carries the state's size and time", "bytes": "the state is "
                    "compressed, so its size follows the frame it was taken at"}),
-    Step("left", "send_keys", {"keys": ["left"], "expect": "KEY L$", "seconds": 10},
-         seen("the left arrow moved the paddle after the save"), volatile=INPUT_TIMING),
-    Step("load", "state_write", {"method": "load", "name": "bricks"},
+    Step("serve", "send_keys", {"keys": ["space"], "expect": "SERVE$", "seconds": 10},
+         seen("SPACE served the ball that was waiting on the paddle"), volatile=INPUT_TIMING),
+    Step("miss", "resume", {"seconds": WAIT_S},
+         lambda reply, run: f"the stop at {reply['cause']}",
+         volatile={**BREAK_STOP, "watches": "the score shown at the stop is the game's"}),
+    Step("past", "declaration_clear", {"kind": "breakpoint", "all": True},
+         lambda reply, run: "the breakpoint on lose_life cleared"),
+    Step("carry", "run_to", {"ref": "carry", "control": "retrace", "seconds": WAIT_S},
+         lambda reply, run: f"{reply['verdict']}: the next ball waits on the paddle"),
+    Step("shown", "run_for", {"frames": 20, "seconds": WAIT_S},
+         lambda reply, run: "20 retraces with the status line redrawn",
+         volatile={**RETRACE_STOP,
+                   **{key: "it names the instruction or the clock a retrace stop lands on, "
+                           "which drift with the host's cycles"
+                      for key in ("summary", "emulated_before_s", "emulated_after_s")},
+                   "cycles": "the emulator's own count, a few cycles apart from run to run"}),
+    Step("lives", "read_memory", {"ref": "lives", "length": 1}, lives_are(LIVES - 1)),
+    Step("load", "state_write", {"method": "load", "name": STATE},
          lambda reply, run: f"state loaded from {Path(str(reply['path'])).name}",
          volatile={"summary": "it carries how long the load took",
                    "mark": "the game ran until the load, so where its log ended then follows "
                    "the frame it was sent at"}),
-    Step("halt", "stop", {}, stopped, volatile=BREAK_STOP),
-    Step("restored", "read_memory", {"ref": "paddle_x", "length": 2}, restored,
-         title="Read a value after a saved state is loaded",
-         ask="Now that the state saved before the left arrow is loaded, read `paddle_x` again.",
+    Step("pin", "watch_add", {"ref": "lives", "mode": "freeze", "length": 1}, pinned),
+    Step("break again", "breakpoint_at", {"ref": "lose_life"},
+         lambda reply, run: f"breakpoint {reply['entry']} on lose_life again"),
+    Step("serve 2", "send_keys", {"keys": ["space"], "expect": "SERVE$", "seconds": 10},
+         seen("SPACE served the same ball from the saved machine"), volatile=INPUT_TIMING),
+    Step("miss 2", "resume", {"seconds": WAIT_S},
+         lambda reply, run: f"the stop at {reply['cause']} again",
+         volatile={**BREAK_STOP, "watches": "the score shown at the stop is the game's"}),
+    Step("past 2", "declaration_clear", {"kind": "breakpoint", "all": True},
+         lambda reply, run: "the breakpoint cleared"),
+    Step("carry 2", "run_to", {"ref": "carry", "control": "retrace", "seconds": WAIT_S},
+         lambda reply, run: f"{reply['verdict']}: the next ball waits on the paddle"),
+    Step("shown 2", "run_for", {"frames": 20, "seconds": WAIT_S},
+         lambda reply, run: "20 retraces with the status line redrawn",
+         volatile={**RETRACE_STOP,
+                   **{key: "it names the instruction or the clock a retrace stop lands on, "
+                           "which drift with the host's cycles"
+                      for key in ("summary", "emulated_before_s", "emulated_after_s")},
+                   "cycles": "the emulator's own count, a few cycles apart from run to run"}),
+    Step("lives 2", "read_memory", {"ref": "lives", "length": 1}, lives_are(LIVES),
+         title="Hold a value against the program's own writes",
+         ask=("The same ball was just lost again: read `lives` now that `watch_add` freezes "
+              "it."),
          shown=("summary", "hex"),
-         reads=("A saved state is the whole machine, not the game's own save. So the paddle "
-                "reads where it was before the arrow moved it.")),
-    Step("play on", "resume", {}, lambda reply, run: "the game runs"),
-    Step("serve", "send_keys", {"keys": ["space"], "expect": "SERVE$", "seconds": 10},
-         seen("SPACE served the ball that was waiting on the paddle"), volatile=INPUT_TIMING),
+         reads=("A freeze is the debugger putting a byte back after every instruction. The game "
+                "took the life and the status line still reads 3: `frozen_hex` is the value "
+                "`watch_add` holds.")),
+    recording("lives held", MOMENT_FRAMES),
+    Step("log 2", "log", {"channel": "guest", "pattern": "SERVE|HIT|LOST"}, lost_twice),
+    Step("mouse on", "send_keys", {"keys": ["m"], "expect": "MOUSE ON$", "seconds": 10},
+         seen("M handed the paddle to the mouse: the game logged MOUSE ON"),
+         volatile=INPUT_TIMING),
+    Step("mouse", "send_mouse", {"x": MOUSE_AT[0], "y": MOUSE_AT[1], "expect": "MOUSE$"},
+         pointed, volatile=INPUT_TIMING),
+    recording("pointer seen", MOMENT_FRAMES),
+    Step("paddle", "read_memory", {"ref": "paddle_x", "length": 2}, mouse_paddle),
     Step("unwatch", "declaration_clear", {"kind": "watch", "all": True}, lambda reply,
          run: "watch cleared"),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
@@ -258,12 +354,24 @@ DEMO = Demo(
     name="bricks", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", front=ROOT / "README.md", steps=STEPS,
     capture=lambda run: run.dir / "screen.png",
-    moments=(Moment("screen", "ball in play",
-                    "With the breakpoint cleared the game plays on, and `record` films it.",
-                    frames=200),),
-    alt="Bricks, the game this repository builds, with its ball in play",
+    moments=(Moment("first brick", "brick seen",
+                    "`resume` runs the game to the breakpoint on `brick_hit`, and the ball falls "
+                    "into the next brick."),
+             Moment("score", "score seen",
+                    "`read_memory` reads the score by its name: twenty points from the two "
+                    "bricks the ball broke."),
+             Moment("key right again", "keys seen",
+                    "`send_keys` steps the paddle right, left and right; the game logs each key."),
+             Moment("lives 2", "lives held",
+                    "With `lives` frozen, the same ball is lost and the status line still reads "
+                    "3."),
+             Moment("mouse", "pointer seen",
+                    "`send_mouse` puts the pointer at 240,100 and the paddle centres itself "
+                    "under it.")),
+    alt="Bricks on its DOS version: a breakpoint at a brick, the score, the paddle stepped by "
+        "the keys and by the mouse, and the lives frozen",
     precheck=precheck, offers=frozenset({"display"}),
-    host_args={"display": DISPLAY},
+    host_args={"display": DISPLAY, "captures_dir": "the run's own directory"},
     volatile={**VOLATILE, "saved_at": "the wall-clock time a state was saved at"})
 
 
