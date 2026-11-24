@@ -563,10 +563,9 @@ def find(data_hex: str, ref: str, length: int) -> dict[str, Any]:
     Reply: `ref`, `seg_off`, `length`, `span`, `hits` (`SEG:OFF`, at most {HITS_MAX}, highest kept),
     `hits_total`, `truncated`.
     """
-    # THE HEX BEFORE THE MACHINE, which is where `write` already asked it and where this did
-    # not: the same argument of the same server answered `bad_argument` through one tool and
-    # `no_session` through the other. Whether the bytes are hex is as true with no machine as
-    # with one; where `ref` POINTS is not, and that still waits below.
+    # The hex is judged before the machine is asked for, as `write` judges it: whether the
+    # bytes are hex is as true with no machine as with one, while where `ref` POINTS is not,
+    # and that waits below.
     pattern = finder.check_pattern(data_hex)
     session = live()
     session.require_stopped("a search")
@@ -1632,11 +1631,18 @@ def send_keys(keys: list[str],
     # The key is stamped once the call is accepted, not when its commands are written: the frame
     # read before the write takes about a third of a second, and by then the caption may already
     # be the next call's, so the mark would hang under a caption that is not its own.
+    shown = dpresence.of(STATE.session)
+    before = shown.keys_marked()
+
     def mark() -> None:
-        dpresence.keys_sent(dpresence.of(STATE.session), keys, modifiers or (), action)
+        dpresence.keys_sent(shown, keys, modifiers or (), action)
+
+    def unmark() -> None:
+        """Take back exactly the marks this call made, whatever it did to the keys."""
+        shown.keys_restore(before)
 
     return inputs.send_keys(live(probe=False), keys, modifiers, expect or None, seconds,
-                            bridge(ctx), action, on_ready=mark)
+                            bridge(ctx), action, on_ready=mark, on_failed=unmark)
 
 
 @tool("Send mouse input", summary=one_line.send_mouse, on_cancel="none")

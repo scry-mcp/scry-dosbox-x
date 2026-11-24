@@ -179,7 +179,7 @@ def test_the_listener_that_draws_a_caption_hears_the_names_whatever_the_switch_s
     _reply_to_an_exit_breakpoint()
     call = listener.heard[0]
     text = abbreviation.caption(call.tool, call.given, call.named)
-    assert text == "breakpoint_interrupt exit (0x21/0x4C) 0x4C", (switch, text)
+    assert text == "breakpoint_interrupt(number=exit (0x21/0x4C), ah=0x4C)", (switch, text)
 
 
 def test_with_the_names_off_a_reply_has_no_names() -> None:

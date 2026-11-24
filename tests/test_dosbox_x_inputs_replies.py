@@ -142,9 +142,10 @@ def test_a_mouse_wait_takes_the_callers_bound_and_reports_its_progress(tmp_path:
     real_wait = fake.e9_wait
 
     def wait(pattern: str, seconds: float, mark: int = 0,
-             progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+             progress: ds.Progress = ds.no_progress,
+             advance: Any = None) -> dict[str, object]:
         progress(1.0, 2.0, "waiting")
-        return real_wait(pattern, seconds, mark, progress)
+        return real_wait(pattern, seconds, mark, progress, advance)
     fake.e9_wait = wait  # type: ignore[method-assign]
     inputs.send_mouse(fake, None, None, "left", "click", "screen", "key_cue_a", 0.3,  # type: ignore[arg-type]
                       lambda *a: ticks.append("tick"))

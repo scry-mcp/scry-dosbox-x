@@ -990,7 +990,7 @@ def test_perform_checks_every_op_before_running_any(tmp_path: Path) -> None:
                                 {"op": "status"}])
     assert out["status"] == "INVALID" and out["failed_at"] == 1, out
     assert out["steps_completed"] == 0 and out["ran"] == [], out
-    assert fake.keys_sent == [] if hasattr(fake, "keys_sent") else True
+    assert fake.scancodes_sent == [], fake.scancodes_sent
 
 
 def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(

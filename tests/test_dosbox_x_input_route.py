@@ -17,11 +17,11 @@ from typing import Any, cast
 import pytest
 from channel_double import SilentChannel
 from dosbox_x_server_support import _guest, _names
-from scry_core import judges
+from scry_core import judges, presence
 from scry_core.reply_contract import unavailable
 from scry_core.screen_map import Pointer
 
-from scry_dosbox_x import inputs, running, server, stub_link
+from scry_dosbox_x import control, inputs, running, server, stub_link
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import session as ds
@@ -813,6 +813,89 @@ def test_an_input_sent_while_the_channel_is_silent_says_nothing_went_in(
     assert "NOT sent" in message and "`status`" in message, message
     assert "whether it acted is unknown" not in message, message
     assert fake.commands_sent == [] and silent.asked == 1, (fake.commands_sent, silent.asked)
+
+
+class _PresenceSpy:
+    """The overlay writer's input side: every key, pointer and button it was told about."""
+
+    def __init__(self) -> None:
+        self.events: list[tuple[Any, ...]] = []
+
+    def key(self, name: str, down: bool) -> None:
+        self.events.append(("key", name, down))
+
+    def moved(self, x: int, y: int) -> None:
+        self.events.append(("moved", x, y))
+
+    def button(self, name: str, down: bool) -> None:
+        self.events.append(("button", name, down))
+
+    def paused(self, stopped: bool) -> None: ...
+
+    def recording(self, kind: str, on: bool) -> None: ...
+
+    def began(self, call: Any) -> None: ...
+
+    def ended(self, call: Any, outcome: Any) -> None: ...
+
+    def keys_marked(self) -> dict[str, Any]:
+        return {"before": len(self.events)}
+
+    def keys_restore(self, state: dict[str, Any]) -> None:
+        self.events.append(("restored",))
+
+    def close(self) -> None: ...
+
+
+def _spied(fake: Any) -> _PresenceSpy:
+    spy = _PresenceSpy()
+    fake.presence = presence.Shown(held=cast(Any, spy))
+    return spy
+
+
+def test_a_key_the_channel_wrote_none_of_is_not_left_marked(tmp_path: Path) -> None:
+    """The mark rises when the call is accepted, and the channel then writes none of its keys:
+    nothing of the key went in, so its mark is taken back."""
+    fake = _guest(tmp_path)
+    spy = _spied(fake)
+
+    def unwritten(commands: list[bytes]) -> int:
+        raise control.ChannelSilent("EXEC K", 0.2)
+    fake.send_commands = unwritten
+    got = cast(dict[str, Any], server.send_keys(keys=["c"], action="down"))
+    assert got["status"] == "INVALID" and got.get("delivered") is False, got
+    assert spy.events == [("key", "c", True), ("restored",)], spy.events
+
+
+def test_a_performed_key_whose_action_does_not_parse_is_not_marked(tmp_path: Path) -> None:
+    """`perform` judges no action, so the key reaches the route and is refused there: a key
+    that was never built into a sequence leaves no mark."""
+    fake = _guest(tmp_path)
+    spy = _spied(fake)
+    got = cast(dict[str, Any], server.perform(
+        steps=[{"op": "send_keys", "keys": ["a"], "action": "hold"}]))
+    assert got["status"] == "INVALID", got
+    assert spy.events == [], spy.events
+
+
+def test_a_mouse_event_cut_before_its_pointer_was_read_does_not_move_the_mark(
+        tmp_path: Path) -> None:
+    """A click whose send failed part-way has no pointer in its reply; the overlay must not read
+    that as the top-left corner and jump the pointer there."""
+    fake = _guest(tmp_path)
+    spy = _spied(fake)
+    real = fake.send_commands
+    calls = {"n": 0}
+
+    def dies_on_the_click(commands: list[bytes]) -> int:
+        calls["n"] += 1
+        if calls["n"] == 2:      # the report is read first; the click is what is lost
+            raise ds.Invalid("session_broken", "the input socket is gone after the report")
+        return cast(int, real(commands))
+    fake.send_commands = dies_on_the_click
+    got = cast(dict[str, Any], server.send_mouse(button="left"))
+    assert got["status"] == "INVALID" and got.get("delivered") is True, got
+    assert not [e for e in spy.events if e[0] == "moved"], spy.events
 
 
 #: Each opcode's whole frame on the line: SYNC, sequence, the command, the check.

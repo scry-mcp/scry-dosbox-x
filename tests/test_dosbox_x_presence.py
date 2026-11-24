@@ -655,13 +655,15 @@ def test_a_mouse_call_is_reported_as_the_pointer_then_its_buttons(
 
 
 def test_a_mouse_call_is_reported_where_the_driver_says_else_where_it_was_sent() -> None:
+    """The driver's own reading first, then the place it was sent; a reply that names no place
+    and a call that sent none tells the overlay nothing, rather than moving its pointer."""
     reports = _Reports()
     unmapped = {"pointer": {"screen": {"available": False, "why": "x"},
                             "mouse": {"x": 70, "y": 80}}}
     dpresence.mouse_sent(reports.shown, unmapped, 1, 2, None, "click")
     dpresence.mouse_sent(reports.shown, {}, 1, 2, None, "click")
     dpresence.mouse_sent(reports.shown, {}, None, None, None, "click")
-    assert reports.events == [("moved", 70, 80), ("moved", 1, 2), ("moved", 0, 0)]
+    assert reports.events == [("moved", 70, 80), ("moved", 1, 2)]
 
 
 def _serving(monkeypatch: pytest.MonkeyPatch) -> _Reports:
@@ -828,7 +830,7 @@ def test_a_call_heard_by_the_presence_is_delivered_as_a_caption() -> None:
     shown.held.began(call)
     shown.held.ended(call, "ok")
     sent = _sent(channel, 2)
-    assert any(" caption=read_memory%200x10 serial=" in line and " tint=5AC8FA" in line
+    assert any(" caption=read_memory(ref=0x10) serial=" in line and " tint=5AC8FA" in line
                for line in sent), sent
     shown.close()
 

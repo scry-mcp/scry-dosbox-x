@@ -99,8 +99,8 @@ def record_args(look: presence.Look = presence.LOOK) -> str:
 
 
 def encoded(text: str, limit: int) -> str:
-    """`text` as one word of the command: at most `limit` ASCII bytes, a space, a percent sign
-    and any other byte outside the printable range as `%XX`."""
+    """`text` as one word of the command: its first `limit` ASCII bytes, a space, a percent sign
+    and any other byte outside the printable range as `%XX` (so the word itself may be longer)."""
     data = text.encode("ascii", "replace")[:limit]
     return "".join(chr(b) if 0x21 <= b <= 0x7E and b != 0x25 else f"%{b:02X}" for b in data)
 
@@ -279,7 +279,8 @@ def keys_sent(shown: presence.Shown, keys: Iterable[str], modifiers: Iterable[st
 def mouse_sent(shown: presence.Shown, reply: dict[str, Any], x: int | None, y: int | None,
                button: str | None, action: str) -> None:
     """Report a `send_mouse` that went in: the pointer, then the button's presses."""
-    shown.moved(*pointer_where(reply, x, y))
+    if "pointer" in reply or x is not None:
+        shown.moved(*pointer_where(reply, x, y))
     if button is None:
         return
     for down in button_edges(action):
