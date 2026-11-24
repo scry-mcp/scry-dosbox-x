@@ -9,10 +9,10 @@ explosion can be recorded off the Sound Blaster and held, sample for sample, aga
 recording committed beside this file (`boom.wav`). The recording starts where the click's post
 leaves the machine, a few retraces after the game took the click, so it holds the explosion from
 there on: what it holds is decided by the game's sound and timing and by the input route's own
-pacing, and a change to any of them makes that check fail. The run's own `boom.wav`, beside its
+pacing, and a change to any of them makes that check fail. The run's own `run.wav`, beside its
 transcript, is then the new reference to copy over it. The session is windowed so the game can be
-watched; nothing in it needs the window. It records itself, because the board changes inside
-the calls that click it: the loop's moments are stretches of that video.
+watched; nothing in it needs the window. Each moment is its own `record`, which runs the
+machine's frames from where the call before it stopped, so the board it changed is on screen.
 """
 
 from __future__ import annotations
@@ -29,6 +29,7 @@ from scry_core.demo import (
     Reply,
     Run,
     Step,
+    recording,
     window_args,
 )
 
@@ -63,29 +64,22 @@ FLAGGED = 2
 BOOM_FRAMES = 45
 #: The retraces run at the win, which the explosion's reference sound was made with.
 WIN_FRAMES = 240
-#: The first three seconds of the clicks that clear the board, where the widest regions open,
-#: counted in retraces from the call that flagged the mines.
-CLEAR_SHOWN = 210
+#: The frames one moment records: about two seconds at the game's retrace rate, and inside the
+#: shortest and longest a moment may last.
+MOMENT_FRAMES = 130
 WAIT_S = 60
 
 
-def video(run: Run) -> Path:
-    """Where the session records itself."""
-    return run.dir / "video"
-
-
 def boot(run: Run) -> dict[str, Any]:
-    """A fresh log, recording and state directory of this demo's own under the run's: the
-    server writes no file over an existing one."""
+    """A fresh log and state directory of this demo's own under the run's: the server writes no
+    file over an existing one."""
     (run.dir / "mines-e9.log").unlink(missing_ok=True)
-    (run.dir / "boom.wav").unlink(missing_ok=True)
+    (run.dir / "run.wav").unlink(missing_ok=True)
     states = run.dir / "mines-states"
     shutil.rmtree(states, ignore_errors=True)
-    shutil.rmtree(video(run), ignore_errors=True)
     return {**window_args(run), "conf": HERE / "mines.conf", "cwd": HERE, "session_seconds": 900,
             "program": "MINES.COM", "break_on_int3": True,
-            "logfile": run.dir / "mines-e9.log", "state_dir": states,
-            "capture_video": True, "captures_dir": video(run)}
+            "logfile": run.dir / "mines-e9.log", "state_dir": states}
 
 
 def at_ready(reply: Reply, run: Run) -> str:
@@ -181,16 +175,34 @@ def flagged(reply: Reply, run: Run) -> str:
     return f"{FLAGGED} mines flagged with the right button"
 
 
+def first_safe(run: Run) -> tuple[int, int]:
+    """The first cell the memory says is safe, and the one its own click opens."""
+    return plan(mines_of(run.replies["mines"]))[0]
+
+
+def safe_click(run: Run) -> dict[str, Any]:
+    r, c = first_safe(run)
+    x, y = centre(run, r, c)
+    return {"x": x, "y": y, "button": "left", "expect": f"REVEAL {r} {c} "}
+
+
+def safe_opened(reply: Reply, run: Run) -> str:
+    r, c = first_safe(run)
+    expect(reply["verify"]["seen"] is True, f"verify {reply['verify']}")
+    return f"a left click on the safe cell at {r},{c}: the game revealed it"
+
+
 def clear(run: Run) -> dict[str, Any]:
-    clicks = plan(mines_of(run.replies["mines"]))
+    """The plan's clicks but the one the demo already made."""
+    clicks = plan(mines_of(run.replies["mines"]))[1:]
     return {"steps": [{"op": "send_mouse", "x": x, "y": y, "button": "left",
-                       "expect": f"REVEAL {r} {c} ", "seconds": 10}
+                       "expect": f"REVEAL {r} {c} "}
                       for r, c in clicks for x, y in [centre(run, r, c)]],
             "summaries": True}
 
 
 def cleared(reply: Reply, run: Run) -> str:
-    wanted = len(plan(mines_of(run.replies["mines"])))
+    wanted = len(plan(mines_of(run.replies["mines"]))) - 1
     expect(reply["steps_completed"] == wanted,
            f"{reply['steps_completed']} of {wanted} clicks, failed at {reply['failed_at']}")
     return f"{wanted} clicks opened every safe cell, none on a mine"
@@ -227,7 +239,7 @@ def first_mine(run: Run) -> tuple[int, int]:
 def step_on(run: Run) -> dict[str, Any]:
     r, c = first_mine(run)
     x, y = centre(run, r, c)
-    return {"x": x, "y": y, "button": "left", "expect": f"BOOM {r} {c}$", "seconds": 10}
+    return {"x": x, "y": y, "button": "left", "expect": f"BOOM {r} {c}$"}
 
 
 def stepped(reply: Reply, run: Run) -> str:
@@ -280,18 +292,16 @@ STEPS = [
          reads=("`TARGET` means the run stopped at `main_loop`, where the game goes once its "
                 "title is drawn. So the screen read next is whole on any computer.")),
     Step("is title", "screen_map_find", {}, found("title")),
-    Step("play", "send_mouse", {"target": "start", "button": "left", "expect": "NEW 9 9 10$",
-                                "seconds": 10},
+    recording("title seen", MOMENT_FRAMES),
+    Step("play", "send_mouse", {"target": "start", "button": "left", "expect": "NEW 9 9 10$"},
          seen("a click on the title started a beginner's game"), volatile=INPUT_TIMING),
     back_in_loop("board drawn", "the board drawn"),
     Step("is board", "screen_map_find", {}, found("board")),
-    Step("menu", "send_mouse", {"target": "game", "button": "left", "expect": "MENU OPEN$",
-                                "seconds": 10},
+    Step("menu", "send_mouse", {"target": "game", "button": "left", "expect": "MENU OPEN$"},
          seen("Game opened the menu"), volatile=INPUT_TIMING),
     back_in_loop("menu drawn", "the menu drawn"),
     Step("is menu", "screen_map_find", {}, found("menu")),
-    Step("level", "send_mouse", {"target": "beginner", "button": "left",
-                                 "expect": "NEW 9 9 10$", "seconds": 10},
+    Step("level", "send_mouse", {"target": "beginner", "button": "left", "expect": "NEW 9 9 10$"},
          seen("Beginner started a new beginner's game"), volatile=INPUT_TIMING),
     back_in_loop("board drawn again", "the new board drawn"),
     Step("is board again", "screen_map_find", {}, found("board")),
@@ -302,8 +312,11 @@ STEPS = [
          shown=("summary", "length"),
          reads=("`mines` is a symbol of the build, one byte per cell. Where the mines are is "
                 "data the server can read and a player cannot.")),
+    recording("mines read", MOMENT_FRAMES),
     Step("origin", "read_memory", {"ref": "board_x", "length": 4}, origin_read),
     Step("flags", "perform", flags, flagged),
+    Step("safe", "send_mouse", safe_click, safe_opened, volatile=INPUT_TIMING),
+    recording("safe opened", MOMENT_FRAMES),
     Step("clear", "perform", clear, cleared,
          title="Clear the board in one call",
          ask=("Open every safe cell with as few clicks as the game's flood fill allows, waiting "
@@ -311,6 +324,7 @@ STEPS = [
          shown=("summary", "steps_completed"),
          reads=("Each click waits for the line the game logs when it reveals that cell, so a "
                 "click that missed fails at once. `perform` sends them all as one call.")),
+    recording("board cleared", MOMENT_FRAMES),
     back_in_loop("cleared drawn", "the last reveal and the win dialog drawn"),
     Step("won", "log", {"channel": "guest", "pattern": "WIN$"}, won),
     Step("park", "send_mouse", {"x": PARK[0], "y": PARK[1]}, parked),
@@ -327,20 +341,16 @@ STEPS = [
                    "cycles": "the emulator's own count, a few cycles apart from run to run"},
          optional={"note": "it comes only when the stop landed in a ROM handler, which is the "
                            "host's"}),
-    Step("again", "send_mouse", {"target": "ok", "button": "left", "expect": "NEW 9 9 10$",
-                                 "seconds": 10},
+    Step("again", "send_mouse", {"target": "ok", "button": "left", "expect": "NEW 9 9 10$"},
          seen("OK started the next game"), volatile=INPUT_TIMING),
     back_in_loop("next board drawn", "the next board drawn"),
     Step("next mines", "read_memory", {"ref": "mines", "length": ROWS * COLS}, mines_read),
     Step("mine", "send_mouse", step_on, stepped, volatile=INPUT_TIMING),
     Step("boom", "log", {"channel": "guest", "pattern": "BOOM"}, boom_said),
     Step("record", "audio_record", lambda run: {"frames": BOOM_FRAMES,
-                                                "dest": run.dir / "boom.wav"}, recorded,
+                                                "dest": run.dir / "run.wav"}, recorded,
          volatile={"path": "the run's own directory"}),
-    Step("heard", "audio_compare", lambda run: {"method": "measure",
-                                                "path": run.dir / "boom.wav"}, heard,
-         volatile={"path": "the run's own directory"}),
-    Step("exact", "audio_compare", lambda run: {"method": "diff", "a": run.dir / "boom.wav",
+    Step("exact", "audio_compare", lambda run: {"method": "diff", "a": run.dir / "run.wav",
                                                 "b": HERE / "boom.wav", "align": False},
          exact, volatile={"a": "the run's own directory"},
          title="Compare a sound with its reference",
@@ -348,6 +358,10 @@ STEPS = [
          shown=("summary", "exact"),
          reads=("`exact` is true only when every sample is equal. The recording comes from the "
                 "emulated Sound Blaster's digital output, not from the speakers.")),
+    recording("explosion shown", MOMENT_FRAMES),
+    Step("heard", "audio_compare", lambda run: {"method": "measure",
+                                                "path": run.dir / "run.wav"}, heard,
+         volatile={"path": "the run's own directory"}),
     Step("park again", "send_mouse", {"x": PARK[0], "y": PARK[1]}, parked),
     Step("is lose", "screen_map_find", {}, found("lose")),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
@@ -358,14 +372,21 @@ DEMO = Demo(
     name="mines", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
     capture=lambda run: run.dir / "screen.png",
-    moments=(Moment("flags", "clear", "One `perform` sends the clicks the game's memory says "
-                                      "are safe, and the board opens.",
-                    frames=CLEAR_SHOWN),
-             Moment("next board drawn", "park again",
-                    "On the next board `send_mouse` clicks a cell the memory says holds a mine.")),
-    alt="Minesweeper cleared click by click without a miss, then a mine stepped on",
-    video=video, precheck=precheck, offers=frozenset({"display"}),
-    host_args={"display": DISPLAY, "captures_dir": "the run's own directory"},
+    moments=(Moment("is title", "title seen",
+                    "`screen_map_find` names the screen the game is showing: the title."),
+             Moment("mines", "mines read",
+                    "`read_memory` reads the 81 bytes that say where the mines are."),
+             Moment("safe", "safe opened",
+                    "`send_mouse` clicks a cell the memory says is safe, and the game reveals "
+                    "it."),
+             Moment("clear", "board cleared",
+                    "One `perform` sends the rest of the clicks, and the board opens."),
+             Moment("exact", "explosion shown",
+                    "The explosion recorded from the emulated Sound Blaster equals `boom.wav`.")),
+    alt="Minesweeper read out of memory and cleared click by click without a miss, then a mine "
+        "stepped on",
+    precheck=precheck, offers=frozenset({"display"}),
+    host_args={"display": DISPLAY},
     volatile=VOLATILE)
 
 
