@@ -612,7 +612,7 @@ One entry matches, so `entries` gives it whole: what Ralf Brown's list says firs
   ],
   "truncated": false,
   "examined": 668,
-  "served": 994,
+  "served": 1012,
   "held_back": 0
 }
 ```
@@ -697,7 +697,7 @@ Reply: `query`, `scope`, `entries_total`, `entries`, `truncated`, `examined`, `s
 `held_back`; nothing matched: no entry, `nearest` and a `note`: it stays a number.
 `unconfirmed` lists ids held back.
 
-Scopes: am9517a, chip, ibm-pc, ins8250, mc146818, mc6845, pic8259, pit8253, ym3812, ymf262, z80.
+Scopes: am9517a, chip, ibm-pc, ins8250, mc146818, mc6845, pic8259, pit8253, saa1099, sn76496, ym3812, ymf262, z80.
 
 Reference: REFERENCE.md, Knowledge base.
 ```
