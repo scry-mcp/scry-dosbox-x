@@ -80,9 +80,32 @@ MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK, PRESENCE_OVERLAY_MARK,
 _marks_seen: dict[tuple[str, int, int], frozenset[bytes]] = {}
 
 
+def launched(path: str) -> str:
+    """The program `path` runs: the file itself, or what a launcher script execs. A `.app` carries
+    one, and the marks are in the program, never in the script that starts it."""
+    real = os.path.realpath(path)
+    if os.path.isdir(real):
+        inside = Path(real, "Contents", "MacOS")
+        entries = sorted(p for p in inside.iterdir() if p.is_file()) if inside.is_dir() else []
+        return launched(str(entries[0])) if len(entries) == 1 else real
+    try:
+        data = Path(real).read_bytes()[:4096]
+    except OSError:
+        return real
+    if not data.startswith(b"#!"):
+        return real
+    for line in data.decode("utf-8", "replace").splitlines():
+        words = line.split()
+        if len(words) >= 2 and words[0] == "exec":
+            target = os.path.expanduser(words[1].strip("'\""))
+            if os.path.isfile(target):
+                return os.path.realpath(target)
+    return real
+
+
 def _carries(binary: str, mark: bytes, what: str) -> bool:
     """Whether the build holds `mark`; all marks are read in one pass, cached by path and stat."""
-    real = os.path.realpath(binary)
+    real = launched(binary)
     try:
         st = os.stat(real)
         key = (real, st.st_size, st.st_mtime_ns)

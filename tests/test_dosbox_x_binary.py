@@ -188,3 +188,15 @@ def test_build_check_lists_the_layers_the_build_draws_and_omits_them_without_the
     monkeypatch.setattr(binaries, "debugger_commands", lambda _path: commands)
     got = cast(dict[str, Any], server.build_check(binary=str(mine)))
     assert got.get("presence_layers") == layers, got
+
+
+def test_a_bundle_is_read_as_the_program_its_launcher_execs(tmp_path: Path) -> None:
+    """A `.app` runs its program through a script in `Contents/MacOS`; the marks are in the
+    program, and the script that starts it carries none."""
+    program = tmp_path / "program"
+    program.write_bytes(b"#!/bin/sh\n# \0debugger headless\0\n")
+    program.chmod(0o755)
+    inside = tmp_path / "Scry.app" / "Contents" / "MacOS"
+    inside.mkdir(parents=True)
+    (inside / "Scry").write_text(f"#!/bin/sh\nexec {program} \"$@\"\n")
+    assert binaries.debugger_headless(str(tmp_path / "Scry.app")) is True
