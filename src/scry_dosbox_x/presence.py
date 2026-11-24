@@ -89,12 +89,11 @@ def channel_args(look: presence.Look = presence.LOOK) -> str:
 
 
 def caption_args(look: presence.Look = presence.LOOK) -> str:
-    """The look of the layers protocol 3 added, as `Look` holds it: the command takes the scroll
-    speed in characters a second and keeps its own fades."""
+    """The look of the layers protocol 3 added, as `Look` holds it: the command keeps its own
+    fades, and cuts a caption wider than its band."""
     return (f"caption_text_rgb={look.caption_text_rgb:06X} caption_alpha={look.caption_alpha:g} "
             f"keycap_rgb={look.keycap_rgb:06X} keycap_text_rgb={look.keycap_text_rgb:06X} "
-            f"keycap_alpha={look.keycap_alpha:g} scroll_cps={look.scroll_cps:g} "
-            f"font_share={look.font_share:g}")
+            f"keycap_alpha={look.keycap_alpha:g} font_share={look.font_share:g}")
 
 
 def record_args(look: presence.Look = presence.LOOK) -> str:

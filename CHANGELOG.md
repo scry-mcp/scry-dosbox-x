@@ -4,6 +4,8 @@ What a client of the server notices.
 
 ## Unreleased
 
+- A caption wider than its band is cut in the window and marked with `..`, never scrolled: a
+  line that moves cannot be read while the machine runs.
 - `send_keys` and `send_mouse` sent to a running guest answer `frame_before` and `frame_after`,
   the display frames the input went in between, read from `RUNSTATE` without stopping the guest.
   A build whose `RUNSTATE` prints no frame count says why instead.
