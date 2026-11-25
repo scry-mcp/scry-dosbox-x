@@ -39,6 +39,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "input_port": "<volatile>",
   "background": true,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "<volatile>",
   "declarations": {
@@ -85,6 +86,15 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "entry": "BPINT 21 AH=62",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
+  "names": [
+    {
+      "field": "given.number",
+      "number": "0x21/0x62",
+      "kind": "call",
+      "name": "get psp",
+      "id": "ibm-pc:call:0x21/0x62"
+    }
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -198,6 +208,8 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "run_to",
+      "frame_before": 1,
+      "frame_after": 352,
       "reply": {
         "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 250",
         "status": "ok",
@@ -208,11 +220,15 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": 352,
+      "frame_after": 352,
       "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": 352,
+      "frame_after": 355,
       "reply": {
         "summary": "screen_wait screen 'hiscores': found after 2 firings of breakpoint 'Check_Money100'",
         "status": "ok",
@@ -223,21 +239,29 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": 355,
+      "frame_after": 355,
       "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 4,
       "op": "screen_map_find",
+      "frame_before": 355,
+      "frame_after": 355,
       "reply": {"summary": "screen_map_find: hiscores (file), 2 controls", "status": "ok"}
     },
     {
       "step": 5,
       "op": "read_memory",
+      "frame_before": 355,
+      "frame_after": 355,
       "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0000", "status": "ok"}
     },
     {
       "step": 6,
       "op": "send_keys",
+      "frame_before": 355,
+      "frame_after": 361,
       "reply": {
         "summary": "send_keys (guest): sent, reaction not checked, 6 frames to frame 361",
         "status": "ok",
@@ -248,11 +272,15 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
     {
       "step": 7,
       "op": "breakpoint_at",
+      "frame_before": 361,
+      "frame_after": 361,
       "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 8,
       "op": "screen_wait",
+      "frame_before": 361,
+      "frame_after": 362,
       "reply": {
         "summary": "screen_wait screen 'insert': found after 1 firing of breakpoint 'Check_Money100'",
         "status": "ok",
@@ -263,21 +291,29 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
     {
       "step": 9,
       "op": "declaration_clear",
+      "frame_before": 362,
+      "frame_after": 362,
       "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 10,
       "op": "screen_map_find",
+      "frame_before": 362,
+      "frame_after": 362,
       "reply": {"summary": "screen_map_find: insert (file), 2 controls", "status": "ok"}
     },
     {
       "step": 11,
       "op": "read_memory",
+      "frame_before": 362,
+      "frame_after": 362,
       "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0300", "status": "ok"}
     },
     {
       "step": 12,
       "op": "send_keys",
+      "frame_before": 362,
+      "frame_after": 371,
       "reply": {
         "summary": "send_keys (guest): sent, reaction not checked, 9 frames to frame 371",
         "status": "ok",
@@ -288,6 +324,8 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
     {
       "step": 13,
       "op": "run_to",
+      "frame_before": 371,
+      "frame_after": 380,
       "reply": {
         "summary": "run_to Level_Write: TARGET at 08EB:000058FE, control counted 7",
         "status": "ok",
@@ -298,11 +336,15 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
     {
       "step": 14,
       "op": "breakpoint_at",
+      "frame_before": 380,
+      "frame_after": 380,
       "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 15,
       "op": "screen_wait",
+      "frame_before": 380,
+      "frame_after": 382,
       "reply": {
         "summary": "screen_wait screen 'level': found after 1 firing of breakpoint 'Check_Money100'",
         "status": "ok",
@@ -313,31 +355,43 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
     {
       "step": 16,
       "op": "declaration_clear",
+      "frame_before": 382,
+      "frame_after": 382,
       "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 17,
       "op": "screen_map_find",
+      "frame_before": 382,
+      "frame_after": 382,
       "reply": {"summary": "screen_map_find: level (file), 3 controls", "status": "ok"}
     },
     {
       "step": 18,
       "op": "read_memory",
+      "frame_before": 382,
+      "frame_after": 382,
       "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0200", "status": "ok"}
     },
     {
       "step": 19,
       "op": "read_memory",
+      "frame_before": 382,
+      "frame_after": 382,
       "reply": {"summary": "read_memory Stage_Act: 2 bytes at 08EB:0000B0D8: 0000", "status": "ok"}
     },
     {
       "step": 20,
       "op": "breakpoint_at",
+      "frame_before": 382,
+      "frame_after": 382,
       "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 21,
       "op": "screen_wait",
+      "frame_before": 382,
+      "frame_after": 592,
       "reply": {
         "summary": "screen_wait screen 'play': found after 150 firings of breakpoint 'Check_Money100'",
         "status": "ok",
@@ -348,11 +402,15 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
     {
       "step": 22,
       "op": "declaration_clear",
+      "frame_before": 592,
+      "frame_after": 592,
       "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 23,
       "op": "screen_map_find",
+      "frame_before": 592,
+      "frame_after": 592,
       "reply": {"summary": "screen_map_find: play (file), 3 controls", "status": "ok"}
     },
     {
@@ -365,8 +423,13 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
         "seg_off": "08EB:0000AE32",
         "length": 12,
         "hex": "010004000200040003000200",
+        "names": [
+          {"field": "given.ref", "number": "0x00013ce2", "kind": "symbol", "name": "Player1"}
+        ],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 639,
+      "frame_after": 639
     }
   ],
   "steps_total": 34,
@@ -575,13 +638,13 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
 
 </details>
 
-**11. `record`**: OK second shot: recorded 71 frames in ./tmp/demos/lineup/second-shot.avi
+**11. `record`**: OK second shot: recorded 141 frames in ./tmp/demos/lineup/second-shot.avi
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "frames": 71,
+  "frames": 141,
   "dest": "./tmp/demos/lineup/second-shot.avi",
   "seconds": 300
 }
@@ -608,7 +671,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "frame_after": "<volatile>",
   "cycles": "<volatile>",
   "kind": "avi",
-  "frames": 71,
+  "frames": 141,
   "began": true,
   "ended": true,
   "path": "<volatile>",
@@ -633,7 +696,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "send_keys (guest): sent, reaction not checked, 6 frames to frame 863",
+  "summary": "send_keys (guest): sent, reaction not checked, 6 frames to frame 933",
   "status": "ok",
   "keys": ["up"],
   "modifiers": [],
@@ -645,7 +708,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "pc": "<volatile>",
   "cpu_mode": "real",
   "stop_seq": 86,
-  "frame": 863,
+  "frame": 933,
   "instruction": "<volatile>",
   "regs": "<volatile>",
   "watches": [],
@@ -673,7 +736,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "send_keys (guest): sent, reaction not checked, 20 frames to frame 883",
+  "summary": "send_keys (guest): sent, reaction not checked, 20 frames to frame 953",
   "status": "ok",
   "keys": ["right"],
   "modifiers": [],
@@ -685,7 +748,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "pc": "<volatile>",
   "cpu_mode": "real",
   "stop_seq": 106,
-  "frame": 883,
+  "frame": 953,
   "instruction": "<volatile>",
   "regs": "<volatile>",
   "watches": [],
@@ -727,13 +790,16 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "controls": [
     {"ref": "Check_Money25", "at": "08EB:19DC", "hits_in_run": 0, "removed": true}
   ],
-  "frame": 883,
+  "frame": 953,
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 107,
   "instruction": "<volatile>",
+  "names": [
+    {"field": "given.ref", "number": "0x00009cf2", "kind": "symbol", "name": "Gest_Scores"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -753,7 +819,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "send_keys (guest): sent, reaction not checked, 10 frames to frame 893",
+  "summary": "send_keys (guest): sent, reaction not checked, 10 frames to frame 963",
   "status": "ok",
   "keys": ["up"],
   "modifiers": [],
@@ -765,7 +831,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "pc": "<volatile>",
   "cpu_mode": "real",
   "stop_seq": 117,
-  "frame": 893,
+  "frame": 963,
   "instruction": "<volatile>",
   "regs": "<volatile>",
   "watches": [],
@@ -781,13 +847,13 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
 
 </details>
 
-**16. `record`**: OK third shot: recorded 71 frames in ./tmp/demos/lineup/third-shot.avi
+**16. `record`**: OK third shot: recorded 141 frames in ./tmp/demos/lineup/third-shot.avi
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "frames": 71,
+  "frames": 141,
   "dest": "./tmp/demos/lineup/third-shot.avi",
   "seconds": 300
 }
@@ -814,7 +880,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "frame_after": "<volatile>",
   "cycles": "<volatile>",
   "kind": "avi",
-  "frames": 71,
+  "frames": 141,
   "began": true,
   "ended": true,
   "path": "<volatile>",
@@ -839,7 +905,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "send_keys (guest): sent, reaction not checked, 6 frames to frame 970",
+  "summary": "send_keys (guest): sent, reaction not checked, 6 frames to frame 1110",
   "status": "ok",
   "keys": ["up"],
   "modifiers": [],
@@ -851,7 +917,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "pc": "<volatile>",
   "cpu_mode": "real",
   "stop_seq": 124,
-  "frame": 970,
+  "frame": 1110,
   "instruction": "<volatile>",
   "regs": "<volatile>",
   "watches": [],
@@ -879,7 +945,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "send_keys (guest): sent, reaction not checked, 10 frames to frame 980",
+  "summary": "send_keys (guest): sent, reaction not checked, 10 frames to frame 1120",
   "status": "ok",
   "keys": ["space"],
   "modifiers": [],
@@ -891,7 +957,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "pc": "<volatile>",
   "cpu_mode": "real",
   "stop_seq": 134,
-  "frame": 980,
+  "frame": 1120,
   "instruction": "<volatile>",
   "regs": "<volatile>",
   "watches": [],
@@ -933,13 +999,16 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "controls": [
     {"ref": "Check_Money25", "at": "08EB:19DC", "hits_in_run": 1, "removed": true}
   ],
-  "frame": 981,
+  "frame": 1121,
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 135,
   "instruction": "<volatile>",
+  "names": [
+    {"field": "given.ref", "number": "0x00009cf2", "kind": "symbol", "name": "Gest_Scores"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -959,7 +1028,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "send_keys (guest): sent, reaction not checked, 9 frames to frame 990",
+  "summary": "send_keys (guest): sent, reaction not checked, 9 frames to frame 1130",
   "status": "ok",
   "keys": ["up"],
   "modifiers": [],
@@ -971,7 +1040,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "pc": "<volatile>",
   "cpu_mode": "real",
   "stop_seq": 144,
-  "frame": 990,
+  "frame": 1130,
   "instruction": "<volatile>",
   "regs": "<volatile>",
   "watches": [],
@@ -987,13 +1056,13 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
 
 </details>
 
-**21. `record`**: OK fourth shot: recorded 71 frames in ./tmp/demos/lineup/fourth-shot.avi
+**21. `record`**: OK fourth shot: recorded 141 frames in ./tmp/demos/lineup/fourth-shot.avi
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "frames": 71,
+  "frames": 141,
   "dest": "./tmp/demos/lineup/fourth-shot.avi",
   "seconds": 300
 }
@@ -1020,7 +1089,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "frame_after": "<volatile>",
   "cycles": "<volatile>",
   "kind": "avi",
-  "frames": 71,
+  "frames": 141,
   "began": true,
   "ended": true,
   "path": "<volatile>",
@@ -1045,7 +1114,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "send_keys (guest): sent, reaction not checked, 6 frames to frame 1067",
+  "summary": "send_keys (guest): sent, reaction not checked, 6 frames to frame 1277",
   "status": "ok",
   "keys": ["up"],
   "modifiers": [],
@@ -1057,7 +1126,7 @@ Every call of the run with its reply, in order: 24 calls. `<volatile>` stands fo
   "pc": "<volatile>",
   "cpu_mode": "real",
   "stop_seq": 151,
-  "frame": 1067,
+  "frame": 1277,
   "instruction": "<volatile>",
   "regs": "<volatile>",
   "watches": [],

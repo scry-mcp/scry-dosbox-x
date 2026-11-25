@@ -7,7 +7,7 @@
 2. `send_keys` moves the player one column right and fires again.
 3. `send_keys` raises the next colour and fires a third time.
 
-<!-- moments-ms: 1013,1013,1013 -->
+<!-- moments-ms: 2012,2012,2012 -->
 <!-- demo-motion:end -->
 
 *LineUp* (Eco-Games / GAMART, 1994) was an arcade game, and its team ported the same source to
@@ -40,8 +40,7 @@ does not take your keyboard; `--watch` brings it in front, for when you want to 
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
   `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
-  `PATH`, and Pillow and numpy (the `decorate` extra), which draw the border and the pointer
-  over the loop.
+  `PATH`.
 
 Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
 That last one is no copy of the game or a server that did not start.
@@ -92,6 +91,8 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
     {
       "step": 0,
       "op": "run_to",
+      "frame_before": 1,
+      "frame_after": 352,
       "reply": {
         "summary": "run_to Draw_High_Scores_Screen: TARGET at 08EB:00001DF6, control counted 250",
         "status": "ok",
@@ -102,11 +103,15 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": 352,
+      "frame_after": 352,
       "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": 352,
+      "frame_after": 355,
       "reply": {
         "summary": "screen_wait screen 'hiscores': found after 2 firings of breakpoint 'Check_Money100'",
         "status": "ok",
@@ -117,21 +122,29 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": 355,
+      "frame_after": 355,
       "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 4,
       "op": "screen_map_find",
+      "frame_before": 355,
+      "frame_after": 355,
       "reply": {"summary": "screen_map_find: hiscores (file), 2 controls", "status": "ok"}
     },
     {
       "step": 5,
       "op": "read_memory",
+      "frame_before": 355,
+      "frame_after": 355,
       "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0000", "status": "ok"}
     },
     {
       "step": 6,
       "op": "send_keys",
+      "frame_before": 355,
+      "frame_after": 361,
       "reply": {
         "summary": "send_keys (guest): sent, reaction not checked, 6 frames to frame 361",
         "status": "ok",
@@ -142,11 +155,15 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
     {
       "step": 7,
       "op": "breakpoint_at",
+      "frame_before": 361,
+      "frame_after": 361,
       "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 8,
       "op": "screen_wait",
+      "frame_before": 361,
+      "frame_after": 362,
       "reply": {
         "summary": "screen_wait screen 'insert': found after 1 firing of breakpoint 'Check_Money100'",
         "status": "ok",
@@ -157,21 +174,29 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
     {
       "step": 9,
       "op": "declaration_clear",
+      "frame_before": 362,
+      "frame_after": 362,
       "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 10,
       "op": "screen_map_find",
+      "frame_before": 362,
+      "frame_after": 362,
       "reply": {"summary": "screen_map_find: insert (file), 2 controls", "status": "ok"}
     },
     {
       "step": 11,
       "op": "read_memory",
+      "frame_before": 362,
+      "frame_after": 362,
       "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0300", "status": "ok"}
     },
     {
       "step": 12,
       "op": "send_keys",
+      "frame_before": 362,
+      "frame_after": 371,
       "reply": {
         "summary": "send_keys (guest): sent, reaction not checked, 9 frames to frame 371",
         "status": "ok",
@@ -182,6 +207,8 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
     {
       "step": 13,
       "op": "run_to",
+      "frame_before": 371,
+      "frame_after": 380,
       "reply": {
         "summary": "run_to Level_Write: TARGET at 08EB:000058FE, control counted 7",
         "status": "ok",
@@ -192,11 +219,15 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
     {
       "step": 14,
       "op": "breakpoint_at",
+      "frame_before": 380,
+      "frame_after": 380,
       "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 15,
       "op": "screen_wait",
+      "frame_before": 380,
+      "frame_after": 382,
       "reply": {
         "summary": "screen_wait screen 'level': found after 1 firing of breakpoint 'Check_Money100'",
         "status": "ok",
@@ -207,31 +238,43 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
     {
       "step": 16,
       "op": "declaration_clear",
+      "frame_before": 382,
+      "frame_after": 382,
       "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 17,
       "op": "screen_map_find",
+      "frame_before": 382,
+      "frame_after": 382,
       "reply": {"summary": "screen_map_find: level (file), 3 controls", "status": "ok"}
     },
     {
       "step": 18,
       "op": "read_memory",
+      "frame_before": 382,
+      "frame_after": 382,
       "reply": {"summary": "read_memory Credits: 2 bytes at 08EB:0000BC04: 0200", "status": "ok"}
     },
     {
       "step": 19,
       "op": "read_memory",
+      "frame_before": 382,
+      "frame_after": 382,
       "reply": {"summary": "read_memory Stage_Act: 2 bytes at 08EB:0000B0D8: 0000", "status": "ok"}
     },
     {
       "step": 20,
       "op": "breakpoint_at",
+      "frame_before": 382,
+      "frame_after": 382,
       "reply": {"summary": "breakpoint_at Check_Money100: armed", "status": "ok"}
     },
     {
       "step": 21,
       "op": "screen_wait",
+      "frame_before": 382,
+      "frame_after": 592,
       "reply": {
         "summary": "screen_wait screen 'play': found after 150 firings of breakpoint 'Check_Money100'",
         "status": "ok",
@@ -242,11 +285,15 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
     {
       "step": 22,
       "op": "declaration_clear",
+      "frame_before": 592,
+      "frame_after": 592,
       "reply": {"summary": "declaration_clear breakpoint all: 1 cleared", "status": "ok"}
     },
     {
       "step": 23,
       "op": "screen_map_find",
+      "frame_before": 592,
+      "frame_after": 592,
       "reply": {"summary": "screen_map_find: play (file), 3 controls", "status": "ok"}
     },
     {
@@ -259,8 +306,13 @@ One call runs the whole game script: a coin, a start, a move, a colour and a sho
         "seg_off": "08EB:0000AE32",
         "length": 12,
         "hex": "010004000200040003000200",
+        "names": [
+          {"field": "given.ref", "number": "0x00013ce2", "kind": "symbol", "name": "Player1"}
+        ],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 639,
+      "frame_after": 639
     }
   ],
   "steps_total": 34,
