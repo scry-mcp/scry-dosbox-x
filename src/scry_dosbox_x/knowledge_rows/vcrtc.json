@@ -1,0 +1,3189 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "vcrtc",
+ "title": "The VGA CRT controller, its registers",
+ "kind": "register",
+ "scope": "vcrtc",
+ "covers": "The CRT controller registers of the IBM VGA, reached through the index register at hex 03D4 and the data port behind it",
+ "source": "official",
+ "documents": [
+  {
+   "name": "PS2-Video-Subsystems.raw.txt",
+   "variant": "VGA"
+  }
+ ],
+ "official": {
+  "PS2-Video-Subsystems.raw.txt": [
+   "3055-3094",
+   "3096-3100",
+   "3102-3104",
+   "3105-3114",
+   "3118-3119",
+   "3120-3121",
+   "3125-3128",
+   "3129-3130",
+   "3134-3136",
+   "3137-3140",
+   "3150-3171",
+   "3177-3182",
+   "3183-3187",
+   "3188-3189",
+   "3193-3195",
+   "3196-3197",
+   "3204-3207",
+   "3208-3218",
+   "3219-3227",
+   "3228-3229",
+   "3233-3238",
+   "3239-3240",
+   "3258-3271",
+   "3272-3273",
+   "3282-3288",
+   "3289-3294",
+   "3295-3297",
+   "3298-3299",
+   "3307-3315",
+   "3316-3319",
+   "3320-3322",
+   "3323-3324",
+   "3333-3342",
+   "3343-3344",
+   "3351-3360",
+   "3361-3362",
+   "3366-3372",
+   "3373-3374",
+   "3378-3379",
+   "3380-3381",
+   "3385-3386",
+   "3387-3388",
+   "3392-3393",
+   "3394-3395",
+   "3399-3402",
+   "3403-3404",
+   "3413-3417",
+   "3418-3424",
+   "3425-3430",
+   "3431-3435",
+   "3436-3444",
+   "3445-3446",
+   "3450-3454",
+   "3455-3456",
+   "3460-3464",
+   "3465-3466",
+   "3474-3486",
+   "3487-3488",
+   "3492-3497",
+   "3498-3499",
+   "3503-3510",
+   "3511-3512",
+   "3531-3536",
+   "3537-3549",
+   "3585-3595",
+   "3596-3600",
+   "3601-3605",
+   "3608-3613",
+   "3614-3621",
+   "3622-3631",
+   "3632-3633",
+   "3637-3642"
+  ]
+ },
+ "closed": [
+  {
+   "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+   "lines": "3065-3092",
+   "as": "see-also"
+  },
+  {
+   "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+   "lines": "3094",
+   "as": "layout"
+  }
+ ],
+ "handlers": [],
+ "engine": [
+  "VGA_StartResize",
+  "VGA_RenderOnDemandUpTo",
+  "VGA_CheckScanLength",
+  "VGA_CheckAddrShift",
+  "VGA_SetupDrawing",
+  "page_flip_debug_notify",
+  "write_p3d5",
+  "read_p3d5",
+  "PIC_DeActivateIRQ",
+  "PIC_RemoveEvents"
+ ],
+ "entries": [
+  {
+   "key": "0x3D4",
+   "name": "CRTC index/data ports",
+   "aliases": [
+    "CRTC address register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3055-3064"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3096-3100"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3102-3104"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_read_p3d4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x00"
+     ],
+     "preamble": true
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "A data register is accessed by writing its index to the Address register at hex 03D4 or 03B4, then the data to the other port; the capture reads 0384.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3055-3057",
+       "sha": "5948cdadb648edae6fe200a3b6afdc52d884cc499da308e55df7a7ecdf4a9f4d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The I/O address used depends on bit 0 of the Miscellaneous Output register; the figure writes the variable digit as a question mark.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3057-3061",
+       "sha": "c9a46ce6db39cc6e1474abcc39f9f6704c917ebade142b0d7dac3b37da42e9ee"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Reserved bits must be preserved: read the register first and change only the bits required.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3062-3064",
+       "sha": "dffe733fc564e3d93d2e90ed5905dbc4188edb5256ac8c7e11396f41615f78dd"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The Address register is at hex 03D4 or 03B4, the capture reading 0384 and 0304, and holds an index that points at a data register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3096-3097",
+       "sha": "adabf14722b585213e79619ba6916a77c6051be204ea211973113b02428d819d"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bits 4-0",
+     "of": "doc",
+     "text": "Bits 4-0 are the index of the data register reached through the port at hex 03D5, the capture reading 0305 or 0385.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3102-3104",
+       "sha": "faa3ea337163d3f245850535792c268d56145f604087946cf19297175027011f"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "doc",
+     "state": "undetermined",
+     "text": "The three high bits are set to 0 and undefined on read; the capture prints the zero as e.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3098-3100",
+       "sha": "3f2c3fbbae9426cce868b7ad554d744f927d9fa465ff0760b6198a71f105e1d2"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "state": "undetermined",
+     "text": "The address port is read back as the whole stored byte, so bits 7-5 keep what was written to them.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "78",
+       "sha": "029a02c511daf92f189165aa7a904ab83479f50fd21d7106dc829136d1c9e148"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "A write of the data port is ignored while the VGA register lockout switch is on.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "82-83",
+       "sha": "2ac51aaef5d0cbe7a01ab858b54ef2de34df23538626a3a93ba02a1c573d48ab"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "9",
+     "on": "bits 7-0",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "The whole stored byte is the index: bits 7-5 select the register too, not only bits 4-0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "65",
+       "sha": "5631ab1bdca6d2929afa6cc377d676b4d05bf1e1166de944b40654382dd526a4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "88",
+       "sha": "00d17700296bd416045d0d57c6ad278fe3b242fa4be89323fe027ec230c98559"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x19",
+   "name": "unlisted index",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3093"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_read_p3d5x",
+     "case": [
+      "default"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Index values not listed in the register table are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3093",
+       "sha": "d30d55439905e34a8f3252f8de66eb21f21fbce9acde33b9d851e20337f4c13d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write to an unlisted index reaches no register the table defines.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3093",
+       "sha": "d30d55439905e34a8f3252f8de66eb21f21fbce9acde33b9d851e20337f4c13d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X hands an unlisted index and the value to the SVGA write handler when one is installed, and otherwise logs an unknown index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "413-419",
+       "sha": "0550ab7f1f83d468482e9bc0b61ce6501b3ffe14783d8e353002ec8b1e953619"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of an unlisted index goes to the SVGA read handler, or logs the unknown index and answers 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "485-490",
+       "sha": "c458dfdcd93494cd5fd15efaa2155ce5e0eaa18849c806870b7c7b53886ea18b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "412-418",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "433",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "484-490",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "65",
+     "as": "parent",
+     "owner": "vcrtc:register:0x3D4"
+    }
+   ]
+  },
+  {
+   "key": "0x00",
+   "name": "Horizontal Total",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3105-3114"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3118-3119"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x00"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Horizontal Total register (bits 7-0) holds the total number of characters in one horizontal scan interval, retrace time included.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3105-3109",
+       "sha": "758635d91857a115804bf3184690ef289925e35218a7125d95f25aab3901ba43"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "A character counter counts the character clock, comparators compare the register value with the horizontal character width for horizontal timings, and all horizontal and vertical timings rest on this register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3110-3114",
+       "sha": "86bae6fffb5073a7dfa600134b20ac99727dfb7d7f655f9f80c33f64a9ce6a0b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the byte, which the document reads as the character total minus 5.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3118-3119",
+       "sha": "a90c3d53e82a484a706c490aa292fac42fa6c70785a0fda97324d4261fb9d70c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "91",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "89-93",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x01",
+   "name": "Horizontal Display End",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3120-3121"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3125-3128"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x01"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Horizontal Display-Enable End register (bits 7-0) defines the length of the horizontal display-enable signal and the number of character positions per line.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3125-3127",
+       "sha": "544189db79fa412ced9fd2bb3772592ca27368c2376fdf2fd069ca099fa1bbb6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the byte, which the document reads as the displayed character total minus 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3127-3128",
+       "sha": "14e225209cadeb7ae8b5a6297e25b618489637f8194bfbdf48ac3ea729adc179"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A change calls VGA_StartResize, except when the ignore-smaller option is on and the new value is smaller, which logs instead.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "100-108",
+       "sha": "c0bb30bee35ee677e2f597fe8d6bc49d40516faf7e0160227788ab39c53734d8"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3120-3121",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "102",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "106",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "94-111",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x02",
+   "name": "Start H Blanking",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3129-3130"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3134-3136"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x02"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Start Horizontal Blanking register (bits 7-0) is the horizontal character count at which horizontal blanking becomes active.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3134-3136",
+       "sha": "d90893ce7e8e3aa314467baa0f2040e8ce90d4c6870a70b8709535e5f05da5e8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the count at which the horizontal blanking signal becomes active.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3134-3136",
+       "sha": "d90893ce7e8e3aa314467baa0f2040e8ce90d4c6870a70b8709535e5f05da5e8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3129-3130",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "114",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "112-116",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x03",
+   "name": "End Horizontal Blanking",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3137-3140"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3150-3171"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3177-3182"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3183-3187"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x03"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The End Horizontal Blanking register determines when the horizontal blanking signal becomes active.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3137-3140",
+       "sha": "3babefc73d76b6dfcfab438d78be2ab4366721518597f0b7066e1093f74409e2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 6-5 are the display enable skew control; it delays the display enable signal from zero to three character clocks.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3150-3160",
+       "sha": "f75f5eb0ee01e4e1da59d7f731ceced06af8315ec4645c21765477f22fd35644"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3161-3171",
+       "sha": "49641f2d556360852edd870a95d768d0bfd5de79ef5e2844f42af6b69316b7f8"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-0 hold the five low bits of a six-bit end blanking count; the most significant bit is bit 7 of index hex 05.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3177-3182",
+       "sha": "3011257589422d6a6d66f2e4ef3de39c86a053dd9eafe646f7c56fd0ee68fe75"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the low bits of the end blanking count that the start value and width W give.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3183-3187",
+       "sha": "51562e74d2a08f205f9725a5b156ea10a485b0e25c6dbce388c7f790b48dbf70"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "119",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "117-128",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x04",
+   "name": "Start Horizontal Retrace",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3188-3189"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3193-3195"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x04"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Start Horizontal Retrace Pulse register (bits 7-0) names the character position where the horizontal retrace signal becomes active, centring the screen.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3193-3195",
+       "sha": "feb325a6a4b6fbfa7975f8820ad14418548f64d7f5eda157853556b402246638"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the character position where horizontal retrace starts.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3193-3195",
+       "sha": "feb325a6a4b6fbfa7975f8820ad14418548f64d7f5eda157853556b402246638"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write that changes the value sets the hretrace debug event flag.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "131",
+       "sha": "46e5bd35f596828cb9c9af3d777d380b9e50e1abda67a7ce7a1225d3060ec3f1"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3188-3189",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "132",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "129-134",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x05",
+   "name": "End Horizontal Retrace",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3196-3197"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3204-3207"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3208-3218"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3219-3227"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x05"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 is bit 5 of the end horizontal blanking value in the End Horizontal Blanking register at index hex 03.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3204-3207",
+       "sha": "5193f94271142aa202a067a7f199e4346c9da241fff8e336299de16f668895f1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 6-5 skew the horizontal retrace signal by zero to three character clocks to centre the screen.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3208-3218",
+       "sha": "10616b8821774c94c11192650fd7629a7d4e3e3179fd4ea8d23b0ffe1f86a06d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-0 give the character count at which horizontal retrace becomes inactive; the width W is added to the start retrace value.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3219-3227",
+       "sha": "0f53b961e0fe3b1709cd9a8c2e200ae24085d3de90b633f14f364d2d730d341f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the byte whose low five bits end horizontal retrace, compared with the start retrace register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3219-3222",
+       "sha": "1b582281cc151512ca41fc2a6a37e58f539390389595ec751a961ff551e6c854"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3196-3197",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "137",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "135-145",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x06",
+   "name": "Vertical Total",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3228-3229"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3233-3238"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x06"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Vertical Total register (bits 7-0) holds the eight low-order bits of a 10-bit vertical total; bits 8 and 9 are in the Overflow register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3233-3238",
+       "sha": "e2c489c6f51f8fb3fdbc7ed262cc14e662c5b10eb0edd2ba97fa299c7537bd60"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The vertical total is the number of horizontal raster scans including vertical retrace, minus 2, and it determines the vertical retrace period.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3234-3237",
+       "sha": "b66972bd78b44a5f9fa549f21016d69a9583a6742f5e65824cfc155cdf94f5d7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the low eight bits, which the document reads as the scan count minus 2.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3233-3236",
+       "sha": "517e275146410bf995c86c90400784fef738134ffe217a40ff2221e112a0be3a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write that changes the value calls VGA_StartResize.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "148-150",
+       "sha": "dddc58ce667de85aae14f32cca92dbc159b4fb84d1d2202edc1795af1998c8e1"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3228-3229",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "149",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "146-156",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x07",
+   "name": "Overflow Register",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3239-3240"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3258-3271"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x07"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the byte that carries bit 9 of the vertical retrace start, of the vertical display-enable end and of the vertical total.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3258-3263",
+       "sha": "3e4cc1f4831d76260e41fa3ac4701921198244dec0ceee0c003c5515f3de6cf8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 8 of the line compare, of the start vertical blanking, of the vertical retrace start, of the vertical display-enable end and of the vertical total live here too.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3264-3271",
+       "sha": "962cf746a7a8c8a3e25f20b4e89a9d7d6f2e6b5c3dd7d05846970dae30c9611b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "Bit 4 of the byte also sets bit 8 of the line compare before the read-only check, so it is stored even when read-only is on.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "158-160",
+       "sha": "bfecba530b32549c4bfe43ddfdc5043c7d1bb1ae6e62295df56ca2b306be76da"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3239-3240",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "163",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "165",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "157-176",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x08",
+   "name": "Preset Row Scan",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3272-3273"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3282-3288"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3289-3294"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3295-3297"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x08"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 6-5 are the byte panning field, used in pel panning; Extended Graphics mode behaves as if they are zero, so programs should set them to 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3282-3288",
+       "sha": "aa983e2ec0110d622732d81f8c36cff88f73a4c668f030bfa4e0a2498b765a30"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-0 are the starting row scan count for the row after a vertical retrace; the counter is cleared, not preset, at the maximum row scan.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3289-3294",
+       "sha": "38485c2d2e063f924a9ec36d42318eebe5a5284ac480d3f3a4c1aa07b4fe94b2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The controller latches the start address at the start of vertical retrace, so these registers should be loaded during active display.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3295-3297",
+       "sha": "2f696ca03a9df1c965d042385e62a77ce4c673d0a8fc38576258f73d543609a8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the byte panning in bits 6-5 and the starting row scan count in bits 4-0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3283-3288",
+       "sha": "6de58bee454269d20601628e153c6122df54ccc78928e25d25e173ce9c17158a"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3289-3294",
+       "sha": "38485c2d2e063f924a9ec36d42318eebe5a5284ac480d3f3a4c1aa07b4fe94b2"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X also stores the low five bits as hlines_skip and, on a VGA, bits 6-5 as bytes_skip; other architectures store zero.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "180-182",
+       "sha": "43af771fd0f8972421ecefe6f5bb577e61a58721ed7e5ccb998c6e7b63d67a2f"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3272-3273",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "179",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "177-191",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x09",
+   "name": "Maximum Scan Line",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3298-3299"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3307-3315"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3316-3319"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3320-3322"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x09"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 converts 200-line video to 400 lines: the row scan counter clock is halved and each line is displayed twice.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3307-3315",
+       "sha": "420faa99b1ea11051afb7c882b5b283ad8ff39d373ac6144e8dbc9d2a1ba10bf"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 6 is bit 9 of the line compare and bit 5 bit 9 of the start vertical blanking.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3316-3319",
+       "sha": "4fb7beec03542f623c4e99271b30e2b4d3e7bebe5786fe69b9e36d8be0913a9a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-0 give the number of scan lines per character row, the maximum row scan number minus 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3320-3322",
+       "sha": "f6e578ed4c204952a5c7ad48aba58524a09dfdaaaeb71700e16442b157e1569a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the scan lines per row in bits 4-0 and the doublescan flag in bit 7.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3320-3322",
+       "sha": "f6e578ed4c204952a5c7ad48aba58524a09dfdaaaeb71700e16442b157e1569a"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3308-3313",
+       "sha": "19bd845773b4cdd91683f7747b967b56d8a84cee7aab9c7172e570bbeabf33c3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "On a VGA the write also puts bit 6 into bit 9 of the line compare; on an EGA it ignores bit 7.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "195-199",
+       "sha": "af7f01fc78a0550d5ae5ac2145e2f17ad3fa42e700ec5fd5812995eb2bc15fc1"
+      }
+     ],
+     "vs": "differs",
+     "row": "1"
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X sets address_line_total to the low five bits plus one, doubles it when bit 7 is set, resizes on a change and sets the maxscan debug flag.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "209-211",
+       "sha": "3b6c5eefa86f359b9efbfd93cc890e53b01d0bc5881ed62eb050041b70cd6113"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "222",
+       "sha": "b277255ca0c7918ca17feda76407eb113e7cbfb6309b285881d92c02f4f844d2"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3298-3299",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "202",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "192-223",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0A",
+   "name": "Cursor Start Register",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3323-3324"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3333-3342"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x0A"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 5 disables the cursor when set.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3333-3337",
+       "sha": "891b3affb3a3ca6c9b034826424eea2fd965c4005354c1c433cc12ea66e8d810"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-0 give the row within the character box where the cursor begins, the first cursor line minus 1; a value greater than the cursor end shows no cursor.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3338-3342",
+       "sha": "e2bc893addac00a15953507b45f142c3606efe978745468d9fea0587c1e190be"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the cursor's first scan line in bits 4-0 and turns the cursor off with bit 5.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3336-3342",
+       "sha": "56f25a15646d39a0af06d4d0e997d73f3351d9a913e5d8e65e7499c722e0ab57"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "On a VGA DOSBox-X enables the cursor when bit 5 is clear and stores the low five bits as sline; other architectures enable it unconditionally.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "228-230",
+       "sha": "2659af12e3614dadb5d84915a2c65c2d4a52fa9ccf31fdcda23f63efd5526ac0"
+      }
+     ],
+     "vs": "differs",
+     "row": "1"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3323-3324",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "227",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "225-235",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0B",
+   "name": "Cursor End Register",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3343-3344"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3351-3360"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x0B"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 6-5 are the cursor skew control, delaying the cursor by 0 to 3 character clocks.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3352-3356",
+       "sha": "73682512e63efc139fa5b4d40f6f65647020d69b19860075762234b2d861fae3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-0 give the row where the cursor ends; a value less than the cursor start shows no cursor.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3357-3360",
+       "sha": "78cdfc889d4fe4929e4f808aafa5a95c3694bc7e871d5c32949a4c1f5c5b3f0c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the cursor's last scan line in bits 4-0 and its skew delay in bits 6-5.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3351-3360",
+       "sha": "cbb6fc8ccd37851877f17d6fc6b3b9c5eac36c4ae94e1effe2d6fa14564e4a17"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X stores the low five bits as eline and bits 6-5 as delay.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "238-240",
+       "sha": "08a8261a984a9d4e709a5f3f4a6a32fe0e5de7d160aa47e95298a47e305a57b0"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3343-3344",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "238",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "236-246",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0C",
+   "name": "Start Address High",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3361-3362"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3366-3372"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x0C"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Start Address High register (bits 7-0) holds the 8 high-order bits of the 16-bit start address of the regenerative buffer.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3366-3369",
+       "sha": "f9815079b159b538db97cef6b4c1eac42a3e93f5d043302d6516d82852d2e204"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The start address points to the first address after vertical retrace, latched at its start, so the registers should be loaded during active display.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3368-3372",
+       "sha": "4f4dd31c498ab4fa45cbae07bf4191f2846368dc7b5a88b02e4dda60a12d9495"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the high eight bits of the start address.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3366-3368",
+       "sha": "c094ffec02036bc518661bf1b7f025a4ab89b5ce7b4f35f51051c80dc3ee838a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X marks the display to be drawn again and folds the byte into bits 15-8 of display_start.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "248-250",
+       "sha": "c2619f8693afee664cc4fb3f741acf14e9f0d472009124aa3fea711a4839756e"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3361-3362",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "249",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "250",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "247-253",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0D",
+   "name": "Start Address Low",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3373-3374"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3378-3379"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x0D"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Start Address Low register (bits 7-0) holds the 8 low-order bits of the start address of the regenerative buffer.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3378-3379",
+       "sha": "17f8fda1f0c59acd7e29d4226a28681ef37bf510d7f324d85e0223301a37dfd6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the low eight bits of the start address.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3378-3379",
+       "sha": "17f8fda1f0c59acd7e29d4226a28681ef37bf510d7f324d85e0223301a37dfd6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X marks the display to be drawn again and folds the byte into bits 7-0 of display_start.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "255-257",
+       "sha": "44dc7ed98866a0067dbe34843e75652cd9a3e286b87e3a136183c4c01f6b476b"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3373-3374",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "256",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "257",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "254-260",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0E",
+   "name": "Cursor Location High",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3380-3381"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3385-3386"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x0E"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Cursor Location High register (bits 7-0) holds the 8 high-order bits of the 16-bit cursor location.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3385-3386",
+       "sha": "b2fbed0bcbf15a316e735a80763c93c3f58990b3a4fb9b528b7bbfbbcba9e1d7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the high eight bits of the cursor location.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3385-3386",
+       "sha": "b2fbed0bcbf15a316e735a80763c93c3f58990b3a4fb9b528b7bbfbbcba9e1d7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X folds the byte into bits 15-8 of the cursor start address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "263-265",
+       "sha": "92031e517842684d0887d977ec4b716c38f98c8fc84b54451f4383c59085209e"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3380-3381",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "263",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "265",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "261-269",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0F",
+   "name": "Cursor Location Low",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3387-3388"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3392-3393"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x0F"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Cursor Location Low register (bits 7-0) holds the 8 low-order bits of the cursor location.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3392-3393",
+       "sha": "90480ec025ea31632cd418a08b811c4faedf9e6de508fdb36047986ea48cb28a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the low eight bits of the cursor location.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3392-3393",
+       "sha": "90480ec025ea31632cd418a08b811c4faedf9e6de508fdb36047986ea48cb28a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X folds the byte into bits 7-0 of the cursor start address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "272-274",
+       "sha": "e93a7ab3499950e007f068054dd989abf058e6abf16ed335d184d8368dcd0214"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3387-3388",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "272",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "274",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "270-278",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x10",
+   "name": "Vertical Retrace Start",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3394-3395"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3399-3402"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x10"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Vertical Retrace Start register (bits 7-0) holds the low eight bits of the 9-bit vertical retrace start, in horizontal scan lines; bit 8 is in the Overflow register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3399-3402",
+       "sha": "ebf0ab51b4a9fc38e866ae9dd031dfd22852677bfba90911f2a3b63229110680"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the low eight bits of the vertical retrace start.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3399-3402",
+       "sha": "ebf0ab51b4a9fc38e866ae9dd031dfd22852677bfba90911f2a3b63229110680"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3394-3395",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "280",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "279-286",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x11",
+   "name": "Vertical Retrace End",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3403-3404"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3413-3417"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3418-3424"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3425-3430"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3431-3435"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3436-3444"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x11"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 protects CRT controller registers at index 00 through 07 from writes; the line compare bit in the Overflow register is not protected.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3413-3417",
+       "sha": "c9debcfbe3ac959d0b77c5fc6702f4cdd854eca6f1343d727942d718525e3558"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 6 selects five memory refresh cycles per horizontal line instead of three and should be 0 for supported operations.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3418-3424",
+       "sha": "6bda47d54b3379ec712f0ff827e4282888b68e3d93c0639917d5390459ba3644"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 5 enables a vertical retrace interrupt, IRQ2, when clear; check the CRT interrupt bit to see whether the video raised it.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3425-3430",
+       "sha": "3b4d372be4b6f903f4b8d4b9a3eef689b309db42b04a77b030c5dc469e36d581"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 4 clears a vertical retrace interrupt when clear; the handler clears then sets it to reset the flip-flop.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3431-3435",
+       "sha": "581ac8369639554b9dc04bfa117e49f31663f6ff27640deaefa736c2c3a270ec"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 3-0 end vertical retrace, compared with the vertical retrace start; the width W is added to the start value.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3436-3444",
+       "sha": "84225e421dd93148f2f13ef1ed72f23b2adbd57b03abe7ff5d49802133dd3be3"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the byte holding the protection, refresh, interrupt and retrace-end fields.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3414-3424",
+       "sha": "415bc69bf28702dfb621a8175cae8c2208f7821ae95975cd84588f65d10cf747"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3436-3444",
+       "sha": "84225e421dd93148f2f13ef1ed72f23b2adbd57b03abe7ff5d49802133dd3be3"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3425-3435",
+       "sha": "9ab2e3ce1553b36e6f587794219e236bc3ca00c3026d09bd1df260124c50fb9e"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "On a VGA DOSBox-X stores bit 7 as the read-only lock; clearing bit 4 clears the trigger, and on an EGA deactivates IRQ 9.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "290-295",
+       "sha": "8e1f0b292da97c1912b21e228793e79f2f7f8dcf66b0f07dd25feb90b705bca0"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3403-3404",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "288",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "287-306",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x12",
+   "name": "Vertical Display End",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3445-3446"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3450-3454"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x12"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Vertical Display-Enable End register (bits 7-0) holds the 8 low-order bits of a 10-bit value defining the display-enable end; the two high bits are in the Overflow register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3450-3453",
+       "sha": "70a70a3c6855a4fa80040c892916d476485b586bb7f0361ab3bbe2ad5c6a8da2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The 10-bit value is the total number of scan lines minus 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3452-3454",
+       "sha": "fb6499e13d76c58191ac392de666b5158b12c1597ef93da8f87002224680949a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the low eight bits of the value the document reads as the scan line total minus 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3450-3454",
+       "sha": "a1b017880720c4b734e0265867f6594a164488b57c38390ea68aee2e523272c5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A change resizes the screen; a change under 3 lines is delayed 150ms after removing the pending resize.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "309-315",
+       "sha": "7ee2e4efba1d18899531ccd6b2599ab407b04f378325bb8244e5c5306cc84667"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3445-3446",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "314",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "317",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "307-326",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x13",
+   "name": "Offset Register",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3455-3456"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3460-3464"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x13"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Offset register (bits 7-0) gives the logical line width; the next character row's start address is 2 or 4 times the value further.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3460-3464",
+       "sha": "e4d06a6519d422c005d533afbaa25388410e89970291805f0bba24da81986ebd"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the line width, counted in word or doubleword addresses.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3460-3464",
+       "sha": "e4d06a6519d422c005d533afbaa25388410e89970291805f0bba24da81986ebd"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X sets the low bits of the scan length from the value, rechecks the scan length, and a change sets the scanstep debug flag.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "329-333",
+       "sha": "0892c41ac41abc65efc8da2494f48545fb06b545ed8142e40057fbd07d0d853f"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3455-3456",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "330",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "327-338",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x14",
+   "name": "Underline Location",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3465-3466"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3474-3486"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x14"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 6 makes memory addresses doubleword addresses.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3474-3478",
+       "sha": "8d2158fa1e19efecdcc4506d5f7315255485a75d04114b453d8c3094507683fa"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 5 clocks the memory-address counter with the character clock divided by 4, used with doubleword addresses.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3479-3482",
+       "sha": "670484e38907399e8baf94f68f94c02713b0be1be11e59925b605df3cdf193ee"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4-0 give the horizontal scan line of a character row where an underline occurs, the desired scan line minus 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3483-3486",
+       "sha": "aeea71ef6900b0ce13224f9fed54f12e0d7b661cd82c63ae423b04ac42ea6e4f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the underline scan line and the doubleword and count-by-4 bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3475-3486",
+       "sha": "aefbb7a8f812d2a504be8b59185325c72eb7dd97a5811f496f6496393bc465f1"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write also rechecks the address shift and the scan length.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "342-343",
+       "sha": "bfe954822da590c9ffdf70a566452d4db81d639f78156e757aabcbb61e78aa93"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3465-3466",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "341",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "339-349",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x15",
+   "name": "Start Vertical Blank",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3487-3488"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3492-3497"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x15"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Start Vertical Blanking register (bits 7-0) holds the low bits of a 10-bit value where vertical blanking becomes active.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3492-3494",
+       "sha": "4c608cdaf37f2ba49557658dd54f6ba5740422437148f002f2f1044605498e3f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 8 of that value is in the Overflow register and bit 9 in the Maximum Scan Line register; the value is the scan line count minus 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3494-3497",
+       "sha": "562235d992c2e13bf0434a361880c9e1693076ed7dd072e85cb205613f23ec19"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the low bits of the blanking start, which the document reads as the scan line count minus 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3492-3494",
+       "sha": "4c608cdaf37f2ba49557658dd54f6ba5740422437148f002f2f1044605498e3f"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3496-3497",
+       "sha": "f043257603bf92c51a9fc29789933af4595bdb1f8acf91122f13c7edad980644"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A change calls VGA_StartResize.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "351-353",
+       "sha": "7a185e8db6bd20a482b1d58d289805918afa2cdca783799d1d83138b295d3477"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3487-3488",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "352",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "350-360",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x16",
+   "name": "End Vertical Blank",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3498-3499"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3503-3510"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x16"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The End Vertical Blanking register (bits 7-0) gives the horizontal scan count where vertical blanking ends, in units of a scan line.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3503-3505",
+       "sha": "4a72ecd6b76f8c4b0ad469cc99b023df23a5e4c75101ce92353a8039874b2ef6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "For a blanking width W, W is added to the start vertical blanking value minus 1 and the low bits are programmed.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3506-3510",
+       "sha": "e9f119ba6edf27a6d60e968a5425c2575aa614f708e9e7affd9201616fbc8301"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the low bits of the end blanking count that the start value and width W give.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3506-3510",
+       "sha": "e9f119ba6edf27a6d60e968a5425c2575aa614f708e9e7affd9201616fbc8301"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A change calls VGA_StartResize.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "362-364",
+       "sha": "92cfc06dc2d975ce0b793219ad2f75db7c8858899dd71223bd33db10d5e6916f"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3498-3499",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "363",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "361-371",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x17",
+   "name": "Mode Control",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3511-3512"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3531-3536"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3537-3549"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3585-3595"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3596-3600"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3601-3605"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3608-3613"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3614-3621"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3622-3631"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x17"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7, cleared, disables the horizontal and vertical retrace signals; set, it enables them, and it resets no other register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3531-3536",
+       "sha": "273087df45c0ee58c4e6f069a68d9b790d51d6762e79b0e738783c58ef06ddd0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 6 selects word mode when clear and byte mode when set; the doubleword bit in the Underline Location register also controls addressing.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3537-3546",
+       "sha": "5ab357070928e1935d14305f7f4fb6e5d57e3ba44c23fce815f6d70caf60f728"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3547-3549",
+       "sha": "681bd10868dd13705e36ff5014c1876bcd45c6a7af1f7892a64668fda8ad0098"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 5 selects MA15 or MA13 for the output pin in word mode; in odd/even mode it should be set.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3585-3595",
+       "sha": "65a10d7deca62cc6012ebc5490d7edf57b81846e0a89de5255dc1d360585abe1"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 3 gives the address counter the character clock divided by 2; bit 2 divides the horizontal retrace clock by 2.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3596-3600",
+       "sha": "1bdaf9d9aa913e7bc164d4370243527a8978abd3c8c7a9bf6b3fee9e39d36a78"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3601-3605",
+       "sha": "aff90ef6665bab0c0598fb1d64040efd71403124a1ef9d7abf0c18d952034c20"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 2 selects the clock for the vertical timing counter: the horizontal retrace clock or that clock divided by 2.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3601-3605",
+       "sha": "aff90ef6665bab0c0598fb1d64040efd71403124a1ef9d7abf0c18d952034c20"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Dividing the retrace clock doubles the vertical resolution to 2048 scan lines, the vertical total being 10 bits wide.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3608-3613",
+       "sha": "2687284a1937bbcbd2ae4f5b88d23decb46ffe67c021910341670e900345836a"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 1 selects the source of output bit 14 and bit 0 the source of output bit 13: the row scan counter's bit or the address counter's.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3614-3621",
+       "sha": "5e53c254d339cdfb054616ee68248e32802d55919d69c419713ed7c25c7e4156"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "The Color/Graphics Adapter's controller used 128 scan-line addresses; for 640-by-200 VGA programs 100 scan lines with two addresses per row.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3622-3631",
+       "sha": "975e1b638051f0146fe376c9a4063f95208de921a99f97695a90675d94ac9acb"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the reset, word/byte, address wrap, count, retrace select and row scan select fields.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3532-3536",
+       "sha": "fd9ffb761f709e515f1a4150bd37a737bb2f8d22995dbfd3a09842efbf38f10c"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3537-3546",
+       "sha": "5ab357070928e1935d14305f7f4fb6e5d57e3ba44c23fce815f6d70caf60f728"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3585-3595",
+       "sha": "65a10d7deca62cc6012ebc5490d7edf57b81846e0a89de5255dc1d360585abe1"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3596-3600",
+       "sha": "1bdaf9d9aa913e7bc164d4370243527a8978abd3c8c7a9bf6b3fee9e39d36a78"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3601-3605",
+       "sha": "aff90ef6665bab0c0598fb1d64040efd71403124a1ef9d7abf0c18d952034c20"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3614-3621",
+       "sha": "5e53c254d339cdfb054616ee68248e32802d55919d69c419713ed7c25c7e4156"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X also derives the Tandy line mask, shift and address mask from the low bits and rechecks the address shift and scan length.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "375-378",
+       "sha": "a998b0419a7adf042de51ccb15e158ed1a910cc9ac713592f6ce589596a7d7a1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "380-381",
+       "sha": "bfe954822da590c9ffdf70a566452d4db81d639f78156e757aabcbb61e78aa93"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3511-3512",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "374",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "372-400",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x18",
+   "name": "Line Compare",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3632-3633"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3637-3642"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "function": "vga_write_p3d5",
+     "case": [
+      "0x18"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Line Compare register (bits 7-0) holds the 8 low-order bits of the 10-bit compare target; reaching it clears the line counter's start address.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3637-3640",
+       "sha": "bc672669d6de7a6b416dfdefdc96d7944699c522512f1defd42dd101c640d025"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "That split screen keeps the lower screen immune to scrolling; bit 8 is in the Overflow register and bit 9 in the Maximum Scan Line register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3640-3642",
+       "sha": "07f7cf73586b854d8070364067d14dada2af9426f3d7717ce099fefc6c31aa39"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores the low eight bits of the compare target.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3637-3638",
+       "sha": "27f38ba719a9d00500f6ce0051dc99a3c0e56301dd8a145901a921b9f16ddfad"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3632-3633",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "82-83",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "88",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "403",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "404",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "401-411",
+     "as": "structure"
+    }
+   ]
+  }
+ ]
+}

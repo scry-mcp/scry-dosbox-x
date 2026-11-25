@@ -1,0 +1,192 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "tandy-palette",
+ "title": "The Tandy 1000's palette registers",
+ "kind": "register",
+ "scope": "tandy",
+ "covers": "the sixteen palette registers the Tandy 1000 selects through the index at 03DAh, and what DOSBox-X does with a write to one",
+ "source": "official",
+ "documents": [
+  {
+   "name": "PS2-Video-Subsystems.raw.txt",
+   "variant": "VGA"
+  },
+  {
+   "name": "Tandy1000SL-Technical-Reference.raw.txt",
+   "variant": "1000SL"
+  },
+  {
+   "name": "MC6845.raw.txt",
+   "variant": "6845"
+  }
+ ],
+ "official": {
+  "PS2-Video-Subsystems.raw.txt": [
+   "3055-3064",
+   "3096-3104"
+  ],
+  "Tandy1000SL-Technical-Reference.raw.txt": [
+   "832-843",
+   "2215-2241",
+   "2242"
+  ],
+  "MC6845.raw.txt": [
+   "561-565",
+   "637-640",
+   "641-650",
+   "651-657",
+   "672-680",
+   "681-685",
+   "686-694",
+   "865-870",
+   "872-887",
+   "903-908",
+   "910-917",
+   "918-928"
+  ]
+ },
+ "searched": [
+  {
+   "where": "mame-header",
+   "gave": "MAME's tree at the pinned tag has no Hercules video device; its pc driver names the card and cites no datasheet."
+  },
+  {
+   "where": "maker",
+   "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC address and data registers only at 03B4/03B5 and 03D4/03D5."
+  },
+  {
+   "where": "bitsavers",
+   "gave": "the Hercules folder listing answers 403 from this host, so nothing was read there."
+  },
+  {
+   "where": "archive-org",
+   "gave": "the search returns only later Hercules display cards, not the 1982 Graphics Card's manual."
+  },
+  {
+   "where": "index",
+   "gave": "a web search finds third-party summaries and clone datasheets, no maker manual for these registers."
+  }
+ ],
+ "engine": [
+  "IO_RegisterWriteHandler",
+  "IO_RegisterReadHandler",
+  "VGA_StartResize",
+  "VGA_SetMode",
+  "VGA_SetModeNow",
+  "VGA_SetBlinking",
+  "VGA_SetCGA2Table",
+  "VGA_SetCGA4Table",
+  "VGA_ATTR_SetPalette",
+  "VGA_DAC_SetEntry",
+  "VGA_DAC_CombineColor",
+  "VGA_SetupHandlers",
+  "VGA_SetupDrawing",
+  "ttf_switch_on",
+  "ttf_switch_off",
+  "TANDY_FindMode",
+  "PCJr_FindMode",
+  "TandyCheckLineMask",
+  "tandy_update_palette",
+  "cga16_color_select",
+  "update_cga16_color",
+  "J3_IsCga4Dcga"
+ ],
+ "entries": [
+  {
+   "key": "0x10..0x1F",
+   "name": "Tandy palette registers",
+   "aliases": [
+    "palette registers",
+    "Tandy colour palette"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "832-843"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "992-997"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The palette mask mux switches between the incoming RGBI data and the palette address register, and can zero any input RGBI bit.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "832-838",
+       "sha": "ca2ffface6d70da335b52e556eb2afc27277a6f4af328ce88934e4560b481cae"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "During a CPU write an address register selects one of the 16 palette locations.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "835-837",
+       "sha": "5e6198076ab04c0ca73b1ebe8919ce549c38c5681421126de4a97e14826801e6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The palette allows the 16 colours to be remapped in any desired organization; normally it maps each colour to itself for PC compatibility.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "839-843",
+       "sha": "d725917fcb38ddab2487edcd3153151fdf1f2f25e1104d5f1aba4a8357c1a0ce"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte written is stored as its low four bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "992-995",
+       "sha": "040b8a30832734850d776d1594a7515e4aa2ec75df841db4b54021ebd12ba5d8"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "An index of the default arm other than 0x10 to 0x1F is logged as unhandled and changes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "992-997",
+       "sha": "f5f8166437a88193469e91b5dab07a84c50af9b8f34825fdae2a84ae2d70adca"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "992-995",
+     "as": "agrees",
+     "row": "2"
+    }
+   ],
+   "access": "write"
+  }
+ ]
+}

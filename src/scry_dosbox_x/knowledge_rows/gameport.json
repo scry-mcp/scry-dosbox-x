@@ -1,0 +1,423 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "gameport",
+ "title": "The game port at hex 201",
+ "kind": "register",
+ "scope": "gameport",
+ "covers": "the game control adapter's one port at hex 201, as IBM's technical reference describes it: a write that fires four one-shots and a read that returns their outputs and four trigger buttons",
+ "source": "official",
+ "documents": [
+  {
+   "name": "IBM-PCXT-TechnicalReference.raw.txt",
+   "variant": "ibm-pc-xt"
+  }
+ ],
+ "official": {
+  "IBM-PCXT-TechnicalReference.raw.txt": [
+   "2278-2338"
+  ]
+ },
+ "entries": [
+  {
+   "key": "0x201",
+   "name": "game port",
+   "aliases": [
+    "joystick port",
+    "game control adapter"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+     "lines": "2278-2338"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "function": "read_p201"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "function": "read_p201_timed"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "function": "write_p201"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "function": "write_p201_timed"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "30-35"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "206-217"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The game control adapter connects up to four paddles or two joysticks, and has four switch inputs.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2280-2284",
+       "sha": "b4de5e38359fb712b56117d70045290c4e81010af61e1692e44e5d6416d40219"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Paddle and joystick positions come from changing resistive values; the adapter and the software convert them to a relative position.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2284-2287",
+       "sha": "2340662d1ac760a11335747ba9b9a4b6d03fb5283b3c0368460eedc22be8c7a9"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The adapter could be used as a general purpose I/O card (printed 110card) with four analog inputs and four digital input points.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2291-2292",
+       "sha": "17675df670216d3312aace21ad2fdb5fea6a09fea32ee1ff5c5fb27542027dca"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Two 74LS138 decoders generate the select, with AEN inactive while the address is hex 201.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2309-2312",
+       "sha": "5409271e1c1ba3dacbe16214098e0ab360ebe13e734dd8f5d7687b24609f26af"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The select lets a write fire the one-shots or a read give the values of the trigger buttons and one-shot outputs.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2313-2314",
+       "sha": "def7ae29f818b98536eb65ee92f1e1523b24abdc4f85b4bd212b9219a09685d7"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "doc",
+     "text": "A read from address hex 201 makes the adapter drive the data bus.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2315-2317",
+       "sha": "8f166847d55bad90a41ba5180a4f0751f313acb44d4c7ecd110e5b2b87c970b2"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "doc",
+     "text": "The four trigger buttons are read on data bits 7 through 4, as 1 when open and 0 when pressed.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2320-2324",
+       "sha": "f450ff6e695cad41f785f0ae259f59a60e7be463ebe10155a3c4cb8908dc787c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "The hardware does not debounce the trigger buttons, and software should be aware of it.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2325-2326",
+       "sha": "baa0dd651675386f579d8fcf90cc046a982ce788526d8ae97d589b5d538e31d0"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "when",
+     "of": "doc",
+     "text": "A write starts four timing circuits; each potentiometer of 0 to 100 k-ohms sets how long its one-shot output stays high, and the time-out gives the position.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2288-2290",
+       "sha": "ceeed285515acc907ed47ecb9631484542f45d2c04fe21a5000bd6efb13b7e49"
+      },
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2327-2332",
+       "sha": "fbdf961450b9ad2f6886213e6563060d615f3b4b0ff15fec50f00865fe7fc5b3"
+      },
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2334-2336",
+       "sha": "ba7765df828647bbf9561550ab537f29df3d694a6da1c1d76411082312592126"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "write",
+     "of": "doc",
+     "text": "All four one-shots are fired at once by an Out to address hex 201.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2333",
+       "sha": "68ed367402ea4f604a1bc7a58449e5b10658f8c4c45304b47cfb01d788623adf"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "read",
+     "of": "doc",
+     "text": "The four one-shot outputs are read on data bits 3 through 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+       "lines": "2337-2338",
+       "sha": "4cdaef99fa97e4490d84f29ad33a667cef268494d635ba63cbb1b0d3bca5f683"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs a read handler and a write handler for port 0x201, the timed pair when the timed option is on and the other pair when it is off.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/joystick.cpp",
+       "lines": "209-216",
+       "sha": "ab7c6663de6e2ab5e91e88ac154f6896ca21145cebbeed724daff66fe9990b42"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "9",
+     "text": "The timed mode times each one-shot in microseconds from its resistance, 24.2 plus 11 nanoseconds an ohm; with timed off, a counter set from the position falls one per read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/joystick.cpp",
+       "lines": "34-35",
+       "sha": "655677e8e0f32876ac76571bc8bc52d1f546180704c0dacea83e34c64ddcc0d4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/joystick.cpp",
+       "lines": "142-143",
+       "sha": "73607e78b7c6bf15a7c553f18ef9caf0ba21df256341d4cceab256ae6d4866e4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/joystick.cpp",
+       "lines": "79-88",
+       "sha": "72dea1902203d51920fc057ed1948b60fd44b3c206b6faba11a32a9ef231dffd"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/joystick.cpp",
+       "lines": "128-133",
+       "sha": "db5df2c297475484c207dd02b688eb741186b2e0b6fde291b31510f77915c638"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/joystick.cpp",
+       "lines": "147-156",
+       "sha": "94169b47dadd560cc6299b30d78a081520b61fad55a0a8cd01dc4926110ff5bc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/joystick.cpp",
+       "lines": "209-215",
+       "sha": "a5437f8893b6802e53179533be3facda559ed3513167d8dce63568bf7bc84d4b"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read more than TIMEOUT milliseconds after the write zeroes the four axis counters first.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/joystick.cpp",
+       "lines": "60-66",
+       "sha": "43a5b1b45c7766326538385f3a332f00e6c95c800f6f63111cc2700db1163c29"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/joystick.cpp",
+       "lines": "125-126",
+       "sha": "ae59dcf839375a22f94a48c36b5a40fa7e681fd0aeea3d54b129a7807e45db06"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/joystick.cpp",
+       "lines": "31",
+       "sha": "710ef4c28b85470db07d0a62c54b6b70496f0adaf859c2483577e78a31811806"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+     "lines": "2278-2279",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+     "lines": "2293-2307",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+     "lines": "2308",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:IBM-PCXT-TechnicalReference.raw.txt",
+     "lines": "2318-2319",
+     "as": "electrical"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "211",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "214",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "92",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "117",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "79-90",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "98-106",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "109-117",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "212",
+     "as": "agrees",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "215",
+     "as": "agrees",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "128-133",
+     "as": "agrees",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "147-156",
+     "as": "agrees",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "79-88",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "98-106",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "30",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "33",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "127",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "146",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "206-207",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/joystick.cpp",
+     "lines": "217",
+     "as": "structure"
+    }
+   ]
+  }
+ ]
+}

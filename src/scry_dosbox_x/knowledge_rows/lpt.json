@@ -1,0 +1,2001 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "lpt",
+ "kind": "register",
+ "scope": "lpt",
+ "title": "The parallel port registers",
+ "covers": "The data, status and control registers of the PC parallel printer ports at 0278h, 0378h and 03BCh, and what DOSBox-X does at each.",
+ "source": "official",
+ "entries": [
+  {
+   "key": "0x278",
+   "name": "Data port at 0278h",
+   "aliases": [
+    "LPT data port"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "1455-1459"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "45"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "450-451"
+    },
+    {
+     "ref": "dosbox-x:src/dosbox.cpp",
+     "lines": "4709"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "128"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "48-50"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2564"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "166"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "57-59"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2571"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/iohandler.cpp",
+     "lines": "58-60"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/iohandler.cpp",
+     "lines": "62-66"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/iohandler.cpp",
+     "lines": "71-73"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "0278h-027Ah are a parallel printer port, usually LPT1 and sometimes LPT2.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "1455",
+       "sha": "b05598c7a013e809688c7d8ad34e0779c0fbac54683d7b8d61f3bab2ce496b54"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The port may sit at 03BCh, 0278h or 0378h.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "1456",
+       "sha": "ce50b758d2104970370f3c33ef5202fa872c4d2198ca36e6edc3e5f4befdf88e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "0278h is the data port.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "1459",
+       "sha": "58a5eb3f89a3bdd71ece257e070d131e4b1462527376018858b84422756838af"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "0278h is write-only: a write sets the data byte the port holds.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "1459",
+       "sha": "58a5eb3f89a3bdd71ece257e070d131e4b1462527376018858b84422756838af"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The second port is reached only when parallel2 names a backend; by default it is disabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dosbox.cpp",
+       "lines": "4709",
+       "sha": "c0b29d935ddba987e799931bd01a164b01c52763eba5dc4093ad2cdbde4fdc31"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "45",
+       "sha": "3799b91e2d369245de5e9db9b8ea1f09ab81974764e179e4a7e54c84b42f7b1d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "450-451",
+       "sha": "f35fd8bdb8356ab8f1bfcd672bc2f2caccbe6065264993ccd4a6407d55e69222"
+      }
+     ]
+    },
+    {
+     "n": "Q",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "When the printer backend answers it, a write stores the byte and a read returns it, so the port is not write-only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "166",
+       "sha": "9f852cd6908925f2dfb1155734d06839e2508e713701f80612d916ebc5b1c76a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "128",
+       "sha": "68f1856c64cdaf2849a2b682417d5e816084882622f62cd0f5eff4bf9ef657b4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "57-59",
+       "sha": "c6ac912698054de7673e866a2af99e17cc4f71978ca4dcdafd1c59099b8fdd88"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "48-50",
+       "sha": "7f2c5b88864f447f63f499b6198bdfd7e002283c4b4472c46d591439d88ad48e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2571",
+       "sha": "fb7d44393ee24cef093c02efdddd6d8e274f2a778fc4648bb984cb9664758eef"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2564",
+       "sha": "f1cfbb0646537e1d7505f7ae04d2a407a2a91a6e47be5897f91539a7b11304da"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "R",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "While the port is disabled a read reaches IO_ReadBlocked and returns 0xFF, and a write stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/iohandler.cpp",
+       "lines": "58-60",
+       "sha": "24240a1edc1ce278103e6e4d0fa53ea5c167d84dcc0c903f78639dc69056048d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/iohandler.cpp",
+       "lines": "71-73",
+       "sha": "d04cc66633073a6a9d57c6c55cebd7fcb53dc2b96005cf357b6f5de0c838bb75"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/iohandler.cpp",
+       "lines": "62-66",
+       "sha": "61b3f675ca014b340286f0b74934a1cf1a91c99524c9b6d814800a2883a0cf3d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "1457",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x279",
+   "name": "Status port at 0279h",
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "1460"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "450-451"
+    },
+    {
+     "ref": "dosbox-x:src/dosbox.cpp",
+     "lines": "4709"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "240-246"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "131"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "54-56"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2582-2597"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/iohandler.cpp",
+     "lines": "62-66"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "0279h is the status port.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "1460",
+       "sha": "f57c306c84744e3bd07b10c5ae5a9561bca07f2b86310951dcde030fcfb2469a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 0279h gives the status; its bit table is P0658 at 03BCh.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "1460",
+       "sha": "f57c306c84744e3bd07b10c5ae5a9561bca07f2b86310951dcde030fcfb2469a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "0279h is read-only.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "1460",
+       "sha": "f57c306c84744e3bd07b10c5ae5a9561bca07f2b86310951dcde030fcfb2469a"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The second port is reached only when parallel2 names a backend; by default it is disabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dosbox.cpp",
+       "lines": "4709",
+       "sha": "c0b29d935ddba987e799931bd01a164b01c52763eba5dc4093ad2cdbde4fdc31"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "45",
+       "sha": "3799b91e2d369245de5e9db9b8ea1f09ab81974764e179e4a7e54c84b42f7b1d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "450-451",
+       "sha": "f35fd8bdb8356ab8f1bfcd672bc2f2caccbe6065264993ccd4a6407d55e69222"
+      }
+     ]
+    },
+    {
+     "n": "Q",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "With the printer backend, a read of the status port is handed to Read_SR.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "131",
+       "sha": "39a4dd3480c5ff6b61e99e825f5ca250c647207d8c5a23bca2e2d2c2cee4fe01"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "54-56",
+       "sha": "3263d85e4e1833b10db303d29f55b636160a660a65c51361d8859d2be918e5f0"
+      }
+     ]
+    },
+    {
+     "n": "T",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With the printer backend, before any printer is created a read of the status gives 0xDF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2582-2585",
+       "sha": "b1020181746925fc18158583824a73549ba65590f6f9e00794c08a756cdba77c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2586-2597",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "240-246",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/iohandler.cpp",
+     "lines": "62-66",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x27A",
+   "name": "Control port at 027Ah",
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "1461"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "450-451"
+    },
+    {
+     "ref": "dosbox-x:src/dosbox.cpp",
+     "lines": "4709"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2686"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2688"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2674"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "027Ah is the control port, readable and writable.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "1461",
+       "sha": "05ba12b54b48426981ffdf7baf03a27f92ea14256117e8d6e1993f11d15c1803"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 027Ah gives the control bits back.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "1461",
+       "sha": "05ba12b54b48426981ffdf7baf03a27f92ea14256117e8d6e1993f11d15c1803"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 027Ah sets the control bits.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "1461",
+       "sha": "05ba12b54b48426981ffdf7baf03a27f92ea14256117e8d6e1993f11d15c1803"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The second port is reached only when parallel2 names a backend; by default it is disabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dosbox.cpp",
+       "lines": "4709",
+       "sha": "c0b29d935ddba987e799931bd01a164b01c52763eba5dc4093ad2cdbde4fdc31"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "45",
+       "sha": "3799b91e2d369245de5e9db9b8ea1f09ab81974764e179e4a7e54c84b42f7b1d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "450-451",
+       "sha": "f35fd8bdb8356ab8f1bfcd672bc2f2caccbe6065264993ccd4a6407d55e69222"
+      }
+     ]
+    },
+    {
+     "n": "Q",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "With the printer backend, a read returns 0xE0 ORed with the stored byte, so bits 7-5 read as 1; once a printer exists bit 1 is its autofeed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2686",
+       "sha": "f47c97720d6d6693e89c51b994a988eb034b815bc1e8662254297fed9dc26fb9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2688",
+       "sha": "7a22804ad960438421ca85878ccde85ad47c3a39e9160e0da66aad697fac98dd"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2674",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x378",
+   "name": "Data port at 0378h",
+   "aliases": [
+    "LPT1 data port"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "3799-3803"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "45"
+    },
+    {
+     "ref": "dosbox-x:src/dosbox.cpp",
+     "lines": "4651"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "240-246"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "128"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "48-50"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2564"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "166"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "57-59"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2571"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "0378h-037Ah are a parallel printer port, usually LPT2 and sometimes LPT3.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3799",
+       "sha": "bff1a96483147c01db8672dc1357f9cbee909eec0acc76d9073be2fd1989e036"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The port may sit at 03BCh, 0278h or 0378h.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3800",
+       "sha": "ce50b758d2104970370f3c33ef5202fa872c4d2198ca36e6edc3e5f4befdf88e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "0378h is the data port.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3803",
+       "sha": "dd111f2e66c25af82af6bb5076831c0314e08437dc554c847565c64fdf43967c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "0378h is write-only: a write sets the data byte the port holds.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3803",
+       "sha": "dd111f2e66c25af82af6bb5076831c0314e08437dc554c847565c64fdf43967c"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X makes 0378h its first parallel port, LPT1, with the printer backend.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dosbox.cpp",
+       "lines": "4651",
+       "sha": "49ab0ef487fcbb6ee3eee059fb576a256442e950aef50c91963ca710a9a86aec"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "45",
+       "sha": "3799b91e2d369245de5e9db9b8ea1f09ab81974764e179e4a7e54c84b42f7b1d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "240-246",
+       "sha": "8000b2db359123cded90e41445e9dd26060e9ebb4c771cc5210be7ecb96842cd"
+      }
+     ]
+    },
+    {
+     "n": "Q",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X numbers 0378h as LPT1, where the document places it usually as LPT2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dosbox.cpp",
+       "lines": "4651",
+       "sha": "49ab0ef487fcbb6ee3eee059fb576a256442e950aef50c91963ca710a9a86aec"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "45",
+       "sha": "3799b91e2d369245de5e9db9b8ea1f09ab81974764e179e4a7e54c84b42f7b1d"
+      }
+     ],
+     "row": "1"
+    },
+    {
+     "n": "R",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A write stores the byte and a read of 0378h returns it, so the port is not write-only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "166",
+       "sha": "9f852cd6908925f2dfb1155734d06839e2508e713701f80612d916ebc5b1c76a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "128",
+       "sha": "68f1856c64cdaf2849a2b682417d5e816084882622f62cd0f5eff4bf9ef657b4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "57-59",
+       "sha": "c6ac912698054de7673e866a2af99e17cc4f71978ca4dcdafd1c59099b8fdd88"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "48-50",
+       "sha": "7f2c5b88864f447f63f499b6198bdfd7e002283c4b4472c46d591439d88ad48e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2571",
+       "sha": "fb7d44393ee24cef093c02efdddd6d8e274f2a778fc4648bb984cb9664758eef"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2564",
+       "sha": "f1cfbb0646537e1d7505f7ae04d2a407a2a91a6e47be5897f91539a7b11304da"
+      }
+     ],
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "3801",
+     "as": "see-also"
+    }
+   ]
+  },
+  {
+   "key": "0x379",
+   "name": "Status port at 0379h",
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "3804"
+    },
+    {
+     "ref": "dosbox-x:src/dosbox.cpp",
+     "lines": "4651"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "240-246"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "131"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "54-56"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2582-2597"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/iohandler.cpp",
+     "lines": "62-66"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "0379h is the status port.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3804",
+       "sha": "f7faba0f737a657baf1823a14000d0785e0a329a4b7b2212597f40508531eb1f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 0379h gives the status; its bit table is P0658 at 03BCh.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3804",
+       "sha": "f7faba0f737a657baf1823a14000d0785e0a329a4b7b2212597f40508531eb1f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "0379h is read-only.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3804",
+       "sha": "f7faba0f737a657baf1823a14000d0785e0a329a4b7b2212597f40508531eb1f"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "0379h answers by default: parallel1 names the printer backend, whose object installs the LPT1 handlers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dosbox.cpp",
+       "lines": "4651",
+       "sha": "49ab0ef487fcbb6ee3eee059fb576a256442e950aef50c91963ca710a9a86aec"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "240-246",
+       "sha": "8000b2db359123cded90e41445e9dd26060e9ebb4c771cc5210be7ecb96842cd"
+      }
+     ]
+    },
+    {
+     "n": "Q",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "With the printer backend, a read of the status port is handed to Read_SR.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "131",
+       "sha": "39a4dd3480c5ff6b61e99e825f5ca250c647207d8c5a23bca2e2d2c2cee4fe01"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "54-56",
+       "sha": "3263d85e4e1833b10db303d29f55b636160a660a65c51361d8859d2be918e5f0"
+      }
+     ]
+    },
+    {
+     "n": "T",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With the printer backend, before any printer is created a read of the status gives 0xDF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2582-2585",
+       "sha": "b1020181746925fc18158583824a73549ba65590f6f9e00794c08a756cdba77c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2586-2597",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "240-246",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/iohandler.cpp",
+     "lines": "62-66",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x37A",
+   "name": "Control port at 037Ah",
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "3805"
+    },
+    {
+     "ref": "dosbox-x:src/dosbox.cpp",
+     "lines": "4651"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "240-246"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "134"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "51-53"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "172"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "60-62"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2674"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2686"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2688"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "037Ah is the control port, readable and writable.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3805",
+       "sha": "88d44c27de519855920ee8bf42ad11393d611aed7335348de739bd635e887ab1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 037Ah gives the control bits back.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3805",
+       "sha": "88d44c27de519855920ee8bf42ad11393d611aed7335348de739bd635e887ab1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 037Ah sets the control bits.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "3805",
+       "sha": "88d44c27de519855920ee8bf42ad11393d611aed7335348de739bd635e887ab1"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "037Ah answers by default: parallel1 names the printer backend, whose object installs the LPT1 handlers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dosbox.cpp",
+       "lines": "4651",
+       "sha": "49ab0ef487fcbb6ee3eee059fb576a256442e950aef50c91963ca710a9a86aec"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "240-246",
+       "sha": "8000b2db359123cded90e41445e9dd26060e9ebb4c771cc5210be7ecb96842cd"
+      }
+     ]
+    },
+    {
+     "n": "Q",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "With the printer backend, a read of the control port is handed to Read_COM and a write to Write_CON.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "134",
+       "sha": "0fc2b47796f39dffdf6679bc07dbb2f309e6db17b26e9b29b64360f45591e01b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "172",
+       "sha": "aae32ed9b9d6bac538c5dab9116fbf670b2a5ded2678a99fc0d727a95b7fc983"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "51-53",
+       "sha": "5e5073ddf5c6c40741a3d0c6b7da011d0a685e634aa9d3df4aebf68a122a25fa"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "60-62",
+       "sha": "806ef06ddbe7c52fd2f30a3844203c06c7f247f911f991dc44d2949994ed5b56"
+      }
+     ]
+    },
+    {
+     "n": "R",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "With the printer backend, a read returns 0xE0 ORed with the stored byte, so bits 7-5 read as 1; once a printer exists bit 1 is its autofeed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2686",
+       "sha": "f47c97720d6d6693e89c51b994a988eb034b815bc1e8662254297fed9dc26fb9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2688",
+       "sha": "7a22804ad960438421ca85878ccde85ad47c3a39e9160e0da66aad697fac98dd"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2674",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x3BC",
+   "name": "Data port at 03BCh",
+   "aliases": [
+    "MDA LPT1 data port"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "4594-4600"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "45"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "450-451"
+    },
+    {
+     "ref": "dosbox-x:src/dosbox.cpp",
+     "lines": "4712"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "128"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "48-50"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2564"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "166"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "57-59"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2571"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/iohandler.cpp",
+     "lines": "58-60"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/iohandler.cpp",
+     "lines": "62-66"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/iohandler.cpp",
+     "lines": "71-73"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "03BCh-03BFh are the parallel printer port, LPT1 on an MDA.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4594",
+       "sha": "42cbd26082860595dd4c8294402fc8cf714953c0406fb872b7ec2522aa5cc25a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The port may sit at 0278h, 0378h or 03BCh.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4595",
+       "sha": "8ffd48681d67eac9b169b1e89cd75f5441d0dea9e7804a9e644e177f06d323b5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "03BCh is the data port.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4598",
+       "sha": "d083363ab14d094d0c8249e177a93f90c44596b2c8604cb541a84d2bc214356f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "On a unidirectional port a read of 03BCh gives the last byte written.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4600",
+       "sha": "a5a05d09f5c8741fee876264a39c405523ec17beaa41aca7c3f53f9898e8d542"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "On a bidirectional port a read of 03BCh gives input from the connector.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4599",
+       "sha": "9baba7b9cd30bf511a02b000af35cfcfc67e1d1b503bfb0615b15bb1e1a6ba05"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 03BCh sets the data byte the port holds.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4598",
+       "sha": "d083363ab14d094d0c8249e177a93f90c44596b2c8604cb541a84d2bc214356f"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The third port is reached only when parallel3 names a backend; by default it is disabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dosbox.cpp",
+       "lines": "4712",
+       "sha": "1512d97745870f613fff64d85ea46d48f68ad3bca1cb3883f54905ebf4bda73e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "45",
+       "sha": "3799b91e2d369245de5e9db9b8ea1f09ab81974764e179e4a7e54c84b42f7b1d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "450-451",
+       "sha": "f35fd8bdb8356ab8f1bfcd672bc2f2caccbe6065264993ccd4a6407d55e69222"
+      }
+     ]
+    },
+    {
+     "n": "Q",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The port's read is handed to Read_PR and its write to Write_PR of the printer backend.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "128",
+       "sha": "68f1856c64cdaf2849a2b682417d5e816084882622f62cd0f5eff4bf9ef657b4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "166",
+       "sha": "9f852cd6908925f2dfb1155734d06839e2508e713701f80612d916ebc5b1c76a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "48-50",
+       "sha": "7f2c5b88864f447f63f499b6198bdfd7e002283c4b4472c46d591439d88ad48e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "57-59",
+       "sha": "c6ac912698054de7673e866a2af99e17cc4f71978ca4dcdafd1c59099b8fdd88"
+      }
+     ]
+    },
+    {
+     "n": "S",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "With the printer backend, DOSBox-X has no bidirectional data path: a read returns the last byte written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2564",
+       "sha": "f1cfbb0646537e1d7505f7ae04d2a407a2a91a6e47be5897f91539a7b11304da"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2571",
+       "sha": "fb7d44393ee24cef093c02efdddd6d8e274f2a778fc4648bb984cb9664758eef"
+      }
+     ],
+     "row": "5"
+    },
+    {
+     "n": "R",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "While the port is disabled a read reaches IO_ReadBlocked and returns 0xFF, and a write stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/iohandler.cpp",
+       "lines": "58-60",
+       "sha": "24240a1edc1ce278103e6e4d0fa53ea5c167d84dcc0c903f78639dc69056048d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/iohandler.cpp",
+       "lines": "71-73",
+       "sha": "d04cc66633073a6a9d57c6c55cebd7fcb53dc2b96005cf357b6f5de0c838bb75"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/iohandler.cpp",
+       "lines": "62-66",
+       "sha": "61b3f675ca014b340286f0b74934a1cf1a91c99524c9b6d814800a2883a0cf3d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "4596",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2564",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2571",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2571",
+     "as": "agrees",
+     "row": "6"
+    }
+   ]
+  },
+  {
+   "key": "0x3BD",
+   "name": "Status port at 03BDh",
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "4601"
+    },
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "4604-4616"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "450-451"
+    },
+    {
+     "ref": "dosbox-x:src/dosbox.cpp",
+     "lines": "4712"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "240-246"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "131"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "54-56"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2582-2597"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "1764-1768"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "1770-1779"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "1557"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "03BDh is the status port.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4601",
+       "sha": "aa3abc1ecbb2dad5198c02e91f2005932bcfc7f5c33194f1accf5da5a1c06fb9"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 03BDh gives the status register.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4601",
+       "sha": "aa3abc1ecbb2dad5198c02e91f2005932bcfc7f5c33194f1accf5da5a1c06fb9"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bit 7",
+     "of": "doc",
+     "text": "Bit 7 of the status is busy.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4606",
+       "sha": "30a5c946561e3466751f24e01466f0871057c9498cec883e113e634a0c02136b"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bit 6",
+     "of": "doc",
+     "text": "Bit 6 is NOT acknowledge, a pulse about 5 microseconds low.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4607",
+       "sha": "10bc994f1a74dc699cfe5176bf985e60b4642eaa6d71f0c69d4d86faae6d5b63"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bit 5",
+     "of": "doc",
+     "text": "Bit 5 of the status is out of paper.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4608",
+       "sha": "9d2283c4f450b674ad814b360a7445c635adfc81a4ee465f5c6e3b2f2ca1ba09"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "bit 4",
+     "of": "doc",
+     "text": "Bit 4 is set when the printer is selected.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4609",
+       "sha": "eaf8be46d61b50c5527bf8cdbd2e5784488fe6ee561518fc3c50945b1ce9461d"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "bit 3",
+     "of": "doc",
+     "text": "Bit 3 of the status is the *no* error bit.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4610",
+       "sha": "878d332332193f12f999abe08560b4e26a458e0638b01dae26d4d000511d90a3"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "bit 2",
+     "of": "doc",
+     "text": "Bit 2 is clear when an interrupt has occurred; on a PS/2 it is a printer -ACK.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4611-4612",
+       "sha": "8681202ddb3af14e24dfecd35d611df154915fb8080a077c8006354922ae3e6d"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "bits 1-0",
+     "of": "doc",
+     "text": "Bits 1-0 of the status are reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4613",
+       "sha": "7a039937ca083d427d7d7f97abd252f2053ec8b9403d05acc8c87a6cb5954d4c"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "Reading the status sets bit 2 again when an interrupt left it clear.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4614-4615",
+       "sha": "917979818854b9094306f1269deb03c139dc5cdcad58024a246c2ca789a011b5"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The third port is reached only when parallel3 names a backend; by default it is disabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dosbox.cpp",
+       "lines": "4712",
+       "sha": "1512d97745870f613fff64d85ea46d48f68ad3bca1cb3883f54905ebf4bda73e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "45",
+       "sha": "3799b91e2d369245de5e9db9b8ea1f09ab81974764e179e4a7e54c84b42f7b1d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "450-451",
+       "sha": "f35fd8bdb8356ab8f1bfcd672bc2f2caccbe6065264993ccd4a6407d55e69222"
+      }
+     ]
+    },
+    {
+     "n": "Q",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The status port's read handler is installed at base+1 and no write handler is installed for it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "240-246",
+       "sha": "8000b2db359123cded90e41445e9dd26060e9ebb4c771cc5210be7ecb96842cd"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "131",
+       "sha": "39a4dd3480c5ff6b61e99e825f5ca250c647207d8c5a23bca2e2d2c2cee4fe01"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "54-56",
+       "sha": "3263d85e4e1833b10db303d29f55b636160a660a65c51361d8859d2be918e5f0"
+      }
+     ]
+    },
+    {
+     "n": "R",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With the printer backend, before any printer is created a read of the status gives 0xDF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2582-2585",
+       "sha": "b1020181746925fc18158583824a73549ba65590f6f9e00794c08a756cdba77c"
+      }
+     ]
+    },
+    {
+     "n": "S",
+     "on": "bit 7",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X sets bit 7 when the printer is not busy, the opposite of the table, and its printer is never busy, so bit 7 stays set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2586",
+       "sha": "252e657584711e4972797540d4cc01dac857974170416a0d3114e4f59b3f8e13"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2591-2592",
+       "sha": "13c78080e1ad905c73192c8f25e9498c509886df82e6b6e31253345818499b9e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "1764-1768",
+       "sha": "655d9851e87992990345a5099ca3175add5bb44a3e6e4a2ed718844779bbc8f5"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "T",
+     "on": "bits 1-0",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X returns bits 1-0 set, where the document reserves them.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2586",
+       "sha": "252e657584711e4972797540d4cc01dac857974170416a0d3114e4f59b3f8e13"
+      }
+     ],
+     "row": "9"
+    },
+    {
+     "n": "V",
+     "on": "bit 6",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "With the printer backend, bit 6 stays set until a printed byte clears it for one read, not as a 5 microsecond pulse.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2594-2595",
+       "sha": "4dbefd75e12c8a6f47ebed014ba7a5370b522cddb8f9c3cf19e1efae3b6c2e19"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "1770-1779",
+       "sha": "00f1e73f15b6e97ac1ff2b3780ed9424530ee32f062915683e57bf5f76d0e768"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "1557",
+       "sha": "7b40e61a5829f0419066780696bf72d859fc828e9c5fc29480076ce75a2d3e08"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "U",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "With the printer backend, reading the status sets no bit of it: the body returns the value it composed and bit 2 is never set by a read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2582-2597",
+       "sha": "bdc8e69a37c39d9d5f911067898cd5180a0aa9a63a970032d1ed8e45d56645a8"
+      }
+     ],
+     "row": "10"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "4604-4605",
+     "as": "layout"
+    },
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "4616",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2586-2597",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2586",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2586",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2586",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2586",
+     "as": "agrees",
+     "row": "8"
+    }
+   ]
+  },
+  {
+   "key": "0x3BE",
+   "name": "Control port at 03BEh",
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "4602"
+    },
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "4618-4629"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "450-451"
+    },
+    {
+     "ref": "dosbox-x:src/dosbox.cpp",
+     "lines": "4712"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "240-246"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "134"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "51-53"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+     "lines": "172"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "60-62"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2674"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2686"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2688"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2676"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2659-2660"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2663-2666"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+     "lines": "67-69"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "03BEh is the control port, readable and writable.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4602",
+       "sha": "212a59bbe1aec9c271c80dc879b78cf41f4cfa83a1eac6bb758afa01de8e4773"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 03BEh gives the control bits back.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4602",
+       "sha": "212a59bbe1aec9c271c80dc879b78cf41f4cfa83a1eac6bb758afa01de8e4773"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 7-6",
+     "of": "doc",
+     "text": "Bits 7-6 are stored with the control byte; the document reserves them and defers bit 7 to 037Bh.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4620-4621",
+       "sha": "0498b049df0371c225737b68fbf39c0d7988bae2ad461d14d996af18952a18fe"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bit 5",
+     "of": "doc",
+     "text": "Bit 5 is stored; on a PS/2 it enables the bidirectional port, with PORT 0102h.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4622-4623",
+       "sha": "1d50ded68671ef5f9152f5e389a9b9c1bfd6b6234fb133af588a34ead5407460"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bit 4",
+     "of": "doc",
+     "text": "Bit 4 is stored; it enables the IRQ that -ACK raises.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4624",
+       "sha": "ed6077db46240f36f4e64f76d4d8c4a116d8cd4bc7d034fb0d1bec2fe02606e4"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "bit 3",
+     "of": "doc",
+     "text": "Bit 3 is stored; it selects the printer on the SLCT IN line.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4625",
+       "sha": "dcbed5c77c5dbf985b5cbf54e68676b214f839e3424f64618ba5b3b3cbf55541"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "bit 2",
+     "of": "doc",
+     "text": "Bit 2 at 0 initializes the printer on the -RESET line.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4626",
+       "sha": "34448fdbffb5864f4332ccf04e463aac97baf8f639f1e576e26dc63a06fe01cf"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "bit 1",
+     "of": "doc",
+     "text": "Bit 1 is stored and selects the automatic line feed.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4627",
+       "sha": "6135c95e4378c5badf21374bfa423b4c6a723af3dac46edecc4394a66b9a0da7"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer holds bit 0 of the control set for at least 5 microseconds as the strobe.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.B",
+       "lines": "4628",
+       "sha": "934304a6415e978a53850a0531345ff129874e721689f92603ab5aa98c35d31b"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The third port is reached only when parallel3 names a backend; by default it is disabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dosbox.cpp",
+       "lines": "4712",
+       "sha": "1512d97745870f613fff64d85ea46d48f68ad3bca1cb3883f54905ebf4bda73e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "45",
+       "sha": "3799b91e2d369245de5e9db9b8ea1f09ab81974764e179e4a7e54c84b42f7b1d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "450-451",
+       "sha": "f35fd8bdb8356ab8f1bfcd672bc2f2caccbe6065264993ccd4a6407d55e69222"
+      }
+     ]
+    },
+    {
+     "n": "Q",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The control port's handlers are installed at base+2 and handed to Read_COM and Write_CON.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "240-246",
+       "sha": "8000b2db359123cded90e41445e9dd26060e9ebb4c771cc5210be7ecb96842cd"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "134",
+       "sha": "0fc2b47796f39dffdf6679bc07dbb2f309e6db17b26e9b29b64360f45591e01b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/parport.cpp",
+       "lines": "172",
+       "sha": "aae32ed9b9d6bac538c5dab9116fbf670b2a5ded2678a99fc0d727a95b7fc983"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "51-53",
+       "sha": "5e5073ddf5c6c40741a3d0c6b7da011d0a685e634aa9d3df4aebf68a122a25fa"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "60-62",
+       "sha": "806ef06ddbe7c52fd2f30a3844203c06c7f247f911f991dc44d2949994ed5b56"
+      }
+     ]
+    },
+    {
+     "n": "R",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "With the printer backend, a read returns 0xE0 ORed with the stored byte, so bits 7-5 read as 1; once a printer exists bit 1 is its autofeed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2686",
+       "sha": "f47c97720d6d6693e89c51b994a988eb034b815bc1e8662254297fed9dc26fb9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2688",
+       "sha": "7a22804ad960438421ca85878ccde85ad47c3a39e9160e0da66aad697fac98dd"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "S",
+     "on": "bit 2",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X resets the printer when bit 2 rises from 0 to 1, not while it is 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2659-2660",
+       "sha": "bd6c89ef343f607e5e960d02d791096dd8635e679c1879a79ac19ffab1d99e48"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2674",
+       "sha": "4cfd036b4d94672f2ac8e97a0b9830be71ca596a1b3a6d9371ccf7ac7c65607b"
+      }
+     ],
+     "row": "7"
+    },
+    {
+     "n": "T",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X prints the stored data byte when bit 0 falls from 1 to 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2663-2666",
+       "sha": "059b1b91373413d9988bfce58433a1d313cda0ff9faea5399899395410c24e5b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2571",
+       "sha": "fb7d44393ee24cef093c02efdddd6d8e274f2a778fc4648bb984cb9664758eef"
+      }
+     ]
+    },
+    {
+     "n": "U",
+     "on": "bit 4",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "With the printer backend, bit 4 is stored but no interrupt is raised: the event handler is empty.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+       "lines": "2674",
+       "sha": "4cfd036b4d94672f2ac8e97a0b9830be71ca596a1b3a6d9371ccf7ac7c65607b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/parport/printer_redir.cpp",
+       "lines": "67-69",
+       "sha": "070ec8b7db5bcc9c457cdecb24589cc018ce7edfd74eca998bb72c3ad9d7521a"
+      }
+     ],
+     "row": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "4618-4619",
+     "as": "layout"
+    },
+    {
+     "ref": "rbil61:PORTS.B",
+     "lines": "4629",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2674",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2674",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2674",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2674",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/parport/printer.cpp",
+     "lines": "2676",
+     "as": "agrees",
+     "row": "8"
+    }
+   ]
+  }
+ ]
+}

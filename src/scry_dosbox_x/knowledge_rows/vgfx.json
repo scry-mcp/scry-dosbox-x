@@ -1,0 +1,2840 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "vgfx",
+ "title": "The VGA graphics controller registers",
+ "kind": "register",
+ "scope": "vgfx",
+ "covers": "The registers of the VGA graphics controller: the index at port 3CE, the data port 3CF and indices 00 to 09",
+ "source": "official",
+ "documents": [
+  {
+   "name": "PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+   "variant": "VGA"
+  }
+ ],
+ "official": {
+  "PS2-HITR-Common-Interfaces-Oct90.raw.txt": [
+   "12422-12689"
+  ]
+ },
+ "engine": [
+  "VGA_SetupHandlers",
+  "VGA_DetermineMode",
+  "VGA_ComplexityCheck_ODDEVEN",
+  "RasterOp",
+  "setf",
+  "IO_RegisterWriteHandler",
+  "IO_RegisterReadHandler",
+  "IO_FreeWriteHandler",
+  "IO_FreeReadHandler",
+  "write_p3cf",
+  "read_p3cf"
+ ],
+ "entries": [
+  {
+   "key": "0x3CE",
+   "name": "Address register",
+   "aliases": [
+    "index register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12439-12449"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3ce"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3ce"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "VGA_SetupGFX"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Address register is at address hex 03CE.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12440",
+       "sha": "f03547626ce7a12ceb1a5e295ac61aabac438d2b0ac8d6422bacd612c974238c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It is loaded with the index value that points to the desired data register within the graphics controller.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12440-12442",
+       "sha": "8f52290596bfb8062240ea2b1d756125045b482ce84ca98d6198aa189149730e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 3-0",
+     "of": "doc",
+     "text": "The Index field (bits 3-0) contains the index value that points to the data registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12448-12449",
+       "sha": "6836d5e3220b477d9080595508998ccc8c8939cc0d3ad2387c83e1ff334c9792"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bits 7-4",
+     "of": "doc",
+     "text": "Bits 7-4 are set to 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12443-12445",
+       "sha": "09e44c341dfe7cadaabcb69ae2a6b5335be50e7cc6f0ecbd22623ae218f48637"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "The upper bits are undefined on read; the figure prints the zero as an OCR e.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12443-12445",
+       "sha": "09e44c341dfe7cadaabcb69ae2a6b5335be50e7cc6f0ecbd22623ae218f48637"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The port is reached through write_p3ce and read_p3ce, installed as IO_MB handlers at 0x3CE.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "252-258",
+       "sha": "b74022fe23feadcbdbc239781c30d2a1ecee0a9c620518d57a5ceb9864f3867f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12439",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12446",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12447",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "32",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "32",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "36",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x3CF",
+   "name": "data registers",
+   "aliases": [
+    "graphics controller data"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12422-12438"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "0"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "3"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "4"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "5"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "6"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "7"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "8"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The data registers of the graphics controller are at address hex 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12423-12425",
+       "sha": "72e2ddbdb123b999e9d4130a26ea9218d116cf0f5bf4ce21b8ddbb99bfdae923"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "All registers are read/write.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12424-12425",
+       "sha": "7465bc85a759f0d783cbf2664384de6b00a35188ad5b6d9a908d97a5fbf0caa0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "All registers are read back through address hex 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12424-12425",
+       "sha": "7465bc85a759f0d783cbf2664384de6b00a35188ad5b6d9a908d97a5fbf0caa0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "At 03CF the registers are 00 Set/Reset, 01 Enable Set/Reset, 02 Color Compare, 03 Data Rotate and 04 Read Map Select.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12429-12433",
+       "sha": "5ce9090ecd45ef2fc9ab7fa3bf0330d97d617773caf84b75ca48c2f8754669da"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "At 03CF the registers are 05 Graphics Mode, 06 Miscellaneous, 07 Color Don't Care and 08 Bit Mask.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12434-12437",
+       "sha": "192db5654104a270aa4fafec16b7e3c4afd6050d4b93388d61138d005a362b6e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12422",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12426-12428",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12438",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "221",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "222-231",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "232-239",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "47",
+     "as": "parent",
+     "owner": "vgfx:register:0x00"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "63",
+     "as": "parent",
+     "owner": "vgfx:register:0x01"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "72",
+     "as": "parent",
+     "owner": "vgfx:register:0x02"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "83",
+     "as": "parent",
+     "owner": "vgfx:register:0x03"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "102",
+     "as": "parent",
+     "owner": "vgfx:register:0x04"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "108",
+     "as": "parent",
+     "owner": "vgfx:register:0x05"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "160",
+     "as": "parent",
+     "owner": "vgfx:register:0x06"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "176",
+     "as": "parent",
+     "owner": "vgfx:register:0x07"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "189",
+     "as": "parent",
+     "owner": "vgfx:register:0x08"
+    }
+   ]
+  },
+  {
+   "key": "0x00",
+   "name": "Set/Reset register",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12450-12471"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3cf",
+     "case": [
+      "0"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "0"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "ModeOperation"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "This register has an index of hex 00; its address is hex 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12451",
+       "sha": "485381e04dd8d37c11c845c1010f1a87e78fd44f7fb163fe6f7bb361476a9d52"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 3-0 are the Set/Reset fields for maps 3, 2, 1 and 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12459-12462",
+       "sha": "ab9a2f57426270c248bb425f81561fb74838418f501ff030b4f4bf7f245fa4b0"
+      },
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12465-12467",
+       "sha": "a3cc54c71ac0fe61c557c6268590022ede2e1f07ca7f7f64affae0517d519131"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 7-4",
+     "of": "doc",
+     "text": "Bits 7-4 are set to 0 and undefined on read; the figure prints the zero as an OCR e.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12452-12458",
+       "sha": "7d1952ce7597ec41a12ffb6a79427397e2b75dc232d34dda00088268cb1ad5b9"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "In write mode 0 the value of each set/reset field is written to its respective memory map.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12466-12468",
+       "sha": "33a9c6e4a7231e9720353f31d1f301e12a7cae12501cbfb444f3bd560705fb5f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "For each write the set/reset bit, if enabled, is written to all 8 bits within that map.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12468-12470",
+       "sha": "bb6a3dc8043ccb0a8671e61d8c1b238e4df1ab53117fb281969579047285cb44"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Set/reset can be enabled on a map-by-map basis through the Enable Set/Reset register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12470-12471",
+       "sha": "baf02a9cb33887c1935abebc67e2c8db8474f0b01980b1200015813f801f4ed1"
+      }
+     ]
+    },
+    {
+     "n": "E",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler precomputes each field's whole-plane value and the enabled set/reset combination.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "48-50",
+       "sha": "e6b9d8c9a4d0d2eadbf25d34e3f4e35ed98aa4001568049477353309f9e911e5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12450",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12463-12464",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "47",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "223",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "47-50",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "47-50",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "174-180",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "42-43",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "45",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "221",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "173-174",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "176-199",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "384",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2303",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2372",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2406",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "174-180",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x01",
+   "name": "Enable Set/Reset",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12472-12493"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3cf",
+     "case": [
+      "1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "ModeOperation"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The index of this register is hex 01; its address is hex 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12473",
+       "sha": "817bc09e4130ea15fd57304f7dd71150bf5476e9ced067250c10fc0a68ee6ba5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 3-0 are the Enable Set/Reset fields for maps 3, 2, 1 and 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12481-12484",
+       "sha": "ffc576cb4e88490fc4ec8334961b4810fb7b305554fa9e8945e604e7db38caa7"
+      },
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12487-12488",
+       "sha": "cda662508d0e189a8ca0babd6430b9141baa129d4fb6cc454cea911f70a1bc81"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 7-4",
+     "of": "doc",
+     "text": "Bits 7-4 are set to 0 and undefined on read; the figure prints the zero as an OCR e.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12474-12480",
+       "sha": "30dbea09ff4c4bf164d3a01ed2caf7dc3160e36476f76e1c7abbc0094b2c896a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "These fields enable the set/reset function used when write mode 0 is selected.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12488-12490",
+       "sha": "e339df83ed8c09c317666d31b4ad37eab8a112bc63307962f8932f3fb6273f3c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "When set to 1, the respective memory map receives the value in the Set/Reset register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12490-12492",
+       "sha": "a6b1306a79bfc18420ba73f120cdb8e0110d2f03c82fc28083bb06a2ad2d3125"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "When set/reset is not enabled for a map, that map receives the value sent by the system.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12492-12493",
+       "sha": "808df3864a97e045d60f363c7fa58d144e3388b292a60e2749e992e4b91a3c0c"
+      }
+     ]
+    },
+    {
+     "n": "E",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler expands the enable field into a whole-plane value and keeps its complement.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "64-65",
+       "sha": "a2f49a3ad1910c71ca6e7231ccc1bed314b1b00333442b176537657c5aebeed6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12472",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12485-12486",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "63",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "225",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "63-69",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "63-68",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "174-180",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "42-43",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "45",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "221",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "173-174",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "176-199",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "384",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2303",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2372",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2406",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "174-180",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "174-180",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x02",
+   "name": "Color Compare register",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12494-12523"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3cf",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "VGA_Generic_Read_Handler"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "This register has an index of hex 02; its address is hex 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12495",
+       "sha": "3c14fb24f3d9960f25f862996bdb85ddbbe89458f81bd66d9eaa08053a242da5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "CC3-CC0 (bits 3-0) make up the 4-bit color value compared in read mode 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12503-12512",
+       "sha": "b14d51580d835811421f8f5f722fc539e39595aff86285728e49995433909b29"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 7-4",
+     "of": "doc",
+     "text": "Bits 7-4 are set to 0 and undefined on read; the figure prints the zero as an OCR e.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12496-12502",
+       "sha": "2a072bfb7a8860d5bbeadaff04426d3d80bd2f96b80634fda092204784c1bb3c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "In read mode 1 a memory read returns a 1 in each bit position where the four maps equal the Color Compare register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12510-12517",
+       "sha": "17d00bd94606f3334b380c9db34859f9466f98a2e27798683436aabab670081f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "If the read mode bit is 0, the data is returned without comparison.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12516-12517",
+       "sha": "d72556cf15e78ee1e77e8b8dd148bd83c4b3ee19cde161e8efd2f5a34ac4c52a"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "doc",
+     "text": "The 8 bit positions are compared across the four maps, and a 1 is returned where the bits of all four maps equal their color compare values.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12518-12523",
+       "sha": "cf57aa513beddd362c9707fbfe3a2596c3b6d712353833f86251b852149350a3"
+      }
+     ]
+    },
+    {
+     "n": "E",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler also keeps a copy of the field in the emulator's configuration.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "79",
+       "sha": "e9d4905d3134ab897a6143d72ac7994552abcb9f2e5df992075ed1bc9986a021"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12494",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "72",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "227",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323-331",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "324-326",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "327-331",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "42-43",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "45",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "221",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "288-322",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323-334",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x03",
+   "name": "Data Rotate register",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12524-12556"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3cf",
+     "case": [
+      "3"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "3"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "ModeOperation"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "RasterOp"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "This register has an index of hex 03; its address is hex 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12525",
+       "sha": "0e30e17d2b9ee72c67c1dd355cc3089046690b6817d3f6d551e6ad0dac17d043"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "FS (bits 4-3) is the Function Select field and RC (bits 2-0) the Rotate Count field.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12526-12530",
+       "sha": "d3358a91eb49a6b6847ba22478de66517aaa9b802196627083e766a65318204c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 7-5",
+     "of": "doc",
+     "text": "Bits 7-5 are set to 0 and undefined on read; the figure prints the zero as an OCR a.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12526-12528",
+       "sha": "ceeb06054e60a719f98fdd282184813266eb8db6d90391f50da33459186903c0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "The Function Select field determines whether and how data written to the buffer is operated on with the system latches.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12533-12536",
+       "sha": "1c5100ed7e6c5af9107de4f4112d5f3a0e64560253b69cd403955a4dbc6b22c2"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "The logical operations selected are data unmodified, ANDed, ORed or XORed with the latched data.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12542-12551",
+       "sha": "1386f1cd1aff2ea21c600a086b734972b347614ac2915fca8290b8ae9d8044dd"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "In write mode 0 the Rotate Count selects the positions the system data is rotated right during a memory write.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12553-12556",
+       "sha": "676063c50270881960d1f5aeb93cd744f01f496d3026f722672a24c81b4099ea"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "doc",
+     "text": "Data can be any of the choices selected by the write mode bits except the system latches, and a rotate is performed before the logical operation.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12537-12541",
+       "sha": "ecf415cc3e9f02486c4027a0c64c91f6f2e5a56c354e0219e44ef2ded633e0e7"
+      }
+     ]
+    },
+    {
+     "n": "E",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler also records, as complexity, whether a rotate count or a raster operation is active.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "86",
+       "sha": "ba96ad6e3c873556a5c37c3dbe62fe5a2dcc41623dca782b58b5092a4731fd7f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12524",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12531-12532",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12552",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "83",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "229",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "82-87",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "158-162",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "163-169",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "174-180",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "176-179",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "42-43",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "45",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "221",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "173-174",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "176-199",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "384",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2303",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2372",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2406",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "157-166",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "181-184",
+     "as": "agrees",
+     "row": "7"
+    }
+   ]
+  },
+  {
+   "key": "0x04",
+   "name": "Read Map Select register",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12557-12570"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3cf",
+     "case": [
+      "4"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "4"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "VGA_Generic_Read_Handler"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "VGA_UnchainedVGA_Handler::readHandler8"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "This register has an index of hex 04; its address is hex 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12558",
+       "sha": "57b6b8916804cba88501c26ce0c2d5acf274ff47c869de3687d8d405786c07cf"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The Map Select field (bits 1-0) is named MS.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12559-12562",
+       "sha": "611011e5399ea8f9d92f6e7df293279c319292e6bd8db81f6b43621d00dc3e5b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 7-2",
+     "of": "doc",
+     "text": "Bits 7-2 are set to 0 and undefined on read.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12559-12561",
+       "sha": "539aba03b49abf40e4fcd770ada28350658d9da5f8f9273a526474590a50a535"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "The Map Select field selects the memory map for system read operations and has no effect on the color compare read mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12565-12567",
+       "sha": "4278310a47700429468a7b77ab54638680343e29d6f9da2f1c1040a2e75c2b61"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "In odd/even modes, 00 or 01 selects the chained maps 0 and 1, and 10 or 11 the chained maps 2 and 3.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12567-12570",
+       "sha": "519694374b5c9c176760f3e4b354783c05bde8fcb3f468a73cec845d7bcf68a5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12557",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12563-12564",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "102-103",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "231",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "591-592",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "324-331",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "296-297",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "42-43",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "45",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "221",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "288-322",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323-334",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "591-592",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x05",
+   "name": "Graphics Mode register",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12571-12626"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3cf",
+     "case": [
+      "5"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "5"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "ModeOperation"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "VGA_Generic_Read_Handler"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "VGA_ChainedVGA_Handler::chain4remap"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+     "lines": "8129-8153"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2721-2760"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga.cpp",
+     "lines": "313-317"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "591-593"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "This register has an index of hex 05; its address is hex 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12572",
+       "sha": "4043b526d27d02ac5ed437d007c91ef32f1b7faf19670a06b3961cfe31e14381"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 6 is C256, bit 5 SR, bit 4 OE, bit 3 RM and bits 1-0 WM.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12573-12574",
+       "sha": "8b5c480ee323f65406fece15145924fa38fabb868c4d570ff6631bf036cd3efc"
+      },
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12576-12580",
+       "sha": "17cdf5cb26967bf0ac132afb0eb85a6247aafbf1f3afe0b386904d3dad7fba97"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 7 and 2 are set to 0 and undefined on read.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12573-12575",
+       "sha": "24c40de43ad92c4cf5e49d51cc249f8bf6e036bade288d4fbb54b63a00f3e6f9"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "C256 set to 1 causes the shift registers to be loaded in a manner that supports the 256-color mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12583-12586",
+       "sha": "d90ad3230dd03782150c4337ba359926281c1c5b3fe61a8e5cb73bcf93f19f16"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "SR set to 1 formats the serial data stream with even bits on even maps and odd bits on odd maps.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12587-12592",
+       "sha": "121414fa0b137dbdd81b58a4e6c112cabdbb1aa4af2d856df7b346560ef74650"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "OE set to 1 selects the odd/even addressing mode, normally following sequencer Memory Mode register bit 2.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12593-12598",
+       "sha": "59d7131aff7c143332656dd44a74f5ce3475c7de9eb80f5b12eb6df2fa59b8af"
+      }
+     ]
+    },
+    {
+     "n": "D",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X takes odd/even addressing from bit 1 of the Miscellaneous register; the handler stores this whole byte and the memory path tests only that bit.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "106-117",
+       "sha": "ec76b45a0b0c380a864a0d2bf0f0ecdedd9b3f5b2831e35312bcf57027b6a65c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+       "lines": "309",
+       "sha": "c1d655ef7cedfafcb43f7a433f343a525c80f2b0f8fc53a6873e84fc0e01edf0"
+      }
+     ],
+     "row": "6"
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "doc",
+     "text": "When RM is 1, reads return the comparison of the four maps and the Color Compare register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12598-12600",
+       "sha": "f522ce3990ae07b193f583c30f8b806cc81bf323f79f88a7960cf75255603559"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "read",
+     "of": "doc",
+     "text": "When RM is 0, data is read from the memory map selected by the Read Map Select register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12601-12603",
+       "sha": "acd532e468688289000c28fb6c625aaf2817b4f2c2b3435c5b0360004d701147"
+      }
+     ]
+    },
+    {
+     "n": "8b",
+     "on": "read",
+     "of": "doc",
+     "text": "The map may instead be selected by the 2 low-order bits of the memory address, depending on the chain-4 bit.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12603-12605",
+       "sha": "351926c02ec8e65deb3bf86bca511c147a43185cc2e9ab6b84321797c9ebcac6"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "doc",
+     "text": "WM selects the write mode; the function select logic applies to modes 0, 2 and 3.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12606-12610",
+       "sha": "cb3a7cd83ed32234a30cdb70380547d54c4d3f88aa46909398cc9c9f8daca7a1"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "write",
+     "of": "doc",
+     "text": "Mode 0 writes each map with the system data rotated by the Data Rotate count, or with the Set/Reset value where enabled.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12614-12617",
+       "sha": "a76b511a7aedbeef3aa1a73c4f1a94c73df2a4881fb81b029db8f98d72cf85c4"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "write",
+     "of": "doc",
+     "text": "Mode 1 writes each map with the contents of the system latches, which a read loads.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12618-12619",
+       "sha": "702ae7d77c034c029cd2eef31c24b75b5e97f38e41f1b988b1c8bf72c37842d9"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "write",
+     "of": "doc",
+     "text": "Mode 2 fills memory map n (0 through 3) with the value of data bit n; the figure's count of bits is an OCR glyph.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12620",
+       "sha": "4137a2d4e714417c5373190d45c6fdb9f0f7fe860c6e54bbe85d3a0576cfda29"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "write",
+     "of": "doc",
+     "text": "Mode 3 writes each map with its Set/Reset value and uses rotated data ANDed with the Bit Mask.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12621-12625",
+       "sha": "633a3f1965e0128e189181f995e00b62c1ebd69a66661d17a3340f243910a171"
+      }
+     ]
+    },
+    {
+     "n": "E",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler re-determines the video mode and the memory handlers when the upper bits change.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "107-117",
+       "sha": "ccb4fa059bf086744a3c595491e7d8fdf274ae5933029808b23818c1ff6033ad"
+      }
+     ]
+    },
+    {
+     "n": "G",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The drawing path reads bit 5 of this register to choose the 2BPP line drawer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+       "lines": "8133-8135",
+       "sha": "8b7c854c5e69b36b952b89d54ae3e5480f9b9c2756bb4a0f8a639d806e4b14dd"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+       "lines": "8150-8152",
+       "sha": "f00d8ea507699c45541181a486a755ced53fe3397315778c90713d0eea0022eb"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12571",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12581-12582",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12611-12613",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12626",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "232-233",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "107-113",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "107-113",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "112-117",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "324-331",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "324-326",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "404-410",
+     "as": "agrees",
+     "row": "8b"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "112-113",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "174-180",
+     "as": "agrees",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "181-184",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "185-188",
+     "as": "unfollowed",
+     "row": "12"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "189-193",
+     "as": "agrees",
+     "row": "13"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "42-43",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "45",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "221",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "173-174",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "176-199",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "288-322",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323-334",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "384",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2303",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2372",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2406",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "174-180",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "185-193",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga.cpp",
+     "lines": "313-317",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+     "lines": "8133-8135",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+     "lines": "8150-8152",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "591-592",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2725-2734",
+     "as": "agrees",
+     "row": "8b"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga.cpp",
+     "lines": "313-317",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+     "lines": "8129-8153",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "591-593",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2721-2760",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x06",
+   "name": "Miscellaneous register",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12627-12659"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3cf",
+     "case": [
+      "6"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "6"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "VGA_Generic_Read_Handler"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "This register has an index of hex 06; its address is hex 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12628",
+       "sha": "7865137d19980c8abddfa53882c9304c175f9896506503dcefd4cfc3a6f243c6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 3-2 are MM Memory Map, bit 1 is OE and bit 0 is GM.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12629-12630",
+       "sha": "fa76aff398bd9c11a35627337d3147ad5752f7eec42abaa0eaa138a45608c2e1"
+      },
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12632-12634",
+       "sha": "6add2b8f9b07b712388c4f62d92573367cec709b60f52670d3006e521a2c7198"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 7-4",
+     "of": "doc",
+     "text": "Bits 7-4 are set to 0 and undefined on read; the figure prints the zero as an OCR e.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12629-12631",
+       "sha": "1c8a25ede70941ae60cf4c4f725ce2a13c98a7b9378168a276a2ba51294add66"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "MM controls the mapping of the regenerative buffer into the system address space, as A0000 128KB, A0000 64KB, B0000 32KB or B8000 32KB.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12637-12638",
+       "sha": "1f7db2f1f28abc202b2af4d2dff11c0172b02a7dcb9611d2846a7bf9b5a74cc4"
+      },
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12642-12650",
+       "sha": "20259fd4e1cc2718825962716f7f7c668f9789cf3a7c31b78cd4ca743d211b39"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "OE set to 1 replaces address bit A0 with a higher-order bit, selecting the odd map when A0 is 1 and the even map when A0 is 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12652-12655",
+       "sha": "11d53f6a9b888b50098d28a4c67eeacc88c87b83e877198d2e59793564283fd3"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "GM set to 1 selects graphics mode addressing and disables the character generator latches.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12656-12659",
+       "sha": "5e7efabbfead485dc3f189e428f06122d74f46249f9793b061f787fe2d2579de"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "The handler stores the whole byte and re-determines the mode and the memory handlers when the Memory Map bits change; the case never reads GM bit 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "158-174",
+       "sha": "ce2fc0266a85291fb7146565aae3d49d27dcf95503bfaf2a2b77c78b5df14c14"
+      }
+     ],
+     "row": "6"
+    },
+    {
+     "n": "E",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler stores the byte and re-determines the video mode and the memory handlers when MM changes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "158-164",
+       "sha": "27d3978b65ac07f5ef5465354b5f3aacb9e996a8dcea7ff3cff971206a7c73aa"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12627",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12635-12636",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12639",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12640-12641",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12651",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "234-235",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "161",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "164",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "309-317",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "42-43",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "45",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "221",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "288-322",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323-334",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "296-297",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x07",
+   "name": "Color Don't Care",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12660-12674"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3cf",
+     "case": [
+      "7"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "7"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "VGA_Generic_Read_Handler"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "This register has an index of hex 07; its address is hex 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12661",
+       "sha": "7df39c15a369f8d6dced34ec7714af6f1b1fe544bc5f9b6e4f216ac450870bdf"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "M3X-M0X (bits 3-0) are the map don't care fields.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12662-12672",
+       "sha": "3ce67a45f33296c8cf23723890272d66f316bd7153c68616d96b84577e073adc"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 7-4",
+     "of": "doc",
+     "text": "Bits 7-4 are set to 0 and undefined on read; the figure prints the zero as an OCR a.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12662-12664",
+       "sha": "04bb8ee49072d51781a1a9766c32e9f3494f09db42e33728c7178caa563d6471"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "The fields select whether a map participates in the color compare cycle.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12672-12673",
+       "sha": "399179083f5c4b79be64779c10092f1d7d50b8662233bd856efc4988741d3309"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "When set to 1, the bits in that map are compared.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12674",
+       "sha": "b6d8edb01384152e814b0e5484860084530e04c6ff379b7fef4b510eab2d8fe3"
+      }
+     ]
+    },
+    {
+     "n": "E",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler also keeps a copy of the field in the emulator's configuration, for the read comparison.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "185",
+       "sha": "54beed9ae73fcdee1a4c0538c985360107ec18778a88c2bbbf49a36a974cae5d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+       "lines": "329",
+       "sha": "2bb72c7de9b181f455c8fd2b5bdd1c58fe3ea2c02c2da956b8124077e994214d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12660",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "176-178",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "237",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "329-331",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "329-331",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "42-43",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "45",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "221",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "288-322",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323-334",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x08",
+   "name": "Bit Mask register",
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12675-12689"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3cf",
+     "case": [
+      "8"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "8"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "ModeOperation"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "function": "RasterOp"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "This register has an index of hex 08; its address is hex 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12676",
+       "sha": "501fc9413c4ad5c2eb8a232c0962dd184c34a2cd95d70b5ba12baedf0070f43b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "bits 7-0",
+     "of": "doc",
+     "text": "The register holds a Bit Mask in bits 7-0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12677-12678",
+       "sha": "97789e249cc6c2a69414cd4fe79585b5575e91d36745e7a157db8981baa2599e"
+      },
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12680",
+       "sha": "ee9f6b37d65d0af15ccfbd3825b4bb4a7fb5ed20d595f7708d925d00ab21874e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A bit set to 1 lets the corresponding bit position in each map change; a bit set to 0 masks it, if the location was the last one read.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12680-12684",
+       "sha": "08e1874469a09d5ed740b7abeca252e46b46aec954179b459f5818adb04586bd"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "The bit mask applies to write mode 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12685-12686",
+       "sha": "b588f81e7a867df86fa08ee0d390bdc114601686bf29720c7fce0c8351b237fe"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "The bit mask applies to write mode 2.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12685",
+       "sha": "cd0a2eb1d47c209b3896fdec5e387de1ac1b20721d01a5b1d7ab1da1f3aac62e"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "To preserve bits using the bit mask, data must be latched internally by reading the location.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12685-12687",
+       "sha": "b8398253c32fbe9b43c4c06422ded95ae0055e6b43fe338474d2d311ba33351d"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "doc",
+     "text": "When data is written to preserve the bits, the most current data in the latches is written in those positions.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12687-12688",
+       "sha": "261c61daf961b9cd4774adf067ebb7933fe1d5065a34e51210a551de755906b9"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "doc",
+     "text": "The bit mask applies to all maps simultaneously.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+       "lines": "12688-12689",
+       "sha": "da033e47330a9d5f01ec3f5a6b12dd3000639c93d246ce295868ff2f6c28ca6f"
+      }
+     ]
+    },
+    {
+     "n": "E",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Unusual use of the bit mask in chained 256-color mode switches the handler to a slower, accurate path.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "191-197",
+       "sha": "c74f5d0243a54f019b01b21a5553fbc8de6e9d7a4da42d59d0e5efa93d88c16a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12675",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-HITR-Common-Interfaces-Oct90.raw.txt",
+     "lines": "12679",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "189-190",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "239",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "176-179",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "173-179",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "185-188",
+     "as": "unfollowed",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "157-161",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "176-180",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "162-169",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "176-179",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "42-43",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "45",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "221",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "173-174",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "176-199",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "323",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "384",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2303",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2372",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "2406",
+     "as": "unseen",
+     "reason": "the memory engine's own latch update, outside this register"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "157-160",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_memory.cpp",
+     "lines": "157-160",
+     "as": "agrees",
+     "row": "8"
+    }
+   ]
+  },
+  {
+   "key": "0x09",
+   "name": "index 09 (S3 extension)",
+   "aliases": [
+    "S3 graphics index 9"
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pc_vga.cpp cites osdever.net FreeVGA only, not a document"
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 reference documents graphics controller indices 00 to 08 only"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "document 84F9735, the IBM PS/2 technical reference, lists no index 09 register"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the same IBM manual, with no index 09 register for the VGA graphics controller"
+    },
+    {
+     "where": "index",
+     "gave": "no VGA document index lists a standard graphics controller index 09"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3cf",
+     "case": [
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3cf",
+     "case": [
+      "default"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 9 is not among the registers 0-8 the data port decodes, so its accesses reach the default branch, where the SVGA handler receives them.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "221-231",
+       "sha": "f404b11c7d75bf4f00b3c2a04f8dcb5be992a3824670c1bb220db05597596453"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "232-239",
+       "sha": "61355944743872cb26b1f25df7fad283bd30cba4ef54315e3bc5619fc9fee7b7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "205-209",
+       "sha": "f95f620b278f2b65df1c2fed80f134282faca5f449b23053e0129cbcd6a4cb20"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "240-242",
+       "sha": "5efd83cede1a31d810df4f2c6f1d58790f3820a1aa73d458aa9e9c069535d84c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When an SVGA write handler exists it receives the index and the value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "206-208",
+       "sha": "2e8dbd5feab7d1d969699b99cfbab9b90d2ca71f105013ec7dd1d291dc184493"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With no SVGA handler the first write to index 9 logs an illegal index 9 warning and later writes log the generic illegal index warning.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "206-215",
+       "sha": "208dfe3b223c71d62935bac72b7811e5295e09eb900e55b5592b56341c3e8c15"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler's default branch passes the index to the SVGA read handler when one exists, and otherwise logs and returns 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "240-248",
+       "sha": "03167ee45e06c06a4dc55b0dcd39a4a8aa96d2386b1827291a51032fce131157"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "45",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "42-43",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "32",
+     "as": "parent",
+     "owner": "vgfx:register:0x3CE"
+    }
+   ]
+  }
+ ]
+}

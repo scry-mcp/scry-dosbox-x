@@ -1,0 +1,4332 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "sblaster",
+ "title": "The Sound Blaster mixer registers and DSP ports",
+ "kind": "register",
+ "scope": "sblaster",
+ "covers": "the mixer registers of the Sound Blaster series (CT1335, CT1345 and CT1745) and of the ESS AudioDrive, the DSP I/O ports and the EMU8000 bank ports, as Creative's hardware programming guide describes them and as DOSBox-X answers them",
+ "source": "official",
+ "documents": [
+  {
+   "name": "SBHWPG.raw.txt",
+   "variant": "SB2"
+  },
+  {
+   "name": "SBHWPG.raw.txt",
+   "variant": "SBPRO"
+  },
+  {
+   "name": "SBHWPG.raw.txt",
+   "variant": "SB16"
+  },
+  {
+   "name": "EMU8KPGM.raw.txt",
+   "variant": "AWE32"
+  }
+ ],
+ "official": {
+  "SBHWPG.raw.txt": [
+   "622-624",
+   "625-627",
+   "628-639",
+   "640-645",
+   "647-661",
+   "687-693",
+   "702-707",
+   "732-749",
+   "750-756",
+   "757-762",
+   "785-799",
+   "800-826",
+   "1560-1566",
+   "1627-1629",
+   "1630",
+   "1632-1634",
+   "1635-1638",
+   "1701-1703",
+   "1746",
+   "1747",
+   "1748-1750",
+   "1751-1755",
+   "1821",
+   "1822",
+   "1828",
+   "1831",
+   "1843-1845",
+   "1868",
+   "1869",
+   "1870",
+   "1871-1873",
+   "1874",
+   "1875",
+   "1876",
+   "1877-1879",
+   "1894-1904",
+   "1905",
+   "1907-1909",
+   "2921",
+   "2922",
+   "2923",
+   "2927",
+   "2928",
+   "2930",
+   "2936"
+  ],
+  "EMU8KPGM.raw.txt": [
+   "126-130",
+   "131-135",
+   "136",
+   "137-138",
+   "139-150",
+   "151-159"
+  ]
+ },
+ "engine": [
+  "CTMIXER_UpdateVolumes",
+  "DSP_DoReset",
+  "FillUp",
+  "PIC_DeActivateIRQ"
+ ],
+ "entries": [
+  {
+   "key": "0x00",
+   "name": "mixer reset",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1627-1629"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1701-1703"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1843-1845"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x00"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Reset"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB2",
+     "text": "Register 0x00 is the reset register.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1627",
+       "sha": "d2f6fe8fedd04f4bfe7ae1c97ab4b8d12b4e049b55a4667da0ea777218d82c4a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB2",
+     "text": "Writing any 8-bit value to register 0x00 resets the mixer chip, and all the registers are then restored to their default values.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1628-1629",
+       "sha": "ba8dd717addb8447f158e6cc7075d697d598c3d42016872116455d0483249ae3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "Register 0x00 is the reset register.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1701",
+       "sha": "d2f6fe8fedd04f4bfe7ae1c97ab4b8d12b4e049b55a4667da0ea777218d82c4a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "Writing any 8-bit value to register 0x00 resets the mixer, and all the registers are then restored to their default values.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1702-1703",
+       "sha": "99f07231ace2f189a3bbbad4f8eccff8dd32101f23999a602b63fdf41b3f5b90"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 0x00 is the reset register.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1843",
+       "sha": "d2f6fe8fedd04f4bfe7ae1c97ab4b8d12b4e049b55a4667da0ea777218d82c4a"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Writing any 8-bit value to register 0x00 resets the mixer, and all the registers are then restored to their default values.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1844-1845",
+       "sha": "85dabb46b2de0381c3ecb8b22249cbf885c576aab024a3134353c8a9f92fc4e4"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A write resets the mixer, but DOSBox-X sets the FM, CD, DAC and master volumes to 31, their maximum, not to the documented defaults.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2765-2768",
+       "sha": "daebc13bc58b31e21047316c413548938fb00f8b30187c80d11a372c4d02d11e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1928-1938",
+       "sha": "06ce0e7702bfc57d54e31d6883f7f769d8bc4b9e2702411af7daac6b42630f6e"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "A write resets the mixer, but DOSBox-X sets the FM, CD, DAC and master volumes to 31, their maximum, not to the documented defaults.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2765-2768",
+       "sha": "daebc13bc58b31e21047316c413548938fb00f8b30187c80d11a372c4d02d11e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1928-1938",
+       "sha": "06ce0e7702bfc57d54e31d6883f7f769d8bc4b9e2702411af7daac6b42630f6e"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "A write resets the mixer, but DOSBox-X sets the FM, CD, DAC and master volumes to 31, their maximum, not to the documented defaults.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2765-2768",
+       "sha": "daebc13bc58b31e21047316c413548938fb00f8b30187c80d11a372c4d02d11e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1928-1938",
+       "sha": "06ce0e7702bfc57d54e31d6883f7f769d8bc4b9e2702411af7daac6b42630f6e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x02",
+   "name": "master volume (SB2)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1630"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1632-1634"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x02"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x02"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB2",
+     "text": "Register 0x02 holds the master volume.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1630",
+       "sha": "2f69a2aaed9f7bbc4d2e14508707cb1ef727ee48b9b6724d9b1484a323960cf9"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB2",
+     "text": "The volume is 3 bits: 0 to 7 gives about -46 dB to 0 dB in approximate 4 dB steps.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1632-1633",
+       "sha": "0c15a54aa5df7ec22bd89375b5d19de2b9c628d10b3ef76f14d445163d2d0ed2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB2",
+     "text": "The default master volume is 4, about -11 dB.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1634",
+       "sha": "9fb0e6cdd01c9349f56d8a88a36cff4937349ea4897df510531a6f8fb1af7cb5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "After a reset the master volume is 31, its maximum, where the manual's default is 4, about -11 dB.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1936-1937",
+       "sha": "6ab40f0e2ca839d6a736607ea41595714eef45f764ba254b05666494672bd9de"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1928",
+       "sha": "7bd7a3c0ec16f5a741acc3e6e5abb6e06ff7fe62200ce86a5343bca2e9673a74"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X takes 4 bits per channel for register 0x02, not the documented 3: a write of 0x07 reaches 15 of 31, not the maximum.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2770-2772",
+       "sha": "470eea3ec13d879c627d019ed9b97fd4699d1dbfe414383b19de1d41d0213bda"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "401-403",
+       "sha": "b51bfb243df19ce5d95e95c2f8ffd6d34fbad05f5e69db3587c4ad800b746600"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3016-3017",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2847",
+     "as": "parent",
+     "owner": "sblaster:register:0x30..0x31"
+    }
+   ]
+  },
+  {
+   "key": "0x04",
+   "name": "mixer register select",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1560-1565"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2921"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::read_sb",
+     "case": [
+      "MIXER_INDEX"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::write_sb",
+     "case": [
+      "MIXER_INDEX"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The mixer has two consecutive I/O ports, 2x4h and 2x5h, and 2x4h is the write-only address port.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1561-1563",
+       "sha": "87b11668d34a0e90499bcacc256260bd90e77d19f9b53686aeb80d58b0d6d797"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "On the Sound Blaster 16 the mixer register address port is at base plus 4 and is write only.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2921",
+       "sha": "beada5779c0811c955d1ab5216a3e3248a4670617cf4c1b1850e187e392d7320"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "The index of the mixer register to access is written to the address port.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1564-1565",
+       "sha": "218bdc00e0188d812dd7265bc229c15fd1957cd7c01c976d3363a4c548ba994f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "A read of the address port returns the index last written, though the manual calls the port write-only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3215-3217",
+       "sha": "ea3117183401daddfcb8e08ce99e5a9ceac335c82f72c50ee9e460e6dfef1413"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an ESS AudioDrive, writing 0x40 as the mixer index resets the position in the ESS identification string.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3319-3321",
+       "sha": "24d4330d0d5eb01a9bc9c5468a37a41b56ff0ed03dfd0448bf5be46a285fdcd4"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3317-3318",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3307",
+     "as": "key"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1560",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x05",
+   "name": "mixer data",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1566"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2922"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::read_sb",
+     "case": [
+      "MIXER_DATA"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::write_sb",
+     "case": [
+      "MIXER_DATA"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "On the Sound Blaster 16 the mixer data port is at base plus 5 and can be read or written.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2922",
+       "sha": "1f6be29d9842a638e481deb0ff1153ead3c5dd6531a351da3a86e7f1d6f4ac8f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The value of the selected mixer register is read from the data port.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1566",
+       "sha": "38d695e9fa67c0bed180eabe44e905460780c00f5c48bcae8ff78e42b335fb23"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "The value written to the data port goes to the selected mixer register.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1566",
+       "sha": "38d695e9fa67c0bed180eabe44e905460780c00f5c48bcae8ff78e42b335fb23"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3218-3219",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3323-3324",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3215",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3307",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x06",
+   "name": "DSP reset",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "622-624"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "647-661"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2923"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::read_sb",
+     "case": [
+      "DSP_RESET"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::write_sb",
+     "case": [
+      "DSP_RESET"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 2x6h is the DSP reset port and is written only.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "622-624",
+       "sha": "0b0e5cbb8d8fa355c561ab46928414c8a4699e70af440117402c6a875a55a97e"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2923",
+       "sha": "0bc05c377d74d70dea434f2c797cf2186a3852aa488118b8d63d90d67911e01f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of 1 and then 0 to 2x6h resets the DSP and returns it to its default state.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "648-657",
+       "sha": "130e76caf533b751a0ec91c0c587acd84f82c037f22b8ff634f48ad11ffa3eee"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "After the reset the DSP returns 0AAh at the read data port; if it does not, the card may not be installed or the address may be wrong.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "651",
+       "sha": "cdccf3354c7d4ef922cf013cfe38b4fde295d45ed41a4daaa0884035cfd637d3"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "658-661",
+       "sha": "77db6bee6ee72f983b479c78e31d5aea56a9394ebf86c561eb0e4f89f1ec6aff"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "A read of 2x6h returns 0FFh, though the manual calls the port write-only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3284-3285",
+       "sha": "86a80b48338fbb7aad04ea43a3673b809eacc5f6321e2cf92c18efe9c098ec4b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3308-3310",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3307",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3215",
+     "as": "key"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "647",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x08",
+   "name": "CD volume (SB2)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1635-1638"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x08"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x08"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB2",
+     "text": "Register 0x08 holds the CD volume.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1635",
+       "sha": "6c32fefc92dd0c61a4a1fa86d385d28e00ef55c4b4157ea6c68a7e6018be73dd"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB2",
+     "text": "The volume is 3 bits: 0 to 7 gives about -46 dB to 0 dB in approximate 4 dB steps.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1636-1637",
+       "sha": "0c15a54aa5df7ec22bd89375b5d19de2b9c628d10b3ef76f14d445163d2d0ed2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB2",
+     "text": "The default CD volume is 0, about -46 dB.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1638",
+       "sha": "ab8789d9151f6d70e8c100874abf14451f0755c9f7dc492508f260eaef585349"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "After a reset the CD volume is 31, its maximum, where the manual's default is 0, about -46 dB.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1932-1935",
+       "sha": "8668fa43cdaa550e9e3a40b3d4e8a4efa50c8e7dff0d6d3318b7c0a2da71b1c3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1928",
+       "sha": "7bd7a3c0ec16f5a741acc3e6e5abb6e06ff7fe62200ce86a5343bca2e9673a74"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X takes 4 bits per channel for register 0x08, not the documented 3: a write of 0x07 reaches 15 of 31, not the maximum.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2784-2786",
+       "sha": "172bba38de788e1a1d695c80d08ec9bc1d744a33e39e3390116bc7faa607f09c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "401-403",
+       "sha": "b51bfb243df19ce5d95e95c2f8ffd6d34fbad05f5e69db3587c4ad800b746600"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3024-3025",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1930",
+     "as": "parent",
+     "owner": "sblaster:register:0x00"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2895",
+     "as": "parent",
+     "owner": "sblaster:register:0x36..0x37"
+    }
+   ]
+  },
+  {
+   "key": "0x0A",
+   "name": "DSP read data",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "625-627"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "687-693"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2927"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::read_sb",
+     "case": [
+      "DSP_READ_DATA"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_ReadData"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 2xAh returns in-bound DSP data and is read only.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "625-627",
+       "sha": "1b0371cab4164c83b30999157a2a00a15036540240249d23ae6653e599fe087a"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2927",
+       "sha": "4cc108ba9205f11da3d4d7fc8a4a7a9bc86165e9b3a6eea5fe14283c8cb96ff5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Before the data is read in, bit 7 of the read-buffer status port must be checked to be sure data is there.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "689-691",
+       "sha": "04bd202b1d94759168a8e0c63b22a8ba242472e2351720ba370467dc0901a580"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "In-bound DSP data is read from the read data port.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "688",
+       "sha": "6ad395820aa677aaec666e781db092cfb12c00eee3fda79dfda154e06cb67757"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The DSP's last output value is also stored by the Reveal SC400 command 0xE6 and at card start.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2585-2590",
+       "sha": "14e5906344a61e82ba8d33ea7d12554b8f2dfc544263d2b93f072c6b14c1fcf0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "4418",
+       "sha": "8c037eddcf7fc58ec0b1012a134eccb7f93e227d2c79a491c8c6eb32a17b799f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read while the output buffer is empty returns the last value again.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1352-1359",
+       "sha": "0311965f5334b73be4c0a5a1f162e6f468fdac86a81f8b776c82713cac82c3bd"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3220-3221",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1351-1359",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3215",
+     "as": "key"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "692-693",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "687",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x0C",
+   "name": "DSP command/data out",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "628-639"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "702-707"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2928"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::write_sb",
+     "case": [
+      "DSP_WRITE_DATA"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 2xCh in the write direction sends commands or data to the DSP.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "628-633",
+       "sha": "79be1db558845a2758ab8312349b122ba292658e369ba76b9c1c17b3984704ad"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "636-637",
+       "sha": "113ec481f21b530c5e570d464a1489c3ab31e3438bd63f4253e682e0abd7b5f1"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2928",
+       "sha": "1fd437d7afdc0e42bc4fe86f5de465e7b1d6b500ff6c2bd217521dbf9d057e22"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Before a byte is written to 2xCh, a read of the same port must show bit 7 clear.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "702-707",
+       "sha": "a7a20235076a897a1e97f34c8fe462f4dfde36d5d2f175080f8ecfd496bc5f22"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "634-635",
+       "sha": "877c74a263e1b7f7d2bbf44a5dce9937c2c46b1e852c4969c9b511d2377cdd2d"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "638-639",
+       "sha": "ad7e15837ff33f9fdeb1ef1b64f82db367bdbfbb6fa24f71c856ca3c467ca2d7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X accepts the byte without checking the write-buffer status bit.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3311-3316",
+       "sha": "e90fae27d742a679635efacbb062ec4202d03a133fbbbfdda30d89cf6dbf7f7f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3307",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x0E",
+   "name": "DSP read-buffer status",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "640-645"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "757-762"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2930"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::read_sb",
+     "case": [
+      "DSP_READ_STATUS"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 2xEh is the read-buffer status port and is read only.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "640-645",
+       "sha": "544a51e51fdcff5b3cde3f2d817e4880d5c2804de07324a0b0915f34060589a8"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2930",
+       "sha": "766053042e1a175d53a126a74040d7cee986a5a6b6ce10f43de62ea504c8402f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Bit 7 of the status port tells whether there is any in-bound data available for reading.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "640-645",
+       "sha": "544a51e51fdcff5b3cde3f2d817e4880d5c2804de07324a0b0915f34060589a8"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2930",
+       "sha": "766053042e1a175d53a126a74040d7cee986a5a6b6ce10f43de62ea504c8402f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 2xEh also acknowledges an 8-bit DMA or SB-MIDI interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "757-762",
+       "sha": "00c8519e2c21cc768b5b209662a4cea6b619ca5eabf9ffd64deafe5132a204a9"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "640-645",
+       "sha": "544a51e51fdcff5b3cde3f2d817e4880d5c2804de07324a0b0915f34060589a8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The DSP output-buffer count is cleared by the Reveal SC400 command 0xE6 and by the flush, raised as data is added, and lowered on each byte read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2585-2590",
+       "sha": "14e5906344a61e82ba8d33ea7d12554b8f2dfc544263d2b93f072c6b14c1fcf0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1345",
+       "sha": "76a15fadd1f8d54ab1ff7d1e2de17fb3e8c3c25dd958565b42a587cc84cb2416"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "816",
+       "sha": "42fc5ba50b0589ca6a72007dd4706f168853f2a62713ee43df754f4220cddea8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1357",
+       "sha": "22f5f06a39cbef9959782d9484cee968acc091d1efd39f70f78c81b267b92599"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When the running program is DESERT or JUNGLE and the buffer is empty, a status read raises the output count, so bit 7 reports data that is not there.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3234-3241",
+       "sha": "8e856268d0b626dda0173355dbb539d585dc8045c509e9c7b4e863d614047b52"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3238-3241",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3224-3227",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3229-3232",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3215",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3242-3254",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0F",
+   "name": "SB16 16-bit DMA IRQ ack",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "750-756"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::read_sb",
+     "case": [
+      "DSP_ACK_16BIT"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 2xFh acknowledges a 16-bit DMA-mode digitized sound interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "750-751",
+       "sha": "02be10ad7b66a3fb576f37a8be660af7936ff098ab7295bc4a4b88640b5b5b6d"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "753",
+       "sha": "e9fb75bd9297f3b416c5c122c597e208a476ab441d17c58d0b54de8d7f60fbd7"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "755",
+       "sha": "bb6dba18af9932087c009005e4bc625d84e5663aaf7a9dceb6bbb9cf8d898835"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 2xFh sends the interrupt acknowledgment to the DSP.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "750-751",
+       "sha": "02be10ad7b66a3fb576f37a8be660af7936ff098ab7295bc4a4b88640b5b5b6d"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "755",
+       "sha": "bb6dba18af9932087c009005e4bc625d84e5663aaf7a9dceb6bbb9cf8d898835"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "752",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "754",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "756",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3242-3246",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3247-3254",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3215",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x14",
+   "name": "ESS audio 1 volume",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's ISA Sound Blaster header cites no document; its mixer switch handles SB16 registers 0x22-0x3E, has no case 0x14 and no ESS AudioDrive."
+    },
+    {
+     "where": "maker",
+     "gave": "The maker's ES688 data sheet (09/94) is https://www.alsa-project.org/files/pub/manuals/ess/688.pdf, a four-page scan whose OCR cannot be read line for line; esstech.com has no ES688 page."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No ESS ES688 datasheet: the components listing refused an automated request (HTTP 403) and a site search found no ESS page."
+    },
+    {
+     "where": "archive-org",
+     "gave": "No item of its own: only Wayback copies of the same ALSA 688.pdf scan, which is the image-only document above."
+    },
+    {
+     "where": "index",
+     "gave": "datasheet4u.com lists ES688 as the same 380 KB four-page scan; datasheetarchive.com has no ES688 entry."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x14"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x14"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Mixer register 0x14 is a case of the mixer write and read switches that only the ESS AudioDrive gives a body.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2815-2821",
+       "sha": "2b54127959c9d7d1a7cef1e8cd7a5a566ee1ffd90682f0af6a449bb35de75ed3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3031-3033",
+       "sha": "0f836ec2530bbe080bdddee0fb75631f2a7980aa517634b954b797b1546b1245"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an ESS AudioDrive a write to mixer register 0x14 sets the left voice volume from bits 7-4 and the right from bits 3-0, each widened to five bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2815-2821",
+       "sha": "2b54127959c9d7d1a7cef1e8cd7a5a566ee1ffd90682f0af6a449bb35de75ed3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a card that is not an ESS AudioDrive the write to 0x14 has no effect: the case does nothing outside the ESS guard.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2815-2821",
+       "sha": "2b54127959c9d7d1a7cef1e8cd7a5a566ee1ffd90682f0af6a449bb35de75ed3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an ESS AudioDrive a read of 0x14 returns the top four bits of each voice field, the left in bits 7-4 and the right in bits 3-0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3031-3033",
+       "sha": "0f836ec2530bbe080bdddee0fb75631f2a7980aa517634b954b797b1546b1245"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a card that is not an ESS AudioDrive the 0x14 case breaks and the function returns 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3031-3033",
+       "sha": "0f836ec2530bbe080bdddee0fb75631f2a7980aa517634b954b797b1546b1245"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3010",
+       "sha": "63b15860c8a508d5130c031ca172d951f327645e03aad1b5af3d0f40c19bd912"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3175",
+       "sha": "67f6db9d4a2e640b2fa88b7ad8e8f66bbcfe38eae9b1e4d974aaa66f5be96cc8"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a Sound Blaster 2 the mixer register 0x0A writes the same left and right voice fields.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2788-2791",
+       "sha": "e9cd1bf533c441ad31ea905a2b17153358c0fcdbbabf8ca6b823a0f77583d98e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1930",
+     "as": "parent",
+     "owner": "sblaster:register:0x00"
+    }
+   ]
+  },
+  {
+   "key": "0x22",
+   "name": "master volume (SBPRO)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1746"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1748-1750"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x22"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x22"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "Register 0x22 holds the master volume, a field for the left channel and a field for the right.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1746",
+       "sha": "359ad14a1bfe599131556eba4bbc78ff5c75d026d6bda482168515983da61906"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "Each field is 3 bits: 0 to 7 gives about -46 dB to 0 dB in approximate 4 dB steps.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1748-1749",
+       "sha": "be573f63fd81e493599211175d32b79622c259a82d0c58b3e6806bb8d224c36d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "The default value of each master volume field is 4, about -11 dB.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1750",
+       "sha": "9fb0e6cdd01c9349f56d8a88a36cff4937349ea4897df510531a6f8fb1af7cb5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "After a reset or a write to register 0x00 the master volume is 31, its maximum, not the documented default of 4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1936-1937",
+       "sha": "6ab40f0e2ca839d6a736607ea41595714eef45f764ba254b05666494672bd9de"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2765-2766",
+       "sha": "6cc9bccd7e8653d6f12adecc700729b2c62e1de6132aea79c2fbdde3717a603e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1928",
+       "sha": "7bd7a3c0ec16f5a741acc3e6e5abb6e06ff7fe62200ce86a5343bca2e9673a74"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X takes 4 bits per channel for register 0x22, not the documented 3: a write of 0x7F leaves one field at 15 of 31, not the maximum.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2822-2824",
+       "sha": "790a0a1e7f1bc79f74a8cfbdcbdb24e3c3b5635bcbe7890f38f4f1cd282b2e2f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "401-403",
+       "sha": "b51bfb243df19ce5d95e95c2f8ffd6d34fbad05f5e69db3587c4ad800b746600"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3018-3019",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x26",
+   "name": "FM volume (SBPRO)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1747"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x26"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x26"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "Register 0x26 holds the MIDI volume, a field for the left channel and a field for the right.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1747",
+       "sha": "d971e06d578832cf044c31baaa9427c6878c8141aed456cec48cd077883ab432"
+      }
+     ],
+     "links": [
+      "sblaster:register:0x22"
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "Register 0x26 is written with the left and right MIDI volume fields.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1747",
+       "sha": "d971e06d578832cf044c31baaa9427c6878c8141aed456cec48cd077883ab432"
+      }
+     ],
+     "links": [
+      "sblaster:register:0x22"
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2826-2828",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3034-3035",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x28",
+   "name": "CD audio volume (SBPRO)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1751"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1753-1755"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x28"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x28"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "Register 0x28 holds the CD audio volume, a left and a right field.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1751",
+       "sha": "653531a96d39cda73ada67bcaa045bf5bc487ee113adc54753c22e77d3b15d44"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "Each field is 3 bits: 0 to 7 gives about -46 dB to 0 dB in approximate 4 dB steps.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1753-1754",
+       "sha": "be573f63fd81e493599211175d32b79622c259a82d0c58b3e6806bb8d224c36d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "The default CD audio volume is 0, about -46 dB.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1755",
+       "sha": "9a4e4b95ea3a720e90e04c8bd892a5632958049f81c246ab16493e1baf8b7e55"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "After a reset the CD audio volume is 31, its maximum, where the manual's default is 0, about -46 dB.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1932-1935",
+       "sha": "8668fa43cdaa550e9e3a40b3d4e8a4efa50c8e7dff0d6d3318b7c0a2da71b1c3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1928",
+       "sha": "7bd7a3c0ec16f5a741acc3e6e5abb6e06ff7fe62200ce86a5343bca2e9673a74"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X takes 4 bits per channel for register 0x28, not the documented 3: a write of 0x7F leaves one field at 15 of 31, not the maximum.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2830-2832",
+       "sha": "0edaf83fa0fff643fe22c2caf495515ffdcbb3691d841367ffe98c7bd8eb82eb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "401-403",
+       "sha": "b51bfb243df19ce5d95e95c2f8ffd6d34fbad05f5e69db3587c4ad800b746600"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3036-3037",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x2E",
+   "name": "line-in volume (SBPRO)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1752"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x2E"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x2E"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "Register 0x2E holds the line-in volume, a left and a right field.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1752",
+       "sha": "277cda9efc2647cd942ccb516a1cd60635dbc4c3014821e5f178b7c07be102fe"
+      }
+     ],
+     "links": [
+      "sblaster:register:0x28"
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SBPRO",
+     "text": "Register 0x2E is written with the left and right line-in volume fields.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1752",
+       "sha": "277cda9efc2647cd942ccb516a1cd60635dbc4c3014821e5f178b7c07be102fe"
+      }
+     ],
+     "links": [
+      "sblaster:register:0x28"
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2834-2836",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3038-3039",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x30..0x31",
+   "name": "master volume (SB16)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1868"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1871-1873"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x30"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x31"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x30"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x31"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Registers 0x30 and 0x31 hold the left and right master volume fields.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1868",
+       "sha": "59c78e51faee40bcbba103bc05c76ed33fed15bef6641b1b7cda1349ad5e98fa"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Each field is 5 bits: 0 to 31 gives -62 dB to 0 dB in 2 dB steps.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1871-1872",
+       "sha": "fd6dfd439ff5ac3cbd649d34ff1e06b991a83e378b2f11cfa21ac3825cc9c168"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "The default value of each master volume field is 24, about -14 dB.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1873",
+       "sha": "a3dcc12d6cddb24707b4bdb917ce1a5b0a8e750c2f33c6640f929868aeb0f3a9"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "After a reset both master volume fields are 31, their maximum, not the documented default of 24.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1936-1937",
+       "sha": "6ab40f0e2ca839d6a736607ea41595714eef45f764ba254b05666494672bd9de"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1928",
+       "sha": "7bd7a3c0ec16f5a741acc3e6e5abb6e06ff7fe62200ce86a5343bca2e9673a74"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X takes the 5-bit field but attenuates 2 dB per step above level 10: the lowest eleven values are 1 dB short, so 0 is -61 dB, not -62 dB.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1882-1885",
+       "sha": "9314b2505d7b0303aebc7b17d9b55075f5b9afd5298ea1c2c460c8e572a69bf7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1893-1896",
+       "sha": "9c5e8207627943f893afa09dea46591d3999dce622860131d3d8fcc15b701abb"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2838-2842",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2845-2849",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3040-3047",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2858-2859",
+     "as": "parent",
+     "owner": "sblaster:register:0x32..0x33"
+    }
+   ]
+  },
+  {
+   "key": "0x32..0x33",
+   "name": "voice volume (SB16)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1869"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x32"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x33"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x32"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x33"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Registers 0x32 and 0x33 hold the left and right voice volume fields.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1869",
+       "sha": "181bf3dbd7ecbf9c0af7fcd26bfbcc47a712f1fc4a9a7a5ee9f33129df6fc258"
+      }
+     ],
+     "links": [
+      "sblaster:register:0x30..0x31"
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Registers 0x32 and 0x33 are written with the left and right voice volume fields.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1869",
+       "sha": "181bf3dbd7ecbf9c0af7fcd26bfbcc47a712f1fc4a9a7a5ee9f33129df6fc258"
+      }
+     ],
+     "links": [
+      "sblaster:register:0x30..0x31"
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an ESS AudioDrive register 0x32 sets the master volume instead.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2857-2861",
+       "sha": "bdd022759c633f73707741af451eb4c896c49ef9cd8763aeda49089cbe9d81c4"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an ESS AudioDrive a read of register 0x32 returns the master volume.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3051",
+       "sha": "7e6102b839a1c722fbf09458aa714e2f5ea203d26d81fe753257b9a79f8511f2"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a Sound Blaster 2 the voice volume is written by mixer register 0x0A into the same field.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2788-2791",
+       "sha": "e9cd1bf533c441ad31ea905a2b17153358c0fcdbbabf8ca6b823a0f77583d98e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2853-2855",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2864-2866",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3048-3057",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1930",
+     "as": "parent",
+     "owner": "sblaster:register:0x00"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1936-1937",
+     "as": "parent",
+     "owner": "sblaster:register:0x00"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2840",
+     "as": "parent",
+     "owner": "sblaster:register:0x30..0x31"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2847",
+     "as": "parent",
+     "owner": "sblaster:register:0x30..0x31"
+    }
+   ]
+  },
+  {
+   "key": "0x34..0x35",
+   "name": "FM volume (SB16)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1870"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x34"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x35"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x34"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x35"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Registers 0x34 and 0x35 hold the left and right MIDI volume fields.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1870",
+       "sha": "93f80870f72fe91c922e291985d6edbcae53de09f92d49a821ca460d762a85c2"
+      }
+     ],
+     "links": [
+      "sblaster:register:0x30..0x31"
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Registers 0x34 and 0x35 are written with the left and right MIDI volume fields.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1870",
+       "sha": "93f80870f72fe91c922e291985d6edbcae53de09f92d49a821ca460d762a85c2"
+      }
+     ],
+     "links": [
+      "sblaster:register:0x30..0x31"
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2869-2873",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2875-2879",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3058-3065",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1930",
+     "as": "parent",
+     "owner": "sblaster:register:0x00"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2888-2889",
+     "as": "parent",
+     "owner": "sblaster:register:0x36..0x37"
+    }
+   ]
+  },
+  {
+   "key": "0x36..0x37",
+   "name": "CD volume (SB16)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1874"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1877-1879"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x36"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x37"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x36"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x37"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Registers 0x36 and 0x37 hold the left and right CD volume fields.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1874",
+       "sha": "6c218d22310351a1d0690444429e8cd39d05ebff380179efbc5c978b3b9726f2"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Each field is 5 bits: 0 to 31 gives -62 dB to 0 dB in 2 dB steps.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1877-1878",
+       "sha": "fd6dfd439ff5ac3cbd649d34ff1e06b991a83e378b2f11cfa21ac3825cc9c168"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "The default value of each CD volume field is 0, about -62 dB.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1879",
+       "sha": "f26f38bd9e27ac459ff90a7ad5a4e12f45a4e73404194447931ae1305a82cac1"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "After a reset both CD volume fields are 31, their maximum, not the documented default of 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1932-1935",
+       "sha": "8668fa43cdaa550e9e3a40b3d4e8a4efa50c8e7dff0d6d3318b7c0a2da71b1c3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1928",
+       "sha": "7bd7a3c0ec16f5a741acc3e6e5abb6e06ff7fe62200ce86a5343bca2e9673a74"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an ESS AudioDrive register 0x36 sets the FM volume instead.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2887-2891",
+       "sha": "77d83e2a28f893a878af7bceac413e067301ba3289f6806f96dfed397e8d68a6"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an ESS AudioDrive a read of register 0x36 returns the FM volume.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3069",
+       "sha": "676f5b0f905c4cfd5a898996016737d3e950550d43021ecdf946818d59212d87"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X takes the 5-bit field but attenuates 2 dB per step above level 10: the lowest eleven values are 1 dB short, so 0 is -61 dB, not -62 dB.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1882-1885",
+       "sha": "9314b2505d7b0303aebc7b17d9b55075f5b9afd5298ea1c2c460c8e572a69bf7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1893-1896",
+       "sha": "9c5e8207627943f893afa09dea46591d3999dce622860131d3d8fcc15b701abb"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2883-2885",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2894-2896",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3066-3075",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1930",
+     "as": "parent",
+     "owner": "sblaster:register:0x00"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2904-2905",
+     "as": "parent",
+     "owner": "sblaster:register:0x38"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2871",
+     "as": "parent",
+     "owner": "sblaster:register:0x34..0x35"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2877",
+     "as": "parent",
+     "owner": "sblaster:register:0x34..0x35"
+    }
+   ]
+  },
+  {
+   "key": "0x38",
+   "name": "line-in volume left SB16",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1875"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x38"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x38"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 0x38 holds the left line-in volume field and register 0x39 the right.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1875",
+       "sha": "af4e816cccc03a6f79b6b91438118d94cfc977b6ab19f36201c6f52d4169521d"
+      }
+     ],
+     "links": [
+      "sblaster:register:0x36..0x37"
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 0x38 is written with the left line-in volume field.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1875",
+       "sha": "af4e816cccc03a6f79b6b91438118d94cfc977b6ab19f36201c6f52d4169521d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an ESS AudioDrive register 0x38 sets and returns the CD volume instead.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2903-2907",
+       "sha": "38318d7adaba06638f7fa36d7a9d3a7a6c807a4528453338e4b61d3425c102bd"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3079",
+       "sha": "f32f070a1e1d03afd7915ebdc4c2defdba01836257f8a2cf4f0fc5cc084250fa"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an ESS AudioDrive the line volume register 0x3E writes the same left and right line fields.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2915-2919",
+       "sha": "e4b7fc5f9bf463b01863feb58b5c10bc5fdefe72146ae417e952171031176646"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3080-3081",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1930",
+     "as": "parent",
+     "owner": "sblaster:register:0x00"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2884",
+     "as": "parent",
+     "owner": "sblaster:register:0x36..0x37"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2895",
+     "as": "parent",
+     "owner": "sblaster:register:0x36..0x37"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2899-2902",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3078",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x39",
+   "name": "line-in volume R (SB16)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1821"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x39"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x39"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 0x39 is the right line-in volume field of the mixer register map.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1821",
+       "sha": "e2cd252647318ae744fb66a9818f8af44cab3a6cad98b5562e7f9d3f6cbc5f9c"
+      }
+     ],
+     "links": [
+      "sblaster:register:0x36..0x37"
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 0x39 is written with the right line-in volume field.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1821",
+       "sha": "e2cd252647318ae744fb66a9818f8af44cab3a6cad98b5562e7f9d3f6cbc5f9c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a card that is not an SB16 a read of 0x39 returns 0x0A.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3082-3085",
+       "sha": "502058759f942452177f30824b47b0461ac1c3d751db4441513a7de6c1444a66"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2909-2911",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3082-3085",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2918",
+     "as": "parent",
+     "owner": "sblaster:register:0x3E"
+    }
+   ]
+  },
+  {
+   "key": "0x3A",
+   "name": "mic volume (SB16)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1822"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1876"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x3a"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x3a"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 0x3A holds the mixer's mic volume.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1822",
+       "sha": "2a1bfe121cd01e9e8b912b0f319e0f7f5748e51ea12cdf96b07e66a6d61402a8"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1876",
+       "sha": "7b8dfcd677602d7e1ec3af55ca9f58b564a8d83ecd661911932e21014db51d93"
+      }
+     ],
+     "links": [
+      "sblaster:register:0x36..0x37"
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 0x3A is written with the mic volume field.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1876",
+       "sha": "7b8dfcd677602d7e1ec3af55ca9f58b564a8d83ecd661911932e21014db51d93"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a card that is not an SB16 a read of 0x3A returns 0x0A.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3086-3089",
+       "sha": "c780fd5b6422638ecf2d7d73abdedf675c52b8d608ebdbf25d7c68438ddf5640"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2912-2914",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3086-3089",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2793",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x3E",
+   "name": "input mixer R switches",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1828"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1894-1904"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x3e"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x3e"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 0x3E holds the right input mixer switches for MIDI.L, MIDI.R, Line.L, Line.R, CD.L, CD.R and Mic.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1828",
+       "sha": "bf7605949cf305b58e2caed6482dd059a8d0a4355348ffc1907e41ae606e0fc0"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1894-1897",
+       "sha": "84edb9d11d846ddfdd1e140a11a1f69bb50100004156b6617486c1c8ad5d25c7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Setting a switch's bit to 1 closes that switch, and 0 opens it.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1895",
+       "sha": "0145669f635be984f7c48843e24604c9b7180c1520bc28062061e9a86befe7d6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "The default is 0 0 0 1 0 1 1 for MIDI.L, MIDI.R, Line.L, Line.R, CD.L, CD.R and Mic.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1896-1898",
+       "sha": "692a1344105d64dddf652a1bc9e816393d848e0da483b5aabd5fd490c8d6bbc6"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "For a mono recording of a stereo source the switches of registers 0x3D and 0x3E must be set to mix both channels into the left input mixer before sampling.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1899-1904",
+       "sha": "511bd8ded445901f554310709f81d296c5908b49c4a6bf6b7ce5bd2e1b52b285"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "2",
+     "text": "Writing 0x3E on an SB16 stores no switch: the case does nothing unless an ESS AudioDrive is selected.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2915-2920",
+       "sha": "dd6913bba20c668f5517dfc1aa04f7596f5a5a7d9f3e91bc155155df546967e5"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 0x3E on an SB16 returns 0, and on an ESS AudioDrive the line volume.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3010",
+       "sha": "63b15860c8a508d5130c031ca172d951f327645e03aad1b5af3d0f40c19bd912"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3090-3092",
+       "sha": "1bb6836f19815df74d56b10aca0ac26cea5ed252bcf8bc04e6c546e0af6902d4"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an ESS AudioDrive register 0x3E sets the left and right line volume fields from bits 7-4 and 3-0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2915-2919",
+       "sha": "e4b7fc5f9bf463b01863feb58b5c10bc5fdefe72146ae417e952171031176646"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3090-3092",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2902",
+     "as": "parent",
+     "owner": "sblaster:register:0x38"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2910",
+     "as": "parent",
+     "owner": "sblaster:register:0x39"
+    }
+   ]
+  },
+  {
+   "key": "0x40",
+   "name": "input gain right (SB16)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1831"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1905"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "1907-1909"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x40"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 0x40 holds the right input gain field.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1831",
+       "sha": "ee9e580750648943a0659a682afaa974fd9ca9d3610ee52df80632ecef5a8513"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1905",
+       "sha": "8c0512250fa854be96a994856522a4a5db6a4f3590e847b9a12f5606fcb6ce85"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "The gain field is 2 bits: 0 to 3 gives 0 dB to 18 dB in 6 dB steps.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1907-1908",
+       "sha": "7f68a7e26aa69a358a48638659adbe820f031cdfa646bc1a59af5e655ccdaadd"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "The default input gain is 0, 0 dB.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "1909",
+       "sha": "df8bd710f778efabe051beb47a2def37d10d0d5bca944f1fe24a962c42f8aef4"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X keeps no gain field at 0x40: it stores the whole byte and applies no gain, so values above 3 are read back unattenuated.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3002-3004",
+       "sha": "0fc2372a11da3a44e04d2c1da6c06e18ec4f6e0926d28fc1563e6f20f32eda22"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3110-3115",
+       "sha": "517902e6eed2390b40dbc2517a4daeac2ba75b866447a82d4c374b75ece882d8"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an ESS AudioDrive a read of 0x40 returns the card's identification bytes one at a time, 0x0A for an ES688.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3093-3104",
+       "sha": "5d8c4a3050dff7e5c6889d6a920d93cbf660e7b54ecd024ffd3be20cf2c56bca"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3105",
+       "sha": "42af036c740443455b79633c4ad8b5b729798d3a7a26ae1ca2f96dda0e1d266f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3317-3321",
+       "sha": "8e0bc3fb541cff6ac63ec364139f69a95b8674782e347fca59e00fa67f0611ba"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a card with no ESS chip that is not an SB16 a read of 0x40 returns 0x0A.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3094",
+       "sha": "4cff8e48b391468ff70ed0deb5995c9e2fb309cdde10d1d59550c5f3e8e6f291"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3110-3115",
+       "sha": "517902e6eed2390b40dbc2517a4daeac2ba75b866447a82d4c374b75ece882d8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3093-3118",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x80",
+   "name": "IRQ select",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "786-788"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "791-799"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x80"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x80"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 80h is the Interrupt Setup register, read and written like any other mixer register, that configures or determines the interrupt request line.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "786-788",
+       "sha": "3f360b91c6a12b21b8f6dbf2dc4e4edd50bf37a5798c5fb2d2259f8f8baca91a"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "791-793",
+       "sha": "de45ea5bfeed6a3a24e047ac1b395a07f981efc309840dc999e78dfe93b3078b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "The byte from register 80h carries four interrupt fields, IRQ10, IRQ7, IRQ5 and IRQ2, and setting the corresponding bit to 1 selects the IRQ.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "794-799",
+       "sha": "e1d9f1e928981e67cc7324760975bad82a56aa408f8f6b1853602ddd8c33e82e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "A read of register 80h determines the selected interrupt request line.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "787-788",
+       "sha": "f8bafcb54456b0d7b037a5f070e048c0ed9fc7c2d7d8525835f163548c7e59e5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Only one IRQ bit may be set at a time.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "799",
+       "sha": "dbbb31fd896a684122bde03a272857512dea8b719938044996704acc4ec7ab45"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the PC-98 build the four bits select IRQ 3, 10, 12 and 5 instead.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2924-2928",
+       "sha": "782d6c7f17ff5173e7e40ebe7567ddca96d521a1041191a611781dad6f8ca0e2"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the PC-98 build a read returns the selected line's bit with the upper four bits set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3121-3127",
+       "sha": "46351f8cd4661e7f33ad4f2fceaf34936a763fbef4fb973041c289afeebde917"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A ViBRA card ignores a write to 0x80.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2921-2922",
+       "sha": "a19839e8a76ce2a38b94e756f0451c177912e536112a5dc0ad90a99f237d69ed"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write first clears the selection to 0xFF, then the chain takes the first bit set, so IRQ2 wins over IRQ5, IRQ7 and IRQ10.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2923",
+       "sha": "0d2742ff8d05657325a20166e1e2709aef118a6aad2de2bbd5539376655d4ea7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2933-2938",
+       "sha": "9221c779013e3a705bc5da4dc06eb741e220f3af4f20e2188215122e87b01390"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2933-2938",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3129-3135",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3120-3137",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x81",
+   "name": "DMA select",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "789-790"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "800-826"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Write",
+     "case": [
+      "0x81"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x81"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 81h is the DMA Setup register that configures or determines the DMA channels.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "789-790",
+       "sha": "13926ad9902042d7ffaa5150e773ccfe0cc59322d5c22a62f3baf4c67169fd9c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "The byte from register 81h carries six DMA fields, DMA7, DMA6, DMA5, DMA3, DMA1 and DMA0.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "800-808",
+       "sha": "4270324e9f83477d14f3d330b371729801ed7afbcd9c6b77201ed69fc658d7e0"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "809-814",
+       "sha": "8232e5afd3081c0161bca0d1697acd76affff51171dfe0ade1812dbc60342bb5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "A read of register 81h determines the selected DMA channels.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "789-790",
+       "sha": "13926ad9902042d7ffaa5150e773ccfe0cc59322d5c22a62f3baf4c67169fd9c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Only one 16-bit DMA bit (DMA5, DMA6 or DMA7) and one 8-bit DMA bit (DMA0, DMA1 or DMA3) may be set at a time.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "815-818",
+       "sha": "c9a9a6365c33574d40443e0bde82d5b94b4f79886e3113726bb538875b4b818f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "To move 16-bit data through an 8-bit channel, all the 16-bit DMA bits are cleared and only an 8-bit channel is set.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "819-821",
+       "sha": "4ee7a4c449779e380c99240252c6cce5f6221a4f5234fad184fa63dd9f3b7f86"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "An application should not write registers 80h and 81h to change the DMA and interrupt settings; only configuration software such as SBCONFIG.EXE should.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "822-826",
+       "sha": "f463994395e0bbfef390d3b2d7d522d092dcd0c6455fcac10d3ba9e3a94af150"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the PC-98 build the bits select DMA channel 0 or 3, and the written byte is kept XORed with 0x14 for the read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2945-2949",
+       "sha": "28fd4ea2e8b5cf4ad44d74b7769bc3728a744113d7eb64d4dd21a2cd3e5355d2"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the PC-98 build a read returns the channel bits together with the upper bits of the XORed byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3140-3148",
+       "sha": "eb3be2a1e3d10b3a8207e5368c8b18c3745931adbe9b4f45fb743fa1825036af"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A ViBRA card ignores a write to 0x81.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2941-2942",
+       "sha": "7d2618b2433179a25af89e591fe20e03a9096d5487b1acca6345e84f8b9028a4"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write first clears both channels to 0xFF, then each chain takes the first bit set: DMA0 over DMA1 and DMA3, DMA5 over DMA6 and DMA7.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2943-2944",
+       "sha": "e0bdde9abbdcb377b1da0b00146f674f8e6b13f4f69da44b316bf2bbf719f545"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2989-2996",
+       "sha": "828932cb6d8431aced6b79d543cd83296788899da9a2d1426fda228b36abcc99"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2989-2996",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3149-3159",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3138-3161",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2764",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x82",
+   "name": "IRQ status (read only)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "732-749"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::CTMIXER_Read",
+     "case": [
+      "0x82"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "Register 82h is the Interrupt Status register, read like any other mixer register, that an ISR reads to tell whether an interrupt is its own or another's.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "732-737",
+       "sha": "125003d3e150cda5bfb6416901fba94fcde809369c657550516f730476fc1483"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "A bit of register 82h is set to 1 when the corresponding interrupt is triggered; the byte lists MPU-401, 16-bit DMA, 8-bit DMA and SB-MIDI.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "738-749",
+       "sha": "1bdf24deb98bd4566261c1877a902c986e7f392f51dbc20b5b14fe5acf8b89a6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "Bits 0 and 1 follow the pending 8-bit and 16-bit interrupts, but bit 5 is set on every SB16 whether an MPU-401 interrupt occurred or not.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3162-3165",
+       "sha": "b09849b8e1e1c93be114dd85bdebbaa77b1baad91fe0b7bf8d1ad435cfd79daa"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to register 82h stores nothing: the index reaches the default branch, which only logs it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3000-3006",
+       "sha": "a37bdaffda0a009940c94a121c55653417bed70fb1bd3719ddf072cb99ad6bf0"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3013",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "845",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "853",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1221-1222",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1225",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1519-1520",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3225",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3245",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "4115",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x388",
+   "name": "GUS AdLib port (write)",
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2936"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3334-3336"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "4306-4311"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "The card's FM music can also be accessed through I/O addresses 388h and 389h.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2936",
+       "sha": "5f973d94f374fdc7e7d354b07163f4ef7350d7ec065adadae90a8218e6e79b73"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "SB16",
+     "text": "A write to 388h is a write to the FM music.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2936",
+       "sha": "5f973d94f374fdc7e7d354b07163f4ef7350d7ec065adadae90a8218e6e79b73"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "When the OPL mode is none, the write handler for 388h is installed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "4306-4311",
+       "sha": "1f897dbd32ee6a1612403f75f51bcaf4a9a0ef9e2eb1265d164917b913693596"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The 388h write handler passes each write to the GUS AdLib register write.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3334-3336",
+       "sha": "e79bb73f9e3b38349b1bdfd567637830057ea1ffb70021a179228fdd96f51826"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "3334-3336",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x620",
+   "name": "AWE32 EMU8000 bank 0",
+   "regions": [
+    {
+     "ref": "datasheet:EMU8KPGM.raw.txt",
+     "lines": "126-130"
+    },
+    {
+     "ref": "datasheet:EMU8KPGM.raw.txt",
+     "lines": "136"
+    },
+    {
+     "ref": "datasheet:EMU8KPGM.raw.txt",
+     "lines": "139-150"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "635-641"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "644-651"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "4405-4406"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The EMU8000 appears as one doubleword I/O port, two I/O ports that serve as a doubleword or two separate word ports, and two word-only ports.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "126-128",
+       "sha": "aa69f0cacc52b0583b70bfdddb2a7f3462fe8f582224e02390c14d550577e9eb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The EMU8000 base port is the BLASTER E parameter, not always BLASTER plus 0x400.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "139-146",
+       "sha": "21eeaf466b6f8f590db6fdaf8f84033cda663cdc329d6ca3046375e3b602602f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Data0 is a doubleword port at BLASTER plus 0x400 for reading and writing doubleword data.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "129-130",
+       "sha": "b93d765854213185f733e8bd78d6762ad472e179ac86663d65292d07ec118a6e"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "Doubleword data is read from Data0.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "130",
+       "sha": "a531d5446c8b4db6986ef720adb813fde14b00e618e19b406a3ad7dded208a4b"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "Doubleword data is written to Data0.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "130",
+       "sha": "a531d5446c8b4db6986ef720adb813fde14b00e618e19b406a3ad7dded208a4b"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "All I/O transactions must be word or doubleword; no byte I/O transactions are allowed.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "147-150",
+       "sha": "e4b1cd03f8426ad4546cf8030af80c124b47a6c2919dead3a271b4479b04b543"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "DOSBox-X accepts a byte read and passes it to the chip's byte port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "635-641",
+       "sha": "543c4ea9f8561b34957ad99f79401a9763cde569279ef53baeaf55db9b06d109"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "DOSBox-X accepts a byte write and passes it to the chip's byte port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "644-651",
+       "sha": "c3702f4b8c82340c764f1d97d8f83eb1846f02de378dc0296b7eef72d2e64bc6"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The AWE32 code installs the read and write handlers at the base port for four consecutive ports.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "4405-4406",
+       "sha": "bbfb19520e8cb617cabffea25ea007b6c7b2abc0689fc3123a9d6993aae2f0ec"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "635-641",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "644-651",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "datasheet:EMU8KPGM.raw.txt",
+     "lines": "136",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0xA20",
+   "name": "AWE32 EMU8000 bank 1",
+   "regions": [
+    {
+     "ref": "datasheet:EMU8KPGM.raw.txt",
+     "lines": "131-135"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "635-641"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "644-651"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "4407-4408"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Data1 is a word or doubleword port at BLASTER plus 0x800 for reading and writing data.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "131-134",
+       "sha": "1bf74ce1e09086ecff8feae9ef3fc982a72cb7a538267c66d811a5b16dd05c38"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Data2 is a word port at BLASTER plus 0x802.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "135",
+       "sha": "83dbdd98f3b104530c9ef60d0ee125046a517351497a76a116a5dc8c1c0c9715"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Word or doubleword data is read from Data1.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "131-134",
+       "sha": "1bf74ce1e09086ecff8feae9ef3fc982a72cb7a538267c66d811a5b16dd05c38"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Word or doubleword data is written to Data1.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "131-134",
+       "sha": "1bf74ce1e09086ecff8feae9ef3fc982a72cb7a538267c66d811a5b16dd05c38"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Data1 takes word and doubleword transactions.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "131-134",
+       "sha": "1bf74ce1e09086ecff8feae9ef3fc982a72cb7a538267c66d811a5b16dd05c38"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "DOSBox-X accepts a byte read and passes it to the chip's byte port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "639-641",
+       "sha": "b8b05fbe3dbb4769696f3f1d8425eba82ffb25313a0e8587c6781fdee96c04e4"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "DOSBox-X accepts a byte write and passes it to the chip's byte port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "648-651",
+       "sha": "6f77afa038717341c67c40fe3694cccc291d935218cc1eece0864e35843d8b76"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The AWE32 code installs the same handlers at the base port plus 0x400 for four consecutive ports.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "4407-4408",
+       "sha": "c1f98590577a6e52b493d02c323565ab6c2037335bed9efbb1447893e898f565"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "635-641",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "644-651",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0xE20",
+   "name": "AWE32 EMU8000 bank 2",
+   "regions": [
+    {
+     "ref": "datasheet:EMU8KPGM.raw.txt",
+     "lines": "137-138"
+    },
+    {
+     "ref": "datasheet:EMU8KPGM.raw.txt",
+     "lines": "151-159"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "635-641"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "644-651"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "4409-4410"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Data3 is a word port at BLASTER plus 0xC00 and the Pointer a word port at BLASTER plus 0xC02.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "137-138",
+       "sha": "3834bc871d522393449d851f677bb9dbc452980130c631c545edf3a9d4745425"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Word data is read from Data3.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "137",
+       "sha": "f023abb8a31a90232e0b0db87c79c8bb1b3660bcc473b7d29c5164263b885ee8"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Word data is written to Data3.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "137",
+       "sha": "f023abb8a31a90232e0b0db87c79c8bb1b3660bcc473b7d29c5164263b885ee8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The pointer's low five bits are the channel number and bits 7-5 the register number.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "151-154",
+       "sha": "154543678f9eef462017d6cc16ba1a2eec876b85fb5a79051783b6a7efab102f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "After the pointer is set, the register is read or written at the Data port.",
+     "quotes": [
+      {
+       "ref": "datasheet:EMU8KPGM.raw.txt",
+       "lines": "155-159",
+       "sha": "a5aaf44bc32ca0ead2b6e06105f4d8ad448156d8295f822779825345294a6de9"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "DOSBox-X accepts a byte read and passes it to the chip's byte port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "639-641",
+       "sha": "b8b05fbe3dbb4769696f3f1d8425eba82ffb25313a0e8587c6781fdee96c04e4"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "DOSBox-X accepts a byte write and passes it to the chip's byte port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "648-651",
+       "sha": "6f77afa038717341c67c40fe3694cccc291d935218cc1eece0864e35843d8b76"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The AWE32 code installs the same handlers at the base port plus 0x800 for four consecutive ports.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "4409-4410",
+       "sha": "7cc1649a01a48cb11f21789dbda3f7d0a293b1831eb17a2d92337645e446924e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "635-641",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "644-651",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  }
+ ],
+ "closed": [
+  {
+   "ref": "datasheet:SBHWPG.raw.txt",
+   "lines": "785",
+   "as": "layout"
+  }
+ ]
+}

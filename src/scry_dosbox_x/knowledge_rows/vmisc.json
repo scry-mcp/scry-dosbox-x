@@ -1,0 +1,1019 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "vmisc",
+ "title": "The VGA's general and CRT controller ports",
+ "kind": "register",
+ "scope": "vmisc",
+ "covers": "The general registers of IBM's VGA and the CRT controller port blocks: the Miscellaneous Output register at hex 03C2 and 03CC with Input Status Register 0 read at hex 03C2, Input Status Register 1 at hex 03DA or 03BA, the Feature Control register at hex 03CA written at 03DA or 03BA, the palette write address at hex 03C8, and the CRT controller address and data ports in the hex 03Bx and 03Dx blocks, as IBM's Video Subsystems guide describes them, and what DOSBox-X does for each",
+ "source": "official",
+ "documents": [
+  {
+   "name": "PS2-Video-Subsystems.raw.txt",
+   "variant": "vga"
+  }
+ ],
+ "official": {
+  "PS2-Video-Subsystems.raw.txt": [
+   "3055-3061",
+   "2762-2783",
+   "2696-2697",
+   "2708-2719",
+   "2721-2732",
+   "2734-2735",
+   "2736-2744",
+   "2746-2760",
+   "2669-2670",
+   "2784-2789"
+  ]
+ },
+ "engine": [
+  "VGA_StartResize",
+  "VGA_RenderOnDemandUpTo",
+  "IO_RegisterWriteHandler",
+  "IO_RegisterReadHandler",
+  "IO_FreeWriteHandler",
+  "IO_FreeReadHandler"
+ ],
+ "entries": [
+  {
+   "key": "0x3B0..0x3B7",
+   "name": "CRT controller blocks",
+   "aliases": [
+    "CRT address and data ports"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3055-3061"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "111-137"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "62-79"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "A write to the Address register stores the index that selects the data register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3055-3056",
+       "sha": "732988bb8df3dd2fc966a780fb9951d2b478092cda39516e7afde58e85b3c9c4"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The Address register is at hex 03B4 or 03D4 and the access port at hex 03B5 or 03D5, the I/O address bit picking the pair.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3055-3061",
+       "sha": "7951acb9acd5882504357f86681424ad4d732c04ab8d6a05a59f0e178d20cd16"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The question mark is the variable part the I/O address select bit sets; the capture prints B as 8 and I/O as 1/0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3055-3061",
+       "sha": "7951acb9acd5882504357f86681424ad4d732c04ab8d6a05a59f0e178d20cd16"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of the Address register returns the stored index through vga_read_p3d4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "40",
+       "sha": "efe0c0d9b8f07934d7fe7a2ecbe3c7b870ba48a4bf3017e2d83d3113fde6ac4f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "65",
+       "sha": "5631ab1bdca6d2929afa6cc377d676b4d05bf1e1166de944b40654382dd526a4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+       "lines": "72-79",
+       "sha": "dec41e51e6a6fa061b50f2b8142ad8ea36a2c9d5241a0deb5786e7eb4a041a78"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "A write to 03B4 or 03D4 goes to vga_write_p3d4 and a read to vga_read_p3d4; 03B5 or 03D5 goes to vga_write_p3d5 and vga_read_p3d5.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "113-116",
+       "sha": "e5e6eaaef77d84a92a5fe213e90d211e832bbabf72699911dd79e63aac4591e5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "118-126",
+       "sha": "6cdc088fe901001801561a77f037ae71b714fe1d440075a7be308c8679de2ef3"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "On the VGA build only the pair bit 0 selects answers; on the EGA build all four pairs of the block take the address and data handlers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "113-116",
+       "sha": "e5e6eaaef77d84a92a5fe213e90d211e832bbabf72699911dd79e63aac4591e5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "118-126",
+       "sha": "6cdc088fe901001801561a77f037ae71b714fe1d440075a7be308c8679de2ef3"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "103",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write registers the pair in the block bit 0 selects, four pairs on EGA, and frees the same ports of the other block.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "113-116",
+       "sha": "e5e6eaaef77d84a92a5fe213e90d211e832bbabf72699911dd79e63aac4591e5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "118-127",
+       "sha": "4ba5b15c4a177d45a61064623f1dc9b65b18687bf73fb23b0f69c3f2d4e6b1db"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "129-136",
+       "sha": "b3aa1bcd4344074b31d41757b83930cb7320d0d5facc1d77c3cbe41f67170985"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "65",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_crtc.cpp",
+     "lines": "62-79",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "111-137",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x3BA",
+   "name": "input status register 1",
+   "aliases": [
+    "status register 1",
+    "03DA"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2762-2783"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "54-101"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "139-145"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "223-225"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+     "lines": "4404-4416"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "read",
+     "of": "doc",
+     "text": "Input Status Register 1 is read-only, at address hex 03DA or 03BA.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2762-2763",
+       "sha": "e19f8685b27717239862f829f42063d0becb27e134318f120fb1184ab7bafc06"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "bit 3",
+     "of": "doc",
+     "text": "A set VR, bit 3, indicates a vertical retrace interval.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2772-2775",
+       "sha": "86f705d893b0d500808c9610d7ce34b5891e53b3769d5bf7f8e4dd3dff184826"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bit 0",
+     "of": "doc",
+     "text": "A set DE, bit 0, indicates a horizontal or vertical retrace interval: the real-time status of the inverted display enable signal.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2776-2778",
+       "sha": "126d083f1b610d26614da9ec83dab52fd18e545615927b6684e16f015c14bd18"
+      }
+     ]
+    },
+    {
+     "n": "2b",
+     "on": "bit 3",
+     "of": "doc",
+     "text": "VR can be programmed, through the Vertical Retrace End register, to generate an interrupt at the start of the vertical retrace.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2772-2775",
+       "sha": "86f705d893b0d500808c9610d7ce34b5891e53b3769d5bf7f8e4dd3dff184826"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The document notes that programs once used this bit to keep updates in the inactive intervals, a need the video subsystem is designed to eliminate.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2779-2783",
+       "sha": "0ec84cc75c1ffd6085c1ec0034793ca8634adbbe8889d98f80ac4f862abc071a"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 03BA or 03DA clears the attribute controller flip-flop and the Tandy one.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "54",
+       "sha": "7c75ddb61b5f190572dbe5b800e35aa1513bc25cfd85d2061e42e571b76e63f7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "66",
+       "sha": "c273548d671e86b3ff43dad4ad8b04a397baa08634dfd67343adf9f525a13f5c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "68-69",
+       "sha": "5956b180a9413d97e8ccb5e630dc7c859b6ef7f29f9d1a6efde97f5c93110312"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "143-144",
+       "sha": "f6b128532c78c9b2fc5ceab10647a81534a611947fcde0cca84c02f2502b1cf3"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With the 3DA lockout flag set, a read returns zero at once.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "60-61",
+       "sha": "bda9fcdea39a29fea26a9cb7149b902cbb797c2ba94e0046cd8125baf9920fb6"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a Tseng ET3000 or ET4000 bit 7 carries the complement of bit 3, which the VGAKIT check reads.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "96-98",
+       "sha": "d110c8d63abaf0993486805bf7f53c27825a97bbe2509f5352bdf9b5c4b7db84"
+      }
+     ]
+    },
+    {
+     "n": "104",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With render on demand, render-wait off, the screen not disabled and the attribute flip-flop clear, a polling read renders the screen up to the current point.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "63-66",
+       "sha": "5faa365d240469cc1cb8773e55c6c654d5b40a3fcf53017ff6de1fd96d7ce1b5"
+      }
+     ]
+    },
+    {
+     "n": "105",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the CGA, Tandy and other adapters a read handler is registered at 03DA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "223-225",
+       "sha": "2325942714b3ed92c5f7de630dd27f5066e4bbca49b6f98c6a93b3167d1d0343"
+      }
+     ]
+    },
+    {
+     "n": "106",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The status read is registered at 03BA when bit 0 of the Miscellaneous Output register is clear and at 03DA when it is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "112-114",
+       "sha": "8b7f26df6a631a6c3d30062606adc70cd8550e101a33f3176686a209b5f32f62"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "143-144",
+       "sha": "f6b128532c78c9b2fc5ceab10647a81534a611947fcde0cca84c02f2502b1cf3"
+      }
+     ]
+    },
+    {
+     "n": "107",
+     "on": "bit 3",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2b",
+     "text": "DOSBox-X sets the retrace trigger and status bit 7 when the Vertical Retrace End register allows it, and raises IRQ 9 on the EGA build only, no interrupt on VGA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+       "lines": "4404-4410",
+       "sha": "ab18f53fa5f6777b320b472dc057562257fd061e3e3162cee7677e7ad2818e80"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+       "lines": "4411-4416",
+       "sha": "8f5d05dc4aa863f952ebb9326ca02de22e0540e65364550caae2b6b6e62b155b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "196-197",
+       "sha": "a216f21d399cb4d25f8c018764ca63ee930223d6c51e6ae5915f8e2b769be6bc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2764-2771",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "54-58",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "100-101",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "83-84",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "75-81",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "54-101",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "139-145",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "223-225",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+     "lines": "4404-4416",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "143-144",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x3C2",
+   "name": "misc output and status 0",
+   "aliases": [
+    "Miscellaneous Output register",
+    "03CC"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2696-2697"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2708-2719"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2721-2732"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2734-2735"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2736-2744"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2746-2760"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "104-158"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "161-165"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "182-197"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "219"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The read address of the Miscellaneous Output register is hex 03CC and its write address is hex 03C2.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2696-2697",
+       "sha": "312070cfb85a3c3c85d43667aaaa96fe29b8aa6338f51645f43dd094b9ac204c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "bits 7-6",
+     "of": "doc",
+     "text": "A write stores VSP in bit 7 and HSP in bit 6: 0 gives a positive sync polarity, and the pair gives 400, 350 or 480 lines, 00 reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2708-2719",
+       "sha": "39913007f4126694356fce6ac89482dbdba7e8e153672dffe0d0312f26bea110"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 3-2",
+     "of": "doc",
+     "text": "A write stores the Clock Select field in bits 3-2: 00 (printed o0) selects the 640/320 pel clock, 01 (o1) the 720/360 clock, 10 an external clock, 11 reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2721-2732",
+       "sha": "ece727eaa363a2777d6cbb94dd83bf7a9ca93eb872b8ec6bfb65372ca2ecf8f9"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bit 1",
+     "of": "doc",
+     "text": "When the Enable RAM field, bit 1, is 0, address decode for the display buffer from the system is disabled.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2734-2735",
+       "sha": "d4f0c14861c3dbe8ed3c54bce661e3655cf9d66fbf85eec26090c73da2bd4e60"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bit 0",
+     "of": "doc",
+     "text": "The I/O Address Select field, bit 0, sets the CRT controller and Input Status Register 1 to 03Bx and 03BA or 03Dx and 03DA, and moves the Feature Control writes.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2736-2744",
+       "sha": "64420b42d7bf48e263f9bc1a343455dbd23366ee62923b2770f8649b617bd4e7"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Input Status Register 0 is the read-only register at address hex 03C2; the document says not to write to it.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2746-2747",
+       "sha": "99ceabf7a5f9db72c03919a073b5fccf678cd2518406fdd2e8c46cdf93310387"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "bit 7",
+     "of": "doc",
+     "text": "In Input Status Register 0, a set CI, bit 7, says a vertical retrace interrupt is pending.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2756-2758",
+       "sha": "2d5c78ab0f3a4743f2f7fee82fb90d48fd41c1c7a96c14148d5dbff1888ff156"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "bit 4",
+     "of": "doc",
+     "text": "BIOS uses the Switch Sense field, bit 4, in determining the type of display attached.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2759-2760",
+       "sha": "2a5b279865795c21031d4a5c8490bbddc9eeead7bb9c1c40bd291ce87f54c22c"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "read",
+     "of": "doc",
+     "text": "The Miscellaneous Output register is read at hex 03CC.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2696-2697",
+       "sha": "312070cfb85a3c3c85d43667aaaa96fe29b8aa6338f51645f43dd094b9ac204c"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write is dropped whole while the VGA register lockout flag is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "108-109",
+       "sha": "2ac51aaef5d0cbe7a01ab858b54ef2de34df23538626a3a93ba02a1c573d48ab"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the EGA build a write that changes either clock bit asks for a resize.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "111",
+       "sha": "cb78bbd4a555bcb089f50f4b488b3bccb701111b953e9324ae403ff963f7c953"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Bits 0-3 read as hex 0F on EGA and 0 on VGA, values the document leaves undefined.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "187-188",
+       "sha": "a85ccf56b1d1bfb3fe25c1fccd295bcbe0db7ce3533ea2531e85f4edfd51f903"
+      }
+     ]
+    },
+    {
+     "n": "105",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read handler of 03CC is registered on the VGA build only, and returns the stored Miscellaneous Output byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "217-222",
+       "sha": "8e2c6da0b9f2761cfd63aaf685cb01e49a6dd64d10601f2137e67ebbcc19dbf7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "161-165",
+       "sha": "2bae7c5ecbc1b2c3b27be42b1ed78eb4d44d2be5be1369e2c7fb1ce4421ecb3c"
+      }
+     ]
+    },
+    {
+     "n": "106",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "4",
+     "text": "A write stores the whole byte and never acts on bit 1 to disable the display buffer's decode.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "104-158",
+       "sha": "c7f951a4080240a23134cff3e652407f46a1eb356da92199ec06cc04bad016cf"
+      }
+     ]
+    },
+    {
+     "n": "107",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "DOSBox-X moves the CRT controller and status ports with bit 0, and registers no handler for the Feature Control writes at 03DA or 03BA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "113-116",
+       "sha": "e5e6eaaef77d84a92a5fe213e90d211e832bbabf72699911dd79e63aac4591e5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "143-144",
+       "sha": "f6b128532c78c9b2fc5ceab10647a81534a611947fcde0cca84c02f2502b1cf3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "212-216",
+       "sha": "11043cb22a1afc61a05a3719a03a3c6fd59d0f2b5433835fb7b809e77ce6757e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "217-222",
+       "sha": "8e2c6da0b9f2761cfd63aaf685cb01e49a6dd64d10601f2137e67ebbcc19dbf7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "223-229",
+       "sha": "12878a74f6c1725e4f0b045da7789d7c5ea1e2813c85d4d39ff364ea9f2d6f6f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "118-127",
+       "sha": "4ba5b15c4a177d45a61064623f1dc9b65b18687bf73fb23b0f69c3f2d4e6b1db"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2748-2755",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "112",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "112",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "190-194",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "161-165",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "104-158",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "161-165",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "182-197",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "196-197",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "219",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x3C8",
+   "name": "palette write address",
+   "aliases": [
+    "03C8",
+    "EGA status"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2669-2670"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "174-178"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "220-222"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The register list gives hex 03C8 as the Video DAC palette's Write Address register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2669-2670",
+       "sha": "e513677f3817e50666985deef63c1b50d2fd2739cc4609c39bf8512ea5259f91"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register list gives the Write Address register at hex 03C8 as read/write.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2670",
+       "sha": "b9921950e75850b36fa16707eeb30e74b103498e854e7f58920537733dc1f44c"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "On VGA a read of 03C8 returns the palette write index through the DAC's handler; on EGA no DAC exists and the read returns the fixed value hex 10.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "174-178",
+       "sha": "3381742b812e04b62f4db3a9a5be9d77c9f3535eb01b388058455a1532ed4fd8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "220-222",
+       "sha": "e1eebc2f30452a238cb8253c1b4da2e2bc4158bf271a7ac6dce4e1b7c457e91d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "290-294",
+       "sha": "714c70a7b9b71791edc37cdbda2cfea5a2236080aa3c91ad6bc66e7d3a8b0a51"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "452-462",
+       "sha": "d9964d7bb5001f93b6133788a4f418652240e6c3c460edbc3e015a1b6edbd502"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "174-178",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "220-222",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x3CA",
+   "name": "feature control register",
+   "aliases": [
+    "03CA",
+    "feature control"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2784-2789"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "168-172"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "218"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Feature Control register is written at hex 03DA or 03BA and read at hex 03CA.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2785-2786",
+       "sha": "e8449e595c0c014e465e269ad3e8af3b19734314825ea856eecb61be5f95a44f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of the Feature Control register at hex 03CA returns reserved bits only.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2785-2786",
+       "sha": "e8449e595c0c014e465e269ad3e8af3b19734314825ea856eecb61be5f95a44f"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "On the VGA build a read of 03CA returns zero, all bits reserved; the EGA build registers no handler at 03CA, and neither registers a write at 03DA or 03BA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "168-172",
+       "sha": "3db2d3be61fac759445fa0170d78f7d80a207f9094818896c8f354d240ea2bd3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "213-216",
+       "sha": "8c9cb69dae35dd633b5490f2bc67ee66f081a09b0cea0c2e0541032c14dbaedf"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "217-222",
+       "sha": "8e2c6da0b9f2761cfd63aaf685cb01e49a6dd64d10601f2137e67ebbcc19dbf7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+       "lines": "223-225",
+       "sha": "2325942714b3ed92c5f7de630dd27f5066e4bbca49b6f98c6a93b3167d1d0343"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2784",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2787-2789",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_misc.cpp",
+     "lines": "168-172",
+     "as": "structure"
+    }
+   ]
+  }
+ ]
+}

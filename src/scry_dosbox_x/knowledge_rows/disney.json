@@ -1,0 +1,639 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "disney",
+ "title": "The Disney Sound Source on the parallel port",
+ "kind": "register",
+ "scope": "disney",
+ "covers": "the three printer-interface registers a Disney Sound Source answers at its base port, as Disney's programmer's guide gives them: the data register that carries a sample, the status register that reports the FIFO, and the control register that carries SELECT on pin 17",
+ "source": "official",
+ "documents": [
+  {
+   "name": "DisneySoundSource-PG.raw.txt",
+   "variant": "disney"
+  }
+ ],
+ "official": {
+  "DisneySoundSource-PG.raw.txt": [
+   "17-29",
+   "30-32",
+   "33-40",
+   "51-58"
+  ]
+ },
+ "closed": [],
+ "engine": [
+  "DISNEY_analyze",
+  "DISNEY_enable",
+  "DISNEY_PlayStereo",
+  "DISNEY_CallBack",
+  "DISNEY_disable"
+ ],
+ "entries": [
+  {
+   "key": "0x00",
+   "name": "data port",
+   "regions": [
+    {
+     "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+     "lines": "27-29"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "function": "disney_write",
+     "case": [
+      "0"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "function": "disney_read",
+     "case": [
+      "0"
+     ]
+    },
+    {
+     "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+     "lines": "33-36"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The data port carries eight-bit sample data to the D/A converter.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "27-28",
+       "sha": "5db893bbf6076131eb434b624ce27fd05b1536186d79db34a7b646c0625300ea"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A byte written to the port is loaded into a 16-level FIFO.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "28",
+       "sha": "fc79a411027d6d4ff15a8f1284e11642ddc88d0175a8fe33ff19dc6a78082db0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The FIFO clocks its data to the converter at the fixed rate of 7 kHz; the scan prints its tolerance as '5ft'.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "29",
+       "sha": "4341d6964b0392426c2b10e115e3d23ffab6699ae95c25fdbd70b985b83d4e77"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A write stores the byte in the data latch and, from the sixth write on, appends it to a 128-byte channel buffer, not a 16-level FIFO.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "36",
+       "sha": "46bb5fdc229c533f04c7388fec9441770b2da193516f531a95b2fd366436eb08"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "204",
+       "sha": "e568334cae52af2277dd21bfa2348c058dd95a9d0be66c9a75f234699d54e52d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "207-210",
+       "sha": "c2a1a476826984fe6d2ad32f53adcaf26771cfc398bf6d17dc3ddeae34ba991f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "213-215",
+       "sha": "186bae03b394e0e4a5d4ca57f9aa2f6bc041e7a2ae76c0859524337a337c0c13"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "The rate is not fixed: it times the gaps between writes and plays at that rate, accepting 500 to 100000 Hz.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "163-173",
+       "sha": "6cb2ed0d7015b70b2ad3109453dbc6fa97d049bed0701a84fee64c748b8e58e6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "148-152",
+       "sha": "d3414c6a3e7ab1001f97fa7096d04461dc7e5819d26ed542f6967704f962a5b5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "159-160",
+       "sha": "c74742a2e4483e49fca9298a1baf8a25d7a02c6095aa8d637dacfa0754f7623d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "93-99",
+       "sha": "c5f83f583a338ccf503ad36f3c39d4dbcce93e767ad78f537780d6b5cbc19d7a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "100-108",
+       "sha": "2a372321756496c18eb7e9b6b78c1b484dfb1d377ec6f0ef86ec93d63d75ad1b"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of the port returns the last byte written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "204",
+       "sha": "e568334cae52af2277dd21bfa2348c058dd95a9d0be66c9a75f234699d54e52d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "282",
+       "sha": "53c4b2d15f71690829199adfb984d4ef45891931471a347aa6376e9f7271970a"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Eight-bit unsigned data converts to an analog voltage, with 128 at the mid level.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "33",
+       "sha": "8adb7e836372de70f4cd28ec08217038596420947208680e42e2e452db335318"
+      },
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "35",
+       "sha": "8f13ad88b9d5a550c1cfc7bb103733c40fe5e9e5f8f1a2b8377ffd45d28e3f9f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "201",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "207-210",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "279",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "212",
+     "as": "structure"
+    },
+    {
+     "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+     "lines": "34",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+     "lines": "36",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x01",
+   "name": "status port",
+   "regions": [
+    {
+     "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+     "lines": "37-40"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "function": "disney_read",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The status port reports the state of the FIFO to the program.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "37",
+       "sha": "d04b46bf8bee38c8253f300b4bcff482c2a4eb824b6e66fa26629b23a3303837"
+      },
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "39",
+       "sha": "50a33d0142619c6c1e47d8e71c538e37288c1757203b807bff8b4e843bf32b00"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Pin 10 is high while the FIFO is full, so while it is low more samples can be sent.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "39-40",
+       "sha": "83b05d02a60a0990419ecc7175c639ff15b4eb3e614185e791396fbde5195705"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A read returns 0x07, after six control edges sets 0x40 and clears 0x04 while the leader buffer holds at least 16, and sets 0x80 when data bit 7 is clear.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "286-294",
+       "sha": "545788a0a5733e6f340b10fe5b57ea16521c4ffd3235b4b5185849ec517bb84f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "251-259",
+       "sha": "92f369de10a2d7b149632fec0996f9927a5fb49835936711f7fd4b3d43a09383"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+     "lines": "38",
+     "as": "electrical"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "279",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x02",
+   "name": "control port",
+   "regions": [
+    {
+     "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+     "lines": "17-26"
+    },
+    {
+     "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+     "lines": "30-32"
+    },
+    {
+     "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+     "lines": "51-58"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "function": "disney_write",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "function": "disney_read",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "404-422"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The SELECT line controls the speaker box's power supply, turning the Sound Source on when it can source current.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "17-19",
+       "sha": "35855bccbfd735952c7822e3d3fe90786f4226a2bec218665abd99089228a876"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Turning the Sound Source on makes a pop on the speaker, from power reaching the amplifier.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "22-23",
+       "sha": "8a7a2afbc9ea648e68b15f53b0265dec5f2b8e58008be55c63411fc31664dd4b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "reset",
+     "of": "doc",
+     "text": "SELECT is connected to pin 17 of the printer interface, which the BIOS sets low at power-on and reset.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "24-25",
+       "sha": "3c96146fb7df7304ed0589c62cfd7579c20d2e766ac83ebb49c5df69554430ef"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The program should return pin 17 low before returning to DOS.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "26",
+       "sha": "d06d7fb65adc7ab705afe52a44b7d550221f018676fdd51904fae1d0ec2c4317"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "The code 04h powers the Sound Source up and 0Ch (printed OCH) powers it down.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "55",
+       "sha": "2fae69b80b001f66c64afeb99e5420307573b463a0b1e0eab4a07c6d92f891ad"
+      },
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "56-57",
+       "sha": "fe35448fee479db2f17c72d167e1e35bfa356b855feb4b68d178d60457a0ae05"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "The code 0Ch strobes the D/A chip as a pulse on SELECT of one to ten microseconds.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "20-21",
+       "sha": "94117fa96111a3e52833b8e804609fb95145e8d742408e8e4b68dcafc01b8813"
+      },
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "58",
+       "sha": "bade68c8581d376b026c21dd07567520b2ad47a99ea11b011889053104217061"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "doc",
+     "text": "The pulse on pin 17 from the printer interface clocks data into the FIFO.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "30-32",
+       "sha": "635ae82f25258df8275d4b81c142569520ad3a6d16fb0a3fbe47ec30469799a4"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "A falling edge of bit 0x08, once six have been counted, enables the mixer channel at 7000 Hz.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "251-259",
+       "sha": "92f369de10a2d7b149632fec0996f9927a5fb49835936711f7fd4b3d43a09383"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "271",
+       "sha": "b6fb2d1046c1795cc5104647edd5b908fa0f79355b0daa84cde50b6eaad45c18"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "A falling edge of bit 0x08 queues the last data byte for playback once six edges have been counted, rather than strobing the D/A chip.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "251-259",
+       "sha": "92f369de10a2d7b149632fec0996f9927a5fb49835936711f7fd4b3d43a09383"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "261-266",
+       "sha": "f826ad508aebbf081c291677e6df2330e088e244d375fa06ea970113f87484a4"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "7",
+     "text": "Once six edges have been counted, the byte is queued on a falling edge of bit 0x08.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "251-259",
+       "sha": "92f369de10a2d7b149632fec0996f9927a5fb49835936711f7fd4b3d43a09383"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "261-266",
+       "sha": "f826ad508aebbf081c291677e6df2330e088e244d375fa06ea970113f87484a4"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A falling edge of bit 0x02 latches the data byte into channel 1's buffer, and a falling edge of bit 0x01 into channel 0's.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "224-234",
+       "sha": "9e3d10d41253a4a3faf2aabdf9e281fb03326785e10dfe9ad1aa8a9d40d0bed0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "238-249",
+       "sha": "f28182c81c61dd101aa7606d9a078998ed872f22c5f2c650cdbe040575bbaf2b"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A set bit 0x10 logs that the parallel IRQ is enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "270",
+       "sha": "e78364d80cd7bd3b28959f96943d361495f99dbf4dbf16fefaea3115263861bd"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The whole byte is stored as the control register, and a read of the port returns it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "271",
+       "sha": "b6fb2d1046c1795cc5104647edd5b908fa0f79355b0daa84cde50b6eaad45c18"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "298",
+       "sha": "f98fa2de59ab0197f0efc1382a7a94e5cc9c565406a560e27e443ef1d8f6ea0a"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "is",
+     "of": "doc",
+     "text": "A low pin 17 turns the Sound Source off.",
+     "quotes": [
+      {
+       "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+       "lines": "24-25",
+       "sha": "3c96146fb7df7304ed0589c62cfd7579c20d2e766ac83ebb49c5df69554430ef"
+      }
+     ]
+    },
+    {
+     "n": "16",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "The control byte is zeroed once, when the module is constructed; a machine reset does not re-run the constructor.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "411-422",
+       "sha": "3c574c4bb711dfd534736416d89f5085b70892a2553288a0c0279d28d2c46c29"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/disney.cpp",
+       "lines": "465-471",
+       "sha": "20d72823af1262d07efdc16b5dba6d95dd1a888a85a332b09534585a13304392"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:DisneySoundSource-PG.raw.txt",
+     "lines": "51-54",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "201",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "279",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "404-409",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "411-413",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "417-422",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/disney.cpp",
+     "lines": "415",
+     "as": "structure"
+    }
+   ]
+  }
+ ]
+}

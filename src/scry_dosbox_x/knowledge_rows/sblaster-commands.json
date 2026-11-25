@@ -1,0 +1,7578 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "sblaster-commands",
+ "title": "The I/O commands of the Sound Blaster DSP",
+ "kind": "command",
+ "scope": "sblaster",
+ "covers": "the commands a host writes to the command port of a Sound Blaster DSP, as Creative's hardware programming guide describes them and as DOSBox-X decodes them",
+ "source": "official",
+ "documents": [
+  {
+   "name": "SBHWPG.raw.txt",
+   "variant": "SB"
+  }
+ ],
+ "official": {
+  "SBHWPG.raw.txt": [
+   "2263-2275",
+   "2276-2285",
+   "2298-2308",
+   "2309-2326",
+   "2327-2340",
+   "2352-2358",
+   "2359-2366",
+   "2430-2437",
+   "2438-2449",
+   "2450-2458",
+   "2459-2464",
+   "2465-2473",
+   "2474-2481",
+   "2482-2489",
+   "2490-2497",
+   "2498-2505",
+   "2506-2514",
+   "2515-2523",
+   "2532-2545",
+   "2546-2554",
+   "2555-2562",
+   "2563-2569",
+   "2286-2297",
+   "2367-2385",
+   "2386-2397",
+   "2398-2407",
+   "2524-2531",
+   "2571-2576",
+   "2586-2627",
+   "2628-2634",
+   "2635-2649",
+   "2650-2662",
+   "2663-2669",
+   "2670-2677",
+   "2678-2684",
+   "2685-2692",
+   "2693-2699",
+   "2700-2707",
+   "2708-2713",
+   "2341-2350",
+   "2419-2428"
+  ]
+ },
+ "engine": [
+  "DSP_ChangeMode",
+  "DSP_PrepareDMA_Old",
+  "DSP_ChangeRate",
+  "DSP_AddData",
+  "DSP_FlushData",
+  "MIDI_RawOutByte",
+  "ESSUpdateFilterFromSB",
+  "updateSoundBlasterFilter",
+  "SetFreq",
+  "AddSamples_m8",
+  "FillUp",
+  "sb16asp_write_current_RAM_byte",
+  "sb16asp_next_RAM_byte",
+  "sb16asp_read_current_RAM_byte",
+  "DSP_RateLimitedFinalTC_Old",
+  "DSP_RateLimitedFinalSB16Freq_New",
+  "PIC_AddEvent",
+  "PIC_RemoveEvents",
+  "DSP_PrepareDMA_New",
+  "DSP_SetSpeaker",
+  "Register_Callback",
+  "SB_RaiseIRQ"
+ ],
+ "entries": [
+  {
+   "key": "0x10",
+   "name": "Direct DAC",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2263-2275"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x10"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 10h plays digitized sound one byte at a time in 8-bit direct mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2263-2264",
+       "sha": "8af0985c8a5edd9d8a3fed62d8290492386e1196ab56030b6092051843d6108c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by one data byte, bData.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2265",
+       "sha": "ad0643cc94426776ed6c7c97c201b37cd37572fcbd42475f32db8d01078d76fe"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The data byte the program sends is one byte of unsigned digitized sound data.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2266",
+       "sha": "ccfbca5f1c038c5c3b0899a72b07eba47055528d0e985243da9e77f9b195945a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The application is responsible for controlling the sampling rate.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2266-2267",
+       "sha": "4f96d7d8f997e26ee44dfade48ff441eddcc65756fc651e872fb9f78d80f67c0"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer sends the command and a data byte at the timing the sound needs, repeating until all data is sent.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2268-2272",
+       "sha": "a998a97cbaebc3321b41991e0f46d612ab5a2d0dc123eaec990e4a9ccc1ec373"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "It repeats the sample up to three times when the mixer buffer holds under 40 ms and keeps the byte in dac.last_direct_dac.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2133-2143",
+       "sha": "16ed7e0834c2e05ade50c2a979a392698c82754391de3c5a5b9ff2645ee9b929"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X estimates the rate from the interval since the previous write and caps it at 1 kHz.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2106-2117",
+       "sha": "5e58ada9884f29282c0b4c1945dc2e3c240f9cbf94b3b262bbfc3ed98dddb36e"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "It programs the ESS filter dividers from 22050 Hz and sets the mixer frequency to the estimated rate.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2120-2129",
+       "sha": "ecf20fa3abb86d3f6d9c3071872332a6574f3df99e071d77fcb82f27b5536afa"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A direct DAC byte written while the speaker is off logs a warning, once, then stops logging it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2101-2103",
+       "sha": "9dcfe95ed7d652c74b10c7201348aceb226857f57b193d548b2046a8870792e9"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2273",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2274-2275",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2143",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2136-2143",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x14",
+   "name": "Single-cycle DMA DAC",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2276-2285"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x14"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 14h plays digitized sound output by 8-bit single-cycle DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2276-2277",
+       "sha": "f77f65247d1b5c013097cd0168833a477fdbad3d24616fb313d2a12031fb3c21"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wLength low byte then high byte, the 8-bit samples to play less 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2278",
+       "sha": "c85dc4836febc638cc934c110ea16862e8100159d94c86bd3d66c0366effd952"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2279-2280",
+       "sha": "fab7abc4fa8b07bd0bf81cf6ce161e0b0bb65f9b9382ef87bbfeae7183662dfb"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The data output is digitized sound, sent by single-cycle DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2279",
+       "sha": "8b1373cef3bbf4251d9b78d04625f24b4ac1b05e4fc37c3d14eed1ab23af3161"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "The data output is unsigned digitized sound.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2279",
+       "sha": "8b1373cef3bbf4251d9b78d04625f24b4ac1b05e4fc37c3d14eed1ab23af3161"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2281-2283",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2284-2285",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2168",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2167-2168",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2168",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2165",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x24",
+   "name": "Single-cycle DMA ADC",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2352-2358"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x24"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 24h records digitized sound input by 8-bit single-cycle DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2352",
+       "sha": "32181be4d6df1046667d0df5bc1b8d1a96a9af356df569c98333848361f64ce4"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wLength low byte then high byte, the 8-bit samples to record less 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2353",
+       "sha": "594c516f46198588f9e6bf922a05d5350c5928eb94a738783d9eafed8642099a"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2354-2355",
+       "sha": "c041634a052f36ef012baa2bee78ab071d9c883578594f4c3b92581bd5414f58"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The data recorded is digitized sound, taken by single-cycle DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2354",
+       "sha": "8dec1fda2f80dc126cd630d21b10ca069910339d07619bf5d41559bb773e3d5f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "The data recorded is unsigned digitized sound.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2354",
+       "sha": "8dec1fda2f80dc126cd630d21b10ca069910339d07619bf5d41559bb773e3d5f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2356",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2357-2358",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2151",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2150-2151",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2151",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x99",
+   "name": "High-speed DMA ADC",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2563-2569"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x99"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 99h records digitized sound input by 8-bit high-speed single-cycle DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2563-2564",
+       "sha": "c5e0ca4926aeee9195cebce7518ad301cc0286ebc8aa05bfe0921933059104f5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2565",
+       "sha": "414020567fda751dfb03eab0580019a4a50ce2f1aa36e504203c7ab953a3c6a0"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2566-2568",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2569",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2146-2153",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2151",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x91",
+   "name": "High-speed DMA DAC",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2546-2554"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x91"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The guide's title calls command 91h an 8-bit high-speed single-cycle DMA mode digitized sound input command.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2546-2547",
+       "sha": "3f5c43d1e969a604cd5cb6f0995a6a3f31a557495961b3d4edc5afae4747c198"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2548",
+       "sha": "dc660732da55c1c1e0d8fd6dc76b58670b5d329e1af546b60fceedaf35893f20"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "After a block of data of the size command 48h set, the DSP generates an interrupt and exits high-speed mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2549-2550",
+       "sha": "45105adb15d8e44224a04a91f6e5269f54e9633ca7a2ff4d225e64fea4b30bbc"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "DOSBox-X treats 91h as an output command, sharing the code of 14h and clearing the recording flag.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2161-2168",
+       "sha": "8c6a3d33380ae781242a5f00b3c952ab5f4bb2e13a63f43feb3a54fd14749cef"
+      }
+     ],
+     "vs": "differs",
+     "row": "1"
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "The block size comes from the two data bytes left by an earlier command, not from command 48h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1364",
+       "sha": "c34e2a7041c7458aba7ed8b100645a4cff6fc18d316ae5c45dfea3720099a6e0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "194",
+       "sha": "c7297c40bda779e365b857b1e2110fe915caf48a5b05d23b66750816c0f9e93c"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "At the end of a single-cycle block the card raises its IRQ and clears high-speed mode.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "886-896",
+       "sha": "e1648589f094b94ab425cb91b66d72ca1925e7509709491b81c3dc7956375a7a"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2551-2552",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2553-2554",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2167",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2168",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x98",
+   "name": "High-speed auto-init ADC",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2555-2562"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x98"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 98h records digitized sound input by 8-bit high-speed auto-init DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2555-2556",
+       "sha": "5572020ebc0d6a93de1e4cd396274eabe4b88404abb55a63b3829541cb13d1ee"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2557",
+       "sha": "da893d7b3ae226dd1edc6670ade85cc663e0c7712846f19b8359e3128223db54"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2558",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2559-2560",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2561-2562",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2158-2159",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2159",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2156",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x90",
+   "name": "High-speed auto-init DAC",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2532-2545"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x90"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 90h plays digitized sound output by 8-bit high-speed auto-init DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2532-2533",
+       "sha": "58c869a62b70b0a7189b24c4394cadfec2b49e6cc8e1cca5fab7395487ce0c00"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2534",
+       "sha": "bcb84c163dfbb9a9d9b0e4e183e3234b7b41e3d88121cc787190da4982e1e8bf"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The DSP generates an interrupt after every block of the size command 48h set.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2535-2536",
+       "sha": "6877c56739b378627fca9b06e887a035cb44d3717d1cb1a18c27b8d5aa757cb4"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "In high-speed mode the DSP will not accept any other commands.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2537",
+       "sha": "a700959d19cbc528f06b372564e04c149110c3a08760fcdc0c19f87d153ea0cc"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "To end high-speed mode, the programmer sends a DSP reset command.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2538",
+       "sha": "c84628c91136e4888ae132ca9f2855d9191a1f4acbe25e3b2a49b8b9d1ce8d03"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "doc",
+     "text": "The reset ends high-speed mode and restores all DSP parameters to their state before it was entered.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2539-2541",
+       "sha": "b4a1ca5dcc1495a000fdd2c8658d87cb98662ce211e827c2231ebcd662ad4081"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X ignores commands in high-speed mode only for a card that is not an SB16 and has no ESS or Reveal SC400 emulation.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1805",
+       "sha": "07f677a2e603ba08b937e7be35ca88f8430cd47924d9681d5a91a3e5fca62e86"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "The reset puts fixed defaults back: 22050 Hz, time constant 45, last direct DAC value 0x80.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1511-1518",
+       "sha": "283887dc305c60ce6d9755e6c60deef0ce8626bf34463e1f6d3931ded029f493"
+      }
+     ],
+     "vs": "differs",
+     "row": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2542-2543",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2544-2545",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2174-2175",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2175",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2175",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2172",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x2C",
+   "name": "Auto-init DMA ADC",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2359-2366"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x2c"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 2Ch records digitized sound input by 8-bit auto-init DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2359",
+       "sha": "d7d2b3f72524e2d63fddeecc76c260b89eaa6c840c9e3ecdf5b5d135a0d783a5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2360",
+       "sha": "31d6b1c7d5f9d7480ef5db9d2f30ef3445d18f9502e66c608fd7d19848f6ed44"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The data recorded is digitized sound, taken by auto-init DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2361",
+       "sha": "eee31fce0dddc91fd4de0cb1e24c51f80706530eb01f7795f6a810cfece09f2d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "The data recorded is unsigned digitized sound.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2361",
+       "sha": "eee31fce0dddc91fd4de0cb1e24c51f80706530eb01f7795f6a810cfece09f2d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2362-2364",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2365-2366",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2159",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2158-2159",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2159",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x1C",
+   "name": "Auto-init DMA DAC",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2309-2326"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x1c"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 1Ch plays digitized sound output by 8-bit auto-init DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2309",
+       "sha": "6250050479d0dd68a6680011077234cac5d49a3bd35e65518f5e1e6f6ecbb8d5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2310",
+       "sha": "4b6d420a612d7235281c6e46a2978cd00c30cc71c3a02c7ae6cc643d2f060fbb"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The data output is digitized sound, sent by auto-init DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2311",
+       "sha": "adcd3fafc0ee3776e8328fe1eb76866bd62abca29ddd25de0ea17aa65d058e87"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "The data output is unsigned digitized sound.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2311",
+       "sha": "adcd3fafc0ee3776e8328fe1eb76866bd62abca29ddd25de0ea17aa65d058e87"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "doc",
+     "text": "The DSP generates an interrupt after transferring every block of the size command 48h set.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2312-2313",
+       "sha": "bb39a7810bdc704588143c66ff2bc93d273472b20fbc42421363dd84da307563"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer ends auto-init I/O by programming single-cycle I/O or by sending the exit command, both at the end of the current block.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2314-2320",
+       "sha": "b4dfa179f7e5e7efff3d41f6751f970151a037e7397456269536917e96e06a7f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2321-2324",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2325-2326",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2175",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2174-2175",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2175",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2175",
+     "as": "unfollowed",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x1F",
+   "name": "2-bit ADPCM auto-init",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2327-2340"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x1f"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 1Fh plays 8-bit to 2-bit ADPCM output with the reference byte, by auto-init DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2327-2328",
+       "sha": "38eace1021100bd074c095253d0a6da2aae521ffb9d64ecad2b5177e27dce174"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2329",
+       "sha": "27f7fab384443b80f0bf8f61274e8e49f4bc761642c23332ec0913c982c7c317"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The data output is compressed with Creative 8-bit to 2-bit ADPCM and sent by auto-init DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2330-2331",
+       "sha": "678c9e082beaf91aec9af7ceb93ac87d25c59e8863d0fb833ffa33e0f0538816"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "To end the transfer the programmer follows command 1Ch; a last block played single-cycle uses the command without reference byte, 16h.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2332-2335",
+       "sha": "4c215e87de1a828358003be30829594eafff0f99c1e53fa213f1aa4b63c19ecc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2336-2338",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2339-2340",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2259-2261",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2261",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x17",
+   "name": "2-bit ADPCM single-cycle",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2298-2308"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x17"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 17h plays 8-bit to 2-bit ADPCM single-cycle DMA output with the reference byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2298-2299",
+       "sha": "711327a6622f91478636bf8bed9dcb5037462de814a1e7705106f465e5d54587"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wLength low byte then high byte, the bytes to transfer less 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2300",
+       "sha": "070526ee184d58e3b64c6653122d132c9a366fccf99f4e93c298b3caa0f3dff6"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2302-2303",
+       "sha": "1755098a93fb01a4172dee297b9e6192ab0b00d7601739d3a7b84af7c6432052"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The first block of digitized sound is compressed with Creative 8-bit to 2-bit ADPCM and sent by single-cycle DMA.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2301-2302",
+       "sha": "1e6f099496450414cfd04d1c4a1601c81e3efc0b64b4aca59c2219a417573817"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer sends the following blocks with the no reference byte command.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2304",
+       "sha": "d607ab09fbd01441d32a7c43730d049bb88f0402ad59f24d2b91a6955af81639"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2305-2306",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2307-2308",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2264-2268",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2268",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x74",
+   "name": "ADPCM 4-bit single-cycle",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2474-2481"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x74"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 74h plays Creative 8-bit to 4-bit ADPCM single-cycle DMA output.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2474-2475",
+       "sha": "34b250a7c49ef68887116a499a8aa3a949207dbb47bd4d83b8a3436562a9f616"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wLength low byte then high byte, as command 16h describes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2476",
+       "sha": "40de7d785427087295a780d1596a00a91bc845f9158cb1bf2820fd1a892099e4"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2477",
+       "sha": "62f73a7762f9075805f24c49e10e5959b3d18b1b295b49d9e10144ebf78d4d6b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The output is Creative 8-bit to 4-bit ADPCM sent by single-cycle DMA mode, as command 16h describes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2474-2477",
+       "sha": "2dd572069fe77322cece163052bca7c361a98e8798811cbdf26014d28d2601ed"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2478-2479",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2480-2481",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2235-2236",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2236",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x75",
+   "name": "ADPCM 4-bit ref single",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2482-2489"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x75"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 75h plays Creative 8-bit to 4-bit ADPCM single-cycle DMA output with the reference byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2482-2483",
+       "sha": "0f8d0aef7216bc3d46191a052b1bc2ab13a1549475b0e6a9f0c87b5bf2012865"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wLength low byte then high byte, as command 17h describes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2484",
+       "sha": "8fcbfa3728b65ed674b19c2e7d18d2f918fd0950076ce04632786a6efb66c5e1"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2485",
+       "sha": "f75cb3993e6a00a63d12dc4ec90274d59450f100741dd4c40188007831e0311a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The first block of Creative 8-bit to 4-bit ADPCM is sent by single-cycle DMA, as command 17h describes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2482-2485",
+       "sha": "48dfd690d33f68c52d6e86dc87bbce94372eb274dfd7638a222515300d6b14a7"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2486-2487",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2488-2489",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2232-2236",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2236",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x76",
+   "name": "ADPCM 3-bit single-cycle",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2490-2497"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x76"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 76h plays Creative 8-bit to 3-bit ADPCM single-cycle DMA output.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2490-2491",
+       "sha": "af46a8aa65efde97fffa9447c88637405db95b882258dc3ed6e73bb84aa9fe84"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wLength low byte then high byte, as command 16h describes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2492",
+       "sha": "7682e7cc5ab50f59645ce0e11a088d3a9b0786bac9f0424e746caa2a1eb95db7"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2493",
+       "sha": "62f73a7762f9075805f24c49e10e5959b3d18b1b295b49d9e10144ebf78d4d6b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The output is Creative 8-bit to 3-bit ADPCM sent by single-cycle DMA mode, as command 16h describes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2490-2493",
+       "sha": "27c93c8101ee505ce80a6f1c172d9946e54dcb1819aebc48d7068262a3e4121d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2494-2495",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2496-2497",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2242-2243",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2243",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x77",
+   "name": "ADPCM 3-bit ref single",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2498-2505"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x77"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 77h plays Creative 8-bit to 3-bit ADPCM single-cycle DMA output with the reference byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2498-2499",
+       "sha": "e420cd2191d1f29baac0eaf160f46abd582537a9900c59d99e4d30795c43b814"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wLength low byte then high byte, as command 17h describes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2500",
+       "sha": "95768b29e3f3424ace76319d8c9fadac26ea1048358cae8794f0951eb8267411"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2501",
+       "sha": "f75cb3993e6a00a63d12dc4ec90274d59450f100741dd4c40188007831e0311a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The first block of Creative 8-bit to 3-bit ADPCM is sent by single-cycle DMA, as command 17h describes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2498-2501",
+       "sha": "e5d3f54d0216be4c12377a278b66a86f00be46cac0e5c797d80fee8747e247e2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2502-2503",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2504-2505",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2239-2243",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2243",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x7D",
+   "name": "ADPCM 4-bit auto ref",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2506-2514"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x7d"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 7Dh plays Creative 8-bit to 4-bit ADPCM auto-init DMA output with the reference byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2506-2507",
+       "sha": "d72cedecef36930be7e8f401051ea77c3c6d03adf356ce87d3f70575906282ea"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2508",
+       "sha": "65b4c39c3d045189fe4ad7ee1e71916ad919c91725bdb70661f960face27e388"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The data is Creative 8-bit to 4-bit ADPCM sent by auto-init DMA with the reference byte, as command 1Fh describes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2506-2509",
+       "sha": "55f0c531587d9d10a7579283ab9b3a52a0d274f8c7d3ba824ec7e44956a7133e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2510-2512",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2513-2514",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2247-2249",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2249",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x7F",
+   "name": "ADPCM 3-bit auto ref",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2515-2523"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x7f"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 7Fh plays Creative 8-bit to 3-bit ADPCM auto-init DMA output with the reference byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2515-2516",
+       "sha": "34b64d96b34c459d91708d5b1ca6d91f98bfe3e780c7feaefbece46561111fae"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2517",
+       "sha": "7eb9f044029204c3cacaa3afd23e48f66726c95a15f8e49300c2d68d95ff351b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The data is Creative 8-bit to 3-bit ADPCM sent by auto-init DMA mode, as command 1Fh describes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2515-2518",
+       "sha": "43777d3b4fc9f6903e9bddcffd42b54653a79f314d63ba17626691bbdfec6ce9"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2519-2521",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2522-2523",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2253-2255",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2255",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x38",
+   "name": "MIDI output",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2430-2437"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x38"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 38h outputs MIDI data to the MIDI port in non-UART mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2430",
+       "sha": "cfa8a21e0f449fa93795cbb15743e4115d9b3e14dacda56fc067ba70ae08b8b7"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2432",
+       "sha": "bd9cf934baba82e9439822003168f88ffa35215ca7272b6945378c46559ea848"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by the MIDI data byte the programmer sends.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2431",
+       "sha": "d1bc25f1b8826e9cb4a582bca2e59df1b2007dce85c72a6406c614ccac4996f5"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2434",
+       "sha": "201480b3d74a41f8657804508a6f0b932a4a6675b59669f008dca33db6bf3728"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer sends the command and then the MIDI data.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2432-2434",
+       "sha": "29f4d832190b7a93863ed405b0747935ec0649a58435cf3ce06073f1bf11808c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "No byte reaches the MIDI port when MIDI is turned off for the card.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2178",
+       "sha": "c8569ee86c3f995ec22f9ce3d8718ed7d91005cdb555a30a43e487c6d74c0446"
+      }
+     ],
+     "vs": "differs",
+     "row": "1"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2435",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2436-2437",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2178",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x40",
+   "name": "Set time constant",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2438-2449"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x40"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 40h sets the digitized sound transfer time constant.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2438",
+       "sha": "6742af5b63148265df1d83bd7f52b2511a9bc0ec822e8abc76f743e4580fe73f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by one byte, bTimeConstant.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2439",
+       "sha": "ef6f313fc4c0ddd90f36e9e1c00bae047d4e36ee0287b0ebbbe0697b083c8f1e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The time constant is the DSP's rate representation: 65536 minus 256000000 over channels times rate, channels 1 mono and 2 stereo.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2440-2444",
+       "sha": "c4be68a3278657780ab99a29f7ebc1d386a88a2f106866373e7673a0831390f5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer sends only the high byte of the computed result to the DSP.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2445",
+       "sha": "4d0d927dceffd9540291b39fe0ccd86673b565d2ed70851a147c753961779bd2"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "On an ESS board the filter is updated from the new rate.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2185",
+       "sha": "26794c206e8a9fde75ed9cb7a8f1f0a537e54d37ed5f9d7a5ee4c8fb77accf03"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2446-2447",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2448-2449",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2182",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2181-2183",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2183",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x41",
+   "name": "Set output sample rate",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2450-2458"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x41"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 41h sets the digitized sound output sampling rate.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2450",
+       "sha": "9cb36d201b87315f68a0b5c695497714d5baf03c252828a57b8b59d36a77f077"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wSamplingRate high byte then low byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2451",
+       "sha": "e568eaeea820992059ab76c26f78f0747cb63d16133f8ebca4efd8a41bf3df15"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The DSP's valid sampling rates run from 5000 to 45000 Hz inclusive.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2452",
+       "sha": "a337cd6297433fb16283c341b8f4fbc52a089f24e3df095d606e58193d50b23a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer does not pre-multiply the rate by two for stereo as the time constant requires.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2453-2454",
+       "sha": "8fea27bc87c4b6ce4425c99de10935cf81e9975bea1c14ebb779fa39a21f7728"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X takes any 16-bit rate, and limits playback to 5000 to 45454 Hz only when sample-rate limits are enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2196",
+       "sha": "b2903b9f2ee2abeec7d2ce0e4ea8df362282c28a1853486afaa17c470fd19e8c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1330-1334",
+       "sha": "dff1d4fb7618cd35cc9b80e17ec9cb400ca69783e7ab16883149b763ba5621a9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1394-1396",
+       "sha": "9dc48293dd163b1028f928fb876d2b22ca696f466f4c6bc891ec2e5faf748fb0"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X clears the time-constant flag and mirrors the rate into SB16 memory bytes 0x13 and 0x14.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2197-2199",
+       "sha": "a1b08a7b6561aadc69df493191906725d3b063672c7aaf01ad64cfddd5b130de"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2455-2456",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2457-2458",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2196-2199",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2189-2194",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2188",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0x42",
+   "name": "Set input sample rate",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2459-2464"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x42"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 42h sets the digitized sound input sampling rate.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2459",
+       "sha": "32430ec72dd2eea9b3cc16c2651c688756eb337e76bfbc19ac463e30b4edbfa8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wSamplingRate high byte then low byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2460",
+       "sha": "cf2c82b24b727f4f11f9231ec743e3680029c23e8e1a7b00f7161b2e0b5f1e75"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X clears the time-constant flag and mirrors the rate into SB16 memory bytes 0x13 and 0x14.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2197-2199",
+       "sha": "a1b08a7b6561aadc69df493191906725d3b063672c7aaf01ad64cfddd5b130de"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2461-2462",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2463-2464",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2196-2199",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2189-2194",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x48",
+   "name": "Set block transfer size",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2465-2473"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x48"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 48h sets the DSP block transfer size.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2465",
+       "sha": "ce7915bc1876757309f6d0282bc60403c60ae8df0cf3947d1be957181d8ce705"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "doc",
+     "text": "The DSP generates an interrupt after transferring the block of data, the number of bytes to transfer less 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2467-2468",
+       "sha": "f29fdbee25873ce8c803621dcf07ee7397d1af394af0d83570a84ff9f4dbcc94"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wBlockSize low byte then high byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2466",
+       "sha": "5087a3591ed07e540a25f9739b437e1541013c46fbb5b0a59bae2b01400a8ca2"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer uses this command with high-speed mode and auto-init DMA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2469",
+       "sha": "afacfbd137267262688fe6866805b4a3fca03d8e0f57ec3c4254f926eedddb20"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "In 16-bit DMA mode DOSBox-X halves the count, warning when the byte count is odd.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2216",
+       "sha": "d468229e2afa5a10fa81e25fec4442ccdfaa115b8803ca866022b934f3fec295"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2227-2228",
+       "sha": "ea8a2a823a8ce694a0f48648b3123bfbbfb93d884fbdda485782ff746c000a3d"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2470-2471",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2472-2473",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2204",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2204",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x04",
+   "name": "ASP mode or DSP status",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster ASP or DSP developer documentation any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster 16 ASP programming manual."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x04"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an SB16 command 04h stores the data byte in ASP_mode, the ASP mode register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1988-1990",
+       "sha": "b05a6dd923572a3bb80b55404e31659d21b2bcd9f850286c6480c8761f65991d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Bit 2 of the stored mode resets the ASP memory index; the comments say bit 7 with bit 3 enables memory access and bits 1 and 0 step the index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1990-1998",
+       "sha": "114889eb6922005d9451c149bbac9820acab91e50270882f6e166e99be226bed"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a Sound Blaster 2 the command returns 0x88, on a Pro 0x7b, and on any other card 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2001-2007",
+       "sha": "23d51fd4e675687ae9bee7be75c5f45ea44de472f4ddea865bafe34644140f7e"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The command is followed by one data byte, which becomes the ASP mode register on an SB16.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1988-1990",
+       "sha": "b05a6dd923572a3bb80b55404e31659d21b2bcd9f850286c6480c8761f65991d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x05",
+   "name": "ASP set codec parameter",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster ASP or DSP developer documentation any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster 16 ASP programming manual."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x05"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Command 05h is the SB16 ASP set codec parameter command.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2009",
+       "sha": "74bdfe6742748a46c7b58e126360b3ec4986169069e3bbe12f8500e45e9ec838"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The command and its two parameter bytes are logged as an unhandled ASP command.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2010-2011",
+       "sha": "59cff9f1e3ad46d885135035c0393eacce4ef6075b8ca7160905a9574da67044"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x08",
+   "name": "ASP get version",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster ASP or DSP developer documentation any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster 16 ASP programming manual."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x08"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an SB16, subcommand 03 of command 08h returns 0x10, the ASP version ID, when ASP is enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2013-2020",
+       "sha": "ed8e34e8c775c2d7fee1116e521a4920de142e70dfa8366504ce749a1e7cc6fa"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When ASP is not enabled, the same subcommand returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2021-2022",
+       "sha": "c81cb03b445223afb8879bded586d64886479eb1f1194fb35783b6f1df8df7eb"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Any other subcommand, and any card that is not an SB16, is logged as unhandled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2024-2030",
+       "sha": "ad1ac6430515004d1b13690e7d29f87364daac373a9fa98eedbafc2340d2aa56"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The command is followed by a subcommand byte; 03 asks for the chip version.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2015-2020",
+       "sha": "a2e89c1c63aa05e24a2ec6024922673f046a34735ac6ef258712e6d578a73d17"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2023",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0E",
+   "name": "ASP set register",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster ASP or DSP developer documentation any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster 16 ASP programming manual."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x0e"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With ASP enabled on an SB16, command 0Eh stores the second data byte in ASP_regs at the first.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2033-2035",
+       "sha": "17b579b027d5e3cf81bda9387323f9691e97821b4a2fc8f3f17540a586a4fae9"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Register 0x83 with mode bits 7 and 3 set takes the memory path, and mode bit 2 resets its index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2037-2041",
+       "sha": "acfb0ff9fb788c594ae5e440aa7aaeb7a055a523aec4cf2cf1abb5e6cd6dd6b1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte is written into ASP internal RAM at the index, which advances when mode bit 1 is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2045-2048",
+       "sha": "8e53d7f1dd5723d3fa3e4ea8fa0f6dd9082460ff488248ec242c8070853f740b"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Register 0x83 without both mode bits is logged as not implemented and writes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2050-2052",
+       "sha": "22d468c37418d89a7b4103c19759a142d2fb1e738b6edb761e85a7c7dd0d1d5f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Any other register reaches no memory path and is only logged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2055-2056",
+       "sha": "603bbae1317c52e5343ab486ceccef4ac0f80604745e64e078e81b2b77a5b064"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With ASP not enabled the write is ignored and logged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2059-2060",
+       "sha": "a7274dea5c986b37db804e1446303fdb7d08b6d719489e24463ee1deff365223"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a card that is not an SB16 the command is logged as unhandled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2062-2064",
+       "sha": "9ba6727249436a4f37e4c5123a7beac57cc129d3af9c97473307bab771aec53f"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The command is followed by two data bytes: the register number and the value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2035",
+       "sha": "999f876ceef5f906555f567ae175085f0fcb6dbd95a3cabc0904e7735d0abc99"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x0F",
+   "name": "ASP get register",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster ASP or DSP developer documentation any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster 16 ASP programming manual."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x0f"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Command 0Fh reads an ASP register on an SB16, whether or not ASP emulation is enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2067-2070",
+       "sha": "e9ac8048b818686ff247edf590fa3e0a83e32e9a11fa198d3d9b6ea4d6d71950"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Register 0x83 with mode bits 7 and 3 set reads the internal RAM byte at the index into ASP_regs[0x83].",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2071-2077",
+       "sha": "22f553e2f6d70f78d0572e314c5fd3262a467d520255ddfb393eb1789af0b9a5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Mode bit 0 advances the ASP memory index after the read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2080-2081",
+       "sha": "2ffd29cfaa80623b191088c4562a3e4a8f006a828afed6a06e64aee97db0168e"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Register 0x83 without both mode bits returns 0x10, the ASP chip version.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2083-2085",
+       "sha": "71cb802d869d0f25c74222a82998d118425db8030444804a573db2fa07a5e4a4"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte chosen is queued for the host to read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2092",
+       "sha": "fdf7cee3c4b760d8b310104960c30692de0a51b0a7b6bba8dbc1bc552ce8a65e"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Any other register, or ASP disabled, is logged and takes no memory path.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2088-2089",
+       "sha": "e2246f695846e1344cdaa3b2e3e6ad4ea4c84fcc1af800dc2e2a95ad772b4248"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a card that is not an SB16 the command is logged as unhandled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2093-2094",
+       "sha": "e5785e1da51c1f8c9ecd79ab8d74b130d65a2186bcc41278bd0d10fe0f6ad61c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The command is followed by one data byte, the register number it reads.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2089",
+       "sha": "2a600fad2dfb89ac8a13b1ab8100d2791fb7250bffd309931ac30dee26674921"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x15",
+   "name": "Waru variant of 14h",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster ASP or DSP developer documentation any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster 16 ASP programming manual."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x15"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Command 15h is handled exactly as command 14h: an 8-bit single-cycle DMA output transfer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2165-2168",
+       "sha": "74010ab2232fe06034609bc608fa697de85872d8407c35df8ea7d752c3721037"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The two parameter bytes are taken as the block length, as command 14h takes them.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2165-2168",
+       "sha": "74010ab2232fe06034609bc608fa697de85872d8407c35df8ea7d752c3721037"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1362-1364",
+       "sha": "92f272ffe1d8bd6c03946fe007de8bc3d233a1d931d6ab3f658d618c0b0244b7"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x16",
+   "name": "Single-cycle 2-bit ADPCM",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2286-2297"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x16"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 16h plays single-cycle DMA output of digitized sound compressed 8-bit to 2-bit ADPCM.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2286-2287",
+       "sha": "dd0e66c8fd4344e51cd82e8062a2292787bf7271e6c880808d7ebda2a2f4cf59"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wLength low byte then high byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2288",
+       "sha": "c430222954126e5d3836899df598cd52a78516492f7a4bcf4bfac8b5e3f729b1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "Subsequent blocks are compressed 8-bit to 2-bit ADPCM and sent by single-cycle DMA.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2289-2290",
+       "sha": "1907220ece111dec4cd226e374ee995450cf5621efaea165e88fae08913bacb1"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "wLength is a word giving the number of bytes to transfer less 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2290-2291",
+       "sha": "efdce719e9c796514b01126df0673daa5afdad496a15f4a79651b96c62bd9419"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer transfers the first block with the reference byte command.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2292-2293",
+       "sha": "26fe02bf5b13990aacb1d48b80556e35c22ccbcd341b3a3d3fab4045aeb966b4"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2294-2295",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2296-2297",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2267-2268",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2268",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2268",
+     "as": "unfollowed",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x80",
+   "name": "Silence DAC by duration",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2524-2531"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x80"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 80h pauses digitized sound output for a duration.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2524",
+       "sha": "6fd29eaff4695912c1bc6f57faaeb9b0b4d0c2640dc16ef4e1d39682c6cf3f0f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by wDuration low byte then high byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2525",
+       "sha": "4c5020bd4717c18b635b6d64a469cfe916addaddc8ea5e1288b84a12de694519"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "wDuration gives the pause in units of the sampling period less 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2526-2527",
+       "sha": "1c4d19528eee4ca9653abb3fe85b57bb1f3b7eea57922fecf632604d53b9a2a1"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "When the specified duration elapses, the DSP generates an interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2528",
+       "sha": "b346e3f96cd3e151523b698bd0b26f8cbb706c4a1ba4a6c5cf80b21e2fb8f456"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2529",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2530-2531",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2271",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2271",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2271-2273",
+     "as": "unfollowed",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0xA0",
+   "name": "Input mode mono",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2571-2576"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xa0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command A0h sets the input mode to mono.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2571",
+       "sha": "051a9b79cb6ad97890318f1e07be5d35f36408d3b488ed9534526673ab599909"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2572",
+       "sha": "b44d34993887f0cd356abaea21f8ae6a367a3c2d98954815f45d5556e7ab18dd"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The default input mode is mono.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2573",
+       "sha": "750299ba6746466862d59086029215d2f7b652cbee17de8fbe3e8957759c4ba7"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X accepts A0h only on SB Pro models; on others it logs a warning and leaves the mixer as it was.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2535-2539",
+       "sha": "de01eab8dfd71cf73a6a43a722fe1f6ca2385bc51191f8852ca239beec406ea5"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2574",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2575-2576",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2535-2540",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xB0..0xCF",
+   "name": "Bxh/Cxh program DMA I/O",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2586-2627"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xb0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command Bxh programs 16-bit DMA mode digitized sound I/O.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2586",
+       "sha": "ca6fc44d2efcd88487f2758d44fe0151e35e5b6c64e42642734f0bb3e9779720"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is followed by bMode, then wLength low byte and high byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2587",
+       "sha": "6245d57c919e9817bb4b716ffb7302ed43fa00cc77dcbbdb2167e0a0bcd0a452"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "bCommand is 1011 in bits 7-4; bits 3-0 are A/D, auto-init, FIFO and 0, and a new I/O command re-initializes the FIFO.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2588-2598",
+       "sha": "c98518406e723940c4070009393a0998a989b6a916576844ec4be483268fd056"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "bMode holds stereo in bit 5 and signed in bit 4.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2599-2603",
+       "sha": "e4ea27e41048ca2d1e5c60852234d1f87153150215a003e6ef08155404a1f2e7"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "doc",
+     "text": "The signed bit selects signed or unsigned data; minimum amplitude is 0000h signed and 8000h unsigned.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2604-2606",
+       "sha": "0c80610cd58b1f268b5c16ed99eb74c844fa1cb3b9310c9cc687ecdaba775174"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "doc",
+     "text": "wLength is the number of 16-bit samples less 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2607",
+       "sha": "5f7c6c9b5744ee5156da98d3e0b802ae286452e3c130354ab7400726c7c62d29"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer ends auto-init DMA mode as command 1Ch says.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2608",
+       "sha": "4675100294b66cc86c725a0c26ae8dcb16d9a50254b1ce2b9d111d1dd0b6ece6"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "doc",
+     "text": "Cxh programs 8-bit DMA mode and is followed by bCommand, bMode and wLength; its bCommand differs only in the high nibble 1100.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2614-2618",
+       "sha": "ed4e971fa498111581b7fcb0bfa9b3e7fa9f6364e9d99a1ce6c350d903b14da4"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "when",
+     "of": "doc",
+     "text": "For 8-bit data the minimum amplitude is 00h signed and 80h unsigned.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2619-2620",
+       "sha": "551320b20b0f5b0cbe39b0976164e8f35b120ed53d6e5cc14c1a33392a07fbb7"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "when",
+     "of": "doc",
+     "text": "wLength is the number of 8-bit samples less 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2621",
+       "sha": "18c3b6c6be16f4913738ba8f64b6eae41d4525d13af83e8fda0d142d6edb4245"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "On an ESS card A0h-CFh is handled before the switch: a write below C0h and a C0h read of register A0h-BFh need extended mode.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1949-1960",
+       "sha": "f110f194c06253536aab5667f94d7b7c5313fb7f3b6231a17a11e1fcc40b8070"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "12",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "On a Reveal SC400 only B6h, BEh, C6h and CEh are accepted; every other command of the range is logged and ignored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2319-2330",
+       "sha": "9bd410199719090101876277b3c5ada61e6c161aa4161c43a181658eeb12e3b6"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "14",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "C6h and C7h set and clear extended mode; any other command of the range is logged as unknown.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1961-1966",
+       "sha": "d6565d7e3b7e58a72d7de866504eb8e3232b04c776ee8dcfe1eb19f7c4fccd95"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2609-2611",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2612-2613",
+     "as": "version"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2622-2625",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2626-2627",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2341",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2339-2345",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2341-2345",
+     "as": "unfollowed",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2341-2345",
+     "as": "unfollowed",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2339-2345",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2341-2345",
+     "as": "unfollowed",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2341-2345",
+     "as": "unfollowed",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2275-2278",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2331-2333",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2335",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2341",
+     "as": "unfollowed",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0xD0",
+   "name": "Pause 8-bit DMA",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2628-2634"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xd0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D0h pauses 8-bit DMA mode digitized sound I/O.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2628",
+       "sha": "a80d83b0bdfa424bd487fc31a82789376fa9b0bcfa6c81693a1f7cf5bf1bc0b7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2629",
+       "sha": "045343aaec0b13585696e98e6c2f847f6b4fbd4cada8d860c96f59af2565d00d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "After the command the DSP ceases to send out DMA requests.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2630",
+       "sha": "9c702e9e18214c552ba4ac5938dc015e721896ddc1877a5853839ca3e28919c0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "It applies to both single-cycle and auto-init DMA modes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2631",
+       "sha": "5ff9efb3608d6388b385412a38b3a7b0b5c9aba238f4e51cb86dd30383fde058"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2632",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2633-2634",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2350",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2356-2358",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2349-2358",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0xD5",
+   "name": "Pause 16-bit DMA",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2670-2677"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xd5"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D5h pauses 16-bit DMA mode digitized sound I/O.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2670",
+       "sha": "f5aabc32c5a3009821c07e8a528769a8368fa1bb1b5cb9012ff91267c4e05f7e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2671",
+       "sha": "f369f2a968b6616dc7f6560b7a49b177e475a1bcf32937a8fdb80502d5d503f3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "It acts on I/O initiated by command Bxh, in both single-cycle and auto-init modes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2672-2673",
+       "sha": "084ad5cac8311be155dfbbb62423e82d967a417ee46ce84f09fead73444f7f6a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2674-2675",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2676-2677",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2350",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2347-2358",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2349-2353",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xD1",
+   "name": "Turn on speaker",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2635-2649"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xd1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D1h turns the digitized sound output speaker on.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2635",
+       "sha": "ec620511defd4150fe58098cb4f3e3b22e5fae7bfff4d16c1f99f0af6e950ad8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2636",
+       "sha": "0e372a14282bbf50e47947ace755bb31e94c19b3d38b7bb2a323b9da760ccb56"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The speaker is the connection of the digitized output to the amplifier input, with no effect on FM music.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2637-2638",
+       "sha": "950cbc94ec69935554cb488adf50684ac3ea2d116c83ace3fc337c41bbf68da1"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "The DSP takes at most 112 milliseconds to complete the command.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2639",
+       "sha": "5f68eb25acb185bd9134e8dba05259f3ae60714bc445069231d0da2949b22c93"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "doc",
+     "text": "On version 1.xx the DSP pauses the DMA transfer after the command.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2640-2642",
+       "sha": "ea9fbfd9462153254121095996e26e9eca55cbcc37664f55368e0462ea8907b3"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "doc",
+     "text": "On version 4.xx it has no practical output effect, but sets the internal speaker flag on for command D8h.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2643-2645",
+       "sha": "1e2c271864531ff97ae3ddf74689d3e625c74d52e9813227efee2a60415a46e6"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X changes the speaker at once, with no wait of up to 112 ms.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2361-2362",
+       "sha": "31f8eb7fdccf1d29e6237b3443962477f0f79a53e766e574739c655ea6d52292"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X does not pause the DMA transfer on a version 1.xx card.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2360-2363",
+       "sha": "29ff11790a7d2ed74edb0827b6ae1bca6c9e48242932d2d7491ff09e2fcd8dcb"
+      }
+     ],
+     "vs": "absent",
+     "row": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2646-2647",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2648-2649",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2361-2362",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2361-2362",
+     "as": "unfollowed",
+     "row": "6"
+    }
+   ]
+  },
+  {
+   "key": "0xD3",
+   "name": "Turn off speaker",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2650-2662"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xd3"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D3h turns the digitized sound output speaker off.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2650",
+       "sha": "b33c1c03a2f913d0d5233094e57341ee1c2572193e4416ddc864fd76cb33a970"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2651",
+       "sha": "124b7b2d2f140e5577143845ef36e7bf23ad47465709d4c2f45029360044dcb7"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The DSP takes at most 220 milliseconds to complete the command.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2652",
+       "sha": "499d639cbd4f2ea4d3440c02eefc94b7f6f2d7eace6557a08bd3beec0bfb9848"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "On version 1.xx the DSP pauses the DMA transfer after the command.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2653-2655",
+       "sha": "ea9fbfd9462153254121095996e26e9eca55cbcc37664f55368e0462ea8907b3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "doc",
+     "text": "On version 4.xx it has no practical output effect, but sets the internal speaker flag off for command D8h.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2656-2658",
+       "sha": "de16240b8695856b527ffe50343ac65a256154cacf1d597014e8802820171504"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X changes the speaker at once, with no wait of up to 220 ms.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2364-2366",
+       "sha": "5d0175745ce24ac59442c5bd496f8a46288ad87fe10c5a6384d1e7773609a582"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2382-2384",
+       "sha": "ed100d07e8241e82d8c09dd02722755151cdbda3b93a76a66ae755dade89d1b4"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X sets the speaker flag off as the row says, and logs a warning when an SB16 with DMA running gets the command.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2382-2383",
+       "sha": "ed100d07e8241e82d8c09dd02722755151cdbda3b93a76a66ae755dade89d1b4"
+      }
+     ],
+     "vs": "differs",
+     "row": "5"
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X does not pause the DMA transfer on a version 1.xx card.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2364-2385",
+       "sha": "dbb2b6967676b349f4a9e6dbf7c62e4b32cf276ea75b61f84e31bde14bf435e4"
+      }
+     ],
+     "vs": "absent",
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2659-2660",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2661-2662",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2366",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xD8",
+   "name": "Get speaker status",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2685-2692"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xd8"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D8h gets the digitized sound output speaker status.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2685",
+       "sha": "84c19c6a2bf2f6795c37282e5cddc2b5452196b9a86711bce49a974e66fa050b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2686",
+       "sha": "d89830e92b704516db2579bbec009fdaba34daaaba15f45b1ad013d807a861e0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The DSP returns FFh when the speaker is on and 00h when it is off.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2687-2688",
+       "sha": "5133ba65574da60b3bac1a2168f66c4cd83dd651c9b30549d5282dc10bdaf646"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2689-2690",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2691-2692",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2388",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2389-2390",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0xD6",
+   "name": "Continue 16-bit DMA",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2678-2684"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xd6"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D6h continues 16-bit DMA mode digitized sound I/O.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2678",
+       "sha": "9c4a5888b26ec3998af246a7812c5b6ea4b9221068849fc1cfb81f88125eead7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2679",
+       "sha": "a11ce3d052fd1ad962c59fb0af35b02a31616e9c8dcfccdcec68a1a85321592e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "It acts on I/O initiated by command Bxh, in both single-cycle and auto-init modes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2680-2681",
+       "sha": "084ad5cac8311be155dfbbb62423e82d967a417ee46ce84f09fead73444f7f6a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2682",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2683-2684",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2395",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2392-2399",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2394",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0xD4",
+   "name": "Continue 8-bit DMA",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2663-2669"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xd4"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D4h continues 8-bit DMA mode digitized sound I/O.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2663",
+       "sha": "1ce3fc5815afa4af91db882b7754f8c4d2b6e72a24cfc177e3d264ff7e138991"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2664",
+       "sha": "6f995a66707dad34ef5b0388a5b82f1a99437156e813914a68a68ee163f0c1fe"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "It resumes the transfer command D0h paused, in both single-cycle and auto-init modes.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2665-2666",
+       "sha": "3ba273caf0ed886a8f4aa84d9f2181bfcdeb1f7a294ccccce8649958488597a2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2667",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2668-2669",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2395",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2394-2399",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0xD9",
+   "name": "Exit auto-init 16-bit",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2693-2699"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xd9"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D9h exits 16-bit auto-init DMA mode digitized sound I/O.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2693",
+       "sha": "19b73ea2a9591dd77afc73838cd09a218631154d5b326cb174d03b1041f0a588"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2694",
+       "sha": "473e80cebf43e5edf23f50698574e82572b479b631513733f0271bfad757a5e0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "It exits at the end of the current 16-bit auto-init block and terminates the I/O process.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2695-2696",
+       "sha": "ca38dedaf530c7873d0e895722e4b9e108f209099249bb465e31ffdc1df0f871"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2697",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2698-2699",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2413",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2411-2412",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2409",
+     "as": "key"
+    }
+   ]
+  },
+  {
+   "key": "0xDA",
+   "name": "Exit auto-init 8-bit",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2700-2707"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xda"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command DAh exits 8-bit auto-init DMA mode digitized sound I/O.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2700",
+       "sha": "457803ad485c635d5e255e7bcc8985a439c4a822cce268cf711adb4883501559"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2701",
+       "sha": "b8d48822468e0058219ffed5cfccf58a862a066dfe7208c2155e4d6a068af8b5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "It exits at the end of the current 8-bit auto-init block and terminates the I/O process.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2702-2703",
+       "sha": "52ee33f4341ad9edbcbb7e2a89b0b7486ee670541710de8ef67b429084c2ea90"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2704-2705",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2706-2707",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2413",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2411-2412",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0xE1",
+   "name": "Get DSP version",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2708-2713"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xe1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command E1h gets the DSP version number.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2708",
+       "sha": "8b50e1d61bafc611fb38f797cae2f671b1eff938b08466262eef5308ab4319c5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2709",
+       "sha": "e4c6c60eb2c8a6632a775bfc9f46082d4e06a8bade06658dbdb652508860a665"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "The DSP returns two bytes: the major version, then the minor.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2710-2711",
+       "sha": "613e75aac0efa7ee2b686888478d753a405cf6a49782f4170a93f005aba9952a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "A Sound Blaster 1.0 answers 1.0, a 1.5 answers 1.5, a 2.0 answers 2.0 and a later 2.0 answers 2.1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2423-2427",
+       "sha": "b965d26c4cd6f667e8eed5cad512056a91a454b3eb52468c5a4de8f4f677a17e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2434-2435",
+       "sha": "0d30e5c9d4c46982658f228a9085c795015212927de72cfa82c34d4e4ac9671c"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "On a Media Vision PAS it alternates between 1.48 and 2.0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2428-2433",
+       "sha": "b8792ce400588c1955edcc7210c7a0a07736082642f55d5df36855327c0d9e6c"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "A Sound Blaster Pro answers 3.0 or 3.2, an ESS Pro 3.1 and an SC400 its stored version.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2437-2448",
+       "sha": "6814c13043b9d3e1b1ffd16ec336afcf922714a8cf455e0a8898a2cc9a0edb37"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "An SB16 answers 4.5, 4.12 with an AWE32 and 4.13 with a ViBRA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2450-2456",
+       "sha": "d07b102a37c443442a998265a62ae1228fd9557bb30bc440c6dfa4a134ee206b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2457-2462",
+       "sha": "8495dd0f04dfaabcdd888e964622bb97ca0b184ae922186aba6e212231e8b751"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2712",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2713",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2421",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2424",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2422-2466",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x47",
+   "name": "Continue auto-init 16b",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x47"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Command 47h sets the auto-init flag on an SB16 and does not resume a paused transfer; on other cards it does nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2401-2405",
+       "sha": "e362e7820c61d59c8236c0179aee0a081ca1ce49cd78f426c9d0cb6c1b493984"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command takes no data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "257",
+       "sha": "e849b3c4675b649ae0db9224758aa31dbf0f6351df0845214e32e9a58ac6357a"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x45",
+   "name": "Continue auto-init 8b",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x45"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Command 45h sets the auto-init flag on an SB16 and does not resume a paused transfer; on other cards it does nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2402-2405",
+       "sha": "becef2337f6ec06eef68e816931a0634f76fd4a4918d057675d83f37262cc157"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command takes no data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "257",
+       "sha": "e849b3c4675b649ae0db9224758aa31dbf0f6351df0845214e32e9a58ac6357a"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xE0",
+   "name": "DSP identification",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xe0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Command E0h flushes the output buffer and returns the one's complement of the data byte that follows it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2415-2418",
+       "sha": "e38ec5d0d5956ba8a5c061ac8c6fe318747104540907135eb408c5a230fc30b4"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "One data byte follows the command and is complemented.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2415-2418",
+       "sha": "e38ec5d0d5956ba8a5c061ac8c6fe318747104540907135eb408c5a230fc30b4"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xE2",
+   "name": "DMA identification",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xe2"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Command E2h adds the data byte exclusive-ored with a rotating key to e2.valadd, rotates the key two bits and registers the DMA-8 callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2471-2474",
+       "sha": "ef08f145974f648a31fd9358f4512974c454a213712078dca62c682ca00b0d53"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "One data byte follows the command.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2471-2474",
+       "sha": "ef08f145974f648a31fd9358f4512974c454a213712078dca62c682ca00b0d53"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xE3",
+   "name": "DSP copyright",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xe3"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "On an ESS chip E3h returns a single zero byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2480-2482",
+       "sha": "f78ab8f2aa87b662e902aa5b3ccecdbc463fa76d03024b68398e0b4ac552f655"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "On a Reveal SC400 it returns the string SC-6000 with its terminating NUL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2484-2490",
+       "sha": "04437a96dbbe90d1e11e7e8ff481b454e7e6426cd55cdf3a107bda330981f15b"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "On an SB2 or SB Pro it returns nothing: the branch is empty.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2492-2497",
+       "sha": "40a095b3af73761bc540ef7b7f15f9a43cd863594d984ac9910d59ec89225175"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "On later cards it returns the copyright string with its terminating NUL.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2498-2502",
+       "sha": "bb833040aa995a5ae8fbf352f7194ad9dfa8cb95faa82bdde89df246ad74b647"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command takes no data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "269",
+       "sha": "fe6fc45ec749285c521dba9a8c344d76cdcc1c777b71c5a2c8dde77b8faa842a"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xE4",
+   "name": "Write test register",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xe4"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Command E4h writes the DSP test register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2506-2508",
+       "sha": "afe40beac3e0a8c01737bb8d04fbcf3f5e5cbc97764456d50eebbf7feb9cd8ab"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "One data byte follows the command.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2506-2508",
+       "sha": "afe40beac3e0a8c01737bb8d04fbcf3f5e5cbc97764456d50eebbf7feb9cd8ab"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xE7",
+   "name": "ESS detect / read config",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xe7"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "On an ESS688 E7h returns 68h then 84h; on an ESS1688, 68h then 89h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2509-2510",
+       "sha": "6bba95b9f51a45be161c4924bd2437d248d3575071ee29738776a103a4370e3b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2512-2523",
+       "sha": "4ef1b3f8b6cef33e543afc39f62db903de86cd28a696b72f68f1fdf815b7a0d4"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command takes no data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "269",
+       "sha": "fe6fc45ec749285c521dba9a8c344d76cdcc1c777b71c5a2c8dde77b8faa842a"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xE8",
+   "name": "Read test register",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xe8"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Command E8h reads the DSP test register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2527-2529",
+       "sha": "9645de9a3038e5784806ffb54e06a67508442a5783ec84833a2ccfcb3312f497"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "It returns the byte last written by command E4h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2527-2529",
+       "sha": "9645de9a3038e5784806ffb54e06a67508442a5783ec84833a2ccfcb3312f497"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2506-2508",
+       "sha": "afe40beac3e0a8c01737bb8d04fbcf3f5e5cbc97764456d50eebbf7feb9cd8ab"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command takes no data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "269",
+       "sha": "fe6fc45ec749285c521dba9a8c344d76cdcc1c777b71c5a2c8dde77b8faa842a"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xF2",
+   "name": "Trigger 8-bit IRQ",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xf2"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Command F2h raises the 8-bit interrupt 10 ms later, through a scheduled event.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2531-2533",
+       "sha": "a4943fbd051b534a10709a6fcd4146175c2c4d8cce52c85744b6b95417de28d0"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command takes no data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "270",
+       "sha": "9aca785737568d6b5b56bcd7dd883a6b48a1341be2f6bee5d2b0660eb3f336fe"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xF3",
+   "name": "Trigger 16-bit IRQ",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xf3"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Command F3h raises the 16-bit interrupt at once, and only on an SB16.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2541-2543",
+       "sha": "cfd8fca6aeecead212bd9dc3f30b99cb4b07bedcb91605a302e0f1eaf4c41738"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command takes no data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "270",
+       "sha": "9aca785737568d6b5b56bcd7dd883a6b48a1341be2f6bee5d2b0660eb3f336fe"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xF8",
+   "name": "Undocumented pre-SB16",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xf8"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Command F8h flushes the output buffer and returns one zero byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2545-2547",
+       "sha": "0a18f705327eea1ec9b1040ced57d32e88486aa3982b38996e8e54caf1e46ed8"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command takes no data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "270",
+       "sha": "9aca785737568d6b5b56bcd7dd883a6b48a1341be2f6bee5d2b0660eb3f336fe"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x30..0x33",
+   "name": "MIDI I/O 30h-33h",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2367-2385"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x30"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 30h inputs MIDI data by polling.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2367",
+       "sha": "9cd9363da6548a08a01d4f7ffa6f55ee7de4982900ec5d0e9ab88e805f11ce40"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Commands 30h and 31h are sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2368",
+       "sha": "2fce9d8a7ab23e95ead27e23cd4aee4bcb0e38d4d4c25bf862abbc71b21f5bb0"
+      },
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2377",
+       "sha": "5c06702b0158e7ebcee90184cfe3006a52fc0d31b92ba67dd2399a8561cb2022"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "In polling mode the programmer sends command 30h and then polls the DSP for MIDI data.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2369-2371",
+       "sha": "87c0b15d4c7fbb89841dd8fe8eaead33ca26e5ccc22812babba8f41adaffe7d6"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 31h inputs MIDI data by interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2376",
+       "sha": "c8327ff8dd3524dcf42868eac5b0eeb0f4c32f3f8eecdec8fabda1cb51848c5c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer sends command 31h again to terminate the mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2381",
+       "sha": "7ed07743326db854181dc3c97826222aede44d6f92a5a709d8361c07ae8c7076"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "doc",
+     "text": "In interrupt mode the DSP interrupts the application when in-bound MIDI data arrives after command 31h.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2378-2380",
+       "sha": "2e39574826cb015f552cfd138b452831272ec851cb83eff46a6b0b204710a793"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X logs an unimplemented MIDI I/O command for 30h to 33h and does nothing else.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2549-2551",
+       "sha": "45407010a632190c079140da7e90a1a9b20ef4691d7efeec8248fa83002bedfa"
+      }
+     ],
+     "vs": "differs",
+     "row": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2372-2373",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2374-2375",
+     "as": "version"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2382-2383",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2384-2385",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2549-2551",
+     "as": "agrees",
+     "row": "2",
+     "nothing": true
+    }
+   ]
+  },
+  {
+   "key": "0x34",
+   "name": "UART polling MIDI I/O",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2386-2397"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x34"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1841-1845"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 34h enters UART polling mode for MIDI I/O.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2386",
+       "sha": "2f25c6c49e6195c7bd0f59f74b14b6b7b261e012c24d9488e06dc9c1e6b4a2dc"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2387",
+       "sha": "e5d9051f0c52c0c0026a7a8ff0008f211a05f70ca3093362fd02ff0e5d30b4bf"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "In UART mode a read from the DSP is taken as reading MIDI data.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2388",
+       "sha": "afb553970c387d16d9e9eb4eb5a629b76e13bae0d78e8ff8f9d2f9d2c0bf8157"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "In UART mode a write to the DSP is taken as sending MIDI data.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2388-2389",
+       "sha": "fce8f3e5d4b4f30e8bc69565b9d609faf4244b84723893d46db02388d0bf1a2c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer ends UART mode with a DSP reset, which restores the parameters the DSP had before it entered.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2390-2393",
+       "sha": "ad297a9e4e26d39db7391dae5ed3d69887634e796d9ba17ffe25c029ff3ebaaf"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "A read hands back a byte of the DSP output buffer, where command replies are queued.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1351-1360",
+       "sha": "f136e224f4cd61ada2af9c4f4e5d4052d97883f88ad9cc9f23f7386e901431f7"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2394-2395",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2396-2397",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2553-2555",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1841-1845",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x35",
+   "name": "UART interrupt MIDI I/O",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2398-2407"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x35"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 35h enters UART interrupt mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2398",
+       "sha": "9e985e7c32616fe0391f2bbb5b45e0e8ffc72d947581ee86d9f129409f7e8d14"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2399",
+       "sha": "98bdbe17d15b161ecde25e9170bc0badeacc7a94c6b67f0f476dbb886b736f6a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "After the command the DSP interrupts when in-bound MIDI data arrives.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2400-2401",
+       "sha": "5d89245d65197b1130538fcc43b6d66e2c167030c1289e9a1aa855a1b7423507"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "DOSBox-X arms the polling and read-interrupt flags and returns.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2557-2562",
+       "sha": "3720b79ed9752995fa8deb48bc27e02da47e9b6c2a92c88b495ec4dd31216229"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2402-2403",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2404-2405",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2406-2407",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2557-2561",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x20",
+   "name": "Direct ADC single sample",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2341-2350"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x20"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 20h inputs digitized sound one byte at a time in 8-bit direct mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2341",
+       "sha": "8c41031f85deadc76296c09328613eeb29b0fd6da0271e2e8ca9759970c25355"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2342",
+       "sha": "09dd87a64358dbedd9207259c6d99cb15697b737062ef345517c53f44d219e3a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "A read from the DSP gives one byte of unsigned digitized sound data.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2343",
+       "sha": "5b00f0f4bfa9baf98dfb14ff9f618781a47f24f4fab418c604d40b425fcf33bc"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The application is responsible for controlling the sampling rate.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2343-2344",
+       "sha": "f2bcbe5d4d7072083369147129913a9a038b67ad129433b03dc26fc29fc04f2e"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The programmer repeats the command and the read at the timing the recording needs.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2345-2348",
+       "sha": "09f035aaac51829cd0fb5936f60f0308bc97ccb2a2ade223c74b5ad76645e4f3"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "A build without Windows microphone support queues the fixed byte 0x7F for the read; a Windows build queues a sample only with the microphone recording source and a microphone present.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2570-2580",
+       "sha": "34b47b034331f9456b9ba4529f1a7aa9513d9883691a98011855ae606e59038c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2349",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2350",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2570-2580",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x37",
+   "name": "MIDI time-stamp IRQ read",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2419-2428"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x37"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command 37h runs UART interrupt mode MIDI I/O with time stamping.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2419",
+       "sha": "eac3b32fc455ee2cf7c04cdf1208f6eb22ecdf5c72d534ce0dc01aaeef84f839"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The command is sent with no parameter byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2420",
+       "sha": "975cdf57143c932cc8ac87942c9978178e64b62f975d3af79adbef5c60f5b781"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "doc",
+     "text": "After the command the DSP interrupts the application when in-bound MIDI data arrives.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2421-2422",
+       "sha": "a1bcbd96a3ccd50cd012e0c92792653e8a2e0e08c10bd59daa541649790a2fd9"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "doc",
+     "text": "The DSP time stamps in-bound MIDI data.",
+     "quotes": [
+      {
+       "ref": "datasheet:SBHWPG.raw.txt",
+       "lines": "2422-2423",
+       "sha": "52cb25ff333699d4ce03a6c1b44ff64be6a765db3d00eef7ae52ffbc970bc981"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "On an SB2 or above DOSBox-X sets the polling, read-interrupt and time-stamp flags and raises no interrupt; an SB 1.x logs that the command needs SB2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2563-2569",
+       "sha": "15ac4a631d211aecc99ca0348d1a12b793c79e49ce190f2665860a4bcebdc39f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "398",
+       "sha": "1faf34b779ebef7fe1ff839edf5a44fc6c8fd95228f291c39638e75aea360dd2"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "On an SB2 or above DOSBox-X records time-stamp mode in a flag; an SB 1.x logs that the command needs SB2, and the case queues no time stamp.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2563-2569",
+       "sha": "15ac4a631d211aecc99ca0348d1a12b793c79e49ce190f2665860a4bcebdc39f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "398",
+       "sha": "1faf34b779ebef7fe1ff839edf5a44fc6c8fd95228f291c39638e75aea360dd2"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2424-2425",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2426",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2427",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:SBHWPG.raw.txt",
+     "lines": "2428",
+     "as": "version"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "2563-2569",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x88",
+   "name": "Reveal SC400, unknown",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x88"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Command 88h changes nothing; its case body holds only the SC400 guard and a break.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2581-2584",
+       "sha": "87845c1611359a6a4053b5f02ab169c766dfa750402d1ac5612b8bd6f2c3792c"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command is sent with no data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "216",
+       "sha": "bb376f2eb71c268b3dd52a111a3cf8382addb4d802f8f4ac24924afb07a54c9e"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xE6",
+   "name": "Reveal SC400 DMA test",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xE6"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "With the SC400 reveal enabled, command E6h registers a DMA callback on the 8-bit channel and sets the DSP output to 0x80.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2585-2590",
+       "sha": "14e5906344a61e82ba8d33ea7d12554b8f2dfc544263d2b93f072c6b14c1fcf0"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Outside the SC400 reveal the command returns without registering the callback.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2585-2586",
+       "sha": "96244a54496327ab04a108d75328c43cd9be43f53c362021645ce6dfd19893f1"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "When the channel is unmasked the callback writes the eight-byte pattern 01 02 04 08 10 20 40 80 and raises the 8-bit IRQ.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "3919-3926",
+       "sha": "83997a43026bb1121a9438b94f540b069780342d93704cbfb47b1b30a7960b63"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command is sent with no data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "223",
+       "sha": "fe6fc45ec749285c521dba9a8c344d76cdcc1c777b71c5a2c8dde77b8faa842a"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x50",
+   "name": "SC400 write config",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x50"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "With the SC400 reveal enabled, command 50h stores its data byte as the card configuration.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2592-2594",
+       "sha": "9582334907c31a9d30efd0c9bfa608332096b4c95e658b8d51dc3a036f8143f8"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Outside the SC400 reveal the command returns before reading the byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2592-2593",
+       "sha": "955eed78bff6cf479aca0e2754d649696407c1950feda65569b44350e73ea519"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "Bits 1-0 select the 8-bit DMA channel, 1, 2 and 3 choosing channels 0, 1 and 3 and 0 choosing none.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2596-2601",
+       "sha": "b1d908bea5ad2727fcf4000e39cfe6f9197adf4426f5da67a1e08a862dc2fa17"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "The 16-bit DMA channel is set to the same one as the 8-bit.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2602",
+       "sha": "c2e1b7b09e9533c6d7c2dca90ff7009f6336852c2605dde118827ee62ae8c51f"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "Bits 5-3 select the IRQ, values 1 to 5 choosing 7, 9, 10, 11 and 5 and the others choosing none.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2603-2612",
+       "sha": "a9be56f69dc932e9006a6447aba6479923d6475dbd789e8632bcfd2dba78bdef"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "Bit 2 enables the MPU-401 IRQ, which bit 7 selects as 9 or 5; a changed MPU IRQ logs a warning that MPU-401 emulation does not yet support changing it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2616-2623",
+       "sha": "4d12e27291f2991051068915afd28b496196638a649a15b1c3b065ba4af9f0d0"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The new configuration byte and the resulting IRQ and DMA channel are logged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2625-2626",
+       "sha": "98212634a1b33f56920de3fd7d3c04e9695a27134b8ac15e160fdad9ed18f99e"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "One data byte follows the command.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "212",
+       "sha": "a6658d72219d873e1d17416b170869a87e01acabb4c62e76009061347dafb59e"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x58",
+   "name": "SC400 read config",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x58"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "With the SC400 reveal enabled, command 58h queues three bytes for the read: the two jumper status bytes and the configuration byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2629-2633",
+       "sha": "7042553cc8f971ef1b81a406c935c7c3055c3e65a44603eefd797709e56d31b2"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Outside the SC400 reveal the command returns without queuing a byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2629-2630",
+       "sha": "893744d88cf83dd3f8a24d47d1f7d498cd76dabaedbaccac47010555afab44cd"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "The first status byte is 2Ch plus 1 when the base port is 240h and plus 2 when both gameports are disabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "4513-4514",
+       "sha": "0e06cb7b76d400b2f78ec3a3a3e9284e0f7e1661a9020a4a727c557dc81ac4b8"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "The second status byte holds C0h and four bits of the card's base port plus 10h shifted right four, which the comment calls the CD-ROM port's bits 8-4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "4518",
+       "sha": "b5ab9e0d7670741939de15d45866a4097ad366fbcd2b97460eb5d562728af542"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "4532",
+       "sha": "525feefffe7f4a4bf624957a527eee79a1b5c5e46236806a02c9c0444c9e35da"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "The configuration byte starts at 0 and is built from the card's DMA channel, IRQ and MPU-401 IRQ at initialisation.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "4536",
+       "sha": "d2d755b6ca70fac866a6488ff2dd2d8df9fbe7f4a9b38aef060b1add5e4f8c3d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "4542-4552",
+       "sha": "10d822cd33dd230719ddcd94b57846a91ec7a89ce5320e695cee3aba15cf4dcb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "4554-4558",
+       "sha": "188343b692f51d48b24e84a5528b04b31c088815d871e2a232db044937a8a64c"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The command is sent with no data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "212",
+       "sha": "a6658d72219d873e1d17416b170869a87e01acabb4c62e76009061347dafb59e"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x6E",
+   "name": "SC400 set DSP version",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0x6E"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "With the SC400 reveal enabled, command 6Eh stores its two data bytes as the SC400's DSP major and minor version.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2635-2640",
+       "sha": "3c239fbbb0bcb9c89597129858740e9dd5539d7c5c7ab98c2841a67a13f36019"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Outside the SC400 reveal the command returns without storing a version.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2635-2636",
+       "sha": "4118e41ad1d2b032c0e078c6be6191d5a5066c167d206a69f4a1f8e30888dc9c"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "Command E1h reports the stored major and minor version on an SC400.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2443-2444",
+       "sha": "0f2a19d72f3ba1e74b7d9465deb70be386abd9443796541d76e0be7a151df1f8"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "Two data bytes follow the command: the major and the minor version.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "213",
+       "sha": "cda5afafa1452886f817982b8726868109bb1d0e5b158f4c8d93af3adb6a609d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2637-2638",
+       "sha": "365300a9c970bcc099f91bc42ee4a7a94a34298e21c4f4194ee1fbeb5046b10a"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xFA",
+   "name": "SB16 8051 memory write",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xfa"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "On an SB16, command FAh writes its second data byte into the 8051's memory at the address in its first.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2642-2645",
+       "sha": "87aad43dd1f9d5d118e7768bcd7ea5689fe97e8d11299d883a8749fa10f68c08"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "On any other card the command is logged as unhandled and writes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2642-2648",
+       "sha": "0df0528a2f804576fcb40084bea12e104f335ae41c93aed1de9ed16827ca1a51"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "when",
+     "of": "dosbox-x",
+     "text": "On an SB16 the 8051 memory at addresses 20h and 30h receives dsp.last_cmd, before and after the command's own case.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "1975-1978",
+       "sha": "3cafaccc147602655c4caa3a89d00656b61712473516de8e7a2b5dbfe8507582"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2663-2666",
+       "sha": "1e0e11563d7a1432d5da03c04283b6694cb5eb3c9dfcee653b7034366f8dd6b9"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "Two data bytes follow the command.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "270",
+       "sha": "9aca785737568d6b5b56bcd7dd883a6b48a1341be2f6bee5d2b0660eb3f336fe"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0xF9",
+   "name": "SB16 8051 memory read",
+   "aliases": [],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's pinned tree has no Sound Blaster DSP device: sb0400 is an empty Audigy2 PCI stub."
+    },
+    {
+     "where": "maker",
+     "gave": "Creative's site serves no Sound Blaster DSP command reference any more."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "No Creative Labs directory under pdf/; only creativeSolutions and vermontCreativeSoftware."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Only the Developer Kit demo disks, the driver software and a 1992 catalogue; no manual scan."
+    },
+    {
+     "where": "index",
+     "gave": "No datasheetarchive-like index lists a Sound Blaster DSP command reference."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "function": "SB_INFO::DSP_DoCommand",
+     "case": [
+      "0xf9"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "On an SB16, command F9h queues for the read the byte in the 8051's memory at the address in its data byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2650-2653",
+       "sha": "a4416bb464ac9eedeca5e230ae553f24c2a0f4809f8d6dae14d43ad53dabb230"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "On any other card the command is logged as unhandled and queues no byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "2650-2656",
+       "sha": "d4379053f4bc7ee3f5e0df9af3aefed661f8700cb35e083735d0a4f3f9cb4c03"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "One data byte follows the command.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/sblaster.cpp",
+       "lines": "270",
+       "sha": "9aca785737568d6b5b56bcd7dd883a6b48a1341be2f6bee5d2b0660eb3f336fe"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1972",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/sblaster.cpp",
+     "lines": "1986",
+     "as": "decode"
+    }
+   ]
+  }
+ ]
+}

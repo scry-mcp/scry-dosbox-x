@@ -1,0 +1,1379 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "vseq",
+ "title": "The VGA sequencer's registers",
+ "kind": "register",
+ "scope": "vseq",
+ "covers": "The VGA sequencer: its address port 03C4 and data port 03C5, and the five registers they carry, Reset, Clocking Mode, Map Mask, Character Map Select and Memory Mode, as the IBM PS/2 video subsystem reference documents them.",
+ "source": "official",
+ "documents": [
+  {
+   "name": "PS2-Video-Subsystems.raw.txt",
+   "variant": "VGA"
+  }
+ ],
+ "official": {
+  "PS2-Video-Subsystems.raw.txt": [
+   "2797-2799",
+   "2800-2825",
+   "2826-2846",
+   "2847-2902",
+   "2903-2930",
+   "2931-3014",
+   "3015-3053"
+  ]
+ },
+ "entries": [
+  {
+   "key": "0x3C5",
+   "name": "sequencer data",
+   "aliases": [
+    "sequencer data register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2797-2799"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "138-149"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "232-238"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "243-248"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "261-266"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "148"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "177"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "218"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "247"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "253"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "259"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The sequencer's data registers are at address hex 03C5.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2797-2798",
+       "sha": "89c35f1cbdb0a086a74966b2af39965a25b5e9fabd9cf4a3188bd3498c87bf1a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "All registers within the sequencer are read/write.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2798-2799",
+       "sha": "cacabb85ee38a039f92db1351b4ba5b7bf8016f2b1c1464a27bb7b2b54fb416f"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to the data port is ignored entirely when the VGA register lockout option is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "141-142",
+       "sha": "2ac51aaef5d0cbe7a01ab858b54ef2de34df23538626a3a93ba02a1c573d48ab"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "An index the sequencer does not implement is passed to the SVGA handler; with none installed the write is logged as an illegal index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "232-238",
+       "sha": "55a0be1f9fa80f1173989d1d9208e5b94d78690c299eaa2c1d4a0f9646c82e47"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of an index the sequencer does not implement is passed to the SVGA handler and otherwise returns 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "261-266",
+       "sha": "fb40a532460064e40850731c3968afaf9d7eaecd4ce68318f3dc874fbeb4522d"
+      }
+     ]
+    },
+    {
+     "n": "104",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs write_p3c5 at port 0x3c5, and read_p3c5 there on VGA machines.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "273",
+       "sha": "5202bdec739732a13a8af1782483970d5fb10a513ac5201d1e40b5454df9cf03"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "274-277",
+       "sha": "f8caa0d7f6cadfd60b91d1864d196d95c79dbeb69e1c51033126949de7e3dc11"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "138-139",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "144",
+     "as": "log"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "145",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "146",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "147",
+     "as": "parent",
+     "owner": "vseq:register:0x00"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "149",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "243",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "244",
+     "as": "log"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "245",
+     "as": "key"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "246",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "248",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "148",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "177",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "218",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "247",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "253",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "259",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x3C4",
+   "name": "sequencer address",
+   "aliases": [
+    "sequencer address register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2800-2825"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "write_p3c4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "read_p3c4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "270-279"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The sequencer's register table lists the Address register and five data registers, indexed 00 to 04: Reset, Clocking Mode, Map Mask, Character Map Select and Memory Mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2800-2806",
+       "sha": "3b402f4dc00d712a0370bb140121b36cd6202f33b3ded9d9edfe89438cdd5628"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2807-2813",
+       "sha": "fd085254ba6ab4f7fb3bf91b8ac98fcc3bc993554c2e1e1b2ae902a6b3e61c25"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The Address register at hex 03C4 is loaded with an index value that points to the desired sequencer data register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2814-2817",
+       "sha": "31b515f9e0daaa9e5ae450270ab55cd67aa0297d4cf2bc932670d9d542482b94"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "The Sequencer Address field, bits 2-0, holds the index; a write sets the other bits to 0, which read as undefined (the capture prints 8 for 0).",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2820",
+       "sha": "f7686ad9dee5b48d3ffd8e70d60664bba6eb04f5236811ed670f77894f384f98"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2824-2825",
+       "sha": "3571e2042406e0b2bff572b3eb155e690bf266c007b382503342ed24ed0ab924"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A write masks the index to 4 bits (6 on S3, 3 on Tseng) and stores the masked value, which reads back, where the document sets bits 7-3 to 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "70-78",
+       "sha": "fa42bf4e129d3a11788160963408be89d58c82d72dfadf9d9bc971629b71622a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "82-84",
+       "sha": "7a010172bcb3854c694f4dd98743dcf800a33d6671262b958490b863fa26ba78"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "34",
+       "sha": "ef43bf3b6f5d43de577c1c0d3fcec6a4ffa843474c9cab774de1e337e0447ed3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "86",
+       "sha": "7f4d8af54a373869c53a276016afd293faa677a09ce5f9cb405b94cca49fd1c4"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "103",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X installs write_p3c4 at port 0x3c4, and read_p3c4 there on VGA machines.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "272",
+       "sha": "da81fa3a62fdaa7e1708d3c6c25f973920f44828c35aad8454191dda20394a15"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "274-277",
+       "sha": "f8caa0d7f6cadfd60b91d1864d196d95c79dbeb69e1c51033126949de7e3dc11"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2818-2819",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2821-2823",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "86",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "270-271",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "273-274",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "276-279",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x00",
+   "name": "reset",
+   "aliases": [
+    "sequencer reset"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2826-2846"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "write_p3c5",
+     "case": [
+      "0"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "read_p3c5",
+     "case": [
+      "0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Index hex 00 is the read/write Reset register at address hex 03C5.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2826-2828",
+       "sha": "e16a2230d406fe430fef1e53ab54e1a0f4a272f6660c3773f912fc52d9ab759b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores SR at bit 1: 0 commands a synchronous clear and halt, and bits 1 and 0 must both be 1 to allow the sequencer to operate.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2836-2838",
+       "sha": "fb1941bb3f70d91cbe483d2389d3ffbb000b8cc3b797e84475f9da7ec6e11b5e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "To prevent loss of data, bit 1 must be set to 0 during the active display interval before the clock selection changes.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2839-2842",
+       "sha": "4855d5f498893f1490b27a3b6c16d5534e4a10637d5151922666e4be9622f4e4"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores ASR at bit 0: 0 commands an asynchronous clear and halt, which can cause loss of video data.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2843-2846",
+       "sha": "a07a54df79dc3b5413c444c572cb3335f9f7c6154a01eb59b3c57be42ca6873f"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write first renders the pending output when render-on-demand is on, then stores the byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "147-148",
+       "sha": "2c26dd5447ed20a5bb7a48aff3fe9e0552cf331d1abaa2cf96f3b142b7c36d12"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2829-2835",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "142",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "145",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "245",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "148",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "148",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "247",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "148",
+     "as": "agrees",
+     "row": "1"
+    }
+   ]
+  },
+  {
+   "key": "0x01",
+   "name": "clocking mode",
+   "aliases": [
+    "sequencer clocking mode"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2847-2902"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "write_p3c5",
+     "case": [
+      "1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "read_p3c5",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Index hex 01 is the read/write Clocking Mode register at address hex 03C5.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2847-2849",
+       "sha": "e733762ccd2d89628be44f05e571e9b78b4c99d4e0d74826f45c54331887d709"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores SO at bit 5: 1 turns off the display and assigns maximum memory bandwidth to the system, keeping the synchronization pulses.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2867-2871",
+       "sha": "a99505bd02711e4ca63178fdf1d124c1ec12193f1ef2507ffbf0e75541d29a5a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores SH4 at bit 4: with SH4 and SL 0 the serializers load every character clock; with SH4 1 every fourth, useful when 32-bit fetches are chained.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2872-2877",
+       "sha": "9cde27f53ff4d6dec90130bdfb753e9a5a2d63f5d7e0f7336fe5df1b729d5256"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Extended Graphics mode behaves as if SH4 were 0, so programs should set it to 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2878-2879",
+       "sha": "2f96842c78539debd547500fbe2d04062a7f768617c56dbb9327384dbdc1ad7a"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores DC at bit 3: 1 divides the master clock by 2 to make the dot clock, as the 320 and 360 pel modes use.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2880-2885",
+       "sha": "91814994fc3589892cc81821e9e38920c1d1c4a23449fe30faa1f38b55305ae9"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores SL at bit 2: with SH4 and SL 0 the serializers load every character clock; with SL 1 every other, useful when 16-bit fetches are chained.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2886-2891",
+       "sha": "cae66782f5da65e92f9b7ee6adac8ef193d4eaddb71999f83a2b06ef49c95e47"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Extended Graphics mode behaves as if SL were 0, so programs should set it to 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2892-2893",
+       "sha": "2f96842c78539debd547500fbe2d04062a7f768617c56dbb9327384dbdc1ad7a"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores 8/9 Dot Clocks at bit 0: 0 generates character clocks 9 dots wide, 1 makes them 8 dots, and only the alphanumeric modes use 9.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2894-2902",
+       "sha": "7995c5d57630113d92db76ef88c4e3a74bc11755e54bdaeb647413f987b3a221"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write of the byte already stored does nothing at all.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "151-162",
+       "sha": "fff5c0b3d1f9692b829063ab40553d557591afc0a87804a9b38e87c7c16fd0b4"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A change in any bit other than screen off makes DOSBox-X resize the display.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "153-156",
+       "sha": "e34b0c1bd3c982b622ee54c43cee394a015bfd9cbe38de5bee2a0b7506b172f3"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The blanking the screen-off bit asks for is skipped when the ignore_sequencer_blanking option is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "160",
+       "sha": "3288b69c2925a37cd4d2ba12c497ad3acde6cb1c9b77cd4c58424dd7e18899b7"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2850-2866",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "142",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "145",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "245",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "155",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "155",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "155",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "155",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "155",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "250",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "155",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "160-161",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x02",
+   "name": "map mask",
+   "aliases": [
+    "sequencer map mask"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2903-2930"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "write_p3c5",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "read_p3c5",
+     "case": [
+      "2"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Index hex 02 is the read/write Map Mask register at address hex 03C5.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2903-2905",
+       "sha": "4dc230ab582b667f37a449053706330bad72b500aff9b5761bf94a9dc925b421"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores M0E-M3E in bits 0-3: 1 enables system access to that map; with all maps enabled the system can write its byte to all four at once.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2915-2921",
+       "sha": "25cb2f9dfa998197267a2eaae0d020bc0aed1017ae7e18e9ebdcf045a43cd87e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "With all maps enabled and the address written with the data held in the system data latches, data scrolling is a read-modify-write operation.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2922-2925",
+       "sha": "ceb2506a0537d1ceda662c5abec95b801277fcbe6f72227f4186bec2580d82d8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "In odd/even modes, maps 0 and 1 and maps 2 and 3 should have the same map mask value.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2926-2928",
+       "sha": "e4116ad8feda0012c83aa658a48b3aee6fcf6190a7ffc467c1922b04dbd5617c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "When chain 4 mode is selected, all maps should be enabled.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2929-2930",
+       "sha": "4239de7a2f4817b82685b91e782c14c0f29ac84671a34d1e40f5d9020589b442"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When a plane is masked off in chained mode, a change reconfigures the memory handlers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "180-181",
+       "sha": "69e65ce3a29fcb194aed4fa3866db3abe95322e66db7249f0887db8d2cb9e13c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2906-2914",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "142",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "145",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "245",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "177-179",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "253",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "177",
+     "as": "agrees",
+     "row": "1"
+    }
+   ]
+  },
+  {
+   "key": "0x03",
+   "name": "character map select",
+   "aliases": [
+    "character map select register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2931-3014"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "write_p3c5",
+     "case": [
+      "3"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "read_p3c5",
+     "case": [
+      "3"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "The Character Map Select register, index 03 at hex 03C5: in alphanumeric modes attribute bit 3 normally sets intensity, and can be redefined to switch character sets for 512 characters.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2931-2936",
+       "sha": "bceb165c050c7c074b869c93ce9fa0bffa3240a6495d6985710d69bb8bb667d1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "To enable it, set the extended memory bit in the Memory Mode register and select different values for character maps A and B.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2937-2940",
+       "sha": "24bdb0cf936d067c8d37deda3afcd1624fa6d3eff7d0b514098302493d863671"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "BIOS supports this function as a call within the character generator routines.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2941-2942",
+       "sha": "84892976963340482f7bb88808b216b8b2e1011124831bcc7a84f1a47454db23"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "MAH (bit 5) and MBH (bit 4) are the most-significant selection bits for the locations of character maps A and B.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2956-2961",
+       "sha": "0f8c84d1d0c8e683a5be72cd5a1793c6d2646d670f6c1e356c287d15ed135657"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "MAL (bits 3, 2) and MAH (bit 5) select map A, the font table in map 2 used when attribute bit 3 is 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2962-2967",
+       "sha": "687d2cdd59429cd5582205a3b0da0d40149ca0b8235827652fc1caa1cfbac81a"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 5, 3 and 2 select maps 0-7 in the 1st, 3rd, 5th and 7th 8KB of map 2 for 000-011, and the 2nd, 4th, 6th and 8th for 100-111.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2968-2977",
+       "sha": "f679658d431d99f9c63bf14f03f66daa3840714421f5d76425d603cc87f505c4"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2978-2987",
+       "sha": "3bfef78a05ff38113829914b5d636d085b3eb3b44883ebc9158eacae3c8e9f7d"
+      },
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2988-2997",
+       "sha": "18f234a65b27836cef38f19b201557669de595996b42676d9c16a6b83f6ceed7"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "MBL (bits 1, 0) and MBH (bit 4) select map B, the font table in map 2 used when attribute bit 3 is 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2998-3003",
+       "sha": "49425538427d8deb09dba50185bc08e45a757cc48de571e297e8d71fb793510c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 4, 1 and 0 select among the same eight 8KB locations of map 2 for character map B.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3004-3013",
+       "sha": "1da51a5d59ab85eaa7ae4520ba0851917787bc7d8bbb8dbd72e81c6ae1bc7b05"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write first renders the pending output when render-on-demand is on, then stores the byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "191-192",
+       "sha": "b6d3f92e98c6ebae137e592145a52ecdc08afb93c3f6186632af25282b855c91"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2943-2955",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3014",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "142",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "145",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "245",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "189-198",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "256",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "196-198",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "193-195",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "193-198",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "196-198",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "193-195",
+     "as": "agrees",
+     "row": "8"
+    }
+   ]
+  },
+  {
+   "key": "0x04",
+   "name": "memory mode",
+   "aliases": [
+    "sequencer memory mode"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3015-3053"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "write_p3c5",
+     "case": [
+      "4"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "function": "read_p3c5",
+     "case": [
+      "4"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Index hex 04 is the Memory Mode register at address hex 03C5.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3015-3016",
+       "sha": "532b8ad795ee1234e39bcc0176c62ee61e21ddb0172aec29723bdfe25724f432"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores CH4 at bit 3: on a system read, 0 walks a bit map via the Map Mask and 1 lets address bits A1-A0 pick the map.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3026-3031",
+       "sha": "6fd05090f15a27bf4a765478e754489e35d20d4899d59f6382a0a6b0c87f22ed"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "In chain 4 mode, address bits A1 and A0 select map 0, 1, 2 or 3.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3032-3043",
+       "sha": "67fda44e68a039f4fc6ca3386c07b35e35bb0b310c3cdb59065db622accee69b"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores OE at bit 2: 0 sends even addresses to maps 0 and 2 and odd to 1 and 3; 1 makes addressing sequential, per the Map Mask.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3044-3049",
+       "sha": "af49911937979db1970c61182f1228e1f8d58bda5f3e02f25ac4f201e804930c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "A write stores EM at bit 1: 1 enables video memory from 64KB to 256KB, and it must be set to enable the character map selection.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3050-3053",
+       "sha": "5a7221b847a32f4fdb08d1225b6cb44a7347d9e90cc48fcbcd66186c7a3ad61e"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write marks the complexity flags, then on VGA sets the chained flag from bit 3 and rebuilds the memory handlers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+       "lines": "219-230",
+       "sha": "b699125ebc7e919b0df05673bb39b3a2be43aa673990fe40569636ac85148aa1"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3017-3025",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "142",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "145",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "245",
+     "as": "parent",
+     "owner": "vseq:register:0x3C5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "218",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "226",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "220",
+     "as": "unfollowed",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "218",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "259",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "223-224",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_seq.cpp",
+     "lines": "218",
+     "as": "agrees",
+     "row": "1"
+    }
+   ]
+  }
+ ],
+ "engine": [
+  "VGA_RenderOnDemandUpTo",
+  "VGA_StartResize",
+  "VGA_SetupHandlers",
+  "VGA_ComplexityCheck_MAP_MASK",
+  "VGA_ComplexityCheck_ODDEVEN",
+  "IO_RegisterWriteHandler",
+  "IO_RegisterReadHandler",
+  "setf"
+ ]
+}

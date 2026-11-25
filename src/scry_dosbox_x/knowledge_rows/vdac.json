@@ -1,0 +1,898 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "vdac",
+ "title": "VGA DAC ports 0x3C6 to 0x3C9",
+ "kind": "register",
+ "scope": "ibm-pc",
+ "covers": "The four I/O ports of the VGA RAMDAC: the pel mask at 0x3C6, the palette address register for reads at 0x3C7 with the DAC state it answers, the palette address register for writes at 0x3C8, and the palette data register at 0x3C9, as IBM's Video Subsystems reference documents them and DOSBox-X handles them.",
+ "source": "official",
+ "documents": [
+  {
+   "name": "PS2-Video-Subsystems.raw.txt",
+   "variant": "VGA function, September 1992"
+  }
+ ],
+ "official": {
+  "PS2-Video-Subsystems.raw.txt": [
+   "2669-2673",
+   "4399-4401",
+   "4427-4429",
+   "4433-4434",
+   "4435-4464",
+   "4487-4489"
+  ]
+ },
+ "closed": [
+  {
+   "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+   "lines": "2669",
+   "as": "layout"
+  },
+  {
+   "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+   "lines": "4435",
+   "as": "layout"
+  }
+ ],
+ "entries": [
+  {
+   "key": "0x3C6",
+   "name": "PEL mask",
+   "aliases": [
+    "03C6"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2673"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4487-4489"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "function": "write_p3c6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "function": "read_p3c6"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "read",
+     "of": "doc",
+     "text": "The register list gives the Pel Mask at hex 03C6 as readable; the capture shows the mark as RIW.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2673",
+       "sha": "29aab157276f1c5d8ffbbf0e7acdb038ce11dc81d5f9bf719aa8dadcf9661ab7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The document tells the programmer not to write the Pel Mask register, since palette information can change.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4487-4488",
+       "sha": "8b58a44f6e548047744efafa45a51056ca923954a57b61c37312dc97e3e50a7a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "A mode set initializes the Pel Mask register to hex FF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4489",
+       "sha": "1c9726f3be43c5e1c33c3040f142c078f31e39d2e6ce190b007da213285c6044"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte into vga.dac.pel_mask, or into reg02 when a VGA machine's 3C6 HiDAC counter is above 3; a DAC lockout stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "221-232",
+       "sha": "e50a4abe5588cdc23ec96fca46111df3a28de33a8605ac333ae8cec833a2d7fc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "246-247",
+       "sha": "9a3f867b4df3a5807fb5de713f459242e2bd14413dd4cc864db70f8eb69e4833"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A changed mask schedules a palette update, rendering up to the change when rendering is on demand.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "230-238",
+       "sha": "bcfca5dbeb8cd25f15bee87fa5d21c3789bb25f9312034718ed48ba78a8beb7d"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When the Sierra RAMDAC setting is on, the read also increments the HiDAC counter.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "246-247",
+       "sha": "9a3f867b4df3a5807fb5de713f459242e2bd14413dd4cc864db70f8eb69e4833"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "445",
+     "as": "unseen",
+     "reason": "the reset store in VGA_SetupDAC, outside the entry's regions"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "243-250",
+     "as": "agrees",
+     "row": "1"
+    }
+   ]
+  },
+  {
+   "key": "0x3C7",
+   "name": "PEL read address",
+   "aliases": [
+    "03C7"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2671"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4447-4448"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4458-4464"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "function": "write_p3c7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "function": "read_p3c7"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Hex 03C7 is the palette address register for read operations.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2671",
+       "sha": "56a57063c91d41a35c02699aaccc653a45f0e0b3596f0a8cb0198a9e64f84312"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "For palette read operations the palette address register is at hex 03C7.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4447-4448",
+       "sha": "585314d7887a6210958166b691f7a8d8b4111415036ffc5b72d543f202339b6b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The DAC State register is read only at hex 03C7; bits 1 and 0 return the last operation, both 1 after a read and both 0 after a write.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4458-4461",
+       "sha": "a5bfd80e2bcdceaf816f28c9a7fef745b74b2200885f33d60a70549078484120"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "Reading the DAC State register at 03C7 does not interfere with the read or write cycles.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4462-4464",
+       "sha": "ff8b6628f38ca2a742928d3d969fc84b65e972e4764e2e4faa9b4ac81fae4bf7"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write also sets the write index to the index plus one.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "264",
+       "sha": "a2f308f63414c12f4fc1c0241a2858f1f308574c211bbf0017f2610c52cdda20"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read also clears the HiDAC counter.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "270",
+       "sha": "0e196a4c2a1dd7f81b7a3160114f9e456a3c50aef1039e91332b7f0414146933"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A DAC lockout makes the write do nothing; otherwise the write clears the HiDAC counter.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "257-260",
+       "sha": "246797eeba4b3460fc7a121ac8acf4951b81fe64bdf683d3ca9dc035ada1a509"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "261-264",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "267-273",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "270-272",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x3C8",
+   "name": "PEL write address",
+   "aliases": [
+    "03C8"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2670"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4436-4438"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4442-4443"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4453-4455"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "function": "write_p3c8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "function": "read_p3c8"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "read",
+     "of": "doc",
+     "text": "The register list gives the palette write address at hex 03C8 as read/write.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2670",
+       "sha": "b9921950e75850b36fa16707eeb30e74b103498e854e7f58920537733dc1f44c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The palette address register holds an 8-bit value that addresses a location in the DAC.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4436-4437",
+       "sha": "edcc13644865bdb0ae9bb87a91ac9cdf98ea49b75d4881c108d3ef2467c3604c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "For palette write operations the address register is at hex 03C8.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4442-4443",
+       "sha": "ca4c193b0e540e3a84762c84987dae2a579b4e5838f94e2fcb0cf552ffbafc42"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write also sets the read index to the value minus one, except on a Paradise PVGA1A card.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "286-287",
+       "sha": "c3b0d4a9486594332685448592ef6e33041274c9507233418e09b85aa1de436d"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A DAC lockout makes the write do nothing; otherwise the write clears the HiDAC counter.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "279-282",
+       "sha": "246797eeba4b3460fc7a121ac8acf4951b81fe64bdf683d3ca9dc035ada1a509"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing the palette address register during a cycle starts a new cycle and ends the unfinished one.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4453-4455",
+       "sha": "6bf43f1b86acd9837f601230d21f34d7c5904bc552d55a056d77a84d1ae4e331"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Hex 03C8 is the palette address register for write operations.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2670",
+       "sha": "b9921950e75850b36fa16707eeb30e74b103498e854e7f58920537733dc1f44c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "The palette address register responds to two addresses.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4438",
+       "sha": "0f800aebf99e818eb58fb37a093f4b916042ce51248e41dadd1ed0371628cbc5"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read also clears the HiDAC counter.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "293",
+       "sha": "0e196a4c2a1dd7f81b7a3160114f9e456a3c50aef1039e91332b7f0414146933"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "285",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "285",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "282-284",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "264",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x3C7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "367",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x3C9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "388",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x3C9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "449",
+     "as": "unseen",
+     "reason": "the reset store in VGA_SetupDAC, outside the entry's regions"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "293-294",
+     "as": "agrees",
+     "row": "1"
+    }
+   ]
+  },
+  {
+   "key": "0x3C9",
+   "name": "PEL data",
+   "aliases": [
+    "03C9"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "2672"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4399-4401"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4427-4429"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4433-4434"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4439-4441"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4444-4446"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4449-4452"
+    },
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "4456-4457"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "function": "write_p3c9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "function": "read_p3c9"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Hex 03C9 is the palette data register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "2672",
+       "sha": "9e0f62f263b81e422b7be02ecddb9fb9c9e87561941b92d8a2ddf4ac85d1ebd7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The DAC has 256 registers of 18 bits, showing up to 256 colours from a possible 256K, and each output is driven by a 6-bit DAC.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4399-4401",
+       "sha": "13bcb0426dab9f6c7e6e14403e403843dba27e77669dead7334e5d4458660c09"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "During normal operation the palette address points to one of the 256 data registers, whose value is converted to the three analog outputs.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4427-4429",
+       "sha": "ae933c302ee62a18de119f2ad6a26a7138c4bb72935e39a90cb1040ab476c5bd"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Each data register is 18 bits wide, 6 bits each for red, green and blue, and is reached through the system interface.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4433-4434",
+       "sha": "90a6bae9091c11579c9de17356c39635425d265d4104cca48eb77b5cbf806df7"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "Successive bytes written to 03C9 have their 6 least-significant bits concatenated into the 18-bit palette data, red first, then green, then blue.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4444-4446",
+       "sha": "99427e2c5bde08b6c432bf7ef0f3c1094d956a155941607d460b3b0303906cb4"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "doc",
+     "text": "A read cycle reads three successive bytes from 03C9 holding the colour value, red first, then green, then blue.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4449-4452",
+       "sha": "0433e8f72f41a447056ba0391c39a81fac400e2ef0afa2545474af7070cceddf"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Reading the data register during a write cycle is undefined and can change the palette.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4456-4457",
+       "sha": "ee22514f002d2e4e8e3b5e98522130371df8d716664e75e0bbe9f3386f0ca2e1"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "doc",
+     "text": "Once the address is loaded, successive accesses to the data register increment the address register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "4439-4441",
+       "sha": "015bb02c48d1021fc2987d8ba6dc0c9cc71a363736a7cb28449a2bb42fba1b43"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X keeps the six bits and stores one colour per byte, but with 8-bit DAC emulation enabled it stores all eight bits of a byte instead.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "316-317",
+       "sha": "808f203990b268e2f508377395555b28e3727884f231ec10fdcf41aa1f74ef9c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "324-333",
+       "sha": "7c2a59c96ea8d573f2ac07a47779debcedb673ca36917135089845d7abf9cec5"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "10",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "After the third byte the read index is set to the write index; outside MCGA double-buffering a completed colour schedules a palette refresh.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "356-367",
+       "sha": "1009117cdd182d7066adfa17a0d8623d733d061dbc3dd1f84247f86d4d283b56"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "After the blue byte the read advances the write index too.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "385-388",
+       "sha": "11284e2d1c4dd68f9531cbcb5a17a6638a8fda5dc664770e808b7af9ab816206"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read clears the HiDAC counter.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "374",
+       "sha": "0e196a4c2a1dd7f81b7a3160114f9e456a3c50aef1039e91332b7f0414146933"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A pel index outside 0 to 2 logs an error and returns 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "390-395",
+       "sha": "3db46a97377e41c34575398e887c919deed3e8a5a552dbd21480a30320d19cc6"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A DAC lockout makes the write do nothing; otherwise the write clears the HiDAC counter.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "305-310",
+       "sha": "cc72cb73544255da7d46cf7b043ada253e90e06aab4d98067f086009e29a55ab"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A byte is staged only while the pel index is below 3.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "319-320",
+       "sha": "1218df6c839b07cdb5a6b90c66329be011107fd73b4b6501ee02b94b6beee532"
+      }
+     ]
+    },
+    {
+     "n": "16",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With full-load updating, the three bytes are stored together when the third arrives.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "322",
+       "sha": "2d03ae131cd55ffa65d6db9ab47eed3dfc40ff3caeab28fc4cd1212e9f245dd3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "337-343",
+       "sha": "c75365ed6133dcb89def5f338ff76bcd06453a88e36a8c256ed2af34c4ffa0d7"
+      }
+     ]
+    },
+    {
+     "n": "17",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "In MCGA mode with the double-buffer bit set, the palette update is deferred.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "356-360",
+       "sha": "96d8049a4d09b9f5beab868c409e71b249c8e69a8e897fc20667ece3f7ce602c"
+      }
+     ]
+    },
+    {
+     "n": "18",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The pel index returns to zero after the third byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "lines": "345-346",
+       "sha": "c722494cbcc551badc08a0130ae7af90112dc5212c889d1de224eae2fb7fc5f7"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "316-317",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "324-333",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "377-388",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "366-367",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "386-388",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "349",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "376",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "389",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "263",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x3C7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "287",
+     "as": "parent",
+     "owner": "ibm-pc:register:0x3C8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "434-436",
+     "as": "unseen",
+     "reason": "written by VGA_DAC_SetEntry on the BIOS palette path"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "lines": "448",
+     "as": "unseen",
+     "reason": "the reset store in VGA_SetupDAC, outside the entry's regions"
+    }
+   ]
+  }
+ ],
+ "engine": [
+  "VGA_StartResize",
+  "VGA_RenderOnDemandUpTo"
+ ]
+}

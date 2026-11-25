@@ -11,6 +11,127 @@
    "tool_version": "26.10.0",
    "pdf": "8bef2f6e2258a4c00a8a16f889ddd52b949122f4d62ed4834d59246aaa06c9e9",
    "capture": "8a6838474bf3da3ac99176560cb4899ba61d2521488bc4d80605914be0a95ef5"
+  },
+  "DisneySoundSource-PG.raw.txt": {
+   "title": "Programmer's Guide to the Disney Sound Source",
+   "url": "https://archive.org/details/dss-programmers-guide",
+   "archive": "https://archive.org/download/dss-programmers-guide/dss-programmers-guide.pdf",
+   "class": "maker-guide",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "c28be8bb9e9d2d968fe628ae36713c7500b9aafd6329d74cf0217786006bc680",
+   "capture": "fce5f3eca29b5fd18968e71b373df615a852b31c60249b858ce3e7e33ffc49aa"
+  },
+  "GUS-Lowlevel-Toolkit-222.raw.txt": {
+   "title": "Advanced Gravis UltraSound Lowlevel ToolKit, revision 2.22",
+   "url": "https://archive.org/details/gusdk-222",
+   "archive": "https://www.infania.net/misc1/programmers_he1/FILES/Sound/gravis/GUSDK222.ZIP",
+   "class": "maker-guide",
+   "text": "layer",
+   "tool": "textutil -convert html + pandoc -t plain",
+   "tool_version": "macOS 26.7.3 + pandoc 3.12",
+   "pdf": "93c3f896c2714d95fbe2397bc80b7e5737d334aff96b324d06e49251d83b4203",
+   "capture": "f46fb2229a3a3b8900c6912bd09d8fa58eceeceb0b2087b1290604a68578e38e"
+  },
+  "MPU401-TRM.raw.txt": {
+   "title": "Roland MPU-401 Technical Reference Manual, version 1.5",
+   "url": "https://web.archive.org/web/20230106160700if_/ftp://ftp.oldskool.org/pub/drivers/Roland/MPU-401%20technical%20reference%20manual.pdf",
+   "archive": "https://archive.org/download/mpu401technicalreferencemanual/MPU-401%20Technical%20Reference%20Manual.pdf",
+   "class": "maker-guide",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "b576ec08d64c07dc6be93013efb9b5925432c573d6bd75223cfad47c99c68510",
+   "capture": "4348cb901e0a69b9416624b7e90a7002720a45fb8c147f596b3beffe777d4291"
+  },
+  "SBHWPG.raw.txt": {
+   "title": "Creative Labs Sound Blaster series hardware programming guide",
+   "url": "https://www.phatcode.net/downloads.php?id=243&action=get&file=sbhwpg.pdf",
+   "archive": "https://web.archive.org/web/20200628215303/https://www.phatcode.net/res/243/files/sbhwpg.pdf",
+   "class": "maker-guide",
+   "text": "layer",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "202d05ea0a10890c7722960936f748a34c93d699a3e542b6b212cc7187fc60d9",
+   "capture": "86d28724a149cf346ef641314a3b2174289da653da5f7bd791359bde4ca553a2"
+  },
+  "EMU8KPGM.raw.txt": {
+   "title": "AWE32/EMU8000 programmer's guide, revision 1.00 (E-mu/Creative Technology)",
+   "url": "https://raw.githubusercontent.com/qb40/sound-blaster-awe32/master/DOC/EMU8KPGM.PDF",
+   "archive": "https://web.archive.org/web/20240829153549/https://raw.githubusercontent.com/qb40/sound-blaster-awe32/master/DOC/EMU8KPGM.PDF",
+   "class": "maker-guide",
+   "text": "layer",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "7a79b19824eab91cb39d63497e2be0f7e22ca98ac8b26f1bcfd67417ab46cf6c",
+   "capture": "a431550f0a65e186f6b88650ead6b67697f20c069d58f404fecf5d9a35953702"
+  },
+  "Tandy1000SL-Technical-Reference.raw.txt": {
+   "title": "Tandy 1000 SL Technical Reference Manual",
+   "url": "http://ftp.oldskool.org/pub/tvdog/tandy1000/documents/sltech.zip",
+   "archive": "https://web.archive.org/web/20031226224340/http://www.oldskool.org/guides/tvdog/documents.html",
+   "class": "maker-guide",
+   "text": "layer",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "8c6b26325557f31c42111165397e28bd53ff5186376fabe3b07b262ee3ae0dcd",
+   "capture": "7830a6c7383b27c8be75a885f5c47e6174794d10db2426d78158d2d502a76847"
+  },
+  "82077SL.raw.txt": {
+   "title": "Intel 82077SL CHMOS single-chip floppy disk controller",
+   "url": "https://bitsavers.org/components/intel/_dataSheets/290410-001_82077SL_Floppy_Disk_Controller_May91.pdf",
+   "archive": "https://ftp.mirrorservice.org/sites/www.bitsavers.org/components/intel/_dataSheets/290410-001_82077SL_Floppy_Disk_Controller_May91.pdf",
+   "class": "maker-datasheet",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "2c4d801410e566a15cd70dd720fd8cab66e0635bf8f68aa858b70539002d79c2",
+   "capture": "00bf908795108a7f2a3151681458b65170cb14df1484e5c6187c1a805bd953b4"
+  },
+  "IBM-PCXT-TechnicalReference.raw.txt": {
+   "title": "IBM Personal Computer XT Technical Reference (1502237)",
+   "url": "https://archive.org/download/IBMPCXTTechnicalReference1502237/IBM%20PC_XT%20Technical%20Reference%201502237.pdf",
+   "archive": "https://archive.org/details/IBMPCXTTechnicalReference1502237",
+   "class": "maker-guide",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "5b97c5473b9904d5566f0dbc0b2ee54d5134e523d9c6d5fab9ed2447b34d764c",
+   "capture": "25c2e1a920713c99470db7698f341c958c50d5110645f2894043e258a414ef30"
+  },
+  "PS2-HITR.raw.txt": {
+   "title": "IBM Personal System/2 Hardware Interface Technical Reference, May 1988",
+   "url": "https://bitsavers.org/pdf/ibm/pc/ps2/Personal_System_2_Hardware_Interface_Technical_Reference_May88.pdf",
+   "archive": "https://ftp.mirrorservice.org/sites/www.bitsavers.org/pdf/ibm/pc/ps2/Personal_System_2_Hardware_Interface_Technical_Reference_May88.pdf",
+   "class": "maker-guide",
+   "text": "layer",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "542242238abd3d5d9657a3cc7c256c2b2d78af986a707e370e4d1aa57c0482af",
+   "capture": "55bacb482f51cfe3329a509871d87ce6a7be550113bc6ceb209b99151b0074f9"
+  },
+  "PS2-Video-Subsystems.raw.txt": {
+   "title": "IBM Personal System/2 Hardware Interface Technical Reference, Video Subsystems",
+   "url": "https://bitsavers.org/pdf/ibm/pc/ps2/42G2193_PS2_Hardware_Interface_Technical_Reference_Video_Subsystems_Sep92.pdf",
+   "archive": "https://ftp.mirrorservice.org/sites/www.bitsavers.org/pdf/ibm/pc/ps2/42G2193_PS2_Hardware_Interface_Technical_Reference_Video_Subsystems_Sep92.pdf",
+   "class": "maker-guide",
+   "text": "layer",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "16d2ba763a88f96c89999f30d6d0fd7cd630c3ba7ab188d8388d0d9ec588a42d",
+   "capture": "aa78da18de677d2016967b0eca0d89d1a11dc46db27933b412edca5f5a38b922"
+  },
+  "PS2-HITR-Common-Interfaces-Oct90.raw.txt": {
+   "title": "IBM PS/2 Hardware Interface Technical Reference, Common Interfaces (October 1990)",
+   "url": "https://ftp.mirrorservice.org/sites/www.bitsavers.org/pdf/ibm/pc/ps2/84F9735_PS2_Hardware_Interface_Technical_Reference_Common_Interfaces_Oct90.pdf",
+   "archive": "https://archive.org/download/bitsavers_ibmpcps284erfaceTechnicalReferenceCommonInterfaces_39004874/84F9735_PS2_Hardware_Interface_Technical_Reference_Common_Interfaces_Oct90.pdf",
+   "class": "maker-guide",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "b3c040ef793d2f2b5093572b6267ebfb0d8ed9b964d64315a8ec22f6981edfea",
+   "capture": "fb651dbbe995325e2556aa86ed55d59527e42417a625666389c67c88d7b34e18"
   }
  }
 }

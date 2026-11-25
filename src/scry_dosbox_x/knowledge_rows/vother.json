@@ -1,0 +1,5367 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "vother",
+ "title": "The other video adapters' control ports and CRTC registers",
+ "kind": "register",
+ "scope": "vother",
+ "covers": "The video ports of the non-VGA adapters that DOSBox-X serves from vga_other.cpp: the CRTC address and data ports of the MDA, Hercules and CGA families and their mirrors, the Hercules and MDA mode, enable and status registers, the light pen latch writes, the CGA mode control and colour select registers, and the Amstrad, Olivetti, 3270 PC and Tandy registers that share those addresses; and the register file behind those CRTC ports: the nineteen MC6845 registers as Motorola's datasheet describes them, the Hercules InColor and HGC+ extensions, and the Tandy palette entries.",
+ "source": "official",
+ "documents": [
+  {
+   "name": "PS2-Video-Subsystems.raw.txt",
+   "variant": "VGA"
+  },
+  {
+   "name": "Tandy1000SL-Technical-Reference.raw.txt",
+   "variant": "1000SL"
+  },
+  {
+   "name": "MC6845.raw.txt",
+   "variant": "6845"
+  }
+ ],
+ "official": {
+  "PS2-Video-Subsystems.raw.txt": [
+   "3055-3064",
+   "3096-3104"
+  ],
+  "Tandy1000SL-Technical-Reference.raw.txt": [
+   "832-843",
+   "2215-2241",
+   "2242"
+  ],
+  "MC6845.raw.txt": [
+   "561-565",
+   "637-640",
+   "641-650",
+   "651-657",
+   "672-680",
+   "681-685",
+   "686-694",
+   "865-870",
+   "872-887",
+   "903-908",
+   "910-917",
+   "918-928"
+  ]
+ },
+ "searched": [
+  {
+   "where": "mame-header",
+   "gave": "MAME's tree at the pinned tag has no Hercules video device; its pc driver names the card and cites no datasheet."
+  },
+  {
+   "where": "maker",
+   "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC address and data registers only at 03B4/03B5 and 03D4/03D5."
+  },
+  {
+   "where": "bitsavers",
+   "gave": "the Hercules folder listing answers 403 from this host, so nothing was read there."
+  },
+  {
+   "where": "archive-org",
+   "gave": "the search returns only later Hercules display cards, not the 1982 Graphics Card's manual."
+  },
+  {
+   "where": "index",
+   "gave": "a web search finds third-party summaries and clone datasheets, no maker manual for these registers."
+  }
+ ],
+ "engine": [
+  "IO_RegisterWriteHandler",
+  "IO_RegisterReadHandler",
+  "VGA_StartResize",
+  "VGA_SetMode",
+  "VGA_SetModeNow",
+  "VGA_SetBlinking",
+  "VGA_SetCGA2Table",
+  "VGA_SetCGA4Table",
+  "VGA_ATTR_SetPalette",
+  "VGA_DAC_SetEntry",
+  "VGA_DAC_CombineColor",
+  "VGA_SetupHandlers",
+  "VGA_SetupDrawing",
+  "ttf_switch_on",
+  "ttf_switch_off",
+  "TANDY_FindMode",
+  "PCJr_FindMode",
+  "TandyCheckLineMask",
+  "tandy_update_palette",
+  "cga16_color_select",
+  "update_cga16_color",
+  "J3_IsCga4Dcga"
+ ],
+ "entries": [
+  {
+   "key": "0x3B4",
+   "name": "CRTC address register",
+   "aliases": [
+    "MDA CRTC index port",
+    "Hercules CRTC index port"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3096-3104"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_index_other"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "read_crtc_index_other"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3101",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "57-59",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "67-69",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "58",
+     "as": "agrees",
+     "row": "3"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Address register is at hex 03B4 or 03D4, and holds an index that points at a data register; the capture reads 0384 and 0304.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3096-3097",
+       "sha": "adabf14722b585213e79619ba6916a77c6051be204ea211973113b02428d819d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "bits 4-0",
+     "of": "doc",
+     "text": "Bits 4-0 are the index of the data register reached at address hex 03B5 or 03D5, the capture reading 0305 or 0385.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3102-3104",
+       "sha": "faa3ea337163d3f245850535792c268d56145f604087946cf19297175027011f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "state": "undetermined",
+     "text": "The three high bits, 7-5, are set to 0 and undefined on read; the capture prints the zero as e.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3098-3100",
+       "sha": "3f2c3fbbae9426cce868b7ad554d744f927d9fa465ff0760b6198a71f105e1d2"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On MCGA the emulator remembers a written bit 5 in a static and ORs it into the data register's reads.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "60-64",
+       "sha": "d871efa937d68d0bbce39b202833475c240cbb2097420941ff23faf0a238cd36"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "361-363",
+       "sha": "b43e3d305b57fc26a4dd2b6239a02ee9dd44270a0b6cd454001ed73b186e3213"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3B5",
+   "name": "CRTC data register",
+   "aliases": [
+    "MDA CRTC data port",
+    "Hercules CRTC data port"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+     "lines": "3055-3064"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "read_crtc_data_other"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "393",
+     "as": "parent",
+     "owner": "vother:register:0x3DC"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-76",
+     "as": "agrees",
+     "row": "1"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "A write to the data port at hex 03B5 or 03D5 writes the register whose index the Address register holds, the capture reading 0385.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3055-3057",
+       "sha": "5948cdadb648edae6fe200a3b6afdc52d884cc499da308e55df7a7ecdf4a9f4d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Which address pair applies depends on bit 0 of the Miscellaneous Output register; the table writes the variable digit as a question mark.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3058-3061",
+       "sha": "372dfb11ca783c11867c0597cc74910e382c3e166cd706bfd3fc07bcb0c1e40b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "When modifying a register the reserved bits must be preserved: read it first and change only the bits required.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-Video-Subsystems.raw.txt",
+       "lines": "3062-3064",
+       "sha": "dffe733fc564e3d93d2e90ed5905dbc4188edb5256ac8c7e11396f41615f78dd"
+      }
+     ]
+    },
+    {
+     "n": "w1",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The switch dispatches on the stored index; index 0x00 stores the horizontal total and resizes on change.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "72-76",
+       "sha": "af7a69c0910ba58506deafeb482d53de5042fe72deb7d0cc5b9d35dc35135237"
+      }
+     ]
+    },
+    {
+     "n": "w2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x01 stores the displayed character count, with a resize when it changes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "77-80",
+       "sha": "a20b2c3f534ba922cb1481fd5c05125914fcfb4ce8d2a1a9db6f844bbbfc870e"
+      }
+     ]
+    },
+    {
+     "n": "w3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x02 only stores the horizontal sync position.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "81-83",
+       "sha": "bb55b58bacb77ee2348d9876a1de652d941e3bcb52d9a252ff2241df6325f4d6"
+      }
+     ]
+    },
+    {
+     "n": "w4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x03 stores the horizontal sync width in its low nibble, and the vertical width as the high nibble on Tandy or a fixed 16 elsewhere.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "84-88",
+       "sha": "7d0aa3a1d719bb47add982cbe63bdf5fa4ea37529b603aadf866f189fbd46b4d"
+      }
+     ]
+    },
+    {
+     "n": "w5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x04 stores the vertical total with seven bits, or eight on Tandy, and asks for a resize.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "89-95",
+       "sha": "6798058cf03786009b9b4ff0ccd253814cb08df5fd2272d51511b3d556a9a80d"
+      }
+     ]
+    },
+    {
+     "n": "w6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x05 stores the vertical display adjust, with a resize on change.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "96-99",
+       "sha": "32e486a7b2a54d478c0a2a6efce4da5d5a8836ac35d4f241d35e531b2e95b89a"
+      }
+     ]
+    },
+    {
+     "n": "w7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x06 stores the vertical displayed rows with seven bits, or eight on Tandy, and asks for a resize.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "100-106",
+       "sha": "8fd5dd43a57ce0a9de2e5677f9e2761634171769266e7e51b4d877d908ca3c76"
+      }
+     ]
+    },
+    {
+     "n": "w8",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x07 only stores the vertical sync position.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "107-109",
+       "sha": "3c68f53a7193b52add87c5d7196e1d739f5ee0c7b2fc5277347c93e4dfb2dd8d"
+      }
+     ]
+    },
+    {
+     "n": "w9",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x09 stores five bits of the maximum scan line, with a resize on change.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "110-114",
+       "sha": "be1ea9fe8df5ed0e086857a47d6f5b23da100b2440463e6cd59dfe0643a0d1ce"
+      }
+     ]
+    },
+    {
+     "n": "w10",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x0A stores the cursor start, its scan line and whether the cursor is enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "115-119",
+       "sha": "32b573be798e5681507c798624b1dee9f22bc9fffc3beea6916f12bb8689401e"
+      }
+     ]
+    },
+    {
+     "n": "w11",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x0B stores the cursor end and its scan line.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "120-123",
+       "sha": "c69ff8826a017aa223fd79be508d0dd932ad55211a8a5463c519721c52965199"
+      }
+     ]
+    },
+    {
+     "n": "w12",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x0C writes the high byte of the display start, eight bits on MCGA, Olivetti and the 3270 PC and six elsewhere.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "124-131",
+       "sha": "c671ef6fec7064f97b48107913140ae02aac88809c7fc49a87a1a8cffbc0efa1"
+      }
+     ]
+    },
+    {
+     "n": "w13",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Indexes 0x0D and 0x0E write the low start address and the high cursor location.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "132-138",
+       "sha": "5144bcf9d51f50875a1fa94b3c42ffcfe95a61ea21467d75dbff11ed684ccf66"
+      }
+     ]
+    },
+    {
+     "n": "w14",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x0F writes the low cursor location.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "139-142",
+       "sha": "2a7116c058614b414109f474eb35481d2dc36c2133f6fae8b566e04a0d2878f5"
+      }
+     ]
+    },
+    {
+     "n": "w15",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Indexes 0x10 and 0x11 store the light pen position, six bits in the high half.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "143-151",
+       "sha": "a06f247cc4c2862d22abac64d07611069181ccd8f9bdc059d862b5bac27487f7"
+      }
+     ]
+    },
+    {
+     "n": "w16",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x14 stores the xMode of the Hercules InColor and HGC+ cards and resizes when bit 1 changes; other cards log it as an illegal index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "152-162",
+       "sha": "b43a0249384214f796ded3550be4d9922dd776ac7d282f703bc63b78de45b0c4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-241",
+       "sha": "84742cb54421a6ca45061c6f2959d21a0d20bcd84929565a264775f9f0fe4fa1"
+      }
+     ]
+    },
+    {
+     "n": "w17",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x15 stores the underline setting of those cards, and other cards log it as illegal.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "163-171",
+       "sha": "09a8063efe28b09b39db06e6ea46cdbbdf6ff66eb350ec1a35e44c69a05c360d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-241",
+       "sha": "84742cb54421a6ca45061c6f2959d21a0d20bcd84929565a264775f9f0fe4fa1"
+      }
+     ]
+    },
+    {
+     "n": "w18",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x16 stores their strikethrough setting, and other cards log it as illegal.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "172-179",
+       "sha": "74d7b23af6e081072f8963cdbc819b38d66e52b10ff5f1ef08ea6b62b97c8257"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-241",
+       "sha": "84742cb54421a6ca45061c6f2959d21a0d20bcd84929565a264775f9f0fe4fa1"
+      }
+     ]
+    },
+    {
+     "n": "w19",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x17 stores the InColor's palette exception and repaints the sixteen attribute colours.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "180-191",
+       "sha": "658121f4d1c64e467c6168a255d392fd69bc62d608b2d35f041a240e38397a1d"
+      }
+     ]
+    },
+    {
+     "n": "w20",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x18 stores the InColor's protected and visible plane masks.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "192-200",
+       "sha": "179910a7720b93d0bfcc1b3bdd723faa029afeb762d0eb25b0a9d6b33ccfd662"
+      }
+     ]
+    },
+    {
+     "n": "w21",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x19 stores the InColor's mask polarity, write mode and do-not-care bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "201-210",
+       "sha": "8a382b91c3154ff51020b67f329737307d1503ee58709fef8621e78fc2c79051"
+      }
+     ]
+    },
+    {
+     "n": "w22",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x1A stores the InColor's foreground and background colours.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "211-219",
+       "sha": "7bc0b421290a638423ee954ab7f7ef48a8133ec90743038aaadd5f01b387f134"
+      }
+     ]
+    },
+    {
+     "n": "w23",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x1B stores the InColor's latch protection byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "220-227",
+       "sha": "56dd76a80f72f20d788a60b4e6caea32cb368c70ad68bbd2359ab378c5a35f81"
+      }
+     ]
+    },
+    {
+     "n": "w24",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x1C stores a palette entry and steps the palette index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "228-237",
+       "sha": "1147434d357817f0dffe785575697b0d059d3455089198fb0edf41633aa445f4"
+      }
+     ]
+    },
+    {
+     "n": "w25",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Any other index on a card without the register is logged as illegal and changes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-241",
+       "sha": "84742cb54421a6ca45061c6f2959d21a0d20bcd84929565a264775f9f0fe4fa1"
+      }
+     ]
+    },
+    {
+     "n": "r1",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of index 0x00 to 0x03 returns the stored byte, with the sync widths packed as on Tandy.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "244-254",
+       "sha": "988f1ecd805ad8538846ddba432867ce54b194a169e89670d082a327b8650b58"
+      }
+     ]
+    },
+    {
+     "n": "r2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of index 0x04 to 0x07 returns the stored vertical total, adjust, rows or sync position.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "255-262",
+       "sha": "dfde92fd04606c32441b5e70ec2c2370ff9ead0e3d66d79191e6da90354c0400"
+      }
+     ]
+    },
+    {
+     "n": "r3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of index 0x09 to 0x0D returns the stored scan line, cursor or start address bytes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "263-272",
+       "sha": "1013375fe3d80d64f4236d55c154c8c3b816b88505f787f20a7cb71a555e11aa"
+      }
+     ]
+    },
+    {
+     "n": "r4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of index 0x0E to 0x11 returns the stored cursor location or light pen bytes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "273-280",
+       "sha": "02f11560031b7b03bbc2919ffc7253f5d6f110fee79110401ba35480307ba47d"
+      }
+     ]
+    },
+    {
+     "n": "r5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Index 0x1C resets the InColor palette index and the read then returns the default 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "281-290",
+       "sha": "bbce58c1f52dd76442becff8d1499af94235273a7912a8daf417ff7636746c4f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "291-294",
+       "sha": "3dc864c4cd244396515b513a73869359c4d1b42742669948a2c37f3e3be459ca"
+      }
+     ]
+    },
+    {
+     "n": "r6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Any other index is logged as illegal and 0xFF is returned.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "289-294",
+       "sha": "53fecad4ebc14cae510245dd79c644c50b4c12ed8419bcb0bdea7b7dcf0a64a4"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3B0",
+   "name": "CRTC address mirror",
+   "aliases": [
+    "undecoded MDA address"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1409-1416"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the Hercules and MDA builds the four even addresses from 0x3B0 up take the CRTC index handler, the four odd ones the data handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1409-1416",
+       "sha": "7efa435a1420ce39d431c5fdd4546f9d5c354b30e1d61623130b059ee09ff38b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1408",
+       "sha": "3c0f7ca897ff45a54cb149bce1ed2506d2e7cd29d14fd4c5386d5bb4c5ab8209"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "A write to 0x3B0 goes to write_crtc_index_other.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1413-1416",
+       "sha": "7dab82a5402b8a37027f012ec64d6bc9b002062a03ce3c04e996fbd118783c64"
+      }
+     ],
+     "links": [
+      "vother:register:0x3B4"
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 0x3B0 returns the stored index through read_crtc_index_other.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1415",
+       "sha": "dc0450bcbef28acaf9d47062cc5b616d1ae27e20b18d217ecc66efd64839f531"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "67-69",
+       "sha": "c1105dc8acd53d23ce85b2cc0184e9d2812649074ea1b5015356de58b2c5d508"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3B2",
+   "name": "CRTC address mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1409-1416"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the Hercules and MDA builds the four even addresses from 0x3B0 up take the CRTC index handler, the four odd ones the data handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1409-1416",
+       "sha": "7efa435a1420ce39d431c5fdd4546f9d5c354b30e1d61623130b059ee09ff38b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1408",
+       "sha": "3c0f7ca897ff45a54cb149bce1ed2506d2e7cd29d14fd4c5386d5bb4c5ab8209"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to 0x3B2 goes to write_crtc_index_other, whose index is shared with the other even addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1409-1416",
+       "sha": "7efa435a1420ce39d431c5fdd4546f9d5c354b30e1d61623130b059ee09ff38b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "58",
+       "sha": "edbe14abb084c870ed9a954806c42fff8b37e87e2e9d9200c0385700abe0e8af"
+      }
+     ],
+     "links": [
+      "vother:register:0x3B4"
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 0x3B2 goes to read_crtc_index_other and returns the stored index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1415",
+       "sha": "dc0450bcbef28acaf9d47062cc5b616d1ae27e20b18d217ecc66efd64839f531"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "67-69",
+       "sha": "c1105dc8acd53d23ce85b2cc0184e9d2812649074ea1b5015356de58b2c5d508"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3B6",
+   "name": "CRTC address mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1409-1416"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the Hercules and MDA builds the four even addresses from 0x3B0 up take the CRTC index handler, the four odd ones the data handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1409-1416",
+       "sha": "7efa435a1420ce39d431c5fdd4546f9d5c354b30e1d61623130b059ee09ff38b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1408",
+       "sha": "3c0f7ca897ff45a54cb149bce1ed2506d2e7cd29d14fd4c5386d5bb4c5ab8209"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to 0x3B6 goes to write_crtc_index_other, whose index is shared with the other even addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1409-1416",
+       "sha": "7efa435a1420ce39d431c5fdd4546f9d5c354b30e1d61623130b059ee09ff38b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "58",
+       "sha": "edbe14abb084c870ed9a954806c42fff8b37e87e2e9d9200c0385700abe0e8af"
+      }
+     ],
+     "links": [
+      "vother:register:0x3B4"
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 0x3B6 goes to read_crtc_index_other and returns the stored index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1415",
+       "sha": "dc0450bcbef28acaf9d47062cc5b616d1ae27e20b18d217ecc66efd64839f531"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "67-69",
+       "sha": "c1105dc8acd53d23ce85b2cc0184e9d2812649074ea1b5015356de58b2c5d508"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3B1",
+   "name": "CRTC data mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1409-1416"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the Hercules and MDA builds the four odd addresses from 0x3B1 up take the CRTC data handler, the four even ones the index handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1409-1416",
+       "sha": "7efa435a1420ce39d431c5fdd4546f9d5c354b30e1d61623130b059ee09ff38b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1408",
+       "sha": "3c0f7ca897ff45a54cb149bce1ed2506d2e7cd29d14fd4c5386d5bb4c5ab8209"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to 0x3B1 goes to write_crtc_data_other, which writes the register the shared index selects.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1414",
+       "sha": "b963b8ee0226b510700d11a20321b2b56ae570810dbcbf44cb43c92c8b0b646a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "72-76",
+       "sha": "af7a69c0910ba58506deafeb482d53de5042fe72deb7d0cc5b9d35dc35135237"
+      }
+     ],
+     "links": [
+      "vother:register:0x3B5"
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 0x3B1 goes to read_crtc_data_other, which returns the register the shared index selects.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1416",
+       "sha": "1ed9defd55b27823e577139991d87b9fbc1f2d8f9221bb309f068d8ac87e0cc1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "243-254",
+       "sha": "b16370ab958b2f28ed6d27e3414ebc80f13c03ecbc8c0bab6f1f48953c414446"
+      }
+     ],
+     "links": [
+      "vother:register:0x3B5"
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3B3",
+   "name": "CRTC data mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1409-1416"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the Hercules and MDA builds the four odd addresses from 0x3B1 up take the CRTC data handler, the four even ones the index handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1409-1416",
+       "sha": "7efa435a1420ce39d431c5fdd4546f9d5c354b30e1d61623130b059ee09ff38b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1408",
+       "sha": "3c0f7ca897ff45a54cb149bce1ed2506d2e7cd29d14fd4c5386d5bb4c5ab8209"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to 0x3B3 goes to write_crtc_data_other, which writes the register the shared index selects.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1414",
+       "sha": "b963b8ee0226b510700d11a20321b2b56ae570810dbcbf44cb43c92c8b0b646a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "72-76",
+       "sha": "af7a69c0910ba58506deafeb482d53de5042fe72deb7d0cc5b9d35dc35135237"
+      }
+     ],
+     "links": [
+      "vother:register:0x3B5"
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 0x3B3 goes to read_crtc_data_other, which returns the register the shared index selects.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1416",
+       "sha": "1ed9defd55b27823e577139991d87b9fbc1f2d8f9221bb309f068d8ac87e0cc1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "243-254",
+       "sha": "b16370ab958b2f28ed6d27e3414ebc80f13c03ecbc8c0bab6f1f48953c414446"
+      }
+     ],
+     "links": [
+      "vother:register:0x3B5"
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3B7",
+   "name": "CRTC data mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1409-1416"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the Hercules and MDA builds the four odd addresses from 0x3B1 up take the CRTC data handler, the four even ones the index handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1409-1416",
+       "sha": "7efa435a1420ce39d431c5fdd4546f9d5c354b30e1d61623130b059ee09ff38b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1408",
+       "sha": "3c0f7ca897ff45a54cb149bce1ed2506d2e7cd29d14fd4c5386d5bb4c5ab8209"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to 0x3B7 goes to write_crtc_data_other, which writes the register the shared index selects.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1414",
+       "sha": "b963b8ee0226b510700d11a20321b2b56ae570810dbcbf44cb43c92c8b0b646a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "72-76",
+       "sha": "af7a69c0910ba58506deafeb482d53de5042fe72deb7d0cc5b9d35dc35135237"
+      }
+     ],
+     "links": [
+      "vother:register:0x3B5"
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 0x3B7 goes to read_crtc_data_other, which returns the register the shared index selects.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1416",
+       "sha": "1ed9defd55b27823e577139991d87b9fbc1f2d8f9221bb309f068d8ac87e0cc1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "243-254",
+       "sha": "b16370ab958b2f28ed6d27e3414ebc80f13c03ecbc8c0bab6f1f48953c414446"
+      }
+     ],
+     "links": [
+      "vother:register:0x3B5"
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3B8",
+   "name": "Hercules mode control",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_hercules"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the Hercules and MDA builds a write to 0x3B8 sets the mode control byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1185-1188",
+       "sha": "b2702fe6f3285544abee3fa8bd3141d149d6ddc26242f2a4821515c827d7a9f7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1408",
+       "sha": "3c0f7ca897ff45a54cb149bce1ed2506d2e7cd29d14fd4c5386d5bb4c5ab8209"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1428",
+       "sha": "380e78f4c7127b5168e2232e5f25b1c225c54e7f007cb150860f2f3f48b7c1c0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1224-1225",
+       "sha": "1c8c91df48c824251aa115969bf4a8a843e9a68c1cd9d76b6690a5becf8edb5d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "bit 1",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Bit 1 selects graphics: it can always be cleared, and set only while bit 0 of the enable register is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1190-1200",
+       "sha": "c54dca7ae237378305499bb8c83fb5ecb77d80922ad27efc308e352feaaa59c5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1201-1208",
+       "sha": "278f42482d3df2cb25630eadd144844e883237b36decab49973d1ef22cd5f024"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bit 7",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Bit 7 shows the upper 32K of video memory: it can always be cleared, and set only while bit 1 of the enable register is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1209-1218",
+       "sha": "da2f5c4686a115e8444056ac914acd84be9b8d7a98168daeb561d513b5328bd0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1219-1222",
+       "sha": "61cd824f889aaa486131f807954c5242397ab835a231d5e9180621920b2e989e"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores bit 5 as the blink state and keeps the byte's other bits, the protected pair masked to 0x82.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1223-1226",
+       "sha": "f9ec159ea52c090e7fe95366fbbec02f1330c891d5455de2b902f3fe64647d28"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The same handler's other case, 0x3BF, stores the enable byte and rebuilds the memory handlers when it changes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1228-1236",
+       "sha": "8a4904b1a42a9ee7ab1cde97693478753a04b78d5855825c5559381106732971"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3BA",
+   "name": "Hercules status",
+   "aliases": [
+    "MDA status register"
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "read_herc_status"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the Hercules and MDA builds a read of 0x3BA returns the status byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1244-1250",
+       "sha": "f8752053a46047bb653f5a1c6e7b208e6e8fb7599052934686f94f325eec6df9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1427",
+       "sha": "38ab34e3a315c9621ec8a1c156ec6da08f0b0251894731872ae693f905f0273e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1296",
+       "sha": "0a89eb8c0a4302ffb4a3bd00d05417530a7c6c893af3ccfdba6c4707213d88ba"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte starts at 0x72; bit 0 is set during horizontal retrace, and bit 7 outside vertical retrace on Hercules or always on MDA, a choice the code marks unsure.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1255-1266",
+       "sha": "d04d07468acbc89d5acb7751a731d04dc121d5803e3f0853acff39cf56f8b65d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1267-1276",
+       "sha": "155f3064f32894bb2c5c08213edac0dc909ce9a323d3b57f35f912e261a82f05"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On Hercules bit 3 is also set when neither sync is active, and the card type replaces bits 4-6: 001 for the Graphics Card Plus, 101 for InColor.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1277-1286",
+       "sha": "4ac93a45132351378a6d9dd516e486968231148faae686a18a9be095199a82b3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1287-1296",
+       "sha": "dfab364070040d12c7cbc00abbfd4fe3747239f57331bbb850705717c052a56b"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3BF",
+   "name": "Hercules enable bits",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1228-1235"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the Hercules build a write to 0x3BF sets the enable byte that gates the protected mode control bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1228-1230",
+       "sha": "c821a5719b464027522a9fd724e8a72508c05972735e04d3a1cb82a5a82c3e02"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1430-1431",
+       "sha": "5ffa6db800ba680fec12b40a0346d0d24ce9d180c124442d9a357963c6e624ee"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1201",
+       "sha": "9bdcf1002ded039e98d4e4548423a8b317d7a3f75e627e960529c8638f3c69d6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1215",
+       "sha": "7b5e3fac649895e83f1286520f87bc072132764b1a29b36aaff386564cba9ffb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte is stored when it changes, and the memory handlers are rebuilt because bit 1 enables the upper 32K.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1229-1235",
+       "sha": "ed2286a82ff9f5c2b1a9033db455bb69978308169324e5bb2c40dc20a47d1fbc"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3DB",
+   "name": "light pen latch clear",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "379-384"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On CGA, Olivetti, Tandy, the PCjr, Hercules and MDA a write to 0x3DB clears the light pen trigger.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "379-384",
+       "sha": "da31036b43a50b0d3a1728a21cfecfdaf3555c8f054e2d4598f9e33e2031123a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1346-1348",
+       "sha": "27c8b648003ae9de4c1c3d7875cc8af370b6acb5766f50b6058c11c25865a52a"
+      },
+      {
+       "ref": "dosbox-x:include/dosbox.h",
+       "lines": "237",
+       "sha": "d6e891cec0c5a6d62860e4b4667311a670c31672c994a9af94e0289d48398944"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte written is discarded; only the address acts.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "380-383",
+       "sha": "bdb1e06631dde7af3d91c8d0d72c87adab614c8067c89b5ec4f669ac4af69f17"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3DC",
+   "name": "light pen latch preset",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_lightpen"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the same machines a write to 0x3DC presets the light pen latch.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "379-385",
+       "sha": "8355d3fc652c9740b13d1c81080d879ad96f6298bc4de8e14ab1341740ef2004"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1346-1348",
+       "sha": "27c8b648003ae9de4c1c3d7875cc8af370b6acb5766f50b6058c11c25865a52a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "386-396",
+       "sha": "8014a134c8d4b1fdca129b1f188ced6f128dcab6968eb56f587e465fda69fcb9"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to 0x3DB clears the trigger and discards the byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "380-384",
+       "sha": "7e54d9a0f1e39fd185903e4b8ac14efec4f85f13feec83592bd04d4c641e28de"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to 0x3DC sets an unset trigger and computes a position from the frame and line timings, kept in scan and pel counts.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "386-396",
+       "sha": "8014a134c8d4b1fdca129b1f188ced6f128dcab6968eb56f587e465fda69fcb9"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A trigger already set is left as it is.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "386-396",
+       "sha": "8014a134c8d4b1fdca129b1f188ced6f128dcab6968eb56f587e465fda69fcb9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "397-399",
+       "sha": "aa29167a6a1ea7d46102bfe1314b999d522e177289ef7e44f81dac196126b072"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3D0",
+   "name": "CRTC index mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1436-1444"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1454-1462"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The four even addresses from 0x3D0 take the index handler and the odd ones the data handler, on CGA, PCjr, Tandy, Olivetti, the 3270 PC and MCGA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1436-1438",
+       "sha": "20f47f39e6cbab4a3dbcd8952126a26e7015e54c5aa526f59d1b1d0ba58eb105"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1454-1456",
+       "sha": "35b90e7d053300b21e595af9d61a94b17ef3cee5ff207b2e8ea97e10925f2cde"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write goes to write_crtc_index_other at the even addresses and write_crtc_data_other at the odd ones, and to write_crtc_data_mcga at MCGA's odd ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1439-1440",
+       "sha": "da66d400a53aa7ff3ddd7c5b68d3b30b623216974dc9390b91df7f864e0792be"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1457-1458",
+       "sha": "3b5ec3a4a17809eb2d1739d169cff8ab6860da62f41c9cc319e0a9c7b1c5b5c5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read goes to read_crtc_index_other or read_crtc_data_other, and to read_crtc_data_mcga at MCGA's odd addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1441-1444",
+       "sha": "507c60230eed4fcd699f74f1b6052917aac772308cf3b02056d04e6bdc1809e3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1459-1462",
+       "sha": "298eedb73b04d11097009d003ff5096222f2c3e02044cfa41b841c563fba1544"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3D1",
+   "name": "CRTC data mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1436-1444"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1454-1462"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The four even addresses from 0x3D0 take the index handler and the odd ones the data handler, on CGA, PCjr, Tandy, Olivetti, the 3270 PC and MCGA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1436-1438",
+       "sha": "20f47f39e6cbab4a3dbcd8952126a26e7015e54c5aa526f59d1b1d0ba58eb105"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1454-1456",
+       "sha": "35b90e7d053300b21e595af9d61a94b17ef3cee5ff207b2e8ea97e10925f2cde"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write goes to write_crtc_index_other at the even addresses and write_crtc_data_other at the odd ones, and to write_crtc_data_mcga at MCGA's odd ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1439-1440",
+       "sha": "da66d400a53aa7ff3ddd7c5b68d3b30b623216974dc9390b91df7f864e0792be"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1457-1458",
+       "sha": "3b5ec3a4a17809eb2d1739d169cff8ab6860da62f41c9cc319e0a9c7b1c5b5c5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read goes to read_crtc_index_other or read_crtc_data_other, and to read_crtc_data_mcga at MCGA's odd addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1441-1444",
+       "sha": "507c60230eed4fcd699f74f1b6052917aac772308cf3b02056d04e6bdc1809e3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1459-1462",
+       "sha": "298eedb73b04d11097009d003ff5096222f2c3e02044cfa41b841c563fba1544"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3D2",
+   "name": "CRTC index mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1436-1444"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1454-1462"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The four even addresses from 0x3D0 take the index handler and the odd ones the data handler, on CGA, PCjr, Tandy, Olivetti, the 3270 PC and MCGA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1436-1438",
+       "sha": "20f47f39e6cbab4a3dbcd8952126a26e7015e54c5aa526f59d1b1d0ba58eb105"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1454-1456",
+       "sha": "35b90e7d053300b21e595af9d61a94b17ef3cee5ff207b2e8ea97e10925f2cde"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write goes to write_crtc_index_other at the even addresses and write_crtc_data_other at the odd ones, and to write_crtc_data_mcga at MCGA's odd ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1439-1440",
+       "sha": "da66d400a53aa7ff3ddd7c5b68d3b30b623216974dc9390b91df7f864e0792be"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1457-1458",
+       "sha": "3b5ec3a4a17809eb2d1739d169cff8ab6860da62f41c9cc319e0a9c7b1c5b5c5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read goes to read_crtc_index_other or read_crtc_data_other, and to read_crtc_data_mcga at MCGA's odd addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1441-1444",
+       "sha": "507c60230eed4fcd699f74f1b6052917aac772308cf3b02056d04e6bdc1809e3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1459-1462",
+       "sha": "298eedb73b04d11097009d003ff5096222f2c3e02044cfa41b841c563fba1544"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3D3",
+   "name": "CRTC data mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1436-1444"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1454-1462"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The four even addresses from 0x3D0 take the index handler and the odd ones the data handler, on CGA, PCjr, Tandy, Olivetti, the 3270 PC and MCGA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1436-1438",
+       "sha": "20f47f39e6cbab4a3dbcd8952126a26e7015e54c5aa526f59d1b1d0ba58eb105"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1454-1456",
+       "sha": "35b90e7d053300b21e595af9d61a94b17ef3cee5ff207b2e8ea97e10925f2cde"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write goes to write_crtc_index_other at the even addresses and write_crtc_data_other at the odd ones, and to write_crtc_data_mcga at MCGA's odd ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1439-1440",
+       "sha": "da66d400a53aa7ff3ddd7c5b68d3b30b623216974dc9390b91df7f864e0792be"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1457-1458",
+       "sha": "3b5ec3a4a17809eb2d1739d169cff8ab6860da62f41c9cc319e0a9c7b1c5b5c5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read goes to read_crtc_index_other or read_crtc_data_other, and to read_crtc_data_mcga at MCGA's odd addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1441-1444",
+       "sha": "507c60230eed4fcd699f74f1b6052917aac772308cf3b02056d04e6bdc1809e3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1459-1462",
+       "sha": "298eedb73b04d11097009d003ff5096222f2c3e02044cfa41b841c563fba1544"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3D4",
+   "name": "CRTC index mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1436-1444"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1454-1462"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1445-1450"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The four even addresses from 0x3D0 take the index handler and the odd ones the data handler, on CGA, PCjr, Tandy, Olivetti, the 3270 PC and MCGA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1436-1438",
+       "sha": "20f47f39e6cbab4a3dbcd8952126a26e7015e54c5aa526f59d1b1d0ba58eb105"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1454-1456",
+       "sha": "35b90e7d053300b21e595af9d61a94b17ef3cee5ff207b2e8ea97e10925f2cde"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write goes to write_crtc_index_other at the even addresses and write_crtc_data_other at the odd ones, and to write_crtc_data_mcga at MCGA's odd ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1439-1440",
+       "sha": "da66d400a53aa7ff3ddd7c5b68d3b30b623216974dc9390b91df7f864e0792be"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1457-1458",
+       "sha": "3b5ec3a4a17809eb2d1739d169cff8ab6860da62f41c9cc319e0a9c7b1c5b5c5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read goes to read_crtc_index_other or read_crtc_data_other, and to read_crtc_data_mcga at MCGA's odd addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1441-1444",
+       "sha": "507c60230eed4fcd699f74f1b6052917aac772308cf3b02056d04e6bdc1809e3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1459-1462",
+       "sha": "298eedb73b04d11097009d003ff5096222f2c3e02044cfa41b841c563fba1544"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On Amstrad only 0x3D4 and 0x3D5 are registered, the index and data of its single CRTC.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1445-1450",
+       "sha": "c51fa3f6e96e9a0c7d1d4b22628142972c6951f6a1add29e36b589846ccd8ce7"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3D5",
+   "name": "CRTC data mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1436-1444"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1454-1462"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1445-1450"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The four even addresses from 0x3D0 take the index handler and the odd ones the data handler, on CGA, PCjr, Tandy, Olivetti, the 3270 PC and MCGA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1436-1438",
+       "sha": "20f47f39e6cbab4a3dbcd8952126a26e7015e54c5aa526f59d1b1d0ba58eb105"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1454-1456",
+       "sha": "35b90e7d053300b21e595af9d61a94b17ef3cee5ff207b2e8ea97e10925f2cde"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write goes to write_crtc_index_other at the even addresses and write_crtc_data_other at the odd ones, and to write_crtc_data_mcga at MCGA's odd ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1439-1440",
+       "sha": "da66d400a53aa7ff3ddd7c5b68d3b30b623216974dc9390b91df7f864e0792be"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1457-1458",
+       "sha": "3b5ec3a4a17809eb2d1739d169cff8ab6860da62f41c9cc319e0a9c7b1c5b5c5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read goes to read_crtc_index_other or read_crtc_data_other, and to read_crtc_data_mcga at MCGA's odd addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1441-1444",
+       "sha": "507c60230eed4fcd699f74f1b6052917aac772308cf3b02056d04e6bdc1809e3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1459-1462",
+       "sha": "298eedb73b04d11097009d003ff5096222f2c3e02044cfa41b841c563fba1544"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On Amstrad only 0x3D4 and 0x3D5 are registered, the index and data of its single CRTC.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1445-1450",
+       "sha": "c51fa3f6e96e9a0c7d1d4b22628142972c6951f6a1add29e36b589846ccd8ce7"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3D6",
+   "name": "CRTC index mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1436-1444"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1454-1462"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The four even addresses from 0x3D0 take the index handler and the odd ones the data handler, on CGA, PCjr, Tandy, Olivetti, the 3270 PC and MCGA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1436-1438",
+       "sha": "20f47f39e6cbab4a3dbcd8952126a26e7015e54c5aa526f59d1b1d0ba58eb105"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1454-1456",
+       "sha": "35b90e7d053300b21e595af9d61a94b17ef3cee5ff207b2e8ea97e10925f2cde"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write goes to write_crtc_index_other at the even addresses and write_crtc_data_other at the odd ones, and to write_crtc_data_mcga at MCGA's odd ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1439-1440",
+       "sha": "da66d400a53aa7ff3ddd7c5b68d3b30b623216974dc9390b91df7f864e0792be"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1457-1458",
+       "sha": "3b5ec3a4a17809eb2d1739d169cff8ab6860da62f41c9cc319e0a9c7b1c5b5c5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read goes to read_crtc_index_other or read_crtc_data_other, and to read_crtc_data_mcga at MCGA's odd addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1441-1444",
+       "sha": "507c60230eed4fcd699f74f1b6052917aac772308cf3b02056d04e6bdc1809e3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1459-1462",
+       "sha": "298eedb73b04d11097009d003ff5096222f2c3e02044cfa41b841c563fba1544"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3D7",
+   "name": "CRTC data mirror",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1436-1444"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1454-1462"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The four even addresses from 0x3D0 take the index handler and the odd ones the data handler, on CGA, PCjr, Tandy, Olivetti, the 3270 PC and MCGA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1436-1438",
+       "sha": "20f47f39e6cbab4a3dbcd8952126a26e7015e54c5aa526f59d1b1d0ba58eb105"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1454-1456",
+       "sha": "35b90e7d053300b21e595af9d61a94b17ef3cee5ff207b2e8ea97e10925f2cde"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write goes to write_crtc_index_other at the even addresses and write_crtc_data_other at the odd ones, and to write_crtc_data_mcga at MCGA's odd ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1439-1440",
+       "sha": "da66d400a53aa7ff3ddd7c5b68d3b30b623216974dc9390b91df7f864e0792be"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1457-1458",
+       "sha": "3b5ec3a4a17809eb2d1739d169cff8ab6860da62f41c9cc319e0a9c7b1c5b5c5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read goes to read_crtc_index_other or read_crtc_data_other, and to read_crtc_data_mcga at MCGA's odd addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1441-1444",
+       "sha": "507c60230eed4fcd699f74f1b6052917aac772308cf3b02056d04e6bdc1809e3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1459-1462",
+       "sha": "298eedb73b04d11097009d003ff5096222f2c3e02044cfa41b841c563fba1544"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3D8",
+   "name": "CGA mode control",
+   "aliases": [
+    "mode select register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "2215-2233"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_cga"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "read_cga"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+     "function": "VGA_SetBlinking"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Mode Select Register is at 03D8.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2215",
+       "sha": "731c132c47c0007a3eaaa73224f06c3a5c1b461fec4c7dd495c75f6b109d7714"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 0 selects 40 or 80 columns, bit 1 graphics over alphanumeric and bit 2 black-and-white over colour.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2216-2223",
+       "sha": "5df7830af4513f280c1a20db0be2091451030ebf6c6e4b574a33c24b7a4efb48"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2230",
+       "sha": "8e0126a1d4989de67ab506cc4445c20abfc0d21f978b1c47e7f17223a29aea71"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 3 enables the video signal and bit 4 the 640 by 200 black-and-white graphics mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2224-2227",
+       "sha": "103a926e6059f15ffef6063cb53d70162723dbe103fd6a929565f25003c1748e"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2231-2232",
+       "sha": "11d69ecf08e2ad00bf5c6389f4f63b09b411a57f6eff1b5a36c048461ccfaf6f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 5 enables the blinking attribute.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2228-2229",
+       "sha": "ff9ccc8cc2aacdfc5a06b7bbef0dbb8554b1ccec1b684b316d16a494e7460409"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2233",
+       "sha": "cc863cf12fef3ce9994be6fb4a1ad33c89764e5d4f051f5de3ac9866b8bac054"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The whole byte is stored, its bit 3 clearing the attribute controller's disable flag, and a change of bit 0 asks for a resize.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "709-720",
+       "sha": "d3798fbb3f8cc5d1f6142315829f6439daf78df93818e38d0b885e73b026755c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "721",
+       "sha": "ff5214cd2e57eaad40c0e435a6a5d7fc3ce17fea5e9cc6715b590cd9ee70b0a6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "750-755",
+       "sha": "ef14d2d101bc9f408b49fe3772f4ff65dbea90a9584e94bdb284f8e6fc5c4fc1"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The emulator selects text or graphics on bit 1, but the mode also depends on bit 2, the composite setting and the machine; bit 0 only resizes the view.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "718-726",
+       "sha": "3a861cb0cb1808789b09504f7562805a2a3d4e8be927438a26d2b3ac85a70605"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "727-738",
+       "sha": "3e5e0164f6336a8ca12b7b9059ae7e0efeecc0946873271d911c7bf5922854be"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "739-742",
+       "sha": "46ebbee41ae19a9e91568ece76cc8819af5f59427c66c2d09f928757c39d4616"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "745-746",
+       "sha": "334dfc6423c385b904b6728d6cfb05a2a4f1df6304661ac7caf76cd11fa0a3da"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "752-753",
+       "sha": "bf76f689f9668e3cd301db7d341ede1d57d1f847ea7808a65ec1de49e1150e3f"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "In the 256-colour MCGA modes and in the 640 by 480 two-colour mode the byte is stored and no CGA mode is chosen.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "718-724",
+       "sha": "5f3cf8d52c81b3c39db20f66fe091a9f894545e21018c7681830f4c8bdf96b95"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The same handler serves 0x3D9 and the Amstrad planes at 0x3DD to 0x3DF, where 0x3DE holds the Olivetti OGC control byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "743-749",
+       "sha": "97d6a801fe029a0d6747366cce9d3f0b8d33fb5c928d3b85a6e1565db2037c78"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "756-767",
+       "sha": "2e5ea6cc002fe7634959685f588c9abc3bcf2f836c25a4481b6a948f5e885a01"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "768",
+       "sha": "41e2d35905eeda591b2ea0848740df98c8b92726833c3cd0b275323fd2e2c317"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "769-780",
+       "sha": "db019cbbe959ea55585310b038e23820d738b1387b382fd66f1914a82547484b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "781",
+       "sha": "d10b36aa74a59bcf4a88185837f658afaf3646eff2bb16c3928d0e9335e945d2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1368-1376",
+       "sha": "435a9631f228ad89cc6031b5a5a846a892418983f2c9e38833a3e3ef009327e2"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On MCGA and the 3270 PC a read of 0x3D8 returns the stored mode control byte; on every other machine it returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "694-704",
+       "sha": "f822ca0187742ce20f5d1035eb43e69553b7872fb76bd3650ef278232b720146"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The blinking helper stores the state, sets bit 5 of the Tandy mode control and rebuilds the background attribute table.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+       "lines": "4349-4356",
+       "sha": "57baa11c701d1095c8adbd24b59a5ea619324843b1afe7b0986774fe41e8977f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+       "lines": "4357-4362",
+       "sha": "7fd407f7ce2801cf935f0a6109d155f952b61095431268b68729ebd4a9e95582"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "647",
+     "as": "parent",
+     "owner": "vother:register:0x3D9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "963",
+     "as": "unseen",
+     "reason": "the Tandy register handler belongs to another dictionary"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1027",
+     "as": "unseen",
+     "reason": "the Tandy write handler belongs to another dictionary"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1037",
+     "as": "unseen",
+     "reason": "the Tandy write handler belongs to another dictionary"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "721-732",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "748",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+     "lines": "4353-4355",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x3D9",
+   "name": "CGA color select",
+   "aliases": [
+    "colour select register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "2234-2241"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_cga_color_select"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1360-1366"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Color Select Register is at 03D9.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2234",
+       "sha": "a93b0c5da29aa544f5dc263b89d745b68a8a099f50634eeaf697b1f0474a5fa3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 0-3 are the background colour's blue, green and red bits and its intensity.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2235-2238",
+       "sha": "1b2e1cde112d457cec79f069e052ffd5ebca3ad0ba98a1b12232ba68f79b1b80"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 4 is the foreground intensity and bit 5 the colour select.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2239-2240",
+       "sha": "01476c07762e05e9d651280ddc7ee861a94fddea87783394b58081c8b88384f9"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "In the 256-colour MCGA mode the byte is stored and the palettes are left as they are.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "647-651",
+       "sha": "629d570d28e692f68181cf6a127ff0c6d789a66f711e76621ffee3258837090b"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The two-colour and DCGA modes set a two-colour table and clear the overscan; text stores the border colour and clears it too.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "666-677",
+       "sha": "206c58063d8307af050b485f8411b66bfde2cbbac96497ca5f5bdc31358ff4c5"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The Amstrad mode and the default change nothing after the store.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "678-683",
+       "sha": "0005ee186aff20eeff31b9d7652a74b8520a7bfae7cc9c19ee62224c921784c1"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "A write to 0x3D9 goes to write_cga, and on MCGA and the 3270 PC a read of it returns the stored colour byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1360-1366",
+       "sha": "cf5831512bb1c11f3bd45f5a715445754e3a1222d9aed9dc94b186277e0f9481"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "2241",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "653-664",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "654-661",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "646-652",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x3DD",
+   "name": "Amstrad write plane",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "762-764"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On Amstrad a write to 0x3DD stores the four-bit write plane mask.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "762-764",
+       "sha": "90403e5ef17c23af129871512e36839c3fe3488735211c3b2b4f0eaaafc36447"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1368-1369",
+       "sha": "c416d3522d5f98f40f55da4738fc249e1167d90b195f594f6f970d45e55725de"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Only the low four bits are kept.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "762-764",
+       "sha": "90403e5ef17c23af129871512e36839c3fe3488735211c3b2b4f0eaaafc36447"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3DE",
+   "name": "Amstrad read plane",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "765-776"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On Amstrad a write to 0x3DE stores the two-bit read plane, and on Olivetti the same port is the OGC control register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "765-776",
+       "sha": "437580312b03a98b82548e4c27b02d3bf3eff12bba3a028b5d5f08b90a940d11"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1368-1372",
+       "sha": "aab0e0499fd8814c1072e984781e60dec0234fbdab06ec423761e468d5e8a936"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1374-1376",
+       "sha": "d4d7388b9f8f1baa65605875519f4663f02a43d5eb2525586a2b82b2763e810a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On Amstrad only the low two bits are kept.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "773-776",
+       "sha": "a68984c9441ca7bf2feac6313c9e3266e566f59e925767941b0ea25cc6806e8c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1368-1372",
+       "sha": "aab0e0499fd8814c1072e984781e60dec0234fbdab06ec423761e468d5e8a936"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On Olivetti the byte is stored as the OGC control, and a change of its bit 0 re-evaluates the graphics mode through 0x3D8.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "766-772",
+       "sha": "143a3cd786995bddf9808832a8021686458e106e50082409ab8bf60af08d8937"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1374-1376",
+       "sha": "d4d7388b9f8f1baa65605875519f4663f02a43d5eb2525586a2b82b2763e810a"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3DF",
+   "name": "Amstrad border color",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "777-779"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On Amstrad a write to 0x3DF stores the four-bit border colour.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "777-779",
+       "sha": "99c67fec0a05dbbcb2b29964205d49287e326110e8109d18cc5988f045a8e7ff"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1371",
+       "sha": "ede794533c226390f8b47509563df1fc6c948952250969465db5cd2b28ec7ff3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Only the low four bits are kept.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "777-779",
+       "sha": "99c67fec0a05dbbcb2b29964205d49287e326110e8109d18cc5988f045a8e7ff"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x188",
+   "name": "3270 PC board status",
+   "aliases": [
+    "APA board status"
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's vga_mda.c and vga_hercules.c name the same ports; no header there cites a datasheet."
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Video Subsystems guide documents the CRTC only at 03B4/03B5 and 03D4/03D5."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds the IBM PC technical references and no Hercules, Amstrad or Olivetti adapter manual that decodes these addresses."
+    },
+    {
+     "where": "archive-org",
+     "gave": "archive.org holds the same IBM references, which name no mirror at 03B0-03B7 or 03D0-03D7."
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index lists a maker document for the Hercules or Amstrad control registers."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "read_3270_status"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the 3270 PC a read of 0x188 returns the board status byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "685-692",
+       "sha": "1fc248c6c93aafcbfcbdc40de927951971335ef816fd6509bbb4b67685b1609c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1378-1380",
+       "sha": "1fd291d7ff82e70ae4105e65991dfb6316bc614e1b568e76d82b8405909f6491"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The answer is a constant 0x07: a colour monitor present with the APA board, and no Programmed Symbols board.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "685-692",
+       "sha": "1fc248c6c93aafcbfcbdc40de927951971335ef816fd6509bbb4b67685b1609c"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x3DA",
+   "name": "Tandy register index",
+   "aliases": [
+    "video array address"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "2242"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1040-1044"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1398"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The 03DA port is the Write Video Array Address register, and a read of it returns the video array status.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2242",
+       "sha": "ea0bc49095cf3bd26a3311f0de2690f026505e65d898ee53fc98e2688f2cd93d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write to 03DA gives the index of a video array register.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2242",
+       "sha": "ea0bc49095cf3bd26a3311f0de2690f026505e65d898ee53fc98e2688f2cd93d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The port is registered as write_tandy when the machine is Tandy.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1382",
+       "sha": "4d1445575d6182a7bc2ec314f137cab84fee47157247feda6e9dbe59bc7dab5d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "1398",
+       "sha": "0798bdc5f1c64f3cb592ff7e78239a65431bbe79574860e8d35fb66571562a24"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "1040-1044",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x00",
+   "name": "horizontal total (R0)",
+   "aliases": [
+    "R0",
+    "horizontal total register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "561-565"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x00"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "245-246"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "R0 determines the horizontal sync frequency by defining the HS period in character times.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "561-563",
+       "sha": "aa456634b71c3425842921f45fc505fce07a51d2ef2fa2f931ca818104364e97"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The 8-bit write-only register holds the displayed characters plus the non-displayed character times minus one.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "561-565",
+       "sha": "a506ab572f8568f6e739813f3dda9120a922d2e042343da972c033ca2d94a076"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read is not defined: the document makes the register write-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "561",
+       "sha": "aee00f935c7c7a51b2ab79477ba74e3466c693e32fd00c01919ef2e01c69fa23"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the byte last written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "245-246",
+       "sha": "e02fa5d14b6230904cc325f3da6c0f9be5292022a8596b17067d201400e07f65"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write that changes the stored byte starts a resize of the drawing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "74",
+       "sha": "6e74d2d61feac0fe375854ddb270a5f216a811fe4674a886b5cf5014601e6f13"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-73",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "75",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x01",
+   "name": "horizontal displayed R1",
+   "aliases": [
+    "R1",
+    "horizontal displayed register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "637-640"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x01"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "247-248"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "R1 determines the number of displayed characters per line; R0 must be greater than R1.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "637-640",
+       "sha": "693d2092c8d6596bccfd3b55ade84b3a5899d22b75db2109e741683be2a54c59"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The 8-bit write-only register holds the number of displayed characters per line.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "637-639",
+       "sha": "2c83eaa8d2e57aec399a74e7d8bdb679dae7b106c575fcac96c028ab6fa63f52"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read is not defined: the document makes the register write-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "637",
+       "sha": "0b296a15c474a56b930294b7e83e473424fcd0939afafdf750a67e637001760a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the byte last written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "247-248",
+       "sha": "6788b000f7a857cc190e0ac08d512dc7d20ec76f819ed18566e948c79b3b41f5"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write that changes the stored byte starts a resize of the drawing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "78",
+       "sha": "5a978024a2fc1fed15bbff177c75fc07fc094f4b8ce0bf594a8a6ef002cd910b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-77",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "79",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x02",
+   "name": "horizontal sync position",
+   "aliases": [
+    "R2",
+    "H sync position register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "641-650"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x02"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "249-250"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "R2 controls the HS position, setting the front and the back porch; increasing it shifts the display left.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "641-647",
+       "sha": "cc8fa1ed94a5c9cd45f8c533ef833d3d4e87dcead6560a4b1c990bdc0541405d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The 8-bit write-only register holds the horizontal sync position.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "641-642",
+       "sha": "3fcfe35e8fe97850faf628dff61072ddc12754995bd8b18d44f685980f03693a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The sum of R2 and R3 must be less than R0, and R2 greater than R1.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "648-650",
+       "sha": "3c594598baec175c5b7c89ef43562cf6a5a1941fd301929dcf6d152ae8be2bb0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "A read is not defined: the document makes the register write-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "641",
+       "sha": "69708ac2903b1d052c3637a38fc9168cfe447870435be733a491f0cb43d01e87"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the byte last written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "249-250",
+       "sha": "fe001e516799b463fc019ae0da55888557c0582a71c37a670b2c494d9601b690"
+      }
+     ],
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-81",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "82",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x03",
+   "name": "sync width (R3)",
+   "aliases": [
+    "R3",
+    "sync width register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "651-657"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x03"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "251-254"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+     "lines": "7668"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "R3 determines the width of the HS pulse; the vertical sync pulse width is fixed at 16 scan-line times.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "651-653",
+       "sha": "b3ee86bf32df6bed3d800c1a49b6a93900cf8c0302651579a3e910eab52f547f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The register holds the HS pulse width in character clocks, from 1 to 15; writing zero provides no HS.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "654-657",
+       "sha": "ac565dc1929749afb8fa96b042a16275e7dab042497164f34b76f08b0897b635"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The document gives the register no second value: the vertical sync pulse width is fixed at 16 scan-line times.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "651-653",
+       "sha": "b3ee86bf32df6bed3d800c1a49b6a93900cf8c0302651579a3e910eab52f547f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "A read is not defined: the document makes the register write-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "651",
+       "sha": "1de6dac454c497e0bb0efed2e5b0c48de5517ac870133172c9d4d7c0aab4ee16"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bits 4-7",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "On machines other than Tandy the width is set to 16, but a Tandy stores bits 4-7 as a vertical sync width and reads them back.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "85-86",
+       "sha": "98b11d9a181d5581c31b63df857862f6b06f3b2c1767afff71bdaa50095bfea0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "251-254",
+       "sha": "e298c74025dd7babd66adb5fa72e5a7cf19c74af4fe5e23717b7ff800fb47f97"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A Tandy read returns both halves; on other machines only the low half.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "251-254",
+       "sha": "e298c74025dd7babd66adb5fa72e5a7cf19c74af4fe5e23717b7ff800fb47f97"
+      }
+     ],
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-84",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "87",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_draw.cpp",
+     "lines": "7668",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x04..0x05",
+   "name": "vertical total/adjust",
+   "aliases": [
+    "R4",
+    "R5",
+    "vertical total register",
+    "vertical total adjust register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "672-680"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x04"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x05"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "255-256"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "257-258"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "R4 and R5 set the VS frequency: R4 the character row times minus one, R5 the fraction as extra scan lines.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "672-680",
+       "sha": "991985ea372ceaccd876b326d4437b569a1f3923a0ef7f4f0c380002dd147057"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "R4 is a 7-bit write-only register holding the integer number of character row times minus one.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "676-678",
+       "sha": "ee1d016ca3599605477562250db6bbbab51f07a813430f6a09f92756cade3b85"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "R5 is a 5-bit write-only register holding the fraction as the number of scan lines required.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "678-680",
+       "sha": "3a824376ebfe0483de830d4d751911cbe57e523dac5abf2d800e25bff9f3b6b4"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of R4 or R5 is not defined: the document makes both write-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "676-679",
+       "sha": "9f529f3bea9974f432ed967a255ee251a16916796fe2ec88d18fa3f250ac39e0"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "On machines other than Tandy the value is masked to 7 bits, but a Tandy stores all 8.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "91-94",
+       "sha": "544c2976e61e72cf6f063a7f66939799eb8078a4ca485020e948558a9fed04ed"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write whose byte differs from the stored one starts a resize of the drawing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "90",
+       "sha": "d66cf747eed559b9b23ea6130b82308558faa5a2b34c6c05bbce3be9f13e47ae"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The emulator stores all 8 bits of R5, one more than the document's five.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "98",
+       "sha": "f21bf25b5132fdab2dfe7b82af41df5b0bd5814cc4b9caf035b1d178dcdadcd4"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "8",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write whose byte differs from the stored one starts a resize of the drawing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "97",
+       "sha": "117fd1a3d1a5aeaedf83edecc0fe281d5f123b55b607e239e949ca03699415dd"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the stored bytes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "255-258",
+       "sha": "4ff45fe885e342c4870221b3d33d2804980be651b6a45611a565694bf5d042c8"
+      }
+     ],
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-89",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-96",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x06",
+   "name": "vertical displayed (R6)",
+   "aliases": [
+    "R6",
+    "vertical displayed register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "681-685"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x06"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "259-260"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "R6 specifies the number of displayed character rows, in character row times; it is smaller than R4.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "681-685",
+       "sha": "fe338b65a2e9a54002586f8b469c20822ff20a158d2847d3664715dc62a80914"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "R6 is a 7-bit write-only register holding the number of displayed character rows.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "681-683",
+       "sha": "09fb50541eee9eb3f6c7a85d7bbe0e43fda945d62e7ca3f61d2e02fefe38fd12"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read is not defined: the document makes the register write-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "681",
+       "sha": "f0d426205a4e201aba55c913d489a25d13e7c9af46ffe0aa4819385241564b02"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "On machines other than Tandy the value is masked to 7 bits, but a Tandy stores all 8.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "102-105",
+       "sha": "8c284dcdf3ff67f53d7fe2deec88d2709e43824da5b9e332a526f8eecce26d0a"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write whose byte differs from the stored one starts a resize of the drawing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "101",
+       "sha": "a45948a3c5b2ff006085bbd56cbff2b5478bfeafccd5673253611cae86192880"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the stored byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "259-260",
+       "sha": "5bc9bb38d5ce63664d8436b80c8f38dde8ddbc974f8c526bd2887ae7c14486cb"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-100",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x07",
+   "name": "vertical sync position",
+   "aliases": [
+    "R7",
+    "vertical sync position register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "686-694"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x07"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "261-262"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "R7 controls the position of vertical sync in character row times; increasing it shifts the display up.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "686-691",
+       "sha": "071ff0d9cd7b3021a197a2f361d6d1b7cc1a3e5a6f2efea09ad25e02dad87ee0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The 7-bit write-only register holds the vertical sync position.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "686-687",
+       "sha": "319591b517726b43aeed3b1117be384b361adb733ca9a351979264f393c4a517"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Any number up to R4 and at least R6 may be used.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "692-694",
+       "sha": "555040c4d4545deeaa9e40ec3df0e636a07d977b291751fca3e7bdabc3510e80"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "A read is not defined: the document makes the register write-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "686",
+       "sha": "26a5a6528e58c6f3acbca71f450665666ff19d8446a6e45f7642dc89e1a99f78"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The emulator stores all 8 bits of the value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "107-109",
+       "sha": "3c68f53a7193b52add87c5d7196e1d739f5ee0c7b2fc5277347c93e4dfb2dd8d"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the byte last written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "261-262",
+       "sha": "bdb2cb86092f04edb4b2d36f365803ceeb4f09ce3316b4fc3066acaa462622a5"
+      }
+     ],
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-107",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x09",
+   "name": "max scan line address",
+   "aliases": [
+    "R9",
+    "maximum scan line register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "865-870"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x09"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "263-264"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "R9 sets the number of scan lines per character row; the programmed value is the maximum address, one less than the count.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "865-870",
+       "sha": "51c298e7cad11fc03755eb751557e8dc00a666309b4fdc792ee7fe89e3c19103"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "It is a 5-bit write-only register holding the maximum scan-line address.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "865-866",
+       "sha": "844fce7af1082367b58c65f99bdeb4361ed192e0825b06da4dd8ff5ef1d9086d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read is not defined: the document makes the register write-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "865",
+       "sha": "88fcd813a7ddcf83047ae469a0132358b6836ac6e40ed2e0fc2f67667faa0e29"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the stored byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "263-264",
+       "sha": "0cc5ecf1475eb24924dc9c8606fd0c274ef8ef358b3f98f4f17c4ac380cc2457"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write whose five-bit value differs from the stored one starts a resize of the drawing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "112",
+       "sha": "12af576d827fbe9ab96bcdf658ea808bf3949eb81ea103ba34c88c1c4095f06f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-110",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "111-113",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x0A..0x0B",
+   "name": "cursor start and end",
+   "aliases": [
+    "R10",
+    "R11",
+    "cursor start register",
+    "cursor end register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "872-887"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x0A"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x0B"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "265-266"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "267-268"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "R10 and R11 place a cursor of up to 32 scan lines on any scan line of the character block.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "872-875",
+       "sha": "cae8571266f866878800f44e07a57535674d4a2ecea4f95e1d4a0c1ff6d3a4a8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "R10 is a 7-bit register: bits 4-0 are the start scan line and bits 6-5 control the cursor.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "875-879",
+       "sha": "59733fc2333b29cbe259e6bc41117d08c18ce502c892b18652038b12f8ec0236"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 6-5",
+     "of": "doc",
+     "text": "Bits 6-5 choose non-blink, non-display, blink at 1/16 or blink at 1/32 of the field rate.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "876-887",
+       "sha": "852889eb93c735999b62f11be28f6eec9fb8c2828a5a45d372a724fe9609d13d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "R11 is a 5-bit register defining the last scan line of the cursor.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "880-881",
+       "sha": "84fcd95077b8ad47368d95d7d81616314c957a2e2363428f24054025fdcf2931"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "A read is not defined: the document makes both registers write-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "875-880",
+       "sha": "589999285e4f1e9e2b6157c253ae78fb1de9b07170a41859f2e263db6ba6ed5d"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The emulator uses bits 6-5 only to decide whether the cursor is enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "115-119",
+       "sha": "32b573be798e5681507c798624b1dee9f22bc9fffc3beea6916f12bb8689401e"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the stored bytes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "265-268",
+       "sha": "8d5220fb64567fe8d0481fe7eb91f7771b4e05ba592e8b60a6d37408d7afba90"
+      }
+     ],
+     "row": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-115",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-120",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "116-118",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "121-122",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x0C..0x0D",
+   "name": "start address (R12, R13)",
+   "aliases": [
+    "R12",
+    "R13",
+    "start address register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "910-917"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x0C"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x0D"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "269-270"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "271-272"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "R12 and R13 set the first address output after vertical blanking, selecting the displayed portion of refresh RAM.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "910-917",
+       "sha": "cecd3867b01010ad80f09bae16da3e64d0b6b1f213366f8e1e37f56767c81787"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The 14-bit write-only start address pair has R13 as its low 8 bits and R12 as its high 6.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "910-914",
+       "sha": "11b1fac42edae9e2f3bfb042c653e29022590f08c0d383906c685ddca36a0c2a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of the start address is not defined: the document makes it write-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "910-912",
+       "sha": "d656c79e671df103829437e7cd76b3ef6173ea770e90e8dca833fbda9724e7d7"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Most machines take 6 high bits, but MCGA, Olivetti and the 3270 PC take the 8 the register holds.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "127-133",
+       "sha": "199918967bbb80e1e1c7c939af943a4a6b6dcd6545b886e5435fe7bcbf664828"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the stored start address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "269-272",
+       "sha": "5d37a20b097fc83a10701d22e629aab8d29820b17b9af95dc92d3c17562ae1e5"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-124",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-132",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0E..0x0F",
+   "name": "cursor location",
+   "aliases": [
+    "R14",
+    "R15",
+    "cursor location register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "903-908"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x0E"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x0F"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "273-274"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "275-276"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The cursor location pair positions the cursor in refresh RAM, allowing paging and scrolling without losing it.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "903-908",
+       "sha": "8105042daa5a5a46c0bc86b8b33dee7d3a45d365506ad1cf9a89578b9df4c7ad"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The 14-bit read/write pair holds the cursor location: R15 the low 8 address bits and R14 the high 6.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "903-908",
+       "sha": "8105042daa5a5a46c0bc86b8b33dee7d3a45d365506ad1cf9a89578b9df4c7ad"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The pair is read/write: a read returns the cursor location stored in it.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "903-908",
+       "sha": "8105042daa5a5a46c0bc86b8b33dee7d3a45d365506ad1cf9a89578b9df4c7ad"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The emulator stores a full 8-bit high half, so the pair holds 16 bits, not the document's 14.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "135-142",
+       "sha": "127006aba4249f77ebc2035c19d1db063f636b9a958537b217e19cd94c4962ba"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The emulator returns the whole 16-bit cursor word, not the document's 14 bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "273-276",
+       "sha": "e122a7e64a7327e8931d1c90a13cff090677cfeb562404aa7645e9bef380cce2"
+      }
+     ],
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-135",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-139",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x10..0x11",
+   "name": "light pen (R16, R17)",
+   "aliases": [
+    "R16",
+    "R17",
+    "light pen register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:MC6845.raw.txt",
+     "lines": "918-928"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x10"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "function": "write_crtc_data_other",
+     "case": [
+      "0x11"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "277-278"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "279-280"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The light pen pair captures the refresh address on the positive edge of a pulse at the LPSTB pin.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "918-921",
+       "sha": "eee5e39c3cf946e4684d04b249cfccd63dc6149a37a07b11353ad64e04d60940"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The 14-bit read-only pair holds the capture: R17 the low 8 address bits and R16 the high 6.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "918-922",
+       "sha": "d92c71b108730aa7c0d8e35b06292152c3038f5e8e9c34272484f64acefef763"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The captured value lags the address and needs a software correction; an interrupt or a polling routine may read it.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "922-928",
+       "sha": "e039a240e404e026a7517448935ad787bb740dbed6b786ca8fe13d921fbe2e59"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "The pair is read-only: a write to R16 or R17 is not defined.",
+     "quotes": [
+      {
+       "ref": "datasheet:MC6845.raw.txt",
+       "lines": "918",
+       "sha": "b81cf2a70d059c68c3ebd0f527426cc06d82871e11a314beb823dc38894e6413"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The emulator returns the whole 16-bit light pen word, not the document's 14 bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "277-280",
+       "sha": "ad306b8f69e6ae59ce0724db24aeb19e5be0eac4435235734e6cf43de888bdbb"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The emulator stores a written byte in the light pen word, though the document makes the pair read-only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "143-151",
+       "sha": "a06f247cc4c2862d22abac64d07611069181ccd8f9bdc059d862b5bac27487f7"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A preset of the light pen latch stores a position computed from the frame and line timings in the same word.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "385-396",
+       "sha": "4a3363b03ccd9bdd882db47cd85bb734270d104453422deb2fa0ab4576f1cc86"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-143",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "72-148",
+     "as": "structure"
+    }
+   ],
+   "access": "read"
+  },
+  {
+   "key": "0x14",
+   "name": "Hercules xMode",
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "152-162"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Bits 0 and 2 select the RAM font at B4000h and the 48k RAM font mode; a change of bit 1 starts a resize.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "153-158",
+       "sha": "7de3cdb6770984b0c5ae18e77c6ba1001a75028bd5adaefabba7219ca8537242"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A card that is neither an InColor nor an HGC+ logs the index as illegal and stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "152-162",
+       "sha": "b43a0249384214f796ded3550be4d9922dd776ac7d282f703bc63b78de45b0c4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-240",
+       "sha": "2b52b879ea830c2ca1caf24225c6ae7dad2032261c6fafd424bfbdd63bc364aa"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x15",
+   "name": "Hercules underline",
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "163-171"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte is stored whole, and its low four bits are also copied to the CRTC underline location.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "163-167",
+       "sha": "5d6cca6e68a4a47d9d2826ea25a1a65d797b88851611267ecb399bf38bd38cd9"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A card that is neither an InColor nor an HGC+ logs the index as illegal and stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "163-171",
+       "sha": "09a8063efe28b09b39db06e6ea46cdbbdf6ff66eb350ec1a35e44c69a05c360d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-240",
+       "sha": "2b52b879ea830c2ca1caf24225c6ae7dad2032261c6fafd424bfbdd63bc364aa"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x16",
+   "name": "Hercules strikethrough",
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "172-179"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte is stored whole as the card's strikethrough value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "172-175",
+       "sha": "0b0f78c8d2a8b4d10350f8a520693cc4037a80b93e0e1967f6d426a9f7cf762a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A card that is neither an InColor nor an HGC+ logs the index as illegal and stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "172-179",
+       "sha": "74d7b23af6e081072f8963cdbc819b38d66e52b10ff5f1ef08ea6b62b97c8257"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-240",
+       "sha": "2b52b879ea830c2ca1caf24225c6ae7dad2032261c6fafd424bfbdd63bc364aa"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x17",
+   "name": "Hercules exception",
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "180-191"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A changed byte remaps each of the sixteen palette entries through VGA_ATTR_SetPalette.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "180-186",
+       "sha": "80c3dde6c8310d1b6b9ce9e257aaa66e694f52aaa1031a4ca3b3ec737a8276d3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A card that is not an InColor logs the index as illegal and stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "180-191",
+       "sha": "658121f4d1c64e467c6168a255d392fd69bc62d608b2d35f041a240e38397a1d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-240",
+       "sha": "2b52b879ea830c2ca1caf24225c6ae7dad2032261c6fafd424bfbdd63bc364aa"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x18",
+   "name": "Hercules plane mask",
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "192-200"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Bits 7-4 are stored as the protect mask and bits 3-0 as the visible mask.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "192-195",
+       "sha": "738ebda93e4dd98460fc70cc33a4d15d8e4b41a07673e593a99d890a0cc92c78"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A card that is not an InColor logs the index as illegal and stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "192-200",
+       "sha": "179910a7720b93d0bfcc1b3bdd723faa029afeb762d0eb25b0a9d6b33ccfd662"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-240",
+       "sha": "2b52b879ea830c2ca1caf24225c6ae7dad2032261c6fafd424bfbdd63bc364aa"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x19",
+   "name": "Hercules mask/write mode",
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "201-210"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Bit 6 becomes a full mask, bits 5-4 the write mode, and bits 3-0 the don't-care mask.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "201-205",
+       "sha": "d8400c6d538a6d70042aaa8737eed254a68a89412d5fff88e5973160b35a0184"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A card that is not an InColor logs the index as illegal and stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "201-210",
+       "sha": "8a382b91c3154ff51020b67f329737307d1503ee58709fef8621e78fc2c79051"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-240",
+       "sha": "2b52b879ea830c2ca1caf24225c6ae7dad2032261c6fafd424bfbdd63bc364aa"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x1A",
+   "name": "Hercules fg/bg colour",
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "211-219"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Bits 3-0 are stored as the foreground colour and bits 7-4 as the background colour.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "211-214",
+       "sha": "55e0b93160db17e08974c88f37226d71ddff6337c610ade557ac73e113bb23ea"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A card that is not an InColor logs the index as illegal and stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "211-219",
+       "sha": "7bc0b421290a638423ee954ab7f7ef48a8133ec90743038aaadd5f01b387f134"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-240",
+       "sha": "2b52b879ea830c2ca1caf24225c6ae7dad2032261c6fafd424bfbdd63bc364aa"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x1B",
+   "name": "Hercules latch protect",
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "220-227"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte is stored whole as the latch protect value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "220-223",
+       "sha": "72a6199b6a0b2546b4111e1aea66499e636d0153ed6240d775d94445fa0bccf1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A card that is not an InColor logs the index as illegal and stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "220-227",
+       "sha": "56dd76a80f72f20d788a60b4e6caea32cb368c70ad68bbd2359ab378c5a35f81"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "238-240",
+       "sha": "2b52b879ea830c2ca1caf24225c6ae7dad2032261c6fafd424bfbdd63bc364aa"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x1C",
+   "name": "Hercules palette entry",
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "228-237"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_other.cpp",
+     "lines": "281-288"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The six low bits are stored at the current palette index, which then advances and wraps at sixteen.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "228-232",
+       "sha": "7c293affccf7fa62dce07211f792fdaf8a6ef3785d1bf4e751bbd5a102cea311"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a card that is not an InColor the write is logged as an illegal index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "233-240",
+       "sha": "f296d55d5920da59c2ccf8380809b60a6a3853c6208b5142d039f26e8dd90372"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On an InColor card a read resets the palette index to zero and returns all ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "281-288",
+       "sha": "045d0ab356fb80c9272370d072d27185a0509a7fad7444cc581b1d54271e81a0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "290-293",
+       "sha": "f40c24ab4d99e5bd88de659e3d8d51ed656bcf1a892e99b9ea6336ad73b5f1c3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a card that is not an InColor the read is logged as an illegal index and returns all ones.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_other.cpp",
+       "lines": "286-293",
+       "sha": "993ea4df7cdf0d58f4145efc02f294d80c923c32f1c320d9f6c6cc3ac178a6f4"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  }
+ ]
+}

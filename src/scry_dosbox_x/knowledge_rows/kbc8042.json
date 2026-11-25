@@ -1,0 +1,3495 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "kbc8042",
+ "title": "The 8042 keyboard controller's ports and commands",
+ "kind": "register",
+ "scope": "kbc8042",
+ "covers": "The IBM keyboard controller as the PC defines it: its data and status ports, its command set at port 64h, the keyboard commands sent through port 60h, and the auxiliary-device (PS/2 mouse) commands sent through port 60h. The controller and keyboard commands are those of the Personal System/2 Hardware Interface Technical Reference, the maker's consolidated guide, which lists them all; the auxiliary-device commands come from the PS/2 Mouse Technical Reference, which is not available, so those entries are notes of DOSBox-X with the places searched; the system ports 61h and 62h are not the controller's and are quoted from the list's port file. In this capture's OCR a hex value prints O for 0 and S for 5.",
+ "source": "official",
+ "documents": [
+  {
+   "name": "PS2-HITR.raw.txt",
+   "variant": "ps2"
+  }
+ ],
+ "official": {
+  "PS2-HITR.raw.txt": [
+   "9392-9398",
+   "9426-9437",
+   "9441-9490",
+   "9492-9507",
+   "9514-9557",
+   "9562-9578",
+   "9624-9648",
+   "9650-9664",
+   "9666-9676",
+   "9683-9721",
+   "16063-16074",
+   "16080-16085",
+   "16093-16103",
+   "16137-16141",
+   "16161-16179",
+   "16187-16199",
+   "16264-16270"
+  ]
+ },
+ "engine": [
+  "PIC_AddEvent",
+  "PIC_RemoveEvents",
+  "PIC_DeActivateIRQ",
+  "PIC_ActivateIRQ",
+  "On_Software_CPU_Reset",
+  "TIMER_SetGate2",
+  "PCSPEAKER_SetType",
+  "ChangeMouseReportRate",
+  "AUX_Reset",
+  "UpdateKeyboardLEDState",
+  "KEYBOARD_AUX_Event",
+  "KEYBOARD_AUX_Write",
+  "KEYBOARD_ClrBuffer",
+  "Mouse_AutoLock",
+  "Mouse_PS2ResetFrame",
+  "KEYBOARD_ResetDelay",
+  "KEYBOARD_TransferBuffer",
+  "CPU_Raise_NMI",
+  "MEM_A20_Enable",
+  "TIMER_GetOutput2"
+ ],
+ "entries": [
+  {
+   "key": "0x60",
+   "name": "data port",
+   "aliases": [
+    "data port",
+    "input/output buffer"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9392-9394"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9492-9496"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9497-9504"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9505-9507"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "read_p60"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The controller presents keyboard data to the system as a byte at data port hex 0060 and may interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9392-9394",
+       "sha": "143422a9220230703531884712be5b01378e1fb072b61b6b4aca47af16c789ce"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The output buffer is an 8-bit read-only register at hex 0060; a read returns scan codes, auxiliary data or a command's data byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9492-9496",
+       "sha": "9f217740418929520359c3078114cb32b09a850e38bc9a1229d8acbeeb776ef3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "The input buffer is write-only at hex 0060 or 0064; a byte written to 0060 goes to the keyboard unless a command expects a data byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9497-9504",
+       "sha": "2e4a0472fb6ac79077d26ba58210aeb015cc4e53330750e10ed75a85e226f8a5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Data should be written to the input buffer only while the input buffer full bit is 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9505-9507",
+       "sha": "729d0e708ad732a2c6000e868e1e4fc4b4edb1d76a8fbd166dfc0a536bf623a0"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Reading port 60h clears IRQ 1 and IRQ 12, except on a PCjr, and both buffers' changed flags.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "393-403",
+       "sha": "a8bf4c115689fa2870c4311a4e348e38c0b8cfc2a1e85f4a728c920e9e318cfe"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A data byte for a pending command is taken as such; a command byte is not sent on but answered by the controller itself.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "635-644",
+       "sha": "4959f79c67616c15b400b6d0b4503facf573ca2b3538fc6de1bb410a9cdc467a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "585-590",
+       "sha": "fd2e5920e47d19c22b6702840e44c6b1e59df44a8b2d72af284ad660fdf93005"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "103",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a PCjr the byte is stored as the port's data and the call returns.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "574-577",
+       "sha": "44e1eb362ffb7809a9d8a1e110d1fce60994e4ddfd57f513213e57454dcef1a1"
+      }
+     ]
+    },
+    {
+     "n": "104",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte at port 60h is also set by the buffer transfer, by a PCjr scancode and by the controller reset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "264",
+       "sha": "c5ead1a59a7d83683251f0ec2fc98514c47ac44bcd0a45e1d7698bd418840932"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "157",
+       "sha": "5a4497aaab54ee477ee52613c901c659111d56e7aa7a6be116e16256c15164f0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "2944",
+       "sha": "5c7dfd1b7cd2c8c488ee97b169d3186aed805bc15118f082889c5cbab84caa6f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-586",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "587-634",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "635-720",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "404",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x61",
+   "name": "control port B",
+   "aliases": [
+    "port B",
+    "system control port"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "7001-7006"
+    },
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "7233-7254"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "read_p61"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p61"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 0061 is the keyboard controller's port B, a system control port for compatibility with the 8255; it is read and written at 0061.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "7001-7006",
+       "sha": "96dec5a25a42fc9006e81dca02171aafb2ccaa29a864f6e5a12dfc574ec74371"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 7 pulses an IRQ1 reset, 3 and 2 disable the channel and RAM parity checks, 1 enables speaker data, 0 gates timer 2 to the speaker.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "7233-7241",
+       "sha": "1b4f8c4bf1304054b261e0c3396987409377d1f71eef5a68214dc2a72e242ef2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Bits read: 7 RAM parity, 6 channel parity, 5 mirrors timer 2, 4 toggles per refresh, 3 and 2 NMI status, 1 speaker data, 0 timer 2 gate.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "7243-7254",
+       "sha": "587833d6b0890a85ecf2325d9bfae9367330baf1cbd9feef9b541604b8d79272"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The byte is stored; bit 0 sets the timer 2 gate and bits 0 and 1 the speaker, while bits 2, 3 and 7 drive nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "740-749",
+       "sha": "e3f0cdc961870e89b537777883bf8ecae642d6835c4502df3a64a119dfec1d88"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "102",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the written low nibble, bit 5 from timer 2 or an off gate, bit 4 a 33 Hz wave, bit 6 a machine flag, bit 7 zero.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "726-737",
+       "sha": "0b55c557db6842a908e3f18c2d37d354766e14fa656bb59dacde5bbf55a92de5"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "103",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the PC-98 the port C handler writes this byte too, from the latch bit that inhibits the speaker.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "2125",
+       "sha": "19a923f17865d059ff5e01ed24b2bd2ce2a0f6f1078b38499066ea36aa02da62"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x62",
+   "name": "timer 2 / PPI port C",
+   "aliases": [
+    "port C",
+    "timer 2 count"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "7007"
+    },
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "7271-7285"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "read_p62"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 0062 is the programmable peripheral interface's data port C on an XT.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "7007",
+       "sha": "d30e514e03a58d79c8469a0c5ae3385d54ae63e2d6e04979df60136c94c6b11e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Port C bits: 7 RAM parity error, 6 channel parity error, 5 timer 2 out, 4 reserved, 3 and 2 RAM size, 1 coprocessor, 0 loop in POST.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "7271-7282",
+       "sha": "15e84bc470d8d24175fcab9de6be0d1cca29c48fd4dc8b9fa5fed747825559aa"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 3 through 0 are a DIL switch's nybble, low or high as port 61h bit 3 selects.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "7283-7285",
+       "sha": "a296d1361adedfb88a8a159ddf47d54b9247d1d0de2ec30b22389afb1f1be771"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns 0xDF, or 0xFF while timer 2 is high: only bit 5 follows timer 2, every other bit reads 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "751-755",
+       "sha": "6fedcb41c27067cdc9b6fb6d98129db9ac1f0cf6f70c9b1bba6e2559d296d215"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x64",
+   "name": "status/command port",
+   "aliases": [
+    "status port",
+    "command port"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9395-9398"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9426-9437"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9441-9457"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9458-9475"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9476-9490"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "read_p64"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Address hex 0064 is the command/status port: a read returns status, a write is taken as a command.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9395-9398",
+       "sha": "ad06cada7986adbfc8f1464f26d16a38aebd712c9dc1a9fa04ce8abb1148dc58"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The status bits: 7 parity error, 6 general time-out, 5 auxiliary output buffer full, 4 inhibit switch, 3 command/data, 2 system flag, 1 input buffer full, 0 output buffer full.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9428-9437",
+       "sha": "2d79b7c031433b3e5105d8a94810d08409513fab71ac17159605415db0da60ec"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Bit 7 set means the last keyboard byte had even parity; bit 6 set means a transmission timed out.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9441-9444",
+       "sha": "41340d6409d7bc73ae23a58283e3a92f69199fe23c62166ceb2bd9cef4768eb2"
+      },
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9445-9455",
+       "sha": "236e53ece8f22aafb1ae9f3df1f6dff3fdbbe2b0956c2d4662eee27ded27ca44"
+      },
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9456-9457",
+       "sha": "eff2cef5752b3ea6456673d66b20a8115cdac2948a7631d5b044bbfc950702ee"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "Bit 5 with bit 0 means auxiliary data in the output buffer; bit 4 is the password state; bit 3 marks a command or data byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9458-9462",
+       "sha": "3e9a62ff57babc93153ac13b27800352612f8c47ec5487e32fffe053e68f3ee0"
+      },
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9463-9467",
+       "sha": "7f4c4c19003a10b8e8dd406595bfb56d3c11671255931c8a11bab0f59ef3d58e"
+      },
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9468-9475",
+       "sha": "c1c16d30ddfd8338c494052d859343d43aca45d6238ee9145ca21b9883bfe6c5"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "Bit 2 is the system flag; bit 1 set means the input buffer is full; bit 0 set means the output buffer holds data for the system.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9476-9478",
+       "sha": "0d08e30a429536adf1c8da1d963c90a68d09ff9c682dd069d7659a1868a1e6c5"
+      },
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9479-9484",
+       "sha": "98620d1f75657187403539c1acb60493eee5856b1ca78893de9c88987c4bad0d"
+      },
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9485-9490",
+       "sha": "308923b89c1f90cd91ad176f7e55c5d45e3d3142f9f09cd79a75249e2b48f375"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The status byte is 0x1C plus bit 0 from the output buffer's change and bit 5 from the auxiliary buffer's; the other six bits never change.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "869-870",
+       "sha": "fbf393533ecb3dc9216545bdbd579798742230b86e167555c86f7fc40ca5ee59"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "102",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Bits 7 and 6 are always 0: no parity error or time-out is ever reported.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "869-870",
+       "sha": "fbf393533ecb3dc9216545bdbd579798742230b86e167555c86f7fc40ca5ee59"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "103",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Bit 5 follows the auxiliary buffer, but bit 4 is always 1 and bit 3 is always 1, a data write to 60h included.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "869-870",
+       "sha": "fbf393533ecb3dc9216545bdbd579798742230b86e167555c86f7fc40ca5ee59"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "104",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Bit 2 is always 1, so the power-on state is never reported; bit 1 is always 0; bit 0 follows the output buffer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "869-870",
+       "sha": "fbf393533ecb3dc9216545bdbd579798742230b86e167555c86f7fc40ca5ee59"
+      }
+     ],
+     "row": "5"
+    },
+    {
+     "n": "105",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The reset clears both flags and the buffer transfer sets them; a port 60h read also clears them.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "262-263",
+       "sha": "57e37d58bb3e632a54bda0c0b8c16149462e2b69a3b8e8b1b09b7358acc4a54d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "398-399",
+       "sha": "f9d06863fb5d0941de3b81316febefdd329c3a329540221a165f417d0a2d720c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "2992-2993",
+       "sha": "f9d06863fb5d0941de3b81316febefdd329c3a329540221a165f417d0a2d720c"
+      }
+     ],
+     "row": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9426",
+     "as": "key"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9427",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-761",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "763-864",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x20",
+   "name": "read command byte",
+   "aliases": [
+    "read controller RAM"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9562-9568"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9569-9578"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0x20"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Commands 20h through 3Fh read the controller's internal RAM, the low six bits naming the address; 20h reads address 0, the command byte, to port 0060.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9562-9568",
+       "sha": "8826295781825b70779f60de68d7cf0430ce96589abbfcf57e3bd3328c123183"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The command byte's bits: 7 reserved, 6 IBM keyboard translate, 5 disable auxiliary device, 4 disable keyboard, 3 reserved, 2 system flag, 1 enable auxiliary interrupt, 0 enable keyboard interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9569-9578",
+       "sha": "deb7b605da0ea6d02f47af24faa554fb08cbcb49802e43c614656fe17fa5a34b"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "764-770",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x90",
+   "name": "write output port bits",
+   "aliases": [
+    "90-9F"
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0x90"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Commands 90h through 9Fh are accepted and ignored; the case body holds only a TODO for the reset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "774-777",
+       "sha": "4296e61accd681577d7fdaab15d3768264e8d680bb05fb1fbbdba7c0c730bd00"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Nothing is stored and the output port keeps its value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "774-777",
+       "sha": "4296e61accd681577d7fdaab15d3768264e8d680bb05fb1fbbdba7c0c730bd00"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "774-777",
+     "as": "structure"
+    }
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's 8042kbdc.cpp cites no document and implements no 90h-9Fh command"
+    },
+    {
+     "where": "maker",
+     "gave": "IBM's PS/2 Hardware Interface Technical Reference lists no command between 7Fh and A4h"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "the PC/AT Technical Reference and the PS/2 May88 and October 1990 volumes list commands 20h-FFh without 90h-9Fh"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the same IBM editions, no command 90h-9Fh"
+    },
+    {
+     "where": "index",
+     "gave": "the datasheet indexes name the same IBM manuals and no controller datasheet for the command"
+    }
+   ]
+  },
+  {
+   "key": "0xA7",
+   "name": "disable auxiliary",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9624-9627"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xa7"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command A7h sets bit 5 of the command byte, which disables the auxiliary device interface by driving its clock low.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9624-9627",
+       "sha": "e6b076b20d5a47573667100c06843fc1216cf473a5b94ba5260d198c50633c0e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A disabled interface sends and receives no data.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9624-9627",
+       "sha": "e6b076b20d5a47573667100c06843fc1216cf473a5b94ba5260d198c50633c0e"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "The command changes nothing: the assignments that would set the flag are commented out.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "778-784",
+       "sha": "bc8ff81a8dcfdea63913e7ed99988d2a7d1f3c037861016f5c271a1c3daf20d0"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "780-784",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xA8",
+   "name": "enable auxiliary",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9628-9630"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xa8"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command A8h clears bit 5 of the command byte, which releases the auxiliary device interface.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9628-9630",
+       "sha": "4e9ef1ee141b3837ed76b8a9c7c154439428a0ef361262c268573cd932016298"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 5 of the command byte is set to 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9628-9630",
+       "sha": "4e9ef1ee141b3837ed76b8a9c7c154439428a0ef361262c268573cd932016298"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The command is ignored unless the machine's configuration has the auxiliary port enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "786-789",
+       "sha": "aac09664d5e84abbbbdc53f4fc3b78310d21d50cc587433db6578c81e125f481"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "785-795",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "787-792",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xA9",
+   "name": "auxiliary interface test",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9631-9648"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xa9"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command A9h tests the auxiliary device's clock and data lines and places the result in the output buffer.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9631-9635",
+       "sha": "649a198c566b15409f972bd78aca9a9c951a2202908162bc709b004a5857a5b4"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bytes 00h-04h: 00 no error, 01-02 a clock line low or high, 03-04 the data line low or high.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9636-9647",
+       "sha": "73d845f6b8f52a8e6ca975a232803b6320c98e673a27ff4e8d2200b4a2c32594"
+      },
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9648",
+       "sha": "2fa262386634871c89af6dd3af27010e8e678e85cc4c924763bc54c494ba56ab"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Only 00h, the no-error result, is ever returned.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "796-799",
+       "sha": "f446427f87be30fa0ef4bc3650954a710f8c1ea81ea21cfdbb21b50d8cb65550"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "796-799",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xAA",
+   "name": "self test",
+   "aliases": [
+    "BAT"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9650-9652"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xaa"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command AAh makes the controller run its internal diagnostic tests.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9650-9652",
+       "sha": "f867a4c3225631e26fa1f6f6649ee84aafd329c1fb08fe45aa751b1815bd522c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Hex 55 is placed in the output buffer if no errors are found.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9650-9652",
+       "sha": "f867a4c3225631e26fa1f6f6649ee84aafd329c1fb08fe45aa751b1815bd522c"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The controller answers AAh rather than 55h, and marks the keyboard inactive.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "800-803",
+       "sha": "36de18113784bdd68698d9155191786e347430801e87f4230057b1d8577184f3"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "800-803",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xAB",
+   "name": "keyboard interface test",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9653-9664"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xab"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command ABh tests the keyboard's clock and data lines.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9653-9656",
+       "sha": "2007125aaada47694d2e10752a6cd7620d9f66833237a634be75dc26c07845c6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The result byte names the fault: 00 no error, 01-04 a keyboard line stuck low or high.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9657-9664",
+       "sha": "581e465ca3615af5b87ad4f8df2d627e146428b918315620bc9d8d365251faa0"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Only 00h is returned, and the keyboard is marked inactive.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "804-807",
+       "sha": "20d863cb7ea7410c20ba02c2518a02349fd8a5a02d340ed0f3e5aca56e7b8156"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "804-807",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xAE",
+   "name": "enable keyboard",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9670-9672"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xae"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command AEh clears bit 4 of the command byte, releasing the keyboard interface.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9670-9672",
+       "sha": "231eb4c51bb1d0049181ec8f0c51c5148c919f0c53cc29e3144d0e2352496d03"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bit 4 of the command byte is cleared to 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9670-9672",
+       "sha": "231eb4c51bb1d0049181ec8f0c51c5148c919f0c53cc29e3144d0e2352496d03"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "808-815",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "808-813",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xAD",
+   "name": "disable keyboard",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9666-9669"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xad"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command ADh sets bit 4 of the command byte, which disables the keyboard interface by driving its clock low.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9666-9669",
+       "sha": "e9306c45a9d13eba0be9f961ec79ec98d1eea5b7ef6fd92f5458d4152189410b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A disabled interface sends and receives no data.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9666-9669",
+       "sha": "e9306c45a9d13eba0be9f961ec79ec98d1eea5b7ef6fd92f5458d4152189410b"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Only the flag is stored: commands written to 60h are still answered and host keystrokes still reach the output buffer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "816-819",
+       "sha": "b67064fcdb7e8769ed2dac53d8be786dbef9d0181abc6d6ef143c78889f13e45"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "587-593",
+       "sha": "f3ba7e8b834da0a9609428f713dae3a94ac70131992a67b22ee43ed074dbd02c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "1879-1884",
+       "sha": "d25d288de8662db144e0e6f61b3474afd683141f551d315d348e3628533ff918"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "816-819",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xC0",
+   "name": "read input port",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9514-9524"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9673-9676"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xc0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command C0h makes the controller read its input port into the output buffer; it should be used only with the output buffer empty.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9673-9676",
+       "sha": "2a0a8e1d3efbb8eb3c1869bde84efeb1b6af9f428e9501ca06e66d150c5c6d7f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The input port's bits: 7 through 2 reserved; 1 the auxiliary device's data line; 0 the keyboard's data line.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9514-9524",
+       "sha": "8a768b19238eea12ba71a49c4b3493e68713f500040bb6186bfe1607cd9fb5d6"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The output buffer receives 40h, a constant, whatever the input port holds.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "820-822",
+       "sha": "82b1f995d220919809fd278cd730d501df18a4f84ec28b1776ce512149e48a03"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "820-822",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xD0",
+   "name": "read output port",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9683-9686"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xd0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D0h makes the controller read its output port into the output buffer; it should be used only with the output buffer empty.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9683-9686",
+       "sha": "b13fa6d561ecf7a0ebd141c8d1bdf307863a59e78f2980156496b0125377a9fa"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The value read is the controller's output port.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9683-9686",
+       "sha": "b13fa6d561ecf7a0ebd141c8d1bdf307863a59e78f2980156496b0125377a9fa"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Bit 0 is always returned set, for programs that read the port and write it back.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "824",
+       "sha": "e2637f3dcf5d63601568a482f0277459cd7653b54613b3d0f609b271fa8d3cb1"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "823-825",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "823-825",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xD1",
+   "name": "write output port",
+   "aliases": [
+    "A20 gate"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9525-9557"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9687-9695"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xd1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "CMD_SETOUTPORT"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D1h takes the next byte written to port 0060 as the controller's output port; its bit 0 should not be set to 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9687-9695",
+       "sha": "d727b66f6e4808efa2531db933e4f34320870f4b3be0ab2ba2a1a4dd84a31c46"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The output port's bits: 7 keyboard data out, 6 keyboard clock out, 5 IRQ12, 4 IRQ01, 3 auxiliary clock out, 2 auxiliary data out, 1 gate A20, 0 reset.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9525-9534",
+       "sha": "f709c3a91fcafe5bd896680c1abfa943e273bc0533953e8c8d367ce85423df7b"
+      },
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9535-9546",
+       "sha": "fd0743e91f777b1d2fbd0f7d6ba16974e841ec54c3855535bef0fced603dcb7f"
+      },
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9547-9557",
+       "sha": "fae838a503a254b4f891b89ff1c8740d9689f0f3e85a7db499c5c312e1d2f7d7"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Bit 1 gates A20; when keyboard resets are allowed, a clear bit 0 restarts the machine; bits 2 through 7 are not kept.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "668-678",
+       "sha": "9b12e10fc49717a372fe9acdb6b48458c72a346a4f3ec393938fd0f73447de83"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-576",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-582",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "826-828",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xD2",
+   "name": "write keyboard buffer",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9696-9700"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xd2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_SetPort60"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "CMD_WRITEOUTPUT"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D2h writes the next byte from port 0060 into the output buffer as if the keyboard had sent it.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9696-9700",
+       "sha": "100dd38218ad9ebe6e79d1c35caf1a4e6e35f6df6db422b16db25114a5fd6f95"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "An interrupt occurs if the command byte enables it.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9696-9700",
+       "sha": "100dd38218ad9ebe6e79d1c35caf1a4e6e35f6df6db422b16db25114a5fd6f95"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-576",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-582",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "829-831",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "660-663",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "262-273",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xD3",
+   "name": "write aux output buffer",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9701-9705"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xd3"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_SetPort60"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "CMD_WRITEAUXOUT"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D3h writes the next byte from port 0060 into the output buffer as if an auxiliary device had sent it.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9701-9705",
+       "sha": "54defbff7d24623f6c1aa9f1af4be98625582ba9410ce9001e3295d1bd3b09a6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "An interrupt occurs if the command byte enables it.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9701-9705",
+       "sha": "54defbff7d24623f6c1aa9f1af4be98625582ba9410ce9001e3295d1bd3b09a6"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Without the auxiliary port configured the command is refused and logged once.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "832-836",
+       "sha": "015343ea572c58960f33782aaaa96fb971a81c953df10f1800a3757fbf4a311a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-576",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-582",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "664-666",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "262-273",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "832-837",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xD4",
+   "name": "write to auxiliary",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9706-9708"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xd4"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "CMD_WRITEAUX"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command D4h sends the next byte written to port 0060 to the auxiliary device.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9706-9708",
+       "sha": "8d6d285ccd2091b620361c21760752016c2012c7a9d6ae162ea33f000cc93866"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The next byte written to port 0060 is transmitted to the auxiliary device.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9706-9708",
+       "sha": "8d6d285ccd2091b620361c21760752016c2012c7a9d6ae162ea33f000cc93866"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Without the auxiliary port configured the command is refused and logged once.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "838-842",
+       "sha": "c0476275b96a9d4d9bc8443a0462e34326f6c6efe147c7bc6962d4cb2e367237"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-579",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "838-843",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "655-656",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "657",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xE0",
+   "name": "read test inputs",
+   "aliases": [],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9709-9713"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xe0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command E0h reads the keyboard and auxiliary clock inputs into the output buffer: bit 0 is T0, bit 1 is T1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9709-9713",
+       "sha": "39284ee3eb3fcd542e98bf5fc75b1f986a60b1702aae379990efef0fd2c5641b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The two test inputs are placed in the output buffer as data bits 0 and 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9709-9713",
+       "sha": "39284ee3eb3fcd542e98bf5fc75b1f986a60b1702aae379990efef0fd2c5641b"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The output buffer receives 00h whatever the two clock lines are.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "844-846",
+       "sha": "6d24e21a04c8170e9dc502129eee819177e081a9ea72cc2aa3f2a7dbafe1e548"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "844-846",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xF0",
+   "name": "pulse output port",
+   "aliases": [
+    "F0-FF"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "9714-9721"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p64",
+     "case": [
+      "0xf0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Commands F0h through FFh pulse the output port's bits 0 through 3 low for about six microseconds, a 0 bit naming a pulsed bit.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9714-9718",
+       "sha": "a7b8da523813a18ebbe53fffdd8a1f577b6ae02d5547d7dc6da1c3cfb885d5ee"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Pulsing bit 0 resets the system microprocessor.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "9719-9721",
+       "sha": "1481b1b965c3f29fc7bb9f54fb578c151cf3248e7085bc241f999ab7f2a288f0"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Nothing is pulsed: a clear bit 0 restarts the machine when keyboard resets are allowed, and bits 1 through 3 do nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "847-858",
+       "sha": "5c4e6bf3e8a1bebfd830480297cc867ab8065734c328e2b8f97fccabe5ff294a"
+      }
+     ],
+     "row": "1"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "760-763",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "847-858",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "853",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xED",
+   "name": "set LEDs",
+   "aliases": [
+    "status indicators"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "16161-16174"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "16175-16179"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "0xed"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "CMD_SETLEDS"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command EDh begins a two-byte sequence whose option byte's bits 2, 1 and 0 select the Caps Lock, Num Lock and Scroll Lock indicators.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16161-16171",
+       "sha": "ec68d505b609129aa0399d745280a49a89591cb6ee33df794804d0ceb62a00d9"
+      },
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16172-16174",
+       "sha": "72a44f000cf469fa3df0337f6dc780a04d40d60160b2922eeff9e53503a9bd0e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The keyboard acknowledges, sets the indicators and continues scanning if it was enabled.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16175-16179",
+       "sha": "ab270bd289a58afbc54f7359833ddce23af2fc424d3d0da285806e05a87bfc70"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The LED bits are stored and passed to the host's keyboard-LED update, which sets no host indicator: its calls are commented out.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "371-379",
+       "sha": "7beeeb0458afc3e909cd0eabad648244fc7c20723d2ccf9855bf6bc3e072ccdf"
+      },
+      {
+       "ref": "dosbox-x:src/gui/sdlmain.cpp",
+       "lines": "2628-2637",
+       "sha": "dd51109850dae196a64fae294d87855dd594d89e0577d861d2ca5f4b4580c092"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-576",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-582",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "586",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "587-589",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "697-702",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "703-704",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xEE",
+   "name": "echo",
+   "aliases": [
+    "diagnostic echo"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "16069-16071"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "16264-16265"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "0xee"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Echo is a diagnostic aid: the keyboard answers it if it was enabled and keeps scanning.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16069-16071",
+       "sha": "fe0459921b5139b8fa7313dc25cde8b6abd74fb306a616b98e40f3432ac876ea"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Hex EE is the answer the keyboard sends to an Echo command.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16264-16265",
+       "sha": "4915d9786451de5bdc637cf2d739a765492adfddc0bca88d5c1d80d443d5f5f5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-576",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-582",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "586",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "591-593",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "592",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xF2",
+   "name": "identify keyboard",
+   "aliases": [
+    "read ID"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "16080-16085"
+    },
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "16266-16270"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "0xf2"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Read ID asks the keyboard for its identification: it acknowledges, stops scanning and sends two ID bytes.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16080-16085",
+       "sha": "40ea2beeb844896bc082cf59c46615aad57b196f8a4ed5a5702a29ab18aea46b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The keyboard ID is two bytes, 83h and ABh, the low byte first.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16266-16270",
+       "sha": "17a03711eaef64b6ae8358d28df0bb2264241fe204bfc34f78f3c41dfb169fc7"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-576",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-582",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "586",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "598-602",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "599-601",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xF3",
+   "name": "typematic rate",
+   "aliases": [
+    "set typematic"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "16187-16199"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "0xf3"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "CMD_SETTYPERATE"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Set Typematic Rate/Delay makes the keyboard acknowledge, stop scanning, take a rate and delay byte, acknowledge it and continue.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16187-16192",
+       "sha": "8eefbddc0a15c846c5a6bb44e2747fd0f0ba619e0c9c853e3e90a447a1743cd1"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 6 and 5 give a delay of 1 plus their value times 250 ms, within 20%; bits 4 through 0 give the rate; bit 7 is 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16193-16199",
+       "sha": "1f979d6c39cbb12d24f6a5fd50c2b6035c0eb9d70fa4fceaaaae9a422b70c254"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The delays and rates are two tables of four and thirty-two entries.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "685-689",
+       "sha": "a20898f6c2bd1ca47240e60ca9faa0f51daa25b64c12e0f4bf42b362d7063dc0"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-576",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-582",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "586",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "603-606",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "680-684",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "690-691",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "692-696",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xF4",
+   "name": "enable",
+   "aliases": [
+    "enable scanning"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "16072-16074"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "0xf4"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command F4h enables the keyboard: it acknowledges, clears its output buffer and the last typematic key and starts scanning.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16072-16074",
+       "sha": "ac9f7bb4e73ad1f9e9d1dd817281bc40cdf736b96f5c54651cdc0e781b141dec"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Scanning starts, with an acknowledgement sent first.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16072-16074",
+       "sha": "ac9f7bb4e73ad1f9e9d1dd817281bc40cdf736b96f5c54651cdc0e781b141dec"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-576",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-582",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "586",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "609-610",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xF5",
+   "name": "default disable",
+   "aliases": [
+    "stop scanning"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "16063-16068"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "0xf5"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command F5h resets all conditions to the power-on defaults: the key types, the typematic rate and delay and the last key.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16063-16068",
+       "sha": "31f3fcb5a58c1beb90392b572b975229e6881388f0947fbc2c835a105024847a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The keyboard acknowledges, clears its output buffer, stops scanning and awaits instructions.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16063-16068",
+       "sha": "31f3fcb5a58c1beb90392b572b975229e6881388f0947fbc2c835a105024847a"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "It acknowledges and stops scanning, but the output buffer is not cleared and no condition is reset.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "612-616",
+       "sha": "4769e2a59e34f0effd52abbf286ad88c337caeb2d1c26a9858db67c1808cc443"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-576",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-582",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "586",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "612-616",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xF6",
+   "name": "set default",
+   "aliases": [
+    "reset defaults"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "16137-16141"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "0xf6"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Command F6h resets all conditions to the power-on defaults.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16137-16141",
+       "sha": "9440c93bc1ba8c892fb72e107208710ae5a4b7b491a93f80615c27f689a3295d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The keyboard acknowledges, clears its buffer, sets the default key types and rate, and continues scanning.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16137-16141",
+       "sha": "9440c93bc1ba8c892fb72e107208710ae5a4b7b491a93f80615c27f689a3295d"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "It acknowledges and keeps scanning, but the output buffer is not cleared and the defaults are not set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "617-621",
+       "sha": "15a652120c0046ee1a13bebe7a3c00d8e14411944ac1ea7ba05e83afd4228d39"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-576",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-582",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "586",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "617-621",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xFF",
+   "name": "keyboard reset",
+   "aliases": [
+    "reset",
+    "FF reset"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PS2-HITR.raw.txt",
+     "lines": "16093-16103"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "write_p60",
+     "case": [
+      "0xff"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AUX_Write",
+     "case": [
+      "0xff"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Reset command starts a program reset and a keyboard internal self-test.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16093-16094",
+       "sha": "66da62c351cd9deebb0165e80cd49df0480f4effafeb4cfae2527398ce98e43b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The keyboard acknowledges with ACK and is disabled until the system accepts ACK by raising the clock and data lines.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16095-16100",
+       "sha": "100c434e363aa9b2dc4a85c796fe789026d4c14e6c393caa4b0323a8396cf5b6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "After acceptance the keyboard reinitializes, performs the BAT and, after its completion code, defaults to scan-code set 2.",
+     "quotes": [
+      {
+       "ref": "datasheet:PS2-HITR.raw.txt",
+       "lines": "16101-16103",
+       "sha": "296f2fa742b0eb62899551123d396a23f219a8fbdafce1e8239bf21debda7ba3"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "The 0xFA acknowledgement is queued and a 400 ms timer starts at once; nothing waits for the host to accept ACK, and writes are ignored until it fires.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "622-628",
+       "sha": "24e94fad107c9fcc6f04b83c11184f942d5d7cc98bf8d674f747dde952842e33"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "45",
+       "sha": "21e52f3ce32e7713fa00f59b665a3136955fcb96f4c9c81a0c187604976f69bb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "278-284",
+       "sha": "16db51338d26d6262900e714bcb9756d4dd1bb92613e3508b69ce7c5fb1dc5c3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "581-582",
+       "sha": "1c83ef2b9eaa0ea43631cf6db6b3bd73cbd092679dbf3a300be4302499239ce0"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "The timer sends 0xAA and 0x00, and the reinitialized keyboard's scan-code set is 1 rather than 2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "622-628",
+       "sha": "24e94fad107c9fcc6f04b83c11184f942d5d7cc98bf8d674f747dde952842e33"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "278-284",
+       "sha": "16db51338d26d6262900e714bcb9756d4dd1bb92613e3508b69ce7c5fb1dc5c3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "2983-2994",
+       "sha": "52dbcb8e73be8b2f7e0840b92c5020c57a01c323501b6eaefc9ed32b3ae46b4e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "2995-3005",
+       "sha": "cc20c0f3aa81e887d2819d8b4fd309944272e92b21374b06563a3e172e6effc5"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A 0xFF sent to the auxiliary device resets the mouse: it replies 0xFA 0xAA 0x00, sets the rate to 80 and resolution to 1, and clears reporting and scaling.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "448-456",
+       "sha": "7054e239202a9caba4bc58dbebb4b80476a2a229899e282e5c1851ea22dcbf03"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "2955-2965",
+       "sha": "8e001bc1017287c9757769ddaa3972ac64b6ddeebbfc3f203054a220cc9c5a57"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "574-577",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "579-582",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "586",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "435-436",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "438-443",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "445-447",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xEC",
+   "name": "reset wrap mode",
+   "aliases": [
+    "reset wrap"
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AUX_Write",
+     "case": [
+      "0xec"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Command 0xEC is the auxiliary device's reset wrap mode.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "494-497",
+       "sha": "a6f286696fb20563c33776192e4ab98caa221b12d91ea45675523e557ed95ab6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte is acknowledged with 0xFA and the mouse's mode is stored as remote.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "494-497",
+       "sha": "a6f286696fb20563c33776192e4ab98caa221b12d91ea45675523e557ed95ab6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "435-436",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "438-443",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "445-447",
+     "as": "structure"
+    }
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's 8042 keyboard and mouse controller source names no document"
+    },
+    {
+     "where": "maker",
+     "gave": "IBM announced a Personal System/2 Mouse Technical Reference (S68X-2229) in October 1987 and no longer offers it, and no copy is published online"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "its IBM PC and PS/2 folders hold no mouse manual, and the PS/2 hardware interface reference there documents the controller and the keyboard, not the auxiliary device"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the scanned PS/2 hardware interface reference editions hold no auxiliary-device command list, and no scan of the mouse manual was found"
+    },
+    {
+     "where": "index",
+     "gave": "the datasheet indexes name no IBM mouse manual"
+    }
+   ]
+  },
+  {
+   "key": "0xEB",
+   "name": "read data",
+   "aliases": [
+    "read data command"
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AUX_Write",
+     "case": [
+      "0xeb"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Command 0xEB is the auxiliary device's read data.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "498-505",
+       "sha": "84d02dd7c00bf7a5e9f34769f94f8de3c1eb549feff13b3f89e8b3f4bc94bc2a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Read data is acknowledged with 0xFA; a packet is queued only when reporting and stream mode are both on, and it carries the current button state.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "498-505",
+       "sha": "84d02dd7c00bf7a5e9f34769f94f8de3c1eb549feff13b3f89e8b3f4bc94bc2a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "188-199",
+       "sha": "63c4ff752b60dbf499ae621f34234a73a26aebfc782ae66e28183c4a9b427b5c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "200-202",
+       "sha": "d7aef29b51e78dda059b7cf6e57110e8d7d2cf2f264a546b556b5d9e4e897075"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "211-212",
+       "sha": "25f184f71ac603557faf64e42eff4a299f619f5d476b245d36dd58e8e49c781b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "225-235",
+       "sha": "f2aad042d55e11482ed02bccb8e19bae6fbb5c3daf721c0773d40e95741e9cdc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "435-436",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "438-443",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "445-447",
+     "as": "structure"
+    }
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's 8042 keyboard and mouse controller source names no document"
+    },
+    {
+     "where": "maker",
+     "gave": "IBM announced a Personal System/2 Mouse Technical Reference (S68X-2229) in October 1987 and no longer offers it, and no copy is published online"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "its IBM PC and PS/2 folders hold no mouse manual, and the PS/2 hardware interface reference there documents the controller and the keyboard, not the auxiliary device"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the scanned PS/2 hardware interface reference editions hold no auxiliary-device command list, and no scan of the mouse manual was found"
+    },
+    {
+     "where": "index",
+     "gave": "the datasheet indexes name no IBM mouse manual"
+    }
+   ]
+  },
+  {
+   "key": "0xEA",
+   "name": "set stream mode",
+   "aliases": [
+    "stream mode"
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AUX_Write",
+     "case": [
+      "0xea"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Command 0xEA is the auxiliary device's set stream mode.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "506-509",
+       "sha": "8c325374d8229bc16761530df2d9eb635a75e41a2e65b8fd2a9cf71b6a842e0e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte is acknowledged with 0xFA and the mouse's mode is stored as stream.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "506-509",
+       "sha": "8c325374d8229bc16761530df2d9eb635a75e41a2e65b8fd2a9cf71b6a842e0e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "435-436",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "438-443",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "445-447",
+     "as": "structure"
+    }
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's 8042 keyboard and mouse controller source names no document"
+    },
+    {
+     "where": "maker",
+     "gave": "IBM announced a Personal System/2 Mouse Technical Reference (S68X-2229) in October 1987 and no longer offers it, and no copy is published online"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "its IBM PC and PS/2 folders hold no mouse manual, and the PS/2 hardware interface reference there documents the controller and the keyboard, not the auxiliary device"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the scanned PS/2 hardware interface reference editions hold no auxiliary-device command list, and no scan of the mouse manual was found"
+    },
+    {
+     "where": "index",
+     "gave": "the datasheet indexes name no IBM mouse manual"
+    }
+   ]
+  },
+  {
+   "key": "0xE9",
+   "name": "status request",
+   "aliases": [
+    "status request command"
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AUX_Write",
+     "case": [
+      "0xe9"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Command 0xE9 is the auxiliary device's status request.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "510-515",
+       "sha": "586a8e1dc05ecd72065b53921d97a619489971e03607e11cc853b71d8f3a9b83"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "It is acknowledged with 0xFA, and then three bytes follow: the device status, the resolution and the sample rate; the status byte holds the remote-mode, reporting, scaling and button bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "510-515",
+       "sha": "586a8e1dc05ecd72065b53921d97a619489971e03607e11cc853b71d8f3a9b83"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "417-423",
+       "sha": "8d38f4d1db8172e2729e5ee0d31506a495de830afac96a45a0eb6a1a81703825"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "435-436",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "438-443",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "445-447",
+     "as": "structure"
+    }
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's 8042 keyboard and mouse controller source names no document"
+    },
+    {
+     "where": "maker",
+     "gave": "IBM announced a Personal System/2 Mouse Technical Reference (S68X-2229) in October 1987 and no longer offers it, and no copy is published online"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "its IBM PC and PS/2 folders hold no mouse manual, and the PS/2 hardware interface reference there documents the controller and the keyboard, not the auxiliary device"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the scanned PS/2 hardware interface reference editions hold no auxiliary-device command list, and no scan of the mouse manual was found"
+    },
+    {
+     "where": "index",
+     "gave": "the datasheet indexes name no IBM mouse manual"
+    }
+   ]
+  },
+  {
+   "key": "0xE8",
+   "name": "set resolution",
+   "aliases": [
+    "resolution"
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AUX_Write",
+     "case": [
+      "0xe8"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AUX_Write",
+     "case": [
+      "ACMD_SET_RESOLUTION"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Command 0xE8 is the auxiliary device's set resolution.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "516-519",
+       "sha": "82413b2eb4a0cc8085c3a613af68aa13faaf144f4aa9d1bc354872145080cc75"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "It is acknowledged with 0xFA and takes the next byte, whose low two bits replace the stored resolution.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "516-519",
+       "sha": "82413b2eb4a0cc8085c3a613af68aa13faaf144f4aa9d1bc354872145080cc75"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "557-562",
+       "sha": "de2875bc03e539e7b18ccf639d239b9b9662c0ec9fd104ae9070e901df9862b4"
+      }
+     ]
+    }
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's 8042 keyboard and mouse controller source names no document"
+    },
+    {
+     "where": "maker",
+     "gave": "IBM announced a Personal System/2 Mouse Technical Reference (S68X-2229) in October 1987 and no longer offers it, and no copy is published online"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "its IBM PC and PS/2 folders hold no mouse manual, and the PS/2 hardware interface reference there documents the controller and the keyboard, not the auxiliary device"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the scanned PS/2 hardware interface reference editions hold no auxiliary-device command list, and no scan of the mouse manual was found"
+    },
+    {
+     "where": "index",
+     "gave": "the datasheet indexes name no IBM mouse manual"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "435-436",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "438-443",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "445-447",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xE7",
+   "name": "set scaling 2:1",
+   "aliases": [
+    "scaling 2:1"
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AUX_Write",
+     "case": [
+      "0xe7"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Command 0xE7 is the auxiliary device's set scaling 2:1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "520-524",
+       "sha": "c96e709e9870c3fb87a7f77757754d228a74975510a268b17239c16d2bb1a081"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte is acknowledged with 0xFA and the mouse's scaling is stored as 2:1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "520-524",
+       "sha": "c96e709e9870c3fb87a7f77757754d228a74975510a268b17239c16d2bb1a081"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "435-436",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "438-443",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "445-447",
+     "as": "structure"
+    }
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's 8042 keyboard and mouse controller source names no document"
+    },
+    {
+     "where": "maker",
+     "gave": "IBM announced a Personal System/2 Mouse Technical Reference (S68X-2229) in October 1987 and no longer offers it, and no copy is published online"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "its IBM PC and PS/2 folders hold no mouse manual, and the PS/2 hardware interface reference there documents the controller and the keyboard, not the auxiliary device"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the scanned PS/2 hardware interface reference editions hold no auxiliary-device command list, and no scan of the mouse manual was found"
+    },
+    {
+     "where": "index",
+     "gave": "the datasheet indexes name no IBM mouse manual"
+    }
+   ]
+  },
+  {
+   "key": "0xE6",
+   "name": "set scaling 1:1",
+   "aliases": [
+    "scaling 1:1"
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "function": "KEYBOARD_AUX_Write",
+     "case": [
+      "0xe6"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Command 0xE6 is the auxiliary device's set scaling 1:1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "525-529",
+       "sha": "8d88d3fc559005453216855fb43e6ebac9d24c4051759acb4ea24d78682c7f43"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The byte is acknowledged with 0xFA and the mouse's scaling is stored as 1:1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "525-529",
+       "sha": "8d88d3fc559005453216855fb43e6ebac9d24c4051759acb4ea24d78682c7f43"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "435-436",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "438-443",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/keyboard.cpp",
+     "lines": "445-447",
+     "as": "structure"
+    }
+   ],
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's 8042 keyboard and mouse controller source names no document"
+    },
+    {
+     "where": "maker",
+     "gave": "IBM announced a Personal System/2 Mouse Technical Reference (S68X-2229) in October 1987 and no longer offers it, and no copy is published online"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "its IBM PC and PS/2 folders hold no mouse manual, and the PS/2 hardware interface reference there documents the controller and the keyboard, not the auxiliary device"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the scanned PS/2 hardware interface reference editions hold no auxiliary-device command list, and no scan of the mouse manual was found"
+    },
+    {
+     "where": "index",
+     "gave": "the datasheet indexes name no IBM mouse manual"
+    }
+   ]
+  }
+ ]
+}

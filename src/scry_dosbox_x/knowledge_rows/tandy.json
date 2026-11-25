@@ -1,0 +1,1387 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "tandy",
+ "kind": "port",
+ "scope": "tandy",
+ "title": "the Tandy 1000's sound ports",
+ "covers": "The Tandy 1000's sound ports: the 76496 tone and noise generator at 00C0h, the PSSJ's DAC registers at 00C4h-00C7h, and the 01E0h and 01E4h aliases DOSBox-X opens on a machine that is not Tandy.",
+ "source": "official",
+ "documents": [
+  {
+   "name": "Tandy1000SL-Technical-Reference.raw.txt",
+   "variant": "1000SL"
+  },
+  {
+   "name": "SN76494.raw.txt",
+   "variant": "SN76496"
+  }
+ ],
+ "official": {
+  "Tandy1000SL-Technical-Reference.raw.txt": [
+   "1807",
+   "1875-1896",
+   "6876-6933",
+   "1953-1979",
+   "1980-1989",
+   "1990-2006",
+   "6982-6990",
+   "6994-6996",
+   "7032",
+   "6951-6953",
+   "6978-6979"
+  ],
+  "SN76494.raw.txt": [
+   "291-312",
+   "315-317"
+  ]
+ },
+ "entries": [
+  {
+   "key": "0xC0",
+   "name": "SN76496 sound port",
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.A",
+     "lines": "9392"
+    },
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "1807"
+    },
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "1875-1896"
+    },
+    {
+     "ref": "datasheet:SN76494.raw.txt",
+     "lines": "291-312"
+    },
+    {
+     "ref": "datasheet:SN76494.raw.txt",
+     "lines": "315-317"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "342"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "74-85"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/sn76496.cpp",
+     "lines": "323-329"
+    },
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "7032"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/sn76496.cpp",
+     "lines": "319-324"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/sn76496.cpp",
+     "lines": "338"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/sn76496.cpp",
+     "lines": "348-353"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "Ports 00C0h-00C3h take writes to the sound chip, an SN76496 tone and noise generator.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1807",
+       "sha": "73baae9f3280be5d0eda752bd5169a08fb84e4e5914e9d6dd3b72088ac5b5128"
+      },
+      {
+       "ref": "rbil61:PORTS.A",
+       "lines": "9392",
+       "sha": "8749f045c86bcb6f69fadb6b3d7b065404e94e03757f50f34f790599eb50f129"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "7032",
+       "sha": "fbb43718adacb9332e99d7189468fb4543ac8959f56a8d5b9ddcf4d04bb94d78"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "The first byte carries the three-bit register address and the data that go with it.",
+     "quotes": [
+      {
+       "ref": "datasheet:SN76494.raw.txt",
+       "lines": "298-301",
+       "sha": "603f2df575aeeba23668739f774135dd5409027bf25d54901b9780ab9cb83b27"
+      },
+      {
+       "ref": "datasheet:SN76494.raw.txt",
+       "lines": "315-317",
+       "sha": "6f2cf565538f47ddb6c8e04778072175f6748f0752c98eb78f572a4019c208d0"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A later byte without the address goes to the control register the address stayed latched on.",
+     "quotes": [
+      {
+       "ref": "datasheet:SN76494.raw.txt",
+       "lines": "294-297",
+       "sha": "ec07f38e84ce826f3c016789bb1c3e0dcfdeaba04cdd7297e78e201f750dc5ec"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A frequency needs two bytes, the second holding the rest of its ten bits; an attenuation needs one.",
+     "quotes": [
+      {
+       "ref": "datasheet:SN76494.raw.txt",
+       "lines": "291-293",
+       "sha": "451fc1da78f28066880a2a1c801d643a131dbcde2b504b64071553e2c2e91056"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1877-1878",
+       "sha": "9dd3b3dd899e9372849348c25f459e5a06eaf097945a3e4beb0767c3f6af71be"
+      },
+      {
+       "ref": "datasheet:SN76494.raw.txt",
+       "lines": "315-317",
+       "sha": "6f2cf565538f47ddb6c8e04778072175f6748f0752c98eb78f572a4019c208d0"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The eight control registers are the frequency and attenuation of each tone, then noise control and noise attenuation.",
+     "quotes": [
+      {
+       "ref": "datasheet:SN76494.raw.txt",
+       "lines": "302-312",
+       "sha": "4aa02e0603a0752c0e6f48f3cdf38b342f4b83c894d489f81453d3fade12e99f"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The bytes the port names: update of tone 1 frequency and attenuation, the same for tones 2 and 3, and of noise control and attenuation.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1875-1886",
+       "sha": "1a8f71ad564e19a9fdae55e1be25e4d1d0f4d1275c29501ec08d42d7c550e2be"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1887-1896",
+       "sha": "197fc0a2c7da52b968bd148b8e598377564250e0358a3e7aa70a41b526f04912"
+      }
+     ]
+    },
+    {
+     "n": "D1",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "DOSBox-X installs the write handler on 0x00C0-0x00C1 only, so a write to 0x00C2 or 0x00C3 reaches no sound chip.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "342",
+       "sha": "174a7b0cc5ec5cd82fdfddb6239c44422fb8b3bdfda4249ed4b29b6870ea17c6"
+      },
+      {
+       "ref": "dosbox-x:include/inout.h",
+       "lines": "155",
+       "sha": "76cce2d4666bd2ff6a265c2efbe9e9a468649b35ed2a2c98417bb913a2bbae02"
+      }
+     ]
+    },
+    {
+     "n": "D3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "On the Tandy 1000, the NCR8496 drops a byte without the address when it goes to an attenuation or the noise control register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/mame/sn76496.cpp",
+       "lines": "323-329",
+       "sha": "504ce64ac10dfe2f5267997a5cd98464bde6a8450034561b88d94c5be3fdeb4d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "310-312",
+       "sha": "0e47e730ae6e5c55f0213b72bab89f5ba09b671e52dfd1475e9d78157ef23193"
+      }
+     ]
+    },
+    {
+     "n": "D4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to 0x00C0 also enables the Tandy channel and makes the mixer render the samples due before the change.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "74-85",
+       "sha": "c057d2222fd5ccf1da3d0b76a2911a0cd52887af0d13004dd67cec800ce73d63"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X reaches the chip through SN76496Write, installed at 0x00C0 when Tandy sound is enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "314-322",
+       "sha": "1c88e8ec26730e2e247d87c103b15c4650248bf07270467512ffb3658e4de444"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "342",
+       "sha": "174a7b0cc5ec5cd82fdfddb6239c44422fb8b3bdfda4249ed4b29b6870ea17c6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/mame/sn76496.cpp",
+     "lines": "319-324",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/sn76496.cpp",
+     "lines": "338",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/mame/sn76496.cpp",
+     "lines": "348-353",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x1E0",
+   "name": "SN76496 alias at 01E0h",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's sn76496.cpp header cites the SN76489 document, which names no port; its Tandy driver installs the chip at 00C0h only."
+    },
+    {
+     "where": "maker",
+     "gave": "The Tandy 1000 SL manual maps 00C0-00C3 and no 01E0h."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "The Tandy folder holds the Model 100, 2000 and 6000 service manuals only."
+    },
+    {
+     "where": "archive-org",
+     "gave": "The Tandy 1000 EX technical reference is held there as full text; it names no 01E0h, though it gives few port numbers."
+    },
+    {
+     "where": "index",
+     "gave": "Web searches for 01E0h with Tandy gave the PSSJ DAC at 00C4h and no 01E0h port."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "325"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "74-85"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a machine that is not Tandy, with tandy enabled and no Sound Blaster, DOSBox-X installs SN76496Write at 0x01E0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "302-306",
+       "sha": "341308062e6ac0b672bbb3d61814f0c9c917d4bdd474580f8f3cb527de7d3a8a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "314-325",
+       "sha": "0ab8ce5cf69312c99e77fddbd7874d6310471404d2230aa9dafbb08726749c2e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The handler ignores which port called it, so 0x01E0 programs the same registers as 0x00C0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "74-85",
+       "sha": "c057d2222fd5ccf1da3d0b76a2911a0cd52887af0d13004dd67cec800ce73d63"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X reaches it through the SN76496Write handler installed for two ports at 0x01E0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "325",
+       "sha": "d3f4c41cec8caa95eea755c9991cb660a88c0b89db8438a4e5c889bbd4d2136d"
+      },
+      {
+       "ref": "dosbox-x:include/inout.h",
+       "lines": "155",
+       "sha": "76cce2d4666bd2ff6a265c2efbe9e9a468649b35ed2a2c98417bb913a2bbae02"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0x1E4..0x1E7",
+   "name": "DAC alias at 01E4h",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's sn76496.cpp header cites the SN76489 document, which names no port; its Tandy driver has no DAC at all."
+    },
+    {
+     "where": "maker",
+     "gave": "The Tandy 1000 SL manual maps the DAC at 00C4-00C7 and no 01E4h."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "The Tandy folder holds the Model 100, 2000 and 6000 service manuals only."
+    },
+    {
+     "where": "archive-org",
+     "gave": "The Tandy 1000 EX technical reference is held there as full text; it names no 01E4h, though it gives few port numbers."
+    },
+    {
+     "where": "index",
+     "gave": "Web searches for 01E4h with Tandy gave the DAC at 00C4h and no 01E4h port."
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "326"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "168-226"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On such a machine DOSBox-X installs TandyDACWrite for four ports at 0x01E4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "302-306",
+       "sha": "341308062e6ac0b672bbb3d61814f0c9c917d4bdd474580f8f3cb527de7d3a8a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "314-324",
+       "sha": "e281159626b013321d2c1fba1937fdde4ca415a8c7beb316c41343b07ae13252"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "325-326",
+       "sha": "9e9deda8ba1d579474401bd4ef691a86ef7f9da8a393821c7516a77b7a86852a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to 0x01E4-0x01E7 changes nothing: the handler tests the port number against 0xC4-0xC7 and has no other case.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "168-179",
+       "sha": "496bd3015d5d1ca19018ccd52e0554453187fdbc763d4a6dfabe931814c08bfd"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "180-191",
+       "sha": "4271d93f55e97f1b8e35a9425a7290daf5ca34a3abdee3ab9bb78974e99762b4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "192-203",
+       "sha": "73dab201bba7cded4223c6fd870921590d24315de4a9d11c85f238e607f2eed1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "204-215",
+       "sha": "554b3d0d0945d00b9420c908af3f2a342eef115fc07ebc444f50bf7ba06992e2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "216-226",
+       "sha": "23ccc24926b8e48f857fde081949e1acdd6036620223a064baab0d0ad61635c9"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X reaches it through TandyDACWrite, installed for four ports at 0x01E4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "326",
+       "sha": "e85d7ab8e17be2dcdafe95989f5bb871f2abc334253944d8d8e7898af8731f8d"
+      },
+      {
+       "ref": "dosbox-x:include/inout.h",
+       "lines": "155",
+       "sha": "76cce2d4666bd2ff6a265c2efbe9e9a468649b35ed2a2c98417bb913a2bbae02"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "0xC4",
+   "name": "Tandy DAC mode register",
+   "regions": [
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "6876-6933"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "346-347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "function": "TandyDACWrite"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "00C4h is the C4 write register that selects the DAC function.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6876-6877",
+       "sha": "fd4ae245c9b70b77b6142561cbfb35d80360eb7b2084bdc87cd2779fe36d9b84"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6899-6900",
+       "sha": "ad3bb52936beab6be9cd022ec1ce27407fbc8abd140008dae343e683e4740118"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "bits 0-1",
+     "of": "doc",
+     "text": "Bits 0-1 select one of four DAC functions: joystick, sound channel, successive approximation, direct write to the DAC.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6878-6882",
+       "sha": "7c9f27abc4899b4d90ad6d5cd2cb42fc5c64b3604d4ad0d5fbf31e348d61c93f"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6899-6904",
+       "sha": "d5632555a1446f27e21eeba63fdd4aceef9f464a282297b938298284100b14d1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bit 2",
+     "of": "doc",
+     "text": "Bit 2 enables DMA for successive approximation and direct access, SA and DA.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6883-6885",
+       "sha": "6d46b101f5b9fc0c807a88dfa74eae79ca417810dcd59a24e25943b90674cd9e"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6905-6907",
+       "sha": "26e75873622487513e94663069da70adf70985ae19bf185a75abd3b2780b4fe4"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6899",
+       "sha": "c6bc7b798ae8cfecf3d78c356649dbb3b2690f7d173a9f1de0238aab2a8f394b"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bit 3",
+     "of": "doc",
+     "text": "Bit 3 clears the DMA interrupt while it is low, and the interrupt is allowed while it is high.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6886-6888",
+       "sha": "f381644cf97ca9a221c08e8d631d03106efb783b7864ef1295c82649bdae2dee"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6908-6912",
+       "sha": "5996f8d8a8b51c1721cba4f5422890b964d9d052bf0545892cb709e074c956c8"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6899",
+       "sha": "c6bc7b798ae8cfecf3d78c356649dbb3b2690f7d173a9f1de0238aab2a8f394b"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bit 4",
+     "of": "doc",
+     "text": "Bit 4 enables the DMA interrupt: the DMA EOP interrupt disabled or enabled.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6889-6891",
+       "sha": "084c956fed448858b691dc0ed2f7d257bb2150db8b42c3c6fa16cc18c4f94656"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6912-6914",
+       "sha": "d65f02e9ec12c7badffbdb307601734216b9a54e49cd7240832f5272797c7995"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6899",
+       "sha": "c6bc7b798ae8cfecf3d78c356649dbb3b2690f7d173a9f1de0238aab2a8f394b"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "bit 5",
+     "of": "doc",
+     "text": "Bit 5 enables divider synchronization, and then a write to C6 or C7 reloads all dividers.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6892-6894",
+       "sha": "9d3d97e9555a8bb36881cf03146db5187b3c3dded9cc115bcdf8174ed88b1b5b"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6915-6918",
+       "sha": "1fc57e18237b9d91d05bc66c0bd9491df41094bdb05e102dfa99be8c1b8fdf00"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6899",
+       "sha": "c6bc7b798ae8cfecf3d78c356649dbb3b2690f7d173a9f1de0238aab2a8f394b"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "bit 6",
+     "of": "doc",
+     "text": "Bit 6 enables an extra bit of division in the sound chip.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6895-6897",
+       "sha": "99937b3be0d7b2da863ec018c73751894a66a69f76c871c85438075b1dad2336"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6919-6922",
+       "sha": "d2f09acaf3195438b30a16958766ce200e6e61feccee34cc304ad05b740db24a"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6876",
+       "sha": "0fcb16bfd92f3ed0ef2273a2ab96753a24e64b7e884950d7d2c5ae2bc577894c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6898",
+       "sha": "205a2d20f0fa3835b3ea1fe417a3f0315bc706e51484e1b8dc55111b0a7937c2"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6923",
+       "sha": "c0d03c1239e01842d73cf046314bdc7de6e5d3280afc9776262f78be40a95bab"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6876",
+       "sha": "0fcb16bfd92f3ed0ef2273a2ab96753a24e64b7e884950d7d2c5ae2bc577894c"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "read",
+     "of": "doc",
+     "text": "A read gives every bit back except bit 3, and bit 7 says whether an approximation is done; bit 3 says a DMA interrupt occurred.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6924-6933",
+       "sha": "ac705e2fc85a276bdc116d3546104cbea035858c50696f90fca6929cce43326f"
+      }
+     ]
+    },
+    {
+     "n": "D2",
+     "on": "bits 0-1",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X switches on the two bits with joystick, recording and playback named, the second value doing nothing, and acts on playback alone.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "128-139",
+       "sha": "e9b765e53fed6284d155821352b83f84446db9cec8b23c1f40f557f708e20404"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "140-149",
+       "sha": "aea4169e3c3e8580d38e58fa3e93923fb0b1b7a1e2e19b597824007aa67d828b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "150-158",
+       "sha": "26d9f3ba0c2d935ea08804e6de46415fa4e779a23edd1b42fdb26062086b7f41"
+      }
+     ]
+    },
+    {
+     "n": "D3",
+     "on": "bit 2",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "DMA starts only when bit 2 and bit 3 are both set, so bit 2 alone enables nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "176-180",
+       "sha": "d8f8203ca9193f21682d8c40f61bd801c24504d8b01894e86889fed3a674591f"
+      }
+     ]
+    },
+    {
+     "n": "D4",
+     "on": "bit 3",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "Bit 3 arms the DMA transfer together with bit 2 instead of clearing an interrupt, and no transfer sets the interrupt flag.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "176-180",
+       "sha": "d8f8203ca9193f21682d8c40f61bd801c24504d8b01894e86889fed3a674591f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "121-126",
+       "sha": "8ab847e8f7f9e5c2c9a08411908d060721f09b0740aa2d85ebbb606385a2d4e1"
+      }
+     ]
+    },
+    {
+     "n": "D5",
+     "on": "bit 4",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "The case stores the byte and never reads bit 4, and an interrupt is raised at terminal count whether the bit is set or not.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "170-181",
+       "sha": "49f5b544010512c0b755252af14e2cb8be3744726b34118a8a769dbb1db729de"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "122-126",
+       "sha": "8ab847e8f7f9e5c2c9a08411908d060721f09b0740aa2d85ebbb606385a2d4e1"
+      }
+     ]
+    },
+    {
+     "n": "D6",
+     "on": "bit 5",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "6",
+     "text": "The handler never reads bit 5, and a write to C6 or C7 reloads no divider.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "168-226",
+       "sha": "266b3af12c519a979739d4987b3abf7a40dcaa3ec10b96609ee1bddbf57970c8"
+      }
+     ]
+    },
+    {
+     "n": "D7",
+     "on": "bit 6",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "7",
+     "text": "The case never reads bit 6, so no extra division is enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "170-181",
+       "sha": "49f5b544010512c0b755252af14e2cb8be3744726b34118a8a769dbb1db729de"
+      }
+     ]
+    },
+    {
+     "n": "D9",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "9",
+     "text": "A read of 0x00C4 returns the mode with bits 3 and 7 clear, and bit 3 never reads set because nothing records the interrupt.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "228-231",
+       "sha": "809433d1a2bf10d984f2f07353cac44d36eb7426c08c8e00b41601f519a29c8f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "366",
+       "sha": "99a91de048a133a6dca4966811c17c29b8cc7a1008d6ca1036041936b7fb2944"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X reaches the register through TandyDACWrite and TandyDACRead, installed for four ports at 0x00C4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "346-347",
+       "sha": "f0c0fa71ad3a56ebb9381413b7fdd05763acf0c29061f89bf0e9b3b3c3d499cc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "168-226",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xC5",
+   "name": "Tandy DAC control",
+   "regions": [
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "1953-1979"
+    },
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "6988-6990"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "346-347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "function": "TandyDACWrite"
+    },
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "6951-6953"
+    },
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "6978-6979"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "A write of 00C5h sets the sound control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1954",
+       "sha": "af3b0590ede44ae3f144c04818dd06d8b8df2b739aee7256f0a97c841990e859"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6978-6979",
+       "sha": "ece7f6e626ee63f3536f4224c72947d6c5147c679d035b156fb95dd864a1274a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "bits 0-2",
+     "of": "doc",
+     "text": "Bits 0-2 select the duty cycle, from 6.25% in steps of 6.25% up to 50%.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1955-1964",
+       "sha": "b482dbdaff02e377e8e46c2c5bf5481f7577d244eac21fa4833961c7da1bca19"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 3-5 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1965-1967",
+       "sha": "9e96d88f4b6130f47039629d5dc59e6aa789399a9396f3624129e45c8942623f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bits 6-7",
+     "of": "doc",
+     "text": "Bits 6-7 select the waveshape: pulse, ramp or triangle, and the fourth value is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1968-1973",
+       "sha": "312e1c8720c8b2ac1dee67ebc6958ce67076c67813bb0ced8be8ae476539d07e"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 00C5h gives the DAC directly when bits 0-1 of 00C4h are 1x, and the control register when they are 01.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1974-1979",
+       "sha": "083626e55cd4afbeefb5c840f153e5e0894415a809730744cb666c6f725d3802"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6951-6953",
+       "sha": "ecf0eda39e373c7c802ef3557a1a8ba15053de6e5afe012ef3241d401828ca8a"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6978-6979",
+       "sha": "ece7f6e626ee63f3536f4224c72947d6c5147c679d035b156fb95dd864a1274a"
+      }
+     ]
+    },
+    {
+     "n": "D2",
+     "on": "bits 0-2",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "2",
+     "text": "The case stores the control byte in mode 1 and does nothing else with it, so no duty cycle is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "183-197",
+       "sha": "1a87f0f5e5945fc4cd885bfb33d6c9f3261a116935461f9990607155d43c5968"
+      }
+     ]
+    },
+    {
+     "n": "D4",
+     "on": "bits 6-7",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "4",
+     "text": "The case never reads the waveshape bits, so a pulse, ramp or triangle is never generated.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "183-197",
+       "sha": "1a87f0f5e5945fc4cd885bfb33d6c9f3261a116935461f9990607155d43c5968"
+      }
+     ]
+    },
+    {
+     "n": "D5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "A read of 0x00C5 matches no case of the DAC read handler, which logs it and returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "228-239",
+       "sha": "c36516d63ad874b468cfa1b36b83bf6d51b84fa249e8384a8393c2b607d098e5"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "In the ramp waveshape the five MSBs of the DAC count up; in the triangle the four count up and back down.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6988-6990",
+       "sha": "26ebba086442b7037885f476abc028e910c0e4337071f2c3f1498a87a8c09f71"
+      }
+     ]
+    },
+    {
+     "n": "D6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "6",
+     "text": "The case never reads the waveshape bits, so neither the ramp nor the triangle is generated.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "183-197",
+       "sha": "1a87f0f5e5945fc4cd885bfb33d6c9f3261a116935461f9990607155d43c5968"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X reaches the register through the four ports of TandyDACWrite and TandyDACRead installed at 0x00C4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "346-347",
+       "sha": "f0c0fa71ad3a56ebb9381413b7fdd05763acf0c29061f89bf0e9b3b3c3d499cc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "1953",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "168-226",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xC6",
+   "name": "DAC frequency low",
+   "regions": [
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "1980-1989"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "346-347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "function": "TandyDACWrite"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "function": "TandyDACRead"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The register holds the low eight bits of the DAC sound channel's frequency, F0-F7.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1980-1988",
+       "sha": "a0b6fab8ca3b12142d9b13a90d709ccca3ac61321b19fc9d78d89aa25ad4f3ce"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets bits F0-F7 of the frequency.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1980-1988",
+       "sha": "a0b6fab8ca3b12142d9b13a90d709ccca3ac61321b19fc9d78d89aa25ad4f3ce"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read gives the low eight bits of the frequency.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1980-1988",
+       "sha": "a0b6fab8ca3b12142d9b13a90d709ccca3ac61321b19fc9d78d89aa25ad4f3ce"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X reaches the register through the four ports of TandyDACWrite and TandyDACRead installed at 0x00C4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "346-347",
+       "sha": "f0c0fa71ad3a56ebb9381413b7fdd05763acf0c29061f89bf0e9b3b3c3d499cc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "1989",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "168-226",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "228-239",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "198-199",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "232-233",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0xC7",
+   "name": "DAC freq high and volume",
+   "regions": [
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "1990-2006"
+    },
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "6982-6987"
+    },
+    {
+     "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+     "lines": "6994-6996"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "346-347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "function": "TandyDACWrite"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "function": "TandyDACRead"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "143"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "145-146"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 0-3 of 00C7h hold frequency bits F8-F11.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1990-1998",
+       "sha": "522b24b23923af4519382563791179c28a7fc71030e8960ac5e9084af99c3f61"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1999-2002",
+       "sha": "1c3a625fbac777869849290435d7b3bc5702d4f8a55f038cf7b5db0647007176"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 5-7 hold the amplitude in seven levels of about 3 dB, where 111 is the maximum and 000 no output.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1996-2006",
+       "sha": "337b352dd7fd3dc4ef4479e7cfa1ece9b0d60cf6f7f1fff45ea12cf6607c7b3e"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6982-6987",
+       "sha": "a3108e2206e5d29e15b5e32fc12ff78dc20396b522fe858ccc3370e2c39d481e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 4 is reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1995",
+       "sha": "5e0f9b6beabfb209d7a7cf4b54e27b47651e5701e1e1d5bfa45ad41a490187f4"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2003",
+       "sha": "3385ffe6747065e4884da355303009050e129ec48d3e05bce928d6213bb6753c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of 00C7h gives F8-F11 and the amplitude back.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1990-1998",
+       "sha": "522b24b23923af4519382563791179c28a7fc71030e8960ac5e9084af99c3f61"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "1999-2002",
+       "sha": "1c3a625fbac777869849290435d7b3bc5702d4f8a55f038cf7b5db0647007176"
+      },
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "2004-2006",
+       "sha": "b0fd5987f73e4f8adfac78654a7eb689c22a548c9570e00add0ec71971f45cd9"
+      }
+     ]
+    },
+    {
+     "n": "D5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "DOSBox-X divides 3579545 by the number where the manual divides 111.86 kHz, 32 times the manual's frequency.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "143",
+       "sha": "da03cdfc4e594290c178e74e67084dcd4f93a2d2de2c33e450436ef6a4d64c18"
+      }
+     ],
+     "vs": "differs",
+     "row": "5"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "The sound channel's frequency is 111.86 kHz divided by the number programmed into the frequency register.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tandy1000SL-Technical-Reference.raw.txt",
+       "lines": "6994-6996",
+       "sha": "38704a1dd83584c3677d2d8a0e75912e6eb386f4a80b85e0759ecbfbc326e6de"
+      }
+     ]
+    },
+    {
+     "n": "D2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "DOSBox-X stores the three amplitude bits and sets the volume to the amplitude over 7, a linear scale and not steps of 3 dB.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "211-213",
+       "sha": "6b20395fa75c18dd3a6a6fa5c979aa63a4b4c6ec8544f67401c790009f8b6020"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "145-146",
+       "sha": "1c394a3aa957cc434aaa013b077927b378e1d36b2b7307d580ff49793e173a5b"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X reaches the register through the four ports of TandyDACWrite and TandyDACRead installed at 0x00C4.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+       "lines": "346-347",
+       "sha": "f0c0fa71ad3a56ebb9381413b7fdd05763acf0c29061f89bf0e9b3b3c3d499cc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "168-226",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "228-239",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "211-213",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/tandy_sound.cpp",
+     "lines": "234-235",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  }
+ ],
+ "engine": [
+  "TandyDACModeChanged",
+  "TandyDACDMAEnabled",
+  "TandyDACDMADisabled"
+ ]
+}
