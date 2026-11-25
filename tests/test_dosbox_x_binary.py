@@ -170,11 +170,11 @@ def test_a_bare_pic_or_a20_word_in_a_build_is_not_the_debuggers_command(tmp_path
     (b"\0record_blink_s\0", []),
     (b"a word of a build that has no command", []),
 ])
-def test_the_layers_a_build_draws_are_read_off_the_literals_of_its_command(
+def test_a_build_with_the_presence_command_lists_the_layers_it_draws(
         tmp_path: Path, marks: bytes, layers: list[str]) -> None:
     mine = tmp_path / "dosbox-x"
     mine.write_bytes(marks)
-    assert binaries.presence_layers(str(mine), binaries.debugger_commands(str(mine))) == layers
+    assert binaries.presence_layers(binaries.debugger_commands(str(mine))) == layers
 
 
 @pytest.mark.parametrize("commands, layers", [(["PRESENCE"], ["edge", "pointer", "record"]),
