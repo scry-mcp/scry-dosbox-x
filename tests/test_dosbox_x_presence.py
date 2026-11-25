@@ -8,11 +8,10 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-import json
 import socket
 import threading
 import time
-from collections.abc import Callable, Collection
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
@@ -45,24 +44,28 @@ def test_the_look_goes_to_the_channel_one_word_per_key_with_its_pointer() -> Non
                      "sprite": "/".join(dpresence.POINTER)}
 
 
-#: The lines of two real builds, as their debugger printed them in a live session of this server.
-CAPTURED = json.loads((Path(__file__).parent / "fixtures" / "presence-channel.json").read_text())
+#: What the fork's `Describe` prints and what its parser refuses, which the fork's own tests hold
+#: to the code; the server's cases below are about what it does with those words.
+BARE = "PRESENCE off frames=0 pointer=0 output=none"
+DRAWN = (True, ["PRESENCE held frames=65 pointer=0 output=720x400x32 px_read=46144 "
+                "px_written=72240 bytes_presented=1256640 uploads=0 upload_bytes=0 "
+                "layers=edge,pointer,record"])
+UNDRAWABLE = (True, ["PRESENCE held frames=0 pointer=0 output=undrawable layers= "
+                     "lacks=edge,pointer,record"])
+ACTING = (True, ["PRESENCE acting frames=0 pointer=0 output=none"])
+REFUSAL = (False, ["PRESENCE does not know the argument bogus",
+                   "*** Debugger command not recognized"])
 
 
 class _Session:
     """The session's debugger: the commands its build parses, and what each `exec` prints."""
 
     def __init__(self, *answers: tuple[bool, list[str]],
-                 commands: frozenset[str] = frozenset({"PRESENCE"}), version: int = 2) -> None:
+                 commands: frozenset[str] = frozenset({"PRESENCE"}), version: int = 4) -> None:
         self.answers = list(answers)
         self.commands = commands
         self.sent: list[str] = []
-        # The latest captured build's words at the version this double announces: the fork
-        # appends only its number to the line.
-        source = "protocol2" if version == 2 else "protocol3"
-        line = CAPTURED[source]["bare_before_output"][0]
-        self.bare = (True, [line if version == 3 else
-                            line.replace("version=3", f"version={version}")])
+        self.bare = (True, [f"{BARE} version={version}"])
 
     def has(self, command: str) -> bool:
         return command in self.commands
@@ -76,29 +79,24 @@ class _Session:
 
 
 def _shown(*answers: tuple[bool, list[str]], asked: bool = True, shared: bool = True,
-           commands: frozenset[str] = frozenset({"PRESENCE"}), version: int = 2,
-           overlay: ov.Overlay = ov.OVERLAY,
-           drawn: Collection[str] = ov.LAYERS) -> tuple[presence.Shown, _Session]:
+           commands: frozenset[str] = frozenset({"PRESENCE"}), version: int = 4,
+           overlay: ov.Overlay = ov.OVERLAY) -> tuple[presence.Shown, _Session]:
     s = _Session(*answers, commands=commands, version=version)
-    return dpresence.open_shown(s, asked, shared, overlay, drawn), s
-
-
-DRAWN = (True, CAPTURED["protocol2"]["drawn"])
-DRAWN_3 = (True, CAPTURED["protocol3"]["drawn"])
+    return dpresence.open_shown(s, asked, shared, overlay), s
 
 
 def test_a_build_with_the_command_is_drawn_and_its_answer_kept() -> None:
     shown, channel = _shown(DRAWN)
     assert shown.reply() is True
     assert channel.sent[0].startswith("PRESENCE held rgb=")
-    assert channel.sent[0].endswith(" pointer=0")
+    assert " pointer=0 " in channel.sent[0]
     assert isinstance(shown.adapter, dpresence.ChannelAdapter)
     assert shown.adapter.answer == DRAWN[1][0]
     assert dpresence.frames(shown.adapter.answer) == 65
     shown.close()
 
 
-@pytest.mark.parametrize("version", [dpresence.MIN_VERSION, None])
+@pytest.mark.parametrize("version", [dpresence.PROTOCOL, None])
 def test_a_delivery_that_waited_behind_a_request_the_channel_left_unanswered_is_not_sent(
         version: int | None) -> None:
     """The delivery is asked while another request still waits on the silent channel; with no
@@ -152,12 +150,13 @@ def test_a_build_naming_presence_whose_debugger_does_not_parse_it_is_said_unavai
 
 
 def test_what_the_command_refuses_is_said_in_place_of_true() -> None:
-    """Captured off the build: a refusal is its reason alone."""
-    shown, _ = _shown((False, CAPTURED["protocol2"]["refused_unknown_word"]))
+    """A refusal is the build's reason alone."""
+    shown, _ = _shown(REFUSAL)
     said = shown.reply()
     assert isinstance(said, dict) and said["available"] is False
     assert said["why"] == ("the first delivery failed: RuntimeError: the debugger refused "
-                           "PRESENCE: PRESENCE does not know the argument bogus"), said
+                           "PRESENCE: PRESENCE does not know the argument bogus / *** Debugger "
+                           "command not recognized"), said
     assert shown.held is None
 
 
@@ -199,20 +198,20 @@ def test_the_first_mouse_move_turns_the_pointer_on_once() -> None:
     dpresence.mouse_sent(shown, reply, 3, 4, None, "click")
     dpresence.mouse_sent(shown, reply, 3, 4, None, "click")
     sent = _sent(channel, 2)
-    assert len(sent) == 2 and sent[1].endswith(" pointer=1"), sent
+    assert len(sent) == 2 and " pointer=1 " in sent[1], sent
     shown.close()
     dpresence.mouse_sent(presence.Shown(), reply, 3, 4, None, "click")   # no presence: nothing
 
 
 def test_an_output_the_emulator_cannot_draw_on_is_said_unavailable() -> None:
-    shown, _ = _shown((True, CAPTURED["protocol3"]["undrawable"]), version=3)
+    shown, _ = _shown(UNDRAWABLE)
     said = shown.reply()
     assert isinstance(said, dict) and said["why"] == dpresence.NO_OUTPUT, said
     assert shown.held is None
 
 
 def test_a_start_parked_before_its_first_frame_is_still_drawn_once_there_is_one() -> None:
-    shown, _ = _shown((True, CAPTURED["protocol3"]["acting_before_output"]), version=3)
+    shown, _ = _shown(ACTING)
     assert shown.reply() is True
     shown.close()
 
@@ -240,8 +239,8 @@ def test_a_start_plan_lights_the_window_while_it_runs(monkeypatch: pytest.Monkey
         def wake(self) -> None:
             """No repaint waits here."""
 
-    def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay,
-            drawn: Collection[str]) -> presence.Shown:
+    def lit(session: Any, asked: bool, shared: bool,
+            overlay: ov.Overlay) -> presence.Shown:
         return presence.Presence.open(Shows(), ())
 
     from scry_dosbox_x import sequence
@@ -303,29 +302,30 @@ def test_a_mouse_event_that_was_not_sent_leaves_the_pointer_off(
     assert out["delivered"] is False and turned_on == [], (out, turned_on)
 
 
-@pytest.mark.parametrize("bare, said", [
-    ((False, ["PRESENCE needs a state", dbg.NOT_RECOGNIZED]), "version 1"),
-    ((True, ["PRESENCE off frames=0 pointer=0 output=none version=1"]), "version 1"),
-])
-def test_a_build_older_than_the_pointers_pixel_size_is_said_unavailable_by_version(
-        bare: tuple[bool, list[str]], said: str) -> None:
+def test_a_build_of_another_protocol_is_refused_by_name_and_nothing_is_sent() -> None:
+    for version in (1, 2, 3, 5):
+        session = _Session(commands=frozenset({"PRESENCE"}), version=version)
+        shown = dpresence.open_shown(session, True, True)
+        why = shown.reply()
+        assert isinstance(why, dict) and why["available"] is False, why
+        assert f"version {version}" in why["why"] and "needs version 4" in why["why"], why
+        assert session.sent == [], "nothing is drawn on a build of another protocol"
+
+
+def test_a_refused_bare_command_names_version_one() -> None:
     session = _Session(commands=frozenset({"PRESENCE"}))
-    session.bare = bare
-    shown = dpresence.open_shown(session, True, True)
-    why = shown.reply()
-    assert isinstance(why, dict) and why["available"] is False and said in why["why"], why
-    assert session.sent == [], "nothing was drawn on a build that would draw it wrong"
+    session.bare = (False, ["PRESENCE needs a state", dbg.NOT_RECOGNIZED])
+    why = dpresence.open_shown(session, True, True).reply()
+    assert isinstance(why, dict) and "needs version 4" in why["why"], why
 
 
 def test_a_build_names_its_version_in_the_bare_answer() -> None:
-    assert dpresence.build_version(CAPTURED["protocol2"]["bare_before_output"]) == 2
-    assert dpresence.build_version(CAPTURED["protocol3"]["bare"]) == 3
+    assert dpresence.build_version([f"{BARE} version=4"]) == 4
     assert dpresence.build_version(["PRESENCE needs a state"]) == 1
 
 
 # ------------------------------------------------------------------------- the layers
 
-#: What a build with `PRESENCE` and the record mark draws.
 ALL = ("edge", "pointer", "record")
 NO_RECORD = ov.Overlay(record=False)
 
@@ -334,17 +334,17 @@ def _payload(**kw: Any) -> presence.Payload:
     return presence.Payload(layers=kw.pop("layers", ALL), **kw)
 
 
-def _adapter(version: int = 4, overlay: ov.Overlay = ov.OVERLAY, drawn: Collection[str] = ALL,
+def _adapter(overlay: ov.Overlay = ov.OVERLAY
              ) -> tuple[dpresence.ChannelAdapter, _Session]:
-    channel = _Session(DRAWN_3, DRAWN_3, DRAWN_3, DRAWN_3, version=version)
-    return dpresence.ChannelAdapter(channel, overlay=overlay, drawn=drawn), channel
+    channel = _Session(DRAWN, DRAWN, DRAWN, DRAWN)
+    return dpresence.ChannelAdapter(channel, overlay=overlay), channel
 
 
 def _words(line: str) -> dict[str, str]:
     return dpresence.words(line)
 
 
-def test_a_build_is_sent_the_layers_it_draws_and_what_is_recorded() -> None:
+def test_a_build_is_sent_the_layers_and_what_is_recorded() -> None:
     adapter, channel = _adapter()
     adapter.show("held", _payload(recording="video"))
     sent = _words(channel.sent[0])
@@ -355,7 +355,7 @@ def test_a_build_is_sent_the_layers_it_draws_and_what_is_recorded() -> None:
 
 
 @pytest.mark.parametrize("recording", ["none", "video", "audio", "both"])
-def test_a_build_with_the_record_mark_is_told_what_is_recorded_and_how_the_mark_looks(
+def test_the_record_mark_is_told_what_is_recorded_and_how_it_looks(
         recording: presence.Recording) -> None:
     adapter, channel = _adapter()
     adapter.show("held", _payload(layers=ov.LAYERS, recording=recording))
@@ -365,94 +365,29 @@ def test_a_build_with_the_record_mark_is_told_what_is_recorded_and_how_the_mark_
         f"{presence.LOOK.record_rgb:06X}", f"{presence.LOOK.record_blink_s:g}")
 
 
-def test_a_layer_not_asked_still_tells_a_build_with_the_record_mark_nothing_is_recorded() -> None:
-    adapter, channel = _adapter(overlay=NO_RECORD)
-    adapter.show("held", _payload())
-    sent = _words(channel.sent[0])
-    assert sent["layers"] == ",".join(ALL) and sent["rec"] == "none"
-
-
-def test_a_build_without_the_record_mark_is_sent_no_word_it_rejects() -> None:
-    adapter, channel = _adapter(drawn=("edge", "pointer"))
-    adapter.show("held", _payload(layers=ov.LAYERS, recording="video"))
-    line = channel.sent[0]
-    assert "record" not in line and "rec=" not in line, line
-    assert _words(line)["layers"] == "edge,pointer"
-
-
-def test_what_a_build_without_the_record_mark_refuses_is_never_sent_to_it() -> None:
-    """The refusals are 158f511fa's own, captured; a delivery that carried a word of them would
-    lose the whole line."""
-    refused = CAPTURED["protocol3"]
-    argument = [refused[key][0].removeprefix("PRESENCE does not know the argument ")
-                for key in ("refused_record_word", "refused_record_look")]
-    layer = refused["refused_record_layer"][0].split()[1].removeprefix("layers=")
-    assert argument == ["rec", "record_rgb"] and layer.endswith(",record"), refused
-    adapter, channel = _adapter(drawn=("edge", "pointer"))
-    adapter.show("held", _payload(layers=ov.LAYERS, recording="both"))
-    sent = _words(channel.sent[0])
-    assert not set(argument) & set(sent) and "record" not in sent["layers"].split(","), sent
-
-
-def test_the_overlay_of_a_build_with_the_record_mark_draws_it_as_its_answer_says() -> None:
-    recorded = CAPTURED["protocol3_record"]
-    assert dpresence.build_version(recorded["bare"]) == 3
-    assert "record" in _words(recorded["bare"][0])["layers"].split(",")
+def test_the_overlay_is_what_the_answer_says_and_nothing_more() -> None:
     adapter, _ = _adapter()
     adapter.show("held", _payload(layers=ov.LAYERS))
-    adapter.answer = recorded["drawn"][0]
     assert adapter.overlay_reply() == {"layers": list(ov.LAYERS)}
 
 
-def test_the_overlay_names_each_layer_the_build_is_not_drawing_and_not_only_the_record() -> None:
-    adapter, channel = _adapter(drawn=("edge", "pointer"))
-    adapter.show("held", _payload(layers=ov.LAYERS))
-    assert _words(channel.sent[0])["layers"] == "edge,pointer"
-    said = adapter.overlay_reply()
-    assert set(said["lacking"]) == {"record"}, said
-
-
-def test_a_start_hands_the_layers_its_build_draws_to_the_presence(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    import dosbox_x_server_support as support
-    from dosbox_x_server_support import _start_on_a_booted_fake
-
-    from scry_dosbox_x import state as dstate
-    handed: list[Collection[str]] = []
-
-    def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay,
-            drawn: Collection[str]) -> presence.Shown:
-        handed.append(drawn)
-        return presence.Shown()
-    monkeypatch.setattr(dpresence, "open_shown", lit)
-    dstate.STATE.session = None
-    out = _start_on_a_booted_fake(tmp_path, monkeypatch)
-    monkeypatch.setattr(support, "_layers_of", lambda _found: list(("edge", "pointer")))
-    dstate.STATE.session = None
-    _start_on_a_booted_fake(tmp_path, monkeypatch)
-    assert out["status"] == "ok" and handed[0] == list(ov.LAYERS) \
-        and handed[1] == ["edge", "pointer"], handed
-
-
-def test_the_overlay_of_a_build_without_the_record_mark_names_it_lacking() -> None:
-    adapter, _ = _adapter(drawn=("edge", "pointer"))
+def test_the_overlay_of_an_output_that_cannot_draw_names_each_layer_lacking() -> None:
+    adapter, _ = _adapter()
     adapter.show("held", _payload())
+    adapter.answer = UNDRAWABLE[1][0]
     said = adapter.overlay_reply()
-    assert said["layers"] == ["edge", "pointer"] and set(said["lacking"]) == {"record"}, said
-    assert "predates the record mark" in said["lacking"]["record"], said
+    assert said["layers"] == [] and set(said["lacking"]) == set(ALL), said
+    assert "undrawable" in said["lacking"]["edge"], said
 
 
-def test_a_build_of_protocol_2_is_sent_only_the_words_it_parses() -> None:
-    adapter, channel = _adapter(version=2)
-    adapter.show("acting", _payload(pointer=presence.Pointer(1, 2)))
-    sent = _words(channel.sent[0])
-    assert list(sent) == ["rgb", "edge", "steps", "acting", "held", "fade", "outline", "glide",
-                          "sprite", "pointer"] and sent["pointer"] == "1", channel.sent[0]
+def test_a_layer_not_asked_is_not_in_the_overlay() -> None:
+    adapter, _ = _adapter(overlay=NO_RECORD)
+    adapter.show("held", _payload())
+    assert adapter.overlay_reply() == {"layers": ["edge", "pointer"]}
 
 
 def test_a_start_asked_for_no_pointer_never_draws_one() -> None:
-    shown, channel = _shown(DRAWN_3, DRAWN_3, DRAWN_3, version=3,
-                            overlay=ov.Overlay(pointer=False))
+    shown, channel = _shown(DRAWN, DRAWN, DRAWN, overlay=ov.Overlay(pointer=False))
     assert shown.held is not None
     shown.held.moved(3, 4)
     time.sleep(0.2)
@@ -460,34 +395,8 @@ def test_a_start_asked_for_no_pointer_never_draws_one() -> None:
     shown.close()
 
 
-def test_the_overlay_of_a_build_of_protocol_3_is_what_its_answer_draws_and_lacks() -> None:
-    adapter, _ = _adapter(overlay=NO_RECORD)
-    adapter.show("held", _payload())
-    assert adapter.overlay_reply() == {"layers": ["edge", "pointer"]}
-    adapter.answer = CAPTURED["protocol3"]["undrawable"][0]
-    said = adapter.overlay_reply()
-    assert said["layers"] == [], said
-    assert set(said["lacking"]) == {"edge", "pointer"}
-    assert "undrawable" in said["lacking"]["edge"], said
-
-
-def test_the_overlay_of_a_build_of_protocol_2_names_the_layers_it_lacks() -> None:
-    adapter, channel = _adapter(version=2)
-    adapter.show("held", _payload())
-    said = adapter.overlay_reply()
-    assert said["layers"] == ["edge", "pointer"], said
-    assert set(said["lacking"]) == {"record"}
-    assert "version 2" in said["lacking"]["record"], said
-
-
-def test_a_layer_not_asked_is_not_named_lacking_on_a_build_of_protocol_2() -> None:
-    adapter, _ = _adapter(version=2, overlay=ov.Overlay(pointer=False))
-    adapter.show("held", _payload())
-    assert set(adapter.overlay_reply()["lacking"]) == {"record"}
-
-
 def test_start_and_status_say_the_overlay_only_of_a_presence_drawn() -> None:
-    drawn, _ = _shown(DRAWN_3, version=3, overlay=NO_RECORD)
+    drawn, _ = _shown(DRAWN, overlay=NO_RECORD)
     assert dpresence.overlay_shown(drawn)["overlay"]["layers"] == ["edge", "pointer"]
     drawn.close()
     for none in (presence.Shown(), _shown(shared=False)[0], _shown(commands=frozenset())[0]):

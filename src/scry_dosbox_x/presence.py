@@ -2,15 +2,13 @@
 `PRESENCE` command.
 
 It draws into the scaled output after the frame went to capture, so no capture or screen read
-carries it. The pointer appears once the session has moved the guest's mouse. A build that
-announces protocol 2 is sent only what protocol 2 parses; the layers it lacks are named in the
-`overlay` of `start` and `status`; so is a build that predates the record mark. A build of
-protocol 4 takes the reduced layer set and refuses a word it no longer knows by name.
+carries it. The pointer appears once the session has moved the guest's mouse. The command is
+protocol 4; a build that answers another version is refused, never half drawn.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable, Collection, Mapping
+from collections.abc import Callable, Mapping
 from typing import Any, Protocol
 
 from pydantic import ValidationError
@@ -42,14 +40,8 @@ NO_COMMAND = "this DOSBox-X's debugger has no PRESENCE command"
 NO_OUTPUT = ("this output cannot be drawn on (an 8-bit output, or the TrueType output while it "
              "shows text)")
 NO_WINDOW = "a session started without `shared` has no window to draw on"
-#: The bare command names the build's version; a build that refuses the bare form is version 1.
-MIN_VERSION = 2
-#: The version that takes the reduced layer set: the edge, the pointer and the record mark.
+#: The command's protocol: the layers, what is recorded, and the words of their look.
 PROTOCOL = 4
-#: The version that takes `layers=` and `rec=`, which is where the record mark arrived.
-LAYERS_PROTOCOL = 3
-#: The layers a build of protocol 2 draws.
-PROTOCOL_2_LAYERS = frozenset({"edge", "pointer"})
 #: The INT 33h driver's default graphics pointer, hot spot top-left: `X` outline, `o` fill, `.`
 #: untouched. One cell per guest pixel, it matches a DOS program's own pointer.
 POINTER = (
@@ -76,7 +68,7 @@ POINTER_GLIDE_S = 0.1
 
 
 def channel_args(look: presence.Look = presence.LOOK) -> str:
-    """The look, as the words every version of the command parses."""
+    """The look, as the words the command parses."""
     return (f"rgb={look.rgb:06X} edge={look.edge:g} steps={look.steps} "
             f"acting={look.acting_alpha:.3f} held={look.held_alpha:.3f} fade={look.fade_s:g} "
             f"outline={POINTER_OUTLINE_RGB:06X} glide={POINTER_GLIDE_S:g} "
@@ -103,15 +95,11 @@ class ChannelAdapter:
     """`scry_core.presence.Adapter` over a session's debugger, read at each delivery."""
 
     def __init__(self, session: Debugger, look: presence.Look = presence.LOOK,
-                 overlay: ov.Overlay = ov.OVERLAY,
-                 drawn: Collection[str] = ov.LAYERS) -> None:
-        """`drawn`: the layers the build's PRESENCE can draw (`binary.presence_layers`), of
-        which a build of protocol 2 draws only its own two."""
+                 overlay: ov.Overlay = ov.OVERLAY) -> None:
         self._session = session
         self._args = channel_args(look)
         self._record_args = record_args(look)
         self._overlay = overlay
-        self._drawn = frozenset(drawn)
         self.answer = ""
         self.version: int | None = None
 
@@ -120,14 +108,13 @@ class ChannelAdapter:
             raise presence.Unavailable(NO_COMMAND)
         if self.version is None:
             self.version = build_version(self._session.exec("PRESENCE", unless_silent=True)[1])
-        if self.version < MIN_VERSION:
+        if self.version != PROTOCOL:
             raise presence.Unavailable(
-                f"this DOSBox-X's PRESENCE is version {self.version}, which draws the pointer at a "
-                f"share of the window; version {MIN_VERSION} sizes it by the guest's pixels")
+                f"this DOSBox-X's PRESENCE is version {self.version}; this server needs version "
+                f"{PROTOCOL}: rebuild the bundle")
         line = (f"PRESENCE {self._state(state)} {self._args} "
                 f"pointer={int(payload.pointer is not None)}")
-        if self.version >= LAYERS_PROTOCOL:
-            line += self._protocol_words(payload)
+        line += self._protocol_words(payload)
         # The writer retries a delivery refused on a silent channel on its own.
         ok, lines = self._session.exec(line, unless_silent=True)
         if not ok:
@@ -145,30 +132,15 @@ class ChannelAdapter:
         return state
 
     def _protocol_words(self, payload: presence.Payload) -> str:
-        """The words a build from protocol 3 takes: the layers, and what is being recorded."""
-        layers = [layer for layer in payload.layers if layer in self._drawn]
-        out = [f" layers={','.join(layers)}"]
-        if "record" in self._drawn:
-            out.append(f" rec={payload.recording} {self._record_args}")
-        return "".join(out)
+        """The layers and what is being recorded."""
+        return (f" layers={','.join(payload.layers)}"
+                f" rec={payload.recording} {self._record_args}")
 
     def overlay_reply(self) -> ov.OverlayReply:
         """The `overlay` of `start` and `status`: the layers the last answer says are drawn."""
         asked = self._overlay.asked()
         said = words(self.answer)
         lacking: dict[ov.Layer, str] = {}
-        if (self.version or 0) < LAYERS_PROTOCOL:
-            why = (f"this DOSBox-X's PRESENCE is version {self.version}, which draws the edge and "
-                   f"the pointer; version {LAYERS_PROTOCOL} draws this layer")
-            lacking = {layer: why for layer in asked if layer not in PROTOCOL_2_LAYERS}
-            return ov.reply(self._overlay, lacking)
-        for layer in asked:
-            if layer not in self._drawn:
-                lacking[layer] = (
-                    f"this DOSBox-X's PRESENCE is version {self.version}, but its build predates "
-                    "the record mark" if layer == "record" else
-                    f"this DOSBox-X's PRESENCE is version {self.version}, which does not draw "
-                    "this layer")
         output = said.get("output", "none")
         lacks = set(said.get("lacks", "").split(","))
         for layer in asked:
@@ -251,14 +223,13 @@ def of(session: object) -> presence.Shown:
 
 
 def open_shown(session: Debugger, asked: bool, shared: bool,
-               overlay: ov.Overlay = ov.OVERLAY,
-               drawn: Collection[str] = ov.LAYERS) -> presence.Shown:
+               overlay: ov.Overlay = ov.OVERLAY) -> presence.Shown:
     """A session's presence, its first state delivered before `start` answers."""
     if not asked:
         return presence.Shown()
     if not shared:
         return presence.Shown(refused=unavailable(NO_WINDOW))
-    return presence.Presence.open(ChannelAdapter(session, overlay=overlay, drawn=drawn),
+    return presence.Presence.open(ChannelAdapter(session, overlay=overlay),
                                   DRIVING_TOOLS,
                                   overlay=overlay)
 

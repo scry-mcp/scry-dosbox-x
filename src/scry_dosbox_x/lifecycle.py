@@ -154,7 +154,6 @@ def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
     STATE.forget_symbols()
     resolved = binaries.resolve(binary)
     commands_built = frozenset(binaries.debugger_commands(resolved.path))
-    drawn_layers = binaries.presence_layers(resolved.path, sorted(commands_built))
     if dos_calls and dos_calls_trace.DOSTRACE not in commands_built:
         raise dbg.missing(dos_calls_trace.DOSTRACE, "`start(dos_calls=True)`")
 
@@ -254,7 +253,7 @@ def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
                         proved = core_window.observe(session.pid, where)
                 seen = {"window": proved.block()}
         finally:    # the live session a refusal leaves carries the presence it was asked for
-            session.presence = dpresence.open_shown(session, presence, shared, layers, drawn_layers)
+            session.presence = dpresence.open_shown(session, presence, shared, layers)
             if capture_video:
                 # DX-CAPTURE records the program from its first instruction to its exit.
                 session.presence.recording("video", True)

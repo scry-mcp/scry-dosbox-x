@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import inspect
 import json
-from collections.abc import Collection
 from pathlib import Path
 from typing import Any
 
@@ -133,8 +132,8 @@ def test_a_profile_sets_the_overlay_as_the_object_it_is_and_the_start_judges_it_
     stored(tmp_path, {"overlay": {"record": False}})
     seen: list[ov.Overlay] = []
 
-    def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay,
-            drawn: Collection[str]) -> Any:
+    def lit(session: Any, asked: bool, shared: bool,
+            overlay: ov.Overlay) -> Any:
         seen.append(overlay)
         return dpresence.NEVER_DRAWN
     monkeypatch.setattr(dpresence, "open_shown", lit)

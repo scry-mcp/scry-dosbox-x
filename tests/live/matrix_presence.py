@@ -6,10 +6,9 @@ source the capture reads while the overlay is on. `DOSBOX_X_STOCK_BINARY` names 
 whose debugger has no PRESENCE command (section S reads the same variable). The screen readers
 have no red, since they read guest memory.
 
-The layers of protocol 3 (captions, keycaps, the pause mark) are judged by a second section R on
-the same guest, with the build's own `PRESENCE` words and nothing that needs `RUNSTATE`, so a
-build that carries the presence command alone can be judged by it; against a build of protocol 2
-its cells are BLOCKED, naming the version.
+The record mark and the layers are judged by a second section R on the same guest, with the
+build's own `PRESENCE` words and nothing that needs `RUNSTATE`, so a build that carries the
+presence command alone can be judged by it.
 """
 from __future__ import annotations
 
@@ -143,11 +142,10 @@ def _by_hand() -> Iterator[dpresence.ChannelAdapter]:
     session.presence.close()
     session.presence = presence.Shown()
     time.sleep(QUIET_S)
-    drawn = _drawn_by(session)
     try:
-        yield dpresence.ChannelAdapter(session, drawn=drawn)
+        yield dpresence.ChannelAdapter(session)
     finally:
-        session.presence = dpresence.open_shown(session, asked=True, shared=True, drawn=drawn)
+        session.presence = dpresence.open_shown(session, asked=True, shared=True)
 
 
 def _drawn_by(session: Any) -> list[ov.Layer]:
@@ -362,12 +360,8 @@ def _layer_box(base: window_capture.Image | str, shot: window_capture.Image | st
 
 def _layers_drawn(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
     """The record mark delivered beside the edge, the window captured settled, the build's answer
-    kept, and the stills read with every layer drawn. A build before the layers' protocol says so
-    of its cells; one before the record mark says that of the mark's."""
+    kept, and the stills read with every layer drawn."""
     adapter.show("held", presence.Payload())  # the build's version is read at the first delivery
-    if (adapter.version or 0) < dpresence.LAYERS_PROTOCOL:
-        return {"blocked": f"this build's PRESENCE is version {adapter.version}: it draws the "
-                           "edge and the pointer only"}
     drawn = _drawn_by(_debugger())
     out: dict[str, Any] = {"drawn": drawn}
 
@@ -384,21 +378,16 @@ def _layers_drawn(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
     out["stills-edge"] = _screen_read()
     deliver("all", layers=ov.LAYERS, recording="both")
     out["stills-all"] = _screen_read()
-    if "record" in drawn:
-        out.update(_record_mark(adapter, deliver, base, drawn))
-    else:
-        out["record-blocked"] = ("this build's PRESENCE predates the record mark: "
-                                 f"it draws {', '.join(drawn)}")
+    out.update(_record_mark(adapter, deliver, base))
     return out
 
 
 def _record_mark(adapter: dpresence.ChannelAdapter, deliver: Any,
-                 base: window_capture.Image | str, drawn: list[ov.Layer]) -> dict[str, Any]:
+                 base: window_capture.Image | str) -> dict[str, Any]:
     """The mark held still (a blink longer than the captures take) against the edge alone, then
     gone; and the window sampled while it blinks at its own period, each against the edge alone."""
     slow = dpresence.ChannelAdapter(
-        _debugger(), look=dataclasses.replace(presence.LOOK, record_blink_s=STILL_BLINK_S),
-        drawn=drawn)
+        _debugger(), look=dataclasses.replace(presence.LOOK, record_blink_s=STILL_BLINK_S))
     asked: dict[str, Any] = {"layers": ("edge", "record")}
     shown = deliver("record-on", via=slow, wait=QUIET_S, recording="video", **asked)
     gone = deliver("record-off", via=slow, wait=QUIET_S, recording="none", **asked)
@@ -437,9 +426,6 @@ def _judge_layers(spun: dict[str, Any]) -> None:
 
 
 def _judge_record_mark(label: str, spun: dict[str, Any]) -> None:
-    if "record-blocked" in spun:
-        M.block(label, str(spun["record-blocked"]))
-        return
     shown, gone, blink = spun["record-on"], spun["record-off"], spun["record-blink"]
     unjudged = [f"{name}: {box}" for name, box in (("on", shown), ("off", gone))
                 if isinstance(box, str)] + [str(n) for n in blink if isinstance(n, str)]
