@@ -73,14 +73,14 @@ def stub_build(monkeypatch: pytest.MonkeyPatch, debugger_headless: bool = True,
     """What a faked build carries, read at `start` off a path that holds no file."""
     monkeypatch.setattr(binaries, "debugger_headless", lambda _b: debugger_headless)
     monkeypatch.setattr(binaries, "debugger_commands", lambda _b: list(commands))
-    monkeypatch.setattr(binaries, "presence_layers", lambda _b, found: _layers_of(found))
+    monkeypatch.setattr(binaries, "presence_layers", _layers_of)
 
 
 def stubbed_build() -> Any:
     """`stub_build` for a case with no monkeypatch at hand."""
     return mock.patch.multiple(binaries, debugger_headless=lambda _b: True,
                                debugger_commands=lambda _b: list(binaries.COMMANDS),
-                               presence_layers=lambda _b, found: _layers_of(found))
+                               presence_layers=_layers_of)
 
 class RunStateOnly:
     """A fake's debugger channel: `RUNSTATE` answered from the fake's own `run_state`, else its
