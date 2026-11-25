@@ -1627,22 +1627,8 @@ def send_keys(keys: list[str],
 
     Reference: REFERENCE.md, Input and the screen.
     """
-    # The input tools ask the run state themselves: a silent answer there means nothing was sent.
-    # The key is stamped once the call is accepted, not when its commands are written: the frame
-    # read before the write takes about a third of a second, and by then the caption may already
-    # be the next call's, so the mark would hang under a caption that is not its own.
-    shown = dpresence.of(STATE.session)
-    before = shown.keys_marked()
-
-    def mark() -> None:
-        dpresence.keys_sent(shown, keys, modifiers or (), action)
-
-    def unmark() -> None:
-        """Take back exactly the marks this call made, whatever it did to the keys."""
-        shown.keys_restore(before)
-
     return inputs.send_keys(live(probe=False), keys, modifiers, expect or None, seconds,
-                            bridge(ctx), action, on_ready=mark, on_failed=unmark)
+                            bridge(ctx), action)
 
 
 @tool("Send mouse input", summary=one_line.send_mouse, on_cancel="none")

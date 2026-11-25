@@ -130,7 +130,7 @@ def test_a_profile_sets_the_overlay_as_the_object_it_is_and_the_start_judges_it_
 
     from scry_dosbox_x import presence as dpresence
     from scry_dosbox_x import state as dstate
-    stored(tmp_path, {"overlay": {"calls": False, "place": "top"}})
+    stored(tmp_path, {"overlay": {"record": False}})
     seen: list[ov.Overlay] = []
 
     def lit(session: Any, asked: bool, shared: bool, overlay: ov.Overlay,
@@ -143,7 +143,7 @@ def test_a_profile_sets_the_overlay_as_the_object_it_is_and_the_start_judges_it_
                                                                   / "guest.json"))
     assert out["status"] == "ok", out
     assert "overlay" in out["profile"]["supplied"], out["profile"]
-    assert seen == [ov.Overlay(calls=False, place="top")]
+    assert seen == [ov.Overlay(record=False)]
     dstate.STATE.session = None
 
 
@@ -152,7 +152,7 @@ def test_a_kept_recipe_holds_the_overlay_as_json_and_only_when_it_is_not_the_def
     from dosbox_x_server_support import _start_on_a_booted_fake
 
     from scry_dosbox_x import state as dstate
-    for asked, kept in (({"calls": False}, True), ({}, False)):
+    for asked, kept in (({"record": False}, True), ({}, False)):
         dstate.STATE.session = None
         dstate.STATE.drafts = type(dstate.STATE.drafts)()
         out = _start_on_a_booted_fake(tmp_path, monkeypatch, overlay=asked)
@@ -160,8 +160,7 @@ def test_a_kept_recipe_holds_the_overlay_as_json_and_only_when_it_is_not_the_def
         documents = [c.document for c in dstate.STATE.drafts.kept.values()]
         if kept:
             assert documents and documents[0]["overlay"] == {
-                "calls": False, "keys": True, "pointer": True, "pause": True, "record": True,
-                "place": "auto"}
+                "pointer": True, "record": False}
             json.dumps(documents[0])
         else:
             assert all("overlay" not in d for d in documents), documents

@@ -255,7 +255,6 @@ def start(conf: str, cwd: str, session_seconds: int | None, shared: bool,
                 seen = {"window": proved.block()}
         finally:    # the live session a refusal leaves carries the presence it was asked for
             session.presence = dpresence.open_shown(session, presence, shared, layers, drawn_layers)
-            session.presence.paused(session.parked)
             if capture_video:
                 # DX-CAPTURE records the program from its first instruction to its exit.
                 session.presence.recording("video", True)

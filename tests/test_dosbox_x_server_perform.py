@@ -1166,15 +1166,6 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
     assert ticks == ["tick"] and out["verify"]["seen"] is True
 
 
-def test_send_keys_reports_the_key_once_the_call_is_accepted() -> None:
-    seen: list[str] = []
-    out = inputs.send_keys(_KeyRoute(), ["enter"], None, "READY", 2.0,  # type: ignore[arg-type]
-                           lambda p, t, m: seen.append("waited"),
-                           on_ready=lambda: seen.append("ready"))
-    assert out["verify"]["seen"] is True
-    assert seen == ["ready", "waited"], "the mark is stamped before the write's frame read"
-
-
 def test_perform_checks_every_steps_arguments_before_any_step_runs(tmp_path: Path) -> None:
     fake = _names(tmp_path)
     fake.halted = False

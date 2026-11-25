@@ -21,7 +21,7 @@ from scry_core import judges, presence
 from scry_core.reply_contract import unavailable
 from scry_core.screen_map import Pointer
 
-from scry_dosbox_x import control, inputs, running, server, stub_link
+from scry_dosbox_x import inputs, running, server, stub_link
 from scry_dosbox_x import launch as dlaunch
 from scry_dosbox_x import pointer as dpointer
 from scry_dosbox_x import session as ds
@@ -816,13 +816,10 @@ def test_an_input_sent_while_the_channel_is_silent_says_nothing_went_in(
 
 
 class _PresenceSpy:
-    """The overlay writer's input side: every key, pointer and button it was told about."""
+    """The overlay writer's input side: every pointer move and button it was told about."""
 
     def __init__(self) -> None:
         self.events: list[tuple[Any, ...]] = []
-
-    def key(self, name: str, down: bool) -> None:
-        self.events.append(("key", name, down))
 
     def moved(self, x: int, y: int) -> None:
         self.events.append(("moved", x, y))
@@ -838,12 +835,6 @@ class _PresenceSpy:
 
     def ended(self, call: Any, outcome: Any) -> None: ...
 
-    def keys_marked(self) -> dict[str, Any]:
-        return {"before": len(self.events)}
-
-    def keys_restore(self, state: dict[str, Any]) -> None:
-        self.events.append(("restored",))
-
     def close(self) -> None: ...
 
 
@@ -851,20 +842,6 @@ def _spied(fake: Any) -> _PresenceSpy:
     spy = _PresenceSpy()
     fake.presence = presence.Shown(held=cast(Any, spy))
     return spy
-
-
-def test_a_key_the_channel_wrote_none_of_is_not_left_marked(tmp_path: Path) -> None:
-    """The mark rises when the call is accepted, and the channel then writes none of its keys:
-    nothing of the key went in, so its mark is taken back."""
-    fake = _guest(tmp_path)
-    spy = _spied(fake)
-
-    def unwritten(commands: list[bytes]) -> int:
-        raise control.ChannelSilent("EXEC K", 0.2)
-    fake.send_commands = unwritten
-    got = cast(dict[str, Any], server.send_keys(keys=["c"], action="down"))
-    assert got["status"] == "INVALID" and got.get("delivered") is False, got
-    assert spy.events == [("key", "c", True), ("restored",)], spy.events
 
 
 def test_a_performed_key_whose_action_does_not_parse_is_not_marked(tmp_path: Path) -> None:

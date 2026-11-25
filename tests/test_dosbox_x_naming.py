@@ -8,12 +8,10 @@ from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import clean_session, install  # noqa: F401
-from scry_core import abbreviation
 from scry_core.knowledge import Base
 from scry_core.naming import Guarded, Named
 
 from scry_dosbox_x import knowledge, naming, server
-from scry_dosbox_x import mcp as dmcp
 from scry_dosbox_x import state as dstate
 from scry_dosbox_x import symbols as sym
 
@@ -154,32 +152,6 @@ def test_a_reply_names_the_call_its_arguments_state() -> None:
     named = _reply_to_an_exit_breakpoint()["names"]
     assert named == [{"field": "given.number", "number": "0x21/0x4C", "kind": "call",
                       "name": "exit", "id": "ibm-pc:call:0x21/0x4C"}]
-
-
-class _Hears:
-    """The listener that draws the window's captions, as far as the names it is handed."""
-
-    def __init__(self) -> None:
-        self.heard: list[Any] = []
-
-    def began(self, call: Any) -> None:
-        self.heard.append(call)
-
-    def ended(self, call: Any, outcome: str) -> None:
-        pass
-
-
-@pytest.mark.parametrize("switch", [True, False])
-def test_the_listener_that_draws_a_caption_hears_the_names_whatever_the_switch_says(
-        switch: bool, monkeypatch: pytest.MonkeyPatch) -> None:
-    install()
-    listener = _Hears()
-    monkeypatch.setattr(dmcp.BOUNDARY, "_listener", listener)
-    monkeypatch.setattr(dstate.STATE, "names", switch)
-    _reply_to_an_exit_breakpoint()
-    call = listener.heard[0]
-    text = abbreviation.caption(call.tool, call.given, call.named)
-    assert text == "breakpoint_interrupt(number=exit (0x21/0x4C), ah=0x4C)", (switch, text)
 
 
 def test_with_the_names_off_a_reply_has_no_names() -> None:

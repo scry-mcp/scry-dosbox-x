@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from scry_core import demo as core
 from scry_core.demo import (
     DISPLAY,
     Demo,
@@ -23,7 +24,6 @@ from scry_core.demo import (
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
-from demos import decorated  # noqa: E402
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
     KEPT_ELSEWHERE,
@@ -40,7 +40,6 @@ from demos.host import (  # noqa: E402
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 #: The layers that exist for this demo: its calls, the keys and the mouse it sends.
-LAYERS = decorated.ALL
 #: The edition the demo was written against: the launcher and the CD image, as the game's own
 #: installer leaves them. Another edition may lay its menus out elsewhere.
 GAME = {Path("XCOMA/XCOMAPOC.EXE"):
@@ -292,4 +291,4 @@ DEMO = Demo(
 
 if __name__ == "__main__":
     isolated_store("xcom")
-    sys.exit(decorated.main(DEMO, LAYERS))
+    sys.exit(core.main(DEMO))

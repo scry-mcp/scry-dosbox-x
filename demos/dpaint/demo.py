@@ -20,10 +20,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from scry_core import demo as core
 from scry_core.demo import Moment, Reply, Run, Step, window_args
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
-from demos import decorated, host  # noqa: E402
+from demos import host  # noqa: E402
 from demos.dpaint.program import (  # noqa: E402
     click,
     declared,
@@ -36,7 +37,6 @@ from demos.host import expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 #: The layers that exist for this demo: its calls, the keys and the mouse it sends.
-LAYERS = decorated.ALL
 #: The palette indices of the swatches the screen map names.
 COLOURS = {"navy": 1, "brown": 6, "blue": 9, "yellow": 14, "white": 15, "peach": 52,
            "orange": 55}
@@ -205,4 +205,4 @@ DEMO = declared("dpaint", HERE, STEPS, MOMENTS, "Deluxe Paint painting a sunset 
 
 if __name__ == "__main__":
     isolated_store("dpaint")
-    sys.exit(decorated.main(DEMO, LAYERS))
+    sys.exit(core.main(DEMO))

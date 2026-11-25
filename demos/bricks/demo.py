@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from scry_core import demo as core
 from scry_core import motion
 from scry_core.demo import (
     DISPLAY,
@@ -35,7 +36,6 @@ from scry_core.demo import (
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
-from demos import decorated  # noqa: E402
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
     RETRACE_STOP,
@@ -53,7 +53,6 @@ from demos.host import (  # noqa: E402
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 #: The layers that exist for this demo: its calls, the keys and the mouse it sends.
-LAYERS = decorated.ALL
 #: These mirror bricks.asm, and the checks go red if the game moves them: the fixed serve's
 #: first brick and its `(6 - row) * 10` points, then PADDLE_HOME and PADDLE_STEP.
 FIRST_ROW, FIRST_COL, FIRST_POINTS = 5, 7, 10
@@ -377,4 +376,4 @@ DEMO = Demo(
 
 if __name__ == "__main__":
     isolated_store("bricks")
-    sys.exit(decorated.main(DEMO, LAYERS))
+    sys.exit(core.main(DEMO))

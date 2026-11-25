@@ -368,15 +368,12 @@ class Session(dprocess.Process):
         if not self._at_debugger:
             self.stop_count += 1
             self._surveyed = None
-            dpresence.of(self).paused(True)
         self._at_debugger = True
         self._run_unknown = False
 
     def forget_stop(self) -> None:
         """The machine was released, or was seen running."""
         self.fired_entry = None
-        if self._at_debugger:
-            dpresence.of(self).paused(False)
         self._at_debugger = False
         self._surveyed = None
         self._run_unknown = False

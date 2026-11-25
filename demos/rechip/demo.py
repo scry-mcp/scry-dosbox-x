@@ -6,11 +6,12 @@ built; nothing of it is in this repository.
 from __future__ import annotations
 
 import json
+import shutil
 import sys
-from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
+from scry_core import demo as core
 from scry_core.demo import (
     DISPLAY,
     Demo,
@@ -19,12 +20,10 @@ from scry_core.demo import (
     Run,
     Step,
     expect,
-    recording,
     window_args,
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
-from demos import decorated  # noqa: E402
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
     NORMAL_CORE,
@@ -42,7 +41,6 @@ from demos.host import (  # noqa: E402
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 #: The layers that exist for this demo: its calls and the keys it sends.
-LAYERS = decorated.CALLS_AND_KEYS
 #: What the built copy holds: the start profile, the DEV build and the conf the profile names.
 PROFILE = Path(".scry/start/dev.json")
 SYMBOLS = Path("build/RECHIPD.SYM")
@@ -65,9 +63,9 @@ REPORT = r"PERF  \. fps="
 ASKED = r"ask opens"
 CONFIRMED = r"ask res=1"
 WAIT_S = 120
-#: The retraces recorded while the song plays, and the three seconds of them the loop shows: the
-#: song opens on a few bare rows, and by then its channels are sounding.
-PLAYING_FRAMES, PLAYING_SKIP, PLAYING_SHOWN = 1050, 840, 210
+#: The seconds a wait holds the picture after a key, so its moment outlives the minimum a moment
+#: lasts: a key's own wait for the program's log is a few retraces.
+SETTLE_S, PLAY_S, DIALOG_S = 2, 2, 2
 VOLATILE_PROGRAM = {**VOLATILE,
                     "conf": "where the reader's copy keeps its derived conf",
                     "state_dir": "a directory in the session's own temporary directory",
@@ -108,10 +106,18 @@ def checked(run: Run) -> str:
         "and its build/ the program, its symbols and its conf")
 
 
+def video(run: Run) -> Path:
+    """Where the session records itself."""
+    return run.dir / "video"
+
+
 def boot(run: Run) -> dict[str, Any]:
+    """The profile boots the DEV build; the session records itself, so a key press is inside a
+    stretch the machine ran."""
+    shutil.rmtree(video(run), ignore_errors=True)
     return {**window_args(run), "profile": str(checkout(run) / PROFILE),
             "symbols": str(checkout(run) / SYMBOLS), "flags": NORMAL_CORE,
-            "captures_dir": str(run.dir / "rechip-captures")}
+            "capture_video": True, "captures_dir": video(run)}
 
 
 def next_report(run: Run) -> dict[str, Any]:
@@ -185,10 +191,10 @@ STEPS = [
          targeted("the transport stopped"), volatile=LOG_TIMING),
     Step("rewind", "send_keys", {"keys": ["home"], "expect": REWOUND, "seconds": 10},
          seen("home put the song back at its first row"), volatile=KEY_TIMING),
-    Step("report", "log_wait", next_report, targeted("the program reported after the rewind"),
-         volatile=LOG_TIMING),
-    Step("settled", "log_wait", next_report,
-         targeted("a second report: the playhead is at the first row"), volatile=LOG_TIMING),
+    Step("settle", "wait", {"seconds": SETTLE_S},
+         lambda reply, run: "the paused song waits under the playhead",
+         volatile={"summary": "it carries how long the wait took",
+                   "waited_s": "wall-clock time the wait took"}),
     Step("hold", "stop", {"until": "protected"},
          lambda reply, run: "the machine stopped in the program, its symbols placed",
          volatile={**STOP_PLACE,
@@ -219,22 +225,24 @@ STEPS = [
                 "program's screens, called `warning_dark`.")),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
     Step("go on", "resume", {"seconds": 0}, released("the program runs on")),
-    # The song is filmed here, after the picture: a song that has played leaves its meters where
-    # the pause landed, which is the host's, and the picture above is of one that never played.
+    # The program's own reports place the playhead back at the first row after the rewind.
+    Step("report", "log_wait", next_report, targeted("the program reported after the rewind"),
+         volatile=LOG_TIMING),
+    Step("settled", "log_wait", next_report,
+         targeted("a second report: the playhead is at the first row"), volatile=LOG_TIMING),
     Step("play", "send_keys", {"keys": ["space"], "expect": PLAYING, "seconds": 10},
          seen("space set the song playing from its first row"), volatile=KEY_TIMING),
-    Step("hold playing", "stop", {"until": "protected"},
-         lambda reply, run: "the machine stopped in the program while the song plays",
-         volatile={**STOP_PLACE,
-                   "path": "where the reader's copy keeps its symbol table",
-                   "runs_to_protected": "how many short runs reached the program, which "
-                                        "follows where the host stopped it"},
-         optional=STOP_NOTE),
-    replace(recording("playing", PLAYING_FRAMES), optional=STOP_NOTE),
-    Step("play on", "resume", {"seconds": 0}, released("the song plays on")),
+    Step("song", "wait", {"seconds": PLAY_S},
+         lambda reply, run: "the song plays with its pattern scrolling",
+         volatile={"summary": "it carries how long the wait took",
+                   "waited_s": "wall-clock time the wait took"}),
     Step("quit", "send_keys", {"keys": ["x"], "modifiers": ["alt"], "expect": ASKED,
                                "seconds": 10},
          seen("File, Quit: the song is dirty, so the confirm opened"), volatile=KEY_TIMING),
+    Step("dialog", "wait", {"seconds": DIALOG_S},
+         lambda reply, run: "the confirm dialog stays open",
+         volatile={"summary": "it carries how long the wait took",
+                   "waited_s": "wall-clock time the wait took"}),
     Step("confirm", "send_keys", {"keys": ["right", "enter"], "expect": CONFIRMED,
                                   "seconds": 10},
          seen("Quit without saving"), volatile=KEY_TIMING,
@@ -250,10 +258,16 @@ DEMO = Demo(
     name="rechip", root=ROOT, server=[sys.executable, "-m", "scry_dosbox_x.server"],
     readme=HERE / "README.md", steps=STEPS,
     capture=lambda run: run.dir / "screen.png",
-    moments=(Moment("hold playing", "playing",
-                    "`send_keys` sets the song playing; `stop` holds the tracker and `record` "
-                    "films it playing on.", skip=PLAYING_SKIP, frames=PLAYING_SHOWN),),
-    alt="ReChip! playing a song, its pattern scrolling under the playhead",
+    moments=(Moment("pause", "hold",
+                    "`send_keys` presses space and Home: the song stops and goes back to its "
+                    "first row."),
+             Moment("play", "quit",
+                    "Space again: the program logs that it plays, and the pattern scrolls."),
+             Moment("quit", "confirm",
+                    "Alt+X opens the quit dialog; right and Enter answer it, and the log names "
+                    "the button.")),
+    alt="ReChip! driven by its keys: space pauses the song, Home rewinds it, and Alt+X quits",
+    video=video,
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE_PROGRAM,
     host_args={"cwd": "the reader's copy of the program",
@@ -268,4 +282,4 @@ DEMO = Demo(
 
 if __name__ == "__main__":
     isolated_store("rechip")
-    sys.exit(decorated.main(DEMO, LAYERS))
+    sys.exit(core.main(DEMO))

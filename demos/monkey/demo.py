@@ -19,6 +19,7 @@ import wave
 from pathlib import Path
 from typing import Any
 
+from scry_core import demo as core
 from scry_core.demo import (
     DISPLAY,
     Demo,
@@ -33,14 +34,13 @@ from scry_core.demo import (
 from scry_core.verdict import Invalid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
-from demos import decorated, host  # noqa: E402
+from demos import host  # noqa: E402
 from demos.host import VOLATILE, expect, isolated_store, started  # noqa: E402
 from demos.monkey import lookout  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 #: The layers that exist for this demo: its calls, the keys and the mouse it sends.
-LAYERS = decorated.ALL
 #: The disc's files the demo reads, with their sha256: the CUE sheet, the data track (the game)
 #: and track 18 (the opening theme), as the 1992 Enhanced CD, multilingual OEM, pressed them.
 DISC = {"monkey.cue": "6a28d6f905010caef6b0582aaa0e0b60218d5aa3a5b2cc20a7b6265b5f996351",
@@ -601,4 +601,4 @@ DEMO = Demo(
 
 if __name__ == "__main__":
     isolated_store("monkey")
-    sys.exit(decorated.main(DEMO, LAYERS))
+    sys.exit(core.main(DEMO))

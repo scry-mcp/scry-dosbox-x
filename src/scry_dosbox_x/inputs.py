@@ -707,12 +707,8 @@ def check_mouse(x: int | None, y: int | None, button: str | None, action: str = 
 
 def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
               expect: str | None, seconds: float | None,
-              progress: ds.Progress = ds.no_progress, action: str = "press",
-              on_ready: Callable[[], None] | None = None,
-              on_failed: Callable[[], None] | None = None) -> dict[str, Any]:
-    """The body of the `send_keys` tool. `on_ready` runs once the call is accepted and before the
-    frame read that precedes the write, where the call still carries its own caption; `on_failed`
-    takes the marks back when the channel wrote none of the keys."""
+              progress: ds.Progress = ds.no_progress, action: str = "press") -> dict[str, Any]:
+    """The body of the `send_keys` tool."""
     check_keys(keys, modifiers, expect, seconds)
     seq = scan_sequence(keys, "+".join(modifiers) if modifiers else "-", action)
     counts = Counts.of(session)
@@ -720,18 +716,13 @@ def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
         parked = _ready(session, "a key", expect)
     except ds.Invalid as e:
         return _unsent("key", e, keys=keys, modifiers=modifiers or [])
-    if on_ready is not None:
-        on_ready()
     first_key = session.keys_posted == 0
 
     def post() -> dict[str, Any]:
         try:
             _send(session, key_commands(seq), parked)
         except ds.Invalid as e:
-            failure = _delivered(e, session, counts, parked)
-            if failure.went_in == 0 and not getattr(e, "held", 0) and on_failed is not None:
-                on_failed()
-            raise failure from None
+            raise _delivered(e, session, counts, parked) from None
         session.keys_posted += 1
         return {"route": "guest", "posted": len(keys), "bytes": len(seq), "frames": len(seq),
                 **_parked_fields(parked), **_released(session, counts)}

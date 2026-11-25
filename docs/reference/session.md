@@ -139,10 +139,8 @@ Start DOSBox-X from your conf file and leave the machine stopped at the debugger
 start(conf="", cwd="", session_seconds=null, shared=false, display=null, fullscreen=null, size=null,
     flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="",
     plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null,
-    presence=true,
-    overlay={"calls": true, "keys": true, "pointer": true, "pause": true, "record": true, "place": "auto"},
-    names=true, dos_calls=false, log_categories=null, guest_files=null, symbols="",
-    base_from="program", profile="")
+    presence=true, overlay={"pointer": true, "record": true}, names=true, dos_calls=false,
+    log_categories=null, guest_files=null, symbols="", base_from="program", profile="")
 ```
 
 ### Try it
@@ -234,8 +232,8 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
 - `binary` (string, default `""`): The DOSBox-X to run: an executable, or on macOS a `.app` bundle holding one. Left empty, `DOSBOX_X_BINARY`, else the `dosbox-x` on the PATH.
 - `background` (boolean, optional): `true` opens the window behind your other windows and leaves the keyboard focus where it is; `false` opens it in front. Left out, behind unless `shared`.
 - `presence` (boolean, default `true`): Draws a border around the emulator's window while the session is open, brighter while a call runs the machine. `false` leaves it off.
-- `overlay` (any, default `{"calls": true, "keys": true, "pointer": true, "pause": true, "record": true, "place": "auto"}`): Layers over the border, each on unless `false`: `calls` names each call, `keys` keys held, `pointer` the pointer, `pause` a stopped machine, `record` a recording. `place`: `top`, `bottom`, `auto`.
-- `names` (boolean, default `true`): `false` leaves a reply's numbers bare, with no `names` field, no name in its summary and no note on a disassembled line; the window's captions still name them.
+- `overlay` (any, default `{"pointer": true, "record": true}`): Layers over the border, each on unless `false`: `calls` names each call, `keys` keys held, `pointer` the pointer, `pause` a stopped machine, `record` a recording. `place`: `top`, `bottom`, `auto`.
+- `names` (boolean, default `true`): `false` leaves a reply's numbers bare, with no `names` field, no name in its summary and no note on a disassembled line.
 - `dos_calls` (boolean, default `false`): `true` records every DOS call (INT 21h) the program makes, for `log(channel="dos")`. It needs a build whose debugger has `DOSTRACE`.
 - `log_categories` (object, optional): DOSBox-X's own `[log]` categories, each with its level, written into `logfile`. It needs `logfile`.
 - `guest_files` (array of string, optional): Up to 16 files on the host that the program is expected to leave. `guest_file` and `close` say what became of each.
@@ -479,9 +477,9 @@ background: Launch behind, keeping the caller's focus, or in front; omitted it i
 
 presence: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
 
-overlay: Layers drawn over the presence edge, each on by default: `calls` a caption naming each call and its arguments, abbreviated (paths by their last name); `keys` the keys or fields held down; `pointer` the guest's mouse pointer; `pause` a mark while the session holds the machine stopped; `record` a blinking mark while it records video or audio. `place`: where the captions go, `top`, `bottom`, or `auto`, the band of the picture that shows less. Ignored with `presence=false`.
+overlay: Layers drawn over the presence edge, each on by default: `pointer` the guest's mouse pointer; `record` a blinking mark while it records video or audio. Ignored with `presence=false`.
 
-names: Name the numbers a reply shows: a port, interrupt, address or key gets its name in the reply's `names`, its summary and a disassembled line's note. `false` leaves replies bare; the window's captions keep their names.
+names: Name the numbers a reply shows: a port, interrupt, address or key gets its name in the reply's `names`, its summary and a disassembled line's note. `false` leaves replies bare.
 ```
 
 </details>
@@ -612,7 +610,7 @@ At a stop it also sets the breakpoints that were declared while the program ran,
 - `program` is read at the stops that answer a call, never while the program runs, so a session that never stops never learns it.
 
 - `presence` is `true` when the border is drawn, `false` when it was asked off, or the reason it is not drawn.
-- `overlay` comes with a drawn border: the `layers` drawn, the `place` of the captions and, per layer the build cannot draw, `lacking` with the reason.
+- `overlay` comes with a drawn border: the `layers` drawn, and, per layer the build cannot draw, `lacking` with the reason.
 - `declarations` counts the server's own saved `breakpoints`, `watches` and `regpoints` (stops on a register condition).
 - `last_stop` also carries `stop_seq` and `wall_at`.
 - `pid`, `conf`, `conf_digest`, `watched`, `bound_s`, `elapsed_s`, `captures`, `state_dir` and `bundle` describe the process, as `start` set it up.
