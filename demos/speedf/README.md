@@ -36,8 +36,7 @@ does not take your keyboard; `--watch` brings it in front, for when you want to 
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
   `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
-  `PATH`, and Pillow and numpy (the `decorate` extra), which draw the border and the pointer
-  over the loop.
+  `PATH`.
 
 Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
 That last one is a copy without its `.scry/` folder or its program, a relative path or a server that
@@ -68,7 +67,7 @@ start(shared=true, background=true, display="<host>", profile="<host>",
     cwd="<host>")
 ```
 
-Reply, 2 of 28 fields:
+Reply, 2 of 29 fields:
 
 ```json
 {
@@ -104,6 +103,7 @@ A start profile is a saved set of `start` arguments: the call adds only what is 
   "input_port": "<volatile>",
   "background": true,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "<volatile>",
   "declarations": {
@@ -141,7 +141,7 @@ Call:
 run_to(ref="titulo_dibuja_cred", control="draw_block", seconds=120)
 ```
 
-Reply, 3 of 18 fields:
+Reply, 3 of 19 fields:
 
 ```json
 {
@@ -201,6 +201,9 @@ Reply, 3 of 18 fields:
     "symbol": "titulo_dibuja_cred",
     "delta": 0
   },
+  "names": [
+    {"field": "given.ref", "number": "0x00009d29", "kind": "symbol", "name": "titulo_dibuja_cred"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -219,7 +222,7 @@ Call:
 read_memory(ref="creditos", length=2)
 ```
 
-Reply, 2 of 7 fields:
+Reply, 2 of 8 fields:
 
 ```json
 {
@@ -240,6 +243,9 @@ Reply, 2 of 7 fields:
   "seg_off": "26AB:00000006",
   "length": 2,
   "hex": "0000",
+  "names": [
+    {"field": "given.ref", "number": "0x00026ab6", "kind": "symbol", "name": "creditos"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```

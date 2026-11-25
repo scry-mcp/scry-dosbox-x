@@ -39,6 +39,7 @@ Every call of the run with its reply, in order: 10 calls. `<volatile>` stands fo
   "input_port": "<volatile>",
   "background": true,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "<volatile>",
   "declarations": {
@@ -145,6 +146,8 @@ Every call of the run with its reply, in order: 10 calls. `<volatile>` stands fo
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
+    "note": "vbe get mode info (0x4F)",
+    "note_live": true,
     "symbol": "hw_init_video",
     "delta": 14
   },
@@ -236,6 +239,9 @@ Every call of the run with its reply, in order: 10 calls. `<volatile>` stands fo
     "symbol": "titulo_dibuja_cred",
     "delta": 0
   },
+  "names": [
+    {"field": "given.ref", "number": "0x00009d29", "kind": "symbol", "name": "titulo_dibuja_cred"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -261,6 +267,9 @@ Every call of the run with its reply, in order: 10 calls. `<volatile>` stands fo
   "seg_off": "26AB:00000006",
   "length": 2,
   "hex": "0000",
+  "names": [
+    {"field": "given.ref", "number": "0x00026ab6", "kind": "symbol", "name": "creditos"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -325,6 +334,9 @@ Every call of the run with its reply, in order: 10 calls. `<volatile>` stands fo
     "symbol": "startdemo",
     "delta": 0
   },
+  "names": [
+    {"field": "given.ref", "number": "0x0000c8b4", "kind": "symbol", "name": "startdemo"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
