@@ -4,6 +4,8 @@ What a client of the server notices.
 
 ## Unreleased
 
+- Pins scry-core 0.122.0: `start` and `status` answer `overlay` with the edge, the pointer and
+  the recording mark, and a demo's timeline is version 3.
 - `send_keys` and `send_mouse` sent to a running guest answer `frame_before` and `frame_after`,
   the display frames the input went in between, read from `RUNSTATE` without stopping the guest.
   A build whose `RUNSTATE` prints no frame count says why instead.
