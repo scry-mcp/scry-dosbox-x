@@ -12,8 +12,15 @@ from scry_dosbox_x import knowledge as pc
 from scry_dosbox_x import server as s
 
 
+def _own_lock() -> sealed.Lock:
+    own = resources.files("scry_dosbox_x") / pc.ROWS_LOCK
+    return sealed.parse_lock(own.read_text(encoding="utf-8"), pc.ROWS_LOCK)
+
+
 def _shared(base: rows.Base) -> set[str]:
-    return {e.id for e in base.entries() if e.scope != pc.SCOPE}
+    """What the base serves that this server's own lock does not seal."""
+    own = _own_lock()
+    return {e.id for e in base.entries() if e.id not in own.sealed}
 
 
 def test_the_base_serves_the_shared_entries_the_shared_lock_seals_and_no_others() -> None:
@@ -23,9 +30,9 @@ def test_the_base_serves_the_shared_entries_the_shared_lock_seals_and_no_others(
 
 
 def test_the_own_entries_are_served_by_the_own_lock_alone() -> None:
-    own = resources.files("scry_dosbox_x") / pc.ROWS_LOCK
-    alone = rows.Base.load("scry_dosbox_x", lock=sealed.parse_lock(own.read_text(encoding="utf-8")))
-    assert {e.id for e in pc.base().entries() if e.scope == pc.SCOPE} == set(alone.ids())
+    alone = rows.Base.load("scry_dosbox_x", lock=_own_lock())
+    own = _own_lock()
+    assert {e.id for e in pc.base().entries() if e.id in own.sealed} == set(alone.ids())
 
 
 def test_knowledge_find_answers_a_shared_chip_command_or_says_it_is_held_back() -> None:

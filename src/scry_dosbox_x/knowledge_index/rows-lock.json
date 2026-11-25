@@ -65312,50 +65312,6 @@
     }
    }
   },
-  "vother:register:0x10..0x11": {
-   "doc": {
-    "seal": "93a84693d6ba4c37ea345f56514e83b98d3c3230d644169670966bec899f0a0c",
-    "by": "slice dx-g8-vother-02 reader",
-    "writer": "slice dx-g8-vother-02 writer",
-    "rows": {
-     "1": {
-      "digest": "63ffe81169802388b00c2f4bba4f40f4d513805fb283a203425ab309ad8f62a2",
-      "by": "slice dx-g8-vother-02 reader"
-     },
-     "2": {
-      "digest": "3cfbb12b8e1aedddd6eb647a1cad32bbd5d0c26c2cf5ae6acf1d47b117feb7ff",
-      "by": "slice dx-g8-vother-02 reader"
-     },
-     "3": {
-      "digest": "5d909e0773e6242c9f806880de5809d2659aebf6699336d366168eb293029eff",
-      "by": "slice dx-g8-vother-02 reader"
-     },
-     "4": {
-      "digest": "e11d89def4d19ea35f88121ef5189b07ef868cd180771c277250c7be5ea79663",
-      "by": "slice dx-g8-vother-02 reader"
-     }
-    }
-   },
-   "dosbox-x": {
-    "seal": "90c11f1216993dc5ea4a6d8091315abd49f3f4d932fb03d5796b0307eb5136b2",
-    "by": "slice dx-g8-vother-02 reader",
-    "writer": "slice dx-g8-vother-02 writer",
-    "rows": {
-     "5": {
-      "digest": "bb135cc6d6260d640e88ba946f3f31a4cb29cb3ef4a8f523b7094dbd90ba37b9",
-      "by": "slice dx-g8-vother-02 reader"
-     },
-     "6": {
-      "digest": "5f1a7cde68b58ab39186bcd69f42591471dc808d8aa9f1b664d93818f2281fd2",
-      "by": "slice dx-g8-vother-02 reader"
-     },
-     "7": {
-      "digest": "29e70bee1d4155c7df130b8ac56a48447cad479795aa384a286414583bab10ab",
-      "by": "slice dx-g8-vother-02 reader"
-     }
-    }
-   }
-  },
   "vother:register:0x10..0x11:read": {
    "doc": {
     "seal": "d2452266b88447ff32de8e9d93b62f10ebbed5ea2c0ecad2a353e5d179b74c44",
@@ -65395,78 +65351,6 @@
      },
      "7": {
       "digest": "29e70bee1d4155c7df130b8ac56a48447cad479795aa384a286414583bab10ab",
-      "by": "slice dx-g8-vother-02 reader"
-     }
-    }
-   }
-  },
-  "vother:register:0x10..0x1F": {
-   "doc": {
-    "seal": "166e59fd8665be9adbbfc986fdbcf438be262d6bfd81e62b0ee90ddfbb3934db",
-    "by": "slice dx-g8-vother-02 reader",
-    "writer": "slice dx-g8-vother-02 writer",
-    "rows": {
-     "1": {
-      "digest": "98494ee90c4a316455b4d30bf151073feb4418318a4d44c331d3f4d029830492",
-      "by": "slice dx-g8-vother-02 reader"
-     },
-     "2": {
-      "digest": "232261f74378fa496671b25e3d0f218c8d1b9b1a5753e5f598a3ab56165413e2",
-      "by": "slice dx-g8-vother-02 reader"
-     },
-     "3": {
-      "digest": "fd764029534faee9794f3aa2685fa04d19c537a294ea4fc6364bd62f54643058",
-      "by": "slice dx-g8-vother-02 reader"
-     }
-    }
-   },
-   "dosbox-x": {
-    "seal": "4868df446bd0fc5bda7b9f7d8f86d59c608a311cbb7fd8d1725790f6c8b559c6",
-    "by": "slice dx-g8-vother-02 reader",
-    "writer": "slice dx-g8-vother-02 writer",
-    "rows": {
-     "4": {
-      "digest": "53af12b53fda1df032ab9b6b597b611c2529ebf3ee4e5b5dce82749e9483cfc8",
-      "by": "slice dx-g8-vother-02 reader"
-     },
-     "5": {
-      "digest": "38cfb28e7e80d4888183aef15a2fd02c91b0cadd6dfd7c98dafbb43e24650118",
-      "by": "slice dx-g8-vother-02 reader"
-     }
-    }
-   }
-  },
-  "vother:register:0x10..0x1F:write": {
-   "doc": {
-    "seal": "4cdc379e070d0408ae11ebaf84bb2dc4f43745a1ce5aeb01c5540a98d11c86b9",
-    "by": "slice dx-g8-vother-02 reader",
-    "writer": "slice dx-g8-vother-02 writer",
-    "rows": {
-     "1": {
-      "digest": "98494ee90c4a316455b4d30bf151073feb4418318a4d44c331d3f4d029830492",
-      "by": "slice dx-g8-vother-02 reader"
-     },
-     "2": {
-      "digest": "232261f74378fa496671b25e3d0f218c8d1b9b1a5753e5f598a3ab56165413e2",
-      "by": "slice dx-g8-vother-02 reader"
-     },
-     "3": {
-      "digest": "fd764029534faee9794f3aa2685fa04d19c537a294ea4fc6364bd62f54643058",
-      "by": "slice dx-g8-vother-02 reader"
-     }
-    }
-   },
-   "dosbox-x": {
-    "seal": "62dd0ed0e0de906aaddf5107eef68653e7b1d642e39b2e716eef2b5ffc9bdf7c",
-    "by": "slice dx-g8-vother-02 reader",
-    "writer": "slice dx-g8-vother-02 writer",
-    "rows": {
-     "4": {
-      "digest": "53af12b53fda1df032ab9b6b597b611c2529ebf3ee4e5b5dce82749e9483cfc8",
-      "by": "slice dx-g8-vother-02 reader"
-     },
-     "5": {
-      "digest": "38cfb28e7e80d4888183aef15a2fd02c91b0cadd6dfd7c98dafbb43e24650118",
       "by": "slice dx-g8-vother-02 reader"
      }
     }
