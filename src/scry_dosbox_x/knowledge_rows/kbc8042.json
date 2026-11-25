@@ -324,12 +324,17 @@
      "on": "read",
      "of": "dosbox-x",
      "vs": "differs",
-     "text": "A read returns the written low nibble, bit 5 from timer 2 or an off gate, bit 4 a 33 Hz wave, bit 6 a machine flag, bit 7 zero.",
+     "text": "A read returns the written low nibble, bit 5 from timer 2 or an off gate, bit 4 a 33 kHz wave, bit 6 a machine flag, bit 7 zero.",
      "quotes": [
       {
        "ref": "dosbox-x:src/hardware/keyboard.cpp",
        "lines": "726-737",
        "sha": "0b55c557db6842a908e3f18c2d37d354766e14fa656bb59dacde5bbf55a92de5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pic.cpp",
+       "lines": "918-921",
+       "sha": "f5795f6c158fef9819205339f9f45e76edcea22aa6ea51f7c1f4c2bc6651e6ab"
       }
      ],
      "row": "3"
@@ -345,6 +350,11 @@
        "ref": "dosbox-x:src/hardware/keyboard.cpp",
        "lines": "2125",
        "sha": "19a923f17865d059ff5e01ed24b2bd2ce2a0f6f1078b38499066ea36aa02da62"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/keyboard.cpp",
+       "lines": "2123-2127",
+       "sha": "085e01ee73ae34f9e377d29e7b5cd426f56958b3bcb46041f6d1f4ae02593eb0"
       }
      ]
     }
