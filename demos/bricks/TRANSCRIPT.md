@@ -17,7 +17,7 @@ Every call of the run with its reply, in order: 44 calls. `<volatile>` stands fo
   "state_dir": "./tmp/demos/bricks/bricks-states",
   "program": "BRICKS.COM",
   "captures_dir": "<host>",
-  "binary": "~/Code/dosbox-x-integration/src/dosbox-x"
+  "binary": "~/.local/state/scry/apps/Scry DOSBox-X.app"
 }
 ```
 
@@ -27,6 +27,7 @@ Every call of the run with its reply, in order: 44 calls. `<volatile>` stands fo
   "status": "ok",
   "pid": "<volatile>",
   "conf": "./tmp/demos/bricks/bricks-capture.conf",
+  "bundle": "~/.local/state/scry/apps/Scry DOSBox-X.app",
   "conf_digest": "10ae0e9fac043b43",
   "watched": true,
   "bound_s": 900,
@@ -2207,11 +2208,12 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "close: quit, exit code 0",
+  "summary": "close: quit, no exit code: the emulator's exit code could not be read",
   "status": "ok",
   "closed": true,
   "pid": "<volatile>",
   "conf": "./tmp/demos/bricks/bricks-capture.conf",
+  "bundle": "~/.local/state/scry/apps/Scry DOSBox-X.app",
   "conf_digest": "10ae0e9fac043b43",
   "watched": true,
   "bound_s": 900,
@@ -2219,9 +2221,12 @@ Also attached: image/png.
   "captures": "off",
   "state_dir": "./tmp/demos/bricks/bricks-states",
   "ended_by": "quit",
-  "exit_code": 0,
-  "omitted": ["stdout_tail", "errorlog_tail"],
-  "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
+  "exit_code": {"available": false, "why": "the emulator's exit code could not be read"},
+  "stdout_tail": {
+    "available": false,
+    "why": "the emulator wrote to a console of its own, which this server does not read (Windows, a build whose debugger draws a screen)"
+  },
+  "errorlog_tail": "cry-dosbox-x-presence/tmp/demos/bricks/video/bricks_000.avi\nPRESENCE acting frames=924 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=265 upload_bytes=9874560 layers=edge,pointer,keys,calls,pause,record place=bottom\nPRESENCE paused frames=924 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=265 upload_bytes=9874560 layers=edge,pointer,keys,calls,pause,record place=bottom\nEV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:\nd05b0004 0 5b0004 3da 580 e46e 91c fffc 53f 8df 8df a000 0 0 8df 7246 10\nPRESENCE paused frames=925 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=266 upload_bytes=9934080 layers=edge,pointer,keys,calls,pause,record place=bottom\nDEBUG: Memory dump binary success.\nPRESENCE paused frames=927 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=268 upload_bytes=10053120 layers=edge,pointer,keys,calls,pause,record place=bottom\nBreakpoint list:\n-------------------------------------------------------------------------\n00. FM 000005CB (03)\n01. BPINT 03\nDEBUG: Breakpoint deletion success.\nBreakpoint list:\n-------------------------------------------------------------------------\n00. BPINT 03\nPRESENCE paused frames=929 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=270 upload_bytes=10172160 layers=edge,pointer,keys,calls,pause,record place=bottom\nSDLNET: Closed client TCP listening socket\n--END OF LOG--\n",
   "draft": "<volatile>",
   "session": {"alive": false, "running": false, "altered": false}
 }
