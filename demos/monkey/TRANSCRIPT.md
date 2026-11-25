@@ -7,14 +7,15 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
 ```json
 {
   "shared": true,
-  "background": true,
+  "background": false,
   "display": "<host>",
   "conf": "./tmp/demos/monkey/monkey.conf",
   "cwd": "./tmp/demos/monkey",
   "session_seconds": 1800,
   "program": "D:\\MONKEY.COM",
   "logfile": "./tmp/demos/monkey/monkey-e9.log",
-  "state_dir": "./tmp/demos/monkey/monkey-states"
+  "state_dir": "./tmp/demos/monkey/monkey-states",
+  "binary": "<host>"
 }
 ```
 
@@ -24,6 +25,7 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
   "status": "ok",
   "pid": "<volatile>",
   "conf": "./tmp/demos/monkey/monkey.conf",
+  "bundle": "~/.local/state/scry/apps/Scry DOSBox-X.app",
   "conf_digest": "<volatile>",
   "watched": true,
   "bound_s": 1800,
@@ -39,8 +41,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": true,
+  "background": false,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "./tmp/demos/monkey/monkey-e9.log",
   "declarations": {
@@ -251,15 +254,15 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     }
   ],
   "devs": [
-    {"header": "0071:0048", "attr": "8004", "strat": "0000", "intr": "0000", "name": "NUL"},
-    {"header": "00F9:0000", "attr": "8013", "strat": "FFFF", "intr": "FFFF", "name": "CON"},
+    {"header": "0075:0048", "attr": "8004", "strat": "0000", "intr": "0000", "name": "NUL"},
+    {"header": "0071:0000", "attr": "8013", "strat": "FFFF", "intr": "FFFF", "name": "CON"},
     {"header": "C404:0000", "attr": "C800", "strat": "0016", "intr": "001B", "name": "MSCD001"}
   ],
   "kern": [
     {"seg": "0070", "size_bytes": 16, "what": "DOS_IHSEG"},
-    {"seg": "0071", "size_bytes": 800, "what": "DOS_INFOBLOCK_SEG"},
-    {"seg": "00a3", "size_bytes": 1376, "what": "DOS_SDA_SEG"},
-    {"seg": "00f9", "size_bytes": 64, "what": "DOS_CONDRV_SEG"},
+    {"seg": "0071", "size_bytes": 64, "what": "DOS_CONDRV_SEG"},
+    {"seg": "0075", "size_bytes": 800, "what": "DOS_INFOBLOCK_SEG"},
+    {"seg": "00a7", "size_bytes": 1376, "what": "DOS_SDA_SEG"},
     {"seg": "00fd", "size_bytes": 256, "what": "DOS_CDA_SEG"},
     {"seg": "010d", "size_bytes": 64, "what": "dos.tables.tempdta"},
     {"seg": "0111", "size_bytes": 64, "what": "dos.tables.fcbdelete"},
@@ -389,7 +392,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "screen": "language",
         "identified_at_stop": "<volatile>",
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 1,
@@ -471,121 +476,169 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "watch_add",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 1,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "read_memory",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 4,
       "op": "read_memory",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 5,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 6,
       "op": "read_memory",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 7,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 8,
       "op": "read_memory",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 9,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 10,
       "op": "read_memory",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 11,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 12,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 13,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 14,
       "op": "send_keys",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 15,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 16,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 17,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 18,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 19,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 20,
       "op": "send_keys",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 21,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 22,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 23,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -597,7 +650,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "declarations_cleared": 1,
         "disarmed": ["BP 0985:011E"],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 44,
@@ -637,11 +692,15 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 1,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -653,7 +712,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "declarations_cleared": 1,
         "disarmed": ["BP 0985:011E"],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 3,
@@ -717,21 +778,29 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 1,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -759,7 +828,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "poster", "rect": [262, 92, 18, 26], "centre": [271, 105]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 5,
@@ -807,26 +878,36 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -844,7 +925,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "poster", "rect": [262, 92, 18, 26], "centre": [271, 105]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 6,
@@ -887,26 +970,36 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -934,7 +1027,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "way_back", "rect": [0, 105, 10, 20], "centre": [5, 115]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 6,
@@ -983,31 +1078,43 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 4,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 5,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1025,7 +1132,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "poster", "rect": [158, 76, 20, 24], "centre": [168, 88]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 7,
@@ -1073,26 +1182,36 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1108,7 +1227,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 6,
@@ -1155,21 +1276,29 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 1,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1185,7 +1314,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 5,
@@ -1232,21 +1363,29 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 1,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1265,7 +1404,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "way_back", "rect": [0, 105, 10, 20], "centre": [5, 115]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 5,
@@ -1313,26 +1454,36 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1350,7 +1501,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "cliffside", "rect": [30, 100, 20, 20], "centre": [40, 110]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 6,
@@ -1394,31 +1547,43 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 4,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 5,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1446,7 +1611,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "way_out", "rect": [302, 90, 16, 20], "centre": [310, 100]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 7,
@@ -1495,31 +1662,43 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 4,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 5,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1537,7 +1716,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "lookout", "rect": [94, 66, 16, 20], "centre": [102, 76]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 7,
@@ -1580,26 +1761,36 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1620,7 +1811,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "characters_in_a_novel", "rect": [0, 168, 320, 8], "centre": [160, 172]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 6,
@@ -1668,26 +1861,36 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1705,7 +1908,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "characters_in_a_novel", "rect": [0, 168, 320, 8], "centre": [160, 172]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 6,
@@ -1749,31 +1954,43 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 4,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 5,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1795,7 +2012,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "seek_my_fortune", "rect": [0, 176, 120, 8], "centre": [60, 180]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 7,
@@ -1843,26 +2062,36 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1880,7 +2109,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "im_guybrush_threepwood", "rect": [0, 144, 120, 8], "centre": [60, 148]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 6,
@@ -1924,31 +2155,43 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 4,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 5,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -1970,7 +2213,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "seek_my_fortune", "rect": [0, 176, 120, 8], "centre": [60, 180]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 7,
@@ -2018,26 +2263,36 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -2055,7 +2310,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
           {"name": "whats_wrong_with_my_name", "rect": [0, 144, 120, 8], "centre": [60, 148]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 6,
@@ -2128,26 +2385,36 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -2163,7 +2430,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 6,
@@ -2250,21 +2519,29 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 1,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -2280,7 +2557,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 5,
@@ -2522,46 +2801,64 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82E5:000C: 98 bytes, verified True", "status": "ok"}
     },
     {
       "step": 1,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82C5:000C: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 2,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82CD:000C: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 3,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82D5:000C: 99 bytes, verified True", "status": "ok"}
     },
     {
       "step": 4,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82ED:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 5,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82F5:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 6,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82FD:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 7,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 8305:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 8,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 830D:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
@@ -2576,7 +2873,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "readback": "7468617420627265616b706f696e74206f6e20796f757220776179206f75742e00ae02183efd",
         "verified": true,
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 10,
@@ -2676,7 +2975,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "screen": "name: whats wrong with my name",
         "identified_at_stop": "<volatile>",
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 1,
@@ -2742,6 +3043,8 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
+    "note": "cdrom driver request (0x15)",
+    "note_live": true,
     "symbol": {"available": false, "why": "no symbol table is loaded"},
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
@@ -2817,7 +3120,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "stop_seq": "<volatile>",
         "instruction": "<volatile>",
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 1,
@@ -2883,6 +3188,8 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
+    "note": "cdrom driver request (0x15)",
+    "note_live": true,
     "symbol": {"available": false, "why": "no symbol table is loaded"},
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
@@ -2958,7 +3265,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "stop_seq": "<volatile>",
         "instruction": "<volatile>",
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 1,
@@ -3024,6 +3333,8 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
+    "note": "cdrom driver request (0x15)",
+    "note_live": true,
     "symbol": {"available": false, "why": "no symbol table is loaded"},
     "delta": {"available": false, "why": "no symbol table is loaded"}
   },
@@ -3235,11 +3546,15 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -3255,7 +3570,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 3,
@@ -3295,11 +3612,15 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -3315,7 +3636,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 3,
@@ -3355,11 +3678,15 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -3375,7 +3702,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 3,
@@ -3415,11 +3744,15 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -3435,7 +3768,9 @@ Every call of the run with its reply, in order: 59 calls. `<volatile>` stands fo
         "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 3,
@@ -3565,26 +3900,36 @@ Also attached: image/png.
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -3612,7 +3957,9 @@ Also attached: image/png.
           {"name": "way_out", "rect": [302, 90, 16, 20], "centre": [310, 100]}
         ],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 6,
@@ -3655,26 +4002,36 @@ Also attached: image/png.
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 3,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 4,
       "op": "run_for",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -3690,7 +4047,9 @@ Also attached: image/png.
         "size": [320, 200],
         "controls": [],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 6,
@@ -3717,22 +4076,25 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "close: quit, exit code 0",
+  "summary": "close: quit, no exit code: the emulator's exit code could not be read",
   "status": "ok",
   "closed": true,
   "pid": "<volatile>",
   "conf": "./tmp/demos/monkey/monkey.conf",
+  "bundle": "~/.local/state/scry/apps/Scry DOSBox-X.app",
   "conf_digest": "<volatile>",
   "watched": true,
   "bound_s": 1800,
   "elapsed_s": "<volatile>",
-  "output_bytes_dropped": "<volatile>",
   "captures": "off",
   "state_dir": "./tmp/demos/monkey/monkey-states",
   "ended_by": "quit",
-  "exit_code": 0,
-  "omitted": ["stdout_tail", "errorlog_tail"],
-  "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
+  "exit_code": {"available": false, "why": "the emulator's exit code could not be read"},
+  "stdout_tail": {
+    "available": false,
+    "why": "the emulator wrote to a console of its own, which this server does not read (Windows, a build whose debugger draws a screen)"
+  },
+  "errorlog_tail": "0305 \n58: 2b0400 2a1500 2d1801 311b04-341f08 38230c 3b2710 3f2c15 \n60: 2b0400 2c0700 2d0b01 2e0f01-2f1302 301703 311b04 153f3f \n68: 153f3f 153f3f 153f3f 153f3f-153f3f 153f3f 153f3f 153f3f \n70: 153f3f 153f3f 153f3f 153f3f-153f3f 153f3f 153f3f 153f3f \n78: 153f3f 153f3f 153f3f 153f3f-153f3f 153f3f 153f3f 153f3f \n80: 131537 131736 131835 131a34-141c33 141d32 141f31 142030 \n88: 14212f 14222e 14222d 14232c-14242b 14242a 142429 142528 \n90: 153f3f 153f3f 153f3f 153f3f-153f3f 153f3f 153f3f 153f3f \n98: 153f3f 153f3f 153f3f 153f3f-153f3f 153f3f 153f3f 153f3f \na0: 153f3f 153f3f 153f3f 153f3f-153f3f 153f3f 153f3f 153f3f \na8: 153f3f 153f3f 153f3f 153f3f-153f3f 153f3f 153f3f 153f3f \nb0: 153f3f 153f3f 153f3f 153f3f-153f3f 153f3f 153f3f 153f3f \nb8: 153f3f 153f3f 153f3f 153f3f-153f3f 153f3f 153f3f 153f3f \nc0: 153f3f 153f3f 153f3f 153f3f-153f3f 153f3f 153f3f 153f3f \nc8: 153f3f 153f3f 153f3f 153f3f-153f3f 153f3f 153f3f 153f3f \nd0: 3f3f27 3f391f 3f3118 3f2611-3c1d16 382526 3e231f 311c19 \nd8: 342135 350436 271021 1b001b-100010 13001d 0d002a 000038 \ne0: 00191f 00001d 130a00 082a3f-053037 3e3e3e 012719 011000 \ne8: 0f1b00 272600 331c01 350601-2c0301 2e190c 190000 100000 \nf0: 000000 353535 2c2c2c 232323-171717 111111 0c0c0c 3f3d00 \nf8: 2d3a00 1c3500 002613 081500-241a10 221203 1a0d01 3e3e3e \nPRESENCE held frames=3324 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=254 upload_bytes=2021460 layers=edge,pointer,record\nSDLNET: Closed client TCP listening socket\n--END OF LOG--\n",
   "draft": "<volatile>",
   "session": "<volatile>"
 }
