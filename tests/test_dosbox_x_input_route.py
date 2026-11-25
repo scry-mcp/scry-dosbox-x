@@ -17,7 +17,7 @@ from typing import Any, cast
 import pytest
 from channel_double import SilentChannel
 from dosbox_x_server_support import _guest, _names
-from scry_core import judges
+from scry_core import judges, presence
 from scry_core.reply_contract import unavailable
 from scry_core.screen_map import Pointer
 
@@ -813,6 +813,66 @@ def test_an_input_sent_while_the_channel_is_silent_says_nothing_went_in(
     assert "NOT sent" in message and "`status`" in message, message
     assert "whether it acted is unknown" not in message, message
     assert fake.commands_sent == [] and silent.asked == 1, (fake.commands_sent, silent.asked)
+
+
+class _PresenceSpy:
+    """The overlay writer's input side: every pointer move and button it was told about."""
+
+    def __init__(self) -> None:
+        self.events: list[tuple[Any, ...]] = []
+
+    def moved(self, x: int, y: int) -> None:
+        self.events.append(("moved", x, y))
+
+    def button(self, name: str, down: bool) -> None:
+        self.events.append(("button", name, down))
+
+    def paused(self, stopped: bool) -> None: ...
+
+    def recording(self, kind: str, on: bool) -> None: ...
+
+    def began(self, call: Any) -> None: ...
+
+    def ended(self, call: Any, outcome: Any) -> None: ...
+
+    def close(self) -> None: ...
+
+
+def _spied(fake: Any) -> _PresenceSpy:
+    spy = _PresenceSpy()
+    fake.presence = presence.Shown(held=cast(Any, spy))
+    return spy
+
+
+def test_a_performed_key_whose_action_does_not_parse_is_not_marked(tmp_path: Path) -> None:
+    """`perform` judges no action, so the key reaches the route and is refused there: a key
+    that was never built into a sequence leaves no mark."""
+    fake = _guest(tmp_path)
+    spy = _spied(fake)
+    got = cast(dict[str, Any], server.perform(
+        steps=[{"op": "send_keys", "keys": ["a"], "action": "hold"}]))
+    assert got["status"] == "INVALID", got
+    assert spy.events == [], spy.events
+
+
+def test_a_mouse_event_cut_before_its_pointer_was_read_does_not_move_the_mark(
+        tmp_path: Path) -> None:
+    """A click whose send failed part-way has no pointer in its reply; the overlay must not read
+    that as the top-left corner and jump the pointer there."""
+    fake = _guest(tmp_path)
+    spy = _spied(fake)
+    real = fake.send_commands
+    calls = {"n": 0}
+
+    def dies_on_the_click(commands: list[bytes]) -> int:
+        calls["n"] += 1
+        if calls["n"] == 2:      # the report is read first; the click is what is lost
+            raise ds.Invalid("session_broken", "the input socket is gone after the report")
+        return cast(int, real(commands))
+    fake.send_commands = dies_on_the_click
+    got = cast(dict[str, Any], server.send_mouse(button="left"))
+    assert got["status"] == "INVALID" and got.get("delivered") is True, got
+    assert not [e for e in spy.events if e[0] == "moved"], spy.events
 
 
 #: Each opcode's whole frame on the line: SYNC, sequence, the command, the check.

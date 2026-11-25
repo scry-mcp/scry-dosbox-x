@@ -363,7 +363,8 @@ def test_a_start_in_front_whose_window_stays_covered_answers_it_and_does_not_ref
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True, background=False)
     try:
         assert got["status"] == "ok", got
-        assert (got["window"]["front"], kept.activations) == (False, 1), got["window"]
+        # A window still covered takes the activation once more: it may have landed mid-opening.
+        assert (got["window"]["front"], kept.activations) == (False, 2), got["window"]
     finally:
         server.close()
 

@@ -104,8 +104,8 @@ def scan_sequence(keys: list[str], mods: str, action: str = "press") -> bytes:
 # The opcodes `guest/scry.asm` reads; its header is the contract.
 OP_KEY, OP_BUTTON, OP_MOVE, OP_REPORT, OP_RANGE = b"K", b"B", b"M", b"R", b"W"
 STUB_PROTOCOL = "7"
-# `inject` is the stub's former name: matching it lets its announce read as another protocol,
-# not as none.
+# A stub may announce itself as `inject` as well as `scry`, so its announce reads as another
+# protocol rather than as none.
 STUB_ANNOUNCE = re.compile(r"STUB  \. (?:scry|inject) device=(\w+)(?: proto=(\d+))?"
                            r"(?: motion=([01]))?")
 REPORT_LINE = re.compile(
@@ -710,12 +710,12 @@ def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
               progress: ds.Progress = ds.no_progress, action: str = "press") -> dict[str, Any]:
     """The body of the `send_keys` tool."""
     check_keys(keys, modifiers, expect, seconds)
+    seq = scan_sequence(keys, "+".join(modifiers) if modifiers else "-", action)
     counts = Counts.of(session)
     try:
         parked = _ready(session, "a key", expect)
     except ds.Invalid as e:
         return _unsent("key", e, keys=keys, modifiers=modifiers or [])
-    seq = scan_sequence(keys, "+".join(modifiers) if modifiers else "-", action)
     first_key = session.keys_posted == 0
 
     def post() -> dict[str, Any]:

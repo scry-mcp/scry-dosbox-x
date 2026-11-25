@@ -990,7 +990,7 @@ def test_perform_checks_every_op_before_running_any(tmp_path: Path) -> None:
                                 {"op": "status"}])
     assert out["status"] == "INVALID" and out["failed_at"] == 1, out
     assert out["steps_completed"] == 0 and out["ran"] == [], out
-    assert fake.keys_sent == [] if hasattr(fake, "keys_sent") else True
+    assert fake.scancodes_sent == [], fake.scancodes_sent
 
 
 def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(
@@ -1125,40 +1125,43 @@ def test_perform_carries_the_clients_context_to_its_wait(
     assert got and got[0].startswith("waiting for the machine to stop")
 
 
+class _KeyRoute:
+    """A running session that takes the keystrokes and answers the `expect` at once."""
+
+    launch = SimpleNamespace(watched=False, input_port=5555, logfile=None)
+    stub_protocol = inputs.STUB_PROTOCOL
+    keys_posted = 1
+    inputs_written = releases_sent = 0
+
+    def e9_mark(self) -> int:
+        return 0
+
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
+    def at_debugger(self) -> bool:
+        return False
+
+    def has(self, command: str) -> bool:
+        return False
+
+    def send_commands(self, commands: list[bytes]) -> list[str]:
+        return []
+
+    log_wait = _log_wait_as_guest
+
+    def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
+                progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        progress(1.0, seconds, "tick")
+        return {"verdict": "TARGET", "line": "READY", "already": False, "lines_total": 1,
+                "lines_before": 0,
+                "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1}
+
+
 def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
-    class _Route:
-        launch = SimpleNamespace(watched=False, input_port=5555, logfile=None)
-        stub_protocol = inputs.STUB_PROTOCOL
-        keys_posted = 1
-        inputs_written = releases_sent = 0
-
-        def e9_mark(self) -> int:
-            return 0
-
-        @property
-        def parked(self) -> bool:
-            return self.at_debugger()
-
-        def at_debugger(self) -> bool:
-            return False
-
-        def has(self, command: str) -> bool:
-            return False
-
-        def send_commands(self, commands: list[bytes]) -> list[str]:
-            return []
-
-        log_wait = _log_wait_as_guest
-
-        def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
-                    progress: ds.Progress = ds.no_progress) -> dict[str, object]:
-            progress(1.0, seconds, "tick")
-            return {"verdict": "TARGET", "line": "READY", "already": False, "lines_total": 1,
-                    "lines_before": 0,
-                    "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1}
-
     ticks: list[str] = []
-    out = inputs.send_keys(_Route(), ["enter"], None, "READY", 2.0,  # type: ignore[arg-type]
+    out = inputs.send_keys(_KeyRoute(), ["enter"], None, "READY", 2.0,  # type: ignore[arg-type]
                            lambda p, t, m: ticks.append(m))
     assert ticks == ["tick"] and out["verify"]["seen"] is True
 

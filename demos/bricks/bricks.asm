@@ -52,7 +52,7 @@
         [map symbols bricks.map]
 
 SCREEN_W        equ 320
-TOP_Y           equ 12                  ; the ball's ceiling, under the frame line
+TOP_Y           equ 12                  ; the ball's ceiling
 BRICK_Y         equ 24                  ; the wall's first row
 BRICK_ROWS      equ 6
 BRICK_COLS      equ 10
@@ -78,7 +78,6 @@ LIVES           equ 3
 ; Palette entries this program owns, set at start and never taken from the BIOS's defaults.
 ROW_PEN         equ 32                  ; 32..37, one per row of the wall
 PADDLE_PEN      equ 38
-GLOW_PEN        equ 39                  ; the frame, cycled every frame
 BALL_PEN        equ 15
 TEXT_PEN        equ 15
 
@@ -98,7 +97,6 @@ ready:  int     3
 
 main_loop:
         call    retrace
-        call    glow
         call    read_input
         call    steer
         call    draw_paddle             ; first, so the paddle's clear never cuts the ball
@@ -144,23 +142,12 @@ serve:
         mov     word [ball_dy], -SPEED
         jmp     draw_ball
 
-; --- the whole screen: cleared, the frame, the wall, the status line ---------------------
+; --- the whole screen: cleared, the wall, the status line --------------------------------
 draw_screen:
         xor     di, di
         xor     ax, ax
         mov     cx, SCREEN_W * 200 / 2
         rep     stosw
-        mov     di, (TOP_Y - 2) * SCREEN_W  ; the frame: a line under the status row ...
-        mov     cx, SCREEN_W
-        mov     dx, 1
-        mov     al, GLOW_PEN
-        call    fill_rect
-        mov     cx, 1                   ; ... and the two sides down to the bottom
-        mov     dx, 200 - (TOP_Y - 2)   ; (fill_rect uses DX up, so it is set for each)
-        call    fill_rect
-        mov     di, (TOP_Y - 2) * SCREEN_W + SCREEN_W - 1
-        mov     dx, 200 - (TOP_Y - 2)
-        call    fill_rect
         xor     bx, bx                  ; BL is the row, BH the column
 .row:   xor     bh, bh
 .col:   call    brick_index
@@ -528,29 +515,6 @@ set_palette:
         loop    .c
         ret
 
-; The frame breathes: red rises and blue falls, then back, one step a frame.
-glow:
-        inc     word [frames]
-        mov     ax, [frames]
-        and     ax, 0x3F
-        cmp     al, 0x20
-        jb      .up
-        xor     al, 0x3F                ; the way back down
-.up:    shl     al, 1                   ; 0..62, a six-bit DAC value
-        mov     bl, al
-        mov     dx, 0x3C8
-        mov     al, GLOW_PEN
-        out     dx, al
-        inc     dx
-        mov     al, bl
-        out     dx, al                  ; red
-        mov     al, 0x10
-        out     dx, al                  ; green
-        mov     al, 0x3F
-        sub     al, bl
-        out     dx, al                  ; blue
-        ret
-
 ; --- the status line: SCORE and LIVES through the BIOS, in its own font --------------------
 draw_status:
         mov     dx, 0x0001              ; row 0, column 1
@@ -658,6 +622,5 @@ ball_x:         dw 0
 ball_y:         dw 0
 ball_dx:        dw 0
 ball_dy:        dw 0
-frames:         dw 0
 bricks_left:    db 0
 bricks:         times BRICKS_ALL db 0

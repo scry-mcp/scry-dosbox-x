@@ -51,13 +51,10 @@ While a session is live the emulator's window has an orange edge, so a person at
 
 Over the edge the window can also show, each layer on unless `start`'s `overlay` turns it off:
 
-- **`calls`**: a caption naming each call and its arguments, shortened (a path by its last name), tinted by what the call did.
-- **`keys`**: the keys held down, as keycaps.
 - **`pointer`**: the guest's mouse pointer.
-- **`pause`**: a mark while the session holds the machine stopped.
 - **`record`**: a red mark in the top right corner, blinking once a second, while `record` or `audio_record` runs: a dot with REC for video, a dot with a note for sound, both when both run. It leaves when the recording ends, and a capture that could not be turned off keeps it, because that one still records.
 
-`place` puts the captions at the `top` or the `bottom`, or `auto`, on the band of the picture that shows less. A build that predates the captions draws the edge and the pointer only, one that predates the record mark draws every layer but that one, and the `overlay` of `start` and `status` names each layer it cannot draw and why. `build_check` says which layers a build draws before any session starts.
+A build that predates the record mark draws the edge and the pointer only, and the `overlay` of `start` and `status` names each layer it cannot draw and why. `build_check` says which layers a build draws before any session starts.
 
 The emulator draws all of it after a frame is handed to capture, so no capture shows it and no tool that reads the screen sees it.
 
@@ -190,13 +187,13 @@ The tools: [Names](docs/reference/names.md).
 
 ## Knowledge base
 
-A reply and a caption call a number by its name where the server knows one, so you do not look it up. A caption reads `exit (0x4C)`; a reply's `names` field gives the number and its name.
+A reply calls a number by its name where the server knows one, so you do not look it up: `exit (0x4C)`, with the number and its name in the reply's `names` field.
 
 - **What it answers.** DOS, BIOS and driver calls, by interrupt and function; the DOS error codes; and the registers and commands of the chips both servers share. A number it has no entry for stays a number.
 - **An entry says what the documentation says, then what DOSBox-X does.** Each row is one sentence with the lines it was read from: the interrupt list's section or DOSBox-X's own handler. A row of the document carries DOSBox-X's verdict on it, and a note says where DOSBox-X does otherwise.
 - **Where the reply says it.** `names` lists each named number with its `field`, its `kind`, its `name` and the `id` of its entry; `names_cut` counts what did not fit. The one-line `summary` carries the same names, and a call's own arguments are named under `given.<argument>`.
-- **`names=false` on `start`** leaves replies bare and a disassembled line with no note. It is a start profile key like any other, and the window's captions keep their names.
-- **`knowledge_find`** asks the base directly: by `id`, by `kind` and `key`, or by words, and `<id>#<n>` asks one row with links to its lines. It needs no session and answers while the program runs.
+- **`names=false` on `start`** leaves replies bare and a disassembled line with no note. It is a start profile key like any other.
+- **`knowledge_find`** asks the base directly: by `id`, by `kind` and `key`, or by words, and `<id>#<n>` asks one row with links to its lines. It needs no session and answers while the program runs. `status` counts the entries it serves, in `knowledge`.
 - **A disassembled line's note.** `disassemble` gains `line_notes` for each line whose instruction states what the base names, and a stop's instruction gains `note`, with `int 21h` named from the registers. Your own comments stay apart.
 - **The log of DOS calls.** The `dos` channel of `log` and `log_wait` names each call and each error the same way.
 
@@ -410,7 +407,7 @@ Some tools need a debugger command a build may lack. `build_check` and `start` l
 | `RUNSTATE` | Whether the program is stopped, and the frame count behind each stop's `frame` and `perform`'s `until_frame` | `run_to`, `run_for`, `trace`, `screen_wait`, `record`, `audio_record`, `step(mode="over")`, `resume` with `seconds`, input to a stopped machine, any reading after a `resume` |
 | `STEPIN` | One instruction run | `step` |
 | `SAVESTATE`, `LOADSTATE` | A saved state | `state_write` |
-| `PRESENCE` | The orange edge, the pointer and, from a build that has them, the captions, keycaps and pause mark | the edge, and `start`'s `overlay` |
+| `PRESENCE` | The orange edge, the pointer and, from a build that has it, the recording mark | the edge, and `start`'s `overlay` |
 | `BPIF` | A stop on a register condition | `regpoint_add` |
 | `VGAMEMDUMP` | Video memory as the card holds it | `screen_view`, `screen_signature` in a planar, unchained or linear mode |
 | `CAPTURE` | A sound or video capture between stops | `record`, `audio_record` |

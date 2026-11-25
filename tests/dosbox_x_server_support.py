@@ -56,8 +56,10 @@ MEASURED_BASE = 0x00400000
 
 
 def _log_wait_as_guest(self: Any, pattern: str, seconds: float, channel: str, mark: int = 0,
-                       progress: ds.Progress = ds.no_progress) -> dict[str, object]:
-    got: dict[str, object] = self.e9_wait(pattern, seconds, mark=mark, progress=progress)
+                       progress: ds.Progress = ds.no_progress,
+                       advance: Any = None) -> dict[str, object]:
+    got: dict[str, object] = self.e9_wait(pattern, seconds, mark=mark, progress=progress,
+                                          advance=advance)
     return got
 
 
@@ -123,6 +125,7 @@ class SessionGates:
         """A fake is stopped as long as its `at_debugger` says."""
 
     # the fields every real session carries, which the server reads directly
+    frames: int | None = None
     stop_count: int | None = 0
     fired_entry: str | None = None
     paging: bool | None = None
@@ -384,7 +387,8 @@ class FakeSession(SessionGates):
         return ["Bochs port E9h: [+ 0.000] BOOT  . start"][offset:], 1
 
     def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
-                progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+                progress: ds.Progress = ds.no_progress,
+                advance: Any = None) -> dict[str, object]:
         return self.log_wait(pattern, seconds, "guest", mark=mark, progress=progress)
 
     def log_wait(self, pattern: str, seconds: float, channel: str, mark: int = 0,
@@ -810,7 +814,8 @@ class NamesFake(SessionGates):
     log_wait = _log_wait_as_guest
 
     def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
-                progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+                progress: ds.Progress = ds.no_progress,
+                advance: Any = None) -> dict[str, object]:
         self.wait_calls.append((pattern, seconds, mark))
         if self.wait_raises is not None:
             raise self.wait_raises

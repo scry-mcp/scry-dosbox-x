@@ -15,12 +15,13 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from scry_core import demo as core
 from scry_core import png
 from scry_core.demo import Moment, Reply, Run, Step, window_args
 from scry_core.verdict import Invalid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
-from demos import decorated, host  # noqa: E402
+from demos import host  # noqa: E402
 from demos.dpaint.program import (  # noqa: E402
     WAIT_S,
     click,
@@ -35,7 +36,6 @@ from demos.host import expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 #: The layers that exist for this demo: its calls, the keys and the mouse it sends.
-LAYERS = decorated.ALL
 #: The colours the checked rows cross, by palette index; the brown slot holds orange once mixed,
 #: and the frame is the white canvas left around the scene.
 COLOURS = {"orange": 6, "blue": 1, "black": 0, "yellow": 14, "frame": 15}
@@ -208,6 +208,13 @@ STEPS = [
          reads=("`send_mouse` presses and releases as two steps. Between them `screen_wait` looks "
                 "only when a watch on the program's copy of brown's red fires, so the arrow is "
                 "held exactly long enough.")),
+    Step("orange shown", "run_for", {"frames": 20, "seconds": WAIT_S},
+         lambda reply, run: "the mixed slot left on screen for 20 retraces",
+         volatile={**host.RETRACE_STOP,
+                   **{key: "it names the instruction or the clock a retrace stop lands on, "
+                           "which drift with the host's cycles"
+                      for key in ("summary", "emulated_before_s", "emulated_after_s")},
+                   "cycles": "the emulator's own count, a few cycles apart from run to run"}),
     counted("mixed"),
     Step("orange", "palette", orange_swatch, mixed,
          title="Read a colour back from the video card",
@@ -256,7 +263,7 @@ STEPS = [
 ]
 
 MOMENTS = (
-    Moment("dialog open", "mixed",
+    Moment("choose Palette", "mixed",
            "`send_mouse` holds the red arrow of the Palette dialog until the brown slot is "
            "orange."),
     Moment("boat drawn", "boat flipped",
@@ -270,4 +277,4 @@ DEMO = declared("dpaint_maps", HERE, STEPS, MOMENTS,
 
 if __name__ == "__main__":
     isolated_store("dpaint_maps")
-    sys.exit(decorated.main(DEMO, LAYERS))
+    sys.exit(core.main(DEMO))

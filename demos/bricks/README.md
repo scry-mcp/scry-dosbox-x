@@ -1,11 +1,15 @@
 # Bricks: a breakout game stopped at every brick it loses
 
 <!-- demo-motion:begin -->
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Bricks, the game this repository builds, with its ball in play"></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Bricks on its DOS version: a breakpoint at a brick, the score, the paddle stepped by the keys and by the mouse, and the lives frozen"></picture></p>
 
-1. With the breakpoint cleared the game plays on, and `record` films it.
+1. `resume` runs the game to the breakpoint on `brick_hit`, and the ball falls into the next brick.
+2. `read_memory` reads the score by its name: twenty points from the two bricks the ball broke.
+3. `send_keys` steps the paddle right, left and right; the game logs each key.
+4. With `lives` frozen, the same ball is lost and the status line still reads 3.
+5. `send_mouse` puts the pointer at 240,100 and the paddle centres itself under it.
 
-<!-- moments-ms: 2854 -->
+<!-- moments-ms: 1484,1569,1569,1569,1569 -->
 <!-- demo-motion:end -->
 
 `BRICKS.COM` is a wall, a ball and a paddle, written in this folder to be debugged as much as
@@ -28,11 +32,12 @@ uv run python demos/bricks/demo.py
 ```
 
 Each line it prints is one call and its check. The window opens behind the others, so the run
-does not take your keyboard.
+does not take your keyboard; `--watch` brings it in front, for when you want to watch it.
 
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
   `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
 - `--display N` opens the window on that display. Left out, it opens on the main one.
+- `--watch` shows the run: the window comes in front and takes your keyboard until the run ends.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png`,
   `loop.webp` and the README's example calls, from a run where every step passed. It needs ffmpeg and `img2webp` on your
@@ -65,12 +70,12 @@ Call:
 breakpoint_at(ref="brick_hit")
 ```
 
-Reply, 3 of 10 fields:
+Reply, 3 of 11 fields:
 
 ```json
 {
   "summary": "breakpoint_at brick_hit: armed",
-  "entry": "BP 08DF:02C8",
+  "entry": "BP 08DF:02A5",
   "by": "symbol"
 }
 ```
@@ -89,7 +94,10 @@ Reply, 3 of 10 fields:
   "stored": true,
   "armed": true,
   "state": "armed",
-  "entry": "BP 08DF:02C8",
+  "entry": "BP 08DF:02A5",
+  "names": [
+    {"field": "given.ref", "number": "0x00009095", "kind": "symbol", "name": "brick_hit"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -112,9 +120,9 @@ Reply, 3 of 16 fields:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002A5",
   "verdict": "OTHER_STOP",
-  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8"
+  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002A5"
 }
 ```
 
@@ -124,17 +132,17 @@ Reply, 3 of 16 fields:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002A5",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DF:000002C8",
+  "pc": "08DF:000002A5",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
-    "EAX": "0x00000005",
+    "EAX": "0xd05b0005",
     "EBX": "0x00000707",
     "ECX": "0x005b0020",
     "EDX": "0x00000000",
@@ -142,7 +150,7 @@ Reply, 3 of 16 fields:
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -162,11 +170,11 @@ Reply, 3 of 16 fields:
       "bytes": "0000"
     }
   ],
-  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002A5",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 3,
   "instruction": {
-    "address": "08DF:000002C8",
+    "address": "08DF:000002A5",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -181,39 +189,42 @@ Reply, 3 of 16 fields:
 
 </details>
 
-### 3. Read a value after a saved state is loaded
+### 3. Hold a value against the program's own writes
 
 Ask:
 
-> Now that the state saved before the left arrow is loaded, read `paddle_x` again.
+> The same ball was just lost again: read `lives` now that `watch_add` freezes it.
 
 Call:
 
 ```text
-read_memory(ref="paddle_x", length=2)
+read_memory(ref="lives", length=1)
 ```
 
-Reply, 2 of 7 fields:
+Reply, 2 of 8 fields:
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08DF:0000061F: dc00",
-  "hex": "dc00"
+  "summary": "read_memory lives: 1 byte at 08DF:000005CB: 03",
+  "hex": "03"
 }
 ```
 
-A saved state is the whole machine, not the game's own save. So the paddle reads where it was before the arrow moved it.
+A freeze is the debugger putting a byte back after every instruction. The game took the life and the status line still reads 3: `frozen_hex` is the value `watch_add` holds.
 
 <details><summary>The whole reply</summary>
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08DF:0000061F: dc00",
+  "summary": "read_memory lives: 1 byte at 08DF:000005CB: 03",
   "status": "ok",
-  "ref": "paddle_x",
-  "seg_off": "08DF:0000061F",
-  "length": 2,
-  "hex": "dc00",
+  "ref": "lives",
+  "seg_off": "08DF:000005CB",
+  "length": 1,
+  "hex": "03",
+  "names": [
+    {"field": "given.ref", "number": "0x000093bb", "kind": "symbol", "name": "lives"}
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```

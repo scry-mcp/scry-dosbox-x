@@ -1,15 +1,16 @@
-"""Presence on DOSBox-X: the edge, a pointer, and from protocol 3 the captions, the keycaps and
-the pause mark, drawn by the emulator's `PRESENCE` command.
+"""Presence on DOSBox-X: the edge, the pointer and the recording mark, drawn by the emulator's
+`PRESENCE` command.
 
 It draws into the scaled output after the frame went to capture, so no capture or screen read
 carries it. The pointer appears once the session has moved the guest's mouse. A build that
 announces protocol 2 is sent only what protocol 2 parses; the layers it lacks are named in the
-`overlay` of `start` and `status`; so is a build of protocol 3 that predates the record mark.
+`overlay` of `start` and `status`; so is a build that predates the record mark. A build of
+protocol 4 takes the reduced layer set and refuses a word it no longer knows by name.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable, Collection, Iterable, Mapping
+from collections.abc import Callable, Collection, Mapping
 from typing import Any, Protocol
 
 from pydantic import ValidationError
@@ -43,14 +44,12 @@ NO_OUTPUT = ("this output cannot be drawn on (an 8-bit output, or the TrueType o
 NO_WINDOW = "a session started without `shared` has no window to draw on"
 #: The bare command names the build's version; a build that refuses the bare form is version 1.
 MIN_VERSION = 2
-#: The version that takes the layers of `overlay`.
-PROTOCOL = 3
+#: The version that takes the reduced layer set: the edge, the pointer and the record mark.
+PROTOCOL = 4
+#: The version that takes `layers=` and `rec=`, which is where the record mark arrived.
+LAYERS_PROTOCOL = 3
 #: The layers a build of protocol 2 draws.
 PROTOCOL_2_LAYERS = frozenset({"edge", "pointer"})
-#: What the command takes of a caption and of the keys, in bytes.
-CAPTION_BYTES = 160
-KEY_BYTES = 12
-KEYS_SHOWN = 8
 #: The INT 33h driver's default graphics pointer, hot spot top-left: `X` outline, `o` fill, `.`
 #: untouched. One cell per guest pixel, it matches a DOS program's own pointer.
 POINTER = (
@@ -84,24 +83,9 @@ def channel_args(look: presence.Look = presence.LOOK) -> str:
             f"sprite={'/'.join(POINTER)}")
 
 
-def caption_args(look: presence.Look = presence.LOOK) -> str:
-    """The look of the layers protocol 3 added, as `Look` holds it: the command takes the scroll
-    speed in characters a second and keeps its own fades."""
-    return (f"caption_text_rgb={look.caption_text_rgb:06X} caption_alpha={look.caption_alpha:g} "
-            f"keycap_rgb={look.keycap_rgb:06X} keycap_text_rgb={look.keycap_text_rgb:06X} "
-            f"keycap_alpha={look.keycap_alpha:g} scroll_cps={look.scroll_cps:g}")
-
-
 def record_args(look: presence.Look = presence.LOOK) -> str:
     """The look of the record mark, for a build that draws it."""
     return f"record_rgb={look.record_rgb:06X} record_blink_s={look.record_blink_s:g}"
-
-
-def encoded(text: str, limit: int) -> str:
-    """`text` as one word of the command: at most `limit` ASCII bytes, a space, a percent sign
-    and any other byte outside the printable range as `%XX`."""
-    data = text.encode("ascii", "replace")[:limit]
-    return "".join(chr(b) if 0x21 <= b <= 0x7E and b != 0x25 else f"%{b:02X}" for b in data)
 
 
 def words(answer: str) -> dict[str, str]:
@@ -125,13 +109,9 @@ class ChannelAdapter:
         which a build of protocol 2 draws only its own two."""
         self._session = session
         self._args = channel_args(look)
-        self._caption_args = caption_args(look)
         self._record_args = record_args(look)
         self._overlay = overlay
         self._drawn = frozenset(drawn)
-        # The caption the emulator holds, as last delivered: sent once, and again when its serial,
-        # text or tint changes (a call that ended refused).
-        self._caption: tuple[int, str, int] | None = None
         self.answer = ""
         self.version: int | None = None
 
@@ -144,12 +124,10 @@ class ChannelAdapter:
             raise presence.Unavailable(
                 f"this DOSBox-X's PRESENCE is version {self.version}, which draws the pointer at a "
                 f"share of the window; version {MIN_VERSION} sizes it by the guest's pixels")
-        line = (f"PRESENCE {self._state(state, payload)} {self._args} "
+        line = (f"PRESENCE {self._state(state)} {self._args} "
                 f"pointer={int(payload.pointer is not None)}")
-        caption = self._caption
-        if self.version >= PROTOCOL:
-            more, caption = self._protocol_words(payload)
-            line += more
+        if self.version >= LAYERS_PROTOCOL:
+            line += self._protocol_words(payload)
         # The writer retries a delivery refused on a silent channel on its own.
         ok, lines = self._session.exec(line, unless_silent=True)
         if not ok:
@@ -157,44 +135,31 @@ class ChannelAdapter:
                 raise presence.Unavailable(NO_COMMAND)
             said = " / ".join(lines) or "no reason given"
             raise RuntimeError(f"the debugger refused PRESENCE: {said}")
-        self._caption = caption
         self.answer = lines[0] if lines else ""
         # `output=none` is not refused: no frame has been drawn yet at the parked start.
         if "output=undrawable" in self.answer.split():
             raise presence.Unavailable(NO_OUTPUT)
 
-    def _state(self, state: presence.State, payload: presence.Payload) -> str:
-        """`paused` is a state of the command from protocol 3; before it the edge stays `held`."""
-        paused = state == "held" and payload.paused and (self.version or 0) >= PROTOCOL
-        return "paused" if paused else state
+    def _state(self, state: presence.State) -> str:
+        """The command's state word; a stopped machine is `held`."""
+        return state
 
-    def _protocol_words(self, payload: presence.Payload
-                        ) -> tuple[str, tuple[int, str, int] | None]:
-        """The words protocol 3 adds, and the caption the emulator holds once they are taken. A
-        caption goes only when it is a new one or leaves."""
+    def _protocol_words(self, payload: presence.Payload) -> str:
+        """The words a build from protocol 3 takes: the layers, and what is being recorded."""
         layers = [layer for layer in payload.layers if layer in self._drawn]
-        out = [f" layers={','.join(layers)} place={payload.place} {self._caption_args}"]
+        out = [f" layers={','.join(layers)}"]
         if "record" in self._drawn:
             out.append(f" rec={payload.recording} {self._record_args}")
-        if "keys" in payload.layers:
-            out.append(" keys=" + ",".join(
-                encoded(name, KEY_BYTES) for name in payload.keys[-KEYS_SHOWN:]))
-        caption = payload.caption if "calls" in payload.layers else None
-        held = None if caption is None else (caption.serial, caption.text, caption.rgb)
-        if held != self._caption:
-            out.append(" caption=" + ("" if caption is None
-                                      else encoded(caption.text, CAPTION_BYTES)
-                                      + f" serial={caption.serial} tint={caption.rgb:06X}"))
-        return "".join(out), held
+        return "".join(out)
 
     def overlay_reply(self) -> ov.OverlayReply:
         """The `overlay` of `start` and `status`: the layers the last answer says are drawn."""
         asked = self._overlay.asked()
         said = words(self.answer)
         lacking: dict[ov.Layer, str] = {}
-        if (self.version or 0) < PROTOCOL:
+        if (self.version or 0) < LAYERS_PROTOCOL:
             why = (f"this DOSBox-X's PRESENCE is version {self.version}, which draws the edge and "
-                   f"the pointer; version {PROTOCOL} draws this layer")
+                   f"the pointer; version {LAYERS_PROTOCOL} draws this layer")
             lacking = {layer: why for layer in asked if layer not in PROTOCOL_2_LAYERS}
             return ov.reply(self._overlay, lacking)
         for layer in asked:
@@ -209,9 +174,7 @@ class ChannelAdapter:
         for layer in asked:
             if layer in lacks and layer not in lacking:
                 lacking[layer] = f"this DOSBox-X's output ({output}) cannot draw this layer"
-        place = said.get("place")
-        return ov.reply(self._overlay, lacking,
-                        "top" if place == "top" else "bottom" if place == "bottom" else None)
+        return ov.reply(self._overlay, lacking)
 
     def wake(self) -> None:
         """Nothing to wake: this emulator repaints on its own."""
@@ -236,17 +199,7 @@ def overlay_of(value: object) -> ov.Overlay:
         return ov.Overlay.model_validate(value)
     except ValidationError as e:
         raise Invalid("bad_argument", f"overlay: {e.errors()[0]['loc']} {e.errors()[0]['msg']}; "
-                      f"it takes the booleans calls, keys, pointer and pause, and place "
-                      f"(top, bottom or auto)") from None
-
-
-def key_edges(keys: Iterable[str], modifiers: Iterable[str], action: str
-              ) -> list[tuple[str, bool]]:
-    """What a `send_keys` does to the keycaps, in order: the modifiers and the keys held by
-    `press` and `down`, let go by `press` and `up`."""
-    names = [name.lower() for name in (*modifiers, *keys)]
-    return ([(name, True) for name in names] if action != "up" else []) + (
-        [(name, False) for name in reversed(names)] if action != "down" else [])
+                      f"it takes the booleans pointer and record") from None
 
 
 def button_edges(action: str) -> list[bool]:
@@ -268,17 +221,11 @@ def pointer_where(reply: Mapping[str, Any], x: int | None, y: int | None) -> tup
     return int(where.get("x", x or 0)), int(where.get("y", y or 0))
 
 
-def keys_sent(shown: presence.Shown, keys: Iterable[str], modifiers: Iterable[str],
-              action: str) -> None:
-    """Report a `send_keys` that went in."""
-    for name, down in key_edges(keys, modifiers, action):
-        shown.key(name, down)
-
-
 def mouse_sent(shown: presence.Shown, reply: dict[str, Any], x: int | None, y: int | None,
                button: str | None, action: str) -> None:
     """Report a `send_mouse` that went in: the pointer, then the button's presses."""
-    shown.moved(*pointer_where(reply, x, y))
+    if "pointer" in reply or x is not None:
+        shown.moved(*pointer_where(reply, x, y))
     if button is None:
         return
     for down in button_edges(action):

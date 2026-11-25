@@ -39,7 +39,7 @@ from matrix_common import (
     videos,
 )
 from matrix_ledger import EXIT_INVALID
-from scry_core import avi, overlay_timeline, presence, window_capture
+from scry_core import avi, presence, window_capture
 from scry_core import overlay as ov
 
 from scry_dosbox_x import binary as dbinary  # isort: skip -- found through the path the matrix sets
@@ -105,17 +105,11 @@ R_CELLS = cells(
      "REFERENCE.md, The orange edge of the window: sized by the guest's pixels"),
 )
 LAYER_CELLS = cells(
-    ("R each layer of protocol 3 is drawn in its own place in the window: the caption in the "
-     "middle of the bottom band, or of the top one when placed there, the keycaps at its right "
-     "and the pause mark at its left, and the window differs from the edge alone by that box",
-     "REFERENCE.md, The orange edge of the window: calls, keys, pause and place"),
-    ("R no capture carries a layer: screen_view and screen_signature with every layer drawn are "
-     "those of the edge alone",
+    ("R the build answers a delivery with the layers asked: the record mark as `overlay` names it",
+     "the PRESENCE channel command's answer: layers"),
+    ("R no capture carries a layer: screen_view and screen_signature with the record mark drawn "
+     "are those of the edge alone",
      "REFERENCE.md, The orange edge of the window: after a frame is handed to capture"),
-    ("R the build answers a delivery with the layers asked and the band in use",
-     "the PRESENCE channel command's answer: layers and place"),
-    ("R a caption sent again under its serial repaints nothing, and under a new serial it does",
-     "the PRESENCE channel command's word: serial"),
     ("R the record mark is drawn at the top right of the window while a recording is on, "
      "blinks, and is gone once it ends, and the window differs from the edge alone by that mark",
      "REFERENCE.md, The orange edge of the window: record"),
@@ -367,57 +361,33 @@ def _layer_box(base: window_capture.Image | str, shot: window_capture.Image | st
 
 
 def _layers_drawn(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
-    """Each layer of protocol 3 delivered alone beside the edge, the window captured settled, the
-    build's answer kept; then every layer at once with the stills read, a caption sent again
-    under its serial, and the record mark's place, blink and end. Nothing is drawn by a build of
-    protocol 2: `blocked` says so; a build before the record mark says that of its cell."""
+    """The record mark delivered beside the edge, the window captured settled, the build's answer
+    kept, and the stills read with every layer drawn. A build before the layers' protocol says so
+    of its cells; one before the record mark says that of the mark's."""
     adapter.show("held", presence.Payload())  # the build's version is read at the first delivery
-    if (adapter.version or 0) < dpresence.PROTOCOL:
+    if (adapter.version or 0) < dpresence.LAYERS_PROTOCOL:
         return {"blocked": f"this build's PRESENCE is version {adapter.version}: it draws the "
                            "edge and the pointer only"}
     drawn = _drawn_by(_debugger())
     out: dict[str, Any] = {"drawn": drawn}
-    serial = iter(range(100, 200))
 
     def deliver(tag: str, state: Any = "held", via: dpresence.ChannelAdapter = adapter,
                 wait: float = QUIET_S + presence.LOOK.fade_s, **kw: Any
                 ) -> window_capture.Image | str:
         kw.setdefault("layers", ("edge",))
-        kw.setdefault("place", "bottom")
         via.show(state, presence.Payload(**kw))
         time.sleep(wait)
         out[f"{tag}-answer"] = dpresence.words(via.answer)
         return _settled(tag)
 
-    def caption(text: str) -> overlay_timeline.Caption:
-        return overlay_timeline.Caption(text, "read", 0x5AC8FA, next(serial))
-
     base = deliver("edge-alone")
     out["stills-edge"] = _screen_read()
-    out["calls-bottom"] = _layer_box(base, deliver(
-        "calls-bottom", layers=("edge", "calls"), caption=caption("registers")))
-    out["calls-top"] = _layer_box(base, deliver(
-        "calls-top", layers=("edge", "calls"), place="top", caption=caption("registers")))
-    out["keys"] = _layer_box(base, deliver("keys", layers=("edge", "keys"), keys=("ctrl", "a")))
-    out["pause"] = _layer_box(base, deliver("pause", layers=("edge", "pause"), paused=True))
-    deliver("all", layers=ov.LAYERS, caption=caption("registers"),
-            keys=("ctrl", "a"), paused=True, recording="both")
+    deliver("all", layers=ov.LAYERS, recording="both")
     out["stills-all"] = _screen_read()
-    # A caption again under its own serial, by hand: the adapter would not send it twice.
-    held = caption("registers")
-    deliver("serial", layers=("edge", "calls"), caption=held)
-    at = _frame_count(adapter)
-    again = f"PRESENCE held caption=registers serial={held.serial} tint={held.rgb:06X}"
-    _debugger().exec(again)
-    time.sleep(QUIET_S)
-    after_same = _frame_count(adapter)
-    _debugger().exec(again.replace(f"serial={held.serial}", f"serial={next(serial)}"))
-    time.sleep(QUIET_S)
-    out["serial-frames"] = (at, after_same, _frame_count(adapter))
     if "record" in drawn:
         out.update(_record_mark(adapter, deliver, base, drawn))
     else:
-        out["record-blocked"] = ("this build's PRESENCE is version 3 and predates the record mark: "
+        out["record-blocked"] = ("this build's PRESENCE predates the record mark: "
                                  f"it draws {', '.join(drawn)}")
     return out
 
@@ -457,42 +427,13 @@ def _judge_layers(spun: dict[str, Any]) -> None:
         for label in labels:
             M.block(label, str(spun["blocked"]))
         return
-    boxes = {name: spun[name] for name in ("calls-bottom", "calls-top", "keys", "pause")}
-    unjudged = [f"{name}: {box}" for name, box in boxes.items() if isinstance(box, str)]
-    if unjudged:
-        M.block(labels[0], "; ".join(unjudged))
-    else:
-        def where(name: str) -> tuple[float, float, float, float, int]:
-            d, w, h = boxes[name]
-            x0, y0, x1, y1 = d.box
-            return x0 / w, y0 / h, x1 / w, y1 / h, d.changed
-        cb, ct, k, p = (where(n) for n in ("calls-bottom", "calls-top", "keys", "pause"))
-        middle = (cb[0] + cb[2]) / 2
-        holds = (
-            all(b[4] > 0 for b in (cb, ct, k, p))
-            and cb[1] >= BAND_BOTTOM_FROM and abs(middle - 0.5) <= MIDDLE_SLACK
-            and cb[2] - cb[0] <= CAPTION_WIDEST
-            and ct[3] <= BAND_TOP_TO and ct[2] - ct[0] <= CAPTION_WIDEST
-            and k[0] > 0.5 and k[1] >= BAND_BOTTOM_FROM and k[2] - k[0] <= CORNER_WIDEST
-            and p[2] < 0.5 and p[1] >= BAND_BOTTOM_FROM and p[2] - p[0] <= CORNER_WIDEST)
-        M.judge(labels[0], holds,
-                "(left, top, right, bottom as shares of the window, pixels changed) caption "
-                f"bottom {tuple(round(v, 3) for v in cb)}, caption top "
-                f"{tuple(round(v, 3) for v in ct)}, keycaps {tuple(round(v, 3) for v in k)}, "
-                f"pause {tuple(round(v, 3) for v in p)}")
+    answered = spun["all-answer"]
+    M.judge(labels[0], answered.get("layers") == ",".join(spun["drawn"]),
+            f"every layer: layers={answered.get('layers')}, drawn {spun['drawn']}")
     edge, every = spun["stills-edge"], spun["stills-all"]
     M.judge(labels[1], all(edge.values()) and edge == every,
             f"edge alone {edge}, every layer {every}")
-    asked = spun["calls-top-answer"]
-    answered = spun["all-answer"]
-    M.judge(labels[2], asked.get("layers") == "edge,calls" and asked.get("place") == "top"
-            and answered.get("layers") == ",".join(spun["drawn"]),
-            f"calls at the top: layers={asked.get('layers')} place={asked.get('place')}; "
-            f"every layer: layers={answered.get('layers')}")
-    first, same, new = spun["serial-frames"]
-    M.judge(labels[3], None not in (first, same, new) and same == first and new > same,
-            f"frames before {first}, after the same serial {same}, after a new serial {new}")
-    _judge_record_mark(labels[4], spun)
+    _judge_record_mark(labels[2], spun)
 
 
 def _judge_record_mark(label: str, spun: dict[str, Any]) -> None:

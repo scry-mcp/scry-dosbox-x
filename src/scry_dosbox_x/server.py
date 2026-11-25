@@ -563,10 +563,9 @@ def find(data_hex: str, ref: str, length: int) -> dict[str, Any]:
     Reply: `ref`, `seg_off`, `length`, `span`, `hits` (`SEG:OFF`, at most {HITS_MAX}, highest kept),
     `hits_total`, `truncated`.
     """
-    # THE HEX BEFORE THE MACHINE, which is where `write` already asked it and where this did
-    # not: the same argument of the same server answered `bad_argument` through one tool and
-    # `no_session` through the other. Whether the bytes are hex is as true with no machine as
-    # with one; where `ref` POINTS is not, and that still waits below.
+    # The hex is judged before the machine is asked for, as `write` judges it: whether the
+    # bytes are hex is as true with no machine as with one, while where `ref` POINTS is not,
+    # and that waits below.
     pattern = finder.check_pattern(data_hex)
     session = live()
     session.require_stopped("a search")
@@ -1628,12 +1627,8 @@ def send_keys(keys: list[str],
 
     Reference: REFERENCE.md, Input and the screen.
     """
-    # The input tools ask the run state themselves: a silent answer there means nothing was sent.
-    sent = inputs.send_keys(live(probe=False), keys, modifiers, expect or None, seconds,
+    return inputs.send_keys(live(probe=False), keys, modifiers, expect or None, seconds,
                             bridge(ctx), action)
-    if sent.get("delivered") is not False:
-        dpresence.keys_sent(dpresence.of(STATE.session), keys, modifiers or (), action)
-    return sent
 
 
 @tool("Send mouse input", summary=one_line.send_mouse, on_cancel="none")

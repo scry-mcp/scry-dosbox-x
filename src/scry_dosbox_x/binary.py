@@ -60,11 +60,8 @@ USAGE_MARKS = {name: b"\0DEBUG: " + name.encode() + b" usage: " for name in ("CA
 USAGE_MARKS |= {"PIC": b"\0MASKIRQ\0", "A20": b"A20 gate is %s"}
 #: The debugger with no screen, which needs no terminal or console.
 HEADLESS_MARK = b"\0debugger headless\0"
-#: A key only a `PRESENCE` of protocol 3 parses, held as a literal of its own: the build draws
-#: captions, keycaps and a pause mark. The file answers before a session starts.
-PRESENCE_OVERLAY_MARK = b"\0keycap_text_rgb\0"
-#: A key only a `PRESENCE` that draws the record mark parses; a build of protocol 3 without it
-#: rejects the layer word `record` and the words of its look.
+#: A key only a `PRESENCE` that draws the record mark parses; a build without it rejects the
+#: layer word `record` and the words of its look.
 PRESENCE_RECORD_MARK = b"\0record_blink_s\0"
 
 
@@ -72,17 +69,39 @@ def command_mark(name: str) -> bytes:
     return USAGE_MARKS.get(name, b"\0" + name.encode() + b"\0")
 
 
-MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK, PRESENCE_OVERLAY_MARK,
-         PRESENCE_RECORD_MARK,
+MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK, PRESENCE_RECORD_MARK,
          *(command_mark(n) for n in COMMANDS))
 
 
 _marks_seen: dict[tuple[str, int, int], frozenset[bytes]] = {}
 
 
+def launched(path: str) -> str:
+    """The program `path` runs: the file itself, or what a launcher script execs. A `.app` carries
+    one, and the marks are in the program, never in the script that starts it."""
+    real = os.path.realpath(path)
+    if os.path.isdir(real):
+        inside = Path(real, "Contents", "MacOS")
+        entries = sorted(p for p in inside.iterdir() if p.is_file()) if inside.is_dir() else []
+        return launched(str(entries[0])) if len(entries) == 1 else real
+    try:
+        data = Path(real).read_bytes()[:4096]
+    except OSError:
+        return real
+    if not data.startswith(b"#!"):
+        return real
+    for line in data.decode("utf-8", "replace").splitlines():
+        words = line.split()
+        if len(words) >= 2 and words[0] == "exec":
+            target = os.path.expanduser(words[1].strip("'\""))
+            if os.path.isfile(target):
+                return os.path.realpath(target)
+    return real
+
+
 def _carries(binary: str, mark: bytes, what: str) -> bool:
     """Whether the build holds `mark`; all marks are read in one pass, cached by path and stat."""
-    real = os.path.realpath(binary)
+    real = launched(binary)
     try:
         st = os.stat(real)
         key = (real, st.st_size, st.st_mtime_ns)
@@ -118,10 +137,8 @@ def presence_layers(binary: str, found: list[str]) -> list[ov.Layer]:
     if "PRESENCE" not in found:
         return []
     drawn: set[ov.Layer] = {"edge", "pointer"}
-    if _carries(binary, PRESENCE_OVERLAY_MARK, "the presence overlay"):
-        drawn |= {"keys", "calls", "pause"}
-        if _carries(binary, PRESENCE_RECORD_MARK, "the presence record mark"):
-            drawn.add("record")
+    if _carries(binary, PRESENCE_RECORD_MARK, "the presence record mark"):
+        drawn.add("record")
     return [layer for layer in ov.LAYERS if layer in drawn]
 
 

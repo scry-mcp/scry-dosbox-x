@@ -8,11 +8,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from scry_core import demo as core
 from scry_core.demo import DISPLAY, Demo, Moment, Run, Step, recording, window_args
 from scry_core.game_demo import arrived, word_is
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
-from demos import decorated  # noqa: E402
 from demos.host import (  # noqa: E402
     VOLATILE,
     checkout,
@@ -29,7 +29,6 @@ from demos.host import (  # noqa: E402
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 #: The layers that exist for this demo: its calls: it sends no input.
-LAYERS = decorated.CALLS
 #: What the game's copy holds: the program and its symbols, then what its store declares.
 EXE, MAP = Path("EXES/SPEEDF.EXE"), Path("EXES/SPEEDF.MAP")
 PROFILE = Path(".scry/start/dos.json")
@@ -135,4 +134,4 @@ DEMO = Demo(
 
 if __name__ == "__main__":
     isolated_store("speedf")
-    sys.exit(decorated.main(DEMO, LAYERS))
+    sys.exit(core.main(DEMO))

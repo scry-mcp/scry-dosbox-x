@@ -1,12 +1,15 @@
 # Minesweeper: the board read out of memory and cleared without a miss
 
 <!-- demo-motion:begin -->
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Minesweeper cleared click by click without a miss, then a mine stepped on"></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="Minesweeper read out of memory and cleared click by click without a miss, then a mine stepped on"></picture></p>
 
-1. One `perform` sends the clicks the game's memory says are safe, and the board opens.
-2. On the next board `send_mouse` clicks a cell the memory says holds a mine.
+1. `screen_map_find` names the screen the game is showing: the title.
+2. `read_memory` reads the 81 bytes that say where the mines are.
+3. `send_mouse` clicks a cell the memory says is safe, and the game reveals it.
+4. One `perform` sends the rest of the clicks, and the board opens.
+5. The explosion recorded from the emulated Sound Blaster equals `boom.wav`.
 
-<!-- moments-ms: 2993,1154 -->
+<!-- moments-ms: 1853,1838,1853,1853,1853 -->
 <!-- demo-motion:end -->
 
 `MINES.COM` is a Minesweeper this repository builds, at 800 x 600 in 256 colours. The demo
@@ -28,11 +31,12 @@ uv run python demos/mines/demo.py
 ```
 
 Each line it prints is one call and its check. The window opens behind the others, so the run
-does not take your keyboard.
+does not take your keyboard; `--watch` brings it in front, for when you want to watch it.
 
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
   `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
 - `--display N` opens the window on that display. Left out, it opens on the main one.
+- `--watch` shows the run: the window comes in front and takes your keyboard until the run ends.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
   `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
@@ -43,10 +47,10 @@ That last one is a server that did not start.
 
 The explosion is recorded from the emulated Sound Blaster and must equal [`boom.wav`](boom.wav)
 sample for sample. A change to the game's sound or timing makes that file out of date: the
-run's own `boom.wav`, beside its transcript, is then the one to copy over it.
+run's own `run.wav`, beside its transcript, is then the one to copy over it.
 
-The session records its own video (`capture_video`), because the board changes inside the
-calls that click it. The clip above is two stretches of that video.
+Each moment is a short recording the demo takes after the call it shows, so the board that
+call changed is on screen.
 
 ## Try it yourself
 
@@ -67,7 +71,7 @@ Call:
 run_to(ref="main_loop", control="retrace", seconds=60)
 ```
 
-Reply, 2 of 18 fields:
+Reply, 2 of 19 fields:
 
 ```json
 {
@@ -126,6 +130,9 @@ Reply, 2 of 18 fields:
     "symbol": "main_loop",
     "delta": 0
   },
+  "names": [
+    {"field": "given.ref", "number": "0x00008f21", "kind": "symbol", "name": "main_loop"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -144,7 +151,7 @@ Call:
 read_memory(ref="mines", length=81)
 ```
 
-Reply, 2 of 7 fields:
+Reply, 2 of 8 fields:
 
 ```json
 {
@@ -165,6 +172,9 @@ Reply, 2 of 7 fields:
   "seg_off": "08DF:00001030",
   "length": 81,
   "hex": "000000010000000000000001000100000000010000000000000000000000000000000000000000000000000000000000000100000000000000000001000001000001000000000000010000010000000000",
+  "names": [
+    {"field": "given.ref", "number": "0x00009e20", "kind": "symbol", "name": "mines"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -180,15 +190,15 @@ Ask:
 Call:
 
 ```text
-perform(steps=[… 19 items], summaries=…)
+perform(steps=[… 18 items], summaries=…)
 ```
 
 Reply, 2 of 12 fields:
 
 ```json
 {
-  "summary": "perform: 19 of 19 steps",
-  "steps_completed": 19
+  "summary": "perform: 18 of 18 steps",
+  "steps_completed": 18
 }
 ```
 
@@ -198,176 +208,210 @@ Each click waits for the line the game logs when it reveals that cell, so a clic
 
 ```json
 {
-  "summary": "perform: 19 of 19 steps",
+  "summary": "perform: 18 of 18 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 534,
+      "frame_after": 555,
       "reply": {
-        "summary": "send_mouse: pointer at 304,204, program's own pointer not read; reaction seen, 25 frames to frame 149",
+        "summary": "send_mouse: pointer at 352,204, program's own pointer not read; reaction seen, 21 frames to frame 555",
         "status": "ok",
-        "stop_seq": 153,
+        "stop_seq": 172,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": 555,
+      "frame_after": 580,
       "reply": {
-        "summary": "send_mouse: pointer at 352,204, program's own pointer not read; reaction seen, 25 frames to frame 174",
+        "summary": "send_mouse: pointer at 400,204, program's own pointer not read; reaction seen, 25 frames to frame 580",
         "status": "ok",
-        "stop_seq": 178,
+        "stop_seq": 197,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
+      "frame_before": 580,
+      "frame_after": 605,
       "reply": {
-        "summary": "send_mouse: pointer at 400,204, program's own pointer not read; reaction seen, 25 frames to frame 199",
+        "summary": "send_mouse: pointer at 424,204, program's own pointer not read; reaction seen, 25 frames to frame 605",
         "status": "ok",
-        "stop_seq": 203,
+        "stop_seq": 222,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
+      "frame_before": 605,
+      "frame_after": 630,
       "reply": {
-        "summary": "send_mouse: pointer at 424,204, program's own pointer not read; reaction seen, 25 frames to frame 224",
+        "summary": "send_mouse: pointer at 448,204, program's own pointer not read; reaction seen, 25 frames to frame 630",
         "status": "ok",
-        "stop_seq": 228,
+        "stop_seq": 247,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
+      "frame_before": 630,
+      "frame_after": 655,
       "reply": {
-        "summary": "send_mouse: pointer at 448,204, program's own pointer not read; reaction seen, 25 frames to frame 249",
+        "summary": "send_mouse: pointer at 376,228, program's own pointer not read; reaction seen, 25 frames to frame 655",
         "status": "ok",
-        "stop_seq": 253,
+        "stop_seq": 272,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
+      "frame_before": 655,
+      "frame_after": 680,
       "reply": {
-        "summary": "send_mouse: pointer at 376,228, program's own pointer not read; reaction seen, 25 frames to frame 274",
+        "summary": "send_mouse: pointer at 400,348, program's own pointer not read; reaction seen, 25 frames to frame 680",
         "status": "ok",
-        "stop_seq": 278,
+        "stop_seq": 297,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 6,
       "op": "send_mouse",
+      "frame_before": 680,
+      "frame_after": 705,
       "reply": {
-        "summary": "send_mouse: pointer at 400,348, program's own pointer not read; reaction seen, 25 frames to frame 299",
+        "summary": "send_mouse: pointer at 448,348, program's own pointer not read; reaction seen, 25 frames to frame 705",
         "status": "ok",
-        "stop_seq": 303,
+        "stop_seq": 322,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 7,
       "op": "send_mouse",
+      "frame_before": 705,
+      "frame_after": 730,
       "reply": {
-        "summary": "send_mouse: pointer at 448,348, program's own pointer not read; reaction seen, 25 frames to frame 324",
+        "summary": "send_mouse: pointer at 472,348, program's own pointer not read; reaction seen, 25 frames to frame 730",
         "status": "ok",
-        "stop_seq": 328,
+        "stop_seq": 347,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 8,
       "op": "send_mouse",
+      "frame_before": 730,
+      "frame_after": 755,
       "reply": {
-        "summary": "send_mouse: pointer at 472,348, program's own pointer not read; reaction seen, 25 frames to frame 349",
+        "summary": "send_mouse: pointer at 376,372, program's own pointer not read; reaction seen, 25 frames to frame 755",
         "status": "ok",
-        "stop_seq": 353,
+        "stop_seq": 372,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 9,
       "op": "send_mouse",
+      "frame_before": 755,
+      "frame_after": 780,
       "reply": {
-        "summary": "send_mouse: pointer at 376,372, program's own pointer not read; reaction seen, 25 frames to frame 374",
+        "summary": "send_mouse: pointer at 400,372, program's own pointer not read; reaction seen, 25 frames to frame 780",
         "status": "ok",
-        "stop_seq": 378,
+        "stop_seq": 397,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 10,
       "op": "send_mouse",
+      "frame_before": 780,
+      "frame_after": 805,
       "reply": {
-        "summary": "send_mouse: pointer at 400,372, program's own pointer not read; reaction seen, 25 frames to frame 399",
+        "summary": "send_mouse: pointer at 424,372, program's own pointer not read; reaction seen, 25 frames to frame 805",
         "status": "ok",
-        "stop_seq": 403,
+        "stop_seq": 422,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 11,
       "op": "send_mouse",
+      "frame_before": 805,
+      "frame_after": 830,
       "reply": {
-        "summary": "send_mouse: pointer at 424,372, program's own pointer not read; reaction seen, 25 frames to frame 424",
+        "summary": "send_mouse: pointer at 448,372, program's own pointer not read; reaction seen, 25 frames to frame 830",
         "status": "ok",
-        "stop_seq": 428,
+        "stop_seq": 447,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 12,
       "op": "send_mouse",
+      "frame_before": 830,
+      "frame_after": 855,
       "reply": {
-        "summary": "send_mouse: pointer at 448,372, program's own pointer not read; reaction seen, 25 frames to frame 449",
+        "summary": "send_mouse: pointer at 472,372, program's own pointer not read; reaction seen, 25 frames to frame 855",
         "status": "ok",
-        "stop_seq": 453,
+        "stop_seq": 472,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 13,
       "op": "send_mouse",
+      "frame_before": 855,
+      "frame_after": 880,
       "reply": {
-        "summary": "send_mouse: pointer at 472,372, program's own pointer not read; reaction seen, 25 frames to frame 474",
+        "summary": "send_mouse: pointer at 496,372, program's own pointer not read; reaction seen, 25 frames to frame 880",
         "status": "ok",
-        "stop_seq": 478,
+        "stop_seq": 497,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 14,
       "op": "send_mouse",
+      "frame_before": 880,
+      "frame_after": 905,
       "reply": {
-        "summary": "send_mouse: pointer at 496,372, program's own pointer not read; reaction seen, 25 frames to frame 499",
+        "summary": "send_mouse: pointer at 328,396, program's own pointer not read; reaction seen, 25 frames to frame 905",
         "status": "ok",
-        "stop_seq": 503,
-        "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
+        "stop_seq": 522,
+        "cause": "no declared code breakpoint at 08DF:00000E07, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 15,
       "op": "send_mouse",
+      "frame_before": 905,
+      "frame_after": 930,
       "reply": {
-        "summary": "send_mouse: pointer at 328,396, program's own pointer not read; reaction seen, 25 frames to frame 524",
+        "summary": "send_mouse: pointer at 352,396, program's own pointer not read; reaction seen, 25 frames to frame 930",
         "status": "ok",
-        "stop_seq": 528,
+        "stop_seq": 547,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
     {
       "step": 16,
       "op": "send_mouse",
+      "frame_before": 930,
+      "frame_after": 955,
       "reply": {
-        "summary": "send_mouse: pointer at 352,396, program's own pointer not read; reaction seen, 25 frames to frame 549",
+        "summary": "send_mouse: pointer at 400,396, program's own pointer not read; reaction seen, 25 frames to frame 955",
         "status": "ok",
-        "stop_seq": 553,
+        "stop_seq": 572,
         "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
       }
     },
@@ -375,17 +419,7 @@ Each click waits for the line the game logs when it reveals that cell, so a clic
       "step": 17,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 400,396, program's own pointer not read; reaction seen, 25 frames to frame 574",
-        "status": "ok",
-        "stop_seq": 578,
-        "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
-      }
-    },
-    {
-      "step": 18,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 424,396, program's own pointer not read; reaction seen, 25 frames to frame 599",
+        "summary": "send_mouse: pointer at 424,396, program's own pointer not read; reaction seen, 25 frames to frame 980",
         "status": "ok",
         "x": 424,
         "y": 396,
@@ -402,19 +436,19 @@ Each click waits for the line the game logs when it reveals that cell, so a clic
         },
         "driver_arrived": true,
         "polls": 25,
-        "pc": "08DF:00000E0A",
+        "pc": "08DF:00000E08",
         "cpu_mode": "real",
-        "stop_seq": 603,
-        "frame": 599,
+        "stop_seq": 597,
+        "frame": 980,
         "instruction": {
-          "address": "08DF:00000E0A",
-          "bytes": "74FB",
-          "text": "je 0xe07",
-          "flow": "branch",
+          "address": "08DF:00000E08",
+          "bytes": "A808",
+          "text": "test al, 8",
+          "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": "retrace",
-          "delta": 11
+          "delta": 9
         },
         "regs": {
           "EAX": "0x00000004",
@@ -425,7 +459,7 @@ Each click waits for the line the game logs when it reveals that cell, so a clic
           "EDI": "0x00000fc4",
           "EBP": "0x0000091c",
           "ESP": "0x0000fffc",
-          "EIP": "0x00000e0a",
+          "EIP": "0x00000e08",
           "CS": "0x08df",
           "DS": "0x08df",
           "ES": "0x08df",
@@ -434,7 +468,7 @@ Each click waits for the line the game logs when it reveals that cell, so a clic
           "SS": "0x08df"
         },
         "watches": [],
-        "cause": "no declared code breakpoint at 08DF:00000E0A, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+        "cause": "no declared code breakpoint at 08DF:00000E08, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
         "e9": {
           "lines_total": 2,
           "truncated": false,
@@ -454,23 +488,25 @@ Each click waits for the line the game logs when it reveals that cell, so a clic
           "lines_total": 1
         },
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 955,
+      "frame_after": 980
     }
   ],
-  "steps_total": 19,
+  "steps_total": 18,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 129,
-    "stop_seq_last": 603,
-    "surveyed": 19,
+    "stop_seq_first": 152,
+    "stop_seq_last": 597,
+    "surveyed": 18,
     "by_cause": {
-      "no declared code breakpoint, and the debugger does not say which row stopped the machine, so what made this stop cannot be told": 19
+      "no declared code breakpoint, and the debugger does not say which row stopped the machine, so what made this stop cannot be told": 18
     },
-    "unaccounted": 456
+    "unaccounted": 428
   },
-  "steps_completed": 19,
+  "steps_completed": 18,
   "failed_at": {"available": false, "why": "no step failed"},
   "held": 0,
   "session": {"alive": true, "running": false, "altered": false}
@@ -488,8 +524,7 @@ Ask:
 Call:
 
 ```text
-audio_compare(method="diff", a="./tmp/demos/mines/boom.wav", b="./demos/mines/boom.wav",
-    align=false)
+audio_compare(method="diff", a="./tmp/demos/mines/run.wav", b="./demos/mines/boom.wav", align=false)
 ```
 
 Reply, 2 of 12 fields:

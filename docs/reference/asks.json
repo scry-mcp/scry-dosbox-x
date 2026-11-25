@@ -112,7 +112,7 @@
     "symbols": "A symbol table, checked now and loaded at the first stop where DOS holds the program it is named after. `symbols_load` loads one later.",
     "base_from": "Where the table's addresses start: `program`, the program's own load address, or a segment register read at a protected-mode stop. Left out, `program`.",
     "profile": "A start profile: a saved set of `start` arguments, by its name under `.scry/start/` or by a path. It fills only the arguments the call leaves out.",
-    "names": "`false` leaves a reply's numbers bare, with no `names` field, no name in its summary and no note on a disassembled line; the window's captions still name them."
+    "names": "`false` leaves a reply's numbers bare, with no `names` field, no name in its summary and no note on a disassembled line."
    },
    "returns": {
     "window": "With `shared`, where the window is. Its `front` is `true` when no other application's window covers its centre; it does not mean the window has the keyboard focus.",
@@ -203,7 +203,7 @@
    ],
    "why_more": [
     "- `conf_changed_on_disk`: the conf file changed since `start`. It is `false` too when the file is gone.\n- `image_changed_on_disk`: the executable the loaded symbol table was checked against was written since, as a rebuild under an open session does.\n- `output_bytes_dropped`: the emulator printed more than the server keeps.\n- `program`: the program that ran inside DOS is gone. It is `state: exited` with `name` and `seen_by`, or `state: fault` with `fault`, the message DJGPP writes as a program dies.\n- `program` is read at the stops that answer a call, never while the program runs, so a session that never stops never learns it.",
-    "- `presence` is `true` when the border is drawn, `false` when it was asked off, or the reason it is not drawn.\n- `overlay` comes with a drawn border: the `layers` drawn, the `place` of the captions and, per layer the build cannot draw, `lacking` with the reason.\n- `declarations` counts the server's own saved `breakpoints`, `watches` and `regpoints` (stops on a register condition).\n- `last_stop` also carries `stop_seq` and `wall_at`.\n- `pid`, `conf`, `conf_digest`, `watched`, `bound_s`, `elapsed_s`, `captures`, `state_dir` and `bundle` describe the process, as `start` set it up."
+    "- `presence` is `true` when the border is drawn, `false` when it was asked off, or the reason it is not drawn.\n- `overlay` comes with a drawn border: the `layers` drawn, and, per layer the build cannot draw, `lacking` with the reason.\n- `declarations` counts the server's own saved `breakpoints`, `watches` and `regpoints` (stops on a register condition).\n- `last_stop` also carries `stop_seq` and `wall_at`.\n- `pid`, `conf`, `conf_digest`, `watched`, `bound_s`, `elapsed_s`, `captures`, `state_dir` and `bundle` describe the process, as `start` set it up."
    ],
    "related": [
     "start",

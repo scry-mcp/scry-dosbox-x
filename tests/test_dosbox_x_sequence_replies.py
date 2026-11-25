@@ -37,6 +37,17 @@ def test_each_batch_writes_files_of_its_own(tmp_path: Path) -> None:
     assert n2 == n1 + 1, (n1, n2)
 
 
+def test_each_row_carries_the_frames_it_ran_for_and_a_summary_keeps_them(tmp_path: Path) -> None:
+    """A timeline places each step it shows by the frames that step ran for: every row carries
+    them, and the compact `summaries` row keeps them."""
+    fake = _names(tmp_path)
+    fake.frames = 40
+    full = cast(dict[str, Any], server.perform(steps=[{"op": "status"}]))
+    assert [(r["frame_before"], r["frame_after"]) for r in full["ran"]] == [(40, 40)]
+    out = cast(dict[str, Any], server.perform(steps=[{"op": "status"}], summaries=True))
+    assert [(r["frame_before"], r["frame_after"]) for r in out["ran"]] == [(40, 40)]
+
+
 def test_run_steps_keeps_every_reply_whole_by_default(tmp_path: Path) -> None:
     fake = _names(tmp_path)
     got = sequence.run_steps(fake, [{"op": "registers"}], 30.0,  # type: ignore[arg-type]
