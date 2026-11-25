@@ -60,16 +60,13 @@ USAGE_MARKS = {name: b"\0DEBUG: " + name.encode() + b" usage: " for name in ("CA
 USAGE_MARKS |= {"PIC": b"\0MASKIRQ\0", "A20": b"A20 gate is %s"}
 #: The debugger with no screen, which needs no terminal or console.
 HEADLESS_MARK = b"\0debugger headless\0"
-#: A key only a `PRESENCE` that draws the record mark parses; a build without it rejects the
-#: layer word `record` and the words of its look.
-PRESENCE_RECORD_MARK = b"\0record_blink_s\0"
 
 
 def command_mark(name: str) -> bytes:
     return USAGE_MARKS.get(name, b"\0" + name.encode() + b"\0")
 
 
-MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK, PRESENCE_RECORD_MARK,
+MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK,
          *(command_mark(n) for n in COMMANDS))
 
 
@@ -136,10 +133,7 @@ def presence_layers(binary: str, found: list[str]) -> list[ov.Layer]:
     """The layers of `overlay` the build's `PRESENCE` draws; none without the command."""
     if "PRESENCE" not in found:
         return []
-    drawn: set[ov.Layer] = {"edge", "pointer"}
-    if _carries(binary, PRESENCE_RECORD_MARK, "the presence record mark"):
-        drawn.add("record")
-    return [layer for layer in ov.LAYERS if layer in drawn]
+    return list(ov.LAYERS)
 
 
 def debugger_commands_missing(found: list[str]) -> list[dict[str, object]]:

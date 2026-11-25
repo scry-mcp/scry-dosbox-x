@@ -54,7 +54,7 @@ Over the edge the window can also show, each layer on unless `start`'s `overlay`
 - **`pointer`**: the guest's mouse pointer.
 - **`record`**: a red mark in the top right corner, blinking once a second, while `record` or `audio_record` runs: a dot with REC for video, a dot with a note for sound, both when both run. It leaves when the recording ends, and a capture that could not be turned off keeps it, because that one still records.
 
-A build that predates the record mark draws the edge and the pointer only, and the `overlay` of `start` and `status` names each layer it cannot draw and why. `build_check` says which layers a build draws before any session starts.
+The `overlay` of `start` and `status` names each layer the output cannot draw and why. `build_check` says which layers a build draws before any session starts.
 
 The emulator draws all of it after a frame is handed to capture, so no capture shows it and no tool that reads the screen sees it.
 
@@ -407,7 +407,7 @@ Some tools need a debugger command a build may lack. `build_check` and `start` l
 | `RUNSTATE` | Whether the program is stopped, and the frame count behind each stop's `frame` and `perform`'s `until_frame` | `run_to`, `run_for`, `trace`, `screen_wait`, `record`, `audio_record`, `step(mode="over")`, `resume` with `seconds`, input to a stopped machine, any reading after a `resume` |
 | `STEPIN` | One instruction run | `step` |
 | `SAVESTATE`, `LOADSTATE` | A saved state | `state_write` |
-| `PRESENCE` | The orange edge, the pointer and, from a build that has it, the recording mark | the edge, and `start`'s `overlay` |
+| `PRESENCE` | The orange edge, the pointer and the recording mark | the edge, and `start`'s `overlay` |
 | `BPIF` | A stop on a register condition | `regpoint_add` |
 | `VGAMEMDUMP` | Video memory as the card holds it | `screen_view`, `screen_signature` in a planar, unchained or linear mode |
 | `CAPTURE` | A sound or video capture between stops | `record`, `audio_record` |

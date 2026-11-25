@@ -51,7 +51,7 @@
     "It is refused while a session is open: reading the version starts a second emulator, which a build that does not know the option runs until the check gives up. The answer is about the build, never about a reading, and `debugger` is always `true`: a build without one is refused."
    ],
    "why_more": [
-    "`tools` lists this server's tools by name.\n\n`presence_layers` lists the layers of `start`'s `overlay` the build draws: all six, five before the record mark, or the border and the pointer from an older build. It is left out without the `PRESENCE` command."
+    "`tools` lists this server's tools by name.\n\n`presence_layers` lists the layers of `start`'s `overlay` the build draws: the edge, the pointer and the recording mark. It is left out without the `PRESENCE` command."
    ],
    "related": [
     "start",

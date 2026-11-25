@@ -102,7 +102,7 @@ It is refused while a session is open: reading the version starts a second emula
 
 `tools` lists this server's tools by name.
 
-`presence_layers` lists the layers of `start`'s `overlay` the build draws: all six, five before the record mark, or the border and the pointer from an older build. It is left out without the `PRESENCE` command.
+`presence_layers` lists the layers of `start`'s `overlay` the build draws: the edge, the pointer and the recording mark. It is left out without the `PRESENCE` command.
 
 </details>
 
