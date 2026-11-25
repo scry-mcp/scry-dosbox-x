@@ -39,7 +39,7 @@ def test_the_call_adds_only_the_run_s_own_to_the_recipe(tmp_path: Path) -> None:
     assert demo.boot(Run(dir=tmp_path, options={"cwd": str(built)})) == {
         "profile": str(built / demo.PROFILE), "shared": True, "background": True,
         "display": 0, "symbols": str(built / demo.SYMBOLS), "flags": NORMAL_CORE,
-        "captures_dir": str(tmp_path / "rechip-captures")}
+        "capture_video": True, "captures_dir": tmp_path / "video"}
 
 
 def test_a_resume_must_leave_the_guest_running(tmp_path: Path) -> None:

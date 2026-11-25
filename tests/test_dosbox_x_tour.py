@@ -59,8 +59,9 @@ def exit_stop() -> Any:
     from scry_dosbox_x import state as dstate
     from scry_dosbox_x import symbols as sym
     image = (BRICKS / "BRICKS.COM").read_bytes()
-    exit_at = image.find(b"\xb8\x00\x4c\xcd\x21")
-    assert exit_at >= 0, "the exit's own bytes are not in BRICKS.COM"
+    exit = b"\xb8\x00\x4c\xcd\x21"
+    assert image.count(exit) == 1, "BRICKS.COM no longer holds exactly one exit sequence"
+    exit_at = image.find(exit)
     regs = {"EAX": "00004C00", "EBX": "0", "ECX": "0", "EDX": "0", "ESI": "0", "EDI": "0",
             "EBP": "0", "ESP": "0000FFFE", "EIP": f"{0x100 + exit_at + 3:08X}", "CS": "08DF",
             "DS": "08DF", "ES": "08DF", "FS": "0", "GS": "0", "SS": "08DF"}
@@ -87,6 +88,20 @@ def test_the_exit_listing_is_judged_on_the_game_s_own_bytes(tour: ModuleType,
         tour.exit_listing(reply, None)
 
 
+def test_the_exit_listing_is_the_last_line_and_the_one_the_note_names(
+        tour: ModuleType) -> None:
+    """The step reads the exit from the listing's end; a note on an earlier `int 0x21`, or an
+    `int 0x21` that is not the end, is not the exit this step is about."""
+    note = {"line": 2, "note": "exit (0x4C)", "live": True}
+    lines = ["mov ax, 0x4c00", "int 0x21", "int 0x21"]
+    assert "exit call's line" in tour.exit_listing({"lines": lines, "line_notes": [note]}, None)
+    with pytest.raises(StepFailed):
+        tour.exit_listing({"lines": lines, "line_notes": [{**note, "line": 1}]}, None)
+    with pytest.raises(StepFailed):
+        tour.exit_listing({"lines": ["mov ax, 0x4c00", "int 0x21", "nop"],
+                           "line_notes": [note]}, None)
+
+
 def test_the_stop_at_the_exit_is_judged_with_its_note(tour: ModuleType, exit_stop: Any) -> None:
     from scry_dosbox_x import code
     from scry_dosbox_x import session as ds
@@ -107,7 +122,7 @@ def test_the_tour_s_row_pens_are_the_game_s_own(tour: ModuleType) -> None:
     rows = [[int(value, 16) for value in line.split("db", 1)[1].split(",")]
             for line in block.splitlines() if "db" in line]
     assert [bytes(row).hex() for row in rows] == tour.ROW_RGB
-    assert tour.ROW_LAST_PEN == tour.ROW_PEN + len(rows) - 1
+    assert tour.ROW_PEN + len(rows) - 1 == tour.ROW_LAST_PEN
 
 
 def test_the_base_step_is_judged_on_the_reply_the_reference_shows(tour: ModuleType) -> None:

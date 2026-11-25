@@ -122,8 +122,7 @@ ROWS_TOLERANCE = 0.3
 #: bands are an eighth of the picture and the capture also holds a title bar the overlay never
 #: draws on. A box is also narrower than the widest each layer can be, so a band-wide change fails.
 BAND_BOTTOM_FROM, BAND_TOP_TO = 0.75, 0.25
-MIDDLE_SLACK = 0.05
-CAPTION_WIDEST, CORNER_WIDEST = 0.4, 0.2
+CORNER_WIDEST = 0.2
 #: The mark's blink for the capture that must hold still: shown for the first half, so a settled
 #: capture is taken inside it.
 STILL_BLINK_S = 10.0
@@ -150,7 +149,7 @@ def _by_hand() -> Iterator[dpresence.ChannelAdapter]:
 
 def _drawn_by(session: Any) -> list[ov.Layer]:
     """The layers the session's build draws, as the server read them from its binary."""
-    return dbinary.presence_layers(session.launch.binary, sorted(session.commands))
+    return dbinary.presence_layers(sorted(session.commands))
 
 
 def _put(adapter: dpresence.ChannelAdapter, state: str) -> int | None:
@@ -443,7 +442,7 @@ def _judge_record_mark(label: str, spun: dict[str, Any]) -> None:
             f"{BLINK_SAMPLES} captures {BLINK_GAP_S} s apart while it blinks: {blink}")
 
 
-@M.section("R", "protocol 3's layers, drawn into the window and never into the evidence",
+@M.section("R", "protocol 4's layers, drawn into the window and never into the evidence",
            LAYER_CELLS, alone=True)
 def section_r_layers() -> None:
     _start(presence=True)
