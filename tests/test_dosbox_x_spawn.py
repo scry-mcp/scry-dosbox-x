@@ -337,7 +337,8 @@ def test_a_bundle_launches_through_open_into_the_session_s_own_cwd(
         assert isinstance(ses.proc, app_launch.AppProcess), ses.proc
         assert ses.proc.pid == 4242
         cmd = seen["cmd"]
-        assert cmd[:4] == ["/usr/bin/open", "-n", "-a", str(bundle)], cmd
+        # The session is launched behind, so `open` must not activate the app.
+        assert cmd[:5] == ["/usr/bin/open", "-n", "-g", "-a", str(bundle)], cmd
         assert "-i" not in cmd and "-o" not in cmd, "the app route carries no channel of ours"
         argv = cmd[cmd.index("--args") + 1:]
         overlay = Path(argv[argv.index("-conf", argv.index("-conf") + 1) + 1])

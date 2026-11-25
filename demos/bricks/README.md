@@ -32,11 +32,12 @@ uv run python demos/bricks/demo.py
 ```
 
 Each line it prints is one call and its check. The window opens behind the others, so the run
-does not take your keyboard.
+does not take your keyboard; `--watch` brings it in front, for when you want to watch it.
 
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
   `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
 - `--display N` opens the window on that display. Left out, it opens on the main one.
+- `--watch` shows the run: the window comes in front and takes your keyboard until the run ends.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png`,
   `loop.webp` and the README's example calls, from a run where every step passed. It needs ffmpeg and `img2webp` on your
