@@ -80,7 +80,7 @@ Reply, 4 of 15 fields:
 }
 ```
 
-The breakpoint is armed at `08DF:02C8`. `OTHER_STOP` means something other than the call's own target stopped the machine: here, `cause` names the breakpoint on `brick_hit`.
+The breakpoint is armed at `08DF:02A5`. `OTHER_STOP` means something other than the call's own target stopped the machine: here, `cause` names the breakpoint on `brick_hit`.
 
 <details><summary>The two replies, whole</summary>
 

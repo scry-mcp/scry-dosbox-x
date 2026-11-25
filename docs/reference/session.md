@@ -510,7 +510,7 @@ Call:
 status()
 ```
 
-Reply, 6 of 18 fields:
+Reply, 6 of 17 fields:
 
 ```json
 {
@@ -547,7 +547,6 @@ The machine is stopped in real mode at `F000:0000FFF0`, the reset vector. `pendi
     "wall_at": "<volatile>"
   },
   "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
-  "knowledge": {"served": 705, "held_back": 317},
   "cpu_mode": "real",
   "pc": "F000:0000FFF0",
   "declarations": {"breakpoints": 0, "watches": 0, "regpoints": 0},
@@ -569,7 +568,7 @@ Takes no argument.
 - `stopped_on_its_own`: Present when the machine had stopped and no call had reported it yet. `status` records that stop as the last one.
 - `pending`: What waits for the next stop: `arm`, the breakpoints declared while the program ran; a `disarm` count; and whether a `symbols_load` or a `base_remeasure` is queued.
 - `symbols_held`: Present while a `start` symbol table waits for its program: its `path`, its `base_from` and `waiting_for`, the program's file name.
-- `knowledge`: How many entries the base serves (`served`) and holds back as not confirmed (`held_back`).
+- `knowledge`: How many entries the base serves (`served`) and how many it holds without serving (`held_back`).
 
 <details><summary>All 21 reply fields</summary>
 

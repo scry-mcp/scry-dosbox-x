@@ -44,7 +44,7 @@ Reply, 7 of 26 fields:
 }
 ```
 
-All 65 symbols of the file are in the debugger, none renamed, at linear `0x8df0`, which is segment 08DF times 16. `replaced` means this table stands alone: any earlier one is gone.
+All 63 symbols of the file are in the debugger, none renamed, at linear `0x8df0`, which is segment 08DF times 16. `replaced` means this table stands alone: any earlier one is gone.
 
 <details><summary>The whole reply</summary>
 
@@ -417,7 +417,7 @@ Call:
 knowledge_find(kind="call", key="0x21/0x4C")
 ```
 
-Reply, 3 of 10 fields:
+Reply, 3 of 8 fields:
 
 ```json
 {
@@ -427,7 +427,7 @@ Reply, 3 of 10 fields:
 }
 ```
 
-One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X does when it is taken, and its source lines. `served` and `held_back` count what the base serves and holds back.
+One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X does when it is taken, and its source lines. `examined` counts the entries the search read.
 
 <details><summary>The whole reply</summary>
 
@@ -465,9 +465,7 @@ One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X d
     }
   ],
   "truncated": false,
-  "examined": 518,
-  "served": 705,
-  "held_back": 317
+  "examined": 518
 }
 ```
 
@@ -488,7 +486,7 @@ One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X d
 - `entries`: Rows with `id`, `kind`, `key`, `name`; one match, or an `id`, answers whole with `description`, `behaviour` and `sources`.
 - `entries_total`: How many entries matched.
 - `examined`: How many entries were searched, so a zero says what it is a zero of.
-- `held_back`: How many entries exist and are not confirmed, so are not served.
+- `held_back`: How many entries the base holds without serving.
 - `unconfirmed`: The ids of the held-back entries the question matched.
 - `nearest`: When nothing matched: the entries next to the number or the words.
 

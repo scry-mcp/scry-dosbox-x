@@ -146,7 +146,7 @@ Reply, 4 of 7 fields:
 }
 ```
 
-`score` is at `08DF:00000615` (`seg_off`) and holds `0000`: no point scored yet.
+`score` is at `08DF:000005C9` (`seg_off`) and holds `0000`: no point scored yet.
 
 <details><summary>The whole reply</summary>
 
@@ -665,7 +665,7 @@ Reply, 5 of 9 fields:
 }
 ```
 
-The five bytes of `SCORE` are at one address, `08DF:00000601`. `span` says which bytes were searched: 1384 from `08DF:00000100`, the symbol `start`.
+The five bytes of `SCORE` are at one address, `08DF:000005B5`. `span` says which bytes were searched: 1306 from `08DF:00000100`, the symbol `start`.
 
 <details><summary>The whole reply</summary>
 

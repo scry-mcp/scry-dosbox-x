@@ -164,7 +164,7 @@ Reply, 3 of 6 fields:
 }
 ```
 
-The comment is saved on `brick_hit`, which is the linear address `0x90b8`. Nothing was there before, so `replaced_comments` is empty.
+The comment is saved on `brick_hit`, which is the linear address `0x00009095`. Nothing was there before, so `replaced_comments` is empty.
 
 <details><summary>The whole reply</summary>
 

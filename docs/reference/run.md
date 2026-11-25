@@ -277,7 +277,7 @@ Reply, 5 of 18 fields:
 }
 ```
 
-`ELAPSED` says the three frames ran out as asked. The frame counter went from 244 to 247 in three stops at the retrace, and the cpu spent 68499 cycles.
+`ELAPSED` says the three frames ran out as asked. The frame counter went from 244 to 247 in three stops at the retrace, and the cpu spent 68493 cycles.
 
 <details><summary>The whole reply</summary>
 
@@ -893,7 +893,7 @@ Reply, 7 of 18 fields:
 }
 ```
 
-Both instructions ran, from `08DF:000002C8` to `08DF:000002CC`. `stalled: 0` says neither of them left the address unchanged.
+Both instructions ran, from `08DF:000002A5` to `08DF:000002A9`. `stalled: 0` says neither of them left the address unchanged.
 
 <details><summary>The whole reply</summary>
 
@@ -1073,7 +1073,7 @@ Reply, 5 of 15 fields:
 }
 ```
 
-`OTHER_STOP` says something stopped the machine before the minute ran out: here the watch on the score, at `08DF:000002EB` in frame 36.
+`OTHER_STOP` says something stopped the machine before the minute ran out: here at `08DF:000002C8`, where `cause` says no declared breakpoint is there and the debugger does not name the row that stopped it.
 
 <details><summary>The whole reply</summary>
 

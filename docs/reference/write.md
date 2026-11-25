@@ -166,7 +166,7 @@ Reply, 5 of 8 fields:
 }
 ```
 
-The byte at `08DF:00000619` now holds 1. `readback` is what the memory holds after the write, and `verified` says it is what was sent.
+The byte at `08DF:000005CD` now holds 1. `readback` is what the memory holds after the write, and `verified` says it is what was sent.
 
 <details><summary>The whole reply</summary>
 

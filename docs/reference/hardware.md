@@ -38,7 +38,7 @@ Reply, 4 of 5 fields:
 }
 ```
 
-Port `0x3C8` reads `0x28`, an 8-bit value: the next palette entry to be written is 40.
+Port `0x3C8` reads `0x27`, an 8-bit value: the next palette entry to be written is 39.
 
 <details><summary>The whole reply</summary>
 
