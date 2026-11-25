@@ -29,7 +29,7 @@ Call:
 build_check()
 ```
 
-Reply, 3 of 9 fields:
+Reply, 3 of 10 fields:
 
 ```json
 {
@@ -53,7 +53,8 @@ The build has the debugger, and it has heavy debugging, the option `trace` needs
   "debugger": true,
   "heavy_debug": true,
   "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "... 8 more"],
-  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 56 more"]
+  "presence_layers": ["edge", "pointer", "record"],
+  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 57 more"]
 }
 ```
 
@@ -159,7 +160,7 @@ start(shared=true, background=true, display="<host>", conf="./demos/bricks/brick
     state_dir="./tmp/demos/tour/files/states", captures_dir="./tmp/demos/tour/files/captures")
 ```
 
-Reply, 6 of 25 fields:
+Reply, 6 of 26 fields:
 
 ```json
 {
@@ -199,6 +200,7 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
   "input_port": "<volatile>",
   "background": true,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "./tmp/demos/tour/files/e9.log",
   "declarations": {
@@ -508,7 +510,7 @@ Call:
 status()
 ```
 
-Reply, 6 of 16 fields:
+Reply, 6 of 18 fields:
 
 ```json
 {
@@ -545,10 +547,12 @@ The machine is stopped in real mode at `F000:0000FFF0`, the reset vector. `pendi
     "wall_at": "<volatile>"
   },
   "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
+  "knowledge": {"served": 705, "held_back": 317},
   "cpu_mode": "real",
   "pc": "F000:0000FFF0",
   "declarations": {"breakpoints": 0, "watches": 0, "regpoints": 0},
-  "presence": true
+  "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]}
 }
 ```
 

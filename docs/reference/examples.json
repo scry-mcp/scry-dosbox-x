@@ -1,6 +1,6 @@
 {
  "a20": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 24",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 25",
   "call": {
    "method": "read"
   },
@@ -105,7 +105,7 @@
   }
  },
  "breakpoint_at": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 50",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 51",
   "call": {
    "ref": "brick_hit"
   },
@@ -118,7 +118,15 @@
    "stored": true,
    "armed": true,
    "state": "armed",
-   "entry": "BP 08DF:02C8"
+   "entry": "BP 08DF:02A5",
+   "names": [
+    {
+     "field": "given.ref",
+     "number": "0x00009095",
+     "kind": "symbol",
+     "name": "brick_hit"
+    }
+   ]
   },
   "then": {
    "tool": "resume",
@@ -126,7 +134,7 @@
     "seconds": 60
    },
    "reply": {
-    "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
+    "summary": "resume: OTHER_STOP, stopped at 08DF:000002A5",
     "status": "ok",
     "verdict": "OTHER_STOP",
     "omitted": [
@@ -136,7 +144,7 @@
     ],
     "how": "detail=True adds what the debugger printed for this command",
     "waited_s": "<volatile>",
-    "pc": "08DF:000002C8",
+    "pc": "08DF:000002A5",
     "cpu_mode": "real",
     "frame": 244,
     "regs": {
@@ -148,7 +156,7 @@
      "EDI": "0x00006410",
      "EBP": "0x0000091c",
      "ESP": "0x0000fffa",
-     "EIP": "0x000002c8",
+     "EIP": "0x000002a5",
      "CS": "0x08df",
      "DS": "0x08df",
      "ES": "0xa000",
@@ -157,7 +165,7 @@
      "SS": "0x08df"
     },
     "watches": [],
-    "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8",
+    "cause": "breakpoint brick_hit (by symbol) at 08DF:000002A5",
     "e9": {
      "lines_total": 0,
      "truncated": false,
@@ -166,7 +174,7 @@
     },
     "stop_seq": 10,
     "instruction": {
-     "address": "08DF:000002C8",
+     "address": "08DF:000002A5",
      "bytes": "88DF",
      "text": "mov bh, bl",
      "flow": "sequential",
@@ -180,7 +188,7 @@
   }
  },
  "breakpoint_interrupt": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 71",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 72",
   "call": {
    "number": "0x21",
    "ah": "0x4C"
@@ -197,7 +205,16 @@
     "output_chars",
     "clipped"
    ],
-   "how": "detail=True adds what the debugger printed for this command"
+   "how": "detail=True adds what the debugger printed for this command",
+   "names": [
+    {
+     "field": "given.number",
+     "number": "0x21/0x4C",
+     "kind": "call",
+     "name": "exit",
+     "id": "ibm-pc:call:0x21/0x4C"
+    }
+   ]
   },
   "then": {
    "tool": "resume",
@@ -205,7 +222,7 @@
     "seconds": 60
    },
    "reply": {
-    "summary": "resume: OTHER_STOP, stopped at 08DF:0000013C",
+    "summary": "resume: OTHER_STOP, stopped at 08DF:00000139",
     "status": "ok",
     "verdict": "OTHER_STOP",
     "omitted": [
@@ -215,7 +232,7 @@
     ],
     "how": "detail=True adds what the debugger printed for this command",
     "waited_s": "<volatile>",
-    "pc": "08DF:0000013C",
+    "pc": "08DF:00000139",
     "cpu_mode": "real",
     "frame": "<volatile>",
     "regs": {
@@ -223,11 +240,11 @@
      "EBX": "0x0000000f",
      "ECX": "0x005b0004",
      "EDX": "0x00000000",
-     "ESI": "0x00000615",
+     "ESI": "0x000005c9",
      "EDI": "0x00006192",
      "EBP": "0x0000091c",
      "ESP": "0x0000fffe",
-     "EIP": "0x0000013c",
+     "EIP": "0x00000139",
      "CS": "0x08df",
      "DS": "0x08df",
      "ES": "0xa000",
@@ -242,16 +259,16 @@
       "mode": "freeze",
       "length": 1,
       "fmt": "u8",
-      "addr": "08DF:00000617",
+      "addr": "08DF:000005CB",
       "frozen_hex": "03",
       "entries": [
-       "FM 00000617 (03)"
+       "FM 000005CB (03)"
       ],
       "bytes": "03",
       "state": "holding"
      }
     ],
-    "cause": "most likely the held `BPINT 21 AH=4C`: the guest is at `int 21`, at 08DF:0000013C",
+    "cause": "most likely the held `BPINT 21 AH=4C`: the guest is at `int 21`, at 08DF:00000139",
     "e9": {
      "lines_total": 1,
      "truncated": false,
@@ -262,14 +279,16 @@
     },
     "stop_seq": "<volatile>",
     "instruction": {
-     "address": "08DF:0000013C",
+     "address": "08DF:00000139",
      "bytes": "CD21",
      "text": "int 0x21",
      "flow": "call",
      "code_bits": 16,
      "bytes_from": "memory",
+     "note": "exit (0x4C)",
+     "note_live": true,
      "symbol": "main_loop",
-     "delta": 33
+     "delta": 30
     }
    }
   }
@@ -294,6 +313,11 @@
     "VGAMEMDUMP",
     "... 8 more"
    ],
+   "presence_layers": [
+    "edge",
+    "pointer",
+    "record"
+   ],
    "tools": [
     "a20",
     "audio_compare",
@@ -301,12 +325,12 @@
     "breakpoint_at",
     "breakpoint_interrupt",
     "build_check",
-    "... 56 more"
+    "... 57 more"
    ]
   }
  },
  "call_stack": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 29",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 30",
   "call": {},
   "reply": {
    "summary": "call_stack: 1 call, innermost brick_hit, heuristic",
@@ -315,7 +339,7 @@
    "code_bits": 16,
    "calls": [
     {
-     "seg_off": "08DF:000002C8",
+     "seg_off": "08DF:000002A5",
      "via": "stop",
      "call": {
       "available": false,
@@ -325,7 +349,7 @@
       "available": false,
       "why": "no frame was read beside it"
      },
-     "addr": "0x000090b8",
+     "addr": "0x00009095",
      "symbol": "brick_hit",
      "delta": 0
     }
@@ -335,7 +359,7 @@
   }
  },
  "capture_frame": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 47",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 48",
   "call": {
    "frame": 104,
    "capture_path": "./tmp/demos/tour/files/second-brick.avi",
@@ -352,7 +376,7 @@
   }
  },
  "captures": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 73",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 75",
   "call": {},
   "reply": {
    "summary": "captures: 10 files",
@@ -402,7 +426,7 @@
   }
  },
  "close": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 74",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 76",
   "call": {},
   "reply": {
    "summary": "close: quit, exit code 0",
@@ -427,7 +451,7 @@
   }
  },
  "comment_list": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 20",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 21",
   "call": {},
   "reply": {
    "summary": "comment_list: 1 comment",
@@ -445,7 +469,7 @@
      "inherited": false,
      "age_s": "<volatile>",
      "text": "AL = row, BL = column of the brick that falls",
-     "addr": "0x000090b8",
+     "addr": "0x00009095",
      "state": "resolved"
     }
    ],
@@ -465,7 +489,7 @@
    "text": "AL = row, BL = column of the brick that falls"
   },
   "reply": {
-   "summary": "comment_write add: brick_hit at 0x000090b8, stored",
+   "summary": "comment_write add: brick_hit at 0x00009095 (brick_hit), stored",
    "status": "ok",
    "comment": {
     "ref": "brick_hit",
@@ -479,18 +503,26 @@
     "inherited": false,
     "age_s": "<volatile>",
     "text": "AL = row, BL = column of the brick that falls",
-    "addr": "0x000090b8",
+    "addr": "0x00009095",
     "state": "resolved"
    },
    "replaced_comments": [],
    "declarations": {
     "persistent": true,
     "path": "<volatile>"
-   }
+   },
+   "names": [
+    {
+     "field": "given.ref",
+     "number": "0x00009095",
+     "kind": "symbol",
+     "name": "brick_hit"
+    }
+   ]
   }
  },
  "debug": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 25",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 26",
   "call": {
    "command": "FPU"
   },
@@ -503,7 +535,7 @@
   }
  },
  "declaration_clear": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 38",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 39",
   "call": {
    "kind": "watch",
    "ref": "score"
@@ -513,13 +545,13 @@
    "status": "ok",
    "declarations_cleared": 1,
    "disarmed": [
-    "BPMEM 08DF:0615 (3C)",
-    "BPMEM 08DF:0616 (00)"
+    "BPMEM 08DF:05C9 (3C)",
+    "BPMEM 08DF:05CA (00)"
    ]
   }
  },
  "declaration_list": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 45",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 46",
   "call": {},
   "reply": {
    "summary": "declaration_list: 0 breakpoints declared, 0 regpoints declared, 3 watches declared",
@@ -558,7 +590,7 @@
      "length": 2,
      "fmt": "u16",
      "tally_id": "1",
-     "addr": "08DF:00000615",
+     "addr": "08DF:000005C9",
      "installed": true,
      "state": "tallied",
      "total": 1,
@@ -566,7 +598,7 @@
      "overflow_pcs": 0,
      "values": [
       {
-       "at": "08DF:00000615",
+       "at": "08DF:000005C9",
        "raw_hex": "4600",
        "count": 1,
        "value": 70
@@ -575,7 +607,7 @@
      "values_total": 1,
      "writers": [
       {
-       "pc": "08DF:000002E7",
+       "pc": "08DF:000002C4",
        "count": 1,
        "symbol": "brick_hit+0x1f"
       }
@@ -597,7 +629,7 @@
      "length": 1,
      "fmt": "u8",
      "tally_id": "2",
-     "addr": "08DF:0000061F",
+     "addr": "08DF:000005D3",
      "trigger_type": "r",
      "installed": true,
      "state": "captured",
@@ -611,8 +643,8 @@
        "n": 1,
        "frame": 37,
        "line": 417,
-       "time_s": 0.532617,
-       "pc": "08DF:000003E4",
+       "time_s": 0.532612,
+       "pc": "08DF:000003C1",
        "data": "0xd4000000",
        "mask": "0xff000000",
        "symbol": "draw_paddle+0xe"
@@ -621,8 +653,8 @@
        "n": 2,
        "frame": 38,
        "line": 417,
-       "time_s": 0.5468845999999999,
-       "pc": "08DF:000003E4",
+       "time_s": 0.5468799,
+       "pc": "08DF:000003C1",
        "data": "0xd6000000",
        "mask": "0xff000000",
        "symbol": "draw_paddle+0xe"
@@ -631,8 +663,8 @@
        "n": 3,
        "frame": 39,
        "line": 417,
-       "time_s": 0.5611531,
-       "pc": "08DF:000003E4",
+       "time_s": 0.5611487,
+       "pc": "08DF:000003C1",
        "data": "0xd8000000",
        "mask": "0xff000000",
        "symbol": "draw_paddle+0xe"
@@ -641,8 +673,8 @@
        "n": 4,
        "frame": 40,
        "line": 417,
-       "time_s": 0.5754217,
-       "pc": "08DF:000003E4",
+       "time_s": 0.5754162,
+       "pc": "08DF:000003C1",
        "data": "0xda000000",
        "mask": "0xff000000",
        "symbol": "draw_paddle+0xe"
@@ -651,8 +683,8 @@
        "n": 5,
        "frame": 41,
        "line": 417,
-       "time_s": 0.589689,
-       "pc": "08DF:000003E4",
+       "time_s": 0.5896851000000001,
+       "pc": "08DF:000003C1",
        "data": "0xdc000000",
        "mask": "0xff000000",
        "symbol": "draw_paddle+0xe"
@@ -661,8 +693,8 @@
        "n": 6,
        "frame": 42,
        "line": 417,
-       "time_s": 0.6039579,
-       "pc": "08DF:000003E4",
+       "time_s": 0.6039529,
+       "pc": "08DF:000003C1",
        "data": "0xde000000",
        "mask": "0xff000000",
        "symbol": "draw_paddle+0xe"
@@ -675,24 +707,24 @@
   }
  },
  "disassemble": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 19",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 20",
   "call": {
    "ref": "brick_hit",
    "length": 12
   },
   "reply": {
-   "summary": "disassemble brick_hit: 4 lines at 08DF:000002C8, 16-bit",
+   "summary": "disassemble brick_hit: 4 lines at 08DF:000002A5, 16-bit",
    "status": "ok",
    "ref": "brick_hit",
-   "seg_off": "08DF:000002C8",
+   "seg_off": "08DF:000002A5",
    "length": 12,
    "code_bits": 16,
    "code_bits_from": "real mode",
    "lines": [
-    "08DF:000002C8 88DF                 mov bh, bl // AL = row, BL = column of the brick that falls",
-    "08DF:000002CA 88C3                 mov bl, al",
-    "08DF:000002CC E81FFF               call 0x1ee",
-    "08DF:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0"
+    "08DF:000002A5 88DF                 mov bh, bl // AL = row, BL = column of the brick that falls",
+    "08DF:000002A7 88C3                 mov bl, al",
+    "08DF:000002A9 E81FFF               call 0x1cb",
+    "08DF:000002AC C684DE0500           mov byte ptr [si + 0x5de], 0"
    ],
    "flow": [
     "sequential",
@@ -704,18 +736,26 @@
    "resolved": [
     {
      "line": 2,
-     "operand": "0x1ee",
+     "operand": "0x1cb",
      "kind": "target",
-     "seg_off": "08DF:000001EE",
-     "addr": "0x00008fde",
+     "seg_off": "08DF:000001CB",
+     "addr": "0x00008fbb",
      "symbol": "brick_index",
      "delta": 0
+    }
+   ],
+   "names": [
+    {
+     "field": "given.ref",
+     "number": "0x00009095",
+     "kind": "symbol",
+     "name": "brick_hit"
     }
    ]
   }
  },
  "drive": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 59",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 60",
   "call": {
    "act": [
     {
@@ -746,6 +786,8 @@
        "posted": 1,
        "bytes": 2,
        "frames": 2,
+       "frame_before": 264,
+       "frame_after": 272,
        "verify": {
         "checked": false,
         "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
@@ -755,7 +797,9 @@
         "running": true,
         "altered": true
        }
-      }
+      },
+      "frame_before": 264,
+      "frame_after": 272
      }
     ],
     "steps_completed": 1,
@@ -836,7 +880,7 @@
   }
  },
  "image_compare": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 75",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 77",
   "call": {
    "method": "region",
    "manifest": "./tmp/demos/tour/files/series/manifest.json",
@@ -941,7 +985,7 @@
   }
  },
  "knowledge_find": {
-  "from": "docs/reference/tour/tour.py: step `base`, run in process because it needs no machine; the tour's next run replaces it",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 19",
   "call": {
    "kind": "call",
    "key": "0x21/0x4C"
@@ -985,12 +1029,12 @@
    ],
    "truncated": false,
    "examined": 518,
-   "served": 630,
-   "held_back": 235
+   "served": 705,
+   "held_back": 317
   }
  },
  "log": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 66",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 67",
   "call": {
    "pattern": "SERVE|HIT|LOST",
    "channel": "guest"
@@ -1013,7 +1057,7 @@
   }
  },
  "log_wait": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 63",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 64",
   "call": {
    "pattern": "LOST$",
    "channel": "guest",
@@ -1124,10 +1168,18 @@
    "summary": "memdump bricks: 60 bytes to ./tmp/demos/tour/files/wall.bin",
    "status": "ok",
    "ref": "bricks",
-   "seg_off": "08DF:0000062C",
+   "seg_off": "08DF:000005DE",
    "length": 60,
    "path": "./tmp/demos/tour/files/wall.bin",
-   "bytes": 60
+   "bytes": 60,
+   "names": [
+    {
+     "field": "given.ref",
+     "number": "0x000093ce",
+     "kind": "symbol",
+     "name": "bricks"
+    }
+   ]
   }
  },
  "palette": {
@@ -1176,7 +1228,7 @@
   }
  },
  "perform": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 62",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 63",
   "call": {
    "steps": [
     {
@@ -1214,6 +1266,8 @@
       "posted": 1,
       "bytes": 2,
       "frames": 2,
+      "frame_before": 330,
+      "frame_after": 337,
       "verify": {
        "checked": true,
        "seen": true,
@@ -1230,7 +1284,9 @@
        "running": true,
        "altered": true
       }
-     }
+     },
+     "frame_before": 330,
+     "frame_after": 337
     },
     {
      "op": "send_keys",
@@ -1245,6 +1301,8 @@
       "posted": 1,
       "bytes": 2,
       "frames": 2,
+      "frame_before": 337,
+      "frame_after": 347,
       "verify": {
        "checked": true,
        "seen": true,
@@ -1261,7 +1319,9 @@
        "running": true,
        "altered": true
       }
-     }
+     },
+     "frame_before": 337,
+     "frame_after": 347
     }
    ],
    "steps_completed": 2,
@@ -1275,12 +1335,12 @@
   }
  },
  "perform_export": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 32",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 33",
   "call": {
    "dest": "./tmp/demos/tour/files/session.json"
   },
   "reply": {
-   "summary": "perform_export: 15 steps, 4 checks, 13 dropped to ./tmp/demos/tour/files/session.json",
+   "summary": "perform_export: 15 steps, 4 checks, 14 dropped to ./tmp/demos/tour/files/session.json",
    "status": "ok",
    "path": "./tmp/demos/tour/files/session.json",
    "steps": 15,
@@ -1316,9 +1376,9 @@
      "op": "palette",
      "why": "it changes nothing in the emulated machine"
     },
-    "... 7 more"
+    "... 8 more"
    ],
-   "dropped_total": 13,
+   "dropped_total": 14,
    "cut": {
     "available": false,
     "why": "the recording kept every call a replay takes"
@@ -1328,7 +1388,7 @@
   }
  },
  "pic": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 23",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 24",
   "call": {
    "method": "read"
   },
@@ -1422,21 +1482,21 @@
   }
  },
  "port": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 22",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 23",
   "call": {
    "method": "read",
    "port": "0x3C8"
   },
   "reply": {
-   "summary": "port read: 8-bit read of 0x03C8: 0x28",
+   "summary": "port read: 8-bit read of 0x03C8: 0x27",
    "status": "ok",
    "port": "0x03C8",
    "bits": 8,
-   "value": "0x28"
+   "value": "0x27"
   }
  },
  "promote": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 33",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 34",
   "call": {
    "dry_run": true
   },
@@ -1450,7 +1510,7 @@
      "kind": "perform",
      "name": "session",
      "file": ".scry/perform/session.json",
-     "bytes": 5129,
+     "bytes": 5216,
      "change": "new"
     },
     {
@@ -1481,8 +1541,8 @@
     }
    ],
    "unchanged": [],
-   "total_bytes": 5283,
-   "store_bytes": 10126
+   "total_bytes": 5370,
+   "store_bytes": 10213
   }
  },
  "read_memory": {
@@ -1492,16 +1552,24 @@
    "length": 2
   },
   "reply": {
-   "summary": "read_memory score: 2 bytes at 08DF:00000615: 0000",
+   "summary": "read_memory score: 2 bytes at 08DF:000005C9: 0000",
    "status": "ok",
    "ref": "score",
-   "seg_off": "08DF:00000615",
+   "seg_off": "08DF:000005C9",
    "length": 2,
-   "hex": "0000"
+   "hex": "0000",
+   "names": [
+    {
+     "field": "given.ref",
+     "number": "0x000093b9",
+     "kind": "symbol",
+     "name": "score"
+    }
+   ]
   }
  },
  "record": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 44",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 45",
   "call": {
    "frames": 110,
    "dest": "./tmp/demos/tour/files/second-brick.avi",
@@ -1539,7 +1607,7 @@
      "length": 2,
      "fmt": "u16",
      "tally_id": "1",
-     "addr": "08DF:00000615",
+     "addr": "08DF:000005C9",
      "installed": true,
      "state": "tallied",
      "total": 1,
@@ -1554,7 +1622,7 @@
      "length": 1,
      "fmt": "u8",
      "tally_id": "2",
-     "addr": "08DF:0000061F",
+     "addr": "08DF:000005D3",
      "trigger_type": "r",
      "installed": true,
      "state": "captured",
@@ -1581,7 +1649,7 @@
    "emulated_after_s": "<volatile>",
    "frame_before": 36,
    "frame_after": 146,
-   "cycles": 3595712,
+   "cycles": 3594703,
    "kind": "avi",
    "frames": 110,
    "began": true,
@@ -1592,7 +1660,7 @@
   }
  },
  "registers": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 28",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 29",
   "call": {},
   "reply": {
    "summary": "registers: 15 registers",
@@ -1606,7 +1674,7 @@
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -1617,7 +1685,7 @@
   }
  },
  "regpoint_add": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 39",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 40",
   "call": {
    "condition": "DX==3DA"
   },
@@ -1639,7 +1707,7 @@
     "seconds": 60
    },
    "reply": {
-    "summary": "resume: OTHER_STOP, stopped at 08DF:00000583",
+    "summary": "resume: OTHER_STOP, stopped at 08DF:00000539",
     "status": "ok",
     "verdict": "OTHER_STOP",
     "omitted": [
@@ -1649,7 +1717,7 @@
     ],
     "how": "detail=True adds what the debugger printed for this command",
     "waited_s": "<volatile>",
-    "pc": "08DF:00000583",
+    "pc": "08DF:00000539",
     "cpu_mode": "real",
     "frame": 36,
     "regs": {
@@ -1657,11 +1725,11 @@
      "EBX": "0x0000000f",
      "ECX": "0x005b0004",
      "EDX": "0x000003da",
-     "ESI": "0x00000615",
+     "ESI": "0x000005c9",
      "EDI": "0x00006266",
      "EBP": "0x0000091c",
      "ESP": "0x0000fffc",
-     "EIP": "0x00000583",
+     "EIP": "0x00000539",
      "CS": "0x08df",
      "DS": "0x08df",
      "ES": "0xa000",
@@ -1686,11 +1754,11 @@
       "bytes": "e6004e0002000200"
      }
     ],
-    "cause": "registerpoint DX==3DA, whose condition came true at 08DF:00000583",
+    "cause": "registerpoint DX==3DA, whose condition came true at 08DF:00000539",
     "regpoint_hit": {
      "ref": "DX==3DA",
      "condition": "DX==3DA",
-     "pc": "08DF:00000583",
+     "pc": "08DF:00000539",
      "note": "still armed: a registerpoint stops at every instruction where its condition holds, so the next advance stops again; `declaration_clear(kind=\"regpoint\")` removes it"
     },
     "e9": {
@@ -1703,7 +1771,7 @@
     },
     "stop_seq": 7,
     "instruction": {
-     "address": "08DF:00000583",
+     "address": "08DF:00000539",
      "bytes": "EC",
      "text": "in al, dx",
      "flow": "sequential",
@@ -1716,12 +1784,12 @@
   }
  },
  "resume": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 36",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 37",
   "call": {
    "seconds": 60
   },
   "reply": {
-   "summary": "resume: OTHER_STOP, stopped at 08DF:000002EB",
+   "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
    "status": "ok",
    "verdict": "OTHER_STOP",
    "omitted": [
@@ -1731,7 +1799,7 @@
    ],
    "how": "detail=True adds what the debugger printed for this command",
    "waited_s": "<volatile>",
-   "pc": "08DF:000002EB",
+   "pc": "08DF:000002C8",
    "cpu_mode": "real",
    "frame": 36,
    "regs": {
@@ -1743,7 +1811,7 @@
     "EDI": "0x00001ee1",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002eb",
+    "EIP": "0x000002c8",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -1778,7 +1846,7 @@
      "bytes": "3c00"
     }
    ],
-   "cause": "no declared code breakpoint at 08DF:000002EB, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+   "cause": "no declared code breakpoint at 08DF:000002C8, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
    "e9": {
     "lines_total": 0,
     "truncated": false,
@@ -1787,9 +1855,9 @@
    },
    "stop_seq": 6,
    "instruction": {
-    "address": "08DF:000002EB",
-    "bytes": "F71E2706",
-    "text": "neg word ptr [0x627]",
+    "address": "08DF:000002C8",
+    "bytes": "F71EDB05",
+    "text": "neg word ptr [0x5db]",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
@@ -1799,7 +1867,7 @@
   }
  },
  "run_for": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 55",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 56",
   "call": {
    "frames": 3
   },
@@ -1828,30 +1896,30 @@
    "emulated_after_s": "<volatile>",
    "frame_before": 244,
    "frame_after": 247,
-   "cycles": 68499
+   "cycles": 68493
   }
  },
  "run_to": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 27",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 28",
   "call": {
    "ref": "brick_hit",
    "control": "retrace",
    "seconds": 60
   },
   "reply": {
-   "summary": "run_to brick_hit: TARGET at 08DF:000002C8, control counted 34",
+   "summary": "run_to brick_hit: TARGET at 08DF:000002A5, control counted 34",
    "status": "ok",
    "verdict": "TARGET",
-   "target": "08DF:02C8",
+   "target": "08DF:02A5",
    "ref": "brick_hit",
-   "pc": "08DF:000002C8",
+   "pc": "08DF:000002A5",
    "cpu_mode": "real",
    "target_disarmed": true,
    "control_hits": 34,
    "controls": [
     {
      "ref": "retrace",
-     "at": "08DF:0580",
+     "at": "08DF:0536",
      "hits_in_run": 34,
      "removed": true
     }
@@ -1866,7 +1934,7 @@
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -1891,7 +1959,7 @@
      "bytes": "e6004e000200feff"
     }
    ],
-   "cause": "run_to's target brick_hit at 08DF:000002C8",
+   "cause": "run_to's target brick_hit at 08DF:000002A5",
    "e9": {
     "lines_total": 0,
     "truncated": false,
@@ -1900,7 +1968,7 @@
    },
    "stop_seq": 3,
    "instruction": {
-    "address": "08DF:000002C8",
+    "address": "08DF:000002A5",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -1909,7 +1977,15 @@
     "comment": "AL = row, BL = column of the brick that falls",
     "symbol": "brick_hit",
     "delta": 0
-   }
+   },
+   "names": [
+    {
+     "field": "given.ref",
+     "number": "0x00009095",
+     "kind": "symbol",
+     "name": "brick_hit"
+    }
+   ]
   }
  },
  "scan": {
@@ -2106,7 +2182,7 @@
   }
  },
  "send_keys": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 62, step 2 of its `perform`",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 63, step 2 of its `perform`",
   "call": {
    "keys": [
     "space"
@@ -2125,6 +2201,8 @@
    "posted": 1,
    "bytes": 2,
    "frames": 2,
+   "frame_before": 337,
+   "frame_after": 347,
    "verify": {
     "checked": true,
     "seen": true,
@@ -2139,7 +2217,7 @@
   }
  },
  "send_mouse": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 60",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 61",
   "call": {
    "target": "court",
    "expect": "MOUSE$",
@@ -2170,6 +2248,8 @@
    },
    "driver_arrived": true,
    "motion": true,
+   "frame_before": 278,
+   "frame_after": 288,
    "verify": {
     "checked": true,
     "seen": true,
@@ -2187,7 +2267,7 @@
   }
  },
  "series_capture": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 48",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 49",
   "call": {
    "first": 95,
    "last": 108,
@@ -2215,7 +2295,7 @@
   }
  },
  "set_register": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 30",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 31",
   "call": {
    "name": "ax",
    "value": 0
@@ -2234,7 +2314,7 @@
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -2247,7 +2327,7 @@
   }
  },
  "snapshot": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 61",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 62",
   "call": {
    "dest": "./tmp/demos/tour/files/held.png"
   },
@@ -2303,6 +2383,13 @@
    "input_port": "<volatile>",
    "background": true,
    "presence": true,
+   "overlay": {
+    "layers": [
+     "edge",
+     "pointer",
+     "record"
+    ]
+   },
    "window": "<volatile>",
    "logfile": "./tmp/demos/tour/files/e9.log",
    "declarations": {
@@ -2318,7 +2405,7 @@
   }
  },
  "state_list": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 53",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 54",
   "call": {},
   "reply": {
    "summary": "state_list: 1 state in ./tmp/demos/tour/files/states",
@@ -2409,6 +2496,10 @@
     "symbols_load": false,
     "base_remeasure": false
    },
+   "knowledge": {
+    "served": 705,
+    "held_back": 317
+   },
    "cpu_mode": "real",
    "pc": "F000:0000FFF0",
    "declarations": {
@@ -2416,25 +2507,32 @@
     "watches": 0,
     "regpoints": 0
    },
-   "presence": true
+   "presence": true,
+   "overlay": {
+    "layers": [
+     "edge",
+     "pointer",
+     "record"
+    ]
+   }
   }
  },
  "step": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 31",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 32",
   "call": {
    "count": 2
   },
   "reply": {
-   "summary": "step 2: 2 done, at 08DF:000002CC",
+   "summary": "step 2: 2 done, at 08DF:000002A9",
    "status": "ok",
    "mode": "into",
    "asked": 2,
    "moved": true,
    "stalled": 0,
-   "before": "08DF:000002C8",
-   "after": "08DF:000002CC",
+   "before": "08DF:000002A5",
+   "after": "08DF:000002A9",
    "instructions_completed": 2,
-   "pc": "08DF:000002CC",
+   "pc": "08DF:000002A9",
    "cpu_mode": "real",
    "frame": 36,
    "regs": {
@@ -2446,7 +2544,7 @@
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002cc",
+    "EIP": "0x000002a9",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -2471,7 +2569,7 @@
      "bytes": "e6004e000200feff"
     }
    ],
-   "cause": "the stop `step` made after 2 steps, at 08DF:000002CC",
+   "cause": "the stop `step` made after 2 steps, at 08DF:000002A9",
    "e9": {
     "lines_total": 0,
     "truncated": false,
@@ -2480,9 +2578,9 @@
    },
    "stop_seq": 4,
    "instruction": {
-    "address": "08DF:000002CC",
+    "address": "08DF:000002A9",
     "bytes": "E81FFF",
-    "text": "call 0x1ee",
+    "text": "call 0x1cb",
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
@@ -2492,7 +2590,7 @@
   }
  },
  "stop": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 65",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 66",
   "call": {},
   "reply": {
    "summary": "<volatile>",
@@ -2524,41 +2622,41 @@
     {
      "name": "ball_rect",
      "kind": "T",
-     "offset": "0x398",
+     "offset": "0x375",
      "section": -1,
-     "addr": "0x00009188",
+     "addr": "0x00009165",
      "idle": false
     },
     {
      "name": "ball_x",
      "kind": "D",
-     "offset": "0x621",
+     "offset": "0x5D5",
      "section": -1,
-     "addr": "0x00009411",
+     "addr": "0x000093c5",
      "idle": false
     },
     {
      "name": "ball_y",
      "kind": "D",
-     "offset": "0x623",
+     "offset": "0x5D7",
      "section": -1,
-     "addr": "0x00009413",
+     "addr": "0x000093c7",
      "idle": false
     },
     {
      "name": "ball_dx",
      "kind": "D",
-     "offset": "0x625",
+     "offset": "0x5D9",
      "section": -1,
-     "addr": "0x00009415",
+     "addr": "0x000093c9",
      "idle": false
     },
     {
      "name": "ball_dy",
      "kind": "D",
-     "offset": "0x627",
+     "offset": "0x5DB",
      "section": -1,
-     "addr": "0x00009417",
+     "addr": "0x000093cb",
      "idle": false
     }
    ],
@@ -2572,7 +2670,7 @@
    "base": "0x8df0"
   },
   "reply": {
-   "summary": "symbols_load: 65 loaded of 65 parsed, base 0x00008df0, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
+   "summary": "symbols_load: 63 loaded of 63 parsed, base 0x00008df0, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
    "status": "ok",
    "base": "0x00008df0",
    "limit": {
@@ -2596,8 +2694,8 @@
     "why": "no executable named bricks.exe beside the table, so it could not be checked against its build"
    },
    "base_from": "caller",
-   "parsed": 65,
-   "kept": 65,
+   "parsed": 63,
+   "kept": 63,
    "excluded_sections": 0,
    "excluded_pattern": 0,
    "excluded_unplaceable": 0,
@@ -2609,21 +2707,21 @@
    "unreadable": 0,
    "overlay_idle": 0,
    "table_mode": "replaced",
-   "table_total": 65,
-   "loaded": 65,
-   "bytes": 1302,
+   "table_total": 63,
+   "loaded": 63,
+   "bytes": 1262,
    "symbols_typed": 0
   }
  },
  "trace": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 34",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 35",
   "call": {
    "instructions": 40
   },
   "reply": {
-   "summary": "trace 40 normal: ELAPSED, 40 executed at 34 addresses, at 08DF:00000221, to ./tmp/demos/tour/files/captures/trace-1.trace",
+   "summary": "trace 40 normal: ELAPSED, 40 executed at 34 addresses, at 08DF:000001FE, to ./tmp/demos/tour/files/captures/trace-1.trace",
    "status": "ok",
-   "pc": "08DF:00000221",
+   "pc": "08DF:000001FE",
    "cpu_mode": "real",
    "frame": 36,
    "regs": {
@@ -2635,7 +2733,7 @@
     "EDI": "0x00001efd",
     "EBP": "0x0000091c",
     "ESP": "0x0000fff0",
-    "EIP": "0x00000221",
+    "EIP": "0x000001fe",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -2660,7 +2758,7 @@
      "bytes": "e6004e000200feff"
     }
    ],
-   "cause": "the end of the trace's count, at 08DF:00000221",
+   "cause": "the end of the trace's count, at 08DF:000001FE",
    "e9": {
     "lines_total": 0,
     "truncated": false,
@@ -2669,7 +2767,7 @@
    },
    "stop_seq": 5,
    "instruction": {
-    "address": "08DF:00000221",
+    "address": "08DF:000001FE",
     "bytes": "F3AA",
     "text": "rep stosb byte ptr es:[di], al",
     "flow": "sequential",
@@ -2690,35 +2788,35 @@
     "symbols": [
      {
       "symbol": "brick_index",
-      "addr": "0x00008fde",
+      "addr": "0x00008fbb",
       "addresses": 6,
       "instructions": 6,
-      "first": "0x00008fde",
-      "last": "0x00008fe8"
+      "first": "0x00008fbb",
+      "last": "0x00008fc5"
      },
      {
       "symbol": "brick_rect",
-      "addr": "0x00008fe9",
+      "addr": "0x00008fc6",
       "addresses": 18,
       "instructions": 18,
-      "first": "0x00008fe9",
-      "last": "0x0000900c"
+      "first": "0x00008fc6",
+      "last": "0x00008fe9"
      },
      {
       "symbol": "fill_rect",
-      "addr": "0x0000900e",
+      "addr": "0x00008feb",
       "addresses": 4,
       "instructions": 10,
-      "first": "0x0000900e",
-      "last": "0x00009011"
+      "first": "0x00008feb",
+      "last": "0x00008fee"
      },
      {
       "symbol": "brick_hit",
-      "addr": "0x000090b8",
+      "addr": "0x00009095",
       "addresses": 6,
       "instructions": 6,
-      "first": "0x000090bc",
-      "last": "0x000090cb"
+      "first": "0x00009099",
+      "last": "0x000090a8"
      }
     ],
     "symbols_total": 4,
@@ -2727,7 +2825,7 @@
   }
  },
  "wait": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 64",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 65",
   "call": {
    "seconds": 1
   },
@@ -2739,7 +2837,7 @@
   }
  },
  "watch_add": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 35",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 36",
   "call": {
    "ref": "score",
    "mode": "change",
@@ -2756,12 +2854,20 @@
    "stored": true,
    "armed": true,
    "state": "armed",
-   "entry": "BPMEM 08DF:0615",
+   "entry": "BPMEM 08DF:05C9",
    "entries": [
-    "BPMEM 08DF:0615",
-    "BPMEM 08DF:0616"
+    "BPMEM 08DF:05C9",
+    "BPMEM 08DF:05CA"
    ],
-   "command": "BPM 08DF:0615"
+   "command": "BPM 08DF:05C9",
+   "names": [
+    {
+     "field": "given.ref",
+     "number": "0x000093b9",
+     "kind": "symbol",
+     "name": "score"
+    }
+   ]
   },
   "then": {
    "tool": "resume",
@@ -2769,7 +2875,7 @@
     "seconds": 60
    },
    "reply": {
-    "summary": "resume: OTHER_STOP, stopped at 08DF:000002EB",
+    "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
     "status": "ok",
     "verdict": "OTHER_STOP",
     "omitted": [
@@ -2779,7 +2885,7 @@
     ],
     "how": "detail=True adds what the debugger printed for this command",
     "waited_s": "<volatile>",
-    "pc": "08DF:000002EB",
+    "pc": "08DF:000002C8",
     "cpu_mode": "real",
     "frame": 36,
     "regs": {
@@ -2791,7 +2897,7 @@
      "EDI": "0x00001ee1",
      "EBP": "0x0000091c",
      "ESP": "0x0000fffa",
-     "EIP": "0x000002eb",
+     "EIP": "0x000002c8",
      "CS": "0x08df",
      "DS": "0x08df",
      "ES": "0xa000",
@@ -2826,7 +2932,7 @@
       "bytes": "3c00"
      }
     ],
-    "cause": "no declared code breakpoint at 08DF:000002EB, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+    "cause": "no declared code breakpoint at 08DF:000002C8, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
     "e9": {
      "lines_total": 0,
      "truncated": false,
@@ -2835,9 +2941,9 @@
     },
     "stop_seq": 6,
     "instruction": {
-     "address": "08DF:000002EB",
-     "bytes": "F71E2706",
-     "text": "neg word ptr [0x627]",
+     "address": "08DF:000002C8",
+     "bytes": "F71EDB05",
+     "text": "neg word ptr [0x5db]",
      "flow": "sequential",
      "code_bits": 16,
      "bytes_from": "memory",
@@ -2857,7 +2963,7 @@
   }
  },
  "write": {
-  "from": "docs/reference/tour/TRANSCRIPT.md: call 70",
+  "from": "docs/reference/tour/TRANSCRIPT.md: call 71",
   "call": {
    "ref": "quit",
    "data_hex": "01"
@@ -2866,10 +2972,18 @@
    "summary": "write quit: 1 byte, verified True",
    "status": "ok",
    "ref": "quit",
-   "seg_off": "08DF:00000619",
+   "seg_off": "08DF:000005CD",
    "bytes_written": 1,
    "readback": "01",
-   "verified": true
+   "verified": true,
+   "names": [
+    {
+     "field": "given.ref",
+     "number": "0x000093bd",
+     "kind": "symbol",
+     "name": "quit"
+    }
+   ]
   }
  }
 }

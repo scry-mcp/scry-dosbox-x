@@ -67,9 +67,10 @@ SIGNED = json.loads((BRICKS / "bricks-screen-map.json").read_text(
 NEEDED = frozenset({"RUNSTATE", "VGAMEMDUMP", "BPIF", "CAPTURE", "PORTINFO", "PIC", "A20",
                     "SAVESTATE", "LOADSTATE", "TAP"})
 
-#: These mirror bricks.asm: `row_colours` as the DAC holds it, GLOW_PEN, the wall and LIVES.
+#: These mirror bricks.asm: `row_colours` as the DAC holds it, its last entry, the wall and
+#: LIVES. A case reads them back from the source, so a row added there cannot leave a stale pen.
 ROW_RGB = ["3f0808", "3f2400", "3f3c0c", "103a10", "08343a", "14183f", "303034"]
-ROW_PEN, GLOW_PEN, BRICKS_ALL, LIVES = 32, 39, 60, 3
+ROW_PEN, ROW_LAST_PEN, BRICKS_ALL, LIVES = 32, 38, 60, 3
 #: What the fixed serve does, read off the runs this tour was written from: the ball where the
 #: first brick falls, the columns of the second and third, and the frame of the film (counted
 #: from 0) that first shows the wall without the second brick.
@@ -246,8 +247,10 @@ def scan_open(reply: Reply, run: Run) -> str:
 
 
 def dac_index(reply: Reply, run: Run) -> str:
-    expect(int(reply["value"], 16) == GLOW_PEN + 1, f"the DAC write index is {reply['value']}")
-    return f"the next DAC entry to write is {GLOW_PEN + 1}: the game just set its frame's pen"
+    expect(int(reply["value"], 16) == ROW_LAST_PEN + 1,
+           f"the DAC write index is {reply['value']}")
+    return (f"the next DAC entry to write is {ROW_LAST_PEN + 1}: the game just set its row "
+            "colours")
 
 
 def lines_open(reply: Reply, run: Run) -> str:
@@ -550,7 +553,8 @@ STEPS = [
     Step("names", "symbols_find", {"name": "ball"}, found_ball),
     Step("vector", "interrupt_vectors", {"number": "0x33"}, mouse_vector),
     Step("picture", "screen_view", out("wall.png"), pictured),
-    Step("palette", "palette", out("palette.png", first=ROW_PEN, count=GLOW_PEN - ROW_PEN + 1),
+    Step("palette", "palette",
+         out("palette.png", first=ROW_PEN, count=ROW_LAST_PEN - ROW_PEN + 1),
          row_colours),
     Step("signature", "screen_signature", {"crop": SIGNED["crop"]}, signed),
     Step("score", "read_memory", {"ref": "score", "length": 2},

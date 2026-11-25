@@ -58,7 +58,7 @@ One comment is saved, and `truncated` is `false`: the reply lists every one.
       "inherited": false,
       "age_s": "<volatile>",
       "text": "AL = row, BL = column of the brick that falls",
-      "addr": "0x000090b8",
+      "addr": "0x00009095",
       "state": "resolved"
     }
   ],
@@ -154,11 +154,11 @@ Call:
 comment_write(method="add", ref="brick_hit", text="AL = row, BL = column of the brick that falls")
 ```
 
-Reply, 3 of 5 fields:
+Reply, 3 of 6 fields:
 
 ```json
 {
-  "summary": "comment_write add: brick_hit at 0x000090b8, stored",
+  "summary": "comment_write add: brick_hit at 0x00009095 (brick_hit), stored",
   "status": "ok",
   "replaced_comments": []
 }
@@ -170,7 +170,7 @@ The comment is saved on `brick_hit`, which is the linear address `0x90b8`. Nothi
 
 ```json
 {
-  "summary": "comment_write add: brick_hit at 0x000090b8, stored",
+  "summary": "comment_write add: brick_hit at 0x00009095 (brick_hit), stored",
   "status": "ok",
   "comment": {
     "ref": "brick_hit",
@@ -181,11 +181,14 @@ The comment is saved on `brick_hit`, which is the linear address `0x90b8`. Nothi
     "inherited": false,
     "age_s": "<volatile>",
     "text": "AL = row, BL = column of the brick that falls",
-    "addr": "0x000090b8",
+    "addr": "0x00009095",
     "state": "resolved"
   },
   "replaced_comments": [],
-  "declarations": {"persistent": true, "path": "<volatile>"}
+  "declarations": {"persistent": true, "path": "<volatile>"},
+  "names": [
+    {"field": "given.ref", "number": "0x00009095", "kind": "symbol", "name": "brick_hit"}
+  ]
 }
 ```
 

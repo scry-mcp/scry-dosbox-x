@@ -37,7 +37,7 @@ Call:
 send_keys(keys=["space"], expect="SERVE$", seconds=10)
 ```
 
-Reply, 7 of 9 fields:
+Reply, 7 of 11 fields:
 
 ```json
 {
@@ -65,6 +65,8 @@ Reply, 7 of 9 fields:
   "posted": 1,
   "bytes": 2,
   "frames": 2,
+  "frame_before": 337,
+  "frame_after": 347,
   "verify": {
     "checked": true,
     "seen": true,
@@ -253,7 +255,7 @@ Call:
 send_mouse(target="court", expect="MOUSE$", seconds=10)
 ```
 
-Reply, 5 of 13 fields:
+Reply, 5 of 15 fields:
 
 ```json
 {
@@ -290,6 +292,8 @@ The pointer went to the centre of `court`: pixel 240,100 of a 320x200 screen, 48
   },
   "driver_arrived": true,
   "motion": true,
+  "frame_before": 278,
+  "frame_after": 288,
   "verify": {
     "checked": true,
     "seen": true,

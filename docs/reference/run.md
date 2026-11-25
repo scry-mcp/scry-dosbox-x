@@ -39,16 +39,16 @@ Call:
 run_to(ref="brick_hit", control="retrace", seconds=60)
 ```
 
-Reply, 5 of 17 fields:
+Reply, 5 of 18 fields:
 
 ```json
 {
-  "summary": "run_to brick_hit: TARGET at 08DF:000002C8, control counted 34",
+  "summary": "run_to brick_hit: TARGET at 08DF:000002A5, control counted 34",
   "verdict": "TARGET",
   "target_disarmed": true,
   "control_hits": 34,
   "controls": [
-    {"ref": "retrace", "at": "08DF:0580", "hits_in_run": 34, "removed": true}
+    {"ref": "retrace", "at": "08DF:0536", "hits_in_run": 34, "removed": true}
   ]
 }
 ```
@@ -59,17 +59,17 @@ The run reached `brick_hit`, which is what `TARGET` says. The control `retrace` 
 
 ```json
 {
-  "summary": "run_to brick_hit: TARGET at 08DF:000002C8, control counted 34",
+  "summary": "run_to brick_hit: TARGET at 08DF:000002A5, control counted 34",
   "status": "ok",
   "verdict": "TARGET",
-  "target": "08DF:02C8",
+  "target": "08DF:02A5",
   "ref": "brick_hit",
-  "pc": "08DF:000002C8",
+  "pc": "08DF:000002A5",
   "cpu_mode": "real",
   "target_disarmed": true,
   "control_hits": 34,
   "controls": [
-    {"ref": "retrace", "at": "08DF:0580", "hits_in_run": 34, "removed": true}
+    {"ref": "retrace", "at": "08DF:0536", "hits_in_run": 34, "removed": true}
   ],
   "frame": 36,
   "regs": {
@@ -81,7 +81,7 @@ The run reached `brick_hit`, which is what `TARGET` says. The control `retrace` 
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -101,11 +101,11 @@ The run reached `brick_hit`, which is what `TARGET` says. The control `retrace` 
       "bytes": "e6004e000200feff"
     }
   ],
-  "cause": "run_to's target brick_hit at 08DF:000002C8",
+  "cause": "run_to's target brick_hit at 08DF:000002A5",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 3,
   "instruction": {
-    "address": "08DF:000002C8",
+    "address": "08DF:000002A5",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -114,7 +114,10 @@ The run reached `brick_hit`, which is what `TARGET` says. The control `retrace` 
     "comment": "AL = row, BL = column of the brick that falls",
     "symbol": "brick_hit",
     "delta": 0
-  }
+  },
+  "names": [
+    {"field": "given.ref", "number": "0x00009095", "kind": "symbol", "name": "brick_hit"}
+  ]
 }
 ```
 
@@ -270,7 +273,7 @@ Reply, 5 of 18 fields:
   "polls": 3,
   "frame_before": 244,
   "frame_after": 247,
-  "cycles": 68499
+  "cycles": 68493
 }
 ```
 
@@ -297,7 +300,7 @@ Reply, 5 of 18 fields:
   "emulated_after_s": "<volatile>",
   "frame_before": 244,
   "frame_after": 247,
-  "cycles": 68499
+  "cycles": 68493
 }
 ```
 
@@ -428,7 +431,7 @@ Reply, 4 of 13 fields:
 {
   "summary": "trace 40 normal: ELAPSED, 40 executed at 34 addresses, at 08 ... (121 characters)",
   "verdict": "ELAPSED",
-  "pc": "08DF:00000221",
+  "pc": "08DF:000001FE",
   "frame": 36
 }
 ```
@@ -439,9 +442,9 @@ All 40 instructions ran, which is what `ELAPSED` says, at 34 distinct addresses.
 
 ```json
 {
-  "summary": "trace 40 normal: ELAPSED, 40 executed at 34 addresses, at 08DF:00000221, to ./tmp/demos/tour/files/captures/trace-1.trace",
+  "summary": "trace 40 normal: ELAPSED, 40 executed at 34 addresses, at 08DF:000001FE, to ./tmp/demos/tour/files/captures/trace-1.trace",
   "status": "ok",
-  "pc": "08DF:00000221",
+  "pc": "08DF:000001FE",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -453,7 +456,7 @@ All 40 instructions ran, which is what `ELAPSED` says, at 34 distinct addresses.
     "EDI": "0x00001efd",
     "EBP": "0x0000091c",
     "ESP": "0x0000fff0",
-    "EIP": "0x00000221",
+    "EIP": "0x000001fe",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -473,11 +476,11 @@ All 40 instructions ran, which is what `ELAPSED` says, at 34 distinct addresses.
       "bytes": "e6004e000200feff"
     }
   ],
-  "cause": "the end of the trace's count, at 08DF:00000221",
+  "cause": "the end of the trace's count, at 08DF:000001FE",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 5,
   "instruction": {
-    "address": "08DF:00000221",
+    "address": "08DF:000001FE",
     "bytes": "F3AA",
     "text": "rep stosb byte ptr es:[di], al",
     "flow": "sequential",
@@ -498,35 +501,35 @@ All 40 instructions ran, which is what `ELAPSED` says, at 34 distinct addresses.
     "symbols": [
       {
         "symbol": "brick_index",
-        "addr": "0x00008fde",
+        "addr": "0x00008fbb",
         "addresses": 6,
         "instructions": 6,
-        "first": "0x00008fde",
-        "last": "0x00008fe8"
+        "first": "0x00008fbb",
+        "last": "0x00008fc5"
       },
       {
         "symbol": "brick_rect",
-        "addr": "0x00008fe9",
+        "addr": "0x00008fc6",
         "addresses": 18,
         "instructions": 18,
-        "first": "0x00008fe9",
-        "last": "0x0000900c"
+        "first": "0x00008fc6",
+        "last": "0x00008fe9"
       },
       {
         "symbol": "fill_rect",
-        "addr": "0x0000900e",
+        "addr": "0x00008feb",
         "addresses": 4,
         "instructions": 10,
-        "first": "0x0000900e",
-        "last": "0x00009011"
+        "first": "0x00008feb",
+        "last": "0x00008fee"
       },
       {
         "symbol": "brick_hit",
-        "addr": "0x000090b8",
+        "addr": "0x00009095",
         "addresses": 6,
         "instructions": 6,
-        "first": "0x000090bc",
-        "last": "0x000090cb"
+        "first": "0x00009099",
+        "last": "0x000090a8"
       }
     ],
     "symbols_total": 4,
@@ -880,11 +883,11 @@ Reply, 7 of 18 fields:
 
 ```json
 {
-  "summary": "step 2: 2 done, at 08DF:000002CC",
+  "summary": "step 2: 2 done, at 08DF:000002A9",
   "mode": "into",
   "instructions_completed": 2,
-  "before": "08DF:000002C8",
-  "after": "08DF:000002CC",
+  "before": "08DF:000002A5",
+  "after": "08DF:000002A9",
   "moved": true,
   "stalled": 0
 }
@@ -896,16 +899,16 @@ Both instructions ran, from `08DF:000002C8` to `08DF:000002CC`. `stalled: 0` say
 
 ```json
 {
-  "summary": "step 2: 2 done, at 08DF:000002CC",
+  "summary": "step 2: 2 done, at 08DF:000002A9",
   "status": "ok",
   "mode": "into",
   "asked": 2,
   "moved": true,
   "stalled": 0,
-  "before": "08DF:000002C8",
-  "after": "08DF:000002CC",
+  "before": "08DF:000002A5",
+  "after": "08DF:000002A9",
   "instructions_completed": 2,
-  "pc": "08DF:000002CC",
+  "pc": "08DF:000002A9",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -917,7 +920,7 @@ Both instructions ran, from `08DF:000002C8` to `08DF:000002CC`. `stalled: 0` say
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002cc",
+    "EIP": "0x000002a9",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -937,13 +940,13 @@ Both instructions ran, from `08DF:000002C8` to `08DF:000002CC`. `stalled: 0` say
       "bytes": "e6004e000200feff"
     }
   ],
-  "cause": "the stop `step` made after 2 steps, at 08DF:000002CC",
+  "cause": "the stop `step` made after 2 steps, at 08DF:000002A9",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 4,
   "instruction": {
-    "address": "08DF:000002CC",
+    "address": "08DF:000002A9",
     "bytes": "E81FFF",
-    "text": "call 0x1ee",
+    "text": "call 0x1cb",
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
@@ -1062,9 +1065,9 @@ Reply, 5 of 15 fields:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:000002EB",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
   "verdict": "OTHER_STOP",
-  "pc": "08DF:000002EB",
+  "pc": "08DF:000002C8",
   "cpu_mode": "real",
   "frame": 36
 }
@@ -1076,13 +1079,13 @@ Reply, 5 of 15 fields:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:000002EB",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DF:000002EB",
+  "pc": "08DF:000002C8",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -1094,7 +1097,7 @@ Reply, 5 of 15 fields:
     "EDI": "0x00001ee1",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002eb",
+    "EIP": "0x000002c8",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -1124,13 +1127,13 @@ Reply, 5 of 15 fields:
       "bytes": "3c00"
     }
   ],
-  "cause": "no declared code breakpoint at 08DF:000002EB, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+  "cause": "no declared code breakpoint at 08DF:000002C8, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 6,
   "instruction": {
-    "address": "08DF:000002EB",
-    "bytes": "F71E2706",
-    "text": "neg word ptr [0x627]",
+    "address": "08DF:000002C8",
+    "bytes": "F71EDB05",
+    "text": "neg word ptr [0x5db]",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",

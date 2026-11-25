@@ -31,10 +31,10 @@ Reply, 4 of 5 fields:
 
 ```json
 {
-  "summary": "port read: 8-bit read of 0x03C8: 0x28",
+  "summary": "port read: 8-bit read of 0x03C8: 0x27",
   "port": "0x03C8",
   "bits": 8,
-  "value": "0x28"
+  "value": "0x27"
 }
 ```
 
@@ -44,11 +44,11 @@ Port `0x3C8` reads `0x28`, an 8-bit value: the next palette entry to be written 
 
 ```json
 {
-  "summary": "port read: 8-bit read of 0x03C8: 0x28",
+  "summary": "port read: 8-bit read of 0x03C8: 0x27",
   "status": "ok",
   "port": "0x03C8",
   "bits": 8,
-  "value": "0x28"
+  "value": "0x27"
 }
 ```
 

@@ -49,7 +49,7 @@ Call:
 breakpoint_at(ref="brick_hit")
 ```
 
-Reply, 5 of 9 fields:
+Reply, 5 of 10 fields:
 
 ```json
 {
@@ -57,7 +57,7 @@ Reply, 5 of 9 fields:
   "status": "ok",
   "role": "stop",
   "state": "armed",
-  "entry": "BP 08DF:02C8"
+  "entry": "BP 08DF:02A5"
 }
 ```
 
@@ -73,10 +73,10 @@ Reply, 4 of 15 fields:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002A5",
   "verdict": "OTHER_STOP",
-  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8",
-  "pc": "08DF:000002C8"
+  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002A5",
+  "pc": "08DF:000002A5"
 }
 ```
 
@@ -96,7 +96,10 @@ The first call's:
   "stored": true,
   "armed": true,
   "state": "armed",
-  "entry": "BP 08DF:02C8"
+  "entry": "BP 08DF:02A5",
+  "names": [
+    {"field": "given.ref", "number": "0x00009095", "kind": "symbol", "name": "brick_hit"}
+  ]
 }
 ```
 
@@ -104,13 +107,13 @@ The second call's:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002A5",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DF:000002C8",
+  "pc": "08DF:000002A5",
   "cpu_mode": "real",
   "frame": 244,
   "regs": {
@@ -122,7 +125,7 @@ The second call's:
     "EDI": "0x00006410",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -131,11 +134,11 @@ The second call's:
     "SS": "0x08df"
   },
   "watches": [],
-  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002A5",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 10,
   "instruction": {
-    "address": "08DF:000002C8",
+    "address": "08DF:000002A5",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -264,7 +267,7 @@ Call:
 breakpoint_interrupt(number="0x21", ah="0x4C")
 ```
 
-Reply, 6 of 8 fields:
+Reply, 6 of 9 fields:
 
 ```json
 {
@@ -289,10 +292,10 @@ Reply, 4 of 15 fields:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:0000013C",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:00000139",
   "verdict": "OTHER_STOP",
-  "cause": "most likely the held `BPINT 21 AH=4C`: the guest is at `int 21`, at 08DF:0000013C",
-  "pc": "08DF:0000013C"
+  "cause": "most likely the held `BPINT 21 AH=4C`: the guest is at `int 21`, at 08DF:00000139",
+  "pc": "08DF:00000139"
 }
 ```
 
@@ -311,7 +314,16 @@ The first call's:
   "armed": true,
   "entry": "BPINT 21 AH=4C",
   "omitted": ["output", "output_chars", "clipped"],
-  "how": "detail=True adds what the debugger printed for this command"
+  "how": "detail=True adds what the debugger printed for this command",
+  "names": [
+    {
+      "field": "given.number",
+      "number": "0x21/0x4C",
+      "kind": "call",
+      "name": "exit",
+      "id": "ibm-pc:call:0x21/0x4C"
+    }
+  ]
 }
 ```
 
@@ -319,13 +331,13 @@ The second call's:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:0000013C",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:00000139",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DF:0000013C",
+  "pc": "08DF:00000139",
   "cpu_mode": "real",
   "frame": "<volatile>",
   "regs": {
@@ -333,11 +345,11 @@ The second call's:
     "EBX": "0x0000000f",
     "ECX": "0x005b0004",
     "EDX": "0x00000000",
-    "ESI": "0x00000615",
+    "ESI": "0x000005c9",
     "EDI": "0x00006192",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffe",
-    "EIP": "0x0000013c",
+    "EIP": "0x00000139",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -352,25 +364,27 @@ The second call's:
       "mode": "freeze",
       "length": 1,
       "fmt": "u8",
-      "addr": "08DF:00000617",
+      "addr": "08DF:000005CB",
       "frozen_hex": "03",
-      "entries": ["FM 00000617 (03)"],
+      "entries": ["FM 000005CB (03)"],
       "bytes": "03",
       "state": "holding"
     }
   ],
-  "cause": "most likely the held `BPINT 21 AH=4C`: the guest is at `int 21`, at 08DF:0000013C",
+  "cause": "most likely the held `BPINT 21 AH=4C`: the guest is at `int 21`, at 08DF:00000139",
   "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: HIT 5 0"], "mark": "<volatile>"},
   "stop_seq": "<volatile>",
   "instruction": {
-    "address": "08DF:0000013C",
+    "address": "08DF:00000139",
     "bytes": "CD21",
     "text": "int 0x21",
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
+    "note": "exit (0x4C)",
+    "note_live": true,
     "symbol": "main_loop",
-    "delta": 33
+    "delta": 30
   }
 }
 ```
@@ -500,10 +514,10 @@ Reply, 4 of 16 fields:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:00000583",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:00000539",
   "verdict": "OTHER_STOP",
-  "cause": "registerpoint DX==3DA, whose condition came true at 08DF:00000583",
-  "pc": "08DF:00000583"
+  "cause": "registerpoint DX==3DA, whose condition came true at 08DF:00000539",
+  "pc": "08DF:00000539"
 }
 ```
 
@@ -532,13 +546,13 @@ The second call's:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:00000583",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:00000539",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DF:00000583",
+  "pc": "08DF:00000539",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -546,11 +560,11 @@ The second call's:
     "EBX": "0x0000000f",
     "ECX": "0x005b0004",
     "EDX": "0x000003da",
-    "ESI": "0x00000615",
+    "ESI": "0x000005c9",
     "EDI": "0x00006266",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffc",
-    "EIP": "0x00000583",
+    "EIP": "0x00000539",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -570,17 +584,17 @@ The second call's:
       "bytes": "e6004e0002000200"
     }
   ],
-  "cause": "registerpoint DX==3DA, whose condition came true at 08DF:00000583",
+  "cause": "registerpoint DX==3DA, whose condition came true at 08DF:00000539",
   "regpoint_hit": {
     "ref": "DX==3DA",
     "condition": "DX==3DA",
-    "pc": "08DF:00000583",
+    "pc": "08DF:00000539",
     "note": "still armed: a registerpoint stops at every instruction where its condition holds, so the next advance stops again; `declaration_clear(kind=\"regpoint\")` removes it"
   },
   "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: HIT 0 7"], "mark": "<volatile>"},
   "stop_seq": 7,
   "instruction": {
-    "address": "08DF:00000583",
+    "address": "08DF:00000539",
     "bytes": "EC",
     "text": "in al, dx",
     "flow": "sequential",
@@ -695,15 +709,15 @@ Call:
 watch_add(ref="score", mode="change", fmt="u16")
 ```
 
-Reply, 5 of 13 fields:
+Reply, 5 of 14 fields:
 
 ```json
 {
   "summary": "watch_add score: armed",
   "status": "ok",
   "state": "armed",
-  "entry": "BPMEM 08DF:0615",
-  "entries": ["BPMEM 08DF:0615", "BPMEM 08DF:0616"]
+  "entry": "BPMEM 08DF:05C9",
+  "entries": ["BPMEM 08DF:05C9", "BPMEM 08DF:05CA"]
 }
 ```
 
@@ -719,9 +733,9 @@ Reply, 5 of 15 fields:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:000002EB",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
   "verdict": "OTHER_STOP",
-  "pc": "08DF:000002EB",
+  "pc": "08DF:000002C8",
   "cpu_mode": "real",
   "frame": 36
 }
@@ -745,9 +759,12 @@ The first call's:
   "stored": true,
   "armed": true,
   "state": "armed",
-  "entry": "BPMEM 08DF:0615",
-  "entries": ["BPMEM 08DF:0615", "BPMEM 08DF:0616"],
-  "command": "BPM 08DF:0615"
+  "entry": "BPMEM 08DF:05C9",
+  "entries": ["BPMEM 08DF:05C9", "BPMEM 08DF:05CA"],
+  "command": "BPM 08DF:05C9",
+  "names": [
+    {"field": "given.ref", "number": "0x000093b9", "kind": "symbol", "name": "score"}
+  ]
 }
 ```
 
@@ -755,13 +772,13 @@ The second call's:
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:000002EB",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DF:000002EB",
+  "pc": "08DF:000002C8",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -773,7 +790,7 @@ The second call's:
     "EDI": "0x00001ee1",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002eb",
+    "EIP": "0x000002c8",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -803,13 +820,13 @@ The second call's:
       "bytes": "3c00"
     }
   ],
-  "cause": "no declared code breakpoint at 08DF:000002EB, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+  "cause": "no declared code breakpoint at 08DF:000002C8, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 6,
   "instruction": {
-    "address": "08DF:000002EB",
-    "bytes": "F71E2706",
-    "text": "neg word ptr [0x627]",
+    "address": "08DF:000002C8",
+    "bytes": "F71EDB05",
+    "text": "neg word ptr [0x5db]",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
@@ -1071,18 +1088,18 @@ Three watches are saved, and no breakpoint or registerpoint. `debugger_read` is 
       "length": 2,
       "fmt": "u16",
       "tally_id": "1",
-      "addr": "08DF:00000615",
+      "addr": "08DF:000005C9",
       "installed": true,
       "state": "tallied",
       "total": 1,
       "overflow_values": 0,
       "overflow_pcs": 0,
       "values": [
-        {"at": "08DF:00000615", "raw_hex": "4600", "count": 1, "value": 70}
+        {"at": "08DF:000005C9", "raw_hex": "4600", "count": 1, "value": 70}
       ],
       "values_total": 1,
       "writers": [
-        {"pc": "08DF:000002E7", "count": 1, "symbol": "brick_hit+0x1f"}
+        {"pc": "08DF:000002C4", "count": 1, "symbol": "brick_hit+0x1f"}
       ],
       "writers_total": 1
     },
@@ -1098,7 +1115,7 @@ Three watches are saved, and no breakpoint or registerpoint. `debugger_read` is 
       "length": 1,
       "fmt": "u8",
       "tally_id": "2",
-      "addr": "08DF:0000061F",
+      "addr": "08DF:000005D3",
       "trigger_type": "r",
       "installed": true,
       "state": "captured",
@@ -1112,8 +1129,8 @@ Three watches are saved, and no breakpoint or registerpoint. `debugger_read` is 
           "n": 1,
           "frame": 37,
           "line": 417,
-          "time_s": 0.532617,
-          "pc": "08DF:000003E4",
+          "time_s": 0.532612,
+          "pc": "08DF:000003C1",
           "data": "0xd4000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -1122,8 +1139,8 @@ Three watches are saved, and no breakpoint or registerpoint. `debugger_read` is 
           "n": 2,
           "frame": 38,
           "line": 417,
-          "time_s": 0.5468845999999999,
-          "pc": "08DF:000003E4",
+          "time_s": 0.5468799,
+          "pc": "08DF:000003C1",
           "data": "0xd6000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -1132,8 +1149,8 @@ Three watches are saved, and no breakpoint or registerpoint. `debugger_read` is 
           "n": 3,
           "frame": 39,
           "line": 417,
-          "time_s": 0.5611531,
-          "pc": "08DF:000003E4",
+          "time_s": 0.5611487,
+          "pc": "08DF:000003C1",
           "data": "0xd8000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -1142,8 +1159,8 @@ Three watches are saved, and no breakpoint or registerpoint. `debugger_read` is 
           "n": 4,
           "frame": 40,
           "line": 417,
-          "time_s": 0.5754217,
-          "pc": "08DF:000003E4",
+          "time_s": 0.5754162,
+          "pc": "08DF:000003C1",
           "data": "0xda000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -1152,8 +1169,8 @@ Three watches are saved, and no breakpoint or registerpoint. `debugger_read` is 
           "n": 5,
           "frame": 41,
           "line": 417,
-          "time_s": 0.589689,
-          "pc": "08DF:000003E4",
+          "time_s": 0.5896851000000001,
+          "pc": "08DF:000003C1",
           "data": "0xdc000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -1162,8 +1179,8 @@ Three watches are saved, and no breakpoint or registerpoint. `debugger_read` is 
           "n": 6,
           "frame": 42,
           "line": 417,
-          "time_s": 0.6039579,
-          "pc": "08DF:000003E4",
+          "time_s": 0.6039529,
+          "pc": "08DF:000003C1",
           "data": "0xde000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -1301,7 +1318,7 @@ Reply, 4 of 4 fields:
   "summary": "declaration_clear watch score: 1 cleared",
   "status": "ok",
   "declarations_cleared": 1,
-  "disarmed": ["BPMEM 08DF:0615 (3C)", "BPMEM 08DF:0616 (00)"]
+  "disarmed": ["BPMEM 08DF:05C9 (3C)", "BPMEM 08DF:05CA (00)"]
 }
 ```
 
@@ -1314,7 +1331,7 @@ The watch on `score` is gone, and `disarmed` lists the two debugger rows it used
   "summary": "declaration_clear watch score: 1 cleared",
   "status": "ok",
   "declarations_cleared": 1,
-  "disarmed": ["BPMEM 08DF:0615 (3C)", "BPMEM 08DF:0616 (00)"]
+  "disarmed": ["BPMEM 08DF:05C9 (3C)", "BPMEM 08DF:05CA (00)"]
 }
 ```
 

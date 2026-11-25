@@ -99,6 +99,17 @@ def test_the_stop_at_the_exit_is_judged_with_its_note(tour: ModuleType, exit_sto
         tour.leaving(bare, None)
 
 
+def test_the_tour_s_row_pens_are_the_game_s_own(tour: ModuleType) -> None:
+    """The tour reads the colours `bricks.asm` writes, so a row added or dropped there reddens
+    the palette and the port steps instead of failing the next live run."""
+    source = (BRICKS / "bricks.asm").read_text(encoding="ascii")
+    block = source.split("row_colours:", 1)[1].split("row_colours_end:", 1)[0]
+    rows = [[int(value, 16) for value in line.split("db", 1)[1].split(",")]
+            for line in block.splitlines() if "db" in line]
+    assert [bytes(row).hex() for row in rows] == tour.ROW_RGB
+    assert tour.ROW_LAST_PEN == tour.ROW_PEN + len(rows) - 1
+
+
 def test_the_base_step_is_judged_on_the_reply_the_reference_shows(tour: ModuleType) -> None:
     shown = json.loads((DOCS / "reference" / "examples.json").read_text(encoding="utf-8"))
     reply = shown["knowledge_find"]["reply"]

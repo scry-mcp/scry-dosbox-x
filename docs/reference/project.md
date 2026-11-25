@@ -33,8 +33,8 @@ Reply, 4 of 7 fields:
 {
   "store": "./.scry",
   "unchanged": [],
-  "total_bytes": 5283,
-  "store_bytes": 10126
+  "total_bytes": 5370,
+  "store_bytes": 10213
 }
 ```
 
@@ -53,7 +53,7 @@ The review read the repository's own `.scry/` folder and wrote nothing. `total_b
       "kind": "perform",
       "name": "session",
       "file": ".scry/perform/session.json",
-      "bytes": 5129,
+      "bytes": 5216,
       "change": "new"
     },
     {
@@ -78,8 +78,8 @@ The review read the repository's own `.scry/` folder and wrote nothing. `total_b
     }
   ],
   "unchanged": [],
-  "total_bytes": 5283,
-  "store_bytes": 10126
+  "total_bytes": 5370,
+  "store_bytes": 10213
 }
 ```
 

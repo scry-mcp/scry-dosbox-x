@@ -60,6 +60,8 @@ Both steps ran and none failed. `still_running` says the list ended with the gam
         "posted": 1,
         "bytes": 2,
         "frames": 2,
+        "frame_before": 330,
+        "frame_after": 337,
         "verify": {
           "checked": true,
           "seen": true,
@@ -72,7 +74,9 @@ Both steps ran and none failed. `still_running` says the list ended with the gam
           "lines_total": "<volatile>"
         },
         "session": {"alive": true, "running": true, "altered": true}
-      }
+      },
+      "frame_before": 330,
+      "frame_after": 337
     },
     {
       "op": "send_keys",
@@ -85,6 +89,8 @@ Both steps ran and none failed. `still_running` says the list ended with the gam
         "posted": 1,
         "bytes": 2,
         "frames": 2,
+        "frame_before": 337,
+        "frame_after": 347,
         "verify": {
           "checked": true,
           "seen": true,
@@ -97,7 +103,9 @@ Both steps ran and none failed. `still_running` says the list ended with the gam
           "lines_total": "<volatile>"
         },
         "session": {"alive": true, "running": true, "altered": true}
-      }
+      },
+      "frame_before": 337,
+      "frame_after": 347
     }
   ],
   "steps_completed": 2,
@@ -264,7 +272,7 @@ Reply, 6 of 10 fields:
   "path": "./tmp/demos/tour/files/session.json",
   "steps": 15,
   "checks": 4,
-  "dropped_total": 13,
+  "dropped_total": 14,
   "cut": {"available": false, "why": "the recording kept every call a replay takes"},
   "kept": "2 saved for `promote`"
 }
@@ -276,7 +284,7 @@ Fifteen calls replay, four of them as checks, and 13 calls were left out. `cut` 
 
 ```json
 {
-  "summary": "perform_export: 15 steps, 4 checks, 13 dropped to ./tmp/demos/tour/files/session.json",
+  "summary": "perform_export: 15 steps, 4 checks, 14 dropped to ./tmp/demos/tour/files/session.json",
   "status": "ok",
   "path": "./tmp/demos/tour/files/session.json",
   "steps": 15,
@@ -288,9 +296,9 @@ Fifteen calls replay, four of them as checks, and 13 calls were left out. `cut` 
     {"call": 8, "op": "interrupt_vectors", "why": "it changes nothing in the emulated machine"},
     {"call": 9, "op": "screen_view", "why": "it changes nothing in the emulated machine"},
     {"call": 10, "op": "palette", "why": "it changes nothing in the emulated machine"},
-    "... 7 more"
+    "... 8 more"
   ],
-  "dropped_total": 13,
+  "dropped_total": 14,
   "cut": {"available": false, "why": "the recording kept every call a replay takes"},
   "replay": "uv run python -m scry_core.replay ./tmp/demos/tour/files/session.json",
   "kept": "2 saved for `promote`"
@@ -433,12 +441,16 @@ The summary says a new log line matched `expect` after the key went in. The line
           "posted": 1,
           "bytes": 2,
           "frames": 2,
+          "frame_before": 264,
+          "frame_after": 272,
           "verify": {
             "checked": false,
             "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
           },
           "session": {"alive": true, "running": true, "altered": true}
-        }
+        },
+        "frame_before": 264,
+        "frame_after": 272
       }
     ],
     "steps_completed": 1,

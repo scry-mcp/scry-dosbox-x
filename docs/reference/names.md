@@ -35,9 +35,9 @@ Reply, 7 of 26 fields:
 ```json
 {
   "base": "0x00008df0",
-  "parsed": 65,
-  "kept": 65,
-  "loaded": 65,
+  "parsed": 63,
+  "kept": 63,
+  "loaded": 63,
   "renamed": 0,
   "table_mode": "replaced",
   "pending": false
@@ -50,7 +50,7 @@ All 65 symbols of the file are in the debugger, none renamed, at linear `0x8df0`
 
 ```json
 {
-  "summary": "symbols_load: 65 loaded of 65 parsed, base 0x00008df0, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
+  "summary": "symbols_load: 63 loaded of 63 parsed, base 0x00008df0, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
   "status": "ok",
   "base": "0x00008df0",
   "limit": {
@@ -68,8 +68,8 @@ All 65 symbols of the file are in the debugger, none renamed, at linear `0x8df0`
     "why": "no executable named bricks.exe beside the table, so it could not be checked against its build"
   },
   "base_from": "caller",
-  "parsed": 65,
-  "kept": 65,
+  "parsed": 63,
+  "kept": 63,
   "excluded_sections": 0,
   "excluded_pattern": 0,
   "excluded_unplaceable": 0,
@@ -81,9 +81,9 @@ All 65 symbols of the file are in the debugger, none renamed, at linear `0x8df0`
   "unreadable": 0,
   "overlay_idle": 0,
   "table_mode": "replaced",
-  "table_total": 65,
-  "loaded": 65,
-  "bytes": 1302,
+  "table_total": 63,
+  "loaded": 63,
+  "bytes": 1262,
   "symbols_typed": 0
 }
 ```
@@ -279,41 +279,41 @@ Five symbols start with `ball`, and all five came back. The whole reply, below, 
     {
       "name": "ball_rect",
       "kind": "T",
-      "offset": "0x398",
+      "offset": "0x375",
       "section": -1,
-      "addr": "0x00009188",
+      "addr": "0x00009165",
       "idle": false
     },
     {
       "name": "ball_x",
       "kind": "D",
-      "offset": "0x621",
+      "offset": "0x5D5",
       "section": -1,
-      "addr": "0x00009411",
+      "addr": "0x000093c5",
       "idle": false
     },
     {
       "name": "ball_y",
       "kind": "D",
-      "offset": "0x623",
+      "offset": "0x5D7",
       "section": -1,
-      "addr": "0x00009413",
+      "addr": "0x000093c7",
       "idle": false
     },
     {
       "name": "ball_dx",
       "kind": "D",
-      "offset": "0x625",
+      "offset": "0x5D9",
       "section": -1,
-      "addr": "0x00009415",
+      "addr": "0x000093c9",
       "idle": false
     },
     {
       "name": "ball_dy",
       "kind": "D",
-      "offset": "0x627",
+      "offset": "0x5DB",
       "section": -1,
-      "addr": "0x00009417",
+      "addr": "0x000093cb",
       "idle": false
     }
   ],
@@ -466,8 +466,8 @@ One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X d
   ],
   "truncated": false,
   "examined": 518,
-  "served": 630,
-  "held_back": 235
+  "served": 705,
+  "held_back": 317
 }
 ```
 
