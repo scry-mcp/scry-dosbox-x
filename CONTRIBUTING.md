@@ -304,10 +304,9 @@ page from a run where every step passed: the two generated blocks of its README,
 - `loop.webp` shows the demo's moments. Each is cut from a `record` step of the run, or from
   the video of a session started with `capture_video`, by the frame the replies count.
 - ffmpeg decodes the recordings and `img2webp` assembles the file; without either on the `PATH`
-  the update is refused by name. The loop is drawn over with the call captions, the keys and the
-  pointer the demo sends, from the timeline the run wrote beside its transcript: each demo
-  declares its `LAYERS`, and Pillow and numpy (the `decorate` extra, part of the dev group) do
-  the drawing.
+  the update is refused by name. The loop is drawn over with the border and the pointer, from
+  the timeline the run wrote beside its transcript: Pillow and numpy (the `decorate` extra,
+  part of the dev group) do the drawing.
 - The Monkey Island demo also writes what the README opens with: its clip, a caption and one
   step of the run as an exchange, all named in its `Lead`.
 - A second run gives the same page. `loop.webp` alone may differ in its bytes.

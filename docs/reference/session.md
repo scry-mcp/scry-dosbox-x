@@ -232,7 +232,7 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
 - `binary` (string, default `""`): The DOSBox-X to run: an executable, or on macOS a `.app` bundle holding one. Left empty, `DOSBOX_X_BINARY`, else the `dosbox-x` on the PATH.
 - `background` (boolean, optional): `true` opens the window behind your other windows and leaves the keyboard focus where it is; `false` opens it in front. Left out, behind unless `shared`.
 - `presence` (boolean, default `true`): Draws a border around the emulator's window while the session is open, brighter while a call runs the machine. `false` leaves it off.
-- `overlay` (any, default `{"pointer": true, "record": true}`): Layers over the border, each on unless `false`: `calls` names each call, `keys` keys held, `pointer` the pointer, `pause` a stopped machine, `record` a recording. `place`: `top`, `bottom`, `auto`.
+- `overlay` (any, default `{"pointer": true, "record": true}`): Layers over the border, on by default: `pointer` the guest's pointer, `record` a recording. The edge comes with `presence`.
 - `names` (boolean, default `true`): `false` leaves a reply's numbers bare, with no `names` field, no name in its summary and no note on a disassembled line.
 - `dos_calls` (boolean, default `false`): `true` records every DOS call (INT 21h) the program makes, for `log(channel="dos")`. It needs a build whose debugger has `DOSTRACE`.
 - `log_categories` (object, optional): DOSBox-X's own `[log]` categories, each with its level, written into `logfile`. It needs `logfile`.

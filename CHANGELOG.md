@@ -4,8 +4,6 @@ What a client of the server notices.
 
 ## Unreleased
 
-- A caption wider than its band is cut in the window and marked with `..`, never scrolled: a
-  line that moves cannot be read while the machine runs.
 - `send_keys` and `send_mouse` sent to a running guest answer `frame_before` and `frame_after`,
   the display frames the input went in between, read from `RUNSTATE` without stopping the guest.
   A build whose `RUNSTATE` prints no frame count says why instead.
@@ -13,11 +11,11 @@ What a client of the server notices.
   call from the knowledge base. Each entry is checked against [Ralf Brown's Interrupt
   List](https://www.cs.cmu.edu/~ralf/files.html) and DOSBox-X's source. A function or error the
   base has no entry for shows as its number (`0x3D`, `2`), so a pattern for it is its number.
-- A reply names the numbers it shows. Its `names` field says what each number is called, its
-  `summary` carries the name beside the number, and a window caption reads `name (number)`: an
-  interrupt breakpoint names the call it waits for, a port or a vector is named where the base
-  has an entry for it, and a symbol you typed as a ref names the address the table places it at.
-  `start(names=false)` turns the reply's names off for that session; the captions keep theirs.
+- A reply names the numbers it shows. Its `names` field says what each number is called and its
+  `summary` carries the name beside the number: an interrupt breakpoint names the call it waits
+  for, a port or a vector is named where the base has an entry for it, and a symbol you typed as
+  a ref names the address the table places it at. `start(names=false)` turns the reply's names
+  off for that session.
 - `knowledge_find` answers what a number is called, by key, id or words: a DOS or BIOS call or a
   DOS error, with the source line each answer was read from. A key the base has no checked entry
   for stays a number. `status` carries `knowledge`, the entries the base serves.
@@ -26,16 +24,15 @@ What a client of the server notices.
 - A disassembled line and the instruction of a stop carry a `note` where the base names what the
   instruction states: `int 21h` is named at a stop, from the registers, and a port written in
   `dx` too. A comment you wrote stays beside it, apart.
-- `start` takes `overlay`, which layers the window shows over the edge: a caption naming each
-  call, the keys held, the pointer, a mark while the machine is stopped and a blinking mark in
-  the top right corner while `record` or `audio_record` runs, or while a session started with
-  `capture_video` records its program, each on by default, and where the
-  captions go. `start` and `status` answer `overlay` with the layers drawn and,
-  for each the build cannot draw, why; `build_check` lists the layers a build draws as
-  `presence_layers`. A build that draws only the edge and the pointer keeps drawing them, and one that predates
-  the record mark draws every layer but that one.
+- `start` takes `overlay`, which layers the window shows over the edge: the pointer, and a
+  blinking mark in the top right corner while `record` or `audio_record` runs, or while a
+  session started with `capture_video` records its program, each on by default. `start` and
+  `status` answer `overlay` with the layers drawn and, for each the build cannot draw, why;
+  `build_check` lists the layers a build draws as `presence_layers`. This server needs the
+  PRESENCE command's protocol 4: a bundle built before it is refused by name, and nothing is
+  drawn.
 - Every demo is shown moving: a `loop.webp` beside its README replaces `loop.mp4`. It holds up
-  to three moments of the demo's own run, scaled up so its pixels stay sharp. A moment is cut
+  to five moments of the demo's own run, scaled up so its pixels stay sharp. A moment is cut
   from a `record` call or, in Minesweeper and the two Deluxe Paint demos, from the video of a
   session started with `capture_video`.
 - The Minesweeper demo's conf no longer starts the game: `start` takes it as `program`, which
