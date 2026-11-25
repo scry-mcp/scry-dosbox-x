@@ -5,7 +5,7 @@
 
 1. The city of a new campaign, started from the menus, in 640 x 480.
 
-<!-- moments-ms: 2857 -->
+<!-- moments-ms: 2843 -->
 <!-- demo-motion:end -->
 
 MicroProse's *X-COM Apocalypse* (1997) is a 32-bit DOS/4GW game that draws its menus and city
@@ -47,8 +47,7 @@ does not take your keyboard; `--watch` brings it in front, for when you want to 
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
   `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
-  `PATH`, and Pillow and numpy (the `decorate` extra), which draw the border and the pointer
-  over the loop.
+  `PATH`.
 
 Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
 That last one is a directory without the game, another edition, a relative path or a server
@@ -77,7 +76,7 @@ start(shared=true, background=true, display="<host>", conf="<host>", cwd="<host>
     captures_dir="<host>")
 ```
 
-Reply, 2 of 28 fields:
+Reply, 2 of 29 fields:
 
 ```json
 {
@@ -113,6 +112,7 @@ With `dos_calls`, the emulator writes each INT 21h call to a file of the session
   "input_port": "<volatile>",
   "background": true,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "<volatile>",
   "dos_calls": "<volatile>",
