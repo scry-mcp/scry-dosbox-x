@@ -29,7 +29,7 @@ Call:
 build_check()
 ```
 
-Reply, 3 of 9 fields:
+Reply, 3 of 10 fields:
 
 ```json
 {
@@ -53,7 +53,8 @@ The build has the debugger, and it has heavy debugging, the option `trace` needs
   "debugger": true,
   "heavy_debug": true,
   "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "... 8 more"],
-  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 56 more"]
+  "presence_layers": ["edge", "pointer", "record"],
+  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 57 more"]
 }
 ```
 
@@ -159,7 +160,7 @@ start(shared=true, background=true, display="<host>", conf="./demos/bricks/brick
     state_dir="./tmp/demos/tour/files/states", captures_dir="./tmp/demos/tour/files/captures")
 ```
 
-Reply, 6 of 25 fields:
+Reply, 6 of 26 fields:
 
 ```json
 {
@@ -199,6 +200,7 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
   "input_port": "<volatile>",
   "background": true,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "./tmp/demos/tour/files/e9.log",
   "declarations": {
@@ -232,7 +234,7 @@ The session may live 900 seconds (`bound_s`), and `watched` says it has a window
 - `binary` (string, default `""`): The DOSBox-X to run: an executable, or on macOS a `.app` bundle holding one. Left empty, `DOSBOX_X_BINARY`, else the `dosbox-x` on the PATH.
 - `background` (boolean, optional): `true` opens the window behind your other windows and leaves the keyboard focus where it is; `false` opens it in front. Left out, behind unless `shared`.
 - `presence` (boolean, default `true`): Draws a border around the emulator's window while the session is open, brighter while a call runs the machine. `false` leaves it off.
-- `overlay` (any, default `{"pointer": true, "record": true}`): Layers over the border, each on unless `false`: `calls` names each call, `keys` keys held, `pointer` the pointer, `pause` a stopped machine, `record` a recording. `place`: `top`, `bottom`, `auto`.
+- `overlay` (any, default `{"pointer": true, "record": true}`): Layers over the border, on by default: `pointer` the guest's pointer, `record` a recording. The edge comes with `presence`.
 - `names` (boolean, default `true`): `false` leaves a reply's numbers bare, with no `names` field, no name in its summary and no note on a disassembled line.
 - `dos_calls` (boolean, default `false`): `true` records every DOS call (INT 21h) the program makes, for `log(channel="dos")`. It needs a build whose debugger has `DOSTRACE`.
 - `log_categories` (object, optional): DOSBox-X's own `[log]` categories, each with its level, written into `logfile`. It needs `logfile`.
@@ -508,7 +510,7 @@ Call:
 status()
 ```
 
-Reply, 6 of 16 fields:
+Reply, 6 of 17 fields:
 
 ```json
 {
@@ -548,7 +550,8 @@ The machine is stopped in real mode at `F000:0000FFF0`, the reset vector. `pendi
   "cpu_mode": "real",
   "pc": "F000:0000FFF0",
   "declarations": {"breakpoints": 0, "watches": 0, "regpoints": 0},
-  "presence": true
+  "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]}
 }
 ```
 
@@ -565,7 +568,7 @@ Takes no argument.
 - `stopped_on_its_own`: Present when the machine had stopped and no call had reported it yet. `status` records that stop as the last one.
 - `pending`: What waits for the next stop: `arm`, the breakpoints declared while the program ran; a `disarm` count; and whether a `symbols_load` or a `base_remeasure` is queued.
 - `symbols_held`: Present while a `start` symbol table waits for its program: its `path`, its `base_from` and `waiting_for`, the program's file name.
-- `knowledge`: How many entries `knowledge_find` answers (`served`), and how many it holds and does not answer yet (`held_back`).
+- `knowledge`: How many entries the base serves (`served`) and how many it holds without serving (`held_back`).
 
 <details><summary>All 21 reply fields</summary>
 

@@ -112,7 +112,7 @@ class ChannelAdapter:
             raise presence.Unavailable(
                 f"this DOSBox-X's PRESENCE is version {self.version}; this server needs version "
                 f"{PROTOCOL}: rebuild the bundle")
-        line = (f"PRESENCE {self._state(state)} {self._args} "
+        line = (f"PRESENCE {state} {self._args} "
                 f"pointer={int(payload.pointer is not None)}")
         line += self._protocol_words(payload)
         # The writer retries a delivery refused on a silent channel on its own.
@@ -126,10 +126,6 @@ class ChannelAdapter:
         # `output=none` is not refused: no frame has been drawn yet at the parked start.
         if "output=undrawable" in self.answer.split():
             raise presence.Unavailable(NO_OUTPUT)
-
-    def _state(self, state: presence.State) -> str:
-        """The command's state word; a stopped machine is `held`."""
-        return state
 
     def _protocol_words(self, payload: presence.Payload) -> str:
         """The layers and what is being recorded."""

@@ -39,7 +39,6 @@ from demos.host import (  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-#: The layers that exist for this demo: its calls, the keys and the mouse it sends.
 #: The edition the demo was written against: the launcher and the CD image, as the game's own
 #: installer leaves them. Another edition may lay its menus out elsewhere.
 GAME = {Path("XCOMA/XCOMAPOC.EXE"):
@@ -65,8 +64,9 @@ WAIT_S = 120
 #: The session's bound: the run takes a few minutes of the host's time.
 SESSION_S = 900
 #: Retraces recorded once the city's map is read, and the last three seconds of them the loop
-#: shows: the city once it is drawn.
-CITY_FRAMES, CITY_SKIP, CITY_SHOWN = 900, 700, 200
+#: shows: the city once it is drawn. The shown stretch ends one frame before the record's own
+#: count, because the timeline counts the frames between the two calls.
+CITY_FRAMES, CITY_SKIP, CITY_SHOWN = 900, 700, 199
 VOLATILE_GAME = {**VOLATILE,
                  "conf_digest": "the conf names the reader's copy and the run's directory",
                  "state_dir": "a directory in the session's own temporary directory",

@@ -5,13 +5,13 @@
 
 1. The city of a new campaign, started from the menus, in 640 x 480.
 
-<!-- moments-ms: 2857 -->
+<!-- moments-ms: 2843 -->
 <!-- demo-motion:end -->
 
 MicroProse's *X-COM Apocalypse* (1997) is a 32-bit DOS/4GW game that draws its menus and city
 in 640 x 480. This demo starts it with every INT 21h call recorded, skips the intro, starts a
 new campaign from the menus and films the city appearing. Then it lists the files the game
-looked for while it loaded: the game finds each file by its exact name before it opens it.
+looked for while it loaded, each by its exact name before it opens it.
 
 ## The program
 
@@ -47,7 +47,7 @@ does not take your keyboard; `--watch` brings it in front, for when you want to 
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
   `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
-  `PATH`, and Pillow and numpy (the `decorate` extra), which draw the call captions, the keys and the pointer over the loop.
+  `PATH`.
 
 Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
 That last one is a directory without the game, another edition, a relative path or a server
@@ -76,7 +76,7 @@ start(shared=true, background=true, display="<host>", conf="<host>", cwd="<host>
     captures_dir="<host>")
 ```
 
-Reply, 2 of 28 fields:
+Reply, 2 of 29 fields:
 
 ```json
 {
@@ -112,6 +112,7 @@ With `dos_calls`, the emulator writes each INT 21h call to a file of the session
   "input_port": "<volatile>",
   "background": true,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "<volatile>",
   "dos_calls": "<volatile>",
@@ -280,13 +281,13 @@ The game opens each file through a FindFirst of its exact name, so the DOS chann
 
 1. Start DOSBox-X with `demos/xcom/xcom.conf`, in my copy of the game, running `XCOMAPOC.EXE`
    with a window and every DOS call recorded.
-2. Let it run, and on the DOS channel wait for it to look for `smk/intro1.smk`; press Esc, wait
-   for `ufodata/titles.pcx`, press Esc, then wait for `ufodata/b-setup.pcx` and
+2. Let it run, and on the DOS channel wait for it to look for `smk/intro1.smk`; press Esc.
+3. Wait for `ufodata/titles.pcx`, press Esc, then wait for `ufodata/b-setup.pcx` and
    `savegame/tactgame.09`, the main menu and its last save slot.
-3. Stop, load `xcom-screen-map.json`, wait for the main menu on screen and press
+4. Stop, load `xcom-screen-map.json`, wait for the main menu on screen and press
    Start Campaign Game for half a second; wait for the difficulty menu and press Novice.
-4. Let it run until it looks for `UFODATA/CITYMAP1.BLD`, stop, and record 900 frames of the city.
-5. List the FindFirst calls the game made, take a picture of the screen and close.
+5. Let it run until it looks for `UFODATA/CITYMAP1.BLD`, stop, and record 900 frames of the city.
+6. List the FindFirst calls the game made, take a picture of the screen and close.
 
 </details>
 

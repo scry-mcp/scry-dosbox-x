@@ -42,6 +42,7 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
   "input_port": "<volatile>",
   "background": true,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "<volatile>",
   "dos_calls": "<volatile>",
@@ -128,6 +129,8 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
   "posted": 1,
   "bytes": 2,
   "frames": 2,
+  "frame_before": 11,
+  "frame_after": 17,
   "verify": {
     "checked": false,
     "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
@@ -190,6 +193,8 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
   "posted": 1,
   "bytes": 2,
   "frames": 2,
+  "frame_before": 178,
+  "frame_after": 184,
   "verify": {
     "checked": false,
     "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"

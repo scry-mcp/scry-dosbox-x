@@ -17,23 +17,23 @@ On Bricks, the game this repository builds, stopped on its play screen with its 
 
 Ask:
 
-> Find the byte that holds the score: scan the 216 bytes from row_colours, and filter once a brick has fallen.
+> Find the byte that holds the score: scan the 214 bytes from row_colours, and filter once a brick has fallen.
 
 Call:
 
 ```text
-scan(method="start", ref="row_colours", cell_bytes=1, length=216)
+scan(method="start", ref="row_colours", cell_bytes=1, length=214)
 ```
 
-Reply, 5 of 8 fields:
+Reply, 5 of 9 fields:
 
 ```json
 {
-  "summary": "scan start: row_colours, 216 cells of 1 byte",
-  "seg_off": "08DF:00000590",
-  "length": 216,
+  "summary": "scan start: row_colours, 214 cells of 1 byte",
+  "seg_off": "08DF:00000544",
+  "length": 214,
   "cell_bytes": 1,
-  "hits_total": 216
+  "hits_total": 214
 }
 ```
 
@@ -52,14 +52,14 @@ Reply, 4 of 9 fields:
   "summary": "scan filter: = 60, 2 left",
   "iterations": 1,
   "hits": [
-    {"seg_off": "08DF:00000597", "addr": "0x00009387", "value": "0x3c"},
-    {"seg_off": "08DF:00000615", "addr": "0x00009405", "value": "0x3c"}
+    {"seg_off": "08DF:0000054B", "addr": "0x0000933b", "value": "0x3c"},
+    {"seg_off": "08DF:000005C9", "addr": "0x000093b9", "value": "0x3c"}
   ],
   "hits_total": 2
 }
 ```
 
-Of 216 bytes, two hold 60 (`0x3c`). One of them, `08DF:00000615`, is where `read_memory` finds the symbol `score`.
+Of 214 bytes, two hold 60 (`0x3c`). One of them, `08DF:000005C9`, is where `read_memory` finds the symbol `score`.
 
 <details><summary>The two replies, whole</summary>
 
@@ -67,14 +67,17 @@ The first call's:
 
 ```json
 {
-  "summary": "scan start: row_colours, 216 cells of 1 byte",
+  "summary": "scan start: row_colours, 214 cells of 1 byte",
   "status": "ok",
   "ref": "row_colours",
-  "seg_off": "08DF:00000590",
-  "length": 216,
+  "seg_off": "08DF:00000544",
+  "length": 214,
   "cell_bytes": 1,
-  "addr": "0x00009380",
-  "hits_total": 216
+  "addr": "0x00009334",
+  "hits_total": 214,
+  "names": [
+    {"field": "given.ref", "number": "0x00009334", "kind": "symbol", "name": "row_colours"}
+  ]
 }
 ```
 
@@ -89,8 +92,8 @@ The second call's:
   "iterations": 1,
   "closed": false,
   "hits": [
-    {"seg_off": "08DF:00000597", "addr": "0x00009387", "value": "0x3c"},
-    {"seg_off": "08DF:00000615", "addr": "0x00009405", "value": "0x3c"}
+    {"seg_off": "08DF:0000054B", "addr": "0x0000933b", "value": "0x3c"},
+    {"seg_off": "08DF:000005C9", "addr": "0x000093b9", "value": "0x3c"}
   ],
   "hits_total": 2,
   "truncated": false

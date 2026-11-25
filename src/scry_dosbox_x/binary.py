@@ -129,8 +129,8 @@ def debugger_commands(binary: str) -> list[str]:
             if _carries(binary, command_mark(name), f"the `{name}` command")]
 
 
-def presence_layers(binary: str, found: list[str]) -> list[ov.Layer]:
-    """The layers of `overlay` the build's `PRESENCE` draws; none without the command."""
+def presence_layers(found: list[str]) -> list[ov.Layer]:
+    """The layers of `overlay` a build with the `PRESENCE` command draws; none without it."""
     if "PRESENCE" not in found:
         return []
     return list(ov.LAYERS)

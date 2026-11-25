@@ -43,6 +43,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
   "input_port": "<volatile>",
   "background": true,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "./tmp/demos/dpaint/dpaint-e9.log",
   "declarations": {
@@ -243,14 +244,14 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     }
   ],
   "devs": [
-    {"header": "0071:0048", "attr": "8004", "strat": "0000", "intr": "0000", "name": "NUL"},
-    {"header": "00F9:0000", "attr": "8013", "strat": "FFFF", "intr": "FFFF", "name": "CON"}
+    {"header": "0075:0048", "attr": "8004", "strat": "0000", "intr": "0000", "name": "NUL"},
+    {"header": "0071:0000", "attr": "8013", "strat": "FFFF", "intr": "FFFF", "name": "CON"}
   ],
   "kern": [
     {"seg": "0070", "size_bytes": 16, "what": "DOS_IHSEG"},
-    {"seg": "0071", "size_bytes": 800, "what": "DOS_INFOBLOCK_SEG"},
-    {"seg": "00a3", "size_bytes": 1376, "what": "DOS_SDA_SEG"},
-    {"seg": "00f9", "size_bytes": 64, "what": "DOS_CONDRV_SEG"},
+    {"seg": "0071", "size_bytes": 64, "what": "DOS_CONDRV_SEG"},
+    {"seg": "0075", "size_bytes": 800, "what": "DOS_INFOBLOCK_SEG"},
+    {"seg": "00a7", "size_bytes": 1376, "what": "DOS_SDA_SEG"},
     {"seg": "00fd", "size_bytes": 256, "what": "DOS_CDA_SEG"},
     {"seg": "010d", "size_bytes": 64, "what": "dos.tables.tempdta"},
     {"seg": "0111", "size_bytes": 64, "what": "dos.tables.fcbdelete"},
@@ -630,6 +631,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 53,
+      "frame_after": 78,
       "reply": {
         "summary": "send_mouse: pointer at 306,77, program's own pointer not read; sent, reaction not checked, 25 frames to frame 78",
         "status": "ok",
@@ -640,6 +643,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": 78,
+      "frame_after": 103,
       "reply": {
         "summary": "send_mouse: pointer at 317,169, program's own pointer not read; sent, reaction not checked, 25 frames to frame 103",
         "status": "ok",
@@ -693,7 +698,9 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
           "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
         },
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 103,
+      "frame_after": 133
     }
   ],
   "steps_total": 3,
@@ -747,6 +754,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 133,
+      "frame_after": 158,
       "reply": {
         "summary": "send_mouse: pointer at 317,77, program's own pointer not read; sent, reaction not checked, 25 frames to frame 158",
         "status": "ok",
@@ -757,6 +766,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": 158,
+      "frame_after": 183,
       "reply": {
         "summary": "send_mouse: pointer at 300,189, program's own pointer not read; sent, reaction not checked, 25 frames to frame 183",
         "status": "ok",
@@ -810,7 +821,9 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
           "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
         },
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 183,
+      "frame_after": 213
     }
   ],
   "steps_total": 3,
@@ -856,6 +869,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 213,
+      "frame_after": 238,
       "reply": {
         "summary": "send_mouse: pointer at 306,77, program's own pointer not read; sent, reaction not checked, 25 frames to frame 238",
         "status": "ok",
@@ -866,6 +881,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": 238,
+      "frame_after": 263,
       "reply": {
         "summary": "send_mouse: pointer at 300,163, program's own pointer not read; sent, reaction not checked, 25 frames to frame 263",
         "status": "ok",
@@ -919,7 +936,9 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
           "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
         },
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 263,
+      "frame_after": 293
     }
   ],
   "steps_total": 3,
@@ -972,6 +991,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 293,
+      "frame_after": 318,
       "reply": {
         "summary": "send_mouse: pointer at 300,173, program's own pointer not read; sent, reaction not checked, 25 frames to frame 318",
         "status": "ok",
@@ -1025,7 +1046,9 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
           "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
         },
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 318,
+      "frame_after": 348
     }
   ],
   "steps_total": 2,
@@ -1089,6 +1112,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 348,
+      "frame_after": 373,
       "reply": {
         "summary": "send_mouse: pointer at 302,51, program's own pointer not read; sent, reaction not checked, 25 frames to frame 373",
         "status": "ok",
@@ -1099,6 +1124,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": 373,
+      "frame_after": 398,
       "reply": {
         "summary": "send_mouse: pointer at 300,191, program's own pointer not read; sent, reaction not checked, 25 frames to frame 398",
         "status": "ok",
@@ -1109,6 +1136,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 2,
       "op": "send_mouse",
+      "frame_before": 398,
+      "frame_after": 428,
       "reply": {
         "summary": "send_mouse: pointer at 86,118, program's own pointer not read; sent, reaction not checked, 30 frames to frame 428",
         "status": "ok",
@@ -1119,6 +1148,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 3,
       "op": "send_mouse",
+      "frame_before": 428,
+      "frame_after": 458,
       "reply": {
         "summary": "send_mouse: pointer at 108,146, program's own pointer not read; sent, reaction not checked, 30 frames to frame 458",
         "status": "ok",
@@ -1172,7 +1203,9 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
           "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
         },
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 458,
+      "frame_after": 488
     }
   ],
   "steps_total": 5,
@@ -1219,6 +1252,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 488,
+      "frame_after": 513,
       "reply": {
         "summary": "send_mouse: pointer at 314,98, program's own pointer not read; sent, reaction not checked, 25 frames to frame 513",
         "status": "ok",
@@ -1229,6 +1264,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": 513,
+      "frame_after": 538,
       "reply": {
         "summary": "send_mouse: pointer at 20,180, program's own pointer not read; sent, reaction not checked, 25 frames to frame 538",
         "status": "ok",
@@ -1239,6 +1276,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
     {
       "step": 2,
       "op": "send_keys",
+      "frame_before": 538,
+      "frame_after": 588,
       "reply": {
         "summary": "send_keys (guest): sent, reaction not checked, 50 frames to frame 588",
         "status": "ok",
@@ -1295,7 +1334,9 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
         "screen": "paint",
         "identified_at_stop": 2,
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 588,
+      "frame_after": 613
     }
   ],
   "steps_total": 4,

@@ -1,11 +1,13 @@
 # ReChip!: a tracker driven by its keys and read by its own log
 
 <!-- demo-motion:begin -->
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="ReChip! playing a song, its pattern scrolling under the playhead"></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="screen.png"><img src="loop.webp" alt="ReChip! driven by its keys: space pauses the song, Home rewinds it, and Alt+X quits"></picture></p>
 
-1. `send_keys` sets the song playing; `stop` holds the tracker and `record` films it playing on.
+1. `send_keys` presses space and Home: the song stops and goes back to its first row.
+2. Space again: the program logs that it plays, and the pattern scrolls.
+3. Alt+X opens the quit dialog; right and Enter answer it, and the log names the button.
 
-<!-- moments-ms: 2998 -->
+<!-- moments-ms: 1856,1856,1856 -->
 <!-- demo-motion:end -->
 
 *ReChip!*, a 32-bit DOS program, converts music for vintage sound chips and plays it in a live
@@ -27,16 +29,17 @@ uv run python demos/rechip/demo.py --cwd /path/to/rechip
 ```
 
 Each line it prints is one call and its check. The window opens behind the others, so the run
-does not take your keyboard.
+does not take your keyboard; `--watch` brings it in front, for when you want to watch it.
 
 - `--cwd PATH` (absolute or `~`-led) is the directory holding the program's build.
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start. Left out, it is
   `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
 - `--display N` opens the window on that display. Left out, it opens on the main one.
+- `--watch` shows the run: the window comes in front and takes your keyboard until the run ends.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
   `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
-  `PATH`, and Pillow and numpy (the `decorate` extra), which draw the call captions and the keys over the loop.
+  `PATH`.
 
 Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
 That last one is a copy without its start profile or its build, a relative path or a server that did
@@ -109,7 +112,7 @@ Call:
 send_keys(keys=["space"], expect="key down SPACE", seconds=10)
 ```
 
-Reply, 2 of 10 fields:
+Reply, 2 of 12 fields:
 
 ```json
 {
@@ -132,6 +135,8 @@ The program logs every key it takes, by name. "reaction seen" means that line ar
   "posted": 1,
   "bytes": 2,
   "frames": 2,
+  "frame_before": 719,
+  "frame_after": 726,
   "verify": {
     "checked": true,
     "seen": true,
@@ -212,7 +217,7 @@ Call:
 send_keys(keys=["right", "enter"], expect="ask res=1", seconds=10)
 ```
 
-Reply, 2 of 10 fields:
+Reply, 2 of 12 fields:
 
 ```json
 {
@@ -235,6 +240,8 @@ Reply, 2 of 10 fields:
   "posted": 2,
   "bytes": 6,
   "frames": 6,
+  "frame_before": 1442,
+  "frame_after": 1470,
   "verify": {
     "checked": true,
     "seen": true,

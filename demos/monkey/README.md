@@ -47,7 +47,7 @@ does not take your keyboard; `--watch` brings it in front, for when you want to 
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
   `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
-  `PATH`, and Pillow and numpy (the `decorate` extra), which draw the call captions, the keys and the pointer over the loop.
+  `PATH`.
 
 Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
 That last one is no disc image, another edition of it or a server that did not start.
@@ -102,121 +102,169 @@ A change watch on the game's room number stops it at each room the intro enters.
     {
       "step": 0,
       "op": "watch_add",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 1,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "read_memory",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 3,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 4,
       "op": "read_memory",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 5,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 6,
       "op": "read_memory",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 7,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 8,
       "op": "read_memory",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 9,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 10,
       "op": "read_memory",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 11,
       "op": "declaration_clear",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 12,
       "op": "breakpoint_at",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
       "step": 13,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 14,
       "op": "send_keys",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 15,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 16,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 17,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 18,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 19,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 20,
       "op": "send_keys",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 21,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 22,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
       "step": 23,
       "op": "resume",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": "<volatile>", "cause": "<volatile>"}
     },
     {
@@ -228,7 +276,9 @@ A change watch on the game's room number stops it at each room the intro enters.
         "declarations_cleared": 1,
         "disarmed": ["BP 0985:011E"],
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 44,
@@ -278,46 +328,64 @@ The game's script is data in memory. This call writes new bytecode over three st
     {
       "step": 0,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82E5:000C: 98 bytes, verified True", "status": "ok"}
     },
     {
       "step": 1,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82C5:000C: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 2,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82CD:000C: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 3,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82D5:000C: 99 bytes, verified True", "status": "ok"}
     },
     {
       "step": 4,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82ED:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 5,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82F5:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 6,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 82FD:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 7,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 8305:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
       "step": 8,
       "op": "write",
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>",
       "reply": {"summary": "write 830D:000D: 128 bytes, verified True", "status": "ok"}
     },
     {
@@ -332,7 +400,9 @@ The game's script is data in memory. This call writes new bytecode over three st
         "readback": "7468617420627265616b706f696e74206f6e20796f757220776179206f75742e00ae02183efd",
         "verified": true,
         "session": "<volatile>"
-      }
+      },
+      "frame_before": "<volatile>",
+      "frame_after": "<volatile>"
     }
   ],
   "steps_total": 10,

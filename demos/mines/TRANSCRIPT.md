@@ -7,7 +7,7 @@ Every call of the run with its reply, in order: 43 calls. `<volatile>` stands fo
 ```json
 {
   "shared": true,
-  "background": true,
+  "background": false,
   "display": "<host>",
   "conf": "./demos/mines/mines.conf",
   "cwd": "./demos/mines",
@@ -42,9 +42,9 @@ Every call of the run with its reply, in order: 43 calls. `<volatile>` stands fo
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": true,
+  "background": false,
   "presence": true,
-  "overlay": {"layers": ["edge", "pointer", "keys", "calls", "pause", "record"], "place": "auto"},
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "./tmp/demos/mines/mines-e9.log",
   "declarations": {
@@ -2567,7 +2567,7 @@ Also attached: image/png.
     "available": false,
     "why": "the emulator wrote to a console of its own, which this server does not read (Windows, a build whose debugger draws a screen)"
   },
-  "errorlog_tail": "1c00 151c00 0e1c00 071c00 \n78: 001c00 001c07 001c0e 001c15-001c1c 00151c 000e1c 00071c \n80: 0e0e1c 110e1c 150e1c 180e1c-1c0e1c 1c0e18 1c0e15 1c0e11 \n88: 1c0e0e 1c110e 1c150e 1c180e-1c1c0e 181c0e 151c0e 111c0e \n90: 0e1c0e 0e1c11 0e1c15 0e1c18-0e1c1c 0e181c 0e151c 0e111c \n98: 14141c 16141c 18141c 1a141c-1c141c 1c141a 1c1418 1c1416 \na0: 1c1414 1c1614 1c1814 1c1a14-1c1c14 1a1c14 181c14 161c14 \na8: 141c14 141c16 141c18 141c1a-141c1c 141a1c 14181c 14161c \nb0: 000010 040010 080010 0c0010-100010 10000c 100008 100004 \nb8: 100000 100400 100800 100c00-101000 0c1000 081000 041000 \nc0: 001000 001004 001008 00100c-001010 000c10 000810 000410 \nc8: 080810 0a0810 0c0810 0e0810-100810 10080e 10080c 10080a \nd0: 100808 100a08 100c08 100e08-101008 0e1008 0c1008 0a1008 \nd8: 081008 08100a 08100c 08100e-081010 080e10 080c10 080a10 \ne0: 0b0b10 0c0b10 0d0b10 0f0b10-100b10 100b0f 100b0d 100b0c \ne8: 100b0b 100c0b 100d0b 100f0b-10100b 0f100b 0d100b 0c100b \nf0: 0b100b 0b100c 0b100d 0b100f-0b1010 0b0f10 0b0d10 0b0c10 \nf8: 000000 000000 000000 000000-000000 000000 000000 000000 \nPRESENCE paused frames=1073 pointer=1 output=800x600x32 px_read=0 px_written=0 bytes_presented=0 uploads=1679 upload_bytes=24919696 layers=edge,pointer,keys,calls,pause,record place=bottom\nPRESENCE paused frames=1074 pointer=1 output=800x600x32 px_read=0 px_written=0 bytes_presented=0 uploads=1680 upload_bytes=24981296 layers=edge,pointer,keys,calls,pause,record place=bottom\nSDLNET: Closed client TCP listening socket\n--END OF LOG--\n",
+  "errorlog_tail": "1f 3f371f-3f3f1f 373f1f 2f3f1f 273f1f \n48: 1f3f1f 1f3f27 1f3f2f 1f3f37-1f3f3f 1f373f 1f2f3f 1f273f \n50: 2d2d3f 312d3f 362d3f 3a2d3f-3f2d3f 3f2d3a 3f2d36 3f2d31 \n58: 3f2d2d 3f312d 3f362d 3f3a2d-3f3f2d 3a3f2d 363f2d 313f2d \n60: 2d3f2d 2d3f31 2d3f36 2d3f3a-2d3f3f 2d3a3f 2d363f 2d313f \n68: 00001c 07001c 0e001c 15001c-1c001c 1c0015 1c000e 1c0007 \n70: 1c0000 1c0700 1c0e00 1c1500-1c1c00 151c00 0e1c00 071c00 \n78: 001c00 001c07 001c0e 001c15-001c1c 00151c 000e1c 00071c \n80: 0e0e1c 110e1c 150e1c 180e1c-1c0e1c 1c0e18 1c0e15 1c0e11 \n88: 1c0e0e 1c110e 1c150e 1c180e-1c1c0e 181c0e 151c0e 111c0e \n90: 0e1c0e 0e1c11 0e1c15 0e1c18-0e1c1c 0e181c 0e151c 0e111c \n98: 14141c 16141c 18141c 1a141c-1c141c 1c141a 1c1418 1c1416 \na0: 1c1414 1c1614 1c1814 1c1a14-1c1c14 1a1c14 181c14 161c14 \na8: 141c14 141c16 141c18 141c1a-141c1c 141a1c 14181c 14161c \nb0: 000010 040010 080010 0c0010-100010 10000c 100008 100004 \nb8: 100000 100400 100800 100c00-101000 0c1000 081000 041000 \nc0: 001000 001004 001008 00100c-001010 000c10 000810 000410 \nc8: 080810 0a0810 0c0810 0e0810-100810 10080e 10080c 10080a \nd0: 100808 100a08 100c08 100e08-101008 0e1008 0c1008 0a1008 \nd8: 081008 08100a 08100c 08100e-081010 080e10 080c10 080a10 \ne0: 0b0b10 0c0b10 0d0b10 0f0b10-100b10 100b0f 100b0d 100b0c \ne8: 100b0b 100c0b 100d0b 100f0b-10100b 0f100b 0d100b 0c100b \nf0: 0b100b 0b100c 0b100d 0b100f-0b1010 0b0f10 0b0d10 0b0c10 \nf8: 000000 000000 000000 000000-000000 000000 000000 000000 \nSDLNET: Closed client TCP listening socket\n--END OF LOG--\n",
   "draft": "<volatile>",
   "session": {"alive": false, "running": false, "altered": false}
 }

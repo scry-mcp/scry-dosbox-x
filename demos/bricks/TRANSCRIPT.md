@@ -7,7 +7,7 @@ Every call of the run with its reply, in order: 44 calls. `<volatile>` stands fo
 ```json
 {
   "shared": true,
-  "background": true,
+  "background": false,
   "display": "<host>",
   "conf": "./tmp/demos/bricks/bricks-capture.conf",
   "cwd": "./demos/bricks",
@@ -43,9 +43,9 @@ Every call of the run with its reply, in order: 44 calls. `<volatile>` stands fo
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": true,
+  "background": false,
   "presence": true,
-  "overlay": {"layers": ["edge", "pointer", "keys", "calls", "pause", "record"], "place": "auto"},
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "./tmp/demos/bricks/bricks-e9.log",
   "declarations": {
@@ -2226,7 +2226,7 @@ Also attached: image/png.
     "available": false,
     "why": "the emulator wrote to a console of its own, which this server does not read (Windows, a build whose debugger draws a screen)"
   },
-  "errorlog_tail": "cry-dosbox-x-presence/tmp/demos/bricks/video/bricks_000.avi\nPRESENCE acting frames=924 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=265 upload_bytes=9874560 layers=edge,pointer,keys,calls,pause,record place=bottom\nPRESENCE paused frames=924 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=265 upload_bytes=9874560 layers=edge,pointer,keys,calls,pause,record place=bottom\nEV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:\nd05b0004 0 5b0004 3da 580 e46e 91c fffc 53f 8df 8df a000 0 0 8df 7246 10\nPRESENCE paused frames=925 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=266 upload_bytes=9934080 layers=edge,pointer,keys,calls,pause,record place=bottom\nDEBUG: Memory dump binary success.\nPRESENCE paused frames=927 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=268 upload_bytes=10053120 layers=edge,pointer,keys,calls,pause,record place=bottom\nBreakpoint list:\n-------------------------------------------------------------------------\n00. FM 000005CB (03)\n01. BPINT 03\nDEBUG: Breakpoint deletion success.\nBreakpoint list:\n-------------------------------------------------------------------------\n00. BPINT 03\nPRESENCE paused frames=929 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=270 upload_bytes=10172160 layers=edge,pointer,keys,calls,pause,record place=bottom\nSDLNET: Closed client TCP listening socket\n--END OF LOG--\n",
+  "errorlog_tail": "s=924\nDEBUG: RUNSTATE stopped cycles=30573391 ms=11372.098600000 frames=925\nEV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:\nd05b0004 0 5b0004 3da 580 e46e 91c fffc 53f 8df 8df a000 0 0 8df 7246 10\nBreakpoint list:\n-------------------------------------------------------------------------\n00. FM 000005CB (03)\n01. BPINT 03\nEV of 'PSPSEG' is:\n8df\nDEBUG: Memory dump binary success.\nDEBUG: Memory dump binary success.\nDEBUG: Memory dump binary success.\nDEBUG: RUNSTATE stopped cycles=30573391 ms=11372.098600000 frames=925\nStopped capturing video.\nDEBUG: CAPTURE VIDEO off path=./tmp/demos/bricks/video/bricks_000.avi\nPRESENCE acting frames=510 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=10 upload_bytes=1080576 layers=edge,pointer,record\nPRESENCE held frames=510 pointer=1 output=640x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=10 upload_bytes=1080576 layers=edge,pointer,record\nEV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:\nd05b0004 0 5b0004 3da 580 e46e 91c fffc 53f 8df 8df a000 0 0 8df 7246 10\nDEBUG: Memory dump binary success.\nBreakpoint list:\n-------------------------------------------------------------------------\n00. FM 000005CB (03)\n01. BPINT 03\nDEBUG: Breakpoint deletion success.\nBreakpoint list:\n-------------------------------------------------------------------------\n00. BPINT 03\nSDLNET: Closed client TCP listening socket\n--END OF LOG--\n",
   "draft": "<volatile>",
   "session": {"alive": false, "running": false, "altered": false}
 }

@@ -58,7 +58,7 @@ AX now holds 0. `readback` is what the register held after the write, four digit
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -154,19 +154,19 @@ Call:
 write(ref="quit", data_hex="01")
 ```
 
-Reply, 5 of 7 fields:
+Reply, 5 of 8 fields:
 
 ```json
 {
   "summary": "write quit: 1 byte, verified True",
-  "seg_off": "08DF:00000619",
+  "seg_off": "08DF:000005CD",
   "bytes_written": 1,
   "readback": "01",
   "verified": true
 }
 ```
 
-The byte at `08DF:00000619` now holds 1. `readback` is what the memory holds after the write, and `verified` says it is what was sent.
+The byte at `08DF:000005CD` now holds 1. `readback` is what the memory holds after the write, and `verified` says it is what was sent.
 
 <details><summary>The whole reply</summary>
 
@@ -175,10 +175,13 @@ The byte at `08DF:00000619` now holds 1. `readback` is what the memory holds aft
   "summary": "write quit: 1 byte, verified True",
   "status": "ok",
   "ref": "quit",
-  "seg_off": "08DF:00000619",
+  "seg_off": "08DF:000005CD",
   "bytes_written": 1,
   "readback": "01",
-  "verified": true
+  "verified": true,
+  "names": [
+    {"field": "given.ref", "number": "0x000093bd", "kind": "symbol", "name": "quit"}
+  ]
 }
 ```
 

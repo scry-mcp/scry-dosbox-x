@@ -1,8 +1,8 @@
 """`presence`: which tools drive, held against the registry; the look as the channel's
 `PRESENCE` takes it; what the emulator's answers mean (drawn, a build without the command, an
-output it cannot draw on); a session with no window; the pointer turned on by the first mouse
-move; and a start plan lighting the window. The words of the layers protocol, the fallback on a
-build of protocol 2, and the `overlay` of `start` and `status`."""
+output it cannot draw on, a build of another protocol refused); a session with no window; the
+pointer turned on by the first mouse move; and a start plan lighting the window. The words of
+the layers protocol and the `overlay` of `start` and `status`."""
 
 from __future__ import annotations
 
@@ -350,7 +350,7 @@ def test_a_build_is_sent_the_layers_and_what_is_recorded() -> None:
     sent = _words(channel.sent[0])
     assert channel.sent[0].startswith("PRESENCE held rgb=")
     assert sent["layers"] == ",".join(ALL) and sent["rec"] == "video" and sent["pointer"] == "0"
-    assert not {"place", "caption", "keys", "key_alpha", "tint", "serial"} & set(sent), (
+    assert not {"place", "caption", "keys", "key_alpha", "tint", "scroll", "serial"} & set(sent), (
         "no word is sent that the command does not parse")
 
 

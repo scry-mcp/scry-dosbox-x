@@ -105,7 +105,7 @@
     "binary": "The DOSBox-X to run: an executable, or on macOS a `.app` bundle holding one. Left empty, `DOSBOX_X_BINARY`, else the `dosbox-x` on the PATH.",
     "background": "`true` opens the window behind your other windows and leaves the keyboard focus where it is; `false` opens it in front. Left out, behind unless `shared`.",
     "presence": "Draws a border around the emulator's window while the session is open, brighter while a call runs the machine. `false` leaves it off.",
-    "overlay": "Layers over the border, each on unless `false`: `calls` names each call, `keys` keys held, `pointer` the pointer, `pause` a stopped machine, `record` a recording. `place`: `top`, `bottom`, `auto`.",
+    "overlay": "Layers over the border, on by default: `pointer` the guest's pointer, `record` a recording. The edge comes with `presence`.",
     "dos_calls": "`true` records every DOS call (INT 21h) the program makes, for `log(channel=\"dos\")`. It needs a build whose debugger has `DOSTRACE`.",
     "log_categories": "DOSBox-X's own `[log]` categories, each with its level, written into `logfile`. It needs `logfile`.",
     "guest_files": "Up to 16 files on the host that the program is expected to leave. `guest_file` and `close` say what became of each.",
@@ -193,7 +193,7 @@
     "stopped_on_its_own": "Present when the machine had stopped and no call had reported it yet. `status` records that stop as the last one.",
     "pending": "What waits for the next stop: `arm`, the breakpoints declared while the program ran; a `disarm` count; and whether a `symbols_load` or a `base_remeasure` is queued.",
     "symbols_held": "Present while a `start` symbol table waits for its program: its `path`, its `base_from` and `waiting_for`, the program's file name.",
-    "knowledge": "How many entries `knowledge_find` answers (`served`), and how many it holds and does not answer yet (`held_back`)."
+    "knowledge": "How many entries the base serves (`served`) and how many it holds without serving (`held_back`)."
    },
    "refuses": [],
    "why": [
@@ -538,7 +538,7 @@
     "length",
     "hex"
    ],
-   "reads": "`score` is at `08DF:00000615` (`seg_off`) and holds `0000`: no point scored yet.",
+   "reads": "`score` is at `08DF:000005C9` (`seg_off`) and holds `0000`: no point scored yet.",
    "arguments": {
     "ref": "The address to read: a symbol or a `SEG:OFF` address.",
     "length": "How many bytes: 1 to 128. Left out, 16."
@@ -724,7 +724,7 @@
     "hits_total",
     "truncated"
    ],
-   "reads": "The five bytes of `SCORE` are at one address, `08DF:00000601`. `span` says which bytes were searched: 1384 from `08DF:00000100`, the symbol `start`.",
+   "reads": "The five bytes of `SCORE` are at one address, `08DF:000005B5`. `span` says which bytes were searched: 1306 from `08DF:00000100`, the symbol `start`.",
    "arguments": {
     "data_hex": "The bytes to look for, as hex: whole bytes, at least one.",
     "ref": "Where the range begins: a symbol or a `SEG:OFF` address.",
@@ -1074,12 +1074,12 @@
   "scan": {
    "what": "Find the byte that holds a value nobody has named: start from a whole range and keep only what changes as the value does.",
    "on": "On Bricks, the game this repository builds, stopped on its play screen with its symbols loaded. The example session filters after its first brick falls, when the score reads 60.",
-   "ask": "Find the byte that holds the score: scan the 216 bytes from row_colours, and filter once a brick has fallen.",
+   "ask": "Find the byte that holds the score: scan the 214 bytes from row_colours, and filter once a brick has fallen.",
    "call": {
     "method": "start",
     "ref": "row_colours",
     "cell_bytes": 1,
-    "length": 216
+    "length": 214
    },
    "shows": [
     "summary",
@@ -1102,7 +1102,7 @@
      "hits_total"
     ]
    },
-   "reads": "Of 216 bytes, two hold 60 (`0x3c`). One of them, `08DF:00000615`, is where `read_memory` finds the symbol `score`.",
+   "reads": "Of 214 bytes, two hold 60 (`0x3c`). One of them, `08DF:000005C9`, is where `read_memory` finds the symbol `score`.",
    "modes": {
     "argument": "method",
     "head": [
@@ -1218,7 +1218,7 @@
     "readback",
     "verified"
    ],
-   "reads": "The byte at `08DF:00000619` now holds 1. `readback` is what the memory holds after the write, and `verified` says it is what was sent.",
+   "reads": "The byte at `08DF:000005CD` now holds 1. `readback` is what the memory holds after the write, and `verified` says it is what was sent.",
    "arguments": {
     "ref": "Where the bytes go: a `SEG:OFF` address or a symbol.",
     "data_hex": "The bytes to write, as hex digits, two per byte: 1 to 128 bytes, what one read takes back for the readback."
@@ -1304,7 +1304,7 @@
     "bits",
     "value"
    ],
-   "reads": "Port `0x3C8` reads `0x28`, an 8-bit value: the next palette entry to be written is 40.",
+   "reads": "Port `0x3C8` reads `0x27`, an 8-bit value: the next palette entry to be written is 39.",
    "modes": {
     "argument": "method",
     "head": [
@@ -1567,7 +1567,7 @@
     "frame_after",
     "cycles"
    ],
-   "reads": "`ELAPSED` says the three frames ran out as asked. The frame counter went from 244 to 247 in three stops at the retrace, and the cpu spent 68499 cycles.",
+   "reads": "`ELAPSED` says the three frames ran out as asked. The frame counter went from 244 to 247 in three stops at the retrace, and the cpu spent 68493 cycles.",
    "arguments": {
     "milliseconds": "How much emulated time to run, in milliseconds. Give this or `frames`, never both.",
     "frames": "How many frames to run, each counted at the screen's vertical retrace. Give this or `milliseconds`, never both.",
@@ -1763,7 +1763,7 @@
     "moved",
     "stalled"
    ],
-   "reads": "Both instructions ran, from `08DF:000002C8` to `08DF:000002CC`. `stalled: 0` says neither of them left the address unchanged.",
+   "reads": "Both instructions ran, from `08DF:000002A5` to `08DF:000002A9`. `stalled: 0` says neither of them left the address unchanged.",
    "modes": {
     "argument": "mode",
     "head": [
@@ -1824,7 +1824,7 @@
     "cpu_mode",
     "frame"
    ],
-   "reads": "`OTHER_STOP` says something stopped the machine before the minute ran out: here the watch on the score, at `08DF:000002EB` in frame 36.",
+   "reads": "`OTHER_STOP` says something stopped the machine before the minute ran out: here at `08DF:000002C8`, where `cause` says no declared breakpoint is there and the debugger does not name the row that stopped it.",
    "arguments": {
     "seconds": "How long to wait for a stop, in real seconds. Left at 0, the call returns at once and the machine keeps running.",
     "detail": "`true` adds `output`, the end of what the debugger printed for its `RUN` command. Left out, `omitted` names the fields not sent."
@@ -1958,7 +1958,7 @@
      "pc"
     ]
    },
-   "reads": "The breakpoint is armed at `08DF:02C8`. `OTHER_STOP` means something other than the call's own target stopped the machine: here, `cause` names the breakpoint on `brick_hit`.",
+   "reads": "The breakpoint is armed at `08DF:02A5`. `OTHER_STOP` means something other than the call's own target stopped the machine: here, `cause` names the breakpoint on `brick_hit`.",
    "arguments": {
     "ref": "Where to break: a symbol or a `SEG:OFF` address in the code.",
     "by": "How `ref` is read: `symbol` or `address` forces one. Left at `auto`, a ref with a colon is an address and anything else a symbol.",
@@ -2458,7 +2458,7 @@
     "table_mode",
     "pending"
    ],
-   "reads": "All 65 symbols of the file are in the debugger, none renamed, at linear `0x8df0`, which is segment 08DF times 16. `replaced` means this table stands alone: any earlier one is gone.",
+   "reads": "All 63 symbols of the file are in the debugger, none renamed, at linear `0x8df0`, which is segment 08DF times 16. `replaced` means this table stands alone: any earlier one is gone.",
    "arguments": {
     "path": "The symbol file, by absolute path: the output of `nm`, or a link map from GNU `ld`, Borland or Open Watcom.",
     "base": "The linear address the program is loaded at, for a file without sections: an integer or `0x` text. Left out, it is measured through `base_from`.",
@@ -2606,7 +2606,7 @@
     "status",
     "replaced_comments"
    ],
-   "reads": "The comment is saved on `brick_hit`, which is the linear address `0x90b8`. Nothing was there before, so `replaced_comments` is empty.",
+   "reads": "The comment is saved on `brick_hit`, which is the linear address `0x00009095`. Nothing was there before, so `replaced_comments` is empty.",
    "modes": {
     "argument": "method",
     "head": [
@@ -3455,7 +3455,7 @@
     "cut",
     "kept"
    ],
-   "reads": "Fifteen calls replay, four of them as checks, and 13 calls were left out. `cut` is unavailable because nothing ended the script early; `kept` says the script is now a candidate for `promote`.",
+   "reads": "Fifteen calls replay, four of them as checks, and 14 calls were left out. `cut` is unavailable because nothing ended the script early; `kept` says the script is now a candidate for `promote`.",
    "arguments": {
     "dest": "The `.json` file to write: absolute, or starting with `~`. Refused when it exists, unless `overwrite`.",
     "overwrite": "`true` replaces a `dest` that is already there. Left out, an existing file is refused."
@@ -3611,8 +3611,8 @@
    ]
   },
   "knowledge_find": {
-   "what": "Ask what a number is called on this machine and what its documentation says of it: a DOS or BIOS call, a DOS error.",
-   "on": "Any session, or none: the base answers from the server's own files.",
+   "what": "Ask what a number is called on this machine and what the server knows about it: a DOS or BIOS call, a DOS error.",
+   "on": "On [Bricks](../../demos/bricks/README.md), the game this repository builds. The base needs no session for what it holds.",
    "ask": "What does INT 21h with AH=4Ch do?",
    "call": {
     "kind": "call",
@@ -3623,21 +3623,22 @@
     "entries_total",
     "examined"
    ],
-   "reads": "One entry matches, so `entries` gives it whole: what Ralf Brown's list says first, each row with DOSBox-X's verdict, then DOSBox-X's notes. `id=ibm-pc:call:0x21/0x4C#3` answers one row, with links.",
+   "reads": "One entry matches, so `entries` answers it whole: the exit call, what DOSBox-X does when it is taken, and its source lines. `examined` counts the entries the search read.",
    "arguments": {
-    "id": "An entry's id, such as `ibm-pc:call:0x21/0x4C`, answers it whole. `<id>#<n>` answers its row `n`, with the link that opens each line it cites.",
+    "id": "An entry's id, as another reply cites it, such as `ibm-pc:call:0x21/0x4C`. Answers that entry whole.",
     "kind": "What the number is: `vector`, `call`, `error`, `port`, `irq`, `memory`, `input`, `device`, `register` or `command`. Left empty, every kind.",
     "key": "The number as a reply prints it: a call is `INT/AH` or `INT/AH/AL`, such as `0x21/0x4C`.",
-    "text": "Words looked for in names, aliases and the rows' text. A word ending in `*` matches by prefix.",
+    "text": "Words looked for in names, aliases, descriptions and behaviour. A word ending in `*` matches by prefix.",
     "device": "A device's key: everything that belongs to it.",
     "scope": "`ibm-pc`, the only system this server names. Left empty, all.",
     "limit": "How many entries are listed: 1 to 50. Left out, 10."
    },
    "returns": {
-    "entries": "One match, or an `id`, gives the entry whole: its `rows`, then `sources`, each place once with its link. More matches list each entry's `id` and `name`.",
+    "entries": "Rows with `id`, `kind`, `key`, `name`; one match, or an `id`, answers whole with `description`, `behaviour` and `sources`.",
     "entries_total": "How many entries matched.",
     "examined": "How many entries were searched, so a zero says what it is a zero of.",
-    "unconfirmed": "Present when entries match that the base holds and does not answer yet: their ids.",
+    "held_back": "How many entries the base holds without serving.",
+    "unconfirmed": "The ids of the held-back entries the question matched.",
     "nearest": "When nothing matched: the entries next to the number or the words."
    },
    "refuses": [
@@ -3646,7 +3647,7 @@
     "An `id` or a `device` the base does not hold (`unknown_ref`)."
    ],
    "why": [
-    "A row says what the documentation states, with `verdicts` saying whether DOSBox-X does it; a note (`vs`) says what DOSBox-X does otherwise. Each row's `cites` says where its lines are and never copies them. Past 24 rows the reply is cut, notes first, and says `rows_total`; an entry no official document covers says so in `source`. The base is the server's own copy: it answers while the program runs."
+    "Each entry was checked against its source, and an answer says where it was read. A key the base has not confirmed answers `unconfirmed` and stays a number. The base is the server's own copy: it answers while the program runs."
    ],
    "related": [
     "symbols_find",

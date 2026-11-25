@@ -1,4 +1,4 @@
-Every call of the run with its reply, in order: 27 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+Every call of the run with its reply, in order: 28 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
 
 **1. `start`**: OK start: DOSBox-X in a window, parked at the debugger before DOS boots
 
@@ -43,6 +43,7 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
   "input_port": "<volatile>",
   "background": true,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "./tmp/demos/dpaint_maps/dpaint-maps-e9.log",
   "declarations": {
@@ -268,14 +269,14 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
     }
   ],
   "devs": [
-    {"header": "0071:0048", "attr": "8004", "strat": "0000", "intr": "0000", "name": "NUL"},
-    {"header": "00F9:0000", "attr": "8013", "strat": "FFFF", "intr": "FFFF", "name": "CON"}
+    {"header": "0075:0048", "attr": "8004", "strat": "0000", "intr": "0000", "name": "NUL"},
+    {"header": "0071:0000", "attr": "8013", "strat": "FFFF", "intr": "FFFF", "name": "CON"}
   ],
   "kern": [
     {"seg": "0070", "size_bytes": 16, "what": "DOS_IHSEG"},
-    {"seg": "0071", "size_bytes": 800, "what": "DOS_INFOBLOCK_SEG"},
-    {"seg": "00a3", "size_bytes": 1376, "what": "DOS_SDA_SEG"},
-    {"seg": "00f9", "size_bytes": 64, "what": "DOS_CONDRV_SEG"},
+    {"seg": "0071", "size_bytes": 64, "what": "DOS_CONDRV_SEG"},
+    {"seg": "0075", "size_bytes": 800, "what": "DOS_INFOBLOCK_SEG"},
+    {"seg": "00a7", "size_bytes": 1376, "what": "DOS_SDA_SEG"},
     {"seg": "00fd", "size_bytes": 256, "what": "DOS_CDA_SEG"},
     {"seg": "010d", "size_bytes": 64, "what": "dos.tables.tempdta"},
     {"seg": "0111", "size_bytes": 64, "what": "dos.tables.fcbdelete"},
@@ -398,6 +399,8 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 13,
+      "frame_after": 29,
       "reply": {
         "summary": "send_mouse: pointer at 251,5, program's own pointer not read; sent, reaction not checked, 16 frames to frame 29",
         "status": "ok",
@@ -408,6 +411,8 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
     {
       "step": 1,
       "op": "screen_wait",
+      "frame_before": 29,
+      "frame_after": 29,
       "reply": {"summary": "screen_wait screen 'color menu': already on screen", "status": "ok"}
     },
     {
@@ -426,7 +431,9 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
           {"name": "color", "rect": [231, 0, 41, 11], "centre": [251, 5]}
         ],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 29,
+      "frame_after": 29
     }
   ],
   "steps_total": 3,
@@ -473,16 +480,22 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 29,
+      "frame_after": 49,
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": 38, "cause": "<volatile>"}
     },
     {
       "step": 1,
       "op": "run_to",
+      "frame_before": 49,
+      "frame_after": 50,
       "reply": {"summary": "<volatile>", "status": "ok", "stop_seq": 39, "cause": "<volatile>"}
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": 50,
+      "frame_after": 50,
       "reply": {"summary": "<volatile>", "status": "ok"}
     },
     {
@@ -505,7 +518,9 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
           {"name": "cancel", "rect": [138, 143, 60, 12], "centre": [168, 149]}
         ],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 50,
+      "frame_after": 50
     }
   ],
   "steps_total": 4,
@@ -597,6 +612,8 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 51,
+      "frame_after": 74,
       "reply": {
         "summary": "send_mouse: pointer at 100,59, program's own pointer not read; sent, reaction not checked, 23 frames to frame 74",
         "status": "ok",
@@ -607,11 +624,15 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
     {
       "step": 1,
       "op": "watch_add",
+      "frame_before": 74,
+      "frame_after": 74,
       "reply": {"summary": "watch_add 31B2:31BC: armed", "status": "ok"}
     },
     {
       "step": 2,
       "op": "send_mouse",
+      "frame_before": 74,
+      "frame_after": 94,
       "reply": {
         "summary": "send_mouse: pointer at 7,39, program's own pointer not read; sent, reaction not checked, 22 frames to frame 94",
         "status": "ok",
@@ -622,6 +643,8 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
     {
       "step": 3,
       "op": "screen_wait",
+      "frame_before": 94,
+      "frame_after": 105,
       "reply": {
         "summary": "screen_wait screen 'palette': found after 28 firings of watch '31B2:31BC'",
         "status": "ok",
@@ -632,6 +655,8 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
     {
       "step": 4,
       "op": "send_mouse",
+      "frame_before": 105,
+      "frame_after": 115,
       "reply": {
         "summary": "send_mouse: pointer at 7,39; sent, reaction not checked, 76 frames to frame 115",
         "status": "ok",
@@ -648,7 +673,9 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
         "declarations_cleared": 1,
         "disarmed": ["BPMEM 31B2:31BC (3F)"],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 115,
+      "frame_after": 115
     }
   ],
   "steps_total": 6,
@@ -674,7 +701,45 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
 
 </details>
 
-**10. `run_for`**: OK mixed: frame 116
+**10. `run_for`**: OK orange shown: the mixed slot left on screen for 20 retraces
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "frames": 20,
+  "seconds": 60
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "ELAPSED",
+  "polls": 20,
+  "note": "the stop landed in F000:0000CFC5 (linear 0xFCFC5), inside a ROM handler the program called into rather than in the program: `run_for` or `resume` leaves it, and a DPMI guest reaches a protected-mode stop with `stop(until=\"protected\")`",
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "frame": 135,
+  "regs": "<volatile>",
+  "watches": [],
+  "cause": "<volatile>",
+  "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
+  "stop_seq": 163,
+  "instruction": "<volatile>",
+  "emulated_before_s": "<volatile>",
+  "emulated_after_s": "<volatile>",
+  "frame_before": 115,
+  "frame_after": 135,
+  "cycles": "<volatile>",
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**11. `run_for`**: OK mixed: frame 136
 
 <details><summary>call and reply</summary>
 
@@ -693,17 +758,17 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
   "polls": 1,
   "pc": "<volatile>",
   "cpu_mode": "real",
-  "frame": 116,
+  "frame": 136,
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-  "stop_seq": 163,
+  "stop_seq": 164,
   "instruction": "<volatile>",
   "emulated_before_s": "<volatile>",
   "emulated_after_s": "<volatile>",
-  "frame_before": 115,
-  "frame_after": 116,
+  "frame_before": 135,
+  "frame_after": 136,
   "cycles": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -711,7 +776,7 @@ Every call of the run with its reply, in order: 27 calls. `<volatile>` stands fo
 
 </details>
 
-**11. `palette`**: OK orange: the brown slot now holds #ff5500, orange
+**12. `palette`**: OK orange: the brown slot now holds #ff5500, orange
 
 <details><summary>call and reply</summary>
 
@@ -752,7 +817,7 @@ Also attached: image/png.
 
 </details>
 
-**12. `perform`**: OK sky, sun and sea: the map named paint: freehand, then paint: rectangle, then paint: circle, then paint: rectangle
+**13. `perform`**: OK sky, sun and sea: the map named paint: freehand, then paint: rectangle, then paint: circle, then paint: rectangle
 
 <details><summary>call and reply</summary>
 
@@ -801,171 +866,211 @@ Also attached: image/png.
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 136,
+      "frame_after": 157,
       "reply": {
-        "summary": "send_mouse: pointer at 37,149, program's own pointer not read; sent, reaction not checked, 24 frames to frame 140",
+        "summary": "send_mouse: pointer at 37,149, program's own pointer not read; sent, reaction not checked, 21 frames to frame 157",
         "status": "ok",
-        "stop_seq": 187,
+        "stop_seq": 185,
         "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "screen_wait",
+      "frame_before": 157,
+      "frame_after": 159,
       "reply": {
         "summary": "screen_wait screen 'paint: freehand': found after 2 frames",
         "status": "ok",
-        "stop_seq": 188,
+        "stop_seq": 186,
         "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "screen_map_find",
+      "frame_before": 159,
+      "frame_after": 159,
       "reply": {"summary": "screen_map_find: paint: freehand (file), 14 controls", "status": "ok"}
     },
     {
       "step": 3,
       "op": "send_mouse",
+      "frame_before": 159,
+      "frame_after": 182,
       "reply": {
-        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; sent, reaction not checked, 23 frames to frame 165",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; sent, reaction not checked, 23 frames to frame 182",
         "status": "ok",
-        "stop_seq": 211,
+        "stop_seq": 209,
         "cause": "<volatile>"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
+      "frame_before": 182,
+      "frame_after": 207,
       "reply": {
-        "summary": "send_mouse: pointer at 604,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 190",
+        "summary": "send_mouse: pointer at 604,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 207",
         "status": "ok",
-        "stop_seq": 236,
+        "stop_seq": 234,
         "cause": "<volatile>"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
+      "frame_before": 207,
+      "frame_after": 237,
       "reply": {
-        "summary": "send_mouse: pointer at 587,259, program's own pointer not read; sent, reaction not checked, 30 frames to frame 220",
+        "summary": "send_mouse: pointer at 587,259, program's own pointer not read; sent, reaction not checked, 30 frames to frame 237",
         "status": "ok",
-        "stop_seq": 266,
+        "stop_seq": 264,
         "cause": "<volatile>"
       }
     },
     {
       "step": 6,
       "op": "send_mouse",
+      "frame_before": 237,
+      "frame_after": 252,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 235",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 252",
         "status": "ok",
-        "stop_seq": 281,
+        "stop_seq": 279,
         "cause": "<volatile>"
       }
     },
     {
       "step": 7,
       "op": "screen_wait",
+      "frame_before": 252,
+      "frame_after": 252,
       "reply": {"summary": "screen_wait screen 'paint: rectangle': already on screen", "status": "ok"}
     },
     {
       "step": 8,
       "op": "screen_map_find",
+      "frame_before": 252,
+      "frame_after": 252,
       "reply": {"summary": "screen_map_find: paint: rectangle (file), 14 controls", "status": "ok"}
     },
     {
       "step": 9,
       "op": "send_mouse",
+      "frame_before": 252,
+      "frame_after": 277,
       "reply": {
-        "summary": "send_mouse: pointer at 634,142, program's own pointer not read; sent, reaction not checked, 25 frames to frame 260",
+        "summary": "send_mouse: pointer at 634,142, program's own pointer not read; sent, reaction not checked, 25 frames to frame 277",
         "status": "ok",
-        "stop_seq": 306,
+        "stop_seq": 304,
         "cause": "<volatile>"
       }
     },
     {
       "step": 10,
       "op": "send_mouse",
+      "frame_before": 277,
+      "frame_after": 302,
       "reply": {
-        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 285",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 302",
         "status": "ok",
-        "stop_seq": 331,
+        "stop_seq": 329,
         "cause": "<volatile>"
       }
     },
     {
       "step": 11,
       "op": "send_mouse",
+      "frame_before": 302,
+      "frame_after": 332,
       "reply": {
-        "summary": "send_mouse: pointer at 356,259, program's own pointer not read; sent, reaction not checked, 30 frames to frame 315",
+        "summary": "send_mouse: pointer at 356,259, program's own pointer not read; sent, reaction not checked, 30 frames to frame 332",
         "status": "ok",
-        "stop_seq": 361,
+        "stop_seq": 359,
         "cause": "<volatile>"
       }
     },
     {
       "step": 12,
       "op": "send_mouse",
+      "frame_before": 332,
+      "frame_after": 347,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 330",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 347",
         "status": "ok",
-        "stop_seq": 376,
+        "stop_seq": 374,
         "cause": "<volatile>"
       }
     },
     {
       "step": 13,
       "op": "screen_wait",
+      "frame_before": 347,
+      "frame_after": 347,
       "reply": {"summary": "screen_wait screen 'paint: circle': already on screen", "status": "ok"}
     },
     {
       "step": 14,
       "op": "screen_map_find",
+      "frame_before": 347,
+      "frame_after": 347,
       "reply": {"summary": "screen_map_find: paint: circle (file), 14 controls", "status": "ok"}
     },
     {
       "step": 15,
       "op": "send_mouse",
+      "frame_before": 347,
+      "frame_after": 372,
       "reply": {
-        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; sent, reaction not checked, 25 frames to frame 355",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; sent, reaction not checked, 25 frames to frame 372",
         "status": "ok",
-        "stop_seq": 401,
+        "stop_seq": 399,
         "cause": "<volatile>"
       }
     },
     {
       "step": 16,
       "op": "send_mouse",
+      "frame_before": 372,
+      "frame_after": 397,
       "reply": {
-        "summary": "send_mouse: pointer at 604,344, program's own pointer not read; sent, reaction not checked, 25 frames to frame 380",
+        "summary": "send_mouse: pointer at 604,344, program's own pointer not read; sent, reaction not checked, 25 frames to frame 397",
         "status": "ok",
-        "stop_seq": 426,
+        "stop_seq": 424,
         "cause": "<volatile>"
       }
     },
     {
       "step": 17,
       "op": "send_mouse",
+      "frame_before": 397,
+      "frame_after": 427,
       "reply": {
-        "summary": "send_mouse: pointer at 587,475, program's own pointer not read; sent, reaction not checked, 30 frames to frame 410",
+        "summary": "send_mouse: pointer at 587,475, program's own pointer not read; sent, reaction not checked, 30 frames to frame 427",
         "status": "ok",
-        "stop_seq": 456,
+        "stop_seq": 454,
         "cause": "<volatile>"
       }
     },
     {
       "step": 18,
       "op": "send_mouse",
+      "frame_before": 427,
+      "frame_after": 442,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 425",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 442",
         "status": "ok",
-        "stop_seq": 471,
+        "stop_seq": 469,
         "cause": "<volatile>"
       }
     },
     {
       "step": 19,
       "op": "screen_wait",
+      "frame_before": 442,
+      "frame_after": 442,
       "reply": {"summary": "screen_wait screen 'paint: rectangle': already on screen", "status": "ok"}
     },
     {
@@ -996,7 +1101,9 @@ Also attached: image/png.
           {"name": "yellow", "rect": [620, 441, 17, 15], "centre": [628, 448]}
         ],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 442,
+      "frame_after": 442
     }
   ],
   "steps_total": 21,
@@ -1004,14 +1111,14 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 164,
-    "stop_seq_last": 471,
+    "stop_seq_first": 165,
+    "stop_seq_last": 469,
     "surveyed": 14,
     "by_cause": {
       "the retrace the input's post ran to,": 13,
       "no declared code breakpoint, and the debugger does not say which row stopped the machine, so what made this stop cannot be told": 1
     },
-    "unaccounted": 294
+    "unaccounted": 291
   },
   "steps_completed": 21,
   "failed_at": {"available": false, "why": "no step failed"},
@@ -1022,7 +1129,7 @@ Also attached: image/png.
 
 </details>
 
-**13. `perform`**: OK glints and hull: the map named paint: line, then paint: rectangle
+**14. `perform`**: OK glints and hull: the map named paint: line, then paint: rectangle
 
 <details><summary>call and reply</summary>
 
@@ -1088,116 +1195,142 @@ Also attached: image/png.
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 442,
+      "frame_after": 467,
       "reply": {
-        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; sent, reaction not checked, 25 frames to frame 450",
+        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; sent, reaction not checked, 25 frames to frame 467",
         "status": "ok",
-        "stop_seq": 496,
+        "stop_seq": 494,
         "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": 467,
+      "frame_after": 492,
       "reply": {
-        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 475",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 492",
         "status": "ok",
-        "stop_seq": 521,
+        "stop_seq": 519,
         "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
+      "frame_before": 492,
+      "frame_after": 522,
       "reply": {
-        "summary": "send_mouse: pointer at 336,272, program's own pointer not read; sent, reaction not checked, 30 frames to frame 505",
+        "summary": "send_mouse: pointer at 336,272, program's own pointer not read; sent, reaction not checked, 30 frames to frame 522",
         "status": "ok",
-        "stop_seq": 551,
+        "stop_seq": 549,
         "cause": "<volatile>"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
+      "frame_before": 522,
+      "frame_after": 552,
       "reply": {
-        "summary": "send_mouse: pointer at 322,284, program's own pointer not read; sent, reaction not checked, 30 frames to frame 535",
+        "summary": "send_mouse: pointer at 322,284, program's own pointer not read; sent, reaction not checked, 30 frames to frame 552",
         "status": "ok",
-        "stop_seq": 581,
+        "stop_seq": 579,
         "cause": "<volatile>"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
+      "frame_before": 552,
+      "frame_after": 582,
       "reply": {
-        "summary": "send_mouse: pointer at 308,296, program's own pointer not read; sent, reaction not checked, 30 frames to frame 565",
+        "summary": "send_mouse: pointer at 308,296, program's own pointer not read; sent, reaction not checked, 30 frames to frame 582",
         "status": "ok",
-        "stop_seq": 611,
+        "stop_seq": 609,
         "cause": "<volatile>"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
+      "frame_before": 582,
+      "frame_after": 597,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 580",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 597",
         "status": "ok",
-        "stop_seq": 626,
+        "stop_seq": 624,
         "cause": "<volatile>"
       }
     },
     {
       "step": 6,
       "op": "screen_wait",
+      "frame_before": 597,
+      "frame_after": 597,
       "reply": {"summary": "screen_wait screen 'paint: line': already on screen", "status": "ok"}
     },
     {
       "step": 7,
       "op": "screen_map_find",
+      "frame_before": 597,
+      "frame_after": 597,
       "reply": {"summary": "screen_map_find: paint: line (file), 14 controls", "status": "ok"}
     },
     {
       "step": 8,
       "op": "send_mouse",
+      "frame_before": 597,
+      "frame_after": 622,
       "reply": {
-        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; sent, reaction not checked, 25 frames to frame 605",
+        "summary": "send_mouse: pointer at 610,142, program's own pointer not read; sent, reaction not checked, 25 frames to frame 622",
         "status": "ok",
-        "stop_seq": 651,
+        "stop_seq": 649,
         "cause": "<volatile>"
       }
     },
     {
       "step": 9,
       "op": "send_mouse",
+      "frame_before": 622,
+      "frame_after": 647,
       "reply": {
-        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; sent, reaction not checked, 25 frames to frame 630",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; sent, reaction not checked, 25 frames to frame 647",
         "status": "ok",
-        "stop_seq": 676,
+        "stop_seq": 674,
         "cause": "<volatile>"
       }
     },
     {
       "step": 10,
       "op": "send_mouse",
+      "frame_before": 647,
+      "frame_after": 677,
       "reply": {
-        "summary": "send_mouse: pointer at 180,395, program's own pointer not read; sent, reaction not checked, 30 frames to frame 660",
+        "summary": "send_mouse: pointer at 180,395, program's own pointer not read; sent, reaction not checked, 30 frames to frame 677",
         "status": "ok",
-        "stop_seq": 706,
+        "stop_seq": 704,
         "cause": "<volatile>"
       }
     },
     {
       "step": 11,
       "op": "send_mouse",
+      "frame_before": 677,
+      "frame_after": 692,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 675",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 692",
         "status": "ok",
-        "stop_seq": 721,
+        "stop_seq": 719,
         "cause": "<volatile>"
       }
     },
     {
       "step": 12,
       "op": "screen_wait",
+      "frame_before": 692,
+      "frame_after": 692,
       "reply": {"summary": "screen_wait screen 'paint: rectangle': already on screen", "status": "ok"}
     },
     {
@@ -1228,7 +1361,9 @@ Also attached: image/png.
           {"name": "yellow", "rect": [620, 441, 17, 15], "centre": [628, 448]}
         ],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 692,
+      "frame_after": 692
     }
   ],
   "steps_total": 14,
@@ -1236,8 +1371,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 472,
-    "stop_seq_last": 721,
+    "stop_seq_first": 470,
+    "stop_seq_last": 719,
     "surveyed": 10,
     "by_cause": {"the retrace the input's post ran to,": 10},
     "unaccounted": 240
@@ -1251,7 +1386,7 @@ Also attached: image/png.
 
 </details>
 
-**14. `perform`**: OK mast and sail: the map named paint: line, then paint: line
+**15. `perform`**: OK mast and sail: the map named paint: line, then paint: line
 
 <details><summary>call and reply</summary>
 
@@ -1307,96 +1442,118 @@ Also attached: image/png.
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 692,
+      "frame_after": 717,
       "reply": {
-        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; sent, reaction not checked, 25 frames to frame 700",
+        "summary": "send_mouse: pointer at 605,89, program's own pointer not read; sent, reaction not checked, 25 frames to frame 717",
         "status": "ok",
-        "stop_seq": 746,
+        "stop_seq": 744,
         "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": 717,
+      "frame_after": 742,
       "reply": {
-        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; sent, reaction not checked, 25 frames to frame 725",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; sent, reaction not checked, 25 frames to frame 742",
         "status": "ok",
-        "stop_seq": 771,
+        "stop_seq": 769,
         "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
+      "frame_before": 742,
+      "frame_after": 772,
       "reply": {
-        "summary": "send_mouse: pointer at 140,320, program's own pointer not read; sent, reaction not checked, 30 frames to frame 755",
+        "summary": "send_mouse: pointer at 140,320, program's own pointer not read; sent, reaction not checked, 30 frames to frame 772",
         "status": "ok",
-        "stop_seq": 801,
+        "stop_seq": 799,
         "cause": "<volatile>"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
+      "frame_before": 772,
+      "frame_after": 787,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 770",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 787",
         "status": "ok",
-        "stop_seq": 816,
+        "stop_seq": 814,
         "cause": "<volatile>"
       }
     },
     {
       "step": 4,
       "op": "screen_wait",
+      "frame_before": 787,
+      "frame_after": 787,
       "reply": {"summary": "screen_wait screen 'paint: line': already on screen", "status": "ok"}
     },
     {
       "step": 5,
       "op": "screen_map_find",
+      "frame_before": 787,
+      "frame_after": 787,
       "reply": {"summary": "screen_map_find: paint: line (file), 14 controls", "status": "ok"}
     },
     {
       "step": 6,
       "op": "send_mouse",
+      "frame_before": 787,
+      "frame_after": 812,
       "reply": {
-        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 795",
+        "summary": "send_mouse: pointer at 628,448, program's own pointer not read; sent, reaction not checked, 25 frames to frame 812",
         "status": "ok",
-        "stop_seq": 841,
+        "stop_seq": 839,
         "cause": "<volatile>"
       }
     },
     {
       "step": 7,
       "op": "send_mouse",
+      "frame_before": 812,
+      "frame_after": 842,
       "reply": {
-        "summary": "send_mouse: pointer at 176,374, program's own pointer not read; sent, reaction not checked, 30 frames to frame 825",
+        "summary": "send_mouse: pointer at 176,374, program's own pointer not read; sent, reaction not checked, 30 frames to frame 842",
         "status": "ok",
-        "stop_seq": 871,
+        "stop_seq": 869,
         "cause": "<volatile>"
       }
     },
     {
       "step": 8,
       "op": "send_mouse",
+      "frame_before": 842,
+      "frame_after": 872,
       "reply": {
-        "summary": "send_mouse: pointer at 142,374, program's own pointer not read; sent, reaction not checked, 30 frames to frame 855",
+        "summary": "send_mouse: pointer at 142,374, program's own pointer not read; sent, reaction not checked, 30 frames to frame 872",
         "status": "ok",
-        "stop_seq": 901,
+        "stop_seq": 899,
         "cause": "<volatile>"
       }
     },
     {
       "step": 9,
       "op": "send_mouse",
+      "frame_before": 872,
+      "frame_after": 887,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 870",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 887",
         "status": "ok",
-        "stop_seq": 916,
+        "stop_seq": 914,
         "cause": "<volatile>"
       }
     },
     {
       "step": 10,
       "op": "screen_wait",
+      "frame_before": 887,
+      "frame_after": 887,
       "reply": {"summary": "screen_wait screen 'paint: line': already on screen", "status": "ok"}
     },
     {
@@ -1427,7 +1584,9 @@ Also attached: image/png.
           {"name": "yellow", "rect": [620, 441, 17, 15], "centre": [628, 448]}
         ],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 887,
+      "frame_after": 887
     }
   ],
   "steps_total": 12,
@@ -1435,8 +1594,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 722,
-    "stop_seq_last": 916,
+    "stop_seq_first": 720,
+    "stop_seq_last": 914,
     "surveyed": 8,
     "by_cause": {"the retrace the input's post ran to,": 8},
     "unaccounted": 187
@@ -1450,7 +1609,7 @@ Also attached: image/png.
 
 </details>
 
-**15. `perform`**: OK SCRY: the map named paint: text, then paint: freehand
+**16. `perform`**: OK SCRY: the map named paint: text, then paint: freehand
 
 <details><summary>call and reply</summary>
 
@@ -1481,86 +1640,106 @@ Also attached: image/png.
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 887,
+      "frame_after": 912,
       "reply": {
-        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; sent, reaction not checked, 25 frames to frame 895",
+        "summary": "send_mouse: pointer at 604,323, program's own pointer not read; sent, reaction not checked, 25 frames to frame 912",
         "status": "ok",
-        "stop_seq": 941,
+        "stop_seq": 939,
         "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": 912,
+      "frame_after": 937,
       "reply": {
-        "summary": "send_mouse: pointer at 629,185, program's own pointer not read; sent, reaction not checked, 25 frames to frame 920",
+        "summary": "send_mouse: pointer at 629,185, program's own pointer not read; sent, reaction not checked, 25 frames to frame 937",
         "status": "ok",
-        "stop_seq": 966,
+        "stop_seq": 964,
         "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
+      "frame_before": 937,
+      "frame_after": 952,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 935",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 952",
         "status": "ok",
-        "stop_seq": 981,
+        "stop_seq": 979,
         "cause": "<volatile>"
       }
     },
     {
       "step": 3,
       "op": "screen_wait",
+      "frame_before": 952,
+      "frame_after": 952,
       "reply": {"summary": "screen_wait screen 'paint: text': already on screen", "status": "ok"}
     },
     {
       "step": 4,
       "op": "screen_map_find",
+      "frame_before": 952,
+      "frame_after": 952,
       "reply": {"summary": "screen_map_find: paint: text (file), 14 controls", "status": "ok"}
     },
     {
       "step": 5,
       "op": "send_mouse",
+      "frame_before": 952,
+      "frame_after": 977,
       "reply": {
-        "summary": "send_mouse: pointer at 40,60, program's own pointer not read; sent, reaction not checked, 25 frames to frame 960",
+        "summary": "send_mouse: pointer at 40,60, program's own pointer not read; sent, reaction not checked, 25 frames to frame 977",
         "status": "ok",
-        "stop_seq": 1006,
+        "stop_seq": 1004,
         "cause": "<volatile>"
       }
     },
     {
       "step": 6,
       "op": "send_keys",
+      "frame_before": 977,
+      "frame_after": 1027,
       "reply": {
-        "summary": "send_keys (guest): sent, reaction not checked, 50 frames to frame 1010",
+        "summary": "send_keys (guest): sent, reaction not checked, 50 frames to frame 1027",
         "status": "ok",
-        "stop_seq": 1056,
+        "stop_seq": 1054,
         "cause": "<volatile>"
       }
     },
     {
       "step": 7,
       "op": "send_mouse",
+      "frame_before": 1027,
+      "frame_after": 1052,
       "reply": {
-        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; sent, reaction not checked, 25 frames to frame 1035",
+        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; sent, reaction not checked, 25 frames to frame 1052",
         "status": "ok",
-        "stop_seq": 1081,
+        "stop_seq": 1079,
         "cause": "<volatile>"
       }
     },
     {
       "step": 8,
       "op": "send_mouse",
+      "frame_before": 1052,
+      "frame_after": 1067,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1050",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1067",
         "status": "ok",
-        "stop_seq": 1096,
+        "stop_seq": 1094,
         "cause": "<volatile>"
       }
     },
     {
       "step": 9,
       "op": "screen_wait",
+      "frame_before": 1067,
+      "frame_after": 1067,
       "reply": {"summary": "screen_wait screen 'paint: freehand': already on screen", "status": "ok"}
     },
     {
@@ -1591,7 +1770,9 @@ Also attached: image/png.
           {"name": "yellow", "rect": [620, 441, 17, 15], "centre": [628, 448]}
         ],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 1067,
+      "frame_after": 1067
     }
   ],
   "steps_total": 11,
@@ -1599,8 +1780,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 917,
-    "stop_seq_last": 1096,
+    "stop_seq_first": 915,
+    "stop_seq_last": 1094,
     "surveyed": 7,
     "by_cause": {"the retrace the input's post ran to,": 7},
     "unaccounted": 173
@@ -1614,7 +1795,7 @@ Also attached: image/png.
 
 </details>
 
-**16. `run_for`**: OK boat drawn: frame 1051
+**17. `run_for`**: OK boat drawn: frame 1068
 
 <details><summary>call and reply</summary>
 
@@ -1633,17 +1814,17 @@ Also attached: image/png.
   "polls": 1,
   "pc": "<volatile>",
   "cpu_mode": "real",
-  "frame": 1051,
+  "frame": 1068,
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-  "stop_seq": 1097,
+  "stop_seq": 1095,
   "instruction": "<volatile>",
   "emulated_before_s": "<volatile>",
   "emulated_after_s": "<volatile>",
-  "frame_before": 1050,
-  "frame_after": 1051,
+  "frame_before": 1067,
+  "frame_after": 1068,
   "cycles": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -1651,7 +1832,7 @@ Also attached: image/png.
 
 </details>
 
-**17. `perform`**: OK flip the boat: the map named paint: grab, then paint: custom brush, then brush menu, then paint: custom brush, then paint: custom brush
+**18. `perform`**: OK flip the boat: the map named paint: grab, then paint: custom brush, then brush menu, then paint: custom brush, then paint: custom brush
 
 <details><summary>call and reply</summary>
 
@@ -1698,141 +1879,177 @@ Also attached: image/png.
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 1068,
+      "frame_after": 1092,
       "reply": {
-        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; sent, reaction not checked, 24 frames to frame 1075",
+        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; sent, reaction not checked, 24 frames to frame 1092",
         "status": "ok",
-        "stop_seq": 1121,
+        "stop_seq": 1119,
         "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": 1092,
+      "frame_after": 1107,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1090",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1107",
         "status": "ok",
-        "stop_seq": 1136,
+        "stop_seq": 1134,
         "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": 1107,
+      "frame_after": 1107,
       "reply": {"summary": "screen_wait screen 'paint: grab': already on screen", "status": "ok"}
     },
     {
       "step": 3,
       "op": "screen_map_find",
+      "frame_before": 1107,
+      "frame_after": 1107,
       "reply": {"summary": "screen_map_find: paint: grab (file), 14 controls", "status": "ok"}
     },
     {
       "step": 4,
       "op": "send_mouse",
+      "frame_before": 1107,
+      "frame_after": 1137,
       "reply": {
-        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; sent, reaction not checked, 30 frames to frame 1120",
+        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; sent, reaction not checked, 30 frames to frame 1137",
         "status": "ok",
-        "stop_seq": 1166,
+        "stop_seq": 1164,
         "cause": "<volatile>"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
+      "frame_before": 1137,
+      "frame_after": 1152,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1135",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1152",
         "status": "ok",
-        "stop_seq": 1181,
+        "stop_seq": 1179,
         "cause": "<volatile>"
       }
     },
     {
       "step": 6,
       "op": "screen_wait",
+      "frame_before": 1152,
+      "frame_after": 1152,
       "reply": {"summary": "screen_wait screen 'paint: custom brush': already on screen", "status": "ok"}
     },
     {
       "step": 7,
       "op": "screen_map_find",
+      "frame_before": 1152,
+      "frame_after": 1152,
       "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
     },
     {
       "step": 8,
       "op": "send_mouse",
+      "frame_before": 1152,
+      "frame_after": 1172,
       "reply": {
-        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1155",
+        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1172",
         "status": "ok",
-        "stop_seq": 1201,
+        "stop_seq": 1199,
         "cause": "<volatile>"
       }
     },
     {
       "step": 9,
       "op": "screen_wait",
+      "frame_before": 1172,
+      "frame_after": 1172,
       "reply": {"summary": "screen_wait screen 'brush menu': already on screen", "status": "ok"}
     },
     {
       "step": 10,
       "op": "screen_map_find",
+      "frame_before": 1172,
+      "frame_after": 1172,
       "reply": {"summary": "screen_map_find: brush menu (file), 2 controls", "status": "ok"}
     },
     {
       "step": 11,
       "op": "send_mouse",
+      "frame_before": 1172,
+      "frame_after": 1192,
       "reply": {
-        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1175",
+        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1192",
         "status": "ok",
-        "stop_seq": 1221,
+        "stop_seq": 1219,
         "cause": "<volatile>"
       }
     },
     {
       "step": 12,
       "op": "send_mouse",
+      "frame_before": 1192,
+      "frame_after": 1207,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1190",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1207",
         "status": "ok",
-        "stop_seq": 1236,
+        "stop_seq": 1234,
         "cause": "<volatile>"
       }
     },
     {
       "step": 13,
       "op": "screen_wait",
+      "frame_before": 1207,
+      "frame_after": 1217,
       "reply": {
         "summary": "screen_wait screen 'paint: custom brush': found after 10 frames",
         "status": "ok",
-        "stop_seq": 1237,
+        "stop_seq": 1235,
         "cause": "<volatile>"
       }
     },
     {
       "step": 14,
       "op": "screen_map_find",
+      "frame_before": 1217,
+      "frame_after": 1217,
       "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
     },
     {
       "step": 15,
       "op": "send_mouse",
+      "frame_before": 1217,
+      "frame_after": 1238,
       "reply": {
-        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; sent, reaction not checked, 21 frames to frame 1221",
+        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; sent, reaction not checked, 21 frames to frame 1238",
         "status": "ok",
-        "stop_seq": 1258,
+        "stop_seq": 1256,
         "cause": "<volatile>"
       }
     },
     {
       "step": 16,
       "op": "send_mouse",
+      "frame_before": 1238,
+      "frame_after": 1253,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1236",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1253",
         "status": "ok",
-        "stop_seq": 1273,
+        "stop_seq": 1271,
         "cause": "<volatile>"
       }
     },
     {
       "step": 17,
       "op": "screen_wait",
+      "frame_before": 1253,
+      "frame_after": 1253,
       "reply": {"summary": "screen_wait screen 'paint: custom brush': already on screen", "status": "ok"}
     },
     {
@@ -1863,7 +2080,9 @@ Also attached: image/png.
           {"name": "yellow", "rect": [620, 441, 17, 15], "centre": [628, 448]}
         ],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 1253,
+      "frame_after": 1253
     }
   ],
   "steps_total": 19,
@@ -1871,8 +2090,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 1098,
-    "stop_seq_last": 1273,
+    "stop_seq_first": 1096,
+    "stop_seq_last": 1271,
     "surveyed": 10,
     "by_cause": {
       "the retrace the input's post ran to,": 9,
@@ -1889,7 +2108,7 @@ Also attached: image/png.
 
 </details>
 
-**18. `run_for`**: OK boat flipped: frame 1237
+**19. `run_for`**: OK boat flipped: frame 1254
 
 <details><summary>call and reply</summary>
 
@@ -1908,17 +2127,17 @@ Also attached: image/png.
   "polls": 1,
   "pc": "<volatile>",
   "cpu_mode": "real",
-  "frame": 1237,
+  "frame": 1254,
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-  "stop_seq": 1274,
+  "stop_seq": 1272,
   "instruction": "<volatile>",
   "emulated_before_s": "<volatile>",
   "emulated_after_s": "<volatile>",
-  "frame_before": 1236,
-  "frame_after": 1237,
+  "frame_before": 1253,
+  "frame_after": 1254,
   "cycles": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -1926,7 +2145,7 @@ Also attached: image/png.
 
 </details>
 
-**19. `perform`**: OK Pict, and the brush put down: the map named pict menu, then paint: custom brush, then paint: freehand
+**20. `perform`**: OK Pict, and the brush put down: the map named pict menu, then paint: custom brush, then paint: freehand
 
 <details><summary>call and reply</summary>
 
@@ -1958,86 +2177,108 @@ Also attached: image/png.
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 1254,
+      "frame_after": 1273,
       "reply": {
-        "summary": "send_mouse: pointer at 119,5, program's own pointer not read; sent, reaction not checked, 19 frames to frame 1256",
+        "summary": "send_mouse: pointer at 119,5, program's own pointer not read; sent, reaction not checked, 19 frames to frame 1273",
         "status": "ok",
-        "stop_seq": 1293,
+        "stop_seq": 1291,
         "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "screen_wait",
+      "frame_before": 1273,
+      "frame_after": 1273,
       "reply": {"summary": "screen_wait screen 'pict menu': already on screen", "status": "ok"}
     },
     {
       "step": 2,
       "op": "screen_map_find",
+      "frame_before": 1273,
+      "frame_after": 1273,
       "reply": {"summary": "screen_map_find: pict menu (file), 1 control", "status": "ok"}
     },
     {
       "step": 3,
       "op": "send_mouse",
+      "frame_before": 1273,
+      "frame_after": 1288,
       "reply": {
-        "summary": "send_mouse: pointer at 119,5; sent, reaction not checked, 15 frames to frame 1271",
+        "summary": "send_mouse: pointer at 119,5; sent, reaction not checked, 15 frames to frame 1288",
         "status": "ok",
-        "stop_seq": 1308,
+        "stop_seq": 1306,
         "cause": "<volatile>"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
+      "frame_before": 1288,
+      "frame_after": 1303,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1286",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1303",
         "status": "ok",
-        "stop_seq": 1323,
+        "stop_seq": 1321,
         "cause": "<volatile>"
       }
     },
     {
       "step": 5,
       "op": "screen_wait",
+      "frame_before": 1303,
+      "frame_after": 1303,
       "reply": {"summary": "screen_wait screen 'paint: custom brush': already on screen", "status": "ok"}
     },
     {
       "step": 6,
       "op": "screen_map_find",
+      "frame_before": 1303,
+      "frame_after": 1303,
       "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
     },
     {
       "step": 7,
       "op": "send_mouse",
+      "frame_before": 1303,
+      "frame_after": 1328,
       "reply": {
-        "summary": "send_mouse: pointer at 599,21, program's own pointer not read; sent, reaction not checked, 25 frames to frame 1311",
+        "summary": "send_mouse: pointer at 599,21, program's own pointer not read; sent, reaction not checked, 25 frames to frame 1328",
         "status": "ok",
-        "stop_seq": 1348,
+        "stop_seq": 1346,
         "cause": "<volatile>"
       }
     },
     {
       "step": 8,
       "op": "send_mouse",
+      "frame_before": 1328,
+      "frame_after": 1353,
       "reply": {
-        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; sent, reaction not checked, 25 frames to frame 1336",
+        "summary": "send_mouse: pointer at 629,65, program's own pointer not read; sent, reaction not checked, 25 frames to frame 1353",
         "status": "ok",
-        "stop_seq": 1373,
+        "stop_seq": 1371,
         "cause": "<volatile>"
       }
     },
     {
       "step": 9,
       "op": "send_mouse",
+      "frame_before": 1353,
+      "frame_after": 1368,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1351",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1368",
         "status": "ok",
-        "stop_seq": 1388,
+        "stop_seq": 1386,
         "cause": "<volatile>"
       }
     },
     {
       "step": 10,
       "op": "screen_wait",
+      "frame_before": 1368,
+      "frame_after": 1368,
       "reply": {"summary": "screen_wait screen 'paint: freehand': already on screen", "status": "ok"}
     },
     {
@@ -2068,7 +2309,9 @@ Also attached: image/png.
           {"name": "yellow", "rect": [620, 441, 17, 15], "centre": [628, 448]}
         ],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 1368,
+      "frame_after": 1368
     }
   ],
   "steps_total": 12,
@@ -2076,8 +2319,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 1275,
-    "stop_seq_last": 1388,
+    "stop_seq_first": 1273,
+    "stop_seq_last": 1386,
     "surveyed": 6,
     "by_cause": {"the retrace the input's post ran to,": 6},
     "unaccounted": 108
@@ -2091,7 +2334,7 @@ Also attached: image/png.
 
 </details>
 
-**20. `run_for`**: OK last frame: frame 1352
+**21. `run_for`**: OK last frame: frame 1369
 
 <details><summary>call and reply</summary>
 
@@ -2110,17 +2353,17 @@ Also attached: image/png.
   "polls": 1,
   "pc": "<volatile>",
   "cpu_mode": "real",
-  "frame": 1352,
+  "frame": 1369,
   "regs": "<volatile>",
   "watches": [],
   "cause": "<volatile>",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
-  "stop_seq": 1389,
+  "stop_seq": 1387,
   "instruction": "<volatile>",
   "emulated_before_s": "<volatile>",
   "emulated_after_s": "<volatile>",
-  "frame_before": 1351,
-  "frame_after": 1352,
+  "frame_before": 1368,
+  "frame_after": 1369,
   "cycles": "<volatile>",
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -2128,7 +2371,7 @@ Also attached: image/png.
 
 </details>
 
-**21. `screen_view`**: OK word row: the row reads frame x 4, then orange x 37, then black x 4, then orange x 3, then black x 2, then orange x 6, then black x 5, then orange x 4, then black x 5, then orange x 518, then frame x 4
+**22. `screen_view`**: OK word row: the row reads frame x 4, then orange x 37, then black x 4, then orange x 3, then black x 2, then orange x 6, then black x 5, then orange x 4, then black x 5, then orange x 518, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -2171,7 +2414,7 @@ Also attached: image/png.
 
 </details>
 
-**22. `screen_view`**: OK sun row: the row reads frame x 4, then orange x 239, then yellow x 107, then orange x 238, then frame x 4
+**23. `screen_view`**: OK sun row: the row reads frame x 4, then orange x 239, then yellow x 107, then orange x 238, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -2214,7 +2457,7 @@ Also attached: image/png.
 
 </details>
 
-**23. `screen_view`**: OK glint row: the row reads frame x 4, then blue x 252, then yellow x 81, then blue x 251, then frame x 4
+**24. `screen_view`**: OK glint row: the row reads frame x 4, then blue x 252, then yellow x 81, then blue x 251, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -2257,7 +2500,7 @@ Also attached: image/png.
 
 </details>
 
-**24. `screen_view`**: OK sail row: the row reads frame x 4, then blue x 136, then black x 1, then blue x 19, then yellow x 1, then blue x 258, then yellow x 1, then blue x 20, then black x 1, then blue x 147, then frame x 4
+**25. `screen_view`**: OK sail row: the row reads frame x 4, then blue x 136, then black x 1, then blue x 19, then yellow x 1, then blue x 258, then yellow x 1, then blue x 20, then black x 1, then blue x 147, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -2300,7 +2543,7 @@ Also attached: image/png.
 
 </details>
 
-**25. `screen_view`**: OK hull row: the row reads frame x 4, then blue x 96, then black x 81, then blue x 219, then black x 81, then blue x 107, then frame x 4
+**26. `screen_view`**: OK hull row: the row reads frame x 4, then blue x 96, then black x 81, then blue x 219, then black x 81, then blue x 107, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -2343,7 +2586,7 @@ Also attached: image/png.
 
 </details>
 
-**26. `screen_view`**: OK screen: mode M_EGA, 640x480 by palette index
+**27. `screen_view`**: OK screen: mode M_EGA, 640x480 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -2384,7 +2627,7 @@ Also attached: image/png.
 
 </details>
 
-**27. `close`**: OK close: closed: quit
+**28. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 

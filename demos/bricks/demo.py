@@ -52,7 +52,6 @@ from demos.host import (  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-#: The layers that exist for this demo: its calls, the keys and the mouse it sends.
 #: These mirror bricks.asm, and the checks go red if the game moves them: the fixed serve's
 #: first brick and its `(6 - row) * 10` points, then PADDLE_HOME and PADDLE_STEP.
 FIRST_ROW, FIRST_COL, FIRST_POINTS = 5, 7, 10

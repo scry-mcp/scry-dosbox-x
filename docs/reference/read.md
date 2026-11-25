@@ -54,7 +54,7 @@ Fifteen registers came back. The whole reply, folded below, lists each under `re
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -135,29 +135,32 @@ Call:
 read_memory(ref="score", length=2)
 ```
 
-Reply, 4 of 6 fields:
+Reply, 4 of 7 fields:
 
 ```json
 {
-  "summary": "read_memory score: 2 bytes at 08DF:00000615: 0000",
-  "seg_off": "08DF:00000615",
+  "summary": "read_memory score: 2 bytes at 08DF:000005C9: 0000",
+  "seg_off": "08DF:000005C9",
   "length": 2,
   "hex": "0000"
 }
 ```
 
-`score` is at `08DF:00000615` (`seg_off`) and holds `0000`: no point scored yet.
+`score` is at `08DF:000005C9` (`seg_off`) and holds `0000`: no point scored yet.
 
 <details><summary>The whole reply</summary>
 
 ```json
 {
-  "summary": "read_memory score: 2 bytes at 08DF:00000615: 0000",
+  "summary": "read_memory score: 2 bytes at 08DF:000005C9: 0000",
   "status": "ok",
   "ref": "score",
-  "seg_off": "08DF:00000615",
+  "seg_off": "08DF:000005C9",
   "length": 2,
-  "hex": "0000"
+  "hex": "0000",
+  "names": [
+    {"field": "given.ref", "number": "0x000093b9", "kind": "symbol", "name": "score"}
+  ]
 }
 ```
 
@@ -236,17 +239,17 @@ Call:
 disassemble(ref="brick_hit", length=12)
 ```
 
-Reply, 4 of 11 fields:
+Reply, 4 of 12 fields:
 
 ```json
 {
-  "summary": "disassemble brick_hit: 4 lines at 08DF:000002C8, 16-bit",
+  "summary": "disassemble brick_hit: 4 lines at 08DF:000002A5, 16-bit",
   "code_bits": 16,
   "lines": [
-    "08DF:000002C8 88DF                 mov bh, bl // AL = row, B ... (94 characters)",
-    "08DF:000002CA 88C3                 mov bl, al",
-    "08DF:000002CC E81FFF               call 0x1ee",
-    "08DF:000002CF C6842C0600           mov byte ptr [si + 0x62c] ... (63 characters)"
+    "08DF:000002A5 88DF                 mov bh, bl // AL = row, B ... (94 characters)",
+    "08DF:000002A7 88C3                 mov bl, al",
+    "08DF:000002A9 E81FFF               call 0x1cb",
+    "08DF:000002AC C684DE0500           mov byte ptr [si + 0x5de] ... (63 characters)"
   ],
   "flow": ["sequential", "sequential", "call", "sequential"]
 }
@@ -258,26 +261,29 @@ Four 16-bit instructions from `brick_hit`; the first ends with the comment writt
 
 ```json
 {
-  "summary": "disassemble brick_hit: 4 lines at 08DF:000002C8, 16-bit",
+  "summary": "disassemble brick_hit: 4 lines at 08DF:000002A5, 16-bit",
   "status": "ok",
   "ref": "brick_hit",
-  "seg_off": "08DF:000002C8",
+  "seg_off": "08DF:000002A5",
   "length": 12,
   "code_bits": 16,
   "code_bits_from": "real mode",
-  "lines": ["08DF:000002C8 88DF                 mov bh, bl // AL = row, BL = column of the brick that falls", "08DF:000002CA 88C3                 mov bl, al", "08DF:000002CC E81FFF               call 0x1ee", "08DF:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0"],
+  "lines": ["08DF:000002A5 88DF                 mov bh, bl // AL = row, BL = column of the brick that falls", "08DF:000002A7 88C3                 mov bl, al", "08DF:000002A9 E81FFF               call 0x1cb", "08DF:000002AC C684DE0500           mov byte ptr [si + 0x5de], 0"],
   "flow": ["sequential", "sequential", "call", "sequential"],
   "flow_source": "capstone",
   "resolved": [
     {
       "line": 2,
-      "operand": "0x1ee",
+      "operand": "0x1cb",
       "kind": "target",
-      "seg_off": "08DF:000001EE",
-      "addr": "0x00008fde",
+      "seg_off": "08DF:000001CB",
+      "addr": "0x00008fbb",
       "symbol": "brick_index",
       "delta": 0
     }
+  ],
+  "names": [
+    {"field": "given.ref", "number": "0x00009095", "kind": "symbol", "name": "brick_hit"}
   ]
 }
 ```
@@ -417,11 +423,11 @@ One call, the stop itself in `brick_hit`. Bricks keeps no frame pointer, so no c
   "code_bits": 16,
   "calls": [
     {
-      "seg_off": "08DF:000002C8",
+      "seg_off": "08DF:000002A5",
       "via": "stop",
       "call": {"available": false, "why": "the stop itself: no call leads to it"},
       "bp": {"available": false, "why": "no frame was read beside it"},
-      "addr": "0x000090b8",
+      "addr": "0x00009095",
       "symbol": "brick_hit",
       "delta": 0
     }
@@ -522,12 +528,12 @@ Call:
 memdump(ref="bricks", length=60, dest="./tmp/demos/tour/files/wall.bin")
 ```
 
-Reply, 5 of 7 fields:
+Reply, 5 of 8 fields:
 
 ```json
 {
   "summary": "memdump bricks: 60 bytes to ./tmp/demos/tour/files/wall.bin",
-  "seg_off": "08DF:0000062C",
+  "seg_off": "08DF:000005DE",
   "length": 60,
   "path": "./tmp/demos/tour/files/wall.bin",
   "bytes": 60
@@ -543,10 +549,13 @@ The file holds 60 bytes, as asked: `bytes` equals `length`. `path` is where it w
   "summary": "memdump bricks: 60 bytes to ./tmp/demos/tour/files/wall.bin",
   "status": "ok",
   "ref": "bricks",
-  "seg_off": "08DF:0000062C",
+  "seg_off": "08DF:000005DE",
   "length": 60,
   "path": "./tmp/demos/tour/files/wall.bin",
-  "bytes": 60
+  "bytes": 60,
+  "names": [
+    {"field": "given.ref", "number": "0x000093ce", "kind": "symbol", "name": "bricks"}
+  ]
 }
 ```
 
@@ -656,7 +665,7 @@ Reply, 5 of 9 fields:
 }
 ```
 
-The five bytes of `SCORE` are at one address, `08DF:00000601`. `span` says which bytes were searched: 1384 from `08DF:00000100`, the symbol `start`.
+The five bytes of `SCORE` are at one address, `08DF:000005B5`. `span` says which bytes were searched: 1306 from `08DF:00000100`, the symbol `start`.
 
 <details><summary>The whole reply</summary>
 

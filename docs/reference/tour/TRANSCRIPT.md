@@ -1,4 +1,4 @@
-Every call of the run with its reply, in order: 76 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
+Every call of the run with its reply, in order: 78 calls. `<volatile>` stands for a value that changes from run to run, and `<host>` for one this host decides.
 
 **1. `build_check`**: OK build: a debugger with every command the tour needs
 
@@ -18,7 +18,8 @@ Every call of the run with its reply, in order: 76 calls. `<volatile>` stands fo
   "debugger": true,
   "heavy_debug": true,
   "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "BPIF", "CAPTURE", "TAP", "PORTINFO", "DOSTRACE", "PIC", "A20", "MEMDUMPLIN"],
-  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "call_stack", "capture_frame", "captures", "close", "comment_list", "comment_write", "debug", "declaration_clear", "declaration_list", "disassemble", "drive", "find", "guest_file", "image_compare", "interrupt_vectors", "log", "log_wait", "machine_map", "memdump", "palette", "perform", "perform_export", "pic", "port", "promote", "read_memory", "record", "registers", "regpoint_add", "resume", "run_for", "run_to", "scan", "screen_map_find", "screen_map_write", "screen_signature", "screen_view", "screen_wait", "send_keys", "send_mouse", "series_capture", "set_register", "snapshot", "start", "state_list", "state_write", "status", "step", "stop", "symbols_find", "symbols_load", "trace", "wait", "watch_add", "window", "write"],
+  "presence_layers": ["edge", "pointer", "record"],
+  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "call_stack", "capture_frame", "captures", "close", "comment_list", "comment_write", "debug", "declaration_clear", "declaration_list", "disassemble", "drive", "find", "guest_file", "image_compare", "interrupt_vectors", "knowledge_find", "log", "log_wait", "machine_map", "memdump", "palette", "perform", "perform_export", "pic", "port", "promote", "read_memory", "record", "registers", "regpoint_add", "resume", "run_for", "run_to", "scan", "screen_map_find", "screen_map_write", "screen_signature", "screen_view", "screen_wait", "send_keys", "send_mouse", "series_capture", "set_register", "snapshot", "start", "state_list", "state_write", "status", "step", "stop", "symbols_find", "symbols_load", "trace", "wait", "watch_add", "window", "write"],
   "session": {"alive": false, "running": false, "altered": false}
 }
 ```
@@ -66,6 +67,7 @@ Every call of the run with its reply, in order: 76 calls. `<volatile>` stands fo
   "input_port": "<volatile>",
   "background": true,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "./tmp/demos/tour/files/e9.log",
   "declarations": {
@@ -106,10 +108,12 @@ Every call of the run with its reply, in order: 76 calls. `<volatile>` stands fo
     "wall_at": "<volatile>"
   },
   "pending": {"arm": [], "disarm": 0, "symbols_load": false, "base_remeasure": false},
+  "knowledge": {"served": 705, "held_back": 317},
   "cpu_mode": "real",
   "pc": "F000:0000FFF0",
   "declarations": {"breakpoints": 0, "watches": 0, "regpoints": 0},
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -324,7 +328,7 @@ Every call of the run with its reply, in order: 76 calls. `<volatile>` stands fo
 
 </details>
 
-**9. `symbols_load`**: OK symbols: 65 symbols placed at base 0x00008df0
+**9. `symbols_load`**: OK symbols: 63 symbols placed at base 0x00008df0
 
 <details><summary>call and reply</summary>
 
@@ -337,7 +341,7 @@ Every call of the run with its reply, in order: 76 calls. `<volatile>` stands fo
 
 ```json
 {
-  "summary": "symbols_load: 65 loaded of 65 parsed, base 0x00008df0, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
+  "summary": "symbols_load: 63 loaded of 63 parsed, base 0x00008df0, not checked against a build: no executable named bricks.exe beside the table, so it could not be checked against its build",
   "status": "ok",
   "base": "0x00008df0",
   "limit": {
@@ -355,8 +359,8 @@ Every call of the run with its reply, in order: 76 calls. `<volatile>` stands fo
     "why": "no executable named bricks.exe beside the table, so it could not be checked against its build"
   },
   "base_from": "caller",
-  "parsed": 65,
-  "kept": 65,
+  "parsed": 63,
+  "kept": 63,
   "excluded_sections": 0,
   "excluded_pattern": 0,
   "excluded_unplaceable": 0,
@@ -368,9 +372,9 @@ Every call of the run with its reply, in order: 76 calls. `<volatile>` stands fo
   "unreadable": 0,
   "overlay_idle": 0,
   "table_mode": "replaced",
-  "table_total": 65,
-  "loaded": 65,
-  "bytes": 1302,
+  "table_total": 63,
+  "loaded": 63,
+  "bytes": 1262,
   "symbols_typed": 0,
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -398,41 +402,41 @@ Every call of the run with its reply, in order: 76 calls. `<volatile>` stands fo
     {
       "name": "ball_rect",
       "kind": "T",
-      "offset": "0x398",
+      "offset": "0x375",
       "section": -1,
-      "addr": "0x00009188",
+      "addr": "0x00009165",
       "idle": false
     },
     {
       "name": "ball_x",
       "kind": "D",
-      "offset": "0x621",
+      "offset": "0x5D5",
       "section": -1,
-      "addr": "0x00009411",
+      "addr": "0x000093c5",
       "idle": false
     },
     {
       "name": "ball_y",
       "kind": "D",
-      "offset": "0x623",
+      "offset": "0x5D7",
       "section": -1,
-      "addr": "0x00009413",
+      "addr": "0x000093c7",
       "idle": false
     },
     {
       "name": "ball_dx",
       "kind": "D",
-      "offset": "0x625",
+      "offset": "0x5D9",
       "section": -1,
-      "addr": "0x00009415",
+      "addr": "0x000093c9",
       "idle": false
     },
     {
       "name": "ball_dy",
       "kind": "D",
-      "offset": "0x627",
+      "offset": "0x5DB",
       "section": -1,
-      "addr": "0x00009417",
+      "addr": "0x000093cb",
       "idle": false
     }
   ],
@@ -536,27 +540,27 @@ Also attached: image/png.
 ```json
 {
   "first": 32,
-  "count": 8,
+  "count": 7,
   "dest": "./tmp/demos/tour/files/palette.png"
 }
 ```
 
 ```json
 {
-  "summary": "palette: entries 32 to 39 of 256; 1024x128 PNG x8, inline",
+  "summary": "palette: entries 32 to 38 of 256; 896x128 PNG x8, inline",
   "status": "ok",
   "entries": 256,
   "first": 32,
-  "count": 8,
-  "colors": ["#ff2020", "#ff9200", "#fff330", "#41eb41", "#20d3eb", "#5161ff", "#c3c3d3", "#0841f7"],
-  "rgb": ["3f0808", "3f2400", "3f3c0c", "103a10", "08343a", "14183f", "303034", "02103d"],
+  "count": 7,
+  "colors": ["#ff2020", "#ff9200", "#fff330", "#41eb41", "#20d3eb", "#5161ff", "#c3c3d3"],
+  "rgb": ["3f0808", "3f2400", "3f3c0c", "103a10", "08343a", "14183f", "303034"],
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
     "path": "./tmp/demos/tour/files/palette.png",
     "bytes": "<volatile>",
     "sha256": "<volatile>",
-    "width": 1024,
+    "width": 896,
     "height": 128,
     "scale": 8,
     "indexed": true,
@@ -609,12 +613,15 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory score: 2 bytes at 08DF:00000615: 0000",
+  "summary": "read_memory score: 2 bytes at 08DF:000005C9: 0000",
   "status": "ok",
   "ref": "score",
-  "seg_off": "08DF:00000615",
+  "seg_off": "08DF:000005C9",
   "length": 2,
   "hex": "0000",
+  "names": [
+    {"field": "given.ref", "number": "0x000093b9", "kind": "symbol", "name": "score"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -638,17 +645,20 @@ Also attached: image/png.
   "summary": "memdump bricks: 60 bytes to ./tmp/demos/tour/files/wall.bin",
   "status": "ok",
   "ref": "bricks",
-  "seg_off": "08DF:0000062C",
+  "seg_off": "08DF:000005DE",
   "length": 60,
   "path": "./tmp/demos/tour/files/wall.bin",
   "bytes": 60,
+  "names": [
+    {"field": "given.ref", "number": "0x000093ce", "kind": "symbol", "name": "bricks"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**17. `find`**: OK find: the text SCORE once, at 08DF:00000601
+**17. `find`**: OK find: the text SCORE once, at 08DF:000005B5
 
 <details><summary>call and reply</summary>
 
@@ -656,21 +666,24 @@ Also attached: image/png.
 {
   "data_hex": "53434f5245",
   "ref": "start",
-  "length": 1384
+  "length": 1306
 }
 ```
 
 ```json
 {
-  "summary": "find start: 1 hit of 53434f5245 in 1384 bytes",
+  "summary": "find start: 1 hit of 53434f5245 in 1306 bytes",
   "status": "ok",
   "ref": "start",
   "seg_off": "08DF:00000100",
-  "length": 1384,
-  "span": {"from": "08DF:00000100", "length": 1384, "source": "ref+length"},
-  "hits": ["08DF:00000601"],
+  "length": 1306,
+  "span": {"from": "08DF:00000100", "length": 1306, "source": "ref+length"},
+  "hits": ["08DF:000005B5"],
   "hits_total": 1,
   "truncated": false,
+  "names": [
+    {"field": "given.ref", "number": "0x00008ef0", "kind": "symbol", "name": "start"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
@@ -691,7 +704,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "comment_write add: brick_hit at 0x000090b8, stored",
+  "summary": "comment_write add: brick_hit at 0x00009095 (brick_hit), stored",
   "status": "ok",
   "comment": {
     "ref": "brick_hit",
@@ -702,18 +715,75 @@ Also attached: image/png.
     "inherited": false,
     "age_s": "<volatile>",
     "text": "AL = row, BL = column of the brick that falls",
-    "addr": "0x000090b8",
+    "addr": "0x00009095",
     "state": "resolved"
   },
   "replaced_comments": [],
   "declarations": {"persistent": true, "path": "<volatile>"},
+  "names": [
+    {"field": "given.ref", "number": "0x00009095", "kind": "symbol", "name": "brick_hit"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**19. `disassemble`**: OK listing: brick_hit opens with mov bh, bl, the comment beside it
+**19. `knowledge_find`**: OK base: the base names INT 21h AH=4Ch exit, read at dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4c
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "kind": "call",
+  "key": "0x21/0x4C"
+}
+```
+
+```json
+{
+  "summary": "kind call key 0x21/0x4C: exit",
+  "status": "ok",
+  "query": {"kind": "call", "key": "0x21/0x4C"},
+  "scope": ["ibm-pc"],
+  "entries_total": 1,
+  "entries": [
+    {
+      "id": "ibm-pc:call:0x21/0x4C",
+      "kind": "call",
+      "key": "0x21/0x4C",
+      "name": "exit",
+      "scope": "ibm-pc",
+      "description": "Ends the program with return code AL.",
+      "behaviour": "The emulator terminates the current PSP with AL as the return code, clears the running program's name and arguments, and sets AX=3E01h for the parent, as the source comment says real MS-DOS appears to return on leaving AH=4Bh.",
+      "checked": true,
+      "sources": [
+        {
+          "role": "documentation",
+          "ref": "rbil61:INTERRUP.G D-214C",
+          "cites": "INT 21 - DOS 2+ - \"EXIT\" - TERMINATE WITH RETURN CODE",
+          "url": "https://www.cs.cmu.edu/~ralf/files.html"
+        },
+        {
+          "role": "emulator",
+          "ref": "dosbox-x:src/dos/dos.cpp DOS_21Handler case 0x4c",
+          "cites": "        case 0x4c:                  /* EXIT Terminate with return code */",
+          "url": "https://github.com/joncampbell123/dosbox-x/blob/2a43c7335efd91f87bf5582245abdd5b3f18d5d4/src/dos/dos.cpp"
+        }
+      ]
+    }
+  ],
+  "truncated": false,
+  "examined": 518,
+  "served": 705,
+  "held_back": 317,
+  "session": {"alive": true, "running": false, "altered": false}
+}
+```
+
+</details>
+
+**20. `disassemble`**: OK listing: brick_hit opens with mov bh, bl, the comment beside it
 
 <details><summary>call and reply</summary>
 
@@ -726,26 +796,29 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "disassemble brick_hit: 4 lines at 08DF:000002C8, 16-bit",
+  "summary": "disassemble brick_hit: 4 lines at 08DF:000002A5, 16-bit",
   "status": "ok",
   "ref": "brick_hit",
-  "seg_off": "08DF:000002C8",
+  "seg_off": "08DF:000002A5",
   "length": 12,
   "code_bits": 16,
   "code_bits_from": "real mode",
-  "lines": ["08DF:000002C8 88DF                 mov bh, bl // AL = row, BL = column of the brick that falls", "08DF:000002CA 88C3                 mov bl, al", "08DF:000002CC E81FFF               call 0x1ee", "08DF:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0"],
+  "lines": ["08DF:000002A5 88DF                 mov bh, bl // AL = row, BL = column of the brick that falls", "08DF:000002A7 88C3                 mov bl, al", "08DF:000002A9 E81FFF               call 0x1cb", "08DF:000002AC C684DE0500           mov byte ptr [si + 0x5de], 0"],
   "flow": ["sequential", "sequential", "call", "sequential"],
   "flow_source": "capstone",
   "resolved": [
     {
       "line": 2,
-      "operand": "0x1ee",
+      "operand": "0x1cb",
       "kind": "target",
-      "seg_off": "08DF:000001EE",
-      "addr": "0x00008fde",
+      "seg_off": "08DF:000001CB",
+      "addr": "0x00008fbb",
       "symbol": "brick_index",
       "delta": 0
     }
+  ],
+  "names": [
+    {"field": "given.ref", "number": "0x00009095", "kind": "symbol", "name": "brick_hit"}
   ],
   "session": {"alive": true, "running": false, "altered": false}
 }
@@ -753,7 +826,7 @@ Also attached: image/png.
 
 </details>
 
-**20. `comment_list`**: OK comments: one comment, on brick_hit
+**21. `comment_list`**: OK comments: one comment, on brick_hit
 
 <details><summary>call and reply</summary>
 
@@ -775,7 +848,7 @@ Also attached: image/png.
       "inherited": false,
       "age_s": "<volatile>",
       "text": "AL = row, BL = column of the brick that falls",
-      "addr": "0x000090b8",
+      "addr": "0x00009095",
       "state": "resolved"
     }
   ],
@@ -788,7 +861,7 @@ Also attached: image/png.
 
 </details>
 
-**21. `scan`**: OK scan: 216 one-byte cells are candidates
+**22. `scan`**: OK scan: 214 one-byte cells are candidates
 
 <details><summary>call and reply</summary>
 
@@ -797,27 +870,30 @@ Also attached: image/png.
   "method": "start",
   "ref": "row_colours",
   "cell_bytes": 1,
-  "length": 216
+  "length": 214
 }
 ```
 
 ```json
 {
-  "summary": "scan start: row_colours, 216 cells of 1 byte",
+  "summary": "scan start: row_colours, 214 cells of 1 byte",
   "status": "ok",
   "ref": "row_colours",
-  "seg_off": "08DF:00000590",
-  "length": 216,
+  "seg_off": "08DF:00000544",
+  "length": 214,
   "cell_bytes": 1,
-  "addr": "0x00009380",
-  "hits_total": 216,
+  "addr": "0x00009334",
+  "hits_total": 214,
+  "names": [
+    {"field": "given.ref", "number": "0x00009334", "kind": "symbol", "name": "row_colours"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**22. `port`**: OK port: the next DAC entry to write is 40: the game just set its frame's pen
+**23. `port`**: OK port: the next DAC entry to write is 39: the game just set its row colours
 
 <details><summary>call and reply</summary>
 
@@ -830,18 +906,18 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "port read: 8-bit read of 0x03C8: 0x28",
+  "summary": "port read: 8-bit read of 0x03C8: 0x27",
   "status": "ok",
   "port": "0x03C8",
   "bits": 8,
-  "value": "0x28",
+  "value": "0x27",
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**23. `pic`**: OK lines: the timer and the keyboard lines are open
+**24. `pic`**: OK lines: the timer and the keyboard lines are open
 
 <details><summary>call and reply</summary>
 
@@ -918,7 +994,7 @@ Also attached: image/png.
 
 </details>
 
-**24. `a20`**: OK gate: the A20 gate is on
+**25. `a20`**: OK gate: the A20 gate is on
 
 <details><summary>call and reply</summary>
 
@@ -939,7 +1015,7 @@ Also attached: image/png.
 
 </details>
 
-**25. `debug`**: OK fpu: the FPU's eight registers, which no typed tool reads
+**26. `debug`**: OK fpu: the FPU's eight registers, which no typed tool reads
 
 <details><summary>call and reply</summary>
 
@@ -962,7 +1038,7 @@ Also attached: image/png.
 
 </details>
 
-**26. `watch_add`**: OK ball: the ball shown at every stop, as a struct
+**27. `watch_add`**: OK ball: the ball shown at every stop, as a struct
 
 <details><summary>call and reply</summary>
 
@@ -986,13 +1062,16 @@ Also attached: image/png.
   "stored": true,
   "armed": false,
   "state": "evaluated",
+  "names": [
+    {"field": "given.ref", "number": "0x000093c5", "kind": "symbol", "name": "ball_x"}
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**27. `run_to`**: OK first brick: at brick_hit for the brick at row 5 column 7, after 34 retraces
+**28. `run_to`**: OK first brick: at brick_hit for the brick at row 5 column 7, after 34 retraces
 
 <details><summary>call and reply</summary>
 
@@ -1006,17 +1085,17 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "run_to brick_hit: TARGET at 08DF:000002C8, control counted 34",
+  "summary": "run_to brick_hit: TARGET at 08DF:000002A5, control counted 34",
   "status": "ok",
   "verdict": "TARGET",
-  "target": "08DF:02C8",
+  "target": "08DF:02A5",
   "ref": "brick_hit",
-  "pc": "08DF:000002C8",
+  "pc": "08DF:000002A5",
   "cpu_mode": "real",
   "target_disarmed": true,
   "control_hits": 34,
   "controls": [
-    {"ref": "retrace", "at": "08DF:0580", "hits_in_run": 34, "removed": true}
+    {"ref": "retrace", "at": "08DF:0536", "hits_in_run": 34, "removed": true}
   ],
   "frame": 36,
   "regs": {
@@ -1028,7 +1107,7 @@ Also attached: image/png.
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -1048,11 +1127,11 @@ Also attached: image/png.
       "bytes": "e6004e000200feff"
     }
   ],
-  "cause": "run_to's target brick_hit at 08DF:000002C8",
+  "cause": "run_to's target brick_hit at 08DF:000002A5",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 3,
   "instruction": {
-    "address": "08DF:000002C8",
+    "address": "08DF:000002A5",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -1062,13 +1141,16 @@ Also attached: image/png.
     "symbol": "brick_hit",
     "delta": 0
   },
+  "names": [
+    {"field": "given.ref", "number": "0x00009095", "kind": "symbol", "name": "brick_hit"}
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**28. `registers`**: OK registers: AL 5 and BL 7: the row and the column
+**29. `registers`**: OK registers: AL 5 and BL 7: the row and the column
 
 <details><summary>call and reply</summary>
 
@@ -1089,7 +1171,7 @@ Also attached: image/png.
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -1103,7 +1185,7 @@ Also attached: image/png.
 
 </details>
 
-**29. `call_stack`**: OK callers: 1 row, the stop itself: the game keeps no frame pointer
+**30. `call_stack`**: OK callers: 1 row, the stop itself: the game keeps no frame pointer
 
 <details><summary>call and reply</summary>
 
@@ -1119,11 +1201,11 @@ Also attached: image/png.
   "code_bits": 16,
   "calls": [
     {
-      "seg_off": "08DF:000002C8",
+      "seg_off": "08DF:000002A5",
       "via": "stop",
       "call": {"available": false, "why": "the stop itself: no call leads to it"},
       "bp": {"available": false, "why": "no frame was read beside it"},
-      "addr": "0x000090b8",
+      "addr": "0x00009095",
       "symbol": "brick_hit",
       "delta": 0
     }
@@ -1136,7 +1218,7 @@ Also attached: image/png.
 
 </details>
 
-**30. `set_register`**: OK force: AX forced to 0: the brick now counts as one of the top row
+**31. `set_register`**: OK force: AX forced to 0: the brick now counts as one of the top row
 
 <details><summary>call and reply</summary>
 
@@ -1162,7 +1244,7 @@ Also attached: image/png.
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -1178,7 +1260,7 @@ Also attached: image/png.
 
 </details>
 
-**31. `step`**: OK step: two instructions on, BH holds column 7 and BL row 0
+**32. `step`**: OK step: two instructions on, BH holds column 7 and BL row 0
 
 <details><summary>call and reply</summary>
 
@@ -1190,16 +1272,16 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "step 2: 2 done, at 08DF:000002CC",
+  "summary": "step 2: 2 done, at 08DF:000002A9",
   "status": "ok",
   "mode": "into",
   "asked": 2,
   "moved": true,
   "stalled": 0,
-  "before": "08DF:000002C8",
-  "after": "08DF:000002CC",
+  "before": "08DF:000002A5",
+  "after": "08DF:000002A9",
   "instructions_completed": 2,
-  "pc": "08DF:000002CC",
+  "pc": "08DF:000002A9",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -1211,7 +1293,7 @@ Also attached: image/png.
     "EDI": "0x000064e4",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002cc",
+    "EIP": "0x000002a9",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -1231,13 +1313,13 @@ Also attached: image/png.
       "bytes": "e6004e000200feff"
     }
   ],
-  "cause": "the stop `step` made after 2 steps, at 08DF:000002CC",
+  "cause": "the stop `step` made after 2 steps, at 08DF:000002A9",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 4,
   "instruction": {
-    "address": "08DF:000002CC",
+    "address": "08DF:000002A9",
     "bytes": "E81FFF",
-    "text": "call 0x1ee",
+    "text": "call 0x1cb",
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
@@ -1250,7 +1332,7 @@ Also attached: image/png.
 
 </details>
 
-**32. `perform_export`**: OK export: 15 steps and 4 checks written, 13 reads left out, nothing cut
+**33. `perform_export`**: OK export: 15 steps and 4 checks written, 14 reads left out, nothing cut
 
 <details><summary>call and reply</summary>
 
@@ -1262,7 +1344,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "perform_export: 15 steps, 4 checks, 13 dropped to ./tmp/demos/tour/files/session.json",
+  "summary": "perform_export: 15 steps, 4 checks, 14 dropped to ./tmp/demos/tour/files/session.json",
   "status": "ok",
   "path": "./tmp/demos/tour/files/session.json",
   "steps": 15,
@@ -1277,12 +1359,13 @@ Also attached: image/png.
     {"call": 13, "op": "memdump", "why": "it changes nothing in the emulated machine"},
     {"call": 14, "op": "find", "why": "a read the export does not check"},
     {"call": 15, "op": "comment_write", "why": "it changes nothing in the emulated machine"},
-    {"call": 16, "op": "disassemble", "why": "a read the export does not check"},
-    {"call": 17, "op": "comment_list", "why": "a read the export does not check"},
-    {"call": 18, "op": "scan", "why": "it changes nothing in the emulated machine"},
-    {"call": 26, "op": "call_stack", "why": "a read the export does not check"}
+    {"call": 16, "op": "knowledge_find", "why": "a read the export does not check"},
+    {"call": 17, "op": "disassemble", "why": "a read the export does not check"},
+    {"call": 18, "op": "comment_list", "why": "a read the export does not check"},
+    {"call": 19, "op": "scan", "why": "it changes nothing in the emulated machine"},
+    {"call": 27, "op": "call_stack", "why": "a read the export does not check"}
   ],
-  "dropped_total": 13,
+  "dropped_total": 14,
   "cut": {"available": false, "why": "the recording kept every call a replay takes"},
   "replay": "uv run python -m scry_core.replay ./tmp/demos/tour/files/session.json",
   "kept": "2 saved for `promote`",
@@ -1292,7 +1375,7 @@ Also attached: image/png.
 
 </details>
 
-**33. `promote`**: OK review: reviewed and nothing written: perform/session, start/bricks
+**34. `promote`**: OK review: reviewed and nothing written: perform/session, start/bricks
 
 <details><summary>call and reply</summary>
 
@@ -1313,7 +1396,7 @@ Also attached: image/png.
       "kind": "perform",
       "name": "session",
       "file": ".scry/perform/session.json",
-      "bytes": 5129,
+      "bytes": 5216,
       "change": "new"
     },
     {
@@ -1338,15 +1421,15 @@ Also attached: image/png.
     }
   ],
   "unchanged": [],
-  "total_bytes": 5283,
-  "store_bytes": 10126,
+  "total_bytes": 5370,
+  "store_bytes": 10213,
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**34. `trace`**: OK trace: 40 instructions traced through brick_index, brick_rect, fill_rect, brick_hit
+**35. `trace`**: OK trace: 40 instructions traced through brick_index, brick_rect, fill_rect, brick_hit
 
 <details><summary>call and reply</summary>
 
@@ -1358,9 +1441,9 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "trace 40 normal: ELAPSED, 40 executed at 34 addresses, at 08DF:00000221, to ./tmp/demos/tour/files/captures/trace-1.trace",
+  "summary": "trace 40 normal: ELAPSED, 40 executed at 34 addresses, at 08DF:000001FE, to ./tmp/demos/tour/files/captures/trace-1.trace",
   "status": "ok",
-  "pc": "08DF:00000221",
+  "pc": "08DF:000001FE",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -1372,7 +1455,7 @@ Also attached: image/png.
     "EDI": "0x00001efd",
     "EBP": "0x0000091c",
     "ESP": "0x0000fff0",
-    "EIP": "0x00000221",
+    "EIP": "0x000001fe",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -1392,11 +1475,11 @@ Also attached: image/png.
       "bytes": "e6004e000200feff"
     }
   ],
-  "cause": "the end of the trace's count, at 08DF:00000221",
+  "cause": "the end of the trace's count, at 08DF:000001FE",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 5,
   "instruction": {
-    "address": "08DF:00000221",
+    "address": "08DF:000001FE",
     "bytes": "F3AA",
     "text": "rep stosb byte ptr es:[di], al",
     "flow": "sequential",
@@ -1417,35 +1500,35 @@ Also attached: image/png.
     "symbols": [
       {
         "symbol": "brick_index",
-        "addr": "0x00008fde",
+        "addr": "0x00008fbb",
         "addresses": 6,
         "instructions": 6,
-        "first": "0x00008fde",
-        "last": "0x00008fe8"
+        "first": "0x00008fbb",
+        "last": "0x00008fc5"
       },
       {
         "symbol": "brick_rect",
-        "addr": "0x00008fe9",
+        "addr": "0x00008fc6",
         "addresses": 18,
         "instructions": 18,
-        "first": "0x00008fe9",
-        "last": "0x0000900c"
+        "first": "0x00008fc6",
+        "last": "0x00008fe9"
       },
       {
         "symbol": "fill_rect",
-        "addr": "0x0000900e",
+        "addr": "0x00008feb",
         "addresses": 4,
         "instructions": 10,
-        "first": "0x0000900e",
-        "last": "0x00009011"
+        "first": "0x00008feb",
+        "last": "0x00008fee"
       },
       {
         "symbol": "brick_hit",
-        "addr": "0x000090b8",
+        "addr": "0x00009095",
         "addresses": 6,
         "instructions": 6,
-        "first": "0x000090bc",
-        "last": "0x000090cb"
+        "first": "0x00009099",
+        "last": "0x000090a8"
       }
     ],
     "symbols_total": 4,
@@ -1457,7 +1540,7 @@ Also attached: image/png.
 
 </details>
 
-**35. `watch_add`**: OK watch: a stop armed on any change of the score
+**36. `watch_add`**: OK watch: a stop armed on any change of the score
 
 <details><summary>call and reply</summary>
 
@@ -1481,16 +1564,19 @@ Also attached: image/png.
   "stored": true,
   "armed": true,
   "state": "armed",
-  "entry": "BPMEM 08DF:0615",
-  "entries": ["BPMEM 08DF:0615", "BPMEM 08DF:0616"],
-  "command": "BPM 08DF:0615",
+  "entry": "BPMEM 08DF:05C9",
+  "entries": ["BPMEM 08DF:05C9", "BPMEM 08DF:05CA"],
+  "command": "BPM 08DF:05C9",
+  "names": [
+    {"field": "given.ref", "number": "0x000093b9", "kind": "symbol", "name": "score"}
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**36. `resume`**: OK score changes: stopped inside brick_hit, the score just written: 60
+**37. `resume`**: OK score changes: stopped inside brick_hit, the score just written: 60
 
 <details><summary>call and reply</summary>
 
@@ -1502,13 +1588,13 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:000002EB",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DF:000002EB",
+  "pc": "08DF:000002C8",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -1520,7 +1606,7 @@ Also attached: image/png.
     "EDI": "0x00001ee1",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002eb",
+    "EIP": "0x000002c8",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -1550,13 +1636,13 @@ Also attached: image/png.
       "bytes": "3c00"
     }
   ],
-  "cause": "no declared code breakpoint at 08DF:000002EB, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
+  "cause": "no declared code breakpoint at 08DF:000002C8, and the debugger does not say which row stopped the machine, so what made this stop cannot be told",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 6,
   "instruction": {
-    "address": "08DF:000002EB",
-    "bytes": "F71E2706",
-    "text": "neg word ptr [0x627]",
+    "address": "08DF:000002C8",
+    "bytes": "F71EDB05",
+    "text": "neg word ptr [0x5db]",
     "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
@@ -1569,7 +1655,7 @@ Also attached: image/png.
 
 </details>
 
-**37. `scan`**: OK survivors: 2 cells hold 60, score among them
+**38. `scan`**: OK survivors: 2 cells hold 60, score among them
 
 <details><summary>call and reply</summary>
 
@@ -1589,8 +1675,8 @@ Also attached: image/png.
   "iterations": 1,
   "closed": false,
   "hits": [
-    {"seg_off": "08DF:00000597", "addr": "0x00009387", "value": "0x3c"},
-    {"seg_off": "08DF:00000615", "addr": "0x00009405", "value": "0x3c"}
+    {"seg_off": "08DF:0000054B", "addr": "0x0000933b", "value": "0x3c"},
+    {"seg_off": "08DF:000005C9", "addr": "0x000093b9", "value": "0x3c"}
   ],
   "hits_total": 2,
   "truncated": false,
@@ -1600,7 +1686,7 @@ Also attached: image/png.
 
 </details>
 
-**38. `declaration_clear`**: OK unwatch: 1 cleared
+**39. `declaration_clear`**: OK unwatch: 1 cleared
 
 <details><summary>call and reply</summary>
 
@@ -1616,14 +1702,14 @@ Also attached: image/png.
   "summary": "declaration_clear watch score: 1 cleared",
   "status": "ok",
   "declarations_cleared": 1,
-  "disarmed": ["BPMEM 08DF:0615 (3C)", "BPMEM 08DF:0616 (00)"],
+  "disarmed": ["BPMEM 08DF:05C9 (3C)", "BPMEM 08DF:05CA (00)"],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**39. `regpoint_add`**: OK regpoint: a stop armed on DX holding 3DAh
+**40. `regpoint_add`**: OK regpoint: a stop armed on DX holding 3DAh
 
 <details><summary>call and reply</summary>
 
@@ -1651,7 +1737,7 @@ Also attached: image/png.
 
 </details>
 
-**40. `resume`**: OK status port: stopped in retrace, the routine that loads DX with the VGA status port
+**41. `resume`**: OK status port: stopped in retrace, the routine that loads DX with the VGA status port
 
 <details><summary>call and reply</summary>
 
@@ -1663,13 +1749,13 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:00000583",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:00000539",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DF:00000583",
+  "pc": "08DF:00000539",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -1677,11 +1763,11 @@ Also attached: image/png.
     "EBX": "0x0000000f",
     "ECX": "0x005b0004",
     "EDX": "0x000003da",
-    "ESI": "0x00000615",
+    "ESI": "0x000005c9",
     "EDI": "0x00006266",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffc",
-    "EIP": "0x00000583",
+    "EIP": "0x00000539",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -1701,17 +1787,17 @@ Also attached: image/png.
       "bytes": "e6004e0002000200"
     }
   ],
-  "cause": "registerpoint DX==3DA, whose condition came true at 08DF:00000583",
+  "cause": "registerpoint DX==3DA, whose condition came true at 08DF:00000539",
   "regpoint_hit": {
     "ref": "DX==3DA",
     "condition": "DX==3DA",
-    "pc": "08DF:00000583",
+    "pc": "08DF:00000539",
     "note": "still armed: a registerpoint stops at every instruction where its condition holds, so the next advance stops again; `declaration_clear(kind=\"regpoint\")` removes it"
   },
   "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: HIT 0 7"], "mark": "<volatile>"},
   "stop_seq": 7,
   "instruction": {
-    "address": "08DF:00000583",
+    "address": "08DF:00000539",
     "bytes": "EC",
     "text": "in al, dx",
     "flow": "sequential",
@@ -1726,7 +1812,7 @@ Also attached: image/png.
 
 </details>
 
-**41. `declaration_clear`**: OK unregpoint: 1 cleared
+**42. `declaration_clear`**: OK unregpoint: 1 cleared
 
 <details><summary>call and reply</summary>
 
@@ -1749,7 +1835,7 @@ Also attached: image/png.
 
 </details>
 
-**42. `watch_add`**: OK tally: every write of the score counted, with its writer
+**43. `watch_add`**: OK tally: every write of the score counted, with its writer
 
 <details><summary>call and reply</summary>
 
@@ -1775,14 +1861,17 @@ Also attached: image/png.
   "state": "armed",
   "tally_id": "1",
   "entry": "TAP 1",
-  "addr": "08DF:00000615",
+  "addr": "08DF:000005C9",
+  "names": [
+    {"field": "given.ref", "number": "0x000093b9", "kind": "symbol", "name": "score"}
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**43. `watch_add`**: OK reads: every read of the paddle's place captured, with the beam line
+**44. `watch_add`**: OK reads: every read of the paddle's place captured, with the beam line
 
 <details><summary>call and reply</summary>
 
@@ -1809,14 +1898,17 @@ Also attached: image/png.
   "state": "armed",
   "tally_id": "2",
   "entry": "TAP 2",
-  "addr": "08DF:0000061F",
+  "addr": "08DF:000005D3",
+  "names": [
+    {"field": "given.ref", "number": "0x000093c3", "kind": "symbol", "name": "paddle_x"}
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**44. `record`**: OK film: 110 retraces filmed, the second brick's fall among them
+**45. `record`**: OK film: 110 retraces filmed, the second brick's fall among them
 
 <details><summary>call and reply</summary>
 
@@ -1856,7 +1948,7 @@ Also attached: image/png.
       "length": 2,
       "fmt": "u16",
       "tally_id": "1",
-      "addr": "08DF:00000615",
+      "addr": "08DF:000005C9",
       "installed": true,
       "state": "tallied",
       "total": 1,
@@ -1871,7 +1963,7 @@ Also attached: image/png.
       "length": 1,
       "fmt": "u8",
       "tally_id": "2",
-      "addr": "08DF:0000061F",
+      "addr": "08DF:000005D3",
       "trigger_type": "r",
       "installed": true,
       "state": "captured",
@@ -1891,7 +1983,7 @@ Also attached: image/png.
   "emulated_after_s": "<volatile>",
   "frame_before": 36,
   "frame_after": 146,
-  "cycles": 3595712,
+  "cycles": 3594703,
   "kind": "avi",
   "frames": 110,
   "began": true,
@@ -1905,7 +1997,7 @@ Also attached: image/png.
 
 </details>
 
-**45. `declaration_list`**: OK declared: the score was written once, 70 by brick_hit+0x1f; the paddle was read 110 times, by draw_paddle+0xe
+**46. `declaration_list`**: OK declared: the score was written once, 70 by brick_hit+0x1f; the paddle was read 110 times, by draw_paddle+0xe
 
 <details><summary>call and reply</summary>
 
@@ -1945,18 +2037,18 @@ Also attached: image/png.
       "length": 2,
       "fmt": "u16",
       "tally_id": "1",
-      "addr": "08DF:00000615",
+      "addr": "08DF:000005C9",
       "installed": true,
       "state": "tallied",
       "total": 1,
       "overflow_values": 0,
       "overflow_pcs": 0,
       "values": [
-        {"at": "08DF:00000615", "raw_hex": "4600", "count": 1, "value": 70}
+        {"at": "08DF:000005C9", "raw_hex": "4600", "count": 1, "value": 70}
       ],
       "values_total": 1,
       "writers": [
-        {"pc": "08DF:000002E7", "count": 1, "symbol": "brick_hit+0x1f"}
+        {"pc": "08DF:000002C4", "count": 1, "symbol": "brick_hit+0x1f"}
       ],
       "writers_total": 1
     },
@@ -1972,7 +2064,7 @@ Also attached: image/png.
       "length": 1,
       "fmt": "u8",
       "tally_id": "2",
-      "addr": "08DF:0000061F",
+      "addr": "08DF:000005D3",
       "trigger_type": "r",
       "installed": true,
       "state": "captured",
@@ -1986,8 +2078,8 @@ Also attached: image/png.
           "n": 1,
           "frame": 37,
           "line": 417,
-          "time_s": 0.532617,
-          "pc": "08DF:000003E4",
+          "time_s": 0.532612,
+          "pc": "08DF:000003C1",
           "data": "0xd4000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -1996,8 +2088,8 @@ Also attached: image/png.
           "n": 2,
           "frame": 38,
           "line": 417,
-          "time_s": 0.5468845999999999,
-          "pc": "08DF:000003E4",
+          "time_s": 0.5468799,
+          "pc": "08DF:000003C1",
           "data": "0xd6000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2006,8 +2098,8 @@ Also attached: image/png.
           "n": 3,
           "frame": 39,
           "line": 417,
-          "time_s": 0.5611531,
-          "pc": "08DF:000003E4",
+          "time_s": 0.5611487,
+          "pc": "08DF:000003C1",
           "data": "0xd8000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2016,8 +2108,8 @@ Also attached: image/png.
           "n": 4,
           "frame": 40,
           "line": 417,
-          "time_s": 0.5754217,
-          "pc": "08DF:000003E4",
+          "time_s": 0.5754162,
+          "pc": "08DF:000003C1",
           "data": "0xda000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2026,8 +2118,8 @@ Also attached: image/png.
           "n": 5,
           "frame": 41,
           "line": 417,
-          "time_s": 0.589689,
-          "pc": "08DF:000003E4",
+          "time_s": 0.5896851000000001,
+          "pc": "08DF:000003C1",
           "data": "0xdc000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2036,8 +2128,8 @@ Also attached: image/png.
           "n": 6,
           "frame": 42,
           "line": 417,
-          "time_s": 0.6039579,
-          "pc": "08DF:000003E4",
+          "time_s": 0.6039529,
+          "pc": "08DF:000003C1",
           "data": "0xde000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2046,8 +2138,8 @@ Also attached: image/png.
           "n": 7,
           "frame": 43,
           "line": 417,
-          "time_s": 0.6182251,
-          "pc": "08DF:000003E4",
+          "time_s": 0.6182203,
+          "pc": "08DF:000003C1",
           "data": "0xe0000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2056,8 +2148,8 @@ Also attached: image/png.
           "n": 8,
           "frame": 44,
           "line": 417,
-          "time_s": 0.6324938,
-          "pc": "08DF:000003E4",
+          "time_s": 0.6324892,
+          "pc": "08DF:000003C1",
           "data": "0xe2000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2066,8 +2158,8 @@ Also attached: image/png.
           "n": 9,
           "frame": 45,
           "line": 417,
-          "time_s": 0.6467625,
-          "pc": "08DF:000003E4",
+          "time_s": 0.6467569,
+          "pc": "08DF:000003C1",
           "data": "0xe4000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2076,8 +2168,8 @@ Also attached: image/png.
           "n": 10,
           "frame": 46,
           "line": 417,
-          "time_s": 0.6610297,
-          "pc": "08DF:000003E4",
+          "time_s": 0.6610258,
+          "pc": "08DF:000003C1",
           "data": "0xe6000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2086,8 +2178,8 @@ Also attached: image/png.
           "n": 11,
           "frame": 47,
           "line": 417,
-          "time_s": 0.6752983,
-          "pc": "08DF:000003E4",
+          "time_s": 0.6752934,
+          "pc": "08DF:000003C1",
           "data": "0xe8000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2096,8 +2188,8 @@ Also attached: image/png.
           "n": 12,
           "frame": 48,
           "line": 417,
-          "time_s": 0.6895669,
-          "pc": "08DF:000003E4",
+          "time_s": 0.6895610000000001,
+          "pc": "08DF:000003C1",
           "data": "0xea000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2106,8 +2198,8 @@ Also attached: image/png.
           "n": 13,
           "frame": 49,
           "line": 417,
-          "time_s": 0.7038343,
-          "pc": "08DF:000003E4",
+          "time_s": 0.7038298999999999,
+          "pc": "08DF:000003C1",
           "data": "0xec000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2116,8 +2208,8 @@ Also attached: image/png.
           "n": 14,
           "frame": 50,
           "line": 417,
-          "time_s": 0.7181028,
-          "pc": "08DF:000003E4",
+          "time_s": 0.7180974,
+          "pc": "08DF:000003C1",
           "data": "0xee000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2126,8 +2218,8 @@ Also attached: image/png.
           "n": 15,
           "frame": 51,
           "line": 417,
-          "time_s": 0.7323702,
-          "pc": "08DF:000003E4",
+          "time_s": 0.7323664,
+          "pc": "08DF:000003C1",
           "data": "0xf0000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2136,8 +2228,8 @@ Also attached: image/png.
           "n": 16,
           "frame": 52,
           "line": 417,
-          "time_s": 0.7466387999999999,
-          "pc": "08DF:000003E4",
+          "time_s": 0.746634,
+          "pc": "08DF:000003C1",
           "data": "0xf2000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2146,8 +2238,8 @@ Also attached: image/png.
           "n": 17,
           "frame": 53,
           "line": 417,
-          "time_s": 0.7609075000000001,
-          "pc": "08DF:000003E4",
+          "time_s": 0.7609017,
+          "pc": "08DF:000003C1",
           "data": "0xf4000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2156,8 +2248,8 @@ Also attached: image/png.
           "n": 18,
           "frame": 54,
           "line": 417,
-          "time_s": 0.7751747,
-          "pc": "08DF:000003E4",
+          "time_s": 0.7751705,
+          "pc": "08DF:000003C1",
           "data": "0xf6000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2166,8 +2258,8 @@ Also attached: image/png.
           "n": 19,
           "frame": 55,
           "line": 417,
-          "time_s": 0.7894433000000001,
-          "pc": "08DF:000003E4",
+          "time_s": 0.7894380999999999,
+          "pc": "08DF:000003C1",
           "data": "0xf8000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2176,8 +2268,8 @@ Also attached: image/png.
           "n": 20,
           "frame": 56,
           "line": 417,
-          "time_s": 0.803712,
-          "pc": "08DF:000003E4",
+          "time_s": 0.8037071,
+          "pc": "08DF:000003C1",
           "data": "0xfa000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2186,8 +2278,8 @@ Also attached: image/png.
           "n": 21,
           "frame": 57,
           "line": 417,
-          "time_s": 0.8179793,
-          "pc": "08DF:000003E4",
+          "time_s": 0.8179746999999999,
+          "pc": "08DF:000003C1",
           "data": "0xfc000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2196,8 +2288,8 @@ Also attached: image/png.
           "n": 22,
           "frame": 58,
           "line": 417,
-          "time_s": 0.8322478,
-          "pc": "08DF:000003E4",
+          "time_s": 0.8322421000000001,
+          "pc": "08DF:000003C1",
           "data": "0xfe000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2206,8 +2298,8 @@ Also attached: image/png.
           "n": 23,
           "frame": 59,
           "line": 417,
-          "time_s": 0.8465151,
-          "pc": "08DF:000003E4",
+          "time_s": 0.846511,
+          "pc": "08DF:000003C1",
           "data": "0x00000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2216,8 +2308,8 @@ Also attached: image/png.
           "n": 24,
           "frame": 60,
           "line": 417,
-          "time_s": 0.8607839,
-          "pc": "08DF:000003E4",
+          "time_s": 0.8607788000000001,
+          "pc": "08DF:000003C1",
           "data": "0x02000000",
           "mask": "0xff000000",
           "symbol": "draw_paddle+0xe"
@@ -2232,7 +2324,7 @@ Also attached: image/png.
 
 </details>
 
-**46. `declaration_clear`**: OK untap: 3 cleared
+**47. `declaration_clear`**: OK untap: 3 cleared
 
 <details><summary>call and reply</summary>
 
@@ -2255,7 +2347,7 @@ Also attached: image/png.
 
 </details>
 
-**47. `capture_frame`**: OK still: frame 104 of the film as a PNG
+**48. `capture_frame`**: OK still: frame 104 of the film as a PNG
 
 <details><summary>call and reply</summary>
 
@@ -2282,7 +2374,7 @@ Also attached: image/png.
 
 </details>
 
-**48. `series_capture`**: OK series: 14 frames of the film and their manifest
+**49. `series_capture`**: OK series: 14 frames of the film and their manifest
 
 <details><summary>call and reply</summary>
 
@@ -2315,7 +2407,7 @@ Also attached: image/png.
 
 </details>
 
-**49. `audio_record`**: OK sound: a WAV of silence: the game makes no sound
+**50. `audio_record`**: OK sound: a WAV of silence: the game makes no sound
 
 <details><summary>call and reply</summary>
 
@@ -2345,7 +2437,7 @@ Also attached: image/png.
   "emulated_after_s": "<volatile>",
   "frame_before": 146,
   "frame_after": 166,
-  "cycles": 659349,
+  "cycles": 659162,
   "kind": "wav",
   "frames": 20,
   "began": true,
@@ -2355,7 +2447,7 @@ Also attached: image/png.
   "channels": 2,
   "sample_rate_hz": 48000,
   "samples": 13680,
-  "emulated_s": 0.285362,
+  "emulated_s": 0.2853618,
   "sample_min": 0,
   "sample_max": 0,
   "session": {"alive": true, "running": false, "altered": true}
@@ -2364,7 +2456,7 @@ Also attached: image/png.
 
 </details>
 
-**50. `breakpoint_at`**: OK break: a breakpoint on brick_hit
+**51. `breakpoint_at`**: OK break: a breakpoint on brick_hit
 
 <details><summary>call and reply</summary>
 
@@ -2384,14 +2476,17 @@ Also attached: image/png.
   "stored": true,
   "armed": true,
   "state": "armed",
-  "entry": "BP 08DF:02C8",
+  "entry": "BP 08DF:02A5",
+  "names": [
+    {"field": "given.ref", "number": "0x00009095", "kind": "symbol", "name": "brick_hit"}
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**51. `resume`**: OK third brick: at brick_hit for the brick at row 5 column 0
+**52. `resume`**: OK third brick: at brick_hit for the brick at row 5 column 0
 
 <details><summary>call and reply</summary>
 
@@ -2403,13 +2498,13 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:000002A5",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DF:000002C8",
+  "pc": "08DF:000002A5",
   "cpu_mode": "real",
   "frame": 244,
   "regs": {
@@ -2421,7 +2516,7 @@ Also attached: image/png.
     "EDI": "0x00006410",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
-    "EIP": "0x000002c8",
+    "EIP": "0x000002a5",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -2430,11 +2525,11 @@ Also attached: image/png.
     "SS": "0x08df"
   },
   "watches": [],
-  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08DF:000002A5",
   "e9": {"lines_total": 0, "truncated": false, "lines": [], "mark": "<volatile>"},
   "stop_seq": 10,
   "instruction": {
-    "address": "08DF:000002C8",
+    "address": "08DF:000002A5",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -2450,7 +2545,7 @@ Also attached: image/png.
 
 </details>
 
-**52. `state_write`**: OK save: the machine saved as third-brick.sav
+**53. `state_write`**: OK save: the machine saved as third-brick.sav
 
 <details><summary>call and reply</summary>
 
@@ -2480,7 +2575,7 @@ Also attached: image/png.
 
 </details>
 
-**53. `state_list`**: OK states: one state, third-brick
+**54. `state_list`**: OK states: one state, third-brick
 
 <details><summary>call and reply</summary>
 
@@ -2512,7 +2607,7 @@ Also attached: image/png.
 
 </details>
 
-**54. `declaration_clear`**: OK unbreak: 1 cleared
+**55. `declaration_clear`**: OK unbreak: 1 cleared
 
 <details><summary>call and reply</summary>
 
@@ -2528,14 +2623,14 @@ Also attached: image/png.
   "summary": "declaration_clear breakpoint all: 1 cleared",
   "status": "ok",
   "declarations_cleared": 1,
-  "disarmed": ["BP 08DF:02C8"],
+  "disarmed": ["BP 08DF:02A5"],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**55. `run_for`**: OK frames: three frames on, stopped again
+**56. `run_for`**: OK frames: three frames on, stopped again
 
 <details><summary>call and reply</summary>
 
@@ -2564,14 +2659,14 @@ Also attached: image/png.
   "emulated_after_s": "<volatile>",
   "frame_before": 244,
   "frame_after": 247,
-  "cycles": 68499,
+  "cycles": 68493,
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**56. `watch_add`**: OK pin: the lives pinned at 3
+**57. `watch_add`**: OK pin: the lives pinned at 3
 
 <details><summary>call and reply</summary>
 
@@ -2595,17 +2690,20 @@ Also attached: image/png.
   "stored": true,
   "armed": true,
   "state": "armed",
-  "entry": "FM 00000617 (03)",
-  "entries": ["FM 00000617 (03)"],
-  "addr": "08DF:00000617",
+  "entry": "FM 000005CB (03)",
+  "entries": ["FM 000005CB (03)"],
+  "addr": "08DF:000005CB",
   "frozen_hex": "03",
+  "names": [
+    {"field": "given.ref", "number": "0x000093bb", "kind": "symbol", "name": "lives"}
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**57. `send_keys`**: OK key: the right arrow took the paddle from the game: it logged KEY R
+**58. `send_keys`**: OK key: the right arrow took the paddle from the game: it logged KEY R
 
 <details><summary>call and reply</summary>
 
@@ -2641,9 +2739,9 @@ Also attached: image/png.
       "mode": "freeze",
       "length": 1,
       "fmt": "u8",
-      "addr": "08DF:00000617",
+      "addr": "08DF:000005CB",
       "frozen_hex": "03",
-      "entries": ["FM 00000617 (03)"],
+      "entries": ["FM 000005CB (03)"],
       "bytes": "03",
       "state": "holding"
     }
@@ -2672,7 +2770,7 @@ Also attached: image/png.
 
 </details>
 
-**58. `resume`**: OK play: the game runs
+**59. `resume`**: OK play: the game runs
 
 <details><summary>call and reply</summary>
 
@@ -2692,7 +2790,7 @@ Also attached: image/png.
 
 </details>
 
-**59. `drive`**: OK mouse on: M handed the paddle to the mouse: the game logged MOUSE ON
+**60. `drive`**: OK mouse on: M handed the paddle to the mouse: the game logged MOUSE ON
 
 <details><summary>call and reply</summary>
 
@@ -2723,12 +2821,16 @@ Also attached: image/png.
           "posted": 1,
           "bytes": 2,
           "frames": 2,
+          "frame_before": 264,
+          "frame_after": 272,
           "verify": {
             "checked": false,
             "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
           },
           "session": {"alive": true, "running": true, "altered": true}
-        }
+        },
+        "frame_before": 264,
+        "frame_after": 272
       }
     ],
     "steps_completed": 1,
@@ -2765,7 +2867,7 @@ Also attached: image/png.
 
 </details>
 
-**60. `send_mouse`**: OK mouse: the pointer on the map's court, pixel 240,100: the paddle centres under it, at x 220
+**61. `send_mouse`**: OK mouse: the pointer on the map's court, pixel 240,100: the paddle centres under it, at x 220
 
 <details><summary>call and reply</summary>
 
@@ -2793,6 +2895,8 @@ Also attached: image/png.
   },
   "driver_arrived": true,
   "motion": true,
+  "frame_before": 278,
+  "frame_after": 288,
   "verify": {
     "checked": true,
     "seen": true,
@@ -2813,7 +2917,7 @@ Also attached: image/png.
 
 </details>
 
-**61. `snapshot`**: OK snapshot: a still taken while the game runs
+**62. `snapshot`**: OK snapshot: a still taken while the game runs
 
 <details><summary>call and reply</summary>
 
@@ -2837,7 +2941,7 @@ Also attached: image/png.
 
 </details>
 
-**62. `perform`**: OK serve: the mouse given back and the ball served, in one call
+**63. `perform`**: OK serve: the mouse given back and the ball served, in one call
 
 <details><summary>call and reply</summary>
 
@@ -2866,6 +2970,8 @@ Also attached: image/png.
         "posted": 1,
         "bytes": 2,
         "frames": 2,
+        "frame_before": 330,
+        "frame_after": 337,
         "verify": {
           "checked": true,
           "seen": true,
@@ -2878,7 +2984,9 @@ Also attached: image/png.
           "lines_total": "<volatile>"
         },
         "session": {"alive": true, "running": true, "altered": true}
-      }
+      },
+      "frame_before": 330,
+      "frame_after": 337
     },
     {
       "op": "send_keys",
@@ -2891,6 +2999,8 @@ Also attached: image/png.
         "posted": 1,
         "bytes": 2,
         "frames": 2,
+        "frame_before": 337,
+        "frame_after": 347,
         "verify": {
           "checked": true,
           "seen": true,
@@ -2903,7 +3013,9 @@ Also attached: image/png.
           "lines_total": "<volatile>"
         },
         "session": {"alive": true, "running": true, "altered": true}
-      }
+      },
+      "frame_before": 337,
+      "frame_after": 347
     }
   ],
   "steps_completed": 2,
@@ -2917,7 +3029,7 @@ Also attached: image/png.
 
 </details>
 
-**63. `log_wait`**: OK lost: the game logged LOST: nobody moved the paddle
+**64. `log_wait`**: OK lost: the game logged LOST: nobody moved the paddle
 
 <details><summary>call and reply</summary>
 
@@ -2949,7 +3061,7 @@ Also attached: image/png.
 
 </details>
 
-**64. `wait`**: OK wait: the game runs
+**65. `wait`**: OK wait: the game runs
 
 <details><summary>call and reply</summary>
 
@@ -2971,7 +3083,7 @@ Also attached: image/png.
 
 </details>
 
-**65. `stop`**: OK stop: stopped through the debugger
+**66. `stop`**: OK stop: stopped through the debugger
 
 <details><summary>call and reply</summary>
 
@@ -3000,7 +3112,7 @@ Also attached: image/png.
 
 </details>
 
-**66. `log`**: OK log: the game logged HIT 0 7, HIT 5 6, HIT 5 0, SERVE, HIT 5 9, LOST
+**67. `log`**: OK log: the game logged HIT 0 7, HIT 5 6, HIT 5 0, SERVE, HIT 5 9, LOST
 
 <details><summary>call and reply</summary>
 
@@ -3026,7 +3138,7 @@ Also attached: image/png.
 
 </details>
 
-**67. `read_memory`**: OK lives: a ball was lost and the lives still read 3: the freeze undid the write
+**68. `read_memory`**: OK lives: a ball was lost and the lives still read 3: the freeze undid the write
 
 <details><summary>call and reply</summary>
 
@@ -3039,19 +3151,22 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory lives: 1 byte at 08DF:00000617: 03",
+  "summary": "read_memory lives: 1 byte at 08DF:000005CB: 03",
   "status": "ok",
   "ref": "lives",
-  "seg_off": "08DF:00000617",
+  "seg_off": "08DF:000005CB",
   "length": 1,
   "hex": "03",
+  "names": [
+    {"field": "given.ref", "number": "0x000093bb", "kind": "symbol", "name": "lives"}
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**68. `state_write`**: OK load: the machine of third-brick loaded
+**69. `state_write`**: OK load: the machine of third-brick loaded
 
 <details><summary>call and reply</summary>
 
@@ -3081,7 +3196,7 @@ Also attached: image/png.
 
 </details>
 
-**69. `read_memory`**: OK restored: score 70: the third brick is not counted yet, as when the state was saved
+**70. `read_memory`**: OK restored: score 70: the third brick is not counted yet, as when the state was saved
 
 <details><summary>call and reply</summary>
 
@@ -3094,24 +3209,27 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory score: 2 bytes at 08DF:00000615: 4600",
+  "summary": "read_memory score: 2 bytes at 08DF:000005C9: 4600",
   "status": "ok",
   "ref": "score",
-  "seg_off": "08DF:00000615",
+  "seg_off": "08DF:000005C9",
   "length": 2,
   "hex": "4600",
   "stopped_on_its_own": {
     "stop_seq": 29,
-    "pc": "08DF:000002C8",
-    "cause": "no declared code breakpoint at 08DF:000002C8, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
+    "pc": "08DF:000002A5",
+    "cause": "no declared code breakpoint at 08DF:000002A5, and the debugger does not say which row stopped the machine, so what made this stop cannot be told"
   },
+  "names": [
+    {"field": "given.ref", "number": "0x000093b9", "kind": "symbol", "name": "score"}
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**70. `write`**: OK quit: the game's quit flag set
+**71. `write`**: OK quit: the game's quit flag set
 
 <details><summary>call and reply</summary>
 
@@ -3127,17 +3245,20 @@ Also attached: image/png.
   "summary": "write quit: 1 byte, verified True",
   "status": "ok",
   "ref": "quit",
-  "seg_off": "08DF:00000619",
+  "seg_off": "08DF:000005CD",
   "bytes_written": 1,
   "readback": "01",
   "verified": true,
+  "names": [
+    {"field": "given.ref", "number": "0x000093bd", "kind": "symbol", "name": "quit"}
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**71. `breakpoint_interrupt`**: OK exit: armed as BPINT 21 AH=4C
+**72. `breakpoint_interrupt`**: OK exit: armed as BPINT 21 AH=4C, which the reply names exit
 
 <details><summary>call and reply</summary>
 
@@ -3158,13 +3279,22 @@ Also attached: image/png.
   "entry": "BPINT 21 AH=4C",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
+  "names": [
+    {
+      "field": "given.number",
+      "number": "0x21/0x4C",
+      "kind": "call",
+      "name": "exit",
+      "id": "ibm-pc:call:0x21/0x4C"
+    }
+  ],
   "session": {"alive": true, "running": false, "altered": true}
 }
 ```
 
 </details>
 
-**72. `resume`**: OK leaving: stopped at the game's own exit call, INT 21h with AX 4C00h
+**73. `resume`**: OK leaving: stopped at the game's own exit call, INT 21h with AX 4C00h, which the base names exit
 
 <details><summary>call and reply</summary>
 
@@ -3176,13 +3306,13 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08DF:0000013C",
+  "summary": "resume: OTHER_STOP, stopped at 08DF:00000139",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08DF:0000013C",
+  "pc": "08DF:00000139",
   "cpu_mode": "real",
   "frame": "<volatile>",
   "regs": {
@@ -3190,11 +3320,11 @@ Also attached: image/png.
     "EBX": "0x0000000f",
     "ECX": "0x005b0004",
     "EDX": "0x00000000",
-    "ESI": "0x00000615",
+    "ESI": "0x000005c9",
     "EDI": "0x00006192",
     "EBP": "0x0000091c",
     "ESP": "0x0000fffe",
-    "EIP": "0x0000013c",
+    "EIP": "0x00000139",
     "CS": "0x08df",
     "DS": "0x08df",
     "ES": "0xa000",
@@ -3209,25 +3339,27 @@ Also attached: image/png.
       "mode": "freeze",
       "length": 1,
       "fmt": "u8",
-      "addr": "08DF:00000617",
+      "addr": "08DF:000005CB",
       "frozen_hex": "03",
-      "entries": ["FM 00000617 (03)"],
+      "entries": ["FM 000005CB (03)"],
       "bytes": "03",
       "state": "holding"
     }
   ],
-  "cause": "most likely the held `BPINT 21 AH=4C`: the guest is at `int 21`, at 08DF:0000013C",
+  "cause": "most likely the held `BPINT 21 AH=4C`: the guest is at `int 21`, at 08DF:00000139",
   "e9": {"lines_total": 1, "truncated": false, "lines": ["Bochs port E9h: HIT 5 0"], "mark": "<volatile>"},
   "stop_seq": "<volatile>",
   "instruction": {
-    "address": "08DF:0000013C",
+    "address": "08DF:00000139",
     "bytes": "CD21",
     "text": "int 0x21",
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
+    "note": "exit (0x4C)",
+    "note_live": true,
     "symbol": "main_loop",
-    "delta": 33
+    "delta": 30
   },
   "session": {"alive": true, "running": false, "altered": true}
 }
@@ -3235,7 +3367,108 @@ Also attached: image/png.
 
 </details>
 
-**73. `captures`**: OK captures: 10 files written by the session, all there
+**74. `disassemble`**: OK exit listing: the exit call's line carries its note, named from the registers of the stop
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "ref": "main_loop",
+  "length": 32
+}
+```
+
+```json
+{
+  "summary": "disassemble main_loop: 11 lines at 08DF:0000011B, 16-bit",
+  "status": "ok",
+  "ref": "main_loop",
+  "seg_off": "08DF:0000011B",
+  "length": 32,
+  "code_bits": 16,
+  "code_bits_from": "real mode",
+  "lines": ["08DF:0000011B E81804               call 0x536", "08DF:0000011E E8B302               call 0x3d4", "08DF:00000121 E86A02               call 0x38e", "08DF:00000124 E88C02               call 0x3b3", "08DF:00000127 E8E100               call 0x20b", "08DF:0000012A 803ECD0500           cmp byte ptr [0x5cd], 0", "08DF:0000012F 74EA                 je 0x11b", "08DF:00000131 B80300               mov ax, 3", "08DF:00000134 CD10                 int 0x10", "08DF:00000136 B8004C               mov ax, 0x4c00", "08DF:00000139 CD21                 int 0x21"],
+  "flow": ["call", "call", "call", "call", "call", "sequential", "branch", "sequential", "call", "sequential", "call"],
+  "flow_source": "capstone",
+  "resolved": [
+    {
+      "line": 0,
+      "operand": "0x536",
+      "kind": "target",
+      "seg_off": "08DF:00000536",
+      "addr": "0x00009326",
+      "symbol": "retrace",
+      "delta": 0
+    },
+    {
+      "line": 1,
+      "operand": "0x3d4",
+      "kind": "target",
+      "seg_off": "08DF:000003D4",
+      "addr": "0x000091c4",
+      "symbol": "read_input",
+      "delta": 0
+    },
+    {
+      "line": 2,
+      "operand": "0x38e",
+      "kind": "target",
+      "seg_off": "08DF:0000038E",
+      "addr": "0x0000917e",
+      "symbol": "steer",
+      "delta": 0
+    },
+    {
+      "line": 3,
+      "operand": "0x3b3",
+      "kind": "target",
+      "seg_off": "08DF:000003B3",
+      "addr": "0x000091a3",
+      "symbol": "draw_paddle",
+      "delta": 0
+    },
+    {
+      "line": 4,
+      "operand": "0x20b",
+      "kind": "target",
+      "seg_off": "08DF:0000020B",
+      "addr": "0x00008ffb",
+      "symbol": "move_ball",
+      "delta": 0
+    },
+    {
+      "line": 5,
+      "operand": "byte ptr [0x5cd]",
+      "kind": "memory",
+      "register": "DS",
+      "seg_off": "08DF:000005CD",
+      "addr": "0x000093bd",
+      "symbol": "quit",
+      "delta": 0
+    },
+    {
+      "line": 6,
+      "operand": "0x11b",
+      "kind": "target",
+      "seg_off": "08DF:0000011B",
+      "addr": "0x00008f0b",
+      "symbol": "main_loop",
+      "delta": 0
+    }
+  ],
+  "line_notes": [
+    {"line": 10, "note": "exit (0x4C)", "live": true}
+  ],
+  "names": [
+    {"field": "given.ref", "number": "0x00008f0b", "kind": "symbol", "name": "main_loop"}
+  ],
+  "session": {"alive": true, "running": false, "altered": true}
+}
+```
+
+</details>
+
+**75. `captures`**: OK captures: 10 files written by the session, all there
 
 <details><summary>call and reply</summary>
 
@@ -3307,7 +3540,7 @@ Also attached: image/png.
 
 </details>
 
-**74. `close`**: OK close: closed: quit
+**76. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
@@ -3339,7 +3572,7 @@ Also attached: image/png.
 
 </details>
 
-**75. `image_compare`**: OK compare: 944 pixels of the second brick's rectangle change at frame 104 of the film: the brick is gone
+**77. `image_compare`**: OK compare: 944 pixels of the second brick's rectangle change at frame 104 of the film: the brick is gone
 
 <details><summary>call and reply</summary>
 
@@ -3379,7 +3612,7 @@ Also attached: image/png.
 
 </details>
 
-**76. `audio_compare`**: OK measure: a sound, peaking at -4.98 dBFS
+**78. `audio_compare`**: OK measure: a sound, peaking at -4.98 dBFS
 
 <details><summary>call and reply</summary>
 
@@ -3397,14 +3630,14 @@ Also attached: image/png.
   "sample_rate_hz": 48000,
   "channels": 2,
   "bits": 16,
-  "window": [0.0, 0.641],
+  "window": [0.0, 0.642],
   "measures": [
     {
       "channel": 0,
       "peak_dbfs": -4.98,
       "rms_dbfs": -18.47,
       "silent": false,
-      "silence_spans": {"count": 1, "first": [0.5204, 0.641]},
+      "silence_spans": {"count": 1, "first": [0.5212, 0.642]},
       "onset_s": 0.0,
       "clipping_run": 7,
       "clipped": false
@@ -3414,13 +3647,13 @@ Also attached: image/png.
       "peak_dbfs": -4.98,
       "rms_dbfs": -18.47,
       "silent": false,
-      "silence_spans": {"count": 1, "first": [0.5204, 0.641]},
+      "silence_spans": {"count": 1, "first": [0.5212, 0.642]},
       "onset_s": 0.0,
       "clipping_run": 7,
       "clipped": false
     }
   ],
-  "pcm_sha256": "770c3049ce3f08cbbd1a4576cc1ebc8fc99a5f3674b073a1495d88dd2092e08a",
+  "pcm_sha256": "d9e7fde4e6cc592459de60472500d2ff670db86cfbc81759cfe0671319936f13",
   "path": "./demos/mines/boom.wav",
   "session": {"alive": false, "running": false, "altered": false}
 }

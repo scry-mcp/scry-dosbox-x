@@ -6,7 +6,7 @@
 1. `send_mouse` holds the red arrow of the Palette dialog until the brown slot is orange.
 2. One `perform` lifts the boat as a brush, flips it from the Brush menu and stamps it.
 
-<!-- moments-ms: 1084,2836 -->
+<!-- moments-ms: 2052,2836 -->
 <!-- demo-motion:end -->
 
 Electronic Arts' Deluxe Paint II, the 1988 PC version, at 640 x 480 in 16 colours. Every menu,
@@ -40,7 +40,7 @@ does not take your keyboard; `--watch` brings it in front, for when you want to 
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites this page's generated parts, `TRANSCRIPT.md`, `screen.png` and
   `loop.webp`, from a run where every step passed. It needs ffmpeg and `img2webp` on your
-  `PATH`, and Pillow and numpy (the `decorate` extra), which draw the call captions, the keys and the pointer over the loop.
+  `PATH`.
 
 Exit codes: 0 every step passed, 1 a step failed, 2 a usage error, 3 nothing was demonstrated.
 That last one is no program directory, another build of it, a DOSBox-X without relative motion or a
@@ -91,6 +91,8 @@ Reply, 2 of 12 fields:
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 51,
+      "frame_after": 74,
       "reply": {
         "summary": "send_mouse: pointer at 100,59, program's own pointer not read; sent, reaction not checked, 23 frames to frame 74",
         "status": "ok",
@@ -101,11 +103,15 @@ Reply, 2 of 12 fields:
     {
       "step": 1,
       "op": "watch_add",
+      "frame_before": 74,
+      "frame_after": 74,
       "reply": {"summary": "watch_add 31B2:31BC: armed", "status": "ok"}
     },
     {
       "step": 2,
       "op": "send_mouse",
+      "frame_before": 74,
+      "frame_after": 94,
       "reply": {
         "summary": "send_mouse: pointer at 7,39, program's own pointer not read; sent, reaction not checked, 22 frames to frame 94",
         "status": "ok",
@@ -116,6 +122,8 @@ Reply, 2 of 12 fields:
     {
       "step": 3,
       "op": "screen_wait",
+      "frame_before": 94,
+      "frame_after": 105,
       "reply": {
         "summary": "screen_wait screen 'palette': found after 28 firings of watch '31B2:31BC'",
         "status": "ok",
@@ -126,6 +134,8 @@ Reply, 2 of 12 fields:
     {
       "step": 4,
       "op": "send_mouse",
+      "frame_before": 105,
+      "frame_after": 115,
       "reply": {
         "summary": "send_mouse: pointer at 7,39; sent, reaction not checked, 76 frames to frame 115",
         "status": "ok",
@@ -142,7 +152,9 @@ Reply, 2 of 12 fields:
         "declarations_cleared": 1,
         "disarmed": ["BPMEM 31B2:31BC (3F)"],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 115,
+      "frame_after": 115
     }
   ],
   "steps_total": 6,
@@ -255,141 +267,177 @@ After each move the screen map is asked which screen is showing, because the sam
     {
       "step": 0,
       "op": "send_mouse",
+      "frame_before": 1068,
+      "frame_after": 1092,
       "reply": {
-        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; sent, reaction not checked, 24 frames to frame 1075",
+        "summary": "send_mouse: pointer at 605,185, program's own pointer not read; sent, reaction not checked, 24 frames to frame 1092",
         "status": "ok",
-        "stop_seq": 1121,
+        "stop_seq": 1119,
         "cause": "<volatile>"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
+      "frame_before": 1092,
+      "frame_after": 1107,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1090",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1107",
         "status": "ok",
-        "stop_seq": 1136,
+        "stop_seq": 1134,
         "cause": "<volatile>"
       }
     },
     {
       "step": 2,
       "op": "screen_wait",
+      "frame_before": 1107,
+      "frame_after": 1107,
       "reply": {"summary": "screen_wait screen 'paint: grab': already on screen", "status": "ok"}
     },
     {
       "step": 3,
       "op": "screen_map_find",
+      "frame_before": 1107,
+      "frame_after": 1107,
       "reply": {"summary": "screen_map_find: paint: grab (file), 14 controls", "status": "ok"}
     },
     {
       "step": 4,
       "op": "send_mouse",
+      "frame_before": 1107,
+      "frame_after": 1137,
       "reply": {
-        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; sent, reaction not checked, 30 frames to frame 1120",
+        "summary": "send_mouse: pointer at 184,399, program's own pointer not read; sent, reaction not checked, 30 frames to frame 1137",
         "status": "ok",
-        "stop_seq": 1166,
+        "stop_seq": 1164,
         "cause": "<volatile>"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
+      "frame_before": 1137,
+      "frame_after": 1152,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1135",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1152",
         "status": "ok",
-        "stop_seq": 1181,
+        "stop_seq": 1179,
         "cause": "<volatile>"
       }
     },
     {
       "step": 6,
       "op": "screen_wait",
+      "frame_before": 1152,
+      "frame_after": 1152,
       "reply": {"summary": "screen_wait screen 'paint: custom brush': already on screen", "status": "ok"}
     },
     {
       "step": 7,
       "op": "screen_map_find",
+      "frame_before": 1152,
+      "frame_after": 1152,
       "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
     },
     {
       "step": 8,
       "op": "send_mouse",
+      "frame_before": 1152,
+      "frame_after": 1172,
       "reply": {
-        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1155",
+        "summary": "send_mouse: pointer at 203,5, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1172",
         "status": "ok",
-        "stop_seq": 1201,
+        "stop_seq": 1199,
         "cause": "<volatile>"
       }
     },
     {
       "step": 9,
       "op": "screen_wait",
+      "frame_before": 1172,
+      "frame_after": 1172,
       "reply": {"summary": "screen_wait screen 'brush menu': already on screen", "status": "ok"}
     },
     {
       "step": 10,
       "op": "screen_map_find",
+      "frame_before": 1172,
+      "frame_after": 1172,
       "reply": {"summary": "screen_map_find: brush menu (file), 2 controls", "status": "ok"}
     },
     {
       "step": 11,
       "op": "send_mouse",
+      "frame_before": 1172,
+      "frame_after": 1192,
       "reply": {
-        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1175",
+        "summary": "send_mouse: pointer at 269,18, program's own pointer not read; sent, reaction not checked, 20 frames to frame 1192",
         "status": "ok",
-        "stop_seq": 1221,
+        "stop_seq": 1219,
         "cause": "<volatile>"
       }
     },
     {
       "step": 12,
       "op": "send_mouse",
+      "frame_before": 1192,
+      "frame_after": 1207,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1190",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1207",
         "status": "ok",
-        "stop_seq": 1236,
+        "stop_seq": 1234,
         "cause": "<volatile>"
       }
     },
     {
       "step": 13,
       "op": "screen_wait",
+      "frame_before": 1207,
+      "frame_after": 1217,
       "reply": {
         "summary": "screen_wait screen 'paint: custom brush': found after 10 frames",
         "status": "ok",
-        "stop_seq": 1237,
+        "stop_seq": 1235,
         "cause": "<volatile>"
       }
     },
     {
       "step": 14,
       "op": "screen_map_find",
+      "frame_before": 1217,
+      "frame_after": 1217,
       "reply": {"summary": "screen_map_find: paint: custom brush (file), 14 controls", "status": "ok"}
     },
     {
       "step": 15,
       "op": "send_mouse",
+      "frame_before": 1217,
+      "frame_after": 1238,
       "reply": {
-        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; sent, reaction not checked, 21 frames to frame 1221",
+        "summary": "send_mouse: pointer at 440,357, program's own pointer not read; sent, reaction not checked, 21 frames to frame 1238",
         "status": "ok",
-        "stop_seq": 1258,
+        "stop_seq": 1256,
         "cause": "<volatile>"
       }
     },
     {
       "step": 16,
       "op": "send_mouse",
+      "frame_before": 1238,
+      "frame_after": 1253,
       "reply": {
-        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1236",
+        "summary": "send_mouse: pointer at 610,300, program's own pointer not read; no button pressed; sent, reaction not checked, 15 frames to frame 1253",
         "status": "ok",
-        "stop_seq": 1273,
+        "stop_seq": 1271,
         "cause": "<volatile>"
       }
     },
     {
       "step": 17,
       "op": "screen_wait",
+      "frame_before": 1253,
+      "frame_after": 1253,
       "reply": {"summary": "screen_wait screen 'paint: custom brush': already on screen", "status": "ok"}
     },
     {
@@ -420,7 +468,9 @@ After each move the screen map is asked which screen is showing, because the sam
           {"name": "yellow", "rect": [620, 441, 17, 15], "centre": [628, 448]}
         ],
         "session": {"alive": true, "running": false, "altered": false}
-      }
+      },
+      "frame_before": 1253,
+      "frame_after": 1253
     }
   ],
   "steps_total": 19,
@@ -428,8 +478,8 @@ After each move the screen map is asked which screen is showing, because the sam
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 1098,
-    "stop_seq_last": 1273,
+    "stop_seq_first": 1096,
+    "stop_seq_last": 1271,
     "surveyed": 10,
     "by_cause": {
       "the retrace the input's post ran to,": 9,
