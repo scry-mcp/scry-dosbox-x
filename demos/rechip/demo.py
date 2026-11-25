@@ -260,12 +260,13 @@ DEMO = Demo(
     capture=lambda run: run.dir / "screen.png",
     moments=(Moment("pause", "hold",
                     "`send_keys` presses space and Home: the song stops and goes back to its "
-                    "first row."),
+                    "first row.", frames=130),
              Moment("play", "quit",
-                    "Space again: the program logs that it plays, and the pattern scrolls."),
+                    "Space again: the program logs that it plays, and the pattern scrolls.",
+                    frames=130),
              Moment("quit", "confirm",
                     "Alt+X opens the quit dialog; right and Enter answer it, and the log names "
-                    "the button.")),
+                    "the button.", frames=130)),
     alt="ReChip! driven by its keys: space pauses the song, Home rewinds it, and Alt+X quits",
     video=video,
     offers=frozenset({"cwd", "display"}), reads=frozenset({"cwd"}), precheck=checked,

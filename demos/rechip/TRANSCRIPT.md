@@ -7,12 +7,14 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 ```json
 {
   "shared": true,
-  "background": true,
+  "background": false,
   "display": "<host>",
   "profile": "<host>",
   "symbols": "<host>",
   "flags": ["-set", "cpu core=normal"],
+  "capture_video": true,
   "captures_dir": "<host>",
+  "binary": "~/.local/state/scry/apps/Scry DOSBox-X.app",
   "cwd": "<host>"
 }
 ```
@@ -23,11 +25,12 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
   "status": "ok",
   "pid": "<volatile>",
   "conf": "<volatile>",
+  "bundle": "~/.local/state/scry/apps/Scry DOSBox-X.app",
   "conf_digest": "<volatile>",
   "watched": true,
   "bound_s": 14400,
   "elapsed_s": "<volatile>",
-  "captures": "off",
+  "captures": "./tmp/demos/rechip/video",
   "state_dir": "<volatile>",
   "shared": true,
   "ready_after_s": "<volatile>",
@@ -38,8 +41,9 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
   "debugger_commands": ["A20", "BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "MEMDUMPLIN", "PIC", "PORTINFO", "PRESENCE", "RUNSTATE", "SAVESTATE", "STEPIN", "TAP", "VGAMEMDUMP"],
   "stub": "./src/scry_dosbox_x/guest/SCRY.COM",
   "input_port": "<volatile>",
-  "background": true,
+  "background": false,
   "presence": true,
+  "overlay": {"layers": ["edge", "pointer", "record"]},
   "window": "<volatile>",
   "logfile": "<volatile>",
   "declarations": {
@@ -138,6 +142,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
   "posted": 1,
   "bytes": 2,
   "frames": 2,
+  "frame_before": 719,
+  "frame_after": 726,
   "verify": {
     "checked": true,
     "seen": true,
@@ -209,6 +215,8 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
   "posted": 1,
   "bytes": 4,
   "frames": 4,
+  "frame_before": 730,
+  "frame_after": 748,
   "verify": {
     "checked": true,
     "seen": true,
@@ -226,16 +234,13 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 </details>
 
-**7. `log_wait`**: OK report: the program reported after the rewind
+**7. `wait`**: OK settle: the paused song waits under the playhead
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "pattern": "PERF  \\. fps=",
-  "channel": "guest",
-  "seconds": 10,
-  "since_mark": "<host>"
+  "seconds": 2
 }
 ```
 
@@ -243,56 +248,15 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 {
   "summary": "<volatile>",
   "status": "ok",
-  "verdict": "TARGET",
-  "pattern": "PERF  \\. fps=",
-  "channel": "guest",
-  "line": "<volatile>",
-  "already": "<volatile>",
-  "lines_total": "<volatile>",
-  "lines_before": "<volatile>",
-  "arrived_during": "<volatile>",
   "waited_s": "<volatile>",
-  "lines_examined": "<volatile>",
+  "note": "the machine is still running after 2 s; a deliberate wait that expires is this answer, not a failure",
   "session": {"alive": true, "running": true, "altered": false}
 }
 ```
 
 </details>
 
-**8. `log_wait`**: OK settled: a second report: the playhead is at the first row
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "pattern": "PERF  \\. fps=",
-  "channel": "guest",
-  "seconds": 10,
-  "since_mark": "<host>"
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "verdict": "TARGET",
-  "pattern": "PERF  \\. fps=",
-  "channel": "guest",
-  "line": "<volatile>",
-  "already": "<volatile>",
-  "lines_total": "<volatile>",
-  "lines_before": "<volatile>",
-  "arrived_during": "<volatile>",
-  "waited_s": "<volatile>",
-  "lines_examined": "<volatile>",
-  "session": {"alive": true, "running": true, "altered": false}
-}
-```
-
-</details>
-
-**9. `stop`**: OK hold: the machine stopped in the program, its symbols placed
+**8. `stop`**: OK hold: the machine stopped in the program, its symbols placed
 
 <details><summary>call and reply</summary>
 
@@ -325,7 +289,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 </details>
 
-**10. `read_memory`**: OK ticks: the program's own counter, which sets the pulse
+**9. `read_memory`**: OK ticks: the program's own counter, which sets the pulse
 
 <details><summary>call and reply</summary>
 
@@ -344,13 +308,16 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
   "seg_off": "<volatile>",
   "length": 4,
   "hex": "<volatile>",
+  "names": [
+    {"field": "given.ref", "number": "0x00657b9c", "kind": "symbol", "name": "_g_ticks"}
+  ],
   "session": {"alive": true, "running": false, "altered": false}
 }
 ```
 
 </details>
 
-**11. `run_for`**: OK into lit: to the middle of the next lit half of the pulse
+**10. `run_for`**: OK into lit: to the middle of the next lit half of the pulse
 
 <details><summary>call and reply</summary>
 
@@ -387,7 +354,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 </details>
 
-**12. `screen_map_write`**: OK map: 2 looks of the warning button
+**11. `screen_map_write`**: OK map: 2 looks of the warning button
 
 <details><summary>call and reply</summary>
 
@@ -413,7 +380,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 </details>
 
-**13. `screen_map_find`**: OK lit: the warning button shows warning_lit
+**12. `screen_map_find`**: OK lit: the warning button shows warning_lit
 
 <details><summary>call and reply</summary>
 
@@ -437,7 +404,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 </details>
 
-**14. `screen_wait`**: OK dark: the first frame it went dark
+**13. `screen_wait`**: OK dark: the first frame it went dark
 
 <details><summary>call and reply</summary>
 
@@ -474,7 +441,7 @@ Every call of the run with its reply, in order: 23 calls. `<volatile>` stands fo
 
 </details>
 
-**15. `screen_view`**: OK screen: mode M_LIN8, 1024x768 by palette index
+**14. `screen_view`**: OK screen: mode M_LIN8, 1024x768 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -515,7 +482,7 @@ Also attached: image/png.
 
 </details>
 
-**16. `resume`**: OK go on: the program runs on
+**15. `resume`**: OK go on: the program runs on
 
 <details><summary>call and reply</summary>
 
@@ -537,7 +504,73 @@ Also attached: image/png.
 
 </details>
 
-**17. `send_keys`**: OK play: space set the song playing from its first row
+**16. `log_wait`**: OK report: the program reported after the rewind
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "pattern": "PERF  \\. fps=",
+  "channel": "guest",
+  "seconds": 10,
+  "since_mark": "<host>"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "TARGET",
+  "pattern": "PERF  \\. fps=",
+  "channel": "guest",
+  "line": "<volatile>",
+  "already": "<volatile>",
+  "lines_total": "<volatile>",
+  "lines_before": "<volatile>",
+  "arrived_during": "<volatile>",
+  "waited_s": "<volatile>",
+  "lines_examined": "<volatile>",
+  "session": {"alive": true, "running": true, "altered": false}
+}
+```
+
+</details>
+
+**17. `log_wait`**: OK settled: a second report: the playhead is at the first row
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "pattern": "PERF  \\. fps=",
+  "channel": "guest",
+  "seconds": 10,
+  "since_mark": "<host>"
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "verdict": "TARGET",
+  "pattern": "PERF  \\. fps=",
+  "channel": "guest",
+  "line": "<volatile>",
+  "already": "<volatile>",
+  "lines_total": "<volatile>",
+  "lines_before": "<volatile>",
+  "arrived_during": "<volatile>",
+  "waited_s": "<volatile>",
+  "lines_examined": "<volatile>",
+  "session": {"alive": true, "running": true, "altered": false}
+}
+```
+
+</details>
+
+**18. `send_keys`**: OK play: space set the song playing from its first row
 
 <details><summary>call and reply</summary>
 
@@ -559,6 +592,8 @@ Also attached: image/png.
   "posted": 1,
   "bytes": 2,
   "frames": 2,
+  "frame_before": 1135,
+  "frame_after": 1141,
   "verify": {
     "checked": true,
     "seen": true,
@@ -576,13 +611,13 @@ Also attached: image/png.
 
 </details>
 
-**18. `stop`**: OK hold playing: the machine stopped in the program while the song plays
+**19. `wait`**: OK song: the song plays with its pattern scrolling
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "until": "protected"
+  "seconds": 2
 }
 ```
 
@@ -590,92 +625,15 @@ Also attached: image/png.
 {
   "summary": "<volatile>",
   "status": "ok",
-  "interrupted": true,
-  "runs_to_protected": "<volatile>",
-  "via": "break",
-  "pc": "<volatile>",
-  "cpu_mode": "<volatile>",
-  "frame": "<volatile>",
-  "regs": "<volatile>",
-  "watches": [],
-  "cause": "<volatile>",
-  "e9": "<volatile>",
-  "stop_seq": 5,
-  "instruction": "<volatile>",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**19. `record`**: OK playing: recorded 1050 frames in ./tmp/demos/rechip/playing.avi
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "frames": 1050,
-  "dest": "./tmp/demos/rechip/playing.avi",
-  "seconds": 300
-}
-```
-
-```json
-{
-  "summary": "<volatile>",
-  "status": "ok",
-  "verdict": "ELAPSED",
-  "polls": "<volatile>",
-  "pc": "<volatile>",
-  "cpu_mode": "<volatile>",
-  "frame": "<volatile>",
-  "regs": "<volatile>",
-  "watches": "<volatile>",
-  "cause": "<volatile>",
-  "e9": "<volatile>",
-  "stop_seq": "<volatile>",
-  "instruction": "<volatile>",
-  "emulated_before_s": "<volatile>",
-  "emulated_after_s": "<volatile>",
-  "frame_before": "<volatile>",
-  "frame_after": "<volatile>",
-  "cycles": "<volatile>",
-  "kind": "avi",
-  "frames": 1050,
-  "began": true,
-  "ended": true,
-  "path": "./tmp/demos/rechip/playing.avi",
-  "bytes": "<volatile>",
-  "avi_frames": "<volatile>",
-  "session": {"alive": true, "running": false, "altered": false}
-}
-```
-
-</details>
-
-**20. `resume`**: OK play on: the song plays on
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "seconds": 0
-}
-```
-
-```json
-{
-  "summary": "resume: running",
-  "status": "ok",
-  "omitted": ["output", "output_chars", "clipped"],
-  "how": "detail=True adds what the debugger printed for this command",
+  "waited_s": "<volatile>",
+  "note": "the machine is still running after 2 s; a deliberate wait that expires is this answer, not a failure",
   "session": {"alive": true, "running": true, "altered": false}
 }
 ```
 
 </details>
 
-**21. `send_keys`**: OK quit: File, Quit: the song is dirty, so the confirm opened
+**20. `send_keys`**: OK quit: File, Quit: the song is dirty, so the confirm opened
 
 <details><summary>call and reply</summary>
 
@@ -698,6 +656,8 @@ Also attached: image/png.
   "posted": 1,
   "bytes": 4,
   "frames": 4,
+  "frame_before": 1281,
+  "frame_after": 1300,
   "verify": {
     "checked": true,
     "seen": true,
@@ -709,6 +669,28 @@ Also attached: image/png.
     "waited_s": "<volatile>",
     "lines_total": "<volatile>"
   },
+  "session": {"alive": true, "running": true, "altered": false}
+}
+```
+
+</details>
+
+**21. `wait`**: OK dialog: the confirm dialog stays open
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "seconds": 2
+}
+```
+
+```json
+{
+  "summary": "<volatile>",
+  "status": "ok",
+  "waited_s": "<volatile>",
+  "note": "the machine is still running after 2 s; a deliberate wait that expires is this answer, not a failure",
   "session": {"alive": true, "running": true, "altered": false}
 }
 ```
@@ -737,6 +719,8 @@ Also attached: image/png.
   "posted": 2,
   "bytes": 6,
   "frames": 6,
+  "frame_before": 1442,
+  "frame_after": 1470,
   "verify": {
     "checked": true,
     "seen": true,
@@ -764,21 +748,25 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "close: quit, exit code 0",
+  "summary": "close: quit, no exit code: the emulator's exit code could not be read",
   "status": "ok",
   "closed": true,
   "pid": "<volatile>",
   "conf": "<volatile>",
+  "bundle": "~/.local/state/scry/apps/Scry DOSBox-X.app",
   "conf_digest": "<volatile>",
   "watched": true,
   "bound_s": 14400,
   "elapsed_s": "<volatile>",
-  "captures": "off",
+  "captures": "./tmp/demos/rechip/video",
   "state_dir": "<volatile>",
   "ended_by": "quit",
-  "exit_code": 0,
-  "omitted": ["stdout_tail", "errorlog_tail"],
-  "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
+  "exit_code": {"available": false, "why": "the emulator's exit code could not be read"},
+  "stdout_tail": {
+    "available": false,
+    "why": "the emulator wrote to a console of its own, which this server does not read (Windows, a build whose debugger draws a screen)"
+  },
+  "errorlog_tail": "6.000002457 frames=1468\nDEBUG: RUNSTATE running cycles=3847218124 ms=20927.000002457 frames=1468\nDEBUG: RUNSTATE running cycles=3848032057 ms=20929.000002457 frames=1468\nDEBUG: RUNSTATE running cycles=3848439023 ms=20930.000002457 frames=1468\nDEBUG: RUNSTATE running cycles=3849252956 ms=20932.000002457 frames=1468\nDEBUG: RUNSTATE running cycles=3849659923 ms=20933.000002457 frames=1468\nDEBUG: RUNSTATE running cycles=3850473856 ms=20935.000002457 frames=1468\nDEBUG: RUNSTATE running cycles=3850880825 ms=20936.000002457 frames=1468\nDEBUG: RUNSTATE running cycles=3851694800 ms=20938.000002457 frames=1469\nDEBUG: RUNSTATE running cycles=3852101767 ms=20939.000002457 frames=1469\nDEBUG: RUNSTATE running cycles=3852915700 ms=20941.000002457 frames=1469\nDEBUG: RUNSTATE running cycles=3853322667 ms=20942.000002457 frames=1469\nDEBUG: RUNSTATE running cycles=3854136600 ms=20944.000000000 frames=1469\nDEBUG: RUNSTATE running cycles=3854543567 ms=20945.000000000 frames=1469\nDEBUG: RUNSTATE running cycles=3855357501 ms=20947.000002457 frames=1469\nDEBUG: RUNSTATE running cycles=3855764468 ms=20948.000002457 frames=1469\nDEBUG: RUNSTATE running cycles=3861369583 ms=20962.000002457 frames=1470\nDEBUG: RUNSTATE running cycles=3861776550 ms=20963.000002457 frames=1470\nPRESENCE held frames=578 pointer=0 output=720x400x32 px_read=0 px_written=0 bytes_presented=0 uploads=1 upload_bytes=1152000 layers=edge,pointer,record\nSDLNET: Closed client TCP listening socket\nStopped capturing video.\n--END OF LOG--\n",
   "draft": "<volatile>",
   "session": {"alive": false, "running": false, "altered": false}
 }
