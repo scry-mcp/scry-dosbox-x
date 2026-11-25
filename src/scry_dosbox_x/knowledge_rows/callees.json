@@ -677,7 +677,7 @@
   "dosbox-x:DISNEY_disable": "engine",
   "dosbox-x:DISNEY_PlayStereo": "engine",
   "dosbox-x:DISNEY_CallBack": "engine",
-  "dosbox-x:Install": "none:accessor",
+  "dosbox-x:Install": "engine",
   "dosbox-x:memmove": "none:libc",
   "dosbox-x:GUS_EffectiveIRQStatus": "none:accessor",
   "dosbox-x:GUS_EmulationIRQStatus": "none:accessor",
