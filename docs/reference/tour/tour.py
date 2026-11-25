@@ -661,7 +661,7 @@ STEPS = [
     Step("quit", "write", {"ref": "quit", "data_hex": "01"}, written),
     Step("exit", "breakpoint_interrupt", {"number": "0x21", "ah": "0x4C"}, exit_armed),
     Step("leaving", "resume", {"seconds": WAIT_S}, leaving, volatile=AFTER_PLAY),
-    Step("exit listing", "disassemble", {"ref": "main_loop", "length": 35}, exit_listing),
+    Step("exit listing", "disassemble", {"ref": "main_loop", "length": 32}, exit_listing),
     Step("captures", "captures", {}, all_present,
          volatile={"bytes": "a compressed file is the size the host's zlib makes it, and the "
                             "replay document carries the host's paths"}),

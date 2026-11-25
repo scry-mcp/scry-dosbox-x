@@ -58,13 +58,15 @@ def exit_stop() -> Any:
     from scry_dosbox_x import session as ds
     from scry_dosbox_x import state as dstate
     from scry_dosbox_x import symbols as sym
+    image = (BRICKS / "BRICKS.COM").read_bytes()
+    exit_at = image.find(b"\xb8\x00\x4c\xcd\x21")
+    assert exit_at >= 0, "the exit's own bytes are not in BRICKS.COM"
     regs = {"EAX": "00004C00", "EBX": "0", "ECX": "0", "EDX": "0", "ESI": "0", "EDI": "0",
-            "EBP": "0", "ESP": "0000FFFE", "EIP": "0000013C", "CS": "08DF", "DS": "08DF",
-            "ES": "08DF", "FS": "0", "GS": "0", "SS": "08DF"}
+            "EBP": "0", "ESP": "0000FFFE", "EIP": f"{0x100 + exit_at + 3:08X}", "CS": "08DF",
+            "DS": "08DF", "ES": "08DF", "FS": "0", "GS": "0", "SS": "08DF"}
     machine = CodeMachine(regs)
     start = 0x8DF * 16 + 0x100
-    machine.mem[start:start + (BRICKS / "BRICKS.COM").stat().st_size] = (
-        BRICKS / "BRICKS.COM").read_bytes()
+    machine.mem[start:start + len(image)] = image
     install()
     dstate.STATE.session = cast(ds.Session, machine)
     table = "\n".join(f"{o} {k} {n}" for o, k, n in (
@@ -78,7 +80,7 @@ def test_the_exit_listing_is_judged_on_the_game_s_own_bytes(tour: ModuleType,
                                                             exit_stop: Any) -> None:
     from scry_dosbox_x import code
     from scry_dosbox_x import session as ds
-    reply = code.disassemble(cast(ds.Session, exit_stop), "main_loop", 35)
+    reply = code.disassemble(cast(ds.Session, exit_stop), "main_loop", 32)
     assert "named from the registers" in tour.exit_listing(reply, None)
     reply["line_notes"] = []
     with pytest.raises(StepFailed):
