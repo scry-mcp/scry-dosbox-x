@@ -11,7 +11,7 @@
 MicroProse's *X-COM Apocalypse* (1997) is a 32-bit DOS/4GW game that draws its menus and city
 in 640 x 480. This demo starts it with every INT 21h call recorded, skips the intro, starts a
 new campaign from the menus and films the city appearing. Then it lists the files the game
-looked for while it loaded: the game finds each file by its exact name before it opens it.
+looked for while it loaded, each by its exact name before it opens it.
 
 ## The program
 
@@ -281,13 +281,13 @@ The game opens each file through a FindFirst of its exact name, so the DOS chann
 
 1. Start DOSBox-X with `demos/xcom/xcom.conf`, in my copy of the game, running `XCOMAPOC.EXE`
    with a window and every DOS call recorded.
-2. Let it run, and on the DOS channel wait for it to look for `smk/intro1.smk`; press Esc, wait
-   for `ufodata/titles.pcx`, press Esc, then wait for `ufodata/b-setup.pcx` and
+2. Let it run, and on the DOS channel wait for it to look for `smk/intro1.smk`; press Esc.
+3. Wait for `ufodata/titles.pcx`, press Esc, then wait for `ufodata/b-setup.pcx` and
    `savegame/tactgame.09`, the main menu and its last save slot.
-3. Stop, load `xcom-screen-map.json`, wait for the main menu on screen and press
+4. Stop, load `xcom-screen-map.json`, wait for the main menu on screen and press
    Start Campaign Game for half a second; wait for the difficulty menu and press Novice.
-4. Let it run until it looks for `UFODATA/CITYMAP1.BLD`, stop, and record 900 frames of the city.
-5. List the FindFirst calls the game made, take a picture of the screen and close.
+5. Let it run until it looks for `UFODATA/CITYMAP1.BLD`, stop, and record 900 frames of the city.
+6. List the FindFirst calls the game made, take a picture of the screen and close.
 
 </details>
 

@@ -190,14 +190,12 @@ The tools: [Names](docs/reference/names.md).
 A reply calls a number by its name where the server knows one, so you do not look it up: `exit (0x4C)`, with the number and its name in the reply's `names` field.
 
 - **What it answers.** DOS, BIOS and driver calls, by interrupt and function; the DOS error codes; and the registers and commands of the chips both servers share. A number it has no entry for stays a number.
-- **Each entry is checked against its source.** It cites the lines it was read from: the interrupt list's section, DOSBox-X's own handler, or both. Checked against its source is not complete: an entry says what its source says.
+- **Each entry is checked against its source.** It cites the lines it was read from: the interrupt list's section, DOSBox-X's own handler, or both. An entry says what its source says, which is not always what DOSBox-X does.
 - **Where the reply says it.** `names` lists each named number with its `field`, its `kind`, its `name` and the `id` of its entry; `names_cut` counts what did not fit. The one-line `summary` carries the same names, and a call's own arguments are named under `given.<argument>`.
 - **`names=false` on `start`** leaves replies bare and a disassembled line with no note. It is a start profile key like any other.
 - **`knowledge_find`** asks the base directly: by `id`, by `kind` and `key`, or by words. It needs no session and answers while the program runs. `status` counts the entries it serves, in `knowledge`.
 - **A disassembled line's note.** `disassemble` gains `line_notes` for each line whose instruction states what the base names, and a stop's instruction gains `note`, with `int 21h` named from the registers. Your own comments stay apart.
 - **The log of DOS calls.** The `dos` channel of `log` and `log_wait` names each call and each error the same way.
-
-Where the base is going: an entry states the documented behaviour, with what DOSBox-X does as a note beside it where the two differ. Today an entry's `behaviour` is what DOSBox-X does, and its fields will change with this.
 
 The DOS and BIOS entries are checked against [Ralf Brown's Interrupt List](https://www.cs.cmu.edu/~ralf/files.html), with thanks. The list's page holds it and its licence.
 
