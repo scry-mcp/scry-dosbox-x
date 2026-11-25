@@ -29,8 +29,8 @@ What a client of the server notices.
   session started with `capture_video` records its program, each on by default. `start` and
   `status` answer `overlay` with the layers drawn and, for each the build cannot draw, why;
   `build_check` lists the layers a build draws as `presence_layers`. This server needs the
-  PRESENCE command's protocol 4: a bundle built before it is refused by name, and nothing is
-  drawn.
+  PRESENCE command's protocol 4: an older bundle is refused at the first delivery, `presence`
+  names the version the build has and the 4 this server needs, and nothing is drawn.
 - Every demo is shown moving: a `loop.webp` beside its README replaces `loop.mp4`. It holds up
   to five moments of the demo's own run, scaled up so its pixels stay sharp. A moment is cut
   from a `record` call or, in Minesweeper and the two Deluxe Paint demos, from the video of a
@@ -45,7 +45,7 @@ What a client of the server notices.
 - The README opens with what the server lets you ask, its lead demo moving at the page's width
   and one exchange of that demo's run. Its `## Install` section has the lines to paste for ten
   MCP clients and a first question to ask.
-- Takes scry-core 0.121.0.
+- Takes the scry-core release `pyproject.toml` pins.
 - Each tool's reference entry opens with what the tool does and an example to try: what to ask,
   the call and the reply it got. Its arguments, what comes back, what it refuses and why follow,
   each under its own heading.

@@ -36,7 +36,6 @@ from demos.dpaint.program import (  # noqa: E402
 from demos.host import expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-#: The layers that exist for this demo: its calls, the keys and the mouse it sends.
 #: The palette indices of the swatches the screen map names.
 COLOURS = {"navy": 1, "brown": 6, "blue": 9, "yellow": 14, "white": 15, "peach": 52,
            "orange": 55}

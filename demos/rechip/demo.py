@@ -40,7 +40,6 @@ from demos.host import (  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-#: The layers that exist for this demo: its calls and the keys it sends.
 #: What the built copy holds: the start profile, the DEV build and the conf the profile names.
 PROFILE = Path(".scry/start/dev.json")
 SYMBOLS = Path("build/RECHIPD.SYM")

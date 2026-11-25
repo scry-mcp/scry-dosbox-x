@@ -51,7 +51,6 @@ from demos.host import (  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-#: The layers that exist for this demo: its calls and the mouse it sends.
 #: These mirror mines.asm: a beginner's board, its cells' size, and where the pointer waits
 #: while a screen is read, off every region the map signs.
 ROWS, COLS, MINES, CELL = 9, 9, 10, 24

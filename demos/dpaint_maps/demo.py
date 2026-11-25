@@ -35,7 +35,6 @@ from demos.dpaint.program import (  # noqa: E402
 from demos.host import expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-#: The layers that exist for this demo: its calls, the keys and the mouse it sends.
 #: The colours the checked rows cross, by palette index; the brown slot holds orange once mixed,
 #: and the frame is the white canvas left around the scene.
 COLOURS = {"orange": 6, "blue": 1, "black": 0, "yellow": 14, "frame": 15}

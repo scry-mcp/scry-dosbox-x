@@ -32,7 +32,6 @@ from demos.host import (  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-#: The layers that exist for this demo: its calls and the keys it sends.
 #: What the game's copy holds: the program and its symbols, then what its store declares.
 EXE, MAP = Path("EXES/LINEUP.EXE"), Path("EXES/LINEUP.MAP")
 PROFILE = Path(".scry/start/dos.json")
