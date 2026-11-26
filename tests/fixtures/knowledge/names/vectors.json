@@ -18,7 +18,7 @@
      "text": "Interrupt 33h belongs to the mouse driver.",
      "quotes": [
       {
-       "ref": "datasheet:names.raw.txt",
+       "ref": "datasheet:names-raw.txt",
        "lines": "5",
        "sha": "6044d8b0988741873f81eb090087cdd77af918c38101d4719e70e81fbc2756d6"
       }

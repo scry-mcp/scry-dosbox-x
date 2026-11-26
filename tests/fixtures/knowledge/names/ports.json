@@ -13,7 +13,7 @@
    "name": "dac write index",
    "regions": [
     {
-     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "ref": "dosbox-x:src/hardware/vga-dac.cpp",
      "function": "write_p3c8"
     }
    ],
@@ -25,7 +25,7 @@
      "text": "The DAC index at hex 03C8 selects the palette entry the next data write reaches.",
      "quotes": [
       {
-       "ref": "datasheet:names.raw.txt",
+       "ref": "datasheet:names-raw.txt",
        "lines": "1-2",
        "sha": "56f9873ac0bb331771d948087268b8f10dbf9dafac4897111b29ec8d82b7d2b6"
       }
@@ -39,7 +39,7 @@
      "text": "VGA_SetupDAC registers write_p3c8 on port 0x3c8.",
      "quotes": [
       {
-       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "ref": "dosbox-x:src/hardware/vga-dac.cpp",
        "lines": "4",
        "sha": "1fe2b1ba1b18b078548895b6116163150db437970e90dcf7a09933838cbf652c"
       }
@@ -53,7 +53,7 @@
    "name": "dac read index",
    "regions": [
     {
-     "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+     "ref": "dosbox-x:src/hardware/vga-dac.cpp",
      "function": "read_p3c8"
     }
    ],
@@ -65,7 +65,7 @@
      "text": "The DAC index at hex 03C8 gives the palette entry the next data read reaches.",
      "quotes": [
       {
-       "ref": "datasheet:names.raw.txt",
+       "ref": "datasheet:names-raw.txt",
        "lines": "3",
        "sha": "157a466ed554650583051ec8685bd222aa70c6d6e2a4f3dd2654ccb1a417fc91"
       }
@@ -79,7 +79,7 @@
      "text": "VGA_SetupDAC registers read_p3c8 on port 0x3c8.",
      "quotes": [
       {
-       "ref": "dosbox-x:src/hardware/vga_dac.cpp",
+       "ref": "dosbox-x:src/hardware/vga-dac.cpp",
        "lines": "5",
        "sha": "6e5de324d12a779c123b0e60603669f523af988d900ae73a78b4859bcb4df0ea"
       }
@@ -104,7 +104,7 @@
      "text": "The keyboard controller's data port is at hex 60.",
      "quotes": [
       {
-       "ref": "datasheet:names.raw.txt",
+       "ref": "datasheet:names-raw.txt",
        "lines": "4",
        "sha": "640536fc956c64ee13b2de2e7722f61307bcbe2e653ac0d26ed2565314c28f37"
       }
