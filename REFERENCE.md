@@ -187,7 +187,7 @@ The tools: [Names](docs/reference/names.md).
 
 ## Knowledge base
 
-A reply calls a number by its name where the server knows one, so you do not look it up: `exit (0x4C)`, with the number and its name in the reply's `names` field.
+A reply calls a number by its name where the server knows one, so you do not look it up: `terminate with code (0x4C)`, with the number and its name in the reply's `names` field.
 
 - **What it answers.** DOS, BIOS and driver calls, by interrupt and function; the DOS error codes; and the registers and commands of the chips both servers share. A number it has no entry for stays a number.
 - **Each entry is checked against its source.** It cites the lines it was read from: the interrupt list's section, DOSBox-X's own handler, or both. An entry says what its source says, which is not always what DOSBox-X does.
