@@ -132,6 +132,138 @@
    "tool_version": "26.10.0",
    "pdf": "b3c040ef793d2f2b5093572b6267ebfb0d8ed9b964d64315a8ec22f6981edfea",
    "capture": "fb651dbbe995325e2556aa86ed55d59527e42417a625666389c67c88d7b34e18"
+  },
+  "ATA-ATAPI-1.raw.txt": {
+   "title": "AT Attachment Interface for Disk Drives, X3T10/791D revision 4c (the draft proposed standard later published as ANSI X3.221-1994)",
+   "url": "https://archive.org/download/SCSISpecificationDocumentsATAATAPI/ATA_ATAPI/AT%20Attachment%20Interface%20for%20Disk%20Drives%20Revision%204c.pdf",
+   "archive": "https://archive.org/details/SCSISpecificationDocumentsATAATAPI",
+   "class": "maker-guide",
+   "text": "layer",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "29f47b7b9f7f912abad8d9aa22d6cc2a77eec69fff1b8525eb58c88a87b159d1",
+   "capture": "4e4cfb61b8f24547ef3b3ee8bac5345ab114f38fafbc4e50bff075ec91841090"
+  },
+  "IMFC-TechnicalReference.raw.txt": {
+   "title": "IBM PC Music Feature Technical Reference, first edition (March 1987)",
+   "url": "https://archive.org/download/ibm-pc-music-feature-technical-reference/IMFTechnicalReference_text.pdf",
+   "archive": "https://archive.org/details/ibm-pc-music-feature-technical-reference",
+   "class": "maker-guide",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "ab5e53d80cc5bfb6dc3ae2fe1cdb0b422c578b908785fe0cac793f45ab81c45d",
+   "capture": "8bb2bbc8ca1a9815dfe8d3a3c6b223f67eaf797f8a57c01e2851efcc609da3dd"
+  },
+  "MOS6581.raw.txt": {
+   "title": "MOS Technology 6581 Sound Interface Device (SID) preliminary datasheet, October 1982",
+   "url": "https://archive.org/download/mos_6581_sid_preliminary_october_1982/mos_6581_sid_preliminary_october_1982.pdf",
+   "archive": "http://www.6502.org/documents/datasheets/mos/mos_6581_sid.pdf",
+   "class": "maker-datasheet",
+   "text": "layer",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "0039abf5407b1725b72b0a6418efd37ed2b36577e00035438753754af11f1730",
+   "capture": "8e99588f429a71b43353c74e91a88416040782b362f1c93ee16177867245de97"
+  },
+  "PASTECH-DeveloperToolkitReference.raw.txt": {
+   "title": "Media Vision Pro AudioSpectrum Developer's Toolkit Reference, July 1992",
+   "url": "https://www.symphoniae.com/soundcard/MediaVision/SDK/PASSDK_201.zip",
+   "archive": "http://mtrx.org/mirrors/misc/mindcandydvd.com/pub/misc/Hardware/Media%20Vision/PASSDK_201.zip",
+   "class": "maker-guide",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "0fc8d9c29f0224511e7ae511f88deedb33ac5181aa583e8a7806178f000dcb45",
+   "capture": "9b7dbf4f2d91cab28bc4e23b765aa3a541102290c53edc871416bb66f05c466d"
+  },
+  "IBM-PS1-Technical-Reference-57F1970.raw.txt": {
+   "title": "IBM PS/1 Technical Reference, first edition (P/N 57F1970)",
+   "url": "http://ftp.oldskool.org/pub/drivers/IBM/PS1/Technical%20Reference%20for%20PS1%20Computer%20-%20PN%2057F1970.pdf",
+   "archive": "http://ftp.infania.net/pub/DOS%20Drivers/IBM%20PS1/Technical%20Reference%20for%20PS1%20Computer%20-%20PN%2057F1970.pdf",
+   "class": "maker-guide",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "b5bb9c145f12370fa8760bfe2cc222f3a617f183abe42a7ff60e7ca87fbe8ca5",
+   "capture": "1e7f0eaadde17b3c932eb803667ce52f4cfc4558dfd21f2e4098398cb2e67a3a"
+  },
+  "PVGA1A.raw.txt": {
+   "title": "Western Digital PVGA1A video graphics array device, data book section 19",
+   "url": "http://bitsavers.trailing-edge.com/components/westernDigital/_dataBooks/1991_SystemLogic_Imaging_Storage/19_PVGA1A.pdf",
+   "archive": "http://web.archive.org/web/20240519024712/http://bitsavers.trailing-edge.com/components/westernDigital/_dataBooks/1991_SystemLogic_Imaging_Storage/19_PVGA1A.pdf",
+   "class": "maker-datasheet",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "866c34f8c801a58ac29076d2a14acb076994df1cbfde320ddd77f742f4ea899b",
+   "capture": "897a7520ceb1a8e6a016e18ab552341688ee5c1d7020263ee367f6d9879a1b6c"
+  },
+  "DB02-C_S3_86C928_GUI_Accelerator_Sep92.raw.txt": {
+   "title": "S3 Incorporated 86C928 GUI Accelerator data book (DB02-C)",
+   "url": "https://bitsavers.org/components/s3/DB02-C_S3_86C928_GUI_Accelerator_Sep92.pdf",
+   "archive": "https://ftp.mirrorservice.org/sites/www.bitsavers.org/components/s3/DB02-C_S3_86C928_GUI_Accelerator_Sep92.pdf",
+   "class": "maker-datasheet",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "09f6ce97e3aa707df87d41cc786173ff63c7cd0fb4cd61f6b7f9870aa41ba039",
+   "capture": "5093f6925e3cdbbcfd70dec51fb13b028deafd7cfe14a15d0b1586460d17c07a"
+  },
+  "Tseng-ET4000-Graphics-Controller-1990.raw.txt": {
+   "title": "Tseng Labs ET4000 Graphics Controller data book",
+   "url": "https://bitsavers.trailing-edge.com/components/tsengLabs/Tseng_Labs_ET4000_Graphics_Controller_1990.pdf",
+   "archive": "http://ftpmirror.your.org/pub/misc/bitsavers/components/tsengLabs/Tseng_Labs_ET4000_Graphics_Controller_1990.pdf",
+   "class": "maker-datasheet",
+   "text": "layer",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "db23f00af4e83256d746dbcb9869926ed1e4e0dbde40e21a9b338e43038f9304",
+   "capture": "fe3c2614334360f8d47b26e13d248db7f49d6a36a0f11b3f8b30b4b0a38b9890"
+  },
+  "S3-Trio64.raw.txt": {
+   "title": "S3 Trio32/Trio64 Integrated Graphics Accelerators, DB014-B, March 1995",
+   "url": "https://bitsavers.org/components/s3/DB014-B_Trio32_Trio64_Graphics_Accelerators_Mar1995.pdf",
+   "archive": "https://archive.org/download/bitsavers_s3DB014BTrcceleratorsMar1995_13849936/DB014-B_Trio32_Trio64_Graphics_Accelerators_Mar1995.pdf",
+   "class": "maker-datasheet",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "7528eefe26846da697541ccab575610dad3eaa7ab7de0ac7147d02bd2ddf4277",
+   "capture": "966e0f07b2a24c74dc86f1e42b629c04049a102b710b7e3788e05fa7ad2f7ccb"
+  },
+  "S3-Trio64VPlus.raw.txt": {
+   "title": "S3 Trio64V+ Integrated Graphics/Video Accelerator, DB018-A, July 1995",
+   "url": "https://bitsavers.org/components/s3/DB018-A_Trio64V+_Integrated_Graphics_Video_Accelerator_Jul95.pdf",
+   "archive": "https://archive.org/download/bitsavers_s3DB018ATrhicsVideoAcceleratorJul95_15892560/DB018-A_Trio64V+_Integrated_Graphics_Video_Accelerator_Jul95.pdf",
+   "class": "maker-datasheet",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "c5027001fb5f30f44abe58b8ff02d53f7a8b467b0a2dde5e806cc16840b18148",
+   "capture": "e1f0b393370a1459fc347b44ff0619afe510b476e5206a7705185ff78f798ac5"
+  },
+  "S3-ViRGE.raw.txt": {
+   "title": "S3 ViRGE Integrated 3D Accelerator, DB019-B, August 1996",
+   "url": "https://bitsavers.org/components/s3/DB019-B_ViRGE_Integrated_3D_Accelerator_Aug1996.pdf",
+   "archive": "https://archive.org/download/bitsavers_s3DB019BVileratorAug1996_10670720/DB019-B_ViRGE_Integrated_3D_Accelerator_Aug1996.pdf",
+   "class": "maker-datasheet",
+   "text": "ocr",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "d9caf3430ced5db7b7985b5ef3bc4a283c457c75f78026887e06e47d151cd602",
+   "capture": "8773664a6caf75b332bf06aedfa108f7f7403610f37b95d2de703f59bcfd0443"
+  },
+  "CS4231A.raw.txt": {
+   "title": "Crystal Semiconductor CS4231A parallel interface multimedia audio codec",
+   "url": "https://bitsavers.org/components/crystalSemiconductor/_dataSheets/CS4231A.pdf",
+   "archive": "http://ftpmirror.your.org/pub/misc/bitsavers/components/crystalSemiconductor/_dataSheets/CS4231A.pdf",
+   "class": "maker-datasheet",
+   "text": "layer",
+   "tool": "pdftotext -raw",
+   "tool_version": "26.10.0",
+   "pdf": "752f570957bbd93af4b72e67fd27df85c7b2f1215f63f39271804bed6b0ab1b7",
+   "capture": "3f1a9f8fd24f32fa824fedfd8311102481a6a796b1961a4071e5e5f9759e97df"
   }
  }
 }

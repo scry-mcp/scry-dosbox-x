@@ -1,0 +1,2515 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "pci_bus",
+ "title": "The PCI configuration ports and registers",
+ "kind": "register",
+ "scope": "pci",
+ "covers": "PCI configuration mechanism 1: the address port at 0CF8h, the data port at 0CFCh, the 64-byte header of configuration space and the device-specific registers that DOSBox-X's emulated VGA and Voodoo cards add, as Ralf Brown's list gives them",
+ "source": "official",
+ "entries": [
+  {
+   "key": "0xCF8",
+   "name": "address port",
+   "aliases": [
+    "configuration address port",
+    "PCI configuration address"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.C",
+     "lines": "364-381"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "58"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "84-85"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "376-377"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "65-68"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 0CF8h is the 32-bit configuration address port of PCI mechanism 1, written only, beside the data port at 0CFCh.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.C",
+       "lines": "364",
+       "sha": "b0fdbeaa52d9386f4c8e145f0bad60a62253e2eacccf2c8bd56834a7478e239f"
+      },
+      {
+       "ref": "rbil61:PORTS.C",
+       "lines": "367-368",
+       "sha": "1478f575d5a4390e5bcef25dd05f8ffe721078b26c757accce59adc7400d033d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write loads the address: bus in bits 23-16, device in 15-11, function in 10-8 and register number in 7-2; bits 30-24 and 1-0 are reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.C",
+       "lines": "370-377",
+       "sha": "b30b42793a64525067fa497dddae66925d3747596b93b81ed21e80f1bf6b7004"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 31 set enables configuration space mapping, and the registers are DWORDs addressed by bits 7-2.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.C",
+       "lines": "378",
+       "sha": "44e092450f56ff58522f7cdc0f0eec07e6da263707d2182f71db8c31c0d92070"
+      },
+      {
+       "ref": "rbil61:PORTS.C",
+       "lines": "379-380",
+       "sha": "99a8fb2f4288e04b7097c285544ac21a9993b425ddd0209cb83acbcfb0a04d12"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "InitializePCI installs write_pci_addr and read_pci_addr at 0CF8h as DWORD handlers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "376-377",
+       "sha": "1f791f8c3353beccca7960a9071c4b795f5da0ceee3da2bfeddd7f4363c4d4d6"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "The address port is readable: a read returns the last value written to it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "84-85",
+       "sha": "9d1e8788beb89f9baad8335ad26b37ead589f45646284c89df49476b2fa87f90"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "54-58",
+       "sha": "4ee4fa26f6a096448c0ee3c0acf30ae31e3bfe38c18d3d4de923191a09856e0f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "rbil61:PORTS.C",
+     "lines": "365",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "58",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "rbil61:PORTS.C",
+     "lines": "381",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "65-68",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xCFC..0xCFF",
+   "name": "data port",
+   "aliases": [
+    "configuration data port",
+    "PCI configuration data"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:PORTS.C",
+     "lines": "368"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2527-2528"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "64-76"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "91-106"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "378-383"
+    },
+    {
+     "ref": "rbil61:PORTS.C",
+     "lines": "373"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "0CFCh is the DWORD configuration data port, reached when bit 31 of the address port is set.",
+     "quotes": [
+      {
+       "ref": "rbil61:PORTS.C",
+       "lines": "368",
+       "sha": "1b578840c311c39568e822eaac76148041ffb135fa8cbfc1ce3811620ef44aee"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of the data port returns the configuration data the address port selects.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2527-2528",
+       "sha": "3818ae6c1a7797a762cc839b36930496627afb34cbfb643cc007270e0e1eb382"
+      },
+      {
+       "ref": "rbil61:PORTS.C",
+       "lines": "368",
+       "sha": "1b578840c311c39568e822eaac76148041ffb135fa8cbfc1ce3811620ef44aee"
+      },
+      {
+       "ref": "rbil61:PORTS.C",
+       "lines": "373",
+       "sha": "fcea103394e6865cf8403adbfabd5c1169747b3bba9cf4e23a0dcde01b0ea632"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write of the data port stores into the configuration data the address port selects.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2527-2528",
+       "sha": "3818ae6c1a7797a762cc839b36930496627afb34cbfb643cc007270e0e1eb382"
+      },
+      {
+       "ref": "rbil61:PORTS.C",
+       "lines": "368",
+       "sha": "1b578840c311c39568e822eaac76148041ffb135fa8cbfc1ce3811620ef44aee"
+      },
+      {
+       "ref": "rbil61:PORTS.C",
+       "lines": "373",
+       "sha": "fcea103394e6865cf8403adbfabd5c1169747b3bba9cf4e23a0dcde01b0ea632"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "InitializePCI installs write_pci and read_pci at 0CFCh to 0CFFh, with byte, word and DWORD widths.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "378-383",
+       "sha": "ecaf93bef47397aa973f6c050c970817e726daed164dc91228b733a51349784e"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read with bit 31 clear or of an empty bus, device or slot returns all ones; a write to an empty slot is dropped.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "71-76",
+       "sha": "98db123bc1913fd2a4fa94bc21f9b1277cc2c467ced2f6499820a8f1223bd683"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "91-97",
+       "sha": "b000939e235c4857d70e585f4ba8810bfe1c034b43bf25ba27f9b978a97b2221"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "98-106",
+       "sha": "a6333ce9050a862643d224d8f7b1a01dfd11a2c8a0ddd0b9a30717087e792d4e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "64-71",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "72-76",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "91-97",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "98-103",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x00..0x01",
+   "name": "vendor id",
+   "aliases": [
+    "vendor ID",
+    "configuration vendor ID"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "69-70"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "567"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "1192"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2529-2530"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "119-121"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "130"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "161"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "244"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "52-58"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "98-106"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "82-90"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The first word of configuration space is the vendor ID, read-only; FFFFh answers when no device exists.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2529-2530",
+       "sha": "2144d2d579c981de2ac668c61b68dd65f58312359189fee603ab0437c5700653"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The list gives vendor ID 121Ah to 3DFX Interactive and 5333h to S3.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "69-70",
+       "sha": "7e07509ef44ae3c49bea39422f65138d5fe72ccd0bf976c12d2c4038b86db3da"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "567",
+       "sha": "d7696e0c8fedcd3af2fe4a84187122c4cb1b4933da84212d40f28c3d82af200b"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "1192",
+       "sha": "dd9c9f8b6ebb11e3212c9b7430247d826ce8e5ab1e2a02f576102bd5c4f35cee"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The vendor ID is read as a word at 00h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2529",
+       "sha": "3b0114758c396cf230831eb0050be2d345072949b095a3d730d74c12bfa367ce"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X stores 121Ah for the Voodoo, 5333h for the S3 card and D05Bh for its own VGA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "130",
+       "sha": "f4b630ad1b7e804b69574a6453fb984a71334603ca6a81e183d86c69b65d70c4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "161",
+       "sha": "3056078458a70893eba7d6f1922c7b1cee47a0678b0619d48c9bd37e711773b1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "244",
+       "sha": "49ba9dafc887ed750e58d95504002d105d54853389771ee117bb049ea04fb25f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "121",
+       "sha": "8854145fc34b5d69c31b151e31d16520c99567cca73e797ccaf421d082c2db4d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "52-58",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "119-120",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "98-106",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "82-90",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x02..0x03",
+   "name": "device id",
+   "aliases": [
+    "device ID",
+    "configuration device ID"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2531"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "131"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "190"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "248"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "52-58"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "119-120"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "122"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "82-90"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The second word of configuration space is the device ID, read-only.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2531",
+       "sha": "88740bc46e53a05c4a1d841417dee68359f96cb9f6a8f48af881ad28f72e7b89"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The device ID is read as a word at 02h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2531",
+       "sha": "88740bc46e53a05c4a1d841417dee68359f96cb9f6a8f48af881ad28f72e7b89"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X stores 6845h for its own VGA, 8811h for the S3 card by default and 0001h or 0002h for the Voodoo.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "131",
+       "sha": "4005e624c73d976bff66b48bbc9ff9b773b21e1db296c5443411880dbafd0308"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "190",
+       "sha": "447303223dad3759d91979ab40db5962cd1a6be486f4d02964f90bfb4f2ea32f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "248",
+       "sha": "ab113d26b437940863c8658042e3736ae2f5e0e0d3231872b33ffbfb253c5a8c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "122",
+       "sha": "8207f49bb8ebfd604f6a2070b018095d87127e44b5016498796e0f67776a5228"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "52-58",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "119-120",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "82-90",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x04..0x05",
+   "name": "command register",
+   "aliases": [
+    "command word",
+    "PCI command"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2532"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2631-2643"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "52-72"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "125"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "148-149"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "153"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "211-212"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "216"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "260-261"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "267"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The command register is a word at 04h; bits 0 and 1 enable I/O and memory access and bit 2 bus mastering.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2532",
+       "sha": "40ce016c558620f7ab48a7f80e190136b64a41149d186168a4a4c65554bb5e9e"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2631-2635",
+       "sha": "8141ff635c84005765455b80cf09ccadb5e2791a0c9c9dc8d06625ae8ffd9a6b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 3 to 5 enable special cycle, memory write and invalidate and VGA palette snoop; bits 6 and 7 parity error response and wait cycles.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2636-2640",
+       "sha": "53c1206f4fcd28d3dbaa176f994be864977762ca16705e02c03c63e22792a83c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 8 enables system error and bit 9 fast back-to-back transactions; bits 15-10 are reserved.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2641-2643",
+       "sha": "d12bc5c2c3902a1aa3db6091ead134af0779713cd9a1575ca01a4895df0c30f6"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "The command register is written as a word at 04h of the configuration header.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2532",
+       "sha": "40ce016c558620f7ab48a7f80e190136b64a41149d186168a4a4c65554bb5e9e"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The word is stored under a write mask: 0403h in the base device, 0023h for both VGA classes and 0123h for the Voodoo.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "125",
+       "sha": "56306efcfa1e3fd71fca3eb671f5fe116c733cffd8dccbb8d091fde1667a12a2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "153",
+       "sha": "63e47bebf50448e62a194d62c204bfe8be654baa78806e6ad42b23c3f05c3399"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "216",
+       "sha": "63e47bebf50448e62a194d62c204bfe8be654baa78806e6ad42b23c3f05c3399"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "267",
+       "sha": "1a4d08ea0bf574ac78e679a608b4ecb307c64b815d4123e6a1ad8369eb8f9a1b"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A new device holds 0023h in the command register for the VGA classes and 0002h for the Voodoo.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "148-149",
+       "sha": "89b5553826ed1b738999abd3bf2ad2dd278ec4d9d73dd6436c81d63cdecfb3f1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "211-212",
+       "sha": "89b5553826ed1b738999abd3bf2ad2dd278ec4d9d73dd6436c81d63cdecfb3f1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "260-261",
+       "sha": "8f8b1a8f8b4a03a7a75087829ed040bc19b4bcdadbaeb3f6bfd4b223d61361d5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "52-63",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "64-72",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x06..0x07",
+   "name": "status register",
+   "aliases": [
+    "status word",
+    "PCI status"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2533"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2646-2667"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "150-151"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "213-214"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "262-263"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "82-90"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The status register is the word at 06h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2533",
+       "sha": "ce14ff71b20f9e63731df1de5900981412e51e8aea3fe95a4be0f8f8c8864767"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2646-2647",
+       "sha": "eb51c8634f281316322dce8533850c62719a066337ac6387b1314aafdcede7e8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 3-0 are reserved; bit 4 says a capabilities list is present.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2648-2650",
+       "sha": "d41f96731a2f8553447b7bc8aad02996015a14c2cf482949aaf632fba224d3b1"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 5 reports 66 MHz capability and bit 6 UDF support.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2651-2652",
+       "sha": "37bdf00024aea939a03311995e4ab4b40197fec9ed09cced9432cc6a7ed03c86"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 reports fast back-to-back capability, bit 8 a data parity error and bits 10-9 the device select timing.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2653-2659",
+       "sha": "fb17e14a309df3ed7386c43f3fd2c0d58eb71e5a540f41333eb7c1c44059a9d5"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 11 to 14 report target aborts, a master abort and system error, and bit 15 a detected parity error.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2660-2664",
+       "sha": "f8ec34aee1c39731c864ae280a60b51783489027175d8da24c8bd858880297a1"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 12, 13 and 15 are cleared by writing a 1.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2665-2666",
+       "sha": "3995f1657938292d5545aa3a7d8b0428a13a53ebd6f4ca0ec7149b22c1bea233"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "doc",
+     "text": "The status register is read as a word at 06h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2533",
+       "sha": "ce14ff71b20f9e63731df1de5900981412e51e8aea3fe95a4be0f8f8c8864767"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A new device holds 0280h in the status word for the VGA classes and 0080h for the Voodoo.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "150-151",
+       "sha": "0dcf0072fcc4147336e66e345ac7c4d379f649b2e4585fec804990dcab72a9e4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "213-214",
+       "sha": "0dcf0072fcc4147336e66e345ac7c4d379f649b2e4585fec804990dcab72a9e4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "262-263",
+       "sha": "bdbf37f106c7cfa0e9f75c07ea6896a44ab45424fef2c3a3d8df7e2f2a2a4ebc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2667",
+     "as": "see-also"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "82-90",
+     "as": "agrees",
+     "row": "7"
+    }
+   ]
+  },
+  {
+   "key": "0x08",
+   "name": "revision id",
+   "aliases": [
+    "revision ID",
+    "chip revision"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2534"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "136"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "197"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "199"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "253"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The byte at 08h is the revision ID.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2534",
+       "sha": "8a816dcc54de1363e1e5c0504a038df33822b460e39fdbc514c2e6d5eb036e4d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The revision ID is read as a byte at 08h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2534",
+       "sha": "8a816dcc54de1363e1e5c0504a038df33822b460e39fdbc514c2e6d5eb036e4d"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X stores 00h for its VGA and most S3 cards, 40h for the Trio64V+ and 02h for the Voodoo.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "136",
+       "sha": "df21503b7e1141ba3ba48e441c18686fbaf324a324783fc6454d25ca30a53c00"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "197",
+       "sha": "95d13e88b22405dbac3c1f01eba45ec0e42e0213ffb22f2e417a9c92ef339607"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "199",
+       "sha": "b97c314efdae5b1c04603b99355c57c59c0c9840270576d90fc88e0dee21a3a6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "253",
+       "sha": "cd3a6bc91449f3779ab8acce2c4d9cb8ec00dc0a6c521d43fdaa8072f14ad107"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x09..0x0B",
+   "name": "class code",
+   "aliases": [
+    "class code",
+    "programming interface"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2535-2538"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "138-140"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "201-203"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "254-256"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The three bytes at 09h are the class code: programming interface in bits 7-0, sub-class in 15-8 and class in 23-16.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2535-2538",
+       "sha": "5b0f4042db6b9a3b0beb1f21450ef9874251487df04c9b03bdc193855da8b1ae"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The class code is read as its three bytes at 09h to 0Bh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2535",
+       "sha": "594f691c76d72ac7fec64237735ed98395a28d1c60ec7aeeaa1267668c0d25cf"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X stores 030000h for its VGA and the S3 card and 040000h for the Voodoo.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "138-140",
+       "sha": "fb3275e5435c6cd2c6fb268ed53717812ca9d0ffb4d74d30be2ff823e4d316a7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "201-203",
+       "sha": "fb3275e5435c6cd2c6fb268ed53717812ca9d0ffb4d74d30be2ff823e4d316a7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "254-256",
+       "sha": "ec8f7f3788eabcd87de64234a82d96d52b98c9afc664e11b190fce83df6ebe6c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x0C",
+   "name": "cache line size",
+   "aliases": [
+    "cache line size",
+    "PCI cache line"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2539"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "141"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "204"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The byte at 0Ch is the cache line size.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2539",
+       "sha": "21aa2f21ec45b4835c486a0902dccad2b0729bb5cf3e445efcaecae55211acd4"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The cache line size is read as a byte at 0Ch.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2539",
+       "sha": "21aa2f21ec45b4835c486a0902dccad2b0729bb5cf3e445efcaecae55211acd4"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X stores 00h in the cache line size on both VGA classes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "141",
+       "sha": "9b3320bf56021b19c001cb436635f6a954935c6fadea86a7b54b685a78b991dd"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "204",
+       "sha": "9b3320bf56021b19c001cb436635f6a954935c6fadea86a7b54b685a78b991dd"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x0D",
+   "name": "latency timer",
+   "aliases": [
+    "latency timer",
+    "PCI latency"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2540"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "142"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "205"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The byte at 0Dh is the latency timer.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2540",
+       "sha": "1e13c1b8ee46672246a20cfe94de72ef3a4c5da10b0df0617c5e0bb68ca135a7"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The latency timer is read as a byte at 0Dh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2540",
+       "sha": "1e13c1b8ee46672246a20cfe94de72ef3a4c5da10b0df0617c5e0bb68ca135a7"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X stores 00h in the latency timer on both VGA classes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "142",
+       "sha": "d2328b12e390f1db3ba9fd7d115e2365d7fe7b6fdafc1a38aac68f61540c59f6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "205",
+       "sha": "d2328b12e390f1db3ba9fd7d115e2365d7fe7b6fdafc1a38aac68f61540c59f6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x0E",
+   "name": "header type",
+   "aliases": [
+    "header type",
+    "header format"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2541-2546"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "143"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "206"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "257"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The header format is bits 6-0: 00h other, 01h a PCI-to-PCI bridge and 02h a CardBus bridge.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2541-2545",
+       "sha": "8aee51380523f7da4a34bad0539d62d8bc38abe7c24a1bdc872e7096b220f22f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 marks a multi-function device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2546",
+       "sha": "8d0502ae152708b6e861cabbc3384573733efad1e8b2d27947466a24aeaed152"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "The header type is read as a byte at 0Eh.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2541",
+       "sha": "a020bf1a1268db06d3c3de90f24dcfe00b5b3df5a0106464eae60a5942e6e089"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Every emulated card stores 00h, the other header format.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "143",
+       "sha": "d5709747de7ab199fdae70ffdae5d43a3ee3d824782a48a4a804dfbfb5b06ce9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "206",
+       "sha": "d5709747de7ab199fdae70ffdae5d43a3ee3d824782a48a4a804dfbfb5b06ce9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "257",
+       "sha": "d5709747de7ab199fdae70ffdae5d43a3ee3d824782a48a4a804dfbfb5b06ce9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "6178",
+       "sha": "a0237edfc7d60e94cc4103c7db626e60ae57d365cc56244d5cee39cfd782e564"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x10..0x13",
+   "name": "base address 0",
+   "aliases": [
+    "BAR0",
+    "base address register 0"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2549"
+    },
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2679-2694"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "155"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "237"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "270"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "154"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "224"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "231"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "234"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "269"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "291-296"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "82-90"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "134"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The DWORD at 10h is base address 0, in memory or I/O space as its bit 0 says.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2549",
+       "sha": "f41a82842bd2c6d455505e854b6bb229d808db70c4017a4e0b9707f831658da1"
+      },
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2679-2681",
+       "sha": "3b6ff14f6f729d4c5f20cf7cf5c25e65f0b09b6818dc5029b7e82cb40281d040"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "In memory space bits 2-1 place the address anywhere in 4GB, below 1MB or in 64-bit space, and bit 3 is prefetchable.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2682-2688",
+       "sha": "4c97686777970677f1373db16b4468f8ca0d44c3b0a3983d8f516a4a3048614c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 31-4 are the base memory address, or 63-4 in 64-bit space; in I/O space bits 31-2 are the base port.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2689-2694",
+       "sha": "3f8f7c9b5e6f79ee58e82dec5056ea33685aaf877fb1fda0096b375622bf0ecc"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "doc",
+     "text": "Base address 0 is read as a DWORD at 10h.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2549",
+       "sha": "f41a82842bd2c6d455505e854b6bb229d808db70c4017a4e0b9707f831658da1"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox-X stores the linear frame buffer base with bit 3 set, a prefetchable memory BAR.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "155",
+       "sha": "2c4598bb476942c7ad27c6b174aa622fbf966029ee0d5ae4893316d3ca4efaed"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "237",
+       "sha": "2c4598bb476942c7ad27c6b174aa622fbf966029ee0d5ae4893316d3ca4efaed"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "270",
+       "sha": "f77f70cfe2cad9e6d18fadf9552f437992a04f59f8b3f4721bfdd6f95782c2f5"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The BAR's low bits are reserved by alignment: 8MB on the 86C928, Vision864/964 and Trio32/64, 64MB on the Vision868/968, Trio64V+ and ViRGE/VX, and 16MB on the Voodoo.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "218-225",
+       "sha": "796f62603ccbcb2932f8eede65ea860164135e2c8a2d4e5aba7e241403bc4d03"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "226-236",
+       "sha": "65aede44fa27c4182b75fa9c5e2a63ac1685c43d51767f384ceb21116aad05e4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "269",
+       "sha": "b2893a568c65b83d543fb9a58053896add37af9ae855f4acd24e1e351b893e64"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to the Voodoo's BAR recomputes the LFB address from the new masked value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "291-296",
+       "sha": "32a3220d770adc6c5060f6bd4fc79602df75d0243d30722907e0a6947d6b062a"
+      }
+     ]
+    },
+    {
+     "n": "104",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "DOSBox's own VGA reserves the bits its video memory size needs.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "134",
+       "sha": "de48dc138d6a4b08006e9c3e9b80a1e26541497223f39f8f63b25e2af92350ca"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "154",
+       "sha": "29c94ab30edc59dc729afacb690dbb62ea40b45ee2f41e538050b4a6761b102a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "82-90",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x3C",
+   "name": "interrupt line",
+   "aliases": [
+    "interrupt line",
+    "PCI IRQ line"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2564-2565"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "145"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "208"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "265"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The byte at 3Ch is the interrupt line: 00h none, 01h IRQ1 to 0Fh IRQ15.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2564-2565",
+       "sha": "fd4f0bad513432d9a5426283ef010e620343c82952d665f2174a532bc1b1bfae"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The interrupt line is read as a byte at 3Ch.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2564",
+       "sha": "5b7a52dcb88b9c10f159b388d66e5a4a95551f22332c281cb695a8b508e40fe3"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "1",
+     "text": "DOSBox-X stores FFh, outside the document's 00h to 0Fh encoding, commented no irq, on the VGA, S3 and Voodoo cards.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "145",
+       "sha": "888beca8b7170ca0436cc5d9526f7f2b67c9e706ce1f1fd7bdc4d1eea6822c46"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "208",
+       "sha": "888beca8b7170ca0436cc5d9526f7f2b67c9e706ce1f1fd7bdc4d1eea6822c46"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "265",
+       "sha": "888beca8b7170ca0436cc5d9526f7f2b67c9e706ce1f1fd7bdc4d1eea6822c46"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x40",
+   "name": "voodoo init enable",
+   "aliases": [
+    "SST init enable",
+    "PCI init enable"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2571"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "273"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "120"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "267"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "269"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "282-288"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "297-299"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Registers 40h to FFh are 48 DWORDs whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of a register in this area returns data whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A guest write of 40h is masked out of the stored byte, which stays 00h, but its low three bits reach VOODOO_PCI_InitEnable.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "120",
+       "sha": "8fa0ee0f8066a865333209dcf3d5ddaaf0df6275f86b7c3b94a954d7cc339ebb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "267",
+       "sha": "1a4d08ea0bf574ac78e679a608b4ecb307c64b815d4123e6a1ad8369eb8f9a1b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "269",
+       "sha": "b2893a568c65b83d543fb9a58053896add37af9ae855f4acd24e1e351b893e64"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "282-288",
+       "sha": "0bab6980e38b4a976024bf79c87e6041806d468c22f8f01e73ebdc8f03b51626"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "297-299",
+       "sha": "fab9cfd913126a8094d50cbebb47fe9c0c82802462d02b0b7a81a326bffb1e52"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "273",
+       "sha": "ca718514511ac777d18a6ca56328a1253685971df3962e6444e54516737bcb02"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x41..0x43",
+   "name": "voodoo revision id",
+   "aliases": [
+    "SST revision ID block",
+    "revision ID block"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2571"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "274-276"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Registers 40h to FFh are 48 DWORDs whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of a register in this area returns data whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The Voodoo2 stores 40h, 01h and 00h at 41h to 43h, a revision ID.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "272-276",
+       "sha": "6268f9f41ab7b4bcd1415b8df10ed5d6c15df69c41580b85d59f5b7b6e25239c"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x4C",
+   "name": "voodoo status read",
+   "aliases": [
+    "SST status read",
+    "SST ParseReadRegister"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2571"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "317-322"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Registers 40h to FFh are 48 DWORDs whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of a register in this area returns data whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 4Ch logs a debug line and returns the stored byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "317-322",
+       "sha": "737ee0d080ae905992a73bb37e842aa0e2df240e6df794d0820b01479f719be4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "347",
+       "sha": "eae960cd348f19ed397ced1ca906fa74211f050cff0e5eb8e9f6c0f1c12818ce"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x4D..0x4F",
+   "name": "SST status read",
+   "aliases": [
+    "SST status registers",
+    "SST ParseReadRegister STATUS"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2571"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "318-322"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Registers 40h to FFh are 48 DWORDs whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of a register in this area returns data whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 4Dh, 4Eh or 4Fh logs the register number as SST ParseReadRegister STATUS and returns the stored byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "318-320",
+       "sha": "2bf37dd7374d954d6721200f8304f780445c763ca96c0f6485cde11de99426a0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "321-322",
+       "sha": "021e969f22a1f632bc7d49a6037536ea6481fdd856cc5e74cb67260a0d5e85e8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "347",
+       "sha": "eae960cd348f19ed397ced1ca906fa74211f050cff0e5eb8e9f6c0f1c12818ce"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x54..0x57",
+   "name": "SST oscillator counter",
+   "aliases": [
+    "SST oscillator",
+    "oscillator and PCI counter"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2571"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "324-342"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Registers 40h to FFh are 48 DWORDs whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of a register in this area returns data whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a device with ID 2 or more, 54h to 57h return the bytes of a counter: oscillator_ctr in bits 0-15, the low 12 bits of pci_ctr in 16-27.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "245-246",
+       "sha": "2b69da035320f6f4396d0c5d110ac10b8d0fe523f6f5a341ecc50a2ecdcf4157"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "324-330",
+       "sha": "b48d426c0adc4f116bf14a3af01287f508c9e6050c7a7c6d46654b8a4f5ea51c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "331-334",
+       "sha": "ae56092173d8e526742cc9d2e11f8a3091c3f5967d228f05c9e77171d072f0a7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "335-338",
+       "sha": "eacaeb291bb2d45033c077854d0d8d2668095b7bac7aa3d8226c004684967d44"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "339-342",
+       "sha": "7e471bee3859215405f46f4fb720d519cfb69679e0f8db5ed3d5b5616aeeb360"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a device with ID 2 or more, reading 54h increments oscillator_ctr and decrements pci_ctr before returning.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "324-328",
+       "sha": "ec43bbbf36587a6ac33d766bb795938366f4531ea8acab2a7b4ee69f7b91eb70"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "328",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "333",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "337",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "341",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xC0",
+   "name": "SST PCI enable",
+   "aliases": [
+    "SST enable",
+    "SST PCI enable"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2571"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "300-302"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Registers 40h to FFh are 48 DWORDs whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of a register in this area returns data whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A guest write of C0h calls VOODOO_PCI_Enable(true).",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "300-302",
+       "sha": "a6f29af32f8e9d82acc165d1be01500df34d920832691f21ec1e51fa3bbf1adc"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0xE0",
+   "name": "SST PCI disable",
+   "aliases": [
+    "SST disable",
+    "SST PCI disable"
+   ],
+   "regions": [
+    {
+     "ref": "rbil61:INTERRUP.E",
+     "lines": "2571"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "303-305"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347"
+    },
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Registers 40h to FFh are 48 DWORDs whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read of a register in this area returns data whose meaning varies by device.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.E",
+       "lines": "2571",
+       "sha": "8a30950edec640e812f93cdc237f08ab0641d35b581ecb5e6ddb2c200cc33c28"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A guest write of E0h calls VOODOO_PCI_Enable(false).",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+       "lines": "303-305",
+       "sha": "dce4c0453bcaae8669e1e1ad16bb5a08daf9eb1a75c3d67b72aa8d04c1dbc211"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:include/pci_bus.h",
+     "lines": "77-78",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pci_bus.cpp",
+     "lines": "347",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  }
+ ]
+}

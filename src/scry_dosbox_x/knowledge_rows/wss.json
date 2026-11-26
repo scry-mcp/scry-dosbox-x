@@ -1,0 +1,4481 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "wss",
+ "title": "The Windows Sound System window and its codec",
+ "kind": "register",
+ "scope": "wss",
+ "covers": "The eight ports of a Windows Sound System window at its base address, and the CS4231 codec's indirect registers 8 to 31",
+ "source": "official",
+ "documents": [
+  {
+   "name": "CS4231A.raw.txt",
+   "variant": "CS4231A"
+  }
+ ],
+ "official": {
+  "CS4231A.raw.txt": [
+   "2091-2118",
+   "2120-2124",
+   "2130-2140",
+   "2166-2168",
+   "2172-2174",
+   "2233-2237",
+   "2245-2255",
+   "2259",
+   "2267-2282",
+   "2386-2401",
+   "2408-2409",
+   "2429-2434",
+   "2439-2441",
+   "2455-2465",
+   "2467-2501",
+   "2513-2526",
+   "2528-2530",
+   "2532-2545",
+   "2576-2581",
+   "2590-2597",
+   "2603-2608",
+   "2610-2620",
+   "2622-2631",
+   "2633-2642",
+   "2644-2652",
+   "2654-2665",
+   "2667-2680",
+   "2701-2706",
+   "2719-2733",
+   "2735-2740",
+   "2742-2750",
+   "2940-2945",
+   "2947-2957",
+   "2959-2966",
+   "2969-2974",
+   "2976-2990",
+   "3010-3024",
+   "3026-3037",
+   "3039-3044",
+   "3052-3066",
+   "3068-3075",
+   "3078-3095",
+   "3098-3103",
+   "3105-3110",
+   "3112-3114",
+   "3115-3126",
+   "4205-4211",
+   "4219-4242"
+  ]
+ },
+ "engine": [
+  "UpdateMixerShim",
+  "AuxVol",
+  "cs4231_init_vols",
+  "ReadDmaByte",
+  "AlignDmaFrame",
+  "ProcessMulaw",
+  "ProcessAlaw",
+  "ProcessAdpcm",
+  "LowerIRQ",
+  "EndCalibrate",
+  "PIC_ActivateIRQ",
+  "PIC_DeActivateIRQ",
+  "PIC_AddEvent",
+  "PIC_RemoveSpecificEvents",
+  "PIC_RemoveEvents",
+  "SetFreq",
+  "SetIRQ",
+  "SetPlaybackDMA",
+  "FillUp",
+  "SetVolume",
+  "AddSamples_s16",
+  "AddSilence",
+  "Enable",
+  "Clear_Request",
+  "Reset",
+  "Read"
+ ],
+ "entries": [
+  {
+   "key": "0x00..0x03",
+   "name": "WSS config register",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "4205-4211"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "4219-4242"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/wss.cpp",
+     "function": "wss_write"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/wss.cpp",
+     "function": "wss_read"
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "The first four addresses of the window are a read-only board ID register, and the second four belong to the codec.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "4205-4211",
+       "sha": "c8e4d73140c93f96003c7700e87c87e13e94e8db92dddad0541ddda54636f794"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "A read of the first four addresses returns the board ID, 0x04 in its lower six bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "4208-4211",
+       "sha": "9c27586c672000473f9614f5577d1973c98ad9eede6fc805975f67df7e29eeff"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "Windows software that finds the board ID assumes the auto-select register needs to be loaded, and that register allows only certain IRQ and DMA combinations.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "4219-4229",
+       "sha": "80b13faefbcb0ce5cf03e91851e351e28e3d8f15f88819c8d365b82999605f88"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A WSS program takes INT 7, 10 or 11, half duplex DMA 0, 1 or 3, and full duplex 0 and 1, 1 and 0, or 3 and 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "4226-4232",
+       "sha": "d2eca105e2d0edac3a08050338382d56df2e6316a6190d489e5e0bdfd8c26e3b"
+      },
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "4233-4242",
+       "sha": "d38abc1f6fa654d57ff6aacc12077ea8632624d61be0d6e08769ac4fd12adc2a"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write takes the DMA channel from bits 0-1 and the IRQ from bits 3-5, a layout no line of the document gives.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/wss.cpp",
+       "lines": "50-55",
+       "sha": "dc5dfa2571aeec7513887ea9fbcdf4398239db1978cc1b9fb338536d04caddc2"
+      }
+     ],
+     "vs": "extra",
+     "n": "5"
+    },
+    {
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The emulator accepts IRQ 5, 7, 9, 10, 11, 12, 14 and 15, and DMA channel 0, 1 or 3, more than the auto-select register allows.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/wss.cpp",
+       "lines": "21-22",
+       "sha": "a1db32d5435b805191dbb1f7c656a471f46207f46fb978baf7965ac8ce1213c6"
+      }
+     ],
+     "vs": "differs",
+     "row": "4",
+     "n": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/wss.cpp",
+     "lines": "57-63",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/wss.cpp",
+     "lines": "50",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/wss.cpp",
+     "lines": "56",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/wss.cpp",
+     "lines": "48",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/wss.cpp",
+     "lines": "69",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/wss.cpp",
+     "lines": "73",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/wss.cpp",
+     "lines": "92-93",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/wss.cpp",
+     "lines": "70-72",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/wss.cpp",
+     "lines": "51-53",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x04",
+   "name": "Index address register",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2091-2118"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2120-2124"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2166-2168"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "0"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "R0 is the index address register: INIT, MCE, TRD, IA4 and IA3-IA0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2166-2168",
+       "sha": "ebe1ee7ec415e68c88209eee57ce61b6bcca21afa0dfc3decb5ca7e5f3d7baa9"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "bits 3-0 = IA3-IA0",
+     "of": "doc",
+     "text": "IA3-IA0 name the indirect register that the indexed data register reaches, and are read/write.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2091-2094",
+       "sha": "f5ed23ea74a084dab688dd3eba4fba3c8047ff0f7130e4c32427d7b9ef801228"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "bit 4",
+     "of": "doc",
+     "text": "IA4 reaches indirect registers 16-31 and is available only in MODE 2.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2095-2097",
+       "sha": "1f5633627f20067abae950579ce83e3a01dfee6c55e79442c335fece14a1b02a"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "bit 5",
+     "of": "doc",
+     "text": "TRD set stops DMA transfers while the INT bit of the status register is set.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2098-2106",
+       "sha": "84f83f880b7d58f844ef02398681844dad95052cf3fb439fce70a0fef077f858"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "bit 6",
+     "of": "doc",
+     "text": "MCE must be set to change the sample frequency or the interface configuration, except CEN and PEN; the DAC output is muted while MCE is set.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2107-2118",
+       "sha": "da9132d2b16dc0f306465227f386aa175b71d07521550a75ec49cbdffef34cb6"
+      }
+     ],
+     "n": "5"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "INIT reads 1 while the part cannot answer parallel interface cycles.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2120-2124",
+       "sha": "9a21e502f42a5ed0147a816a1f641165822f673e40f7aea9e85151e2e84c985e"
+      }
+     ],
+     "n": "6"
+    },
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "The datasheet gives the INIT bit as read-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2123-2124",
+       "sha": "797ac3d402966ac49b451f2f157de16649204d973b15e1c582771e46ffbcc5d7"
+      }
+     ],
+     "n": "7"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write names the indirect register the data port reaches.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2091-2094",
+       "sha": "f5ed23ea74a084dab688dd3eba4fba3c8047ff0f7130e4c32427d7b9ef801228"
+      }
+     ],
+     "n": "8"
+    },
+    {
+     "on": "bit 5",
+     "of": "dosbox-x",
+     "text": "A write stores TRD and a read returns it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "513",
+       "sha": "c130efda5d8dcd886d8a4f31de17874c4ec1c933fc46fe613cd589f01c34a420"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "477",
+       "sha": "dea62c8938855bf7d0982d09e4d676d4c0213a03ac2977468f3f5960f6eb2a74"
+      }
+     ],
+     "vs": "differs",
+     "row": "4",
+     "n": "9"
+    },
+    {
+     "on": "bit 6",
+     "of": "dosbox-x",
+     "text": "A write stores MCE and a fall with a calibration mode set starts a calibration, but a write to I8 changes the rate without it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "513-515",
+       "sha": "cb1acc833b185f0e44aa4b043cf23157a03ddf37e0a41529d5d4df855fac4685"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "506-508",
+       "sha": "11f886295ee1759e51aa0aa09a0b1478f0be73c02c50d8929cefdcb2037c5c87"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "519-521",
+       "sha": "a97ff5c11463f55a21c47c9cf3bd1e025a486bfbfde05942be41095f7f7b411d"
+      }
+     ],
+     "vs": "differs",
+     "row": "5",
+     "n": "10"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "506-508",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "509-512",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "513-514",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "474-477",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "477",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510-512",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510-512",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224-226",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x05",
+   "name": "Indexed data register",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2130-2135"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2275-2282"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "R1 carries the indirect register that the index address register points at.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2130-2132",
+       "sha": "9b89ac4169662574456bd95b452fb6074515a855d91eaabc5c5bf007663d6b3f"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "During initialization and power down the register cannot be written and reads 0x80.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2133-2135",
+       "sha": "dd615eccd3d7de59ff2d51be07a1414758ab486fecbe518e99081768a2d3f96b"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "An indirect register is reached by writing its index in R0 and then reading or writing R1, and 16-31 exist only with MODE2 set.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2275-2282",
+       "sha": "3e8b85552e20b0bec25709b2d928c48074ca5d363a8ef3d46800680355480a70"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write carries the byte to the register R0 names.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2275-2279",
+       "sha": "854164a8ccf4b9a0c73bb39cf894de0f83eb424442edec763885e9e3c9ce89e4"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "While the part initialises a write to this port returns at once, and a read answers the selected register rather than 0x80.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "502-503",
+       "sha": "7ce94cdfc7e82208bd4a6f2f6a96eb2c71bea5d359d5a09e5d5faee9e60abc5e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "479-489",
+       "sha": "06a4ff1a14505630d41e68046441ba7518fb2850e84b57fe8ce8595fca03af56"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x06",
+   "name": "Status register",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2136-2140"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2172-2174"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "2"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "R2 is the status register: CU/L, CL/R, CRDY, SER, PU/L, PL/R, PRDY and INT.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2172-2174",
+       "sha": "cbb29808800d86c956354ec4a777d7981245540ca31b360e6d08903f4f13aa6d"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "INT is cleared by any write of any value to this register.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2136-2140",
+       "sha": "6571bc167ad3448153435ec941cb67852c1591650fd4f6303cb7de20c302a036"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "A read of the status register returns its byte, whose bit 0 is INT.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2172-2174",
+       "sha": "cbb29808800d86c956354ec4a777d7981245540ca31b360e6d08903f4f13aa6d"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write of any value to the status register clears INT.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2136-2140",
+       "sha": "6571bc167ad3448153435ec941cb67852c1591650fd4f6303cb7de20c302a036"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores nothing in the status byte: it clears INT and the three interrupt bits of I24 and lowers the IRQ.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "602-606",
+       "sha": "4426363497d45fb2afea12cfd0e65c94e10bb447f810b1a83c7a10d620a477e7"
+      }
+     ],
+     "vs": "differs",
+     "row": "4",
+     "n": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "602-606",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "492-493",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "223",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "299",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "419",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "589",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x07",
+   "name": "PIO data register",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2233-2237"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2245-2255"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2259"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2267-2274"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "3"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "R3 is two registers at one address: a write sends playback data and a read receives capture data.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2233-2237",
+       "sha": "32881cd1b0296409e590a13874575da959fba3589702c6c6e0327f3e1d40a1c8"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "Reading the capture port advances the byte state machine of a sample, and a status read with a new sample received points it at the first byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2245-2255",
+       "sha": "1d5b50d408aaea794f6c4b1debdb26a37e6d091bf1ab5b1331ea0195de40a151"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "Writing the playback port advances the byte state machine, later bytes of a full sample are ignored, and a status read with the sample sent to the DACs resets it.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2267-2274",
+       "sha": "415a541d30fff77ab3a361d9fd119ac96951cdb30d36b38f864a49eeafa799ec"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "The emulator answers 0x80 on the PIO port: programmed I/O is not implemented and no sample byte moves.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "494-495",
+       "sha": "8cc9898f9d6a9c6f7ef265b22e3b01efd3aa5ca0ad60ccbe785aa0975e10a51d"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "4"
+    },
+    {
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write to the PIO port changes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "607-608",
+       "sha": "94e2ecb4e1d59375c74b47090f513d2faef58f2b2ac2a7eccca85bc23d956e28"
+      }
+     ],
+     "vs": "differs",
+     "row": "3",
+     "n": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2259",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x08",
+   "name": "Playback data format",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2386-2401"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2408-2409"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2429-2434"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2439-2441"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2455-2465"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_PLAYFMT"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::UpdateFreq"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::Generate"
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I8 is the Fs and playback data format register: FMT1, FMT0 and C/L choose the data format, S/M stereo, and CFS2-CFS0 with C2SL the sample rate.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2439-2441",
+       "sha": "168b6f1929b8ce748ffa8beffb33c22088c2bcadcce929ceb026da6f02a1c2fb"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "bit 0",
+     "of": "doc",
+     "text": "C2SL picks the crystal: 0 is XTAL1, typically 24.576 MHz, and 1 is XTAL2, typically 16.9344 MHz.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2386-2390",
+       "sha": "e3f67eab10c97866282b5aab982189bdf4c4e32d24a23398f7acfcfb28eb1e2d"
+      },
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2393-2394",
+       "sha": "920df4caa42d95575e84eb0612741458de01225a15c8b036181cacedbac44bf9"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "bits 3-1 = CFS2-CFS0",
+     "of": "doc",
+     "text": "CFS2-CFS0 select the sample frequency, which depends on the crystal C2SL selects.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2395-2401",
+       "sha": "49ad18f82470bcf563a980ca23b09a864d956fd87c1c2c2797b7327be60ad35f"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "bits 7-5",
+     "of": "doc",
+     "text": "FMT1, FMT0 and C/L choose linear 8-bit, u-Law, 16-bit little endian or A-Law.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2429-2434",
+       "sha": "7b7aa80df79ff024ac4acf83c3f360d450958e7d587c93df908bc46166391a61"
+      },
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2455-2459",
+       "sha": "a2f42a0cb276163f5169c71161276acb4939702b345961becee82e980201b15c"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "bits 7-5",
+     "of": "doc",
+     "text": "The same bits choose ADPCM or 16-bit big endian, and 100 and 111 are reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2460-2465",
+       "sha": "54ea97efc2bb21e15c32f80be4f5fd03800ccaf70d491ca4d4627115061ab6f5"
+      }
+     ],
+     "n": "5"
+    },
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "C2SL and CFS2-CFS0 may be changed only while MCE is set.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2391-2392",
+       "sha": "fc042bd51dd5944358f36fc0daa0812764d17ea6c4e0f12da93eaad15d2e022f"
+      },
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2408-2409",
+       "sha": "30fc2a4fe19fbf0c0f7d44beff10761e20ff866bc5d4aba8cea678bb493f0737"
+      }
+     ],
+     "n": "6"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the format bits, S/M and the sample-rate bits of I8.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2439-2441",
+       "sha": "168b6f1929b8ce748ffa8beffb33c22088c2bcadcce929ceb026da6f02a1c2fb"
+      }
+     ],
+     "n": "7"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "520-522",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "196-197",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "197-206",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "207-215",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "216-217",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "612-740",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "624-635",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "636-647",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "648-659",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "660-671",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "672-683",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "684-695",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "696-707",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "708-719",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x09",
+   "name": "Interface configuration",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2467-2501"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2513-2526"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2528-2530"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_INTERFACE"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I9 is the interface configuration: CPIO, PPIO, CAL1, CAL0, SDC, CEN and PEN.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2528-2530",
+       "sha": "f514f5393770c5f85727f6f6accb5572dd6db6704b85a6ec2f2c551fa2442832"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "Except CEN and PEN, the register may be written only in mode change enable.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2523-2526",
+       "sha": "3afd7874b324b41f8a2e1c40a56979477da96f421472bf61c595d75d8d6b9548"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "bits 1-0 = CEN-PEN",
+     "of": "doc",
+     "text": "CEN enables capture and PEN playback, each may be set and reset without MCE, and PPIO or CPIO moves it to PIO.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2467-2477",
+       "sha": "fe63be0037f0735e16a101ef81240954ae6dfa182b20ba51f8876b8a02ff2783"
+      },
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2478-2488",
+       "sha": "bfc73dd983c34d7a4dcdc23a540759113a4ac20eaab10df17a1152565a40af71"
+      },
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2513-2522",
+       "sha": "387931e60a5ab81ec44c1b2bbf298433619ac65d41d9a490d42684d638b7eb3c"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "bit 2",
+     "of": "doc",
+     "text": "SDC forces both DMA requests onto the playback channel, and only playback occurs when both are enabled.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2489-2497",
+       "sha": "802f8e318ecea51d5a9c66044187c2ec133b658f5c1b76872daae29c4e36de5d"
+      },
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2498-2501",
+       "sha": "2626a491f1767318ddec69c7c8ddf4dc25d31e51a46cae39198b1211f3090281"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets PEN, CEN, SDC, CAL1, CAL0, PPIO and CPIO.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2528-2530",
+       "sha": "f514f5393770c5f85727f6f6accb5572dd6db6704b85a6ec2f2c551fa2442832"
+      }
+     ],
+     "n": "5"
+    },
+    {
+     "on": "bits 1-0 = CEN-PEN",
+     "of": "dosbox-x",
+     "text": "The write enables playback from PEN and PPIO alone and clears the DMA request when it is off; CEN and CPIO are stored and nothing captures through them.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "524-535",
+       "sha": "62a5a90c6da97567c1e461ed45bd9344532b68e57e01b9415b5c418103fa2cee"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "536-539",
+       "sha": "4e49cb323f408309290ed197f740e63e5e6268e87969517abb4668e7fe45160c"
+      }
+     ],
+     "vs": "differs",
+     "row": "3",
+     "n": "6"
+    },
+    {
+     "on": "bit 2",
+     "of": "dosbox-x",
+     "text": "The write reads only PEN and PPIO and never SDC.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "524-535",
+       "sha": "62a5a90c6da97567c1e461ed45bd9344532b68e57e01b9415b5c418103fa2cee"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "536-540",
+       "sha": "08df99aab3732bc504cadcfa27cb8b5295f5c40a15039ac88f99d770f8d933ac"
+      }
+     ],
+     "vs": "differs",
+     "row": "4",
+     "n": "7"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "537-539",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x0A",
+   "name": "Pin control",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2532-2545"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2603-2605"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_PINCTRL"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I10 is the pin control: XCTL1, XCTL0, DEN, IEN.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2603-2605",
+       "sha": "91549865b5129657734183aadbc3d3e7f7c3b176bb5ec280d36be96f83a2295a"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "bit 1",
+     "of": "doc",
+     "text": "IEN enables the interrupt pin, which reflects the INT bit of the status register and is active high.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2532-2538",
+       "sha": "85ad5ef26bf3b6b585805655648d9a5d0af1ec409bbaa062a3a69a2fcc920976"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "bit 3",
+     "of": "doc",
+     "text": "DEN adds triangular dither before the ADC is truncated to 8-bit unsigned data.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2539-2545",
+       "sha": "10b9a4741d9d70bc7b3f8593870f4fb0a5c7808e0aef7563ac351e166c539b6a"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets XCTL1, XCTL0, DEN and IEN.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2603-2605",
+       "sha": "91549865b5129657734183aadbc3d3e7f7c3b176bb5ec280d36be96f83a2295a"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "bit 3",
+     "of": "dosbox-x",
+     "text": "The emulator stores DEN in the byte and its only branch tests IEN.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "541-547",
+       "sha": "111afa9db858b3d5d967363957dea605cd627ae0af31bc73904275b8501d7e22"
+      }
+     ],
+     "vs": "differs",
+     "row": "3",
+     "n": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "541-547",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "542",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x0B",
+   "name": "Error status and init",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2576-2581"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2590-2597"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2606-2608"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_TESTINIT"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::StartCalibrate"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I11 is the error status and initialization register: COR, PUR, ACI, DRS, ORR1, ORR0, ORL1 and ORL0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2606-2608",
+       "sha": "3df5a1d9e281a850a46dbe737a8bd6828ad14fa7223761cecc7ef5359a3fa6a5"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "ACI reads 1 while a calibration is in progress.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2576-2581",
+       "sha": "770d2a4f406c1fb3a649bdeb0448e979b467726789b9662457592d073a1b1aa5"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "COR is set when the capture data has not been read before the next sample, and the new sample is ignored.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2590-2597",
+       "sha": "f8008f4dad3ae4fad7811cc466e63b1fa485d189c4ec4427e3d9901eb589bda4"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write to the register is dropped.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2606-2608",
+       "sha": "3df5a1d9e281a850a46dbe737a8bd6828ad14fa7223761cecc7ef5359a3fa6a5"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "The emulator's read of this register answers the ACI countdown and stores no COR or PUR bit.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "480-486",
+       "sha": "30d6a35af0c8c4bf51f82a4e3f5da29ca8532e4dec0475d6ee0f67a846eb9d3a"
+      }
+     ],
+     "vs": "differs",
+     "row": "3",
+     "n": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "549-550",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-485",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "274-280",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "548-551",
+     "as": "agrees",
+     "row": "4",
+     "nothing": true
+    }
+   ]
+  },
+  {
+   "key": "0x0C",
+   "name": "Mode and ID",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2610-2620"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2654-2656"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_MISCINFO"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::Reset"
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I12 is the mode and ID register: D7 reads 1, MODE2, ID3-ID0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2654-2656",
+       "sha": "3d35b5cbc742412a6c1c8b90d25e0f2a9c3bbc652f2a95c792f5f64b112d7e33"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "bits 3-0 = ID3-ID0",
+     "of": "doc",
+     "text": "ID3-ID0 read 1010 as the codec ID.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2610-2614",
+       "sha": "55ff46c3f7ce48c6b405843ced35bf390f1d704ac0f48fc5690c618b05c6a042"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "bit 6",
+     "of": "doc",
+     "text": "MODE2 enables the expanded mode; clear, the part is a MODE 1 look-alike.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2615-2620",
+       "sha": "f2279db15ca81ed45eb2cf9a531107d2fcfb9a6e0550b311e5a969e333b92b6d"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "MODE2 must be set to reach indirect registers 16-31.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2615-2618",
+       "sha": "1265dbe58633dbf766b2858a72c3036cbc247c79fd9268531b468ded8073eebf"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets MODE2, and the four ID bits are read-only.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2610-2620",
+       "sha": "5ded371393cc17cc30a8802dee46d2fd95c81cc253b81ff1d7a76fa058fab587"
+      }
+     ],
+     "n": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "553",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "554-557",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "553",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "220-271",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "239",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x0D",
+   "name": "Loopback control",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2622-2631"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2657-2659"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I13 is the loopback control: LBA5-LBA0 and LBE.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2657-2659",
+       "sha": "3fdcda0dc7e03bf495c49955e4b0a69e78545dc0dedce8927cd769962126ea84"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "bit 0",
+     "of": "doc",
+     "text": "LBE set mixes the ADC data digitally with the data sent to the DACs.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2622-2626",
+       "sha": "8c677ef3871938710089c86bf62e081f7fa63c1096c14f52b296ecea451bb837"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "bits 7-2 = LBA5-LBA0",
+     "of": "doc",
+     "text": "LBA5-LBA0 attenuate the loopback from ADC to DAC by 1.5 dB a step.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2627-2631",
+       "sha": "a978cb65ac836822e2394c60191130d607f8853de3f74d3665b15258275a3a45"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets LBE, which enables the loopback, and LBA5-LBA0, its attenuation.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2622-2631",
+       "sha": "4a0fe9f237061f970f2d686f2252f1d02b1802b8660cedbfde272c9124f85055"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "bit 0",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; the generate loop sends the DAC data out alone, with nothing mixed back from the ADC.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "487-489",
+       "sha": "f131a1e7d17ac032762f1c64b0b4fc76dc1737ac88ed24fac77894bf35c19c06"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "728-738",
+       "sha": "7e91f8c8377d520de4144092a6a371447147b6dd337a685831fc77bd16848ada"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "5"
+    },
+    {
+     "on": "bits 7-2 = LBA5-LBA0",
+     "of": "dosbox-x",
+     "text": "The attenuation is stored in the byte, and the sample sent out is the DAC data with no loopback path to attenuate.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "728-738",
+       "sha": "7e91f8c8377d520de4144092a6a371447147b6dd337a685831fc77bd16848ada"
+      }
+     ],
+     "vs": "differs",
+     "row": "3",
+     "n": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x0E",
+   "name": "Playback upper base",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2633-2642"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2660-2662"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_PLAYCNTM"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I14 is the upper byte of the playback base count: PUB7-PUB0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2660-2662",
+       "sha": "a32ccb0462f64e546b2f6b3cfa289d432e7a1416829e765725429383cb5e080e"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the value written.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2636-2638",
+       "sha": "de491b77e5b3bee415aa35d955efdd311247b708cb84c8729f221f1a5cee29a6"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "The current count registers cannot be read.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2638-2639",
+       "sha": "61b5ae461e72b18e1f26e77adb388bbd9b522c20a6ce7f96dea9aa852589c0fb"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "In MODE 1 or SDC the register serves both the playback and capture base.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2640-2642",
+       "sha": "5464913ec3b874844be811a6e10f9f63498b8873055ba51b963165d426d63ea9"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the upper byte of the playback base count.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2633-2636",
+       "sha": "1bdeaa5217d016cfc0ad55e4e837681b3a1b934357c93fb8d32e29cecdc16053"
+      }
+     ],
+     "n": "5"
+    },
+    {
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The write also loads the current count from both base bytes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "561",
+       "sha": "8e0df05923b022c16e4112b82d36014433564334d467d46031054bcc062157ac"
+      }
+     ],
+     "vs": "extra",
+     "n": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "559-560",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x0F",
+   "name": "Playback lower base",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2644-2652"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2663-2665"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I15 is the lower byte of the playback base count: PLB7-PLB0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2663-2665",
+       "sha": "b49bc42b86fd3e42718ba1aa2a6786d072a95da56897ba16ca5c212888d0f0b6"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the value written.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2647-2649",
+       "sha": "fef383d4e99a67132633c73280378185cd08cd3559f6fc0ceee80f6ff2f3e55e"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "In MODE 1 or SDC the register serves both the playback and capture base.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2649-2652",
+       "sha": "b31a11390054a8c3068bdc1ef94ea3884e831530c089b41b252e9d25718efd95"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the lower byte of the playback base count.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2644-2647",
+       "sha": "663990e6a33fd967d633482246d2f118769b98ce78cdaf1da930fb06ffdccbb1"
+      }
+     ],
+     "n": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x10",
+   "name": "Alternate feature I",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2667-2680"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2701-2706"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2742-2744"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_FEATURE1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::TimerTick"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ArmTimer"
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I16 is alternate feature enable I: OLB, TE, CMCE, PMCE, SF1, SF0, SPE and DACZ.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2742-2744",
+       "sha": "f5987b1ab4302fa563f9be0ad45c6eba86461524763c9cd35c0e5c0823cacdb2"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "bit 6",
+     "of": "doc",
+     "text": "TE set runs the timer and interrupts the host at the frequency in the timer registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2701-2706",
+       "sha": "2da783ce1f4c80fffdc6b4532e3511230f730728be065464af404bf7ed074f62"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "bit 0",
+     "of": "doc",
+     "text": "DACZ sends the playback output to centre scale on an underrun.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2667-2671",
+       "sha": "117ea521d58c8410ad79ff5aa3d61fe139c54212744ba7f664a9ac8ab4f78b02"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "bit 1",
+     "of": "doc",
+     "text": "SPE sends the ADC data out SDOUT and the SDIN data to the DACs.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2672-2680",
+       "sha": "a54dfe1810c78b7898384edce3752bff98b436d56f7542ecc54fc3dddf8c73df"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets OLB, TE, CMCE, PMCE, SF1, SF0, SPE and DACZ.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2742-2744",
+       "sha": "f5987b1ab4302fa563f9be0ad45c6eba86461524763c9cd35c0e5c0823cacdb2"
+      }
+     ],
+     "n": "5"
+    },
+    {
+     "on": "bit 0",
+     "of": "dosbox-x",
+     "text": "The emulator's case stores DACZ and acts on TE alone; the output is zero while MCE is set and the DAC data otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "563-569",
+       "sha": "df0c76c909dd093dca7dc7d91ca986ec799198898d1c13e02fa0b669f1786661"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "732-738",
+       "sha": "501ce9e6a2a98772907008cc960f8a147263f7fcc44668455d7e1d660ca69539"
+      }
+     ],
+     "vs": "differs",
+     "row": "3",
+     "n": "6"
+    },
+    {
+     "on": "bit 1",
+     "of": "dosbox-x",
+     "text": "The emulator's case stores SPE and acts on TE alone.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "563-569",
+       "sha": "df0c76c909dd093dca7dc7d91ca986ec799198898d1c13e02fa0b669f1786661"
+      }
+     ],
+     "vs": "differs",
+     "row": "4",
+     "n": "7"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "564",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "289-294",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "297-306",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "564-568",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "287-295",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "298-299",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "301-305",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x11",
+   "name": "Alternate feature II",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2719-2733"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2745-2747"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_FEATURE2"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I17 is alternate feature enable II: four TEST bits, APAR, XTALE and HPF.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2745-2747",
+       "sha": "e058a1fffbd4a5a822aaeef008d44b23b6486782d431dd5c5b4ab2798845a958"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "bit 2",
+     "of": "doc",
+     "text": "APAR holds the playback ADPCM accumulator at zero while set.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2727-2730",
+       "sha": "6c16797375124889275313bf7ffbc9838897b4acce49a51d5ca55b6eea91aeca"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "bit 1",
+     "of": "doc",
+     "text": "XTALE keeps both crystals active, and clear powers down the one C2SL does not select.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2719-2726",
+       "sha": "97a9362cd419177802034f1514233f8251361af3ae42dcedb2fa77991aec3fa7"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "The TEST bits are for factory testing and must remain 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2731-2733",
+       "sha": "41128a1c658393b0632b9b4ab598c7bea0d729ccdf93ac0ca633b5cfd3eb0f2c"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets APAR, XTALE, HPF and the four TEST bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2745-2747",
+       "sha": "e058a1fffbd4a5a822aaeef008d44b23b6486782d431dd5c5b4ab2798845a958"
+      }
+     ],
+     "n": "5"
+    },
+    {
+     "on": "bit 3",
+     "of": "dosbox-x",
+     "text": "The emulator tests bit 3, not the document's bit 2: setting it clears both ADPCM predictors once, and they adapt again while it stays set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "570-574",
+       "sha": "feacee14bd4b8ccbcc10fc843beed585096f08330234fd2499a62efc5364e5f1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "405-412",
+       "sha": "8b838410b4701b50fca4ef4d66c2861d23bdfb685402851dbcb8b416201e73a5"
+      },
+      {
+       "ref": "dosbox-x:include/cs4231.h",
+       "lines": "135",
+       "sha": "8548eab3d217ad258b2a431905cb4f9239db9aa9d3e1d64ec73928ef336deadd"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "6"
+    },
+    {
+     "on": "bit 1",
+     "of": "dosbox-x",
+     "text": "The emulator's case stores XTALE and acts on APAR alone, and no line of that branch reaches a crystal.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "570-574",
+       "sha": "feacee14bd4b8ccbcc10fc843beed585096f08330234fd2499a62efc5364e5f1"
+      }
+     ],
+     "vs": "differs",
+     "row": "3",
+     "n": "7"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "573",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x12",
+   "name": "Left line input",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2735-2740"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2748-2750"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I18 is the left line input control: LLM and LLG4-LLG0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2748-2750",
+       "sha": "879f7ba6b6dba4597276f3ba0288625b901c6a678315f4e43cd6855c8f93f7e9"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "bit 7",
+     "of": "doc",
+     "text": "LLM mutes the left line input to the mixer.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2738-2740",
+       "sha": "2dd7147e13a0d1c3fbf808d409d6444507134aa905d79ffba99ceeb6d8511e4d"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "bits 4-0 = LLG4-LLG0",
+     "of": "doc",
+     "text": "LLG4-LLG0 set the left line mix gain, 1.5 dB a step from 01000 = 0 dB.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2735-2737",
+       "sha": "14d5397e1a75b3193799af3820071ea072ac535c100cca872dde2716468fd52f"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets LLM, the mute, and LLG4-LLG0, the mix gain of the left line input.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2735-2740",
+       "sha": "0f1d0b928de1b3e0488288669221c4524292d21b164d1cdc65f1d9456f9916cf"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "bit 7",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; no mixer level is updated from it, since the update runs for the AUX and DAC registers only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "487-489",
+       "sha": "f131a1e7d17ac032762f1c64b0b4fc76dc1737ac88ed24fac77894bf35c19c06"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "597-600",
+       "sha": "cfb2a7e8711f20b4b4b92ddfe53e77343dd7027f28dbc7e1db93f11a2d41fe58"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "5"
+    },
+    {
+     "on": "bits 4-0 = LLG4-LLG0",
+     "of": "dosbox-x",
+     "text": "The gain is stored in the byte; no mixer level is updated from it, since the update runs for the AUX and DAC registers only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "597-600",
+       "sha": "cfb2a7e8711f20b4b4b92ddfe53e77343dd7027f28dbc7e1db93f11a2d41fe58"
+      }
+     ],
+     "vs": "differs",
+     "row": "3",
+     "n": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x13",
+   "name": "Right line input",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2940-2945"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2976-2978"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I19 is the right line input control: RLM and RLG4-RLG0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2976-2978",
+       "sha": "e9dae40ee81ad05cf5e05e605716b635f0eae9d727b548a1fb6df141e761ffd5"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "bit 7",
+     "of": "doc",
+     "text": "RLM mutes the right line input to the mixer.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2943-2945",
+       "sha": "b6ddbb5636f2d1e52402eb5c0d1c27a48fa5ea35b0c0777a522da7f67498f6a8"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "bits 4-0 = RLG4-RLG0",
+     "of": "doc",
+     "text": "RLG4-RLG0 set the right line mix gain, 1.5 dB a step from 01000 = 0 dB.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2940-2942",
+       "sha": "61cef5228cba7b8e8e64c93c614086075c8d799a5829642fec2b70f6e6054cc3"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets RLM, the mute, and RLG4-RLG0, the mix gain of the right line input.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2940-2945",
+       "sha": "aaa358ab2f849d2c8a2355037adab7f5f3de8845ff4db69b4b9831c29ada6e95"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "bit 7",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; no mixer level is updated from it, since the update runs for the AUX and DAC registers only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "487-489",
+       "sha": "f131a1e7d17ac032762f1c64b0b4fc76dc1737ac88ed24fac77894bf35c19c06"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "597-600",
+       "sha": "cfb2a7e8711f20b4b4b92ddfe53e77343dd7027f28dbc7e1db93f11a2d41fe58"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "5"
+    },
+    {
+     "on": "bits 4-0 = RLG4-RLG0",
+     "of": "dosbox-x",
+     "text": "The gain is stored in the byte; no mixer level is updated from it, since the update runs for the AUX and DAC registers only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "597-600",
+       "sha": "cfb2a7e8711f20b4b4b92ddfe53e77343dd7027f28dbc7e1db93f11a2d41fe58"
+      }
+     ],
+     "vs": "differs",
+     "row": "3",
+     "n": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x14",
+   "name": "Timer lower base",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2947-2957"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2979-2981"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_TIMERL"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ArmTimer"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::TimerTick"
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I20 is the low byte of the 16-bit timer base: TL7-TL0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2979-2981",
+       "sha": "f385bf4c6c287206ffea2f10ba76503af53ba137ee7d3f5ab5f815e0d9e40e6a"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write loads both timer base registers into the timer, and after zero the timer reloads them.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2947-2957",
+       "sha": "5057b8f0baabf9f6f8bac5cda86747d7fd20d3976190675e6d9cb035f640a690"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "The upper timer register should be loaded before the lower.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2949-2953",
+       "sha": "4e9eac29776eaca2e448bd76cde709487129a03151a62c0dde54917e7f87539e"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the low byte of the timer base.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2979-2981",
+       "sha": "f385bf4c6c287206ffea2f10ba76503af53ba137ee7d3f5ab5f815e0d9e40e6a"
+      }
+     ],
+     "n": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "576-578",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "287-295",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "301-305",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "576",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "297-306",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x15",
+   "name": "Timer upper base",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2959-2966"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2982-2984"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_TIMERH"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ArmTimer"
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I21 is the high byte of the timer base: TU7-TU0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2982-2984",
+       "sha": "3ad14da11be4cf2b0f4527e7306c00b96b7c1ed62299b6543adcecf46ab7ce5e"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the high byte of the 16-bit timer, whose time base is the crystal C2SL selects divided by 245 or 168.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2959-2966",
+       "sha": "8e624ba209567031a9984b23ab80d0b880df12da2bd8299c789caa167eeeb63d"
+      }
+     ],
+     "n": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "287-295",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "581",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "582",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x16",
+   "name": "Reserved register",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2985-2987"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I22 is reserved: the datasheet gives its eight bits as res.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2985-2987",
+       "sha": "3a0999ce87631c27cc8170b4b218ed58598d5dc1679110f31a6fb6baf0ff416a"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "A read of I22 returns eight reserved bits, whose value the datasheet does not define.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2986-2987",
+       "sha": "df313dbcf9213a99d3604014bd185289c1501fd19fe7ba6b7d60dd80ed8695a4"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write to I22 sets bits the datasheet leaves reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2985-2987",
+       "sha": "3a0999ce87631c27cc8170b4b218ed58598d5dc1679110f31a6fb6baf0ff416a"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "The read returns the byte the write stored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "487-489",
+       "sha": "f131a1e7d17ac032762f1c64b0b4fc76dc1737ac88ed24fac77894bf35c19c06"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x17",
+   "name": "Alternate feature III",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2969-2974"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "2988-2990"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_RESERVED2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I23 is alternate feature enable III: seven res bits and ACF.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2988-2990",
+       "sha": "1940974538fb83ad190a9c7f5c04c9b01bab9cf7291eb6df80f9447cd6ffe203"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "bit 0",
+     "of": "doc",
+     "text": "ACF freezes the capture ADPCM accumulator and step size while set.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2969-2974",
+       "sha": "438cf102ed659888bae2b935dd5746bcc5a7115669f64540bad30698c368a026"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "A read of I23 returns its eight bits, which the datasheet states as res and ACF.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "2988-2990",
+       "sha": "1940974538fb83ad190a9c7f5c04c9b01bab9cf7291eb6df80f9447cd6ffe203"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "bit 0",
+     "of": "dosbox-x",
+     "text": "The write of I23 is dropped by its empty case, so ACF never freezes anything.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "548-551",
+       "sha": "4dc1207be06e5c51ba7735b71989a9f7f4f7f7a08b2db6f59e3eef907d9979e2"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "550",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x18",
+   "name": "Alternate feature status",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3010-3024"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3058-3060"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::RaiseIRQ"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::TimerTick"
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I24 is the alternate feature status: res, TI, CI, PI, CU, CO, PO and PU.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3058-3060",
+       "sha": "b483ce0c3e8c6a04a4c8dc09e5162dd7b36fe7b7219a4f302ffc03aa4dcfd1bb"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "PI, CI and TI say an interrupt is pending from the playback, record or timer count registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3010-3021",
+       "sha": "946a6f73067898c1fb328bd21a47031815ff0b90cb8b8c20f3e336230f95b936"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "PI, CI and TI are reset by writing any value to the status register.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3022-3024",
+       "sha": "88781be2ece57f8d8fac1e47f508232dce61cb08d8c53a4a2866d77ddc775c85"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "The emulator sets PI on a playback interrupt and TI on the timer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "418-421",
+       "sha": "a32b8acd1ec91d3d26f0d480eacb903533e88b27f0b23d92141a1ad5bb28887f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "298-299",
+       "sha": "e1c98458aaf14d4a7a75ca8620246f62856c206070ea6dd5aef0ba439aa50ec7"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "602-606",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "418-421",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "298-299",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "300-305",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "422-426",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x19",
+   "name": "Version and chip ID",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3026-3037"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3061-3063"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "CS4231_VERSION"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::Reset"
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I25 is the version and chip ID: V2-V0, res, res and CID2-CID0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3061-3063",
+       "sha": "969afc32c76d8ffca0ba1b380f782617f531cdeae8fd99a22c560818d3729930"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "V2-V0 read 100 for all CS4231 revisions and 101 for the CS4231A.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3026-3033",
+       "sha": "edd601691800ca7110f2fc2025aef0ed9c4e3f68e27884930e6788a37ec66b2b"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "CID2-CID0 read 000 for the CS4231 or the CS4231A.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3034-3037",
+       "sha": "541331b9cb549569354f34df8a1cf2639d75fc3d7ea47a5643ca832355e5edd9"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "The register holds 0x80: V2-V0 read 100, the CS4231's value, where the CS4231A reads 101.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "242",
+       "sha": "187c3b7af00104efe7321c3a6da086914b88048f98ae31304dbfa35ea14cdc36"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "487-489",
+       "sha": "f131a1e7d17ac032762f1c64b0b4fc76dc1737ac88ed24fac77894bf35c19c06"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "220-271",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "242",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1A",
+   "name": "Mono input and output",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3039-3044"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3052-3057"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3064-3066"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3068-3075"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I26 is the mono input and output control: MIM, MOM, MBY, MIA3-MIA0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3064-3066",
+       "sha": "e15fe955be743a4b58464d3053292243c70002eb27feb035aa5edd86b4f3b685"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "bit 7",
+     "of": "doc",
+     "text": "MIM mutes the mono input to the mixer, and with MIM clear MBY should be clear.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3068-3075",
+       "sha": "8fa5da047f3ba16d85f20235f78cf911d596717e31e56600b61fa41616574ef2"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "bit 6",
+     "of": "doc",
+     "text": "MOM mutes the mono mix output independently of the line output.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3052-3057",
+       "sha": "bc15549d4618e3354d398ea51d7c3f68398899a3c4a17668268e6dd50219d786"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "bits 3-0 = MIA3-MIA0",
+     "of": "doc",
+     "text": "MIA3-MIA0 attenuate the mono input 3 dB a step when MIM is clear.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3039-3044",
+       "sha": "637cf24ed20ddebbc9d6d832dbf05df1dc2f0a455de5925d5092a342604207aa"
+      }
+     ],
+     "n": "4"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets MIM, MOM, MBY and MIA3-MIA0.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3064-3066",
+       "sha": "e15fe955be743a4b58464d3053292243c70002eb27feb035aa5edd86b4f3b685"
+      }
+     ],
+     "n": "5"
+    },
+    {
+     "on": "bit 7",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; no mixer level is updated from it, since the update runs for the AUX and DAC registers only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "487-489",
+       "sha": "f131a1e7d17ac032762f1c64b0b4fc76dc1737ac88ed24fac77894bf35c19c06"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "597-600",
+       "sha": "cfb2a7e8711f20b4b4b92ddfe53e77343dd7027f28dbc7e1db93f11a2d41fe58"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "6"
+    },
+    {
+     "on": "bit 6",
+     "of": "dosbox-x",
+     "text": "MOM is stored in the byte; no mono output is muted, since the update runs for the AUX and DAC registers only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "597-600",
+       "sha": "cfb2a7e8711f20b4b4b92ddfe53e77343dd7027f28dbc7e1db93f11a2d41fe58"
+      }
+     ],
+     "vs": "differs",
+     "row": "3",
+     "n": "7"
+    },
+    {
+     "on": "bits 3-0 = MIA3-MIA0",
+     "of": "dosbox-x",
+     "text": "The attenuation is stored in the byte; no mixer level is updated from it, since the update runs for the AUX and DAC registers only.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "597-600",
+       "sha": "cfb2a7e8711f20b4b4b92ddfe53e77343dd7027f28dbc7e1db93f11a2d41fe58"
+      }
+     ],
+     "vs": "differs",
+     "row": "4",
+     "n": "8"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "5"
+    }
+   ]
+  },
+  {
+   "key": "0x1B",
+   "name": "Reserved register 3",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3112-3114"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "text": "I27 is reserved: the datasheet gives its eight bits as res.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3112-3114",
+       "sha": "5bc57fb2fed69a60f40601e7506d71e2a66493b5a94efc3219f7e9264962d4ca"
+      }
+     ],
+     "n": "1"
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "text": "A read of I27 returns eight reserved bits, whose value the datasheet does not define.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3113-3114",
+       "sha": "df313dbcf9213a99d3604014bd185289c1501fd19fe7ba6b7d60dd80ed8695a4"
+      }
+     ],
+     "n": "2"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "text": "A write to I27 sets bits the datasheet leaves reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3112-3114",
+       "sha": "5bc57fb2fed69a60f40601e7506d71e2a66493b5a94efc3219f7e9264962d4ca"
+      }
+     ],
+     "n": "3"
+    },
+    {
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "The read returns the byte the write stored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "487-489",
+       "sha": "f131a1e7d17ac032762f1c64b0b4fc76dc1737ac88ed24fac77894bf35c19c06"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      }
+     ],
+     "vs": "differs",
+     "row": "2",
+     "n": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1C",
+   "name": "Capture data format",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3078-3095"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3115-3117"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "n": "1",
+     "text": "I28 is the capture data format: FMT1, FMT0, C/L, S/M and four reserved bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3115-3117",
+       "sha": "511ae66d58ff1697d37880a3dcc3f414b1dff6e1a0e2baefc3579ad4603621d6"
+      }
+     ]
+    },
+    {
+     "on": "bits 7-5",
+     "of": "doc",
+     "n": "2",
+     "text": "FMT1, FMT0 and C/L select the capture format in MODE 2; it may differ from the playback format, but the sample frequency is shared and set in I8.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3088-3095",
+       "sha": "d82ffadbe9bdd990d38728124162e05654590be31ba2a48a362e0ae4e00f74bf"
+      }
+     ]
+    },
+    {
+     "on": "bit 4",
+     "of": "doc",
+     "n": "3",
+     "text": "S/M selects stereo or mono capture; stereo alternates left and right samples, and mono captures the left channel only.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3078-3087",
+       "sha": "c1f3b2aacfef4a934f6f40ac7497de5752c08c72d5d252f5de2c5d5d88713a9a"
+      }
+     ]
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "n": "4",
+     "text": "A write sets the capture format; MCE (R0) or CMCE (I16) must be set to modify the register.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3088-3095",
+       "sha": "d82ffadbe9bdd990d38728124162e05654590be31ba2a48a362e0ae4e00f74bf"
+      }
+     ]
+    },
+    {
+     "on": "bits 7-5",
+     "of": "dosbox-x",
+     "n": "5",
+     "text": "A write stores the byte; nothing in it sets a capture format from FMT1, FMT0 or C/L.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "593-595",
+       "sha": "0b640e9eaff71c2f37917cc381733fdab6466fc4677f7c598ea16a271f568ab9"
+      }
+     ],
+     "vs": "absent",
+     "row": "2"
+    },
+    {
+     "on": "bit 4",
+     "of": "dosbox-x",
+     "n": "6",
+     "text": "A write stores the byte; nothing in it makes the captured stream stereo or mono from S/M.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "593-595",
+       "sha": "0b640e9eaff71c2f37917cc381733fdab6466fc4677f7c598ea16a271f568ab9"
+      }
+     ],
+     "vs": "absent",
+     "row": "3"
+    },
+    {
+     "on": "write",
+     "of": "dosbox-x",
+     "n": "7",
+     "text": "A write stores the byte whether MCE or CMCE is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "593-595",
+       "sha": "0b640e9eaff71c2f37917cc381733fdab6466fc4677f7c598ea16a271f568ab9"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1D",
+   "name": "Reserved register 4",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3118-3120"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "n": "1",
+     "text": "I29 is reserved: the datasheet gives its eight bits as res.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3118-3120",
+       "sha": "f4d6c81444df3a42fac9d0fa0c6037831aa5b27b7dc3769f7f6b762c86470696"
+      }
+     ]
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "n": "2",
+     "text": "I29 is eight reserved bits; the datasheet defines no value for them.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3118-3120",
+       "sha": "f4d6c81444df3a42fac9d0fa0c6037831aa5b27b7dc3769f7f6b762c86470696"
+      }
+     ],
+     "state": "undetermined"
+    },
+    {
+     "on": "write",
+     "of": "doc",
+     "n": "3",
+     "text": "A write sets I29's eight bits, which the datasheet leaves reserved.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3118-3120",
+       "sha": "f4d6c81444df3a42fac9d0fa0c6037831aa5b27b7dc3769f7f6b762c86470696"
+      }
+     ]
+    },
+    {
+     "on": "read",
+     "of": "dosbox-x",
+     "n": "4",
+     "text": "The read returns the byte the write stored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "487-489",
+       "sha": "f131a1e7d17ac032762f1c64b0b4fc76dc1737ac88ed24fac77894bf35c19c06"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "594",
+       "sha": "2f64e2a9ad889878709fc6da0160b0b7af0e8a1f2f033306c4af1c4f2bd92cd7"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x1E",
+   "name": "Capture upper base",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3098-3103"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3121-3123"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "n": "1",
+     "text": "I30 is the capture upper base: CUB7-CUB0, the high byte of the 16-bit capture base.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3121-3123",
+       "sha": "f912b1fbffc6b8fb824183beda9b7575fc4cae7e82f7473123f8a2cf6e6de17c"
+      },
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3098-3101",
+       "sha": "1ea486e6fa285022d80f54e90ca03215454d3d1111f93efe94309805ba5c81bd"
+      }
+     ]
+    },
+    {
+     "on": "bits 7-0 = CUB7-CUB0",
+     "of": "doc",
+     "n": "2",
+     "text": "CUB7-CUB0 are the eight most significant bits of the 16-bit capture base register.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3098-3101",
+       "sha": "1ea486e6fa285022d80f54e90ca03215454d3d1111f93efe94309805ba5c81bd"
+      }
+     ]
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "n": "3",
+     "text": "A read of I30 returns the same value that was written.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3101-3103",
+       "sha": "9ec2bb88d07618766825135a30d445636ad894b932013535d541e1dba7b7f9ff"
+      }
+     ]
+    },
+    {
+     "on": "bits 7-0 = CUB7-CUB0",
+     "of": "dosbox-x",
+     "n": "4",
+     "text": "A write stores the byte; nothing in it forms a capture base from CUB7-CUB0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "593-595",
+       "sha": "0b640e9eaff71c2f37917cc381733fdab6466fc4677f7c598ea16a271f568ab9"
+      }
+     ],
+     "vs": "absent",
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x1F",
+   "name": "Capture lower base",
+   "regions": [
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3105-3110"
+    },
+    {
+     "ref": "datasheet:CS4231A.raw.txt",
+     "lines": "3124-3126"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::WritePort",
+     "case": [
+      "1",
+      "default"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "function": "CS4231::ReadPort",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "on": "is",
+     "of": "doc",
+     "n": "1",
+     "text": "I31 is the capture lower base: CLB7-CLB0, the low byte of the 16-bit capture base.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3124-3126",
+       "sha": "404a1ccc8427680751c1c6e31ad17f9c5cce43166e3c8ad50c2d9f20b05d02ac"
+      },
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3105-3108",
+       "sha": "2aa26f31342c93a8898d4863fa8f6332d2504ad823ce10d41387bcaf712f971b"
+      }
+     ]
+    },
+    {
+     "on": "bits 7-0 = CLB7-CLB0",
+     "of": "doc",
+     "n": "2",
+     "text": "CLB7-CLB0 are the eight least significant bits of the 16-bit capture base register.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3105-3108",
+       "sha": "2aa26f31342c93a8898d4863fa8f6332d2504ad823ce10d41387bcaf712f971b"
+      }
+     ]
+    },
+    {
+     "on": "read",
+     "of": "doc",
+     "n": "3",
+     "text": "A read of I31 returns the same value which was written.",
+     "quotes": [
+      {
+       "ref": "datasheet:CS4231A.raw.txt",
+       "lines": "3108-3110",
+       "sha": "44e13dcfff3ae7ca17cd06cbbb5d5d8a300f23eedcdf7fdb500534e1585c2d3c"
+      }
+     ]
+    },
+    {
+     "on": "bits 7-0 = CLB7-CLB0",
+     "of": "dosbox-x",
+     "n": "4",
+     "text": "A write stores the byte; nothing in it forms a capture base from CLB7-CLB0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/cs4231.cpp",
+       "lines": "593-595",
+       "sha": "0b640e9eaff71c2f37917cc381733fdab6466fc4677f7c598ea16a271f568ab9"
+      }
+     ],
+     "vs": "absent",
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "503-504",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "518",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "472",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "480-486",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "224",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "510",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "276",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "594",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/cs4231.cpp",
+     "lines": "487-489",
+     "as": "agrees",
+     "row": "3"
+    }
+   ]
+  }
+ ]
+}

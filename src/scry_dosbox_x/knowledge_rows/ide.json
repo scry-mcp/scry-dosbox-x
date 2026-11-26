@@ -1,0 +1,3471 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "ide",
+ "title": "The fixed disk controller's task file registers",
+ "kind": "register",
+ "scope": "ide",
+ "covers": "The AT attachment task file registers at 0x1F0 to 0x1F7 and the control block registers at 0x3F6 and 0x3F7, as the AT Attachment Interface for Disk Drives defines them, and the three selection ports of the PC-98 IDE interface at 0x430, 0x432 and 0x435",
+ "source": "official",
+ "documents": [
+  {
+   "name": "ATA-ATAPI-1.raw.txt",
+   "variant": "ATA-1"
+  }
+ ],
+ "official": {
+  "ATA-ATAPI-1.raw.txt": [
+   "987-1010",
+   "1040-1056",
+   "1060-1069",
+   "1070-1074",
+   "1075-1084",
+   "1085-1090",
+   "1091-1095",
+   "1096-1109",
+   "1110-1132",
+   "1133-1153",
+   "1154-1183",
+   "1184-1191",
+   "1192-1200",
+   "1201-1208",
+   "1209-1263"
+  ]
+ },
+ "engine": [
+  "data_read",
+  "data_write",
+  "writecommand",
+  "deselect",
+  "select"
+ ],
+ "closed": [
+  {
+   "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+   "lines": "1042-1044",
+   "as": "layout"
+  }
+ ],
+ "entries": [
+  {
+   "key": "0x1F0",
+   "name": "data register",
+   "regions": [
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1045"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1091-1095"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_r",
+     "case": [
+      "0"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_w",
+     "case": [
+      "0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Table 6 selects the data register for reading and for writing with CS1FX- asserted and DA2-0 = 000.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1045",
+       "sha": "79a57c2d36f9abec6a7eba41ecb5bcef14aab3fdc3237890a0f967e5a67b8abd"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Selected for reading, this 16-bit register transfers data blocks between the device data buffer and the host.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1045",
+       "sha": "79a57c2d36f9abec6a7eba41ecb5bcef14aab3fdc3237890a0f967e5a67b8abd"
+      },
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1091-1093",
+       "sha": "a5c389a9e71c6578abb8d34da9d8c8b1f09ee56b74e97bc220c25827bf3a783d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Selected for writing, this 16-bit register transfers data blocks between the device data buffer and the host.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1045",
+       "sha": "79a57c2d36f9abec6a7eba41ecb5bcef14aab3fdc3237890a0f967e5a67b8abd"
+      },
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1091-1093",
+       "sha": "a5c389a9e71c6578abb8d34da9d8c8b1f09ee56b74e97bc220c25827bf3a783d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Sector information is transferred through this register on a Format Track command, and transfers may be PIO or DMA.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1093-1095",
+       "sha": "0e5337eb9b00b536d8a3c135b72aa2a1bc93561b76948e10087edc493320a52c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When 32-bit PIO is off, a four-byte read is answered as two 16-bit reads combined and a four-byte write is split into two.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9434-9435",
+       "sha": "2e463fca338ca32cad053f6969af5a41751256928568e9bf226419baed663ca6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9505-9508",
+       "sha": "78315ed516a553a35e37bcc610b1dcfcc9670b83fd17455ca051154165e33f91"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When 32-bit PIO is ignored, a four-byte read returns all ones and a four-byte write is dropped.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9436-9437",
+       "sha": "e7f821f0874f6da5c07107fdf15c03a109d6cc4ba4ed8b09868d30be56a82470"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9510-9511",
+       "sha": "a16962596c76c9289a3a3defa222dfd96256093321ee1f9f17a240cc8e91cd7e"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "While the drive is busy, a write to the drive/head register that keeps the selected drive is dropped silently, and any other write is dropped and logged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9521-9531",
+       "sha": "3fcb283f489643fa0d5a5c576f548674d2c2223dfb1c8183098daec6bc620bfd"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9456-9458",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9566-9569",
+     "as": "unfollowed",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9429-9431",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9500-9502",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9549-9563",
+     "as": "parent",
+     "owner": "ide:register:0x1F1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9455",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9566",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x1F1",
+   "name": "error and features",
+   "regions": [
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1046"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1154-1183"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1184-1191"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_r",
+     "case": [
+      "1"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_w",
+     "case": [
+      "1"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Table 6 selects the error register on a read and the features register on a write, DA2-0 = 001.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1046",
+       "sha": "6259a18ab2d0cf41671d6a8c21218675fe623c5a6fb0fbdc7715caceea5cab9b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The error register holds status from the last command, or a diagnostic code after a reset or Execute Drive Diagnostic.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1155-1160",
+       "sha": "c4fc22c7392f09b4c9d8f660c93d4c78a8bb4edbedf2b5fa42a47adbdd2d139d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 7-0 of the error register are BBK, UNC, MC, IDNF, MCR, ABRT, TK0NF and AMNF.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1154",
+       "sha": "7e1aebad85799de8a0fcc73e33c032f2f94fe9f85a7ff81522bc76cc3ab8c5b8"
+      },
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1161-1165",
+       "sha": "22f1f0c6705444d7086a1795c676b9956fd8e3237f7e0a9a9378f6470cca5352"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "BBK is a bad block mark in the requested sector's ID field, UNC an uncorrectable data error, and MC a change in the media.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1166-1171",
+       "sha": "1c328ed236358ccbb7c27137db86dafab829ca6fff4ad4f79fb775014b3345ab"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "IDNF is the requested sector's ID field not found, and MCR a pressed release latch on removable media that needs an eject action.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1172-1179",
+       "sha": "83e883d7e6271ae06a9e42dd22756ed63f1379ab542c140825ec74e801a14b40"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "ABRT is the command aborted because of a drive status error or an invalid command code.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1174-1175",
+       "sha": "516da8d3cfc1647fdf89e729994020adc0c0c831304fa2f3376f5572a2ae53ab"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "TK0NF is track 0 not found during a Recalibrate, and AMNF the data address mark not found after the ID field.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1180-1183",
+       "sha": "48a80c7e4f82c296f560a66effa93f250143a6dda680102c374d84846558c569"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "The features register is command specific, enables and disables interface features, and some drives ignore it.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1184-1188",
+       "sha": "a3921d46fe880f075ceb38b71dc8c031be03946658b814a95dc7703ec8c55625"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "doc",
+     "text": "The features register is written with a command-specific value.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1185-1186",
+       "sha": "d32a9fd4d5143e57999182404aeb7ea05d2b09f027d1988297d5234cdfe694bd"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "Some hosts set a recommended write precompensation cylinder there, from definitions before this standard.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1189-1191",
+       "sha": "b8b42038f9b9af708e3c131d876d520c4bb1fb9d05dd46a46ea3d48ca8a94b61"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With HOB set in the device control register, a read returns the previous contents of the features register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9460-9461",
+       "sha": "f82d0424631119f2eb3a16f68617f68493212c2ac24dfd71f2387b26f53b10f2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9556",
+       "sha": "eb9ded1d9e2e04e732def4a7c2694b6f0279e9b7b303fd88da5a912680b16b54"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9373-9375",
+       "sha": "3b71d9ff24b06c67f4d772e79f17946c104485ace21c3de95b2c9b90c79e8184"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write reaches both drives and keeps the previous value in hob_feature for a later HOB read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9549-9560",
+       "sha": "5023109efeb99c5dff9cdb02ba9052bb505bc6041f86ff5a53874f324399362f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9429-9431",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9434-9435",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9436-9437",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9500-9502",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9505-9508",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9510-9511",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9521-9529",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9556",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9549-9563",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9455",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1206",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1219",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1235",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2012",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3262",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3316",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3693",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5488",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5659",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6347",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6346",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6374",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6380",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6402",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6435",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6517",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6971",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8249",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8899",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9148",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9545",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9598",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    }
+   ]
+  },
+  {
+   "key": "0x1F2",
+   "name": "sector count register",
+   "regions": [
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1047"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1192-1200"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_r",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_w",
+     "case": [
+      "2"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Table 6 selects the sector count register for reading and for writing, DA2-0 = 010.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1047",
+       "sha": "666554d7036e014b77ee98e87d1a1a61c256bb4d66ba6c80c339f3233545a283"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It holds the sectors requested; a zero value is 256 sectors, and at completion zero means success, else the sectors still to transfer.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1192-1198",
+       "sha": "c9a14f590491fa1c87bbf7cb5b9d652ccccdbb5d48302b171ec5bfa81f5d95dd"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Some commands define it otherwise, such as Initialize Drive Parameters, Format Track or Write Same.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1199-1200",
+       "sha": "3ff719a77ba58008bb5a5214bc29165e73bcb3a97f2cec5efde1bca17fc03ecf"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A program writes the number of sectors to transfer.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1193-1194",
+       "sha": "255611aa5796f8d1266d44d02c67ad5b6c3355279836d5989c8210f4c658ec31"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With HOB set, a read returns the previous count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9463-9464",
+       "sha": "b2c8e6a4b5698ad58d7ebe9932bc817c828bac6147ce3c5b1ddf2e89f41af0f9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9557",
+       "sha": "c9c637e1dc8a7436d27a6ba39d95a897b62947c31940f98a96242c3e8f3007b2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9373-9375",
+       "sha": "3b71d9ff24b06c67f4d772e79f17946c104485ace21c3de95b2c9b90c79e8184"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write reaches both drives and keeps the previous value in hob_count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9549-9560",
+       "sha": "5023109efeb99c5dff9cdb02ba9052bb505bc6041f86ff5a53874f324399362f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9429-9431",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9434-9435",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9436-9437",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9500-9502",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9505-9508",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9510-9511",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9521-9529",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9557",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9549-9563",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9455",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1204",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1217",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1236",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2013",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2529",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2586",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2633",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3012",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3011",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3073",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3072",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3150",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3149",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3213",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3212",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3314",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3694",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3978",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5489",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5660",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5829",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6347",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6346",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6360",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6516",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6972",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6991",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "7562",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "7626",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8052",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8235",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8261",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8253",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8899",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9148",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9545",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    }
+   ]
+  },
+  {
+   "key": "0x1F3",
+   "name": "sector number register",
+   "regions": [
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1048-1049"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1201-1208"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_r",
+     "case": [
+      "3"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_w",
+     "case": [
+      "3"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Table 6 selects the sector number register, which in LBA mode holds LBA bits 0-7.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1048-1049",
+       "sha": "5e9307fc43b5eaeba71a6292e4b287d12974fa8d2331f581a834481adcfa3b7d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It holds the starting sector number, from 1 to the sectors per track, or LBA bits 0-7 in LBA mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1201-1206",
+       "sha": "2dc3895dade1c08aaaa5e44ee88d835e3d9135fef07e9dff07d68b5b629816a6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "At the end of the command it is updated to reflect the current LBA bits 0-7.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1205-1206",
+       "sha": "a33155a19817620709f8c5fbd7f08069cc4799b804e94ec0fb0bbc5df40241d5"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The command descriptions say what it holds at completion, successful or not.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1207-1208",
+       "sha": "6166379728519b601b1a944fcba54cb440db8451b039baed3b17f58c05185d35"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "A program writes the starting sector number or the LBA bits 0-7.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1202-1205",
+       "sha": "a8cd320b346dd7e1adea11d7f76a70bd672d4864fa30cd454c5f653fa8dbd02e"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With HOB set, a read returns the previous LBA byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9466-9467",
+       "sha": "486bf4b65831466f576e98844150fdc3ff3fecf89e23cfd4d9d360866d59d994"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9558",
+       "sha": "94262019833eb229f965f27ca40a5eabf817f28e3f3db91c577cc7d13707bce6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9373-9375",
+       "sha": "3b71d9ff24b06c67f4d772e79f17946c104485ace21c3de95b2c9b90c79e8184"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write reaches both drives and keeps the previous value in hob_lba[0].",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9549-9560",
+       "sha": "5023109efeb99c5dff9cdb02ba9052bb505bc6041f86ff5a53874f324399362f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9429-9431",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9434-9435",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9436-9437",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9500-9502",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9505-9508",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9510-9511",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9521-9529",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9558",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9549-9563",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9455",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2530",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2975",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2972",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3273",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3315",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5490",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5661",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6347",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6346",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6361",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6525",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "7627",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8899",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9148",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9545",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    }
+   ]
+  },
+  {
+   "key": "0x1F4",
+   "name": "cylinder low register",
+   "regions": [
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1050-1051"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1085-1090"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_r",
+     "case": [
+      "4"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_w",
+     "case": [
+      "4"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Table 6 selects the cylinder low register, which in LBA mode holds LBA bits 8-15.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1050-1051",
+       "sha": "8390195049bf2795dd616281660c6bf687934c7b2a8c542c75d5b57f6e64d652"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It holds the low order 8 bits of the starting cylinder address, or LBA bits 8-15.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1085-1089",
+       "sha": "cb6185896529690561f78f3c2e8e6ab5fec0500a0d73562154e106096d24e50c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "At the end of the command it reflects the current cylinder number or LBA bits 8-15.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1087-1090",
+       "sha": "d244259bb4904d459d4261f5f6a1ae55d5be243112a3a4f7772bf1bc15559d88"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A program writes the cylinder address's low bits or the LBA bits 8-15.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1085-1089",
+       "sha": "cb6185896529690561f78f3c2e8e6ab5fec0500a0d73562154e106096d24e50c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With HOB set, a read returns the previous LBA byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9469-9470",
+       "sha": "8d09785c9e5a75eab991dc4493a7c7f58b8d64bf71cf410090687a3600d103b4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9559",
+       "sha": "902f1ac369eea35523b04422a8f64ef16b4887c72f7006d0532534e22cd6c62e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9373-9375",
+       "sha": "3b71d9ff24b06c67f4d772e79f17946c104485ace21c3de95b2c9b90c79e8184"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write reaches both drives and keeps the previous value in hob_lba[1].",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9549-9560",
+       "sha": "5023109efeb99c5dff9cdb02ba9052bb505bc6041f86ff5a53874f324399362f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9429-9431",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9434-9435",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9436-9437",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9500-9502",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9505-9508",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9510-9511",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9521-9529",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9559",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9549-9563",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9455",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1211",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1222",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1241",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2007",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2531",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2976",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2973",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3274",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3317",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3691",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5491",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5662",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6347",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6346",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6362",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6525",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "7628",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8349",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8900",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9148",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9545",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    }
+   ]
+  },
+  {
+   "key": "0x1F5",
+   "name": "cylinder high register",
+   "regions": [
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1052-1053"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1075-1084"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_r",
+     "case": [
+      "5"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_w",
+     "case": [
+      "5"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Table 6 selects the cylinder high register, which in LBA mode holds LBA bits 16-23.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1052-1053",
+       "sha": "09ffb8741609d5d974d6f93df311f62364dc3e105e1e30a273191f91deaf552f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It holds the high order bits of the starting cylinder address.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1075-1079",
+       "sha": "df407460146065ce63651ba101af2a125ce886e1daeb1de77bc9e648e097732c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "In LBA mode it holds bits 16-23 and is updated to the current LBA bits 16-23.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1080-1081",
+       "sha": "157cbe6d4606a6e1d96014810b97d8d1d5f7fb3934f2f23ea0ea191f82b26e5c"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Before this standard only its lower two bits were valid, limiting the cylinder address to 1024 cylinders.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1082-1084",
+       "sha": "279939a85ff304f8c92571756c1cd3696c36735df9f551259baae94d1ed43c8a"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "A program loads the cylinder address's most significant bits into the register.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1076-1079",
+       "sha": "19e0a740829bb8890cd7cd8460d2d15144f8853d47d7c5790d469952388c9b77"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With HOB set, a read returns the previous LBA byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9472-9473",
+       "sha": "28c83b5417e2f8bc63bbb1f40d5cbd8ff4e601060bc5e96507f8fdd2ef49ed96"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9560",
+       "sha": "440dc84c45d1974cbed9e0f061ce60ae7f97e98cf3e5f63ce67e638e597bd148"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9373-9375",
+       "sha": "3b71d9ff24b06c67f4d772e79f17946c104485ace21c3de95b2c9b90c79e8184"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write reaches both drives and keeps the previous value in hob_lba[2].",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9549-9560",
+       "sha": "5023109efeb99c5dff9cdb02ba9052bb505bc6041f86ff5a53874f324399362f"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9429-9431",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9434-9435",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9436-9437",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9500-9502",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9505-9508",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9510-9511",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9521-9529",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9560",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9549-9563",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9455",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1211",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1222",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1240",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2006",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2532",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2977",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2974",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3274",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3318",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3690",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5492",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5663",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6347",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6346",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6363",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6525",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "7628",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8349",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8900",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9148",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9545",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    }
+   ]
+  },
+  {
+   "key": "0x1F6",
+   "name": "drive and head register",
+   "regions": [
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1054-1055"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "987-1010"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1133-1153"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_r",
+     "case": [
+      "6"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_w",
+     "case": [
+      "6"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "IDEDevice::select"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Table 6 selects the drive/head register, which in LBA mode holds LBA bits 24-27.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1054-1055",
+       "sha": "04ac58a1653dce0e724185a90d0d75fdb96deaa8c58e5069d3188d73d0f425fd"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Commands are written in parallel to two daisy-chained drives, and only the selected drive executes them, except Execute Diagnostics.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "987-994",
+       "sha": "28ad092f93eb9a9f067d74b12b38ee6fa0ec50c7130ed4aad1d9b8b504e4b72b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Drives are selected by the DRV bit and by a jumper or switch that makes a drive 0 or 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "995-1000",
+       "sha": "395f191771fe0b1eb6c0da8794053b5b41346f73f025ed70989c705d145c5636"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Before this standard some drives used jumpers to show whether drive 1 was present; selection refers to DRV, the jumper or CSEL.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1001-1005",
+       "sha": "772b7f0e7448d0fb6bccc439ebefc13e42f262479d87de16aeaf5e4a35457967"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "A drive addresses in CHS or LBA mode, command by command, and LBA mode is selected in the drive/head register.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1006-1010",
+       "sha": "b14185e4e82a6855e4e50d342688d37985d049f6f0ebf0c68ced93fbe4bf0b22"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The register's bits 7-0 are 1, L, 1, DRV, HS3, HS2, HS1 and HS0, and it holds the drive and head numbers.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1133-1141",
+       "sha": "175ed56d3c898f2bfa00496c0b1087ec398f63ff6439615d1fc1e3389f6adc54"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "L is the address mode: zero selects CHS and one selects LBA.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1142-1143",
+       "sha": "7f14fb60e41fe06d8404b98034caa29f5942bb3853b2fc62a738a7cf49472afd"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "DRV is the drive select: zero selects drive 0 and one selects drive 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1144-1145",
+       "sha": "bbf3a61e5e2af8ff24edbbdc2d1ae10197e5ff22559d761b9d6430f9f93f9c31"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "With L=0 the HS bits are the head address; with L=1 they are LBA bits 24-27, updated at command completion.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1146-1153",
+       "sha": "b7c6d82a4db0fa9b57dfab27442ae3ffdf7b717bc52b878d703df54b7a3d2064"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the drive and head numbers.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1134-1136",
+       "sha": "5c5064f27568a93ce0cc07492d674f46bba357387c0c38ecf8f8f1820d7ae315"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "write",
+     "of": "doc",
+     "text": "A program writes the drive and head numbers, selecting CHS or LBA and drive 0 or 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1134-1136",
+       "sha": "5c5064f27568a93ce0cc07492d674f46bba357387c0c38ecf8f8f1820d7ae315"
+      },
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1142-1145",
+       "sha": "1ceb17f07792a8cfb08aad0f6a69517467ee8e0eb40a64b0c00a97cfcc53447f"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "When the DRV bit changes, the previously selected drive is deselected before the new drive is selected.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9570-9581",
+       "sha": "8507cbe2501f5980f81c52897488326d4a7f5fcdd0becc48f93b23ecbfb2de10"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The other device latches the register too, when it is writable and not busy.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9583-9587",
+       "sha": "dd3ae9b93e64280ab36f34516935ec10465a0c8dbd08279351d619765f09634a"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "Both drives carry out command 0x90; drive 0 stores 01h as the diagnostic code and raises the interrupt, and drive 1 raises its own when drive 0 is absent.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9593-9604",
+       "sha": "9fd46ca8ce56687ea3fb5b2d5685bf06b999f9abe88a1958aac50f83400c2835"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9429-9431",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9434-9435",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9436-9437",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9500-9502",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9505-9508",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9510-9511",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9521-9529",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9475-9477",
+     "as": "agrees",
+     "row": "10"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9570-9581",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9583-9589",
+     "as": "agrees",
+     "row": "11"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9549-9563",
+     "as": "parent",
+     "owner": "ide:register:0x1F1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9455",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9566",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2533",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2983",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3272",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5493",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5664",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6346",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6364",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6547",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8898",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9117",
+     "as": "agrees",
+     "row": "11"
+    }
+   ]
+  },
+  {
+   "key": "0x1F7",
+   "name": "status and command",
+   "regions": [
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1056"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1070-1074"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1209-1263"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_r",
+     "case": [
+      "7"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_baseio_w",
+     "case": [
+      "7"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Table 6 selects the status register on a read and the command register on a write, DA2-0 = 111.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1056",
+       "sha": "b53f7b2748c212e8054846be750bf36ac6604475411df4a51203a69b4fb74866"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The status register holds the drive status, updated at each command completion; a read while an interrupt is pending is its acknowledge, and any read clears a pending interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1210-1214",
+       "sha": "084751134041d5966250d74ffc71b7791b5d11797e93a8a130bf92a69c4f432c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Its bits 7-0 are BSY, DRDY, DWF, DSC, DRQ, CORR, IDX and ERR.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1209",
+       "sha": "d84a823a4c4bc9ac1ea5698daea17673c0a545f24ac5e972495489adbc3995a5"
+      },
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1217-1221",
+       "sha": "eff60aeed23f63569fe957403e63c843b953a2c470920f1bb40de9329a746761"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "BSY is set while the drive has the command block registers, and a read of any of them then returns the status register.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1224-1227",
+       "sha": "fb897e09cd04620f7693e823023ea831759005540ee9516ffef608216915e12e"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "BSY is set after a reset, after certain commands are written, and during a data transfer.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1230-1241",
+       "sha": "71b8e48c049afabb7434532cb55996699aa090444f9d07f70f3ac54998e1643b"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "DRDY shows the drive is able to respond to a command; it is cleared at power on until the drive is ready.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1242-1247",
+       "sha": "9c822a620f3e1c841423916f21d3f03141d1ecfe64ebb1c85bc72374b7c0617a"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "DWF shows a current write fault, held until the status register is read.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1248-1251",
+       "sha": "02ca090b69627bf30637417ed623cc46f1fcc9f1f9e5c244762157924f996d1a"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "DSC shows the heads settled over a track, held until the status register is read.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1252-1255",
+       "sha": "0a52dc186fb37389410a27452237228eb698571cab8ac97ae5dac2155f692f7e"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "DRQ shows the drive is ready to transfer a word or byte of data.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1256-1257",
+       "sha": "d6f9c7fa47cbc6129b763929699a42f6dbdad99708e92364b7af7568a6f09f1c"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "CORR shows a correctable data error that was corrected, which does not end the transfer.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1258-1260",
+       "sha": "23f0c9106f9cae3acf116745106c3dd0f30c735d37cddca453f83cb3c99488a3"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "is",
+     "of": "doc",
+     "text": "IDX is set once per disk revolution.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1261",
+       "sha": "6e725f8c9855f5d1db5b37ff6da955b9ecd4e0d72676dce3c366250f2f5df7d4"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "doc",
+     "text": "ERR shows an error occurred in the previous command, with the cause in the error register.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1262-1263",
+       "sha": "d6a16773462059a69bddd998d27ee40f081bfbdc9d9fa9a8e1d062300c11e9ad"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "is",
+     "of": "doc",
+     "text": "If drive 1 is not detected, drive 0 clears the drive 1 status register to 00h, Not Ready.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1215-1216",
+       "sha": "2c754af86355195e23ba218b960b01d446049948fc0823967606bfd5426906ea"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "is",
+     "of": "doc",
+     "text": "A write sends the command code, and execution begins immediately after the register is written.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1070-1074",
+       "sha": "7e1a40f5b7b600ced4050d41b3f09f4878749ababb98e7f131832c5a564a6cf7"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "write",
+     "of": "doc",
+     "text": "A program writes the command code to this register.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1071-1072",
+       "sha": "74eb767a9455261f54a331cf3d91f160fef7c5ff43d935bbf59afd2b9435f358"
+      }
+     ]
+    },
+    {
+     "n": "16",
+     "on": "is",
+     "of": "doc",
+     "text": "Before this standard, DRDY and DSC were unlatched real time signals.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1222-1223",
+       "sha": "375d6b3c2ae3927cc542481b52b16a4b18414fad87332d88ae063511f1d3797a"
+      }
+     ]
+    },
+    {
+     "n": "17",
+     "on": "is",
+     "of": "doc",
+     "text": "BSY may be set by the drive even when the media cannot be accessed.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1227-1229",
+       "sha": "8eb17c2f5c892f15733a60f631e3931106fe4d78ab9c748f15ec3ef7906b64ea"
+      }
+     ]
+    },
+    {
+     "n": "19",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X returns the drive status, but clears a pending interrupt only when the drive is not busy.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9478-9485",
+       "sha": "f794417561a7ba16c357ac1854f6b246e92910dbc3a54c1192ece807e1867958"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9429-9431",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9434-9435",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9436-9437",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9500-9502",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9505-9508",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9510-9511",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9521-9529",
+     "as": "preamble",
+     "owner": "ide:register:0x1F0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9606",
+     "as": "unfollowed",
+     "row": "15"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9549-9563",
+     "as": "parent",
+     "owner": "ide:register:0x1F1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9455",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9566",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1207",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1220",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "1238",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2015",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2588",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "2619",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3075",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3153",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3169",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3311",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3696",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "3980",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5494",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5665",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "5828",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6348",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6375",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6386",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6408",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6424",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6436",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6444",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6537",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6782",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6791",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6802",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6815",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "6989",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "7186",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "7500",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8227",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8250",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "8897",
+     "as": "unseen",
+     "reason": "written by the drive model elsewhere; this register only hands it out"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9593-9604",
+     "as": "parent",
+     "owner": "ide:register:0x1F6"
+    }
+   ]
+  },
+  {
+   "key": "0x3F6",
+   "name": "status and control block",
+   "regions": [
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1040"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1060-1069"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1096-1109"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9415-9416"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9373-9391"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "With CS3FX- asserted and DA2-0 = 110, a read selects the alternate status register and a write the device control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1040",
+       "sha": "f10ff8a0d58d2a8dc1a640ca23d5d1dbd9bc0de5660f51aad7350950bac0d46f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the status register's bits without acknowledging the interrupt or clearing a pending one.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1060-1063",
+       "sha": "cc9aaa6cb07b239c0062c4c0800e7f74ef03b813e6b4608b0bf9db1f4889a725"
+      },
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1064-1069",
+       "sha": "4ac018dac24ace18b8d400f2fb7df47ccfb0d09316bfcf9d1b112eb42f63664d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The device control register's bits 7-0 are x, x, x, x, 1, SRST, nIEN and 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1096-1101",
+       "sha": "b5fbe1af98d34a72939b628c2b2d149409b085d19a488efde9ad15b4343a9af2"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "SRST holds the drive in reset, and on a daisy chain it resets both drives; drive 1 need not run the DASP- handshake.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1102-1105",
+       "sha": "faf8b7b2b227c7d7692e27371d3b6c6966cb2241493ebb2fa255e15da4076639"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "nIEN enables the drive's interrupt when zero; when one, or when the drive is not selected, INTRQ is high impedance.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1106-1109",
+       "sha": "fa720d77d09d98971fc3d65e3f227553afae226012418c7cd091f1717d9d0087"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "A program writes SRST to reset the drive and nIEN to enable or disable its interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1102-1109",
+       "sha": "b9f9a5e7bf5885abc923dd57f327db9cac01aeaf56df73d82aa01e660521e5dc"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write sets the controller's interrupt enable from bit 1 and its HOB flag from bit 7.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9373-9379",
+       "sha": "e909095a736748ebdaf2b72a4b7b2181fd6565cc8718db9f193edf82dc60ba3b"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read that finds no device returns 00h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9416",
+       "sha": "a044fb2cd7a4e987a66104e42028e74a7f183333c1e0fc0046a9119e236b2f79"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9415-9416",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9373-9379",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9381-9391",
+     "as": "agrees",
+     "row": "6"
+    }
+   ]
+  },
+  {
+   "key": "0x3F7",
+   "name": "drive address register",
+   "regions": [
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1041"
+    },
+    {
+     "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+     "lines": "1110-1132"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9417-9419"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "With CS3FX- asserted and DA2-0 = 111, a read selects the drive address register and a write is not used.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1041",
+       "sha": "d4b29abd6760e785bc504db49d46566a8c7057db5cd35b650aa2ac1fb55df5cc"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register holds the inverted drive select and head select addresses; bits 7-0 are HiZ, nWTG, nHS3 to nHS0, nDS1 and nDS0.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1110-1117",
+       "sha": "fadcfbdc5838f50d1809156a5d185ef82867ba6fb84daf30856b92eee441d493"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "HiZ is always in a high impedance state.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1118",
+       "sha": "ac53ab3ca8dd096255ad7a749867d0f673eba15332dc38f1dd0e2d5ba6887789"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "nWTG is the write gate, zero while a write to the disk is in progress.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1119-1120",
+       "sha": "fc2430c9345ed4001a8136cb4a4260832adca6f6125495958dbd78456e8ea68d"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "nHS3 to nHS0 are the one's complement of the selected head's address.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1121-1124",
+       "sha": "76a5469ca3fe093c7af436bc7d35611bf8f745f14093670030415bad2331555d"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "nDS1 and nDS0 are the drive select bits, zero when that drive is selected and active.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1125-1128",
+       "sha": "2ad8ff6a5a8e3d9bd46dc2f467cebcfb719fc284bf38d920197e7003d179ae66"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The bits do not always show the expected status of drive operations at the instant, because of caching, translate mode and the Drive 0/Drive 1 concept.",
+     "quotes": [
+      {
+       "ref": "datasheet:ATA-ATAPI-1.raw.txt",
+       "lines": "1129-1132",
+       "sha": "3934008ec1a71c5b9bb378fb735496361514f24bf3a90fbdb82300b7d7507d0d"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "DOSBox-X returns bit 7 set, the drive select bits inverted, and the head bits inverted or 0x3C with no device.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9417-9419",
+       "sha": "7faca95bc6a45110fb6aeb18cff1176a77ad619a12482763c96e7d72bcc27002"
+      }
+     ],
+     "row": "2"
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x430",
+   "name": "PC-98 IDE selection",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "no IDE use of 0x430, 0x432 or 0x435 in the MAME 0.289 source"
+    },
+    {
+     "where": "maker",
+     "gave": "no freely downloadable NEC PC-9800 technical data book was found"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers.org NEC directory holds peripherals only, no PC-9800 computer reference"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the 1986 PC-9800 technical data book scan predates the IDE interface"
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index was found listing a PC-98 IDE selection register"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_pc98ctlio_r",
+     "case": [
+      "0"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_pc98ctlio_w",
+     "case": [
+      "0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The port reads the latched one-bit IDE selection; the write is ignored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9334-9335",
+       "sha": "d19c7259770f392c47f474fdc876ba95590ba29b405bd741dfdb07388d93a5fc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9313-9315",
+       "sha": "216dceb1cd4205c1803d95fd0eb54cd01ad4bae436f06e6348a2670ee2f10310"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9303-9305",
+       "sha": "bd612ce68f62b2953049fe68161e4ccc39506e01212674f59bc4f78d959df0f4"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the selection latch, which match_ide_controller uses to pick the controller.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9334-9335",
+       "sha": "d19c7259770f392c47f474fdc876ba95590ba29b405bd741dfdb07388d93a5fc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "5891-5894",
+       "sha": "9e7ba6495cb0aad4c7e72a36c2f34b5f5e2005ffb4cb7001f11f48cb8cf55d63"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to 0x430 does nothing; the case body holds only a comment and a break.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9313-9315",
+       "sha": "216dceb1cd4205c1803d95fd0eb54cd01ad4bae436f06e6348a2670ee2f10310"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9312",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9333",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x432",
+   "name": "PC-98 IDE device select",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "no IDE use of 0x430, 0x432 or 0x435 in the MAME 0.289 source"
+    },
+    {
+     "where": "maker",
+     "gave": "no freely downloadable NEC PC-9800 technical data book was found"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers.org NEC directory holds peripherals only, no PC-9800 computer reference"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the 1986 PC-9800 technical data book scan predates the IDE interface"
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index was found listing a PC-98 IDE selection register"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_pc98ctlio_r",
+     "case": [
+      "2"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_pc98ctlio_w",
+     "case": [
+      "2"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The port reads the same selection latch; a write with bit 7 clear latches bit 0, and with bit 7 set does nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9336-9337",
+       "sha": "0ef44796cfaacf31b1a351ab846b592d81e35b5d43f9f377c1c2c1f55f04397f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9316-9323",
+       "sha": "2d991247e34c5fc5a1ab7696622bf3fc0eda0795051e2f32f2234f0e18fe6449"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the selection latch.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9336-9337",
+       "sha": "0ef44796cfaacf31b1a351ab846b592d81e35b5d43f9f377c1c2c1f55f04397f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write with bit 7 clear latches bit 0 of the value; with bit 7 set nothing happens and the code comment asks whether it is a test write.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9316-9323",
+       "sha": "2d991247e34c5fc5a1ab7696622bf3fc0eda0795051e2f32f2234f0e18fe6449"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The latch is set by IDE_PC98_Select, which masks the value with 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9303-9306",
+       "sha": "8254139dbfa7b33fa99496dc1e211fd38c6fddc92dd13ab4dcc52cd9e795a4d9"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9312",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9333",
+     "as": "decode"
+    }
+   ]
+  },
+  {
+   "key": "0x435",
+   "name": "PC-98 present devices",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "no IDE use of 0x430, 0x432 or 0x435 in the MAME 0.289 source"
+    },
+    {
+     "where": "maker",
+     "gave": "no freely downloadable NEC PC-9800 technical data book was found"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers.org NEC directory holds peripherals only, no PC-9800 computer reference"
+    },
+    {
+     "where": "archive-org",
+     "gave": "the 1986 PC-9800 technical data book scan predates the IDE interface"
+    },
+    {
+     "where": "index",
+     "gave": "no datasheet index was found listing a PC-98 IDE selection register"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_pc98ctlio_r",
+     "case": [
+      "5"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "function": "ide_pc98ctlio_w",
+     "case": [
+      "5"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The port reads a bitmask of the installed controllers; the write is ignored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9338-9347",
+       "sha": "e000264fd4bc6e3db315a25e14fa0931d836ff371f2d014ab686fe35f74d862a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9324-9326",
+       "sha": "cd5299749add0c91168e80433fd2adcb24cb334dbb8ab40092e62124abd1634a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns all ones with one bit cleared for each controller present, bit 0 for the first and bit 1 for the second.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9338-9347",
+       "sha": "e000264fd4bc6e3db315a25e14fa0931d836ff371f2d014ab686fe35f74d862a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to 0x435 does nothing; the case body holds only a comment and a break.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/ide.cpp",
+       "lines": "9324-9326",
+       "sha": "cd5299749add0c91168e80433fd2adcb24cb334dbb8ab40092e62124abd1634a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9312",
+     "as": "decode"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/ide.cpp",
+     "lines": "9333",
+     "as": "decode"
+    }
+   ]
+  }
+ ]
+}

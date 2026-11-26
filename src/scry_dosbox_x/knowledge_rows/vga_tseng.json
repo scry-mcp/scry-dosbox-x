@@ -1,0 +1,3199 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "vga_tseng",
+ "title": "The Tseng ET4000 and ET3000 extension registers",
+ "kind": "register",
+ "scope": "vga_tseng",
+ "covers": "The Tseng extension registers of the ET4000 and ET3000: the CRTC, sequencer, attribute and DAC extras, and the segment select port",
+ "source": "official",
+ "documents": [
+  {
+   "name": "Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+   "variant": "ET4000"
+  }
+ ],
+ "official": {
+  "Tseng-ET4000-Graphics-Controller-1990.raw.txt": [
+   "6043-6045",
+   "6059-6060",
+   "6071-6079",
+   "5495-5497",
+   "5499-5504",
+   "5528-5530",
+   "5532",
+   "5533",
+   "5534",
+   "5535",
+   "5537-5539",
+   "5541-5542",
+   "5543-5544",
+   "5545-5548",
+   "5696-5698",
+   "5700-5704",
+   "5705-5707",
+   "5708-5709",
+   "5714-5718",
+   "5719",
+   "5723-5726",
+   "5730",
+   "5731",
+   "5732-5734",
+   "5735-5736",
+   "5737",
+   "5738-5740",
+   "5741-5747",
+   "5748-5753",
+   "5754-5757",
+   "5759-5762",
+   "5764",
+   "5765",
+   "5766-5769",
+   "5770-5771",
+   "5773-5777",
+   "5784-5786",
+   "5787-5791",
+   "5792-5795",
+   "5803-5804",
+   "5970-5972",
+   "5975-5986",
+   "5987-5989",
+   "5990-5992",
+   "5994-5995",
+   "5996-5999",
+   "6000-6001",
+   "6506-6509",
+   "6510-6512",
+   "6513-6514",
+   "6515-6524",
+   "6526-6527",
+   "4511-4513",
+   "4515-4523",
+   "4524-4530",
+   "4531-4537",
+   "4482-4486",
+   "5710-5713",
+   "5566-5567",
+   "6019-6021"
+  ]
+ },
+ "handlers": [],
+ "engine": [
+  "VGA_SetupHandlers",
+  "VGA_StartResize",
+  "write_p3c6",
+  "read_p3c6",
+  "write_p3c7",
+  "read_p3c7",
+  "write_p3c8",
+  "read_p3c8",
+  "write_p3c9",
+  "read_p3c9",
+  "DetermineMode_ET4K",
+  "IO_Write"
+ ],
+ "entries": [
+  {
+   "key": "0x3CD",
+   "name": "Segment Select",
+   "aliases": [
+    "GDC segment select"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "6043-6045"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "6059-6060"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "6071-6079"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3cd_et4k"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "read_p3cd_et4k"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3cd_et3k"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "read_p3cd_et3k"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The GDC Segment Select is a read/write register at port hex 03CD.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6043-6045",
+       "sha": "d9f377c27ff706beb498823a7bd41c3bf60d0131226f8b3935563c6113862bf6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "bits 0-3",
+     "of": "doc",
+     "text": "Bits 0-3 are the write segment pointer, WSP(0:3).",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6059",
+       "sha": "92769353f8d35394c5d00caf0c31af70fbf3d91c2e6e2e9d7398e423f37a0493"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 4-7",
+     "of": "doc",
+     "text": "Bits 4-7 are the read segment pointer, RSP(0:3).",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6060",
+       "sha": "e9f0396250853c8b21f1e107608754a31892676a18677ad39dfe58114379eba1"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "The write pointer selects one of sixteen segments (0 to F) for CPU write operations.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6071-6074",
+       "sha": "8d22e0da973da1d79caef63a122ada682b7c6d23f3d8a2193bbd969b155db1e3"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "The read pointer selects one of sixteen segments (0 to F) for CPU read operations.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6075-6076",
+       "sha": "c144915f3af2ac1415198d3f22a7b478c847f329d5e85a96de89a88f63d76d7d"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Access to the register needs the KEY set once after a power-on or a synchronous reset.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6077-6079",
+       "sha": "c445df3bf8d7a3c6e749cc2df9472429885af36ca6a5d4110d4b74b60089efdf"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "The ET3000 handler takes the read bank from bits 3-5, not bits 4-7 as the row says; the ET4000 handler uses bits 4-7.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "852-853",
+       "sha": "33468756efcafc270a7438769d0de9cf698cc04129faa543a4dfb64a9a0a5f95"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "273",
+       "sha": "709ba03fb4c99e35567bfdf64bb65c5ce568d82549994a3ce497f82de3a57ac3"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "bits 6-7",
+     "of": "dosbox-x",
+     "text": "The ET3000 handler sets a 64K segment when bit 6 is set and 128K otherwise, and answers bit 6 set for any size but 128K.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "855-858",
+       "sha": "3030862a8f9c20c1cf9cce5548ccd5afb0c764916c6d0b19601b58bdf865d5a9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "866",
+       "sha": "da7f86686880456c32a286b538fc1b29bb5f6cc6fa001f051216afe5a0a2b41b"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "272",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "272",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "273",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "277-281",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x31",
+   "name": "General Purpose",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's Tseng source cites no document for this register"
+    },
+    {
+     "where": "maker",
+     "gave": "the maker's site survives only as Wayback snapshots of company pages"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "the 1990 ET4000 data book omits this register"
+    },
+    {
+     "where": "archive-org",
+     "gave": "searches returned only drivers and board manuals"
+    },
+    {
+     "where": "index",
+     "gave": "gdcy.com, a datasheet index, refused the connection"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "92"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "214"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "CRTC index 31h is handled by the ET4000 write and read handlers, whose comment names it General Purpose.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "86-92",
+       "sha": "5c259745d4297e49d317c03d1d43550d525cfc34565dd0184443c7e8afc836ae"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "209-214",
+       "sha": "28148e830098d1b522d86bf66af55e60e80dab709633312c20321c7319c59661"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the whole byte and changes no mode.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "92",
+       "sha": "ad7a85feaf0adac322a30bbc69ec2fc5660a1039ad0bbe4dc766bdb85b49ad52"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the last byte stored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "214",
+       "sha": "eadb46bded7391aae859b711d287946624e58c5c0d5ed0c90267848a61f713d0"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x1B..0x21",
+   "name": "Hardware zoom control",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's Tseng source cites no document for this register"
+    },
+    {
+     "where": "maker",
+     "gave": "the maker's site survives only as Wayback snapshots of company pages"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds no ET3000 data book"
+    },
+    {
+     "where": "archive-org",
+     "gave": "searches returned only drivers and board manuals"
+    },
+    {
+     "where": "index",
+     "gave": "gdcy.com, a datasheet index, refused the connection"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "721-727"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "797-803"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The ET3000 handler stores indices 1Bh to 21h and answers them on read; the zoom is not implemented.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "718-727",
+       "sha": "b243c3087e51829e3941f38b6ff2b1a2970d8004c1e3604a2d9f71628c4a66f2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "797-803",
+       "sha": "32c4d4daea5666d0a847dc79e6ccfd161590269ed7700f391ca3ec6155bb2773"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write to any of the seven indices stores the byte, and the code's comment says the zoom is not implemented.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "718-727",
+       "sha": "b243c3087e51829e3941f38b6ff2b1a2970d8004c1e3604a2d9f71628c4a66f2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read answers the byte last stored for the index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "797-803",
+       "sha": "32c4d4daea5666d0a847dc79e6ccfd161590269ed7700f391ca3ec6155bb2773"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x32",
+   "name": "RAS/CAS Configuration",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5495-5497"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5499-5504"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "96"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "215"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CRTC Indexed Register 32, the RAS/CAS Configuration, is read/write at port hex 03x5 and protected by the KEY.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5495-5497",
+       "sha": "a768cdeaa6b3fc797a345fd755c450f265218be7790787ddf08cd0baddfe7dfc"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is read/write: what was programmed can be read back.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5496-5497",
+       "sha": "0fd01c1532cc57e6cbb9fda21cf5d7652ca4f4a96607ca239b5ca4e9a56ead51"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 0-1",
+     "of": "doc",
+     "text": "Bits 0-1, CSW(1:0), plus one, set the CAS low pulse width in SCLK clock periods.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5499",
+       "sha": "a58717f8fcbf5bdf2d148eaf4c62d67f5d29640ee7d07faf506f31a9df991ff0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bits 3-4",
+     "of": "doc",
+     "text": "Bits 3-4, RSP(1:0), plus two, set the RAS pre-charge time in SCLK clock periods.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5501",
+       "sha": "a1d57cf559e9aa7467da6a91d07a4bdac7b0c4f3016472a69a2e49fde184ce22"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bit 2",
+     "of": "doc",
+     "text": "Bit 2 sets the CAS pre-charge time.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5500",
+       "sha": "f25c8619e87e7a5a9f40b58a149e6eb7ff0bcf4a72cb99ba198a98bdfaa9dbf9"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "bits 5-7",
+     "of": "doc",
+     "text": "Bit 5 sets the RAS-to-CAS time, bit 6 the RAS and CAS column setup time and bit 7 static column memory.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5502-5504",
+       "sha": "0eb4cbc4cc184ff662603f7a44116617b4072ac00faaf526ad459ebd0c337047"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "bit 2",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "A write stores the byte and a read answers it; no memory timing changes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "96",
+       "sha": "ebc355fa00f8af08bac45ac6e8097a43580927c3c217e25abde74a8908cf84ce"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "215",
+       "sha": "288071aa51b8f8b482f2ce1f4009bc28a8fb94f7dfdbac048a600c56f053ee70"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "bits 5-7",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "A write stores the byte and a read answers it; no memory timing changes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "96",
+       "sha": "ebc355fa00f8af08bac45ac6e8097a43580927c3c217e25abde74a8908cf84ce"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "215",
+       "sha": "288071aa51b8f8b482f2ce1f4009bc28a8fb94f7dfdbac048a600c56f053ee70"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "bits 0-1",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "A write stores the byte and a read answers it; no memory timing changes with it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "96",
+       "sha": "ebc355fa00f8af08bac45ac6e8097a43580927c3c217e25abde74a8908cf84ce"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "215",
+       "sha": "288071aa51b8f8b482f2ce1f4009bc28a8fb94f7dfdbac048a600c56f053ee70"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "bits 3-4",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "A write stores the byte and a read answers it; no memory timing changes with it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "96",
+       "sha": "ebc355fa00f8af08bac45ac6e8097a43580927c3c217e25abde74a8908cf84ce"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "215",
+       "sha": "288071aa51b8f8b482f2ce1f4009bc28a8fb94f7dfdbac048a600c56f053ee70"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "215",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x33",
+   "name": "Extended Start Address",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5528-5530"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5532"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5533"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5534"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5535"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3d5_et4k",
+     "case": [
+      "0x33"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "216"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CRTC Indexed Register 33, the Extended Start Address, is a read/write register at port hex 03x5.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5528-5530",
+       "sha": "ac0fc7c5a8dd3c33fa26521b4ce9a77bb5c25a4fa4224e69534b6fe13d9df677"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is read/write and can be read back.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5529-5530",
+       "sha": "0fd01c1532cc57e6cbb9fda21cf5d7652ca4f4a96607ca239b5ca4e9a56ead51"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 0-1",
+     "of": "doc",
+     "text": "Bits 0-1 are bits 16 and 17 of the 18-bit Linear Starting Address.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5532",
+       "sha": "b0f639f2ee1221c5d3408365350409494a5042ccbb19d32dd701b380980382a2"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5534",
+       "sha": "2927cc90e9a9d617ebca78feb4cd7901d8020aaa9b94abbe37322cdc9c80b45e"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bits 2-3",
+     "of": "doc",
+     "text": "Bits 2-3 are bits 16 and 17 of the 18-bit Cursor Address.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5533",
+       "sha": "2c33a0f6009acb808feb81b5b48488540b327e044beee858f8fd6325b12de439"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5535",
+       "sha": "aae5eea1ea6960178349b1b44f24796488cd3adab150c2a28f385984c98757a1"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "216",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "107",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "108",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "83-84",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "86",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "106",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x34",
+   "name": "6845 Compatibility",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5537-5539"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5541-5542"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5543-5544"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5545-5548"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "124"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "217"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "350"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "356"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5566-5567"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CRTC Indexed Register 34, the 6845 Compatibility Control, is read/write at port hex 03x5 and protected by the KEY.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5537-5539",
+       "sha": "bd632d724eada7ec8988501c5b0f6268d83af47a6cad30654c09a0f60f5fba2b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is read/write and can be read back.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5538-5539",
+       "sha": "0fd01c1532cc57e6cbb9fda21cf5d7652ca4f4a96607ca239b5ca4e9a56ead51"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 0-1",
+     "of": "doc",
+     "text": "Bit 0, EMCK, enables translation of the CS0 bit; bit 1, CS2, is clock select 2, for up to eight clocks.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5541-5542",
+       "sha": "d27783bd84e6b129045d1c8ace7e1bb4b88d08b07bb8281a2100071d79aabfcc"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bits 2-3",
+     "of": "doc",
+     "text": "Bit 2 tri-states every output pin and bit 3 moves the Video Subsystem Enable register to port 46E8.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5543-5544",
+       "sha": "83387d266491386adbeb26b7eb6f2ad3a3538f453fba71f8d1347e436f2b3568"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5566-5567",
+       "sha": "b0aede85f7a8bcc88bb1610612a41aed1e612d5e7c6a78312dfdc007acf213d7"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bits 4-7",
+     "of": "doc",
+     "text": "Bits 4 and 5 enable the translation ROM for reads and writes, bit 6 double scan and bit 7 6845 compatibility.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5545-5548",
+       "sha": "58abaa2cdfc85054ef8486c7bcd96759acd9642986b5f4315dc4cb34661b85e5"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "bits 0-1",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and answers it on read; bit 1 feeds the clock index, and bit 0 translates nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "124",
+       "sha": "63b3c94cbd54bc807c98d0affc6bb6f3434d8af36f706f465f9254b9ee03de9a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "217",
+       "sha": "70ebb8f0f6eca5554e8cc89575a5efd75a364f017f06a1c3e8d32926769450df"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "350",
+       "sha": "9d37ee6ce07f869988a1f8c7ef2a9376afe041d1645e4c1e8d488c79aedec2f4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "356",
+       "sha": "bb717e4f54d2f5fe7cd4d1dfb7af0df5bc748834f6c3653b82d9fc2abbcb81c2"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "7",
+     "on": "bits 2-3",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; no output is tri-stated and no port moves.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "124",
+       "sha": "63b3c94cbd54bc807c98d0affc6bb6f3434d8af36f706f465f9254b9ee03de9a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "217",
+       "sha": "70ebb8f0f6eca5554e8cc89575a5efd75a364f017f06a1c3e8d32926769450df"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    },
+    {
+     "n": "8",
+     "on": "bits 4-7",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; the translation, double scan and 6845 bits change nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "124",
+       "sha": "63b3c94cbd54bc807c98d0affc6bb6f3434d8af36f706f465f9254b9ee03de9a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "217",
+       "sha": "70ebb8f0f6eca5554e8cc89575a5efd75a364f017f06a1c3e8d32926769450df"
+      }
+     ],
+     "vs": "differs",
+     "row": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "217",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x35",
+   "name": "Overflow High",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5696-5698"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5700-5704"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5705-5707"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5708-5709"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5714-5718"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5719"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3d5_et4k",
+     "case": [
+      "0x35"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "218"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5710-5713"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CRTC Indexed Register 35, Overflow High, is a read/write register at port hex 03x5.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5696-5698",
+       "sha": "c398a18f27b03f09a6aba0d85aa4a2bb7f682e09ffcc5ad17283554ea2dcb175"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is read/write and can be read back.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5697-5698",
+       "sha": "0fd01c1532cc57e6cbb9fda21cf5d7652ca4f4a96607ca239b5ca4e9a56ead51"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 0-4",
+     "of": "doc",
+     "text": "Bits 0-4 are bit 10 of the Vertical Blank Start, Vertical Total, Vertical Display End, Vertical Sync Start and Line Compare.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5700-5704",
+       "sha": "7385113fdfc1bf835fd51ffc2a262d23b0dd5093296474db01bd61eeff25a9aa"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5708-5709",
+       "sha": "f121214c386d3dfefcac5998dc60a80890cbc105d1eb63dd0e92f92225289406"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bits 5-7",
+     "of": "doc",
+     "text": "Bit 5 enables a counter reset from the SYNR input, bit 6 read-modify-write and bit 7 the vertical interlace mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5705-5707",
+       "sha": "f319662d133eedb10d3bbbfcb7d727050e881c0276044cf1059ab284699188d4"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5710-5713",
+       "sha": "5866b24880bcc4dc093fec937a1891c998865e3f1c237a4b566975857be0a627"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5714-5718",
+       "sha": "4aad26ee26278748fad4fa6e1dcb42cadaafa19f98123c5431c57b68a834f25f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "CRTC bit 7 must be 0 to write any bit here except bits 4 and 7.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5719",
+       "sha": "dd5e9f8d4e566c8263fe20fa3f386c4b24e59bbadcd2c4009ba3516562c93089"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "bits 5-7",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; bits 5-7 change no timing and no interlace.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "139",
+       "sha": "b97e1688d1cd68e30c9b929d056724e217e9efb12cbc0fcdc4c7e1ce4e668d3c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "218",
+       "sha": "51f9da7bedab1f389e24224d9a261ca281429efd4d78aca032c1b2c03c80545f"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "218",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "140",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "143-149",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "83-84",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "86",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "150-153",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x36",
+   "name": "Video System Config 1",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5723-5726"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5730"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5731"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5732-5734"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5735-5736"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5737"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5738-5740"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5741-5747"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5748-5753"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5754-5757"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3d5_et4k",
+     "case": [
+      "0x36"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "219"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CRTC Indexed Register 36, Video System Configuration 1, is read/write at port hex 03x5 and protected by the KEY.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5723-5726",
+       "sha": "77ae85c61f87de5bbab7ff87edf0950e65f5b605326370f24e645d937a1b12cb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is read/write and can be read back.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5725-5726",
+       "sha": "7f11a997dbf747ef07131a43b8fed041d7e8878716cc0200ba1a494107595af4"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 0-2",
+     "of": "doc",
+     "text": "Bits 0-2 form a 3-bit value equal to the refresh counter per line minus one.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5730",
+       "sha": "8eddeef4b01778888c4e53c9b42943f7144028a3970ce121a6ae8a71217454be"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5737",
+       "sha": "3633dd3697e882f31c0f7e54d23131935a72e811b2534dfad71c3137a83d2b04"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bit 3",
+     "of": "doc",
+     "text": "Bit 3 allows a text font wider than 8 pixels, where 0 keeps the VGA-compatible width.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5731",
+       "sha": "5e99b87081c1f62404a448308ed8a4ed6da85f8020dd8656ff06f0aa13994f75"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5738-5740",
+       "sha": "561a46fc2b8f186d6783d18b185d20decc73c391658bdd821f9c92df525f2b58"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bits 4-5",
+     "of": "doc",
+     "text": "Bit 4 presents memory as a linear framebuffer and bit 5 enables the contiguous TLI address mapping.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5732-5734",
+       "sha": "7abb3a4ad94abca01bd447172cd2438e35279dd95baa287d6a6e0d93d755c916"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5741-5747",
+       "sha": "844c6bc838f96d351c3b273a1021cf21e89d1d887bdafc53c90564a4409060ae"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5748-5753",
+       "sha": "f986c3d671487cac9d7c9a72a1f8d98d47d733d0d8a8246103b42beebc957752"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "bits 6-7",
+     "of": "doc",
+     "text": "Bit 6 enables the 16-bit display memory data bus and bit 7 the 16-bit CPU I/O bus.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5735-5736",
+       "sha": "720191c72b3fb01768b92f5484242ef0c13a5ea99546648f6489203d8721abcf"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5754-5757",
+       "sha": "6cbe6cdf03ab369f1fa5cf5c298b5e9539ec3106c912e9b1e7161c016c0237ff"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "bits 0-2",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; the refresh count changes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "168",
+       "sha": "e57bda964e5dd0cf201b1e5b840c6b41570b45c983938ad222b83f91602dbef1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "219",
+       "sha": "830bbc7216f06c3f2886c6ed103d3b727fa780b3f8a6a304df166b266570aa39"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "8",
+     "on": "bit 3",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; the font width is not changed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "168",
+       "sha": "e57bda964e5dd0cf201b1e5b840c6b41570b45c983938ad222b83f91602dbef1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "219",
+       "sha": "830bbc7216f06c3f2886c6ed103d3b727fa780b3f8a6a304df166b266570aa39"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    },
+    {
+     "n": "9",
+     "on": "bits 4-5",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; neither the linear framebuffer nor TLI mapping is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "168",
+       "sha": "e57bda964e5dd0cf201b1e5b840c6b41570b45c983938ad222b83f91602dbef1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "219",
+       "sha": "830bbc7216f06c3f2886c6ed103d3b727fa780b3f8a6a304df166b266570aa39"
+      }
+     ],
+     "vs": "differs",
+     "row": "5"
+    },
+    {
+     "n": "10",
+     "on": "bits 6-7",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; the bus widths are not changed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "168",
+       "sha": "e57bda964e5dd0cf201b1e5b840c6b41570b45c983938ad222b83f91602dbef1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "219",
+       "sha": "830bbc7216f06c3f2886c6ed103d3b727fa780b3f8a6a304df166b266570aa39"
+      }
+     ],
+     "vs": "differs",
+     "row": "6"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "219",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "83-84",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "86",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "167-170",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x37",
+   "name": "Video System Config 2",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5759-5762"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5764"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5765"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5766-5769"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5770-5771"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5773-5777"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5784-5786"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5787-5791"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5792-5795"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5803-5804"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3d5_et4k",
+     "case": [
+      "0x37"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "220"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CRTC Indexed Register 37, Video System Configuration 2, is read/write at port hex 03x5 and protected by the KEY.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5759-5762",
+       "sha": "dbde8a7873d15dbf9417cae5975f40c8a1d9bc24347b9114a06bc9c48d754b43"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is read/write and can be read back.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5761-5762",
+       "sha": "d4c450c2664ce4f0d4df4faa5e033cae86e00f075be3617f99814a530bcfba38"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 0-1",
+     "of": "doc",
+     "text": "Bits 0-1 determine the width of the display memory data bus: 8, 16 or 32 bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5764",
+       "sha": "2159267949539634c8153ef8c4afe5950a5a9876edd9253e27366691325e0e82"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5770-5771",
+       "sha": "5acbd8b1c167eb1e1089271ee6124a0900b846a2b26e9da1b4962574fb5ef467"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5773-5777",
+       "sha": "c543098038bb6a0b97c3a67d790d7ad4d28aaef0083462676c2352cc40bf5981"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bits 2-3",
+     "of": "doc",
+     "text": "The bit table gives bits 2-3 as memory data depth; the text gives bit 2 as the read latch and bit 3 as chip depth.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5765",
+       "sha": "2fd49da12e08ed0c8c98311c95426beb2946350d25faf5b0b9aba7c404216148"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5784-5786",
+       "sha": "341e345f8768ccfd1d0e05304fe5c949b60d24861f6878c7e9cbf0500b3c4e25"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5787-5791",
+       "sha": "9bccdaa21a8c48031e6584b3856168e3a7771eb6c6c279c50467e69d092073a9"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bits 4-7",
+     "of": "doc",
+     "text": "Bit 4 enables the 16-bit ROM, bit 5 the bandwidth threshold, bit 6 a test mode and bit 7 VRAM.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5766-5769",
+       "sha": "c34c4b409760f576f7afdf2a4ddc71cc8c135a26611572665d81c7fdb9f5b0ee"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5792-5795",
+       "sha": "dff6d66a17142c1b34d8b88b6dc7c4304f14f29775460bd3b8187977401b1eb1"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5803-5804",
+       "sha": "fb4ba6742b86fe1cbb42aa3b2ae406f147ed3b0fb2b2e448f82755ff1b377edc"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "bits 0-1",
+     "of": "dosbox-x",
+     "text": "A write computes the emulated memory mask from bits 0-1 and 3 of the byte, not a bus width.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "180-181",
+       "sha": "a6e5b0608d0318ce07dfac7ec8b1b716e4968235a077b652690f1545cc05d265"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "7",
+     "on": "bits 2-3",
+     "of": "dosbox-x",
+     "text": "The same write uses bit 3 as 256K rather than 64K chips and computes the mask from bits 0-1 and 3; bit 2 does nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "180-181",
+       "sha": "a6e5b0608d0318ce07dfac7ec8b1b716e4968235a077b652690f1545cc05d265"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    },
+    {
+     "n": "8",
+     "on": "bits 4-7",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; the ROM, threshold, test and VRAM bits change nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "180",
+       "sha": "97b59cd0fca4221405a7fa8f0f0e9935b27217c3bec5cb2056edd3ade1f004b3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "220",
+       "sha": "dc601ef22d476b9f0bbde9c110f45f2dbfaec26982134cd11caf1ac89fa31051"
+      }
+     ],
+     "vs": "differs",
+     "row": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "220",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "83-84",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "86",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "178-183",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x06",
+   "name": "TS State Control",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5970-5972"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5975-5986"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5987-5989"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "242"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "255"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "819"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "830"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "TS Indexed Register 6, TS State Control, is read/write at port 3C5 and protected by the KEY.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5970-5972",
+       "sha": "d1feb58021c71dc4378a933b962044562022dae9e08a0f0ea34eaee66195de71"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is read/write and can be read back.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5971-5972",
+       "sha": "8fc1d3556042520ad85a48df04e46249cb8350bece98aa43ae6e532cf88cd801"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 1-2",
+     "of": "doc",
+     "text": "Bits 1-2 with bit 0 of the TS Mode register select 9, 8, 10, 11, 12 or 16 dots per character in text mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5975-5986",
+       "sha": "02432a474eccbfc6ff16584e02e80e738b8ef22d41216317c53f8c63cd32939f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Every CRTC character timing calculation except the 9-dot one treats the character as 8 dots wide.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5987-5989",
+       "sha": "48ece46ba42c4cb1a15d98fc75e6432767aa84bea0f6138d8dbf585c4292dd24"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bits 1-2",
+     "of": "dosbox-x",
+     "text": "Any write is stored and read back; the character width is not changed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "242",
+       "sha": "a480607b3c604e0f8b372c6c3f93bfd5cab14e60c696875354572fc6a10b2918"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "819",
+       "sha": "2c50f10a284a8d5349ee668c8689e6e91e6dc9c8ced4e09546ed6b32f107bb30"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "255",
+       "sha": "d3fc858e435e55346e7c623b1c9f18ab952b5972fa8d530471784d4192a7d96e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "830",
+       "sha": "33209abe8d2f2b15d3704979c2c9815a8cf0fb39d6446c01fc93ad939e3afabb"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "255",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "830",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x07",
+   "name": "TS Auxiliary Mode",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5990-5992"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5994-5995"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "5996-5999"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "6000-6001"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "245"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "256"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "820"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "831"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "6019-6021"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "TS Indexed Register 7, TS Auxiliary Mode, is read/write at port 3C5 and protected by the KEY.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5990-5992",
+       "sha": "0c2936026a70f6f1266b2b7b14e3e6e7d4f4c9eec413927553bed21b6e84c836"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is read/write and can be read back.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5991-5992",
+       "sha": "8fc1d3556042520ad85a48df04e46249cb8350bece98aa43ae6e532cf88cd801"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 0-1",
+     "of": "doc",
+     "text": "Bit 0 selects MCLK/4 and bit 1 divides the SCLK input frequency by two.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5994-5995",
+       "sha": "4719417e08abe464e93f67564b53c2257945fd7523176299d8e6d9c51b0f372f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bits 2-5",
+     "of": "doc",
+     "text": "Bits 3 and 5 select the BIOS ROM address map and bits 2 and 4 are always set to 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "5996-5999",
+       "sha": "6f0be2905cbf0ac71e294b3a2760cc30b5819c7c430932b8ca6c11e9188ceb6f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bits 6-7",
+     "of": "doc",
+     "text": "Bit 6 divides MCLK by two and bit 7 enables VGA compatibility rather than EGA.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6000-6001",
+       "sha": "0863348688f9829550289d03eedf60931ab25fe13e2f85c13288b17aaf319820"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6019-6021",
+       "sha": "46950fab0792d64c7cdd111916b8606c060e2dc519a3e9991fee784e773964c0"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "bits 0-1",
+     "of": "dosbox-x",
+     "text": "Any write is stored and read back; neither clock division is applied.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "245",
+       "sha": "913df6567e877a7353fa2261a64dfe2f1508b9538517608cfc08cc18af655f78"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "820",
+       "sha": "836212b3791f0789ca3efde99d2238d18705854aa17ac292ee25d1a8f454f9e5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "256",
+       "sha": "9150aa8c8b3238a55bb4bf14d3074046fad998ba7be676a0135241710e1ecd7f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "831",
+       "sha": "e810910b2462b1d27b947b795e0026f4f39fbd5377c703bb62b918c71ebfaf40"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "7",
+     "on": "bits 2-5",
+     "of": "dosbox-x",
+     "text": "Any write is stored and read back; the ROM address map is not changed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "245",
+       "sha": "913df6567e877a7353fa2261a64dfe2f1508b9538517608cfc08cc18af655f78"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "820",
+       "sha": "836212b3791f0789ca3efde99d2238d18705854aa17ac292ee25d1a8f454f9e5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "256",
+       "sha": "9150aa8c8b3238a55bb4bf14d3074046fad998ba7be676a0135241710e1ecd7f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "831",
+       "sha": "e810910b2462b1d27b947b795e0026f4f39fbd5377c703bb62b918c71ebfaf40"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    },
+    {
+     "n": "8",
+     "on": "bits 6-7",
+     "of": "dosbox-x",
+     "text": "Any write is stored and read back; the mode stays as it was.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "245",
+       "sha": "913df6567e877a7353fa2261a64dfe2f1508b9538517608cfc08cc18af655f78"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "820",
+       "sha": "836212b3791f0789ca3efde99d2238d18705854aa17ac292ee25d1a8f454f9e5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "256",
+       "sha": "9150aa8c8b3238a55bb4bf14d3074046fad998ba7be676a0135241710e1ecd7f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "831",
+       "sha": "e810910b2462b1d27b947b795e0026f4f39fbd5377c703bb62b918c71ebfaf40"
+      }
+     ],
+     "vs": "differs",
+     "row": "5"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "256",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "831",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x16",
+   "name": "ATC Miscellaneous",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "6506-6509"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "6510-6512"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "6513-6514"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "6515-6524"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "6526-6527"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3c0_et4k",
+     "case": [
+      "0x16"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "329"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "873"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "884"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "ATC Indexed Register 16, Miscellaneous, is read/write, read at 3C1 and written at 3C0, protected by the KEY.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6506-6509",
+       "sha": "a306c77b230fe3cd97d0e86c8725b35af498fbd273643ba79bf79b420e177a06"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "The register is read/write and can be read back.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6507-6509",
+       "sha": "ec7ee05e31e74c77333360ec17b255da533696db9b53a9a27930776c7187440d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bits 4-5",
+     "of": "doc",
+     "text": "Bits 4-5 select normal, high-resolution or 16-bit high-color mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6510-6512",
+       "sha": "8afe84a3fb8972475aaf09c3b7e759bfe8139f10d7898f3ad5dd5fa347911cc9"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6515-6524",
+       "sha": "d1ac640b2b06b117de64a1aae36e98fc1946a887a9145fb9b6c35969340ec946"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bits 6-7",
+     "of": "doc",
+     "text": "Bit 6 selects a 2-byte character code on the ET4000 Rev. E and bit 7 bypasses the internal palette.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6513-6514",
+       "sha": "d02912161280c9f617fcc2d1ea4b4c1eab51784ae581676a9924698e8eaa9930"
+      },
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "6526-6527",
+       "sha": "0f7f82f69bfc266bb214beb170273336c479cfce012d712ec8992e08321c2991"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bits 4-5",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; the display mode is not changed by these bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "296",
+       "sha": "2dbfa73544bf0e49a4632c1a5ebdab30033cfc42779fe1eb0f0f597de3c8fb34"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "873",
+       "sha": "187f42068f4a9d14e011f07c17d659ffad43c5ed4e87b6f93955ee21bffe88fa"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "329",
+       "sha": "ee3d5c8f5cdc0d367ebf60c72ddde119f9b3ecc319c8f511bc25ba134132f904"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "6",
+     "on": "bits 6-7",
+     "of": "dosbox-x",
+     "text": "A write stores the byte and a read answers it; neither the character code nor the palette bypass takes effect.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "296",
+       "sha": "2dbfa73544bf0e49a4632c1a5ebdab30033cfc42779fe1eb0f0f597de3c8fb34"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "873",
+       "sha": "187f42068f4a9d14e011f07c17d659ffad43c5ed4e87b6f93955ee21bffe88fa"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "329",
+       "sha": "ee3d5c8f5cdc0d367ebf60c72ddde119f9b3ecc319c8f511bc25ba134132f904"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "329",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "884",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "285-286",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x3C2",
+   "name": "Miscellaneous Output",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "4511-4513"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "4515-4523"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "4524-4530"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "4531-4537"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "set_clock_index_et4k"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Miscellaneous Output register is read/write, written at 3C2 and read at 3CC.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4511-4513",
+       "sha": "ff7915df527d7251c0f8a971918c3427e430808055fc4dd87436a6edc56c0174"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 3-2 choose the clock rate: MCLK clock 1, 2, 3 or 4.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4531-4537",
+       "sha": "b45655a8a54974b8f09417bfbc7858080be4888710ad5f20ff7cffc043e2ca8a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 0-7 are the address select, RAM enable, clock select, reserved, page select and two retrace polarities; a hardware reset clears them.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4515-4523",
+       "sha": "ba08cea9a137f99b76d994d94bc94afead6d980d75c2f0cb4e36607a90afc76f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 0 set gives 3DX addresses and 3DA for Input Status 1, clear gives 3BX and 3BA; bit 1 enables display memory access.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4524-4530",
+       "sha": "7423370ecaab4ddfe626484e664be70ef995a56fa227cb24f2576a28ef29d612"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "355-357",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x3C6",
+   "name": "PEL mask / DAC command",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "4482"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3c6_et4k"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "read_p3c6_et4k"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The PEL mask register is read/write at port hex 03C6.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4482",
+       "sha": "47fb4cd790cb68f0c9a72df4ce2bedf5228ad3e92393d56dfc0c97878480b608"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the PEL mask value.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4482",
+       "sha": "47fb4cd790cb68f0c9a72df4ce2bedf5228ad3e92393d56dfc0c97878480b608"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the mask value.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4482",
+       "sha": "47fb4cd790cb68f0c9a72df4ce2bedf5228ad3e92393d56dfc0c97878480b608"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "With vga_enable_3C6_ramdac set, four reads switch the port to the HiColor command byte; any access to 03C7, 03C8 or 03C9 clears that.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "497-501",
+       "sha": "470cbbf7ab573dd06eca960704f54445745315e26dc7e997eb4b0ea2f568e630"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "519-529",
+       "sha": "4935700c949d382e0ce3903d1f066bddc13fbcd7e4c689266575ff06dba048fe"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "530-540",
+       "sha": "11df6b92e3b845bec7b68a0683d1dcc0e4b4e741e1ff783c5db8464377f2371d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "542-551",
+       "sha": "e13fe42e5e6c2ec09f9d4f9d8f8526e11ef9ffe7064dc976ab26bad05d77d760"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "552-563",
+       "sha": "9b4eef5992ffec9e606f2a68915081168e916e892b1b8cdd41662966dfdb3370"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Setting a mode writes 0A0h or 00h into the command byte; INT 10h AX=10F2h with BL=2 writes 0E0h.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "363-368",
+       "sha": "de552a3dbc16755ec530542ccaf1f590ca41cf2b81cfc0bd9b1226536b4e4f8d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "600-604",
+       "sha": "81f3d306f22fff0f12846ffb634061b1f67dd12f1f11ec677881341269eb946d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "521",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "547",
+     "as": "unfollowed",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x3C7",
+   "name": "PEL read address",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "4485"
+    },
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "4486"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3c7_et4k"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "read_p3c7_et4k"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port hex 03C7 is written as the PEL read address and read as the DAC state.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4485-4486",
+       "sha": "dff990f778747ddbdecc6493f36aa1f067c6d1597f402fb082091ab07fe9f341"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the PEL read address.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4485",
+       "sha": "9a65e111a4310106332b4db29bcd64aae42f0770c96e34aa85a34cdf8e8ac7b5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the DAC state.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4486",
+       "sha": "226d80735d6b0470b41ab2c886660f6e47d1721a852eae50477905caf9a457bf"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Each access clears the HiColor command mode and defers to the base DAC handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "530-533",
+       "sha": "35e53feb1c067da36e3ebc2a0999f2e7109dd5e3b40a23614307fbba0d3524c2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "552-555",
+       "sha": "b2a3052280abbbeec6765f1fccf1558d2467aa6bd93458277dbb7a17f6520c93"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "532",
+     "as": "unfollowed",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "554",
+     "as": "unfollowed",
+     "row": "3"
+    }
+   ]
+  },
+  {
+   "key": "0x3C8",
+   "name": "PEL write address",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "4483"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3c8_et4k"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The PEL write address register is read/write at port hex 03C8.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4483",
+       "sha": "4464e050f9c23f7064a2002cd527b126374cc4434cdf7d7a0d7ef8c484ceb678"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the PEL write address.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4483",
+       "sha": "4464e050f9c23f7064a2002cd527b126374cc4434cdf7d7a0d7ef8c484ceb678"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read answers the write address.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4483",
+       "sha": "4464e050f9c23f7064a2002cd527b126374cc4434cdf7d7a0d7ef8c484ceb678"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Each access clears the HiColor command mode and defers to the base DAC handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "534-537",
+       "sha": "01e0a7e97953b3565d52b2557d57efe44248aa5a86a8ac1c8faf2a04e5cf0d56"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "556-559",
+       "sha": "63aefabe2542dc08b5b13de5a6a067eee1e3fc815b24369cd6cc3c8efc49366e"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "Before answering, the read clears the HiColor command mode; the answer itself comes from the base DAC handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "556-558",
+       "sha": "b007bf92f100103ecea4b76db92b373c99c847919e5cdbc3f02387c8e8aa2039"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "536",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x3C9",
+   "name": "PEL data",
+   "regions": [
+    {
+     "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+     "lines": "4484"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3c9_et4k"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The PEL data register is read/write at port hex 03C9.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4484",
+       "sha": "4fefe84246212fb441253f23914204badb064e69e907e688c4ab9d589f7e383d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A write goes to the PEL data register at port hex 03C9.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4484",
+       "sha": "4fefe84246212fb441253f23914204badb064e69e907e688c4ab9d589f7e383d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read comes from the PEL data register at port hex 03C9.",
+     "quotes": [
+      {
+       "ref": "datasheet:Tseng-ET4000-Graphics-Controller-1990.raw.txt",
+       "lines": "4484",
+       "sha": "4fefe84246212fb441253f23914204badb064e69e907e688c4ab9d589f7e383d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Each access clears the HiColor command mode and defers to the base DAC handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "538-541",
+       "sha": "cb1c15ecf32b4ae85cce5822f400d4524036eb92ff0eff0cf04cc21df75e36e4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "560-563",
+       "sha": "0f00676b4b269a9752238bdac0a51b418dc94b01d2c987a96c33e27696f79531"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "Before answering, the read clears the HiColor command mode; the answer itself comes from the base DAC handler.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "560-562",
+       "sha": "ef7c890e9b4d7e945624af65f1423a6d289141f6e7e6038d0945d896389e312d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "540",
+     "as": "unfollowed",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x17",
+   "name": "ATC Miscellaneous 1",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's Tseng source cites no document for this register"
+    },
+    {
+     "where": "maker",
+     "gave": "the maker's site survives only as Wayback snapshots of company pages"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "the 1990 ET4000 data book omits this register"
+    },
+    {
+     "where": "archive-org",
+     "gave": "searches returned only drivers and board manuals"
+    },
+    {
+     "where": "index",
+     "gave": "gdcy.com, a datasheet index, refused the connection"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "299-319"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "330"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "869-874"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "885"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Attribute index 17h is stored by both the ET4000 and the ET3000 handlers, whose comment names it Miscellaneous 1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "299-310",
+       "sha": "77f62f40bdbdeabf43dc948bf8bcd43f984b31031e35eb66b715ce0f82ebe970"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "311-319",
+       "sha": "714668b26c57c782f58d4ea1fad0dfa1bf920675d4ca59c469672d87e93fde2f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "869-874",
+       "sha": "bb2fc233379212a16d8ebc7c89f95ba6bf3355c0171f866e10b8411fdd2d3539"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the whole byte and changes no attribute.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "319",
+       "sha": "05bc33c7173da18e5e3745b35c9a619107e638368bed6d57d353cfeace48fad5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "874",
+       "sha": "fb3f95c9382f192fa8d606a70a4b29c7da4d7319bf9aef85445518fe3bbf2f53"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read answers the byte last stored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "330",
+       "sha": "619ce90ea2c4fb2e895dea13b5a8559dcac896a7fbb85977f9304bec155df7e5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "885",
+       "sha": "84c1f949a75e0f4a9a78a189c306759c816a86124085907433c6a4846e79e568"
+      }
+     ]
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x3F",
+   "name": "Horizontal Overflow High",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's Tseng source cites no document for this register"
+    },
+    {
+     "where": "maker",
+     "gave": "the maker's site survives only as Wayback snapshots of company pages"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "the 1990 ET4000 data book omits this register"
+    },
+    {
+     "where": "archive-org",
+     "gave": "searches returned only drivers and board manuals"
+    },
+    {
+     "where": "index",
+     "gave": "gdcy.com, a datasheet index, refused the connection"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3d5_et4k",
+     "case": [
+      "0x3f"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "221"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "CRTC index 3Fh is handled by the ET4000 write and read handlers; its comment gives bits 0, 2, 4 and 7 as bit 8 of four registers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "186-192",
+       "sha": "f2fc1254c1a2b3145f3f0ce34c3724e87ea901358e68347d5469f3ed0ebc35fa"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "221",
+       "sha": "cafa331adc393c3bade97c0339a2b2e9cccc84618bc89af424a703a8ff26b929"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte, keeps bits 0, 2 and 4 in a horizontal overflow field and triggers a resize when bits 0-1 change.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "195-201",
+       "sha": "399541ff90a5128b7c0529121223b54f13342dcd79cad2c600cc23871ff16065"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read answers the byte last stored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "221",
+       "sha": "cafa331adc393c3bade97c0339a2b2e9cccc84618bc89af424a703a8ff26b929"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "83-84",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "86",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x23",
+   "name": "Extended Start Address",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's Tseng source cites no document for this register"
+    },
+    {
+     "where": "maker",
+     "gave": "the maker's site survives only as Wayback snapshots of company pages"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds no ET3000 data book"
+    },
+    {
+     "where": "archive-org",
+     "gave": "searches returned only drivers and board manuals"
+    },
+    {
+     "where": "index",
+     "gave": "gdcy.com, a datasheet index, refused the connection"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3d5_et3k",
+     "case": [
+      "0x23"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "804"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "CRTC index 23h is handled by the ET3000 write and read handlers, whose comment names it the extended start address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "729-737",
+       "sha": "273f7b773a8de45446e91244680f0309a8b0ed568f99bd0b32aec5c8207b37e1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "804",
+       "sha": "455b77ded9618fc3105a82aa7c205e7870e9dadf86322d8ec4c09fb7ce381212"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte, puts bit 1 into display start bit 16 and bit 0 into cursor start bit 16.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "739-741",
+       "sha": "aeab45e45170805bcd0cdfb2e1ee7036c1f1612aa0d3d4e4be14c894b46612df"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read answers the byte last stored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "804",
+       "sha": "455b77ded9618fc3105a82aa7c205e7870e9dadf86322d8ec4c09fb7ce381212"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "717",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x24",
+   "name": "Compatibility Control",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's Tseng source cites no document for this register"
+    },
+    {
+     "where": "maker",
+     "gave": "the maker's site survives only as Wayback snapshots of company pages"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds no ET3000 data book"
+    },
+    {
+     "where": "archive-org",
+     "gave": "searches returned only drivers and board manuals"
+    },
+    {
+     "where": "index",
+     "gave": "gdcy.com, a datasheet index, refused the connection"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "745-757"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "805"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "907"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "913"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "CRTC index 24h, the compatibility control, is handled by the ET3000 write and read handlers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "745-754",
+       "sha": "706472311f145802e762bb4641bff1a06a832e95ada0501f998557539c5ce232"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "757",
+       "sha": "30f51e1ab60a3a62d899a1c8581d0fd0d0e4ee3ec76716e4509f12315c4e196c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "805",
+       "sha": "a6bdfe1fec2e347f89017ce1d15de2a28ea76f5b9d253ba6211c785974817ffe"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the whole byte; bit 1 is read and written as clock-select 2 by the ET3000 clock helpers, and the other bits change nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "757",
+       "sha": "30f51e1ab60a3a62d899a1c8581d0fd0d0e4ee3ec76716e4509f12315c4e196c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "907",
+       "sha": "3776fa1d16649e9170d93f6d251183e39cce2cfbaaa454e73e4df6517aface55"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "913",
+       "sha": "bed9ab2dd1c467e30d1de6134a1070e26a964e935e45171f53537c8495abc731"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read answers the byte last stored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "805",
+       "sha": "a6bdfe1fec2e347f89017ce1d15de2a28ea76f5b9d253ba6211c785974817ffe"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "755-756",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x25",
+   "name": "Overflow High",
+   "source": "emulator",
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME's Tseng source cites no document for this register"
+    },
+    {
+     "where": "maker",
+     "gave": "the maker's site survives only as Wayback snapshots of company pages"
+    },
+    {
+     "where": "bitsavers",
+     "gave": "bitsavers holds no ET3000 data book"
+    },
+    {
+     "where": "archive-org",
+     "gave": "searches returned only drivers and board manuals"
+    },
+    {
+     "where": "index",
+     "gave": "gdcy.com, a datasheet index, refused the connection"
+    }
+   ],
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "function": "write_p3d5_et3k",
+     "case": [
+      "0x25"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "806"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "CRTC index 25h, Overflow High, is handled by the ET3000 write and read handlers.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "760-769",
+       "sha": "9a53f9091dee8ba3da0c649fe6c37593ff7da28dd1d700aef53b173f387399df"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "806",
+       "sha": "ea5baea6b747b604d807626e859f2f56d7441d1ed23814bb99fc0a4d46180adb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte, folds bits 0-4 into a vertical overflow field and triggers a resize when bits 0-1 change.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "771-780",
+       "sha": "960b7645c4e54e8a05bd1dc0fb9ee77be25aecd64397d4126e887cf5a5998428"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "781-786",
+       "sha": "7a421bc3756aa1109b0ecf966bfa4f31893fa7f0d8d0e9bcf50720212d52161c"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read answers the byte last stored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+       "lines": "806",
+       "sha": "ea5baea6b747b604d807626e859f2f56d7441d1ed23814bb99fc0a4d46180adb"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/vga_tseng.cpp",
+     "lines": "717",
+     "as": "structure"
+    }
+   ]
+  }
+ ]
+}

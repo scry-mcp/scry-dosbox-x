@@ -2579,7 +2579,7 @@
      "ref": "dosbox-x:src/hardware/gus.cpp",
      "lines": "1165",
      "as": "parent",
-     "owner": "ibm-pc:register:0x43"
+     "owner": "ibm-pc:register:0x43..0x44"
     }
    ]
   },

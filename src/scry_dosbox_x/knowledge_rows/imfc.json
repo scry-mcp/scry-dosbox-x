@@ -1,0 +1,3391 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "imfc",
+ "title": "The IBM Music Card ports and OPP registers",
+ "kind": "register",
+ "scope": "imfc",
+ "covers": "the sixteen ports of the IBM Music Feature Card at its base address, and the register file of the Yamaha OPP that its Z80 drives",
+ "source": "official",
+ "documents": [
+  {
+   "name": "IMFC-TechnicalReference.raw.txt",
+   "variant": "imfc"
+  }
+ ],
+ "official": {
+  "IMFC-TechnicalReference.raw.txt": [
+   "443-479",
+   "480",
+   "481",
+   "482-493",
+   "496-498",
+   "500-517",
+   "537-552",
+   "574-596",
+   "642-655",
+   "658-663",
+   "664-675",
+   "676-687",
+   "688-693",
+   "694-726",
+   "727-797",
+   "798-825"
+  ]
+ },
+ "searched": [
+  {
+   "where": "mame-header",
+   "gave": "The header of imfc.cpp credits Loris Chiocca's reverse engineering of the card's Z80 ROM and the Virtual FB-01 project, and cites no Yamaha document."
+  },
+  {
+   "where": "maker",
+   "gave": "IBM's PC Music Feature Technical Reference (March 1987) documents the card's ports and voice parameters, never the OPP's register numbers."
+  },
+  {
+   "where": "bitsavers",
+   "gave": "The Yamaha components listing holds no YM2164 or OPP document."
+  },
+  {
+   "where": "archive-org",
+   "gave": "The IBM PC Music Feature Technical Reference is there; no YM2164 datasheet."
+  },
+  {
+   "where": "index",
+   "gave": "Datasheet indexes name no YM2164 datasheet; the YM2151 manual describes a different part."
+  }
+ ],
+ "closed": [
+  {
+   "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+   "lines": "443-479",
+   "as": "key"
+  },
+  {
+   "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+   "lines": "482-493",
+   "as": "see-also"
+  }
+ ],
+ "entries": [
+  {
+   "key": "0x00",
+   "name": "PIU0 data port",
+   "aliases": [
+    "PIU0",
+    "port 0"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "500-517"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "PD71055::readPortPIU0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "PD71055::writePortPIU0"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 0 (PIU0) is at base address +0 and its bits 0-7 carry data bits 0-7 of the card's 9-bit word.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "508-517",
+       "sha": "8e50f2680cf05fd3b41404c4d3090ab4471feee3b22a9526d35956b6b6a0cb03"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "500-503",
+       "sha": "628caefceb73af27af37ee54fa4f46a1ea999c1be7468a2418f8bc590a56f3f8"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Reading PIU0 clears RxRDY, which is why bit 8 is read from PIU2 before the byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "502-507",
+       "sha": "8ad64314db5377d05f1aeb0bfa0d075e1ea7c5b7b326db59b63320d9a81518eb"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "Base port +0 is installed as readPortPIU0 for a read and writePortPIU0 for a write.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "13037-13038",
+       "sha": "a76188d860c3eeab5ff7365a4d5ba51d30b3e2b789e22f7f96439318d53154e4"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "The read returns port 0's stored value and, in mode 1 as an input, marks the byte acknowledged; no RxRDY flag of PIU2 is cleared.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2467-2477",
+       "sha": "14d90207fad04d021b96d15a3d599772c841a447015b1078a3350274f28f565d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2216-2219",
+       "sha": "90192681ad1fad8fc9abb903aa1afa0cf03256118b76706268b77c5fb0659d21"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the byte into port 0 only while port 0 is an output; otherwise it logs and drops it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2481-2492",
+       "sha": "5aa5a95b99cb6d46fa575167b68d4e4d660bad3ba27fc2382634b077f10d8b1f"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x01",
+   "name": "PIU1 data port",
+   "aliases": [
+    "PIU1",
+    "port 1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "537-552"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "PD71055::readPortPIU1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "PD71055::writePortPIU1"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Port 1 (PIU1) is at base address +1, sends data from the system to the card, and its bits 0-7 are data bits 0-7.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "537-542",
+       "sha": "a8cb8e60c11576239f8c06c47bf69c9176c8c3e653cbe1940887c1efabb96693"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "543-552",
+       "sha": "f2e4457389cc02708a2538f49bc403c9548a5c076fcab902981d4901ee25f1e5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing PIU1 clears TxRDY.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "542",
+       "sha": "970af8f9a4d9a186101632c408dda51d223377e64b061732cded2d6e2473eac6"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "Base port +1 is installed as readPortPIU1 and writePortPIU1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "13039-13040",
+       "sha": "fc71726669fd919e099ae119b546917ea78ba44e2e1eea87e7a201b3ed46af5c"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the byte into port 1 and, in mode 1 as an output, marks data available; no TxRDY flag is cleared.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2506-2514",
+       "sha": "bc8e9f97dbb297e1d260608b03d90f3fd06747db1fd7839caa9509da0996c92f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2515-2520",
+       "sha": "f16f5f3c05c45720f85cb6d93d87cb4d774bcf96748e859f4c9629bfaae4cafb"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write to port 1 while it is an input is logged and dropped.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2515-2519",
+       "sha": "5861a6b684d3d1b658161881eb2d23d464f3b927d33eb94899c18ba9d721de1d"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read returns the stored output byte and, in mode 1 as an input, also acknowledges the data.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2499-2504",
+       "sha": "f77fa3919debae57fdfb823b111c00c06677296bc2dd6a91c5c8a3cd7cc44af6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2224-2227",
+       "sha": "520ebeac9872b63b268df687370ef8dd8339453dbce7b44952d1fd7baa8d84f3"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x02",
+   "name": "PIU2 handshake port",
+   "aliases": [
+    "PIU2",
+    "port 2"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "574-596"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "PD71055::readPortPIU2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "PD71055::writePortPIU2"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "PIU2 is a read and write register at base address +2.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "574-578",
+       "sha": "288141d4b0d436e7bac65a0405db5c031c6410e49b991fcd439f931b36929fb0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 2 and 4 are the TxRDY and RxRDY interrupt enables, set only through the PCR's bit set/reset command.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "585-596",
+       "sha": "9273bbf74ee0705154db6a2c69a4ab77564882fc59014cecdb438489b742974b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "Base port +2 is installed as readPortPIU2 and writePortPIU2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "13041-13042",
+       "sha": "7741e8178c3b4d24e5a378a9e004f8e529c4418b724b8691a8f4081f49e095c4"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write sets port 2's pins directly while their group is in mode 0, bits 2 and 4 included, so the PCR is not the only way they change.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2544-2555",
+       "sha": "2b4847845532d906e1e10042242f1937d810e1b45e4b9a5486b2eb1dc4f80581"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2556-2559",
+       "sha": "7674e534c3086c77d6d0bf5346c2bc489b27c6af5c03b94c3e0f62d89268946b"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read returns port 2's pins; bit 2 takes group 1's two enables in mode 1, bit 4 the same two under group 0's mode 1 input.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2523-2534",
+       "sha": "38ea452b831e961550c80174160173b38af5bb83e3fe8274727b29c28e347899"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2535-2537",
+       "sha": "55ca74000463593880cf2c3ad74ea8d2331d3651ae021ac2d61cf03cfdbb8af9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2232-2241",
+       "sha": "e9e906ce85376a0f5a2f04141e2adee9f5c57901882a349316a1ff79318f1637"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "The two enables the read reports are internal flags written by clearing the port and by the control register's bit 2 command.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2249-2257",
+       "sha": "87155453a0a552ac683e30c60f560590d1212a291c35738d8efe104b840bc488"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2639-2640",
+       "sha": "e0d3cffc7a5ef6082439245f07856df11e5937da478cea021fd507cd0f5fff4d"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "579-584",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x03",
+   "name": "PIU command register",
+   "aliases": [
+    "PCR",
+    "PIU control"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "496-498"
+    },
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "642-655"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "PD71055::readPortPCR"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "PD71055::writePortPCR"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The PIU is initialized by writing [BC] to the PCR.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "496-498",
+       "sha": "66c75dda29f8d2588ca6594595f16b172e9d882a6f2fa3bc2d64340768cd802d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The register at base address +3 initializes the PIU and performs bit set/reset of PIU2.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "642-646",
+       "sha": "263f643dcdf71241f0f63c98c3d4789c61ae2f434c4327e7e0a6ac769e3bcf45"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "The commands are [BC] to initialize, [05] and [04] to set and reset bit 2, and [09] and [08] to set and reset bit 4.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "647-655",
+       "sha": "3a10446004f87bc67ff88b79dfcbdbd34cd395629529a3c040bfab7699971b5a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "Base port +3 is installed as readPortPCR and writePortPCR.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "13043-13044",
+       "sha": "d826cbf7cd3284b7bc64ac25b0ea2a0fe2360cd7a3af5153f7137dcb97f6822e"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write with bit 7 set selects both groups' modes and directions, logs them, then clears every port's bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2575",
+       "sha": "4c65e2f38ccdee3a152c20c7295983a17481b635611d59af65fa48fff0c61a6f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2587-2597",
+       "sha": "ea657f7325edda09d2310569033f6bd45fe4e232c6d233960db1c0a06f54cee7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2599-2609",
+       "sha": "5221e10e1ad9396e174a808eb5e7b5a6732744929e2fd884998c11ac8b021cf4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2610-2621",
+       "sha": "e383e671d60b97e6d399f207f9536b70ef332ddae9b10ff06e1375c20668a880"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2622-2626",
+       "sha": "702e27af95fe254b22c1c25c954144ab738a81902a3c9870779f3579f604e936"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2249-2257",
+       "sha": "87155453a0a552ac683e30c60f560590d1212a291c35738d8efe104b840bc488"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "With bit 7 clear, pins 2 and 4 set and reset their interrupt enables as documented, and pin 6 sets the group 0 write enable.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2627-2638",
+       "sha": "d43d36e6353d164f87979518c94ff1c94e42365d0ee90fa30a09b0bac961bb10"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2639-2650",
+       "sha": "cc303676c07fe0f5ac2ae93101f9f5311f230604b15e42f1db7692cad7710ffb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2651-2662",
+       "sha": "2c7a212ad01582741cb215b0a9e8239e8ca0befa7574e7b09b314a77ede264a1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2663-2665",
+       "sha": "25f1d5c898129af062eff05cbaca172890f50d88a9a93a4624d363df77c2bba0"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "In mode 0 the same command writes the selected pin directly while its port is an output, and logs a warning otherwise.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2663-2674",
+       "sha": "111a88971af60c15dc4ee898ef169287d86019214c62a4dd6dc97605d70a3b99"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2675-2686",
+       "sha": "efee86eed1473e813a6354bd5318d73e3371f957d9cdca3088e101e12027952d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2687-2698",
+       "sha": "a886f639631a7cca8c48eb364f6a547b26d1b5f68aae08adb183b8943de381d8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2699-2705",
+       "sha": "da0b6fe159c13d6f48e8dc59b043a14eb8a2649e5c6707156cfac153dfa37aa0"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read of the control register returns 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2561-2569",
+       "sha": "f67afc0b3edf5f2e78582f6f94ea0977a256483865b683b184428d20e2acb49b"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x04",
+   "name": "Timer A count",
+   "aliases": [
+    "CNTR0",
+    "counter 0"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "664-675"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "Intel8253::readPortCNTR0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "Intel8253::writePortCNTR0"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "CounterData::readCounterByte"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "CounterData::writeCounterByte"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CNTRO at base address +4 carries timer A's count data and feeds bit 0 of the Total Status Register and the jumper's IRQ level.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "664-668",
+       "sha": "eef0be528fea07236a5be3d5b1ed65f32df1e890f19ecd8cf8a32afb6511e5a9"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "673-675",
+       "sha": "cc760e1b8e149ad41d399c68f086094d37fef08e24a9f78257b9b1250489a661"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The document asks that counter 0 be used in 8253 mode 2; the countdown resolution is two microseconds and the setting range 2 through 65535.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "669-672",
+       "sha": "0c6a83cff207eef10c4848189703aab02efdd121e0fe4f8a6d1f2233d49c6e24"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Reading base address +4 returns count data for timer A.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "673-675",
+       "sha": "cc760e1b8e149ad41d399c68f086094d37fef08e24a9f78257b9b1250489a661"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing base address +4 sets timer A's count, from 2 through 65535.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "669-675",
+       "sha": "549e5a4722dafcfdb2c7247932525c04f372ced28bee7736df3922b33aba3bee"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "Base port +4 is installed as readPortCNTR0 and writePortCNTR0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "13045-13046",
+       "sha": "82152cd0655cdc8e2f391064b23ec18dfa49dac7af64133049c87d6250fcdff4"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The first byte written becomes the high half and the second the low half of a 16-bit count, which accepts 0 and 1 too.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1922-1933",
+       "sha": "36d4173d779d58f367bf42ab7bd36992fe8d9e9eb7f6eceb4c32c810cc0404f5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1934-1938",
+       "sha": "51537cf4bef0f8bcf421fe04432565859ab87f0566163b214acf37c13166952e"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read without a latch command returns 0; after one it returns the latched low byte and then the high byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1939-1950",
+       "sha": "536cb79730ad0907edca10036d243322cba7ab824ac8a575694a16ee5638ead6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1951-1956",
+       "sha": "70cb6ca8acdab8d9ef96d2dbbbf9ccd449f4cd90bbc833f7fc835e0e3ab887bb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1999-2003",
+       "sha": "506565fe1ded0d3f0b820bf1eac9913973e595566bf6e91fad8e6f2e8708710d"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The counter's byte is read through readCounterByte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2001",
+       "sha": "53e1fa4df0ff1c12cec3e11f7c6950a89868e10b8519e4716ebedacf7ff7b658"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "2075-2078",
+     "as": "parent",
+     "owner": "imfc:register:0x07"
+    }
+   ]
+  },
+  {
+   "key": "0x05",
+   "name": "Timer B count",
+   "aliases": [
+    "CNTR1",
+    "counter 1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "676-687"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "Intel8253::readPortCNTR1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "Intel8253::writePortCNTR1"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CNTR1 at base address +5 carries timer B's count data and feeds bit 1 of the Total Status Register and the jumper's IRQ level.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "676-680",
+       "sha": "f54f545c3990fcd517d398bea767d7b02d643952006e6c19993a636f3a30b430"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "686-687",
+       "sha": "47b6e4c186ce95a6b89bd6067fd57ce945402ca95f6d795192cc1073c230c2aa"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The document asks that counter 1 be used in mode 2, with counter 2 as its prescaler; the resolution is their product times 0.5 microseconds, the range 2 through 65535.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "681-685",
+       "sha": "e198b6c003adbf4dc4556c3059f97204cfa47a59bb30d7e2831e0cac04fdfe99"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "Reading base address +5 returns count data for timer B.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "686-687",
+       "sha": "47b6e4c186ce95a6b89bd6067fd57ce945402ca95f6d795192cc1073c230c2aa"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing base address +5 sets timer B's count, from 2 through 65535.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "681-687",
+       "sha": "1d31ee2d40163cbcbae4598887c3d56a5dd30b9fbbd16c674683da771e67c12c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "Base port +5 is installed as readPortCNTR1 and writePortCNTR1.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "13047-13048",
+       "sha": "f420aacb671704dfbf6d2386e6834fc1639b27659b7bcb2d531b6e5a617b7fce"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The first byte written becomes the high half and the second the low half of a 16-bit count; no range is enforced.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1922-1933",
+       "sha": "36d4173d779d58f367bf42ab7bd36992fe8d9e9eb7f6eceb4c32c810cc0404f5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1934-1938",
+       "sha": "51537cf4bef0f8bcf421fe04432565859ab87f0566163b214acf37c13166952e"
+      }
+     ],
+     "vs": "differs",
+     "row": "4"
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read returns 0 unless a latch command was issued, then the latched low byte and next the high byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1939-1950",
+       "sha": "536cb79730ad0907edca10036d243322cba7ab824ac8a575694a16ee5638ead6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1951-1956",
+       "sha": "70cb6ca8acdab8d9ef96d2dbbbf9ccd449f4cd90bbc833f7fc835e0e3ab887bb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2012-2016",
+       "sha": "4ce40f7b92aa2fb63ed1355fbd8e7ea1263c40eb2214b93786f823f45e055e26"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "8",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The counter's byte is read through readCounterByte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2014",
+       "sha": "35ed4401165ba7ee28037004cc8808bcf1a5aa8c50056b694e177c36816cad29"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x06",
+   "name": "Timer B prescaler",
+   "aliases": [
+    "CNTR2",
+    "counter 2"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "688-693"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "Intel8253::readPortCNTR2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "Intel8253::writePortCNTR2"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "CNTR2 at base address +6 holds timer B's prescaler data and drives counter 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "688-693",
+       "sha": "f5fe069f1b7e29842064f024ef95e9b067abce58de85542b267f97cd5cbcceaa"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "Reading base address +6 returns the prescaler data for timer B.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "692-693",
+       "sha": "7bc6da849430d87879db0a849aa9abb145b1adef2cb3024155a2f9374564082e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing base address +6 sets the prescaler, from 2 through 65535.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "688-693",
+       "sha": "f5fe069f1b7e29842064f024ef95e9b067abce58de85542b267f97cd5cbcceaa"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "Base port +6 is installed as readPortCNTR2 and writePortCNTR2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "13049-13050",
+       "sha": "7353cc3bca19b9aedcf5db527fbb36bdc37e87356f1382b6e03a1bf6c7537976"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "The first byte written becomes the high half and the second the low half of a 16-bit prescaler; no range is enforced.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1922-1933",
+       "sha": "36d4173d779d58f367bf42ab7bd36992fe8d9e9eb7f6eceb4c32c810cc0404f5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1934-1938",
+       "sha": "51537cf4bef0f8bcf421fe04432565859ab87f0566163b214acf37c13166952e"
+      }
+     ],
+     "vs": "differs",
+     "row": "3"
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read returns 0 unless a latch command was issued, then the latched low byte and next the high byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1939-1950",
+       "sha": "536cb79730ad0907edca10036d243322cba7ab824ac8a575694a16ee5638ead6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1951-1956",
+       "sha": "70cb6ca8acdab8d9ef96d2dbbbf9ccd449f4cd90bbc833f7fc835e0e3ab887bb"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2025-2029",
+       "sha": "d5582ad8db864690288f537fceb4f0cb5eea40b8974a3fe5803bfcaf73d8fd5e"
+      }
+     ],
+     "vs": "differs",
+     "row": "2"
+    },
+    {
+     "n": "7",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The counter's byte is read through readCounterByte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2027",
+       "sha": "d58e9df0ad1a59ab79233478cfd381108e557c6ecc4ae5d839aae5023bc4921d"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": []
+  },
+  {
+   "key": "0x07",
+   "name": "Timer mode control",
+   "aliases": [
+    "TCWR",
+    "timer control word"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "658-663"
+    },
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "694-726"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "Intel8253::readPortTCWR"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "Intel8253::writePortTCWR"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "CounterData::readCounterByte"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The card's PIT is software-compatible with the 8253: counter 0 is timer A and counters 1 and 2 together are timer B.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "658-663",
+       "sha": "3a7c242d971c43eb91ba5d1abfad1cb9e3be868823ddd9fdfe5b49fe28299dce"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "TCWR at base address +7 sets each counter's operating mode and latches its current count.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "694-702",
+       "sha": "494e672a3fa0aaf7b878e8c2d250a470bf134a676b02368ed4a02d2884557fec"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "The mode words are [34], [74] and [B6], and the latch commands are [00], [40] and [80].",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "703-711",
+       "sha": "02ab856b43fff350afecdaf1250e8b96c66780bf4ca902ed1907cddec88787e7"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "712-722",
+       "sha": "827f532b9e07c0fababaef7e83ef3d10f39ccb4a13793d0b932cbfb0520186e4"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "Base port +7 is installed as readPortTCWR and writePortTCWR.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "13051-13052",
+       "sha": "9940e2eac9d0d5dd9b62c9048f536fe33afa9af83e61f29081039dfe61cd7fb3"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write outside those six values is logged as unsupported and stores nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2057-2062",
+       "sha": "bb2d36e0dcb374a16a6039283d0112a9781deaead530f836bbfd5612b2593be5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2063-2068",
+       "sha": "a9ba7f3e5f3d6276ca2eb29635b7a9c2657dbde9c7d41529962ddfaa1b776745"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2069-2074",
+       "sha": "b7619f0f587f4f3cf09042e79ebf3398ff30e20c976d1a99a1ee960c426dbc34"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2075-2080",
+       "sha": "48f5938487a2d4994a48e5a4a48f2e20247783a331f7244239f434eb124bee00"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2081-2086",
+       "sha": "690cf919955b89cdfa9e73c14db68206509fa73cde66d360e7f6aef9d6fe9d6c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2087-2089",
+       "sha": "2ee25ea3143972f5d8e5dc879771d457731727758b13d760b7e93750321fcd10"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "A read of the control register returns 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2038-2043",
+       "sha": "426eb031089d113502bb588d200c55820ad09bcdea7b26b4faef05189b2d18e7"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "8",
+     "on": "read",
+     "of": "doc",
+     "text": "After a latch command, a 16-bit read returns the low byte and then the high byte.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "723-726",
+       "sha": "28fa93a8f62229a0972a0ef7bf6d3cabfa385ca16677533822496b2440787943"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "712-722",
+       "sha": "827f532b9e07c0fababaef7e83ef3d10f39ccb4a13793d0b932cbfb0520186e4"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "read",
+     "of": "dosbox-x",
+     "text": "Without a latch the read returns 0 twice and returns to the live path.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1939-1950",
+       "sha": "536cb79730ad0907edca10036d243322cba7ab824ac8a575694a16ee5638ead6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "1951-1956",
+       "sha": "70cb6ca8acdab8d9ef96d2dbbbf9ccd449f4cd90bbc833f7fc835e0e3ab887bb"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Only counter 0's output falls and rises with time; a TODO marks the other timers as not done.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2092-2102",
+       "sha": "8c8c922bc13657ba6c569f9162d05047531d47dea1ef9ded6819e9eb2fdd34bc"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2103-2114",
+       "sha": "956129ba0212b0d0465c5d93973b2b241ef728d02e9f88ff3aa31a0cc1772da8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2115-2126",
+       "sha": "6eb6e3468e2cfe962bfc61d6f8aeefe0ba167f8945bfe3021a5af0bd11bbda2e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2127-2128",
+       "sha": "f19f15e95ded260fa9f2fa593bd7b28a9529458ffc176d1d98fa747a5fef1978"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "2057-2062",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "2063-2068",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "2069-2074",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "2075-2078",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "2079-2082",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "2083-2086",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "1948-1954",
+     "as": "agrees",
+     "row": "8"
+    }
+   ]
+  },
+  {
+   "key": "0x08..0x0B",
+   "name": "Total control register",
+   "aliases": [
+    "TCR"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "480"
+    },
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "727-797"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "TotalControlRegister::readPort"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "TotalControlRegister::writePort"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Total Control Register is at base address +8, and +9 through +B show an image of it.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "480",
+       "sha": "c0a88a2bf5f8077e1fd89f955c025509936771b1e281ff19a515b47e984ba7d0"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "727-731",
+       "sha": "12fdfe3255d6b96bef7123deda6a238c8e9971ebd378d7ae53b6e7344ce8c668"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "bit 0",
+     "of": "doc",
+     "text": "Bit 0 is stored as timer A's interrupt clear, usually 1; a 0 clears the interrupt and the bit is immediately reset to 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "740-744",
+       "sha": "d607090442420e25e529d7680e314cf072206ce032364ed3c8488dec3d99ae7a"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bit 1",
+     "of": "doc",
+     "text": "Bit 1 is stored as timer B's interrupt clear, usually 1; a 0 clears the interrupt and the bit is immediately reset to 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "745-749",
+       "sha": "bfde32bfa172ab36d8e98cbce8df93627ddaeb44e033e118f652a18e12bbe6ca"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bit 2",
+     "of": "doc",
+     "text": "Bit 2 stores the interrupt-enable flag for timer A.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "750-753",
+       "sha": "17e3ed343a8ad9b56016fa61cb6c6491e623e4ed16c8141ab998515b091fbe2f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "bit 3",
+     "of": "doc",
+     "text": "Bit 3 stores the interrupt-enable flag for timer B.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "754-757",
+       "sha": "7a59d801f7ed25d6a718a4aa301567d593e06b19f4fb547d276a289a7d4aa9b2"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "bit 4",
+     "of": "doc",
+     "text": "Bit 4 stores the eighth data bit the system sends with PIU1.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "758-762",
+       "sha": "85c1e599fc750d29436127a1184c766b2752435e5b86c54543446391b8a1ae14"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "729-735",
+       "sha": "0c794b7c9381e3cab9b364f3da4d532c43cde627a7bef0debb1ccedb67d9ad9d"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "bit 6",
+     "of": "doc",
+     "text": "Bit 6 stores the total IRQ mask: 0 masks every interrupt request the card generates, 1 does not.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "763-767",
+       "sha": "cf9d82043def9c889ed05509655e1f8784a1bb96c58b6c7880d9534f252a10d4"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "729-735",
+       "sha": "0c794b7c9381e3cab9b364f3da4d532c43cde627a7bef0debb1ccedb67d9ad9d"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "bit 7",
+     "of": "doc",
+     "text": "Bit 7 stores the IRQ bus enable, which connects or floats the card's IRQ lines on the system bus; the document asks it be set before TMSK.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "791-797",
+       "sha": "028fd2ce67548644dfac8c5cbd20c3a63cbb78d7b365479d1df5c664e79f4b6c"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "To handle overlapping requests a routine masks all sources, polls them, resets their bits, issues EOI and unmasks.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "768-779",
+       "sha": "ccd1f629b73d5cc778b8877182f282a7b206dcc75482e33e9a8802f6d572e0fa"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "780-790",
+       "sha": "cac0e70f9c94650f3b10edcdc79fd4fd28cde2a72fea93e0d2a453a7f2c5c672"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "Ports +8 through +B are installed in a loop as readPortTCR and writePortTCR.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "13053-13057",
+       "sha": "bcca62eb460947923fdca6e044e2a3249995228e7af434cbbb41457d0b0202ad"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "13",
+     "on": "read",
+     "of": "doc",
+     "text": "Base address +8 holds the eight bits listed: IRQ enable, total IRQ mask, the transmit data bit, two timer enables and two timer clears; bit 5 is not used.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "731-739",
+       "sha": "970f372f9e2a75e025cb5cc43db0685ef4f21fa478924ce898afeabf13a73b81"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "1876",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "1892-1895",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "1877",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "1896-1899",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "1878",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "1879",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "1880",
+     "as": "agrees",
+     "row": "6"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "1883",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "1884",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "1864-1872",
+     "as": "agrees",
+     "row": "13"
+    }
+   ]
+  },
+  {
+   "key": "0x0C..0x0F",
+   "name": "Total status register",
+   "aliases": [
+    "TSR"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "481"
+    },
+    {
+     "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+     "lines": "798-825"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "TotalStatusRegister::readPort"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "12604-12621"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The Total Status Register is at base address +C, and +D through +F show an image of it.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "481",
+       "sha": "cc73a98f4892bae29d27b7667fecf07e2a44619cfa19282bf1d2608df95c1c44"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "798-801",
+       "sha": "80ab63ea45722bb8d81a9a728d9f1a40427dfe3a1b0b08af4bc73f77864eb761"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "bit 0",
+     "of": "doc",
+     "text": "Bit 0 reports timer A's IRQ status: 1 while timer A generates an interrupt, cleared with it.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "803",
+       "sha": "54d15227bbe74bf82d4857eaea18e86b3c5ca5247e4e8745c1125f04ae5ee35d"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "810-814",
+       "sha": "84cf0a08f00d95e2bf103563b055517f7f3b4e9c4ddad9539c58b2e6ed4a6d89"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "bit 1",
+     "of": "doc",
+     "text": "Bit 1 reports timer B's IRQ status: 1 while timer B generates an interrupt, cleared with it.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "804",
+       "sha": "6f8cb5707eb57db4dbb9af1862067e573e58f4e87200fd89088a1134b25fdd82"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "815-818",
+       "sha": "b2977639406c38fd51abce398be9ad1d0783aa7374a25402b9195cb01267eeee"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "bit 7",
+     "of": "doc",
+     "text": "Bit 7 reports the card's total IRQ: 1 when timer A, timer B, TxRDY or RxRDY generates one.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "805",
+       "sha": "c9c5a50fd750ee5527dbdd9707cf943cc78d9b73342527a4c356b8df94337f7d"
+      },
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "819-825",
+       "sha": "5a68385f3238a0282dbced8f628861440f08ce4cc4eaf3f5313156bbd95f886e"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "Ports +C through +F are installed in a loop as readPortTSR and writePortTSR.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "13058-13062",
+       "sha": "313060ce07ac489f0a6ba8f1a23db3f3ba6aaf1349ca43e39f62ae3a026d71bd"
+      }
+     ],
+     "vs": "place"
+    },
+    {
+     "n": "8",
+     "on": "read",
+     "of": "doc",
+     "text": "Base address +C reports bits 0, 1 and 7.",
+     "quotes": [
+      {
+       "ref": "datasheet:IMFC-TechnicalReference.raw.txt",
+       "lines": "801-810",
+       "sha": "dbef7e94ac4e3685bd84ac412e12822f3c30253ebf8c54bbe9c3e2a0d376f101"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write to the status register changes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2170-2176",
+       "sha": "9a4987485bcd2bbb65cc93f577e486c57d2e594871a5b619170390d2f2fb20a7"
+      }
+     ],
+     "vs": "extra"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "2164-2168",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "2164-2168",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "2164-2168",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "2164-2168",
+     "as": "agrees",
+     "row": "8"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "12604",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "12607-12609",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "12614",
+     "as": "agrees",
+     "row": "2"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "12605",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "12610-12612",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "12615",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "12616",
+     "as": "agrees",
+     "row": "4"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "12618-12621",
+     "as": "agrees",
+     "row": "4"
+    }
+   ]
+  },
+  {
+   "key": "0x10",
+   "name": "Timer A high index",
+   "aliases": [
+    "Timer A high byte"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x00",
+      "0x10"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The value's eight bits become timer A's index bits 9-2 and the index's two low bits stay.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3761-3763",
+       "sha": "8b98c548908b5f3a8e0da3d661c7c0d569872b437d77c50496e714aa1e306674"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores that high byte into timer A's index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3761-3763",
+       "sha": "8b98c548908b5f3a8e0da3d661c7c0d569872b437d77c50496e714aa1e306674"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3746",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x11",
+   "name": "Timer A low index",
+   "aliases": [
+    "Timer A low byte"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x00",
+      "0x11"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The value's two low bits become timer A's index bits 1-0 and the upper bits stay.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3765-3767",
+       "sha": "8d7153005deecd6ba70ffe5f746410185bbdcb3fc41214758ff21ae220679589"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores that low part into timer A's index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3765-3767",
+       "sha": "8d7153005deecd6ba70ffe5f746410185bbdcb3fc41214758ff21ae220679589"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3746",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x12",
+   "name": "Timer B index",
+   "aliases": [
+    "Timer B time index"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x00",
+      "0x12"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The whole value becomes timer B's time index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3769",
+       "sha": "06c780cdb0b141fbcbafc37af53b33d120012e05f57e9a155ea29f224200f021"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the index of timer B.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3769",
+       "sha": "06c780cdb0b141fbcbafc37af53b33d120012e05f57e9a155ea29f224200f021"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3746",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x14",
+   "name": "Timer control bits",
+   "aliases": [
+    "CSM and timer enable"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x00",
+      "0x14"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The value is stored as the timer enables and CSM mode; the code that would reset flags or start and stop the timers is commented out.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3771-3782",
+       "sha": "83d3ead447fdc97947cb7712fc039f897f4618566bb70c8f70715942781d4c7f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3783-3794",
+       "sha": "07ed5aef5a209a618c051e18613fb2a0f57adad9c7eb7ff24a28f279b969e003"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3795-3806",
+       "sha": "a9aaa2e6174c6f2e39db1b5bb8d7c419584c10cbcf032444ca8230b4e583063a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3807-3812",
+       "sha": "f332587ffd93e90f9c4343559578df376b93619f81683bb2485607da3ea30bbe"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the enable byte and starts no timer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3771-3782",
+       "sha": "83d3ead447fdc97947cb7712fc039f897f4618566bb70c8f70715942781d4c7f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3783-3794",
+       "sha": "07ed5aef5a209a618c051e18613fb2a0f57adad9c7eb7ff24a28f279b969e003"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3795-3806",
+       "sha": "a9aaa2e6174c6f2e39db1b5bb8d7c419584c10cbcf032444ca8230b4e583063a"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3807-3812",
+       "sha": "f332587ffd93e90f9c4343559578df376b93619f81683bb2485607da3ea30bbe"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3746",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x18",
+   "name": "LFO frequency",
+   "aliases": [
+    "LFO speed"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x00",
+      "0x18"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The high nibble scales the LFO's overflow count and the low nibble sets its increment.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3814-3818",
+       "sha": "6a479c3a11a29207ea4cb580ae58badbed92d6ac15703ca5c1f6156136399ffa"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores both LFO frequency halves.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3814-3818",
+       "sha": "6a479c3a11a29207ea4cb580ae58badbed92d6ac15703ca5c1f6156136399ffa"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3746",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x19",
+   "name": "LFO depth select",
+   "aliases": [
+    "PMD and AMD"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x00",
+      "0x19"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "With bit 7 set the low seven bits are stored as PMD, otherwise as AMD.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3820-3826",
+       "sha": "f732357629ac79a0a8c6de6f0b11f5f8e7990a615c4fdebae3fd921d5cf0a199"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the depth in one of the two LFO depth fields.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3820-3826",
+       "sha": "f732357629ac79a0a8c6de6f0b11f5f8e7990a615c4fdebae3fd921d5cf0a199"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3746",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1B",
+   "name": "LFO waveform and clocks",
+   "aliases": [
+    "CT1 CT2 waveform"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x00",
+      "0x1B"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Bits 7-6 are stored as the clock test value and bits 1-0 as the LFO waveform.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3828-3832",
+       "sha": "b7a22bff29c3e0eb0906b90babce6c21adb24cfe75beed9264652dbfbfcf434e"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the clock test and the waveform.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3828-3832",
+       "sha": "b7a22bff29c3e0eb0906b90babce6c21adb24cfe75beed9264652dbfbfcf434e"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3746",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x20..0x27",
+   "name": "RL, feedback, connection",
+   "aliases": [
+    "RL FB CON"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x20",
+      "0x00"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Bit 6 sets pan[channel*2], bit 7 sets pan[channel*2+1], bits 5-3 the feedback shift and bits 2-0 the connection.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3845-3851",
+       "sha": "94654b4a815e8edc6f989ffa516ee604067e59e65b8964b14e22907e93e8b932"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores feedback, the two outputs and the connection, then rebuilds that channel's algorithm.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3845-3851",
+       "sha": "94654b4a815e8edc6f989ffa516ee604067e59e65b8964b14e22907e93e8b932"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3563-3574",
+       "sha": "633c3d6cd56ce0b700f276162025acce0be881c5af89c4330c74dc55b1720ce9"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3844",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x28..0x2F",
+   "name": "Key code",
+   "aliases": [
+    "KC"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x20",
+      "0x08"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The value's low seven bits are stored as the channel's key code, copied to its four operators with their frequencies recomputed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3853-3864",
+       "sha": "bdfd1d62b16bea9e5c1386f39c1744cfdc976b9e62321654f694fa9bd57f1253"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3865-3876",
+       "sha": "90cc18c7b32656481dbc8bb4b4f8ce84ca16e06579ee2b249793462d6e845c94"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3877-3888",
+       "sha": "6a1e718931f4b7035855d3846a7dc1197cbc01fb47ff321bbcf2e9ff1a5fe3f3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3889-3900",
+       "sha": "c34459dc0588f4afecd0ab03196122ee08c915dad7ca12fdd4108528fdedad8c"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the key code and recomputes the four operators' frequency and detune.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3853-3864",
+       "sha": "bdfd1d62b16bea9e5c1386f39c1744cfdc976b9e62321654f694fa9bd57f1253"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3865-3876",
+       "sha": "90cc18c7b32656481dbc8bb4b4f8ce84ca16e06579ee2b249793462d6e845c94"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3877-3888",
+       "sha": "6a1e718931f4b7035855d3846a7dc1197cbc01fb47ff321bbcf2e9ff1a5fe3f3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3889-3900",
+       "sha": "c34459dc0588f4afecd0ab03196122ee08c915dad7ca12fdd4108528fdedad8c"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3844",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x30..0x37",
+   "name": "Key fraction",
+   "aliases": [
+    "KF"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x20",
+      "0x10"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The value's upper six bits are stored as the key fraction inside the channel's frequency index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3902-3913",
+       "sha": "511ccf439380e8b8dadb11da45f91a3926a0a07ae13d0ee94eb405de505b7727"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3914-3925",
+       "sha": "d6065bd550372872ebe3fade29f5ca2ad7f0c7dd3030a9d6e0371fa0d4d0ff27"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3926-3932",
+       "sha": "a0b152a3a66a8fd2ea54801d9d121ff8c1930ac266181cc31a4371c50a8e4fdc"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the key fraction and recomputes the four operators' frequencies.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3902-3913",
+       "sha": "511ccf439380e8b8dadb11da45f91a3926a0a07ae13d0ee94eb405de505b7727"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3914-3925",
+       "sha": "d6065bd550372872ebe3fade29f5ca2ad7f0c7dd3030a9d6e0371fa0d4d0ff27"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3926-3932",
+       "sha": "a0b152a3a66a8fd2ea54801d9d121ff8c1930ac266181cc31a4371c50a8e4fdc"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3844",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x38..0x3F",
+   "name": "PMS and AMS",
+   "aliases": [
+    "PMS and AMS sensitivity"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x20",
+      "0x18"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Bits 6-4 are stored as the phase modulation sensitivity and bits 1-0 as the amplitude one.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3934-3937",
+       "sha": "9a4ed1fc2ed55eb243304edb9964086920ad1a45261a28d0e974c1929014fedc"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the two modulation sensitivities.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3934-3937",
+       "sha": "9a4ed1fc2ed55eb243304edb9964086920ad1a45261a28d0e974c1929014fedc"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3844",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x40..0x4F",
+   "name": "DT1 and multiple",
+   "aliases": [
+    "detune 1 and multiple"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x40"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Bits 6-4 are stored as the detune and bits 3-0 as the frequency multiple, and the operator's frequency follows.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3941-3952",
+       "sha": "109d17fc928950a7918067cbfacb53624920375e38021b36c3e219ceac23aeea"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3953-3957",
+       "sha": "537ed609e4566a6ff60eaebefd2e04de189f7c061e0981c9f9c137d40445e42e"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores detune and multiple, and recomputes the operator's frequency and detune.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3941-3952",
+       "sha": "109d17fc928950a7918067cbfacb53624920375e38021b36c3e219ceac23aeea"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3953-3957",
+       "sha": "537ed609e4566a6ff60eaebefd2e04de189f7c061e0981c9f9c137d40445e42e"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 writes it through register_w and data_w of the OPP.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x60..0x6F",
+   "name": "Total level TL",
+   "aliases": [
+    "TL"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x60"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Bits 6-0 are stored as the operator's total level, shifted left three bits onto the ten-bit envelope scale.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "2872",
+       "sha": "0e4b8a8b572ebad8e3b06a3915f1cf2053bd7fe55009bc1ec98e57be834ec5f3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3960",
+       "sha": "afe6b2df2aad71302b08aa222438485971ed5e8882c7e1805ad65300f45fd609"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the seven low bits as the total level of the operator the register addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3731",
+       "sha": "2823da23f206454aff433eb4014c98e46ac61ced32e2741bf6b345a80803a9ac"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3960",
+       "sha": "afe6b2df2aad71302b08aa222438485971ed5e8882c7e1805ad65300f45fd609"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 ROM routine, ported into the host, writes it through register_w and data_w of the YM2151 device, one call for the number and one for the value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4634-4642",
+       "sha": "ff7e6a63b931d000b2c27b3f0424b604527358d51c8844f0483a121e2b404f89"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "8-11",
+       "sha": "cae9a1dc25166b807e9d72488a06a2c9973456a948879118df254a71a17bf704"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x80..0x8F",
+   "name": "Key scale and AR",
+   "aliases": [
+    "KS",
+    "AR"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0x80"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Bits 7-6 store the key scale as five minus their value, and bits 4-0 the attack rate as twice their value plus 32, or zero.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3963-3969",
+       "sha": "707ba323d0cb909fbf14012817f611689683e9ee8944eedcb8daecf7a0db5105"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores key scale and attack rate, recomputes the attack rate's table entry when either changed, and the other three rates' when the key scale changed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3968-3969",
+       "sha": "da79032e8052c764f909c0e5520deea3432e079580738302e7077d16e712587c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3971-3981",
+       "sha": "a031898fa44bcbff8bc0060328f9e229e71757dc2f295985df7acc4ab0e97b87"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3982-3989",
+       "sha": "5aab55a5273fc967238bb66f421152da2ebd78d01b45d5b7f259dd09319a9153"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The attack rate's table index is the attack rate plus the key code shifted right by the key scale.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3973-3975",
+       "sha": "fc665b85aa491ceff46f0c5223347079e11fb0c25ccaf5b3662a3093272137af"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3140-3145",
+       "sha": "a889e39bb6bc183c37eded2920fe1c31b43a2f34310fed22fedb240cde072ef5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3191-3196",
+       "sha": "5591e3109d45194842bf7bdf12b3a8bcc51b67476e1963c24db506cb4b3b2f45"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 ROM routine, ported into the host, writes it through register_w and data_w of the YM2151 device, one call for the number and one for the value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4634-4642",
+       "sha": "ff7e6a63b931d000b2c27b3f0424b604527358d51c8844f0483a121e2b404f89"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "8-11",
+       "sha": "cae9a1dc25166b807e9d72488a06a2c9973456a948879118df254a71a17bf704"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xA0..0xAF",
+   "name": "LFO AM enable and D1R",
+   "aliases": [
+    "AM-EN",
+    "D1R"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0xA0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Bit 7 enables amplitude modulation by the LFO, and bits 4-0 store the first decay rate as twice their value plus 32, or zero.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3992-3994",
+       "sha": "7369fb60b9e3aac25ab6d34da143e88888e8cca8a9abf7f8e3a41c2f898cc1f6"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the AM mask and the first decay rate, then recomputes that rate's table entry.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3993-3996",
+       "sha": "9ac938eef2c378565adbbf4f1e23c4869fa7fb209e856354f6979a90178fe7fb"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The first decay rate's table index is the rate plus the key code shifted right by the key scale.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3995-3996",
+       "sha": "c2dcc1a9b6ccf9b19a54737faad7039336d006429850e6084ffe0871b5771368"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3140-3145",
+       "sha": "a889e39bb6bc183c37eded2920fe1c31b43a2f34310fed22fedb240cde072ef5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3191-3196",
+       "sha": "5591e3109d45194842bf7bdf12b3a8bcc51b67476e1963c24db506cb4b3b2f45"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 ROM routine, ported into the host, writes it through register_w and data_w of the YM2151 device, one call for the number and one for the value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4634-4642",
+       "sha": "ff7e6a63b931d000b2c27b3f0424b604527358d51c8844f0483a121e2b404f89"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "8-11",
+       "sha": "cae9a1dc25166b807e9d72488a06a2c9973456a948879118df254a71a17bf704"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xC0..0xCF",
+   "name": "Detune 2 and D2R",
+   "aliases": [
+    "DT2",
+    "D2R"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0xC0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Bits 7-6 index a four-entry table of second detune values, 0, 384, 500 and 608; bits 4-0 store the second decay rate as twice their value plus 32, or zero.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3247",
+       "sha": "8463936131add14bfbe9633569ac23cbde9cad29cb2b56e96baba6ed61a9ab1e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4002",
+       "sha": "5cfa1daaa8eb1b2291c58fd626d84aba4d93546e844fd634ae08aee6522ee364"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4008",
+       "sha": "8d0016ac584114b82a018331a71c0ca33274d50acd8dc0efd36f3f8215430b94"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the detune and second decay rate, recomputes the operator's frequency when the detune changed, and the rate's table entry.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4001-4010",
+       "sha": "95e559de5b8b1e62a2f1984bfc48bec83b56fcde9aba65eb1f629ca5a9234cff"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The second decay rate's table index is the rate plus the key code shifted right by the key scale.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4009-4010",
+       "sha": "b2483763b430afd64705f483bfff2c4c74008cbccf1e956c0f26f4aedb7ebc5d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3140-3145",
+       "sha": "a889e39bb6bc183c37eded2920fe1c31b43a2f34310fed22fedb240cde072ef5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3191-3196",
+       "sha": "5591e3109d45194842bf7bdf12b3a8bcc51b67476e1963c24db506cb4b3b2f45"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 ROM routine, ported into the host, writes it through register_w and data_w of the YM2151 device, one call for the number and one for the value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4634-4642",
+       "sha": "ff7e6a63b931d000b2c27b3f0424b604527358d51c8844f0483a121e2b404f89"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "8-11",
+       "sha": "cae9a1dc25166b807e9d72488a06a2c9973456a948879118df254a71a17bf704"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xE0..0xEF",
+   "name": "First decay level and RR",
+   "aliases": [
+    "D1L",
+    "RR"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "function": "ym2151_device::write_reg",
+     "case": [
+      "0xE0"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "Bits 7-4 index a table into the operator's first decay level, and bits 3-0 store the release rate as four times their value plus 34.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4014-4015",
+       "sha": "3a0226e880f3f465f49b0e03de772632f8ec59f94d46e7f8e41855bae216751c"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "text": "A write stores the first decay level and release rate, then recomputes the release rate's table entry.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4013-4017",
+       "sha": "b9f6fb30993b667aded3b1821468431a042b39edf7f7ff4837c7646d5150be9b"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "dosbox-x",
+     "text": "The release rate's table index is the rate plus the key code shifted right by the key scale.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4016-4017",
+       "sha": "9426b82dfeedc740d4ad26700bbbf4e170b533c9241f293f902f2598d3c36b30"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3140-3145",
+       "sha": "a889e39bb6bc183c37eded2920fe1c31b43a2f34310fed22fedb240cde072ef5"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "3191-3196",
+       "sha": "5591e3109d45194842bf7bdf12b3a8bcc51b67476e1963c24db506cb4b3b2f45"
+      }
+     ],
+     "vs": "extra"
+    },
+    {
+     "n": "4",
+     "on": "place",
+     "of": "dosbox-x",
+     "text": "The card's Z80 ROM routine, ported into the host, writes it through register_w and data_w of the YM2151 device, one call for the number and one for the value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5204-5209",
+       "sha": "c767d411ee389015ad7ad2b5de910ec58c78582ce676cb29eaa19f7395a58412"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "5210-5216",
+       "sha": "603956d744fb45d6e80d36363b4806a6539ede1746a342f63cb7f2492cf44557"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "4634-4642",
+       "sha": "ff7e6a63b931d000b2c27b3f0424b604527358d51c8844f0483a121e2b404f89"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/imfc.cpp",
+       "lines": "8-11",
+       "sha": "cae9a1dc25166b807e9d72488a06a2c9973456a948879118df254a71a17bf704"
+      }
+     ],
+     "vs": "place"
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/imfc.cpp",
+     "lines": "3744",
+     "as": "structure"
+    }
+   ]
+  }
+ ]
+}

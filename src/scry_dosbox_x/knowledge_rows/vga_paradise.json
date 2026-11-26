@@ -1,0 +1,2630 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "vga_paradise",
+ "title": "The Paradise PVGA1A's extended registers",
+ "kind": "register",
+ "scope": "vga_paradise",
+ "covers": "The Paradise PVGA1A's Paradise registers, reached through the graphics index port 03CE and the data port 03CF, as the maker's datasheet documents them, and what DOSBox-X does with each.",
+ "source": "official",
+ "documents": [
+  {
+   "name": "PVGA1A.raw.txt",
+   "variant": "PVGA1A"
+  }
+ ],
+ "official": {
+  "PVGA1A.raw.txt": [
+   "2341-2342",
+   "3215-3221",
+   "3233-3235",
+   "3923-3957",
+   "3958-3964",
+   "3965-4037",
+   "4140-4171",
+   "4211-4281",
+   "4282-4381",
+   "4382-4458",
+   "4459-4474"
+  ]
+ },
+ "engine": [
+  "VGA_SetupHandlers",
+  "VGA_SetClock",
+  "IO_Write"
+ ],
+ "entries": [
+  {
+   "key": "0x3CE",
+   "name": "extended index port",
+   "aliases": [
+    "graphics index register",
+    "Paradise register index"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "2341"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3215-3221"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3233-3235"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3923-3930"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "write_p3ce"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "function": "read_p3ce"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "206-207"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The graphics controller index register is read/write at port 03CE.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "2341",
+       "sha": "b2edf1437f318d23f59dff7ee71ed0bdd5e507b97f6ff05d1502f937dc945f2c"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3215",
+       "sha": "af5af37b3330db053b45a61366f9383348448d70210fc59bf66c06dbfa8fdb97"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 7-4 of the index register are reserved, and bits 3-0 point at one graphics controller register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3219-3221",
+       "sha": "a07da7bfd0ce5570bdcf954451183abcb8b8ef53ef961af79969cfd1c914fbc5"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "All the Paradise registers reside at index pointers beyond the graphics controller registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3234-3235",
+       "sha": "8891ed90f7a2a27c0df760d738a79fe4112bf8dce418d9987c37e5e22fa2fed3"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The PVGA1A adds six lock-protected I/O registers in the graphics controller section, at register locations IBM did not use; all are readable and writable.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3923-3930",
+       "sha": "31ba8992d155179e6682ff375bd6da8699feb9fccc2343f6ae596d7937dd4100"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X registers write_p3ce at port 0x3ce, and read_p3ce there on VGA machines.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "253-258",
+       "sha": "94ecf4a361b26d426c795cfd8ae217c348490246103e7bb9587d6f8af3076898"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "An index above eight is handed to the installed SVGA handler as the register number; the Paradise handler is installed at setup.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "206-207",
+       "sha": "dc9415f308da1dd6c6f68dda8beb6c1013725d5a2c91db14cbec7929dc7aaeab"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "241-242",
+       "sha": "6e5492d677927d0ca1805c8dc70b240ca99fbf2f0fdd376265c21bc69ec328d7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "210-212",
+       "sha": "6a255a566ad175d4c29c721412c8d8d5d8b274a3dd85ce4bf1067518f2effb24"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3216-3218",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3233",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "32",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "36",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "32",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x3CF",
+   "name": "extended data port",
+   "aliases": [
+    "other graphics register",
+    "Paradise register data"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "2342"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3931-3952"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "210-212"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "112-114"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "138-141"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "206-207"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The other graphics register is read/write at port 03CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "2342",
+       "sha": "609bba6310c57ca75e11cad18063060a78873055f9921288ef4c4d9f2052ce62"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "text": "A register is written XXX.YY, XXX the data port and YY the index (the capture prints OF for 0F): write 0F to 3CE, then the data byte to 3CF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3950-3952",
+       "sha": "cce0947416683eac1cfe2018c1c080cf05bb6c7fe989c6c2650abc6f0c40430f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The register table names the registers PR0A and PR0B, which the capture prints PROA and PROB, PR1 to PR5, and the configuration field CNF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3932-3939",
+       "sha": "d115bf4cb58052b9e12da09b55bdd06e74e48a232cca85ec05151d3fae597e07"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The I/O location of each register is 3CF with its index 09 to 0F, the capture printing some zeroes as letter O.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3942-3948",
+       "sha": "dcbed2e29da8709147f350bbf4133b5d6f0ca46f3dc5d75c2cea99f9620a4cd7"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "DOSBox-X registers write_p3cf at port 0x3cf, and read_p3cf there on VGA machines.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "253-258",
+       "sha": "94ecf4a361b26d426c795cfd8ae217c348490246103e7bb9587d6f8af3076898"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "SVGA_Setup_ParadisePVGA1A hangs write_p3cf_pvga1a and read_p3cf_pvga1a on the two dispatch pointers the 3CF handlers call.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "210-212",
+       "sha": "6a255a566ad175d4c29c721412c8d8d5d8b274a3dd85ce4bf1067518f2effb24"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "For an index above eight the 3CF handlers pass the stored index and the byte to the Paradise write and read functions.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "206-207",
+       "sha": "dc9415f308da1dd6c6f68dda8beb6c1013725d5a2c91db14cbec7929dc7aaeab"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+       "lines": "241-242",
+       "sha": "6e5492d677927d0ca1805c8dc70b240ca99fbf2f0fdd376265c21bc69ec328d7"
+      }
+     ]
+    },
+    {
+     "n": "104",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "An index the Paradise handler has no case for is logged as illegal and changes nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "112-114",
+       "sha": "77b6fb05b2acb3af10e6998df5e40d036054073ddc6449c32808b9e6e00c558d"
+      }
+     ]
+    },
+    {
+     "n": "105",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of an index the handler has no case for is logged as illegal and returns zero.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "138-141",
+       "sha": "db403d43abbed15e428b9c1186a9fc138e1f7de8e2a122710f8d67af642b1395"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "143",
+       "sha": "2cc9f0d556618b2c5628eeb58384ed57a2eb15173e5d5a8d226ebc8c8925e508"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3931",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3940-3941",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3949",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_gfx.cpp",
+     "lines": "206-207",
+     "as": "agrees",
+     "row": "2"
+    }
+   ]
+  },
+  {
+   "key": "0x09",
+   "name": "PR0A bank A address",
+   "aliases": [
+    "PROA"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3965-3977"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3985-4005"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "write_p3cf_pvga1a",
+     "case": [
+      "0x09"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "read_p3cf_pvga1a",
+     "case": [
+      "0x09"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "bank_setup_pvga1a"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "PRO A is the address offset register A, read and written at port 3CF with index 09.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3998",
+       "sha": "e9b05eb6ac051b2d387b806817cb0adc484164daaa675c18620c59c3dd98d92e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The registers hold an offset added to the system address when accessing 1MB of video memory; register A is primary, always enabled; B only if PR1 bit 3 is 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3985-3991",
+       "sha": "493edf5eab66d1e9134d067dcf32f565558a1ba2dffef3f064cd1ef7d741f8da"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "PROA is always enabled when PR1 bit 3 is 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3975-3976",
+       "sha": "93c2d9f7b67a9fc8c4a0d917126590ee7da6c551868f7e6b13fc2585fc6b8909"
+      }
+     ]
+    },
+    {
+     "n": "3b",
+     "on": "write",
+     "of": "doc",
+     "text": "PROA is normally used to control 64KB of the video address space.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3976-3977",
+       "sha": "f135154364efc1f68d9e11407b740f7086242e689d96b7d1c50bb362a6585406"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "The six-bit offset is added to address bits 12-18 of the system address bus to form a 20-bit address, in 4KB segments.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3991-3996",
+       "sha": "6d8ff361f3179f54570424313049e9e3c8c0b41f1b5ca03bd8d5e5d084fc4648"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The register holds reserved and offset bits, added to the system address and selected when address bit A15 is 1; register A is the default.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3999-4005",
+       "sha": "c022996e65e81fb36f982b2411bbb9df131608c8a2b1f11d21c76f6353f3ebe3"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "The video memory space starts at A0000H (the capture prints O for 0) and ends at BFFFFH, limited to a 64KB partition so a second video card can co-exist.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3967-3974",
+       "sha": "67ea600a06518896e4dba42351a996a63d73c7e7c1e6f1d2dbc5bcd7ada45157"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "Register A drives the bank when PR1 bit 3 is 0; with bit 3 set the dual-bank branch stores nothing, so register B never drives the window.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "56-64",
+       "sha": "cf45f71f90b08d13a4436e0d6f8b1ea691af1ea03cf45780641922afa120e126"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "The setup tests PR1 bit 3 only and makes PR0A the bank of the whole window; address bit A15 selects nothing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "56-64",
+       "sha": "cf45f71f90b08d13a4436e0d6f8b1ea691af1ea03cf45780641922afa120e126"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "The window size and its granularity come from the configuration; the Paradise default is a 64KB window with 4KB granularity.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga.cpp",
+       "lines": "981-992",
+       "sha": "2c7eaa4ebeda2d151a14f40f4445c2e4d352790d1f3a0cadd9d2646a6915b889"
+      }
+     ]
+    },
+    {
+     "n": "104",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "The bank is taken from all eight bits of PR0A, where the document gives a six-bit offset; the window keeps the document's 4KB granularity by default.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "61-62",
+       "sha": "7004e255b3a42ff1961ebd29276bb06a4766b166796568550029e010612436a1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga.cpp",
+       "lines": "989-992",
+       "sha": "0d52f302212ce110770001e0c3cbdbe2e86f2d677b38d0d4978e95fecabd591d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3965-3966",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3997",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "76",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "125",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "56-64",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "63",
+     "as": "unfollowed",
+     "row": "3b"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "69-70",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "72",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "120-121",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "123",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0A",
+   "name": "PR0B bank B address",
+   "aliases": [
+    "PROB"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3978-3984"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4006-4012"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "write_p3cf_pvga1a",
+     "case": [
+      "0x0a"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "read_p3cf_pvga1a",
+     "case": [
+      "0x0a"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "bank_setup_pvga1a"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "PRO B is written at port 3CF with index 0A, which the capture prints as OA, and read back there.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4006",
+       "sha": "5b969fbe7cf50b3098c6428a15a6c2c9deb94d0a51a8231c459ded2254cafc34"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "PROA and PROB may access two 32KB windows, PROA from A8000H-AFFFFH and PROB from A0000H when PR1 bit 3 is set; the capture garbles PROB's end.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3978-3984",
+       "sha": "464a85b72bea7e99907b1a68ae2955fd0b0fca25203786c4a10292b65cff51ea"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The alternate offset bits are selected by the system address only if PR1 bit 3 is 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4007-4011",
+       "sha": "831ba2319f10d3de21c6421e90e16e5a7cc56e3a214f4c80fefe55d511f5f1f6"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A write stores PR0B, but the dual-bank branch is empty, so the bank still comes from register A.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "56-58",
+       "sha": "f2fee2f66e0d5253a80f3323c4596c8cd68bbf889fc89a185442d86732f8cdb4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "82-84",
+       "sha": "5a9d0282f6e93320e64cdc0cfbc43ef1edac9ceee6a7d884a0db2e91fbb0a3ba"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "3",
+     "text": "The branch PR1 bit 3 would take is empty, so no offset from register B ever reaches the video memory window.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "56-59",
+       "sha": "e6234968b0bf1db8f48e05f308d8debd75fc53c8e3b0a075e787e0dbf626247d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4012",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "82",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "127",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "59",
+     "as": "parent",
+     "owner": "vga_paradise:register:0x09"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "61-62",
+     "as": "parent",
+     "owner": "vga_paradise:register:0x09"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "69-70",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "72",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "120-121",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "123",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0B",
+   "name": "PR1 memory size",
+   "aliases": [
+    "memory size register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3958-3964"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4013-4037"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4140-4171"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "write_p3cf_pvga1a",
+     "case": [
+      "0x0b"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "read_p3cf_pvga1a",
+     "case": [
+      "0x0b"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "SVGA_Setup_ParadisePVGA1A"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "PR1 is the eight-bit memory size register, read and written at port 3CF with index 0B, which the capture prints as OB.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4141",
+       "sha": "424bf48cb7438f614de2d32a1d158c783d3cc43765c585f06faa9addf4f4e5f1"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4015",
+       "sha": "69f8406e9837dc44cc113e782e8674aa538f5ea4404ce84058026508bc95f30e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "reset",
+     "of": "doc",
+     "text": "All PR registers except PR1 bits 1-0 are 0 at power on reset; PR1 bits 1-0 latch from the memory data bus pins, and a pullup latches them low.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3958-3964",
+       "sha": "63204fa001569728dd793402fe3d3d0214306709abb8b6c558f4e72e6de3d7cb"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4016-4020",
+       "sha": "b8bc7ca25b082eb709dd5c4a7a65ff90143273a88958e9e2ec3dd549225b5be1"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4171",
+       "sha": "b38889ea4b342d1b8ac5570249a3f010661fcc7d4677762b0b5668af61a99daf"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "256KB of video memory is four 64KB maps defining bit planes 0-3, chained into one large plane in mode 13.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4020-4025",
+       "sha": "b41070b0456973687f34b23376d44ff38c31de2ab351331b4fa87ae72a854c87"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The start of the video buffer is configurable (the capture prints O for 0): 64KB or 128KB segments can start at A0000H, and 32KB segments at B0000H or B8000H.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4026-4032",
+       "sha": "712abe79a21cf2333511e5bcc96397b88828c661cb86c58b1ed60f6aa51ad33a"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "Bits 6 and 7 extend the video buffer to 512KB or 1024KB.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4033-4037",
+       "sha": "a13e15a719fa170943f62c34eb1207991c08cad13e2b9f52327c68fe73b0ce8a"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "The memory size field selects one of four memory sizes: 256KB VGA, 256 PVGA, 512 PVGA or 1024 PVGA.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4142-4146",
+       "sha": "cd5cb5cc2bdda874adff3a1064e7b4c6a7941354bbc6c7f95eb004bf1bd14aa9"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "A field maps the BIOS ROM out when set to 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4150-4151",
+       "sha": "3ad483cd26e2c8391dc3e175507cbf7a19972aefdca4a2f79beb351d99c2c7e8"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "A field gives the BIOS ROM a 16-bit data path, and 0 selects an eight-bit path.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4155-4157",
+       "sha": "85c44a46601b9c36beddd07abe8f9bbbdb05b720c81277101a642e3aad371a9e"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "A field enables a 16-bit wide bus for video memory.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4158-4159",
+       "sha": "5ea9693d80c557363c8ac2936d7ccb02cd3a122f9967ae3af00d3871a279c64b"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "A field enables alternate address offset register B, and 0 enables the primary register A.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4160-4163",
+       "sha": "9c72deb64e0fcf33de7050e50714a913dd9103587d872c17218d2d6f9e41c305"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "is",
+     "of": "doc",
+     "text": "The memory map field selects VGA mapping, the first 256KB or 512KB in 1MB space, or 1024KB in a larger space.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4164-4169",
+       "sha": "72a8d34c19e4c324e2d8fa1f1fb5d0c2c888feb67ed3251a64e6cb6f26bcdf73"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "The emulator starts PR1 at zero and sets its memory size field from the configured video memory; no data bus pin is latched.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "229-240",
+       "sha": "566f969520a4c575e7ff1fca2f2743922af1fa9860a68a8ec0894d681249cdd4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "47",
+       "sha": "1885b3af0213bb5b9f54ff2f57e77d33db3e122c894e6c622d6265d33e52fdc9"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "4",
+     "text": "The buffer's start is not taken from PR1: the memory size alone is configured, and the window comes from the VBE settings.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "229-240",
+       "sha": "566f969520a4c575e7ff1fca2f2743922af1fa9860a68a8ec0894d681249cdd4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga.cpp",
+       "lines": "981-992",
+       "sha": "2c7eaa4ebeda2d151a14f40f4445c2e4d352790d1f3a0cadd9d2646a6915b889"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "7",
+     "text": "A write stores bit 3 only and keeps every other bit, so the BIOS ROM mapping field cannot be changed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "85-89",
+       "sha": "566e23e6934253cfd367adf68fcbe28e233124aaa72c23a25349612e4f88b406"
+      }
+     ]
+    },
+    {
+     "n": "104",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "8",
+     "text": "A write stores bit 3 only, so the BIOS ROM data path width field is never written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "85-89",
+       "sha": "566e23e6934253cfd367adf68fcbe28e233124aaa72c23a25349612e4f88b406"
+      }
+     ]
+    },
+    {
+     "n": "105",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "9",
+     "text": "A write stores bit 3 only, so the field that enables a 16-bit video memory bus keeps its value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "85-89",
+       "sha": "566e23e6934253cfd367adf68fcbe28e233124aaa72c23a25349612e4f88b406"
+      }
+     ]
+    },
+    {
+     "n": "106",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "10",
+     "text": "Bit 3 is stored and tested, but the dual-bank branch is empty, so the field never enables register B.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "85-89",
+       "sha": "566e23e6934253cfd367adf68fcbe28e233124aaa72c23a25349612e4f88b406"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "56-58",
+       "sha": "f2fee2f66e0d5253a80f3323c4596c8cd68bbf889fc89a185442d86732f8cdb4"
+      }
+     ]
+    },
+    {
+     "n": "107",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "11",
+     "text": "A write stores bit 3 only, so no value of the memory map field reaches the emulator.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "85-89",
+       "sha": "566e23e6934253cfd367adf68fcbe28e233124aaa72c23a25349612e4f88b406"
+      }
+     ]
+    },
+    {
+     "n": "108",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The setup installs the two handlers and caps the SVGA width at 2048 and the height at 1024.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "211-215",
+       "sha": "b0516e88a29ad4b6e468567e5e48cccaf95a076372e52a47153c96ee0d171feb"
+      }
+     ]
+    },
+    {
+     "n": "109",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The setup hangs the mode-set, determine, clock and accepts functions on the driver, and calls VGA_SetClock with CLK_25, CLK_28, 32400 and 35900.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "217-226",
+       "sha": "7bc20e546c16f570a63a5d24edce6fb14b911d9d5c305f10810cf9cfaf3f846b"
+      }
+     ]
+    },
+    {
+     "n": "110",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "The memory defaults to 512KB, and PR1's size field is set to 1, 2 or 3 for 256KB, 512KB or 1024KB.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "229-240",
+       "sha": "566f969520a4c575e7ff1fca2f2743922af1fa9860a68a8ec0894d681249cdd4"
+      }
+     ]
+    },
+    {
+     "n": "111",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The setup's last act is a write of 05H to port 0x3cf.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "242",
+       "sha": "b7b6ccb787d832eab3b9cebdffe7cb716e62c1a1cff7cec5c61b63aa21adecd8"
+      }
+     ]
+    },
+    {
+     "n": "112",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "The setup writes the size field from the configured memory as 1, 2 or 3; the 256KB VGA value 0 is never programmed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "229-240",
+       "sha": "566f969520a4c575e7ff1fca2f2743922af1fa9860a68a8ec0894d681249cdd4"
+      }
+     ]
+    },
+    {
+     "n": "113",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "A write stores bit 3 only, so a program cannot set bits 6 and 7; the setup sets them from the configured memory size.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "87",
+       "sha": "fd2bca34592b9530ebdd08ecd7ceab6ad59e2f192dd96a366f04ad23743ded8f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "232-240",
+       "sha": "1835a314dd698fcad91d983ba01613abe015831da210e664a6da13f333fe7ba8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4013-4014",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4140",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4147-4149",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4152-4154",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4170",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "87",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "129",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "69-70",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "72",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "120-121",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "123",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0C",
+   "name": "PR2 video select",
+   "aliases": [
+    "video select register",
+    "video monitor timing register"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4211-4281"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "write_p3cf_pvga1a",
+     "case": [
+      "0x0c"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "read_p3cf_pvga1a",
+     "case": [
+      "0x0c"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "PR2 is written at port 3CF with index 0C, which the capture prints as OC, and read back there.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4211",
+       "sha": "cc15b37f171b52b123f9f13f7e7a1b36783d087925b3e44422e15c5594a7ffeb"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "A bit selects 6845 compatibility mode, VGA mode when 0, and enables M24 mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4217",
+       "sha": "279878563febe4346d16dcd83d1a6a299933507d4026f4e14ee14a4885674322"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4241-4243",
+       "sha": "1910254ee422139779225dd4d271cb14d82d55622af529e513616a59d43af76f"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "A character map select bit, with PR2(2) and attribute bit 4, selects character maps from planes 2 or 3.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4232-4233",
+       "sha": "e4a6ef4221fad8aa26bedd3881145422e306731b4015e42fe2096b6500819f92"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4244-4247",
+       "sha": "bc181f85e4a56cf00457fc35af91197988b8b58a87c5f52aa1a5fb0d112f13b8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "A character clock period field selects the IBM VGA 8 or 9 dot clock, 7 dots for 132-character mode, 9 dots or 10 dots.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4239-4240",
+       "sha": "f1ab0c084b752930b3bf475e43c852e4bb1b035eae4fbefd69f8cb22d7bb7828"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4253-4262",
+       "sha": "dcefe88e48e6bbf6ef94e05f3ffb79b690d6cddd89a9efddc1b4b87b3fa05d83"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4263-4272",
+       "sha": "1a9ff728235632d6641ead600ca01c7887c6a489c127964cdf84b69d49fe7084"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "A bit enables a special color underline on odd numbered attributes and, with PR2(5), the character map selection.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4273-4276",
+       "sha": "1237bf97c64f9cd2882b681acc9267a09c844f06862c0fb6942631222f34b342"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "A bit is the third clock select line to an external clock chip when CNF(3) is 1; otherwise the internal clock multiplexor is locked.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4218-4219",
+       "sha": "dbbd685db1b39df261ce5f9000df1ee4907137da0d87aadcf078e98f360c2eef"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4277-4279",
+       "sha": "54f3500d1241c169ec6f5c598bde127c2d3af93ae129265c3cc11941a0a2ea23"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "A bit sets the horizontal sync timing for 8 or 9 dots per character, and 16 or 18 dots when 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4213-4216",
+       "sha": "252614e681eeee1ba25fb09ea436be1667546f51349af28dddef5ed2ac2cfe38"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4280-4281",
+       "sha": "0d72d54cff6da15da2743df643188080c85b11723573c0a58391a1cfc691fcec"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "2",
+     "text": "The handler stores the byte and nothing else: no mode is selected from the register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "90-94",
+       "sha": "da660cd26568ec43d26848e1faee5707b04abce054bc3e252142ea9a23edac68"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "3",
+     "text": "The handler stores the byte and nothing else: no character map is selected from the register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "90-94",
+       "sha": "da660cd26568ec43d26848e1faee5707b04abce054bc3e252142ea9a23edac68"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "4",
+     "text": "The handler stores the byte and nothing else: the character clock is not changed by the register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "90-94",
+       "sha": "da660cd26568ec43d26848e1faee5707b04abce054bc3e252142ea9a23edac68"
+      }
+     ]
+    },
+    {
+     "n": "104",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "5",
+     "text": "The handler stores the byte and nothing else: no underline mode and no character map is enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "90-94",
+       "sha": "da660cd26568ec43d26848e1faee5707b04abce054bc3e252142ea9a23edac68"
+      }
+     ]
+    },
+    {
+     "n": "105",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "6",
+     "text": "The handler stores the byte and nothing else: no clock select line is driven.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "90-94",
+       "sha": "da660cd26568ec43d26848e1faee5707b04abce054bc3e252142ea9a23edac68"
+      }
+     ]
+    },
+    {
+     "n": "106",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "7",
+     "text": "The handler stores the byte and nothing else: the horizontal sync timing is not changed.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "90-94",
+       "sha": "da660cd26568ec43d26848e1faee5707b04abce054bc3e252142ea9a23edac68"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4212",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4220-4231",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4234-4238",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4248-4252",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "93",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "131",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "69-70",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "72",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "120-121",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "123",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0D",
+   "name": "PR3 CRT control",
+   "aliases": [
+    "CRT control register",
+    "CRT control and group locking"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4282-4381"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "write_p3cf_pvga1a",
+     "case": [
+      "0x0d"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "read_p3cf_pvga1a",
+     "case": [
+      "0x0d"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "PR3 is written at port 3CF with index 0D, which the capture prints as OD, and read back there.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4325",
+       "sha": "042cf4004b4100a47511b52385b5ab7b2a81b09dbcf2c94e1e39738bf93138ad"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The document writes a CRT controller register bit as 3?5.11(7), meaning bit 7 of data register 11 written through index 3?4.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4284-4286",
+       "sha": "ce2c12de2a7c2e170f6c70da71f7b2e4b8b1a09fc58c9d59bfee0a16b9e93548"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Register locking is controlled by PR3 bits 5, 1 and 0 and by CRT controller register 11 bit 7.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4287-4291",
+       "sha": "c5500a757735b104ff664902e361def41793ac2785621d3ddabf57e6dd4af246"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Group 0, CRT controller registers 00 to 05, is locked when PR3 bit 5 is 1 or register 11 bit 7 is 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4292-4303",
+       "sha": "70e029a0989eeb87dc9366bff5a909abbb747ed67004f80fc50e085b62f3b471"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Group 1, register 07 bits 6 and 1, is locked when PR3 bit 1 is 0 and register 11 bit 7 is 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4304-4306",
+       "sha": "fbe03c556cae7eaccb6bd5fcea7bb6af18685a7e355e90e6d0ff2add50ea6558"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Group 2, register 06 and parts of register 07, is locked when PR3 bit 0 is 1 or register 11 bit 7 is 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4307-4313",
+       "sha": "b579005c38b7184b9ab9859383c98b2e7f6ea429bf3b6539773a95adb94ea59b"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Group 3, register 09 bit 5, registers 10, 11 bits 3-0, 15 and 16, is locked when PR3 bit 0 is 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4314-4319",
+       "sha": "de0afd06f06fef60f04fe262b6cfc64797abf15cf9dc9f38240430d6e8ccf286"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "Group 4, CRT controller mode register 17 bit 2, is locked when PR3 bit 5 is 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4320-4322",
+       "sha": "a1ef81d4c5fa72bf339261bbb0dfe3b9c2aa78e97b0b4a71b9a530078a187c8f"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "One bit locks VSYNC polarity as programmed in port 3C2 bit 7.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4364",
+       "sha": "cde7619788f7cac1d78a487a2c6bccfbefcba5cb46d6193b17a42fa930be972d"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "One bit locks HSYNC polarity as programmed in port 3C2 bit 6.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4365",
+       "sha": "26d0aaac47b492b1c6c7a4d783aaef944f8cc192460f14975acb11df1aca631f"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "is",
+     "of": "doc",
+     "text": "One bit locks horizontal timing, the registers of groups 0 and 4, and prevents unlocking group 0 by register 11 bit 7.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4366-4369",
+       "sha": "36a13e8b306f7a45d7ab1cad8cd4a2dabd362b0994e0d2d0e4b394222382e957"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "is",
+     "of": "doc",
+     "text": "One bit multiplies the cursor start, stop, preset row scan and maximum scan line values by two.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4350-4352",
+       "sha": "b6b97378bfa18b378f834e51e7820f9788fbe1b39b4e7387d34f8119cecde19b"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4378-4379",
+       "sha": "3db8ba96414479547543f12542ebfe4b938fa790633321c92e4e920d58df6b43"
+      }
+     ]
+    },
+    {
+     "n": "13",
+     "on": "is",
+     "of": "doc",
+     "text": "Two bits are bits 8 and 9 of the CRT start address and the cursor location, character addresses CA(16) and CA(17).",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4353-4361",
+       "sha": "dd064149d22f0cd81e6510e5ad7d2716898e6372160195fa0dd8318bc541d768"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4370-4372",
+       "sha": "5c77b32790bc528fc201eacb956aee6949abc393f515cffc55dffd3aa1576c32"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4373-4375",
+       "sha": "02692d7ef22313e9b50d5c3c5e5b3c7a1c447a746f13b7db61f064b84e4c0621"
+      }
+     ]
+    },
+    {
+     "n": "14",
+     "on": "is",
+     "of": "doc",
+     "text": "A bit enables the palette registers in non EGA (6845) mode, and in the PVGA1A the palette is enabled all of the time.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4373-4377",
+       "sha": "1bcf35e44c0ba3074707ba14aee81fcd5150641235134d9bf52de6db612194da"
+      }
+     ]
+    },
+    {
+     "n": "15",
+     "on": "is",
+     "of": "doc",
+     "text": "A bit prevents applications software from locking the registers of group 1 by setting register 11 bit 7.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4380-4381",
+       "sha": "54f02e843cc437ddc21873867a5362f9d148bff822b2aad864b30bc849a699fb"
+      }
+     ]
+    },
+    {
+     "n": "16",
+     "on": "reset",
+     "of": "doc",
+     "text": "A bit maps the BIOS ROM out when set to 1, and a pullup on MD(0) latches it to 0 at power on reset.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4362-4363",
+       "sha": "a050ef702137c7266d3b33feb732a064b968a8f9c7e88e5bef15281b349c52ab"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "3",
+     "text": "Nothing in the write case does it: no CRT controller register is locked from PR3's bits; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "4",
+     "text": "Nothing in the write case does it: group 0's registers are not locked from PR3; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "5",
+     "text": "Nothing in the write case does it: group 1's registers are not locked from PR3; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "104",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "6",
+     "text": "Nothing in the write case does it: group 2's registers are not locked from PR3; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "105",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "7",
+     "text": "Nothing in the write case does it: group 3's registers are not locked from PR3; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "106",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "8",
+     "text": "Nothing in the write case does it: CRT controller register 17 is not locked from PR3; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "107",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "9",
+     "text": "Nothing in the write case does it: VSYNC polarity is not locked; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "108",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "10",
+     "text": "Nothing in the write case does it: HSYNC polarity is not locked; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "109",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "11",
+     "text": "Nothing in the write case does it: the horizontal timing registers are not locked; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "110",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "12",
+     "text": "Nothing in the write case does it: the cursor and scan line values are not doubled; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "112",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "14",
+     "text": "Nothing in the write case does it: the palette is not switched by the register; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "113",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "15",
+     "text": "Nothing in the write case does it: nothing prevents a lock of the group 1 registers; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    },
+    {
+     "n": "114",
+     "on": "reset",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "16",
+     "text": "Nothing in the write case does it: the BIOS ROM is not mapped out from PR3; the body stores the byte and sets the start addresses.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "95-102",
+       "sha": "8a250c027454d1ab76c23ec57ee31d617632233cae9b91e07046ca080fcf3168"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4282-4283",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4323-4324",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4326-4349",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "99",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "133",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "100-101",
+     "as": "agrees",
+     "row": "13"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "69-70",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "72",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "120-121",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "123",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0E",
+   "name": "PR4 video control",
+   "aliases": [
+    "video control register",
+    "video monitor output control"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4382-4458"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "write_p3cf_pvga1a",
+     "case": [
+      "0x0e"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "read_p3cf_pvga1a",
+     "case": [
+      "0x0e"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "write",
+     "of": "doc",
+     "text": "PR4 is written at port 3CF with index 0E, which the capture prints as OE, to tri-state display, video and memory control outputs, and read back there.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4383-4385",
+       "sha": "ae434cba8b4f228371bfb8298516d26fe10c4b7506d5e7b490ac977831f91c24"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 7 controls the BLNKN output: 1 is display enable and 0 is blank.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4422",
+       "sha": "4508903c6d09ca0f00979b91368af0e6c70fb36d65d72efbaac8c3cdf7e1903d"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4431-4435",
+       "sha": "c609b9f4f8d5729164c1cb33afc56d3f448bd8c41304a8c341243bd0bb5b9d98"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 6 tri-states the HSYNC, VSYNC and BLNKN output pins.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4423",
+       "sha": "aa7c1b7be8304a9864b8e52e969423dd2211b4469a73c85b82505ebae4577286"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4436-4437",
+       "sha": "22ae26a9c3bf2c6e9177aaa14415e99c093f89c331860300cf5f0e35e30e86cc"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 5 tri-states the video outputs VID(7:0).",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4424",
+       "sha": "77c15bc961623ccc640c96c16ed83dd5cc6ec9167e87773dafdbb13f6b7cb3cc"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4438-4439",
+       "sha": "8dbc1528754fde222755743411755a1f87f464de9c35b1347287b552e4d98d72"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 4 tri-states the memory control outputs.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4425",
+       "sha": "a11610003469e531d2f113cc329c7b2391a03cd7894e5a70b8cfb273aaa4c51e"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4440-4443",
+       "sha": "886083372ca58ee9faef9f28497664cfa20e507125c479a10f579553775c7a98"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 3 disables the CGA enable video bit in mode register 3D8.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4426",
+       "sha": "6467c30cff17bcbb2af382034bac0109df43ad1c7e96f31a78d0d9b4d5388f3b"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4444-4446",
+       "sha": "605e9caa869b260202a4a99cb6c3aff854744164ce9683e329b3c627e519dbf1"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 2 locks the palette and overscan registers.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4427",
+       "sha": "c6d7971df5d081b082596f4d5e2d729a3890a73e61c63158ce93d070bc66b98f"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4447-4448",
+       "sha": "225494a0be753d35d72d10b4758a331bb96bce1ba0164e46e2eec4a8fba62259"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 1 is EGA compatible mode: it disables response to I/O 3X8-3XA except 3XA, and the 3C0 and 3C1 registers change to write only.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4428",
+       "sha": "45e71bb20e9ee31ebe209acf3182afe6dcd893a7333087ee4cd574a472f08d76"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4449-4455",
+       "sha": "e533962cd001cd52a52793f0116c2d7bfdc2cddfd4d24077b7e0cc8e6b5321c2"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 0 is the Paradise shift register control, selecting a 256 color mode beyond mode 13's 320 by 200 (the capture gives the resolution as 640(400 by 480)).",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4429",
+       "sha": "d9e6a210e8384d5835679a87fd3af10cfa47ed5ed635aadc3c5329df9eb5df78"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4456-4458",
+       "sha": "c2c1cdb9cf4508b386a1f4b5e70ca9583a603b3ade5e8bc14d8e8a47a0573548"
+      }
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "2",
+     "text": "The handler stores the byte and nothing else: the BLNKN output is not driven from the register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "103-107",
+       "sha": "db13ab0829f1ac70f7483a5ee45693489e8d6538451e79b3ebcc17aeafc4e45d"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "3",
+     "text": "The handler stores the byte and nothing else: no output pin is tri-stated from the register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "103-107",
+       "sha": "db13ab0829f1ac70f7483a5ee45693489e8d6538451e79b3ebcc17aeafc4e45d"
+      }
+     ]
+    },
+    {
+     "n": "103",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "4",
+     "text": "The handler stores the byte and nothing else: the video outputs are not tri-stated from the register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "103-107",
+       "sha": "db13ab0829f1ac70f7483a5ee45693489e8d6538451e79b3ebcc17aeafc4e45d"
+      }
+     ]
+    },
+    {
+     "n": "104",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "5",
+     "text": "The handler stores the byte and nothing else: the memory control outputs are not tri-stated from the register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "103-107",
+       "sha": "db13ab0829f1ac70f7483a5ee45693489e8d6538451e79b3ebcc17aeafc4e45d"
+      }
+     ]
+    },
+    {
+     "n": "105",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "6",
+     "text": "The handler stores the byte and nothing else: the CGA enable video bit is not disabled from the register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "103-107",
+       "sha": "db13ab0829f1ac70f7483a5ee45693489e8d6538451e79b3ebcc17aeafc4e45d"
+      }
+     ]
+    },
+    {
+     "n": "106",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "7",
+     "text": "The handler stores the byte and nothing else: the palette and overscan registers are not locked.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "103-107",
+       "sha": "db13ab0829f1ac70f7483a5ee45693489e8d6538451e79b3ebcc17aeafc4e45d"
+      }
+     ]
+    },
+    {
+     "n": "107",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "8",
+     "text": "The handler stores the byte and nothing else: EGA compatible mode is not entered from the register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "103-107",
+       "sha": "db13ab0829f1ac70f7483a5ee45693489e8d6538451e79b3ebcc17aeafc4e45d"
+      }
+     ]
+    },
+    {
+     "n": "108",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "9",
+     "text": "Nothing in the write case does it: the handler stores the byte and selects no mode beyond mode 13.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "103-107",
+       "sha": "db13ab0829f1ac70f7483a5ee45693489e8d6538451e79b3ebcc17aeafc4e45d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4382",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4386-4421",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4430",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "106",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "135",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "69-70",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "72",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "120-121",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "123",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x0F",
+   "name": "PR5 lock and status",
+   "aliases": [
+    "lock register",
+    "status register",
+    "Paradise registers lock/unlock"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "3953-3957"
+    },
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4459-4474"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "write_p3cf_pvga1a",
+     "case": [
+      "0x0f"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "read_p3cf_pvga1a",
+     "case": [
+      "0x0f"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "function": "locked"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "PR5 is the general purpose status and Paradise registers lock/unlock register, read and written at port 3CF with index 0F, which the capture prints as OF.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4460-4461",
+       "sha": "540103306eefee5245d98bd3f89e7792023be87e0ec162dcf4138d373f4108c0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 7-4 are general purpose read only status bits, latched at power on reset from memory data bus pins MD(7:4); the capture cuts the sentence at the page break.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4462-4467",
+       "sha": "92b95df3c09e31b95d59ee2829a3aaa09bac91ba170c353458e13c40bf83d321"
+      },
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4473-4474",
+       "sha": "59f9dca32f8e8ef3fc515aaac66c7ec7e42b86177cda26095f0997efa4bfa56e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits 2-0 are the Paradise register lock/unlock bits, stored in PR5.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4471-4472",
+       "sha": "9cc6c07c4a78b3358f72e0f68c79c423bd2d78a53d62aab0e0786a329ef7b1d8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit 0 locks vertical timing: it locks the CRTC registers of groups 2 and 3 and overrides an unlock of group 2 by register 11 bit 7.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "4468-4470",
+       "sha": "b368ccd7585302292a2f83426e72b116959be108dfb9d621e8f302477a04aff8"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "Registers PR0 through PR4 (the capture prints PRO) are normally locked after power up; PR5 loaded with 05H unlocks them, and any other value locks them again.",
+     "quotes": [
+      {
+       "ref": "datasheet:PVGA1A.raw.txt",
+       "lines": "3953-3957",
+       "sha": "df95b09e7b39abc6dc7a399ba5374eb97ffae3a7b3080dd9ca217dcd0cecc3e2"
+      }
+     ],
+     "links": [
+      "vga_paradise:register:0x09",
+      "vga_paradise:register:0x0A",
+      "vga_paradise:register:0x0B",
+      "vga_paradise:register:0x0C"
+     ]
+    },
+    {
+     "n": "101",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A write stores all eight bits, so bits 7-4 are writable rather than the read only status bits the document gives.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "108-111",
+       "sha": "c52e25fe67f33fdb893c471702a9494b541128c01e0aa181a4d93e8d86f79799"
+      }
+     ]
+    },
+    {
+     "n": "102",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "4",
+     "text": "The handler stores the byte and nothing else: no CRT controller register is locked by bit 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+       "lines": "108-111",
+       "sha": "c52e25fe67f33fdb893c471702a9494b541128c01e0aa181a4d93e8d86f79799"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PVGA1A.raw.txt",
+     "lines": "4459",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "110",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "137",
+     "as": "agrees",
+     "row": "1"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "110",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "41",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "41",
+     "as": "agrees",
+     "row": "5"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "69-70",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "72",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "120-121",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/vga_paradise.cpp",
+     "lines": "123",
+     "as": "structure"
+    }
+   ]
+  }
+ ]
+}

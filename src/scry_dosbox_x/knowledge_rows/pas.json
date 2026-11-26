@@ -1,0 +1,6382 @@
+{
+ "format": "scry-knowledge/2",
+ "dictionary": "pas",
+ "title": "The Pro Audio Spectrum's I/O registers",
+ "kind": "register",
+ "scope": "pas",
+ "covers": "the offsets from the Pro Audio Spectrum's 388h base that DOSBox-X decodes: the interrupt, filter, PCM, 8253 timer, MIDI, board-identification, configuration and Sound Blaster emulation registers, as Media Vision's 1992 Developer's Toolkit Reference describes the common ones and as the emulator handles them",
+ "source": "official",
+ "documents": [
+  {
+   "name": "PASTECH-DeveloperToolkitReference.raw.txt",
+   "variant": "pas"
+  },
+  {
+   "name": "PASTECH-DeveloperToolkitReference.raw.txt",
+   "variant": "mv101"
+  }
+ ],
+ "official": {
+  "PASTECH-DeveloperToolkitReference.raw.txt": [
+   "6087-6130",
+   "925-1017",
+   "1854-1899",
+   "1900-1907",
+   "1909-1983",
+   "877-923",
+   "1984-2004",
+   "2005-2016",
+   "2045-2054",
+   "2055-2094",
+   "3478-3495",
+   "3496-3512",
+   "3514-3526",
+   "3527-3594",
+   "3596-3653",
+   "3655-3674",
+   "3714-3721",
+   "3759-3774",
+   "2096-2120"
+  ]
+ },
+ "searched": [
+  {
+   "where": "mame-header",
+   "gave": "MAME has no Pro Audio Spectrum device; its tree names no datasheet for the card."
+  },
+  {
+   "where": "maker",
+   "gave": "Media Vision was bought out; the 1992 Developer's Toolkit Reference was found in PASSDK_201.zip, and its state table names B88h the audio mixer control without a bit layout."
+  },
+  {
+   "where": "bitsavers",
+   "gave": "The Media Vision directory holds the SDK archive and no MV508 or board register document."
+  },
+  {
+   "where": "archive-org",
+   "gave": "Searches for the Pro Audio Spectrum returned drivers, books and the toolkit, no register manual."
+  },
+  {
+   "where": "index",
+   "gave": "datasheetarchive-like indexes answered with sound cards and no MV508 mixer or board register document."
+  }
+ ],
+ "entries": [
+  {
+   "key": "0x9A01",
+   "name": "master address pointer",
+   "aliases": [
+    "relocation port"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "6087-6130"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write9A01"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "977"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "878-887"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "The later models (Plus, 16 and CDPC) relocate their I/O addresses, so up to four boards can share a PC.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "6087-6091",
+       "sha": "38ce9cb29da3fc3d782a6e54b13ab6f5d2ed5fc99b3a568e7d75605cf9591bad"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "The card's 16-bit addressing scheme places OPL3 FM at 388h, MIDI at 1788h, SCSI at 5388h and configuration at F388h.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "6092-6096",
+       "sha": "170f794627850c612efee23dec9ba95df80ce39d5fe6e3e12e8a0a5021776309"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "6097-6104",
+       "sha": "33c2b52e1321f01ea965991baee58491486a9555bedada1b3f339444841241cf"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The original Pro Audio Spectrum used 388h through 38Bh as its base address.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "6106-6110",
+       "sha": "a4e3a0d2ad9f9f3fdde36062dd05300292265168b208e885259b0e48a768815f"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Relocation can select any of 256 addresses; Media Vision recommends 388h, 384h, 38Ch or 288h.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "6111-6114",
+       "sha": "1e7809f123e4d57b244cbb4c521e8314cea24418858cbb8de47343739e60e419"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "when",
+     "of": "doc",
+     "text": "The hardware must be reset before it accepts a new base address.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "6116",
+       "sha": "f3c1776ad2f6a743dfc006f777a490b42dbfa619871aa68c8e18fe0fbfb71b59"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "doc",
+     "text": "A relocation writes two bytes to 9A01h: the board ID BCh through BFh, then the base address shifted right by two.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "6117-6128",
+       "sha": "4c593b3cd3ad1b13b608b8a78bd0d9406b3b97adb30adfea2fdf8a18c7caeaa2"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "The toolkit's own example sets the base to 388h by writing BCh and then 388h shifted right by two.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "6122-6128",
+       "sha": "4725fd5faab64fda61fc0fa96ccf1988630932c532a5addc731d2d53919c9b8c"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "The procedure can be repeated for the next three boards.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "6129-6130",
+       "sha": "92b78dfaf7236efae68252e28f9d90996bc58d0d9766e5019071b495f31ce5f0"
+      }
+     ]
+    },
+    {
+     "n": "P",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "place",
+     "text": "The write handler at fixed port 0x9A01 is installed in the init branch that runs for the Plus and the 16.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "961-972",
+       "sha": "ec05825d0b47aa771081a1c9d45df16af2e7520bc45eaae6f4bf6c2ebe8e3a16"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "973-978",
+       "sha": "6c673a96db2ec04f8f5a51eb5aaf95bd0f3a563dfdcbc62127b274f1012bb11f"
+      }
+     ]
+    },
+    {
+     "n": "Q",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "The first byte is the board ID and the second, only after BCh was written, the new base; IDs BDh through BFh are stored and ignored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "932-938",
+       "sha": "ff1b8740b7cfa691417dcb1855d4ce50019ff6de5126179ce3841a3f95cd6e45"
+      }
+     ]
+    },
+    {
+     "n": "R",
+     "on": "when",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "The new base is kept and applied later, when a write to 0x8000 resets the board and reinstalls the ports.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "878-887",
+       "sha": "36a1c7a91e638318e481edacff170f0ba327463744dafd166b1e58186b29c971"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "6105",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "6115",
+     "as": "layout"
+    }
+   ]
+  },
+  {
+   "key": "0x801",
+   "name": "interrupt status",
+   "aliases": [
+    "B89h"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "925-1017"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x0801"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x0801"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "B89h is the interrupt status register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "925-926",
+       "sha": "034a6195d9e972a4e94afa2558c362b7d307886a9b9962deafa3ce65a04d369f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "An interrupt service routine reads it to find which of the enabled interrupts needs servicing.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "927-931",
+       "sha": "18e0e436e39d39239c9e160d6071cd4f3f468500399e55edeb35fa5a58871efc"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D7 reports sample clipping; it is set automatically when the input is too loud and reset to 0 after each use.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "932-940",
+       "sha": "c87d5e21acfedd197a95b488c6ff0d1e95dbffef39caeeb96e4314696434f82e"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D6 reports the reset state, and is valid only on the older models, being reserved on the Plus, 16 and CDPC.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "941-945",
+       "sha": "ded6d0bbe2a00efff930ae9de0487c826bcd46246d60c1f0d4a05978e1a22ccf"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "949-952",
+       "sha": "98c30c67c1aa3eec9147696c1263b1f2769c96bda1473a9890856f2d506b6407"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "953-955",
+       "sha": "1521e7c4996de96996513915a7fdd7ab9ef2a62d7300fe41dff5d2f931d6581e"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D5 tells the left from the right PCM channel in stereo mode and stays 0 in mono mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "956-966",
+       "sha": "99b2448eb1be46ab312275813c43b4b3f83cb26be9ca1f6b85f81d99b7389548"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D4 reports an active MIDI controller interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "967-974",
+       "sha": "3784cc81a85bf58fadfaf8b42930dcb08f9abd59ba6da8e1d74cf6f1f1409f36"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D3 reports the sample buffer count interrupt, which the programmer clears by writing a 0 to the register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "976-985",
+       "sha": "99940d1319cb074ce3485e9b8d31fd1dfe38ce1b645674f15a587ad0d116192b"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D2 reports the sample rate timer interrupt, cleared by writing a 0 to the register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "986-996",
+       "sha": "b8e9eaf35025e13c7152af646e556aa5d0a8503ab0c3345d9c38ac4954e10305"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D1 reports the right FM interrupt, redefined on the Plus, 16 and CDPC.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "997-1007",
+       "sha": "ab291d5f42c6564de395ba34f90ede135a27e24b75c8071e9bfdf02abe8e67ec"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D0, which the scan prints as D1, reports the left FM interrupt, reset by acknowledging it.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1009-1017",
+       "sha": "f29ecefc1bd322a8cb476de0fc6f9d74788b705d230e5dd5bc02ab24c01daa9b"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing a 0 to the register clears the sample buffer count and sample rate timer interrupt bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "979-980",
+       "sha": "a312815029a01705374f0f15e61ff9975a382a99a69a6129f5052645ac8a4951"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "989-990",
+       "sha": "32cc440ae5f3b9ad4ce883716edc3b4d98cbf00daef548bb1f1802405d471510"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "5",
+     "text": "The read masks D5 off, so the PCM left/right flag always reads 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "734",
+       "sha": "78f9f16f53cf38d567da767187a8fab30c6b2431c55bec80a684dcfddf57b5cb"
+      }
+     ]
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "11",
+     "text": "The write clears the status bits written as 1 and drops the IRQ when none is left, always on the original; an unmute rise there clears the enables and status.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "803-810",
+       "sha": "e1ebe714ca33ba2277453774e77e38ed9b172a9868855f4d4d5c2b7c330e538b"
+      }
+     ]
+    },
+    {
+     "n": "C",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The buffer count interrupt is raised by the buffer counter, the tick sets or clears the left/right flag, and the PCM reset clears both.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "457",
+       "sha": "a56cca665881ee4b15a8f14882350b812b2d531ee595d8eabf1c1fae2f68c006"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "483",
+       "sha": "81f5e4eb979f217c2868293f472ec37ab6c42435fbb83af1e6ec45cb6c45f4b9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "526",
+       "sha": "bf519fc34c21fb70e166a0d13d86b484a578b4fd965c62817f5a50a1afc1656e"
+      }
+     ],
+     "row": "7"
+    },
+    {
+     "n": "D",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "The MIDI interrupt bit is raised when output mode meets status bits 4-3, input mode meets bit 2, or the YM3802 timer fires.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "606-610",
+       "sha": "b1f7335466b5fd52e2d6982ca04b26619fa4f03672676f568a8b4b382c2826a2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "614-621",
+       "sha": "05aad2ce77c4d069566be3aa75df91decc7eb3e849585ffd7bdc08e029c7b00f"
+      }
+     ]
+    },
+    {
+     "n": "E",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The board reset and the YM3802 reset clear the status bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "647",
+       "sha": "95402f219be62d4f8aad2c957c91efaa9f5c0577595fd331b66a18b79007da7f"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "715",
+       "sha": "33ca1a52450e2dccae7cef7888f1e6aef6d092041e30f7270750372b33abdc5e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "946",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "947-948",
+     "as": "see-also"
+    },
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "975",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "1008",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x2401",
+   "name": "board revision",
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x2401"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0x2401 is the board revision register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "741",
+       "sha": "feb9c3ebff5db269096de40280029afaab3ee38a40224122840b430174d25d78"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns 0x00 on every board type.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "741",
+       "sha": "feb9c3ebff5db269096de40280029afaab3ee38a40224122840b430174d25d78"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x802",
+   "name": "audio filter control",
+   "aliases": [
+    "B8Ah"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "1854-1899"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x0802"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x0802"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "B8Ah is the audio filter control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1854-1855",
+       "sha": "15a0d64ab260bd78facc63061603465b6b77327a5c56ea1c1d2d83e4a22bb38a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It sets bit masks that enable and disable counters, generate interrupts, mute and reset the board, and select filtering.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1856-1858",
+       "sha": "158e7618720d212f2ff41679b9c2322bd3e7e681400c698f11c035f7bc2bd944"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D7 gates the sample buffer count register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1859-1866",
+       "sha": "40bbc3da25a952874dcd1831288c19548e47068dd0ff88d81ce144db1b1103d8"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D6 gates the sample rate timer register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1867-1874",
+       "sha": "dfa69a64f2c9ece8cda7eb740edc9468058ea102c1543fc874c7232141be46af"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D5 mutes the card: at 1 every source is mixed and output, at 0 only the PC speaker sounds.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1875-1878",
+       "sha": "a177307f6b3dad203d20337ea4c9d0a17198daf10a16ff0ae043aa3efb8ec882"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1880-1885",
+       "sha": "3996b445823e705d0737e8e2e9701791df99d893b5ce38be4a591907f60cf7ad"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits D4 through D0 select one of six low-pass filter rates from 17.897 kHz to 2.982 kHz, each with a 20 Hz low end.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1886-1892",
+       "sha": "3696293fdd2001fa4811a999d0f776127d7409d575c414dba56ca116dd4d6fee"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1893-1899",
+       "sha": "a5411262d793a40db46ea6d091b285bd185d29737c0436240762f985251f98cd"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the gate, mute and filter bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1856-1858",
+       "sha": "158e7618720d212f2ff41679b9c2322bd3e7e681400c698f11c035f7bc2bd944"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "735",
+       "sha": "e87bd5a8de498dfb9ffe79219f14d6988bba55f357ed21961798cc641bb1f06f"
+      }
+     ]
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write clears the stereo and byte-order flips, resets the timer when D6 rises and the counter when D7 rises, and on the original clears interrupts when D5 rises.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "810-814",
+       "sha": "f41462b418f90326306a39d9f24c58f921f48dfb4a1644e2d88e310209607ca2"
+      }
+     ]
+    },
+    {
+     "n": "D",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write renders the audio first, then updates the filter and the PCM channel.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "809",
+       "sha": "5b908e376e7d9bac294c699f2282af14efa0b538befc1537e440f23bc4ccf947"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "816-818",
+       "sha": "1a9c8f62e8965729ab0ead532506d8d78820198a3e3e4245b08cc25979ef5613"
+      }
+     ]
+    },
+    {
+     "n": "C",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The board reset clears the filter byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "712",
+       "sha": "55fa5f01c6369d7c7a2b2347ec82a9ffc55ae197fcb6917b1ef9598703ae89ec"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "1879",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "815",
+     "as": "agrees",
+     "row": "7"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xC00",
+   "name": "PCM data",
+   "aliases": [
+    "F88h",
+    "PCM sample data (8-bit)"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "1900-1907"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x0c00"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "F88h is the PCM data register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1900-1901",
+       "sha": "2d3bdda8dd19be8595a934ffb5a5021e14e9e0865b14545878a79da659a236d0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "doc",
+     "text": "A read takes a sample from the analog-to-digital converter.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1902-1904",
+       "sha": "caf4be8b8bd57a39d32f70998f53da9c46afd6830587c1f7bac08a0900becfcd"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sends a sample to the digital-to-analog converter; all eight bits are programmed as a group.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1902-1904",
+       "sha": "caf4be8b8bd57a39d32f70998f53da9c46afd6830587c1f7bac08a0900becfcd"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The register serves direct-mode transfers only, not non-DMA PCM.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1905-1907",
+       "sha": "a90ba01b33691e0dec18c672cb9e91f49ee8e3328a30a21503f7b39143a51aab"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A read of this offset yields 0xFF on every board type.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "755",
+       "sha": "cb530d3ef5bbfe23509197a0cd59ba133cfe90ba28545136c47714d7e59efd21"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "758-769",
+       "sha": "a695f2a294dba824a11c89fb71f772646b146978782d6d13197507d303f976d4"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "770-780",
+       "sha": "d91e71b2342f8e4f95536b2c2c5c8eb5f6fd3dc748fd2d52b68c1d721582a1df"
+      }
+     ]
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "3",
+     "text": "A write stores nothing and returns.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "825-827",
+       "sha": "10cdaff0e9617c45eb8caf24617ea613dab18e55f72ef673bdb565ab8364cb57"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "825-827",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xC02",
+   "name": "cross channel control",
+   "aliases": [
+    "F8Ah"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "1909-1983"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x0c02"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x0c02"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_ResetPCM"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "F8Ah is the cross channel control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1909-1910",
+       "sha": "48b0cabf0c90ad3d5d2669e87d37af537fc7527e4ac35032af7f469454eb9b65"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It manages the PCM hardware and DMA interface and configures the connections between the mixers.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1911-1913",
+       "sha": "76780b93a223864eebfea40749b500519673515051e648e24c7f597b7a3f79be"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D7 enables the card's DMA circuitry and must be set before the PC's DMA controller is programmed.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1914-1924",
+       "sha": "4e84e82a46dc0304996e4bd5b2bb6816b0f7a48e5ccf15403e152f915b0f151e"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D6 enables the PCM state machine, after the sample timer is initialized.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1925-1933",
+       "sha": "e3c19f25126ea319d38a7545d83fa78efd9be0da266c7c660df069268e78dcaf"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D5 selects stereo, where the first byte is the left channel and the second the right, or mono.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1935-1943",
+       "sha": "d899f36f15c59fc62b521793c4153c999fa689f151c05da7ae3364cf88d52fac"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D4 selects output (DAC) mode or input (ADC) mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1944-1950",
+       "sha": "2c5345d412f96d3a5f43a633683e501e214953f96ccdf565df51042c4ddbc268"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D3 connects the left input mixer output to the left output mixer input.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1951-1958",
+       "sha": "803d468f00703d380ef1509d378fe5ce941c162fd891800d1f6206d2525611de"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D2 connects the right input mixer output to the left output mixer input.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1959-1966",
+       "sha": "3aca902550087b121223ebaa07a7cca0b8029c0097fc80b9e0a724eb6a787b25"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D1 connects the left input mixer output to the right output mixer input.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1968-1975",
+       "sha": "a86737a0053591b6ae9b9719c065e391b278df2162be00164d7a6189dd02deff"
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D0 connects the right input mixer output to the right output mixer input.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1976-1983",
+       "sha": "95ed5f535dd36a928d89dc5c0de6e843f5fa1e9707ccc24169e5a2a1a7ed6ecf"
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the DMA enable, the PCM enable, the stereo select and the DAC or ADC select, and configures the mixer connections.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1911-1913",
+       "sha": "76780b93a223864eebfea40749b500519673515051e648e24c7f597b7a3f79be"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1914-1924",
+       "sha": "4e84e82a46dc0304996e4bd5b2bb6816b0f7a48e5ccf15403e152f915b0f151e"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1925-1933",
+       "sha": "e3c19f25126ea319d38a7545d83fa78efd9be0da266c7c660df069268e78dcaf"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1935-1943",
+       "sha": "d899f36f15c59fc62b521793c4153c999fa689f151c05da7ae3364cf88d52fac"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1944-1950",
+       "sha": "2c5345d412f96d3a5f43a633683e501e214953f96ccdf565df51042c4ddbc268"
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "on": "reset",
+     "of": "doc",
+     "text": "A reset clears every bit of the register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1911-1913",
+       "sha": "76780b93a223864eebfea40749b500519673515051e648e24c7f597b7a3f79be"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "737",
+       "sha": "1d20593b364b9746d7d85967703d89f3f46a3fb0289c073ed999e1d092e00b3d"
+      }
+     ]
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "11",
+     "text": "The write stores the byte and updates the channel; D6 with the gate and timer starts the PCM machine, D5 makes it mono, and D7 gates a DMA read.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "828-837",
+       "sha": "15a11cf8067e208b0fd831d19e878e53008f3ff2ca98fa857117011809b02138"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "368-370",
+       "sha": "24c75ad760f36fcfef98ce2fa5563f3c47b321be9736bf844739e0462f1d4110"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "471-473",
+       "sha": "7454fb55d93960f8b8e2f3f7bc2aa523f4366273b09a127c8822cd8d49a63586"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "409-414",
+       "sha": "793725321e159154457ae12fa92b565d0dc3d766171632dae80b9645f8817d2a"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "1934",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "1967",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "523-528",
+     "as": "agrees",
+     "row": "12"
+    }
+   ]
+  },
+  {
+   "key": "0x803",
+   "name": "interrupt control",
+   "aliases": [
+    "B8Bh"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "877-923"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x0803"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x0803"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "B8Bh is the interrupt control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "877-878",
+       "sha": "83f516b8aef1edc06379f7727167fd074720467c5c894e167665c66e92372fa6"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It enables feature interrupts and reports the hardware revision.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "879-880",
+       "sha": "6c12931e5713c42979255d81e15dac13bc8bcb2ea25fb9b1a6732b253449ef14"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits D7 through D5 are a read-only field holding the hardware revision level.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "881-886",
+       "sha": "13fd640281d4685788406a207dfa5e25d611fd46d5592d1dfd996972e018bf0a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D4 enables the MIDI controller interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "887-892",
+       "sha": "dadb7fd0de21ecf9171a3a45998147deb8b04c09a4e62b876ba910c97409e1fa"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D3 enables the sample buffer count interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "893-900",
+       "sha": "a26328aa77f0378a6c4ee8950288fca36b7a94c1b4400a81c37c9fbece062f39"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D2 enables the sample rate timer interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "902-909",
+       "sha": "4d3e9e55fd2763471d69fdde31896b79dfa4c624eb316da62f15e95280eb1231"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D1 enables the right FM interrupt on the older models and is redefined on the Plus, 16 and CDPC.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "910-917",
+       "sha": "108ce72076ed7dc17f08cbf8edf558f497c5b7a86e3ca3b3ef754319a3770d81"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D0, printed as D O, enables the left FM interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "918-923",
+       "sha": "ad434f1526d6104a6d197595c2e7ce8edccc63394df296e93806fa79e5a2cdc4"
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the five interrupt enable bits D4 through D0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "887-888",
+       "sha": "951a7b68b05fe2e5da19e714c9acea220a910840f3719766d5184020e4dce101"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "893-894",
+       "sha": "aaeb98d4364ab44859ce6c9d6003aec356dc5d6b8e04d19e77cd88d404c6da00"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "902-903",
+       "sha": "7a5e6916a69572e2b85011b3d1ed4afad4f605d19f0be118046b6dfe9c0ecc53"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "910-911",
+       "sha": "ce3686e6866691abbcb3d6ef99ee8398f0d76c6e1b1b07defffb73031cb68a77"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "918-919",
+       "sha": "42c6154da41f9f5884460c7ef46342d35aef23729bac2bf070a1b09f2e16b879"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "A read returns the enable byte on the original, and that byte with bit 5 set on the Plus and 16.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "736",
+       "sha": "2f32bcb46b2f87d521197cca78f57d731c3789aa949911d8328df6fdf3a04641"
+      }
+     ]
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The board reset clears the interrupt enables and the status bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "715",
+       "sha": "33ca1a52450e2dccae7cef7888f1e6aef6d092041e30f7270750372b33abdc5e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "901",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "819-824",
+     "as": "agrees",
+     "row": "9"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "810",
+     "as": "parent",
+     "owner": "pas:register:0x802"
+    }
+   ]
+  },
+  {
+   "key": "0x1000",
+   "name": "sample rate timer",
+   "aliases": [
+    "1388h"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "1984-2004"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x1000"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x1000"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_PITRead"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_PITWrite"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "1388h is the sample rate timer.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1984-1985",
+       "sha": "cf1d76a97eb9cb8dcde168b1afccd0a15c0ab57c0763f00ff98bb4445b4796bc"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It sets the interval between PCM samples, so the card processes a sample and then waits that period.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1986-1989",
+       "sha": "af7f9595c29e0aeb4b9fad0dac66e31f5918356210af9b47453deee2102dc17e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write programs all 16 bits of the interval.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1990-1992",
+       "sha": "09eac64f462d0995f027e114e950c278f958cea789a3f815951027125ed6e343"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "For stereo sampling the timer is loaded with half the mono interval, since twice as many samples are needed.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1993-1994",
+       "sha": "c051f05fe9214d339eba103d20fe859519443b021fe4e850bfdbfa7ed44903ec"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "The interval is 1,193,180 divided by the sample rate, so 22,050 Hz gives 54.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "1996-2000",
+       "sha": "76a18f5d614875f26d65280ad30e532dccdbae1cc490ad0385de232266681dbf"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Before programming, the timer is selected at 138Bh and the B8Ah sample rate timer gate is cleared to 0.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2001-2004",
+       "sha": "93ddc38687d2f9bbd357b9d622a4b5b6797413b7c4bc9b70df687fd00a1ce7cc"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the counter's value or the byte the control word's read mode selects.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "551-561",
+       "sha": "714de532d9cf273a811f5a707387efd8a28db24e6d5ead2f7dd888b849f6c6be"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "562-567",
+       "sha": "758a4d5b9fc21f97f1462e1dfc3e6155125044123ed0b26cc6fdbe1c2b0ab593"
+      }
+     ]
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The emulator renders the audio first, so a change lands at the right sample.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "569-571",
+       "sha": "ec38d4f4af009337d6b7d37d5011ed2be08ef2cffd845179396f4bcb1c807a56"
+      }
+     ]
+    },
+    {
+     "n": "C",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read and write cases for the three timer offsets share one arm that passes the offset's low bits to the timer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "739",
+       "sha": "2934fe9c9fc8ab1fc045114783cf455675c43ae6aee461008236a6b2c86d74b8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "839",
+       "sha": "fb83f0523581e16ef6fdcfe90b43a82bf279917744944f8361f1b5e2f27e3e89"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "1995",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "569-577",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "578-583",
+     "as": "agrees",
+     "row": "3"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "591-596",
+     "as": "parent",
+     "owner": "pas:register:0x1003"
+    }
+   ]
+  },
+  {
+   "key": "0x1001",
+   "name": "sample buffer count",
+   "aliases": [
+    "1389h"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "2005-2016"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x1001"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x1001"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "1389h is the sample buffer count.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2005-2006",
+       "sha": "95d61c1a3d0693e1755b16138b6a6b0e702a937289cb7788d8e70c349a19287c"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It holds the 16-bit number of bytes in a DMA buffer division, halved on a 16-bit DMA channel.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2007-2010",
+       "sha": "6f8d2f99a4e212551d21de00bc0c9917afe2bf9c463a401157dad5e35ff6428e"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write programs the count; when it reaches zero a sample buffer count interrupt fires.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2007-2012",
+       "sha": "ae89d7b56cba881830c461d131e6fff2bdb7bfb8272f70b613e26731894ae7ff"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The count is selected at 138Bh and the B8Ah sample buffer counter gate is cleared before it is programmed.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2013-2016",
+       "sha": "5f926b81655c381644e9e95baa0b58c2d24a9393be63c6756fc6b17309c3cd73"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "The counter counts DMA transfers, not bytes, and fires only while PCM is enabled and the D3 interrupt is enabled.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "450-460",
+       "sha": "d36d8cde400bc6392c58b38314f13724eab6b5316a5147bd2f66a831ab3fde3a"
+      }
+     ]
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read and write cases for the three timer offsets share one arm that passes the offset's low bits to the timer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "739",
+       "sha": "2934fe9c9fc8ab1fc045114783cf455675c43ae6aee461008236a6b2c86d74b8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "839",
+       "sha": "fb83f0523581e16ef6fdcfe90b43a82bf279917744944f8361f1b5e2f27e3e89"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1002",
+   "name": "speaker timer count",
+   "aliases": [
+    "138Ah"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "2045-2054"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x1002"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x1002"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "138Ah is the local speaker timer count.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2045-2046",
+       "sha": "46eaf383dbd59ea003f9747340923cddaf01f547c7563a15851e1bb1f7207fd0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It shadows the PC speaker timer, and with the card installed PC speaker sounds are generated from it instead of from the PC.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2047-2050",
+       "sha": "576fb080c6b6a1e956dea027c04f10b2566c820297c81e7470743ad9afdbfef2"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "doc",
+     "text": "A write programs the eight-bit speaker count of a PC-compatible 8253 timer, in any of its six modes.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2051-2054",
+       "sha": "c753d30ca4e72f34fb9435f9d2d8d9466941b365e924521082a28934df739185"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "A write stores the reload, and a read returns that reload rather than a running count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "839",
+       "sha": "fb83f0523581e16ef6fdcfe90b43a82bf279917744944f8361f1b5e2f27e3e89"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "532-540",
+       "sha": "7293270570966f90d73650f680d59d73221ccb8a68f690b8708e5dd482c16c73"
+      }
+     ]
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The read and write cases for the three timer offsets share one arm that passes the offset's low bits to the timer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "739",
+       "sha": "2934fe9c9fc8ab1fc045114783cf455675c43ae6aee461008236a6b2c86d74b8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "839",
+       "sha": "fb83f0523581e16ef6fdcfe90b43a82bf279917744944f8361f1b5e2f27e3e89"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1003",
+   "name": "local timer control",
+   "aliases": [
+    "138Bh"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "2055-2094"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x1003"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_PITControl"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "138Bh is the local timer control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2055-2056",
+       "sha": "e64998bca5267d09ef6dcbbf350ee3630ba5235b52e1e319325741c5d12efd2e"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It enables and disables the timers, sets their read and write modes, their generator modes and binary or BCD counting.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2057-2059",
+       "sha": "466db0cb4d57b9cf5866663ca975dff94f21ff5628fe622dfc4e244ea02f1390"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits D7 and D6 select the sample rate timer, the sample buffer counter or the local speaker timer.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2060-2068",
+       "sha": "d92c0211b2059776cd6c7e491094b45e9f1f0b7e0e4f329a8201f308ccf1571a"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits D5 and D4 enable the 16-bit timer, the least significant byte first; the scan's lines are scrambled.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2070-2078",
+       "sha": "60e1c30d3ad2c0eb48eb42d5b63b25374eeb8a80b099ddbf8d50f55a9832342b"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits D3-D1 select the timer mode; the prose gives the sample timer square wave and the buffer counter rate generator, the table the reverse.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2079-2087",
+       "sha": "1e25129b60647402a19ca2e50230dc64c13e9a91bd1ca1a1022abacf08c4145b"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D0 selects BCD counting, though binary is the normal setting.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2088-2094",
+       "sha": "091b2a1bba7a59b01fd70f775f682d8a86181e3bed6bf0fbb061948a1644fe7c"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "doc",
+     "text": "A write selects a timer and sets its read and write mode, generator mode and counting mode.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2057-2059",
+       "sha": "466db0cb4d57b9cf5866663ca975dff94f21ff5628fe622dfc4e244ea02f1390"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2060-2068",
+       "sha": "d92c0211b2059776cd6c7e491094b45e9f1f0b7e0e4f329a8201f308ccf1571a"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "7",
+     "text": "The byte is an 8253 control word: D0 is accepted but counting stays binary, and selecting counter 3 for a read-back is ignored.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "585-596",
+       "sha": "af8b86b4a49faf2993559880b14f10fdda1d43f30ea59217f56fb586384c1bbd"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "597-602",
+       "sha": "64cb1af3d1012610304815b91ff477610caf6b17bad9254cc82c639b30209e07"
+      }
+     ]
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The write case passes the control byte to the 8253 control word.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "840",
+       "sha": "73497131bac359067abce5c7738d2fd69b6ff6fe7988a2662887cb3b7a1f07ef"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "2069",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1400",
+   "name": "MIDI prescale",
+   "aliases": [
+    "1788h",
+    "YM3802 IVR"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3478-3495"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Read",
+     "case": [
+      "0x1400"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x1401"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858-927"
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "1788h is the MIDI prescale register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3478-3479",
+       "sha": "14cd8a73b4e987641f36402be8f41fca9ed1ff9c627124eafd534ff72d468ab6"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It sets the interval for MIDI timer interrupts: (N+1)/2 milliseconds for a programmed value N.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3480-3482",
+       "sha": "f17591f4ae384871c32455d43205ca8a857bd65f3d87f01585504d8db8d0ae4d"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "A MIDI timer interrupt is generated when the decreasing value wraps from zero to 255, enabled by bit D0 of the MIDI control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3483-3486",
+       "sha": "70e19cfb294093d9d52f36484ee2f64b222d49b504c75b7921a6410132b6e32e"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The register is optional and intended for special interrupts.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3494-3495",
+       "sha": "68ad1414eca9bef3d52eafdf32466d506c24f1ae276b01c0c95acac3b15f771b"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "doc",
+     "text": "A write programs bits D7 through D0 as a group; FFh sets 128 ms and 01h sets 1 ms.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3488-3493",
+       "sha": "7f58935b79ec6036ba1dec9d6a05e863dd3bcb69edd27529a668fb3dc7349877"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "A",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "text": "The second write switch's arms take 0x1401, 0x1403, 0x1402, 0x1802, 0x1800, 0x1801 and the configuration ports; 0x1400 has no arm, so a write stores nothing on the Plus and 16.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "858-890",
+       "sha": "047389ffc227edfa8b58c926c4ac8c6b4f229771aeaf6008109048fbacaa50f7"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "891-927",
+       "sha": "a9a05421c44847d960204a302453f4b26cbc3c97f4a1e94e4184b795447e34b2"
+      }
+     ],
+     "row": "5"
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "That arm stores the control byte and picks the UART direction from bits 4 through 2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "859-865",
+       "sha": "121dcbe40935f0ee5b4292ddb41317bc3b2d3a9fc722823822c2ccf2b63527a1"
+      }
+     ]
+    },
+    {
+     "n": "C",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, a read of 0x1400 returns the YM3802 vector, bits 7-5 from register 0, bits 3-1 from the timer, bit 4 set when none is pending.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "627",
+       "sha": "9a100b7e68c955e440e8729006e1e60b76f5246926837719b0148c5ccb56e3aa"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "616-621",
+       "sha": "8bbd97449fb2afefc9836073c3d9813ab7c201a1a6a30eb2d20e87addf2e6781"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "655-662",
+       "sha": "fd17d90191cfc869dc65c20be6c05b3643fd21e6f524e1d3b18bcc1abd295e89"
+      }
+     ]
+    },
+    {
+     "n": "D",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The MIDI timer event sets the interrupt vector to 0x0E and the status bit to 0x80.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "616-621",
+       "sha": "8bbd97449fb2afefc9836073c3d9813ab7c201a1a6a30eb2d20e87addf2e6781"
+      }
+     ]
+    },
+    {
+     "n": "E",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The YM3802 reset clears the interrupt vector and the status byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "645-651",
+       "sha": "f0b4f97c829ff3054093c2872b68b489b0e7118dd5170dddd3e73f6273237dc6"
+      }
+     ]
+    },
+    {
+     "n": "F",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The other write arms handle 0x1402 with 0x1802, 0x1800 and 0x1801.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "866-869",
+       "sha": "06312299b2736f3eb7245a59bda14943498baa2f59f6b840939e45144a6c5a05"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "870-873",
+       "sha": "17ece6d15b1b549962c496d0250a1a390e61cee274df9b4e095744021eb020a0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "874-876",
+       "sha": "3a4ac2f0f293d003c5d2730b77e1d5d16eae7f9bd35eacaa2f161f129f966a7e"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3487",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "626",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "853-856",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858-927",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1401",
+   "name": "MIDI timer",
+   "aliases": [
+    "1789h",
+    "YM3802 RGR"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3496-3512"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Read",
+     "case": [
+      "0x1401"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Write",
+     "case": [
+      "0x1401"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x1401"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x1401"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "1789h is the MIDI timer register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3496-3497",
+       "sha": "fcd83883f7c3ea283c0e3b710c362da22eef60b2514ee076c4940f44f1f3def4"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It is read-only: its value decreases in two-millisecond steps and resets to zero when the MIDI prescale register is programmed.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3498-3500",
+       "sha": "527975cf7edf263cb9bde327285b30c6880b7f0e0a7e87c4c106745f879dfe7f"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "The MIDI system interrupts when the timer wraps to zero or equals the MIDI compare time.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3501-3506",
+       "sha": "569ee3af6389b97bf388ec57596194cc2b25019b179fb653a614b2fcf2a99350"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "The document says to set bits D7 through D0 as a group, FFh for a current MIDI time of 128 ms and 01h for 1 ms.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3507-3512",
+       "sha": "b562d6ee824b81f837b5da6783592e4af14b4cf40dc584a43971fcab858ecef7"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the current MIDI time.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3498-3499",
+       "sha": "a8342ea39f5290e8aa63a20125404f2c6082c14f2350c8bf986102824aaca5e1"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "A",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The Plus returns its MIDI control byte and the original its register-group byte; neither counts a MIDI time.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "759",
+       "sha": "b1b9391fdf1a1c4fe0929fb02f9e9fa722a9a09098de0a95bc139b308dde4871"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "628",
+       "sha": "cf2ff2857ecb7937883f4370fed497e938b39a1c1519ce8910cac36c5e3bc4db"
+      }
+     ],
+     "row": "5"
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original a write stores the register-group byte, selects a bank from bits 0-3, and resets the YM3802 when 0x80 falls to 0x00.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "641-649",
+       "sha": "82179bb66a2651da0c7b6600c3e67e3d02004db95fad85be95511f7e3e4c2f6d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "650-653",
+       "sha": "8d1bd865c5923ec3bf942f8d31124cbc02e23cf37dde531acf0943bfa5c7cd4a"
+      }
+     ]
+    },
+    {
+     "n": "C",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the Plus a write stores the control byte and picks the UART direction from bits 4 through 2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "859-865",
+       "sha": "121dcbe40935f0ee5b4292ddb41317bc3b2d3a9fc722823822c2ccf2b63527a1"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "626",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "640",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "753-756",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "853-856",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1402",
+   "name": "MIDI data",
+   "aliases": [
+    "178Ah",
+    "YM3802 ISR"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3514-3526"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Read",
+     "case": [
+      "0x1402"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x1402"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x1402"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "178Ah is the MIDI data register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3514-3515",
+       "sha": "1dae7c14e1ef27aa524b79639d8ab6cf2de6f4f27f4520a1e5eae9d553dee828"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It sends data to the transmitter FIFO and receives from the receiver FIFO, so bytes move in bursts.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3516-3518",
+       "sha": "123435fd900d47b861a671671b67d19303d108f8ab2331b8849e5e2962b5bfcf"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "doc",
+     "text": "A read retrieves a byte from the MIDI receiver FIFO.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3519-3520",
+       "sha": "868132afad36f9f53c069423b11de2e0245d021690092ee78d7c7ca5e50c7279"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sends a byte to the MIDI transmitter FIFO.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3519-3526",
+       "sha": "fc4b1f08ff703a153c0c9afd61f42ae0a08bcf27434d6b53e2762cf90c813cf8"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "A",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The Plus returns 0 unless the UART echoes the 0xAA loopback byte; the original returns its interrupt status byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "626-635",
+       "sha": "a5ebe498d22108907120d2526b0754d5a1fe5f7f89eb0db0dafa072b4d9e2578"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "760-769",
+       "sha": "5a11eebb931d886b99239fedce02ded252d77c6889832ebb8b90508cc1cc6389"
+      }
+     ],
+     "row": "3"
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The Plus stores the byte and sends it when the UART is in output mode, without a FIFO; the original keeps its UART data at 0x1802.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "866-869",
+       "sha": "06312299b2736f3eb7245a59bda14943498baa2f59f6b840939e45144a6c5a05"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "673-676",
+       "sha": "fb475dd991d2c69158c02d0caad5a2c24ecd7783489cf59dd53fcfde9eb4f07f"
+      }
+     ],
+     "row": "4"
+    },
+    {
+     "n": "C",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The MIDI timer event sets the status bit to 0x80 and the YM3802 reset clears the status and vector bytes.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "616-621",
+       "sha": "8bbd97449fb2afefc9836073c3d9813ab7c201a1a6a30eb2d20e87addf2e6781"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "645-651",
+       "sha": "f0b4f97c829ff3054093c2872b68b489b0e7118dd5170dddd3e73f6273237dc6"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "753-756",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "853-856",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1403",
+   "name": "MIDI control",
+   "aliases": [
+    "178Bh",
+    "YM3802 ICR"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3527-3594"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Write",
+     "case": [
+      "0x1403"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x1403"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x1403"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "178Bh is the MIDI control register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3527-3528",
+       "sha": "7c9dedc62e796a633df249e8165fd91d68e98938426d56580c160f0258d62196"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It echoes input to output, resets the FIFO pointers and enables the half-empty, empty, input, compare and timestamp interrupts.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3529-3532",
+       "sha": "4697084db53095df2328b8ddc42d1d0ff1dec1032cd09b707e86c7f84216ed35"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D7 enables echoing of input to output; it defaults to 1.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3534-3541",
+       "sha": "bbd0195fb0ad50a316f396304d20dc57153f2f72a31656d054e7dd627bc8f5a1"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D6 resets the output FIFO pointer and must be cleared again at once.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3542-3549",
+       "sha": "5401e01ba857c11f288d619b35796808c647bf17328e7c06b6316b59cb196f3f"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D5 resets the input FIFO pointer and must be cleared again at once; the scan prints it as D6.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3550-3557",
+       "sha": "5187c6ef07a2ba1ac1d8c1fbaf1bcc81dd398480da646921f6c5226c67cb6c38"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D4 enables the output FIFO half-empty interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3558-3564",
+       "sha": "e9676281216ced645267e300e3040fd5d96a3efaf1722102f1697ddec8c77caa"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D3 enables the output FIFO empty interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3566-3572",
+       "sha": "2a7cf3ec9530aa633318bc39e176ad5ec538410c2fee12a9b6444b1378894589"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D2 enables the input data available interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3573-3579",
+       "sha": "0298dde9c6eca4d6d61e3087802649e981d01ec3bb0ac4ba47128ef48ebd2538"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D1 enables the compare time interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3580-3587",
+       "sha": "005531c23dc049f7a62fd161c91da1bb6b291f9aa139086b9d148342ec8d5fc4"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D0 enables the timestamp interrupt, generated when the MIDI timer wraps from FFh to 00h.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3588-3594",
+       "sha": "62bebdde524cf18a0eecbb7177860d0e5dafcae9ce3e6d1fd786efc6862be690"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "11",
+     "on": "write",
+     "of": "doc",
+     "text": "A write sets the echo, FIFO reset and interrupt enable bits.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3529-3532",
+       "sha": "4697084db53095df2328b8ddc42d1d0ff1dec1032cd09b707e86c7f84216ed35"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "A",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The Plus stores the byte, resets both UART directions when bits 6 and 5 are set and picks the direction from bits 4-2; the original clears interrupts with it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "859-865",
+       "sha": "121dcbe40935f0ee5b4292ddb41317bc3b2d3a9fc722823822c2ccf2b63527a1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "654-659",
+       "sha": "d59fba07f267c03346487da53a78cd456a6b152d15770982cadf8b98d27a63cf"
+      }
+     ],
+     "row": "11"
+    },
+    {
+     "n": "B",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The Plus returns the control byte; the original returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "759",
+       "sha": "b1b9391fdf1a1c4fe0929fb02f9e9fa722a9a09098de0a95bc139b308dde4871"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "625-636",
+       "sha": "8448bb311a652caaab84593303423e236597114921673ff58a0d2275b6c30e66"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3533",
+     "as": "layout"
+    },
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3565",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "640",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "753-756",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "853-856",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1800",
+   "name": "MIDI status",
+   "aliases": [
+    "1B88h",
+    "YM3802 register 4"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3596-3653"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Read",
+     "case": [
+      "0x1800"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Write",
+     "case": [
+      "0x1800"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x1800"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x1800"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "1B88h is the MIDI status register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3596-3597",
+       "sha": "4e0406ebce6de332a4d896f1278246ebbc2b673cbc42c5e5a49e8482a847347e"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It reports frame errors, the two FIFO overruns and the five interrupt conditions; writing a bit to 0 clears it, and the overrun and frame error interrupts are always on.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3598-3603",
+       "sha": "c147392506f3a29942ab0db502cb2a5357c5042487cf962f37c48dbae6283f5e"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D7 reports a frame error.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3604-3609",
+       "sha": "9ed7a86c03416d2d625171bef28c0ebb4bb7c519db5e76f5669c6ec5760b53f1"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D6 reports an output FIFO overrun.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3610-3615",
+       "sha": "331e99646c1d5730b6f042651d82042715657fbb1afab0e48db42668da13ec67"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D5 reports an input FIFO overrun.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3616-3621",
+       "sha": "a304df29ff4489ca76fb7b50adddf86158610887f2d25c4748ac9b71393bd93c"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D4 reports an output FIFO half-empty interrupt.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3623-3628",
+       "sha": "e3e297d4fd6f383adea02374b3a3adb98330173db9a3adbda050ba899a632b0b"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D3 reports an output FIFO empty interrupt; the scan labels its table D4.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3629-3634",
+       "sha": "c73670b42d70b80040d23ae1830f468534b099c6fa3dfce3dd952514e1f20d21"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "8",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D2 reports an input data available interrupt; the scan labels its table D4.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3635-3640",
+       "sha": "e619b73dafea63dc724fc825d0ace411c857ba33b8f6ba39356c9035ab1c70d2"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "9",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D1 reports a compare time interrupt; the scan labels its table D4.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3641-3647",
+       "sha": "9ca313f55838242192eb1c3d6a34a3e49159eeca64b31138e5a3d5d002891ab1"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "10",
+     "on": "is",
+     "of": "doc",
+     "text": "Bit D0 reports a timestamp interrupt; the scan labels its table D4.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3648-3653",
+       "sha": "676969941ae0446104a46318a97e69900ba8c1bc12ab6f902dd0b8baecdb13d5"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "11",
+     "on": "write",
+     "of": "doc",
+     "text": "Writing a status bit to 0 clears it.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3600-3601",
+       "sha": "ef44a562d12b524c1405f2d57b05da14a43a083f7a7c9d2bb66d996ffef98eed"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "A",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The Plus stores the byte and raises the MIDI interrupt from bits 4-2; the original keeps it as register data and raises it from its timer.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "870-873",
+       "sha": "17ece6d15b1b549962c496d0250a1a390e61cee274df9b4e095744021eb020a0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "606-610",
+       "sha": "b1f7335466b5fd52e2d6982ca04b26619fa4f03672676f568a8b4b382c2826a2"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "660-664",
+       "sha": "fed1641ef0d7cc832e0dd8bd1cb79e1bff696f70f3fa9e802d6a5f6bf266eb8b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "616-621",
+       "sha": "8bbd97449fb2afefc9836073c3d9813ab7c201a1a6a30eb2d20e87addf2e6781"
+      }
+     ],
+     "row": "11"
+    },
+    {
+     "n": "B",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "A read returns the stored status byte; the original returns 0xC0 when the bank is 5.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "770",
+       "sha": "998b0cbf30f9cae337b731c610eaacf4ddcc4ef0e55efb254f5960c2229dd8a1"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "630",
+       "sha": "c871d1e205dc4f7ea54f8cbb058fc891864506d5c3cbf31019aa62f0d3505362"
+      }
+     ],
+     "row": "2"
+    },
+    {
+     "n": "C",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read of 0x1402 in UART input mode clears bit 2 of the status byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "760-768",
+       "sha": "89b3b2abe32ce2d5ec119d7a361f4ebf01267f75f76af19d991aff16452915fe"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3622",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "626",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "640",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "753-756",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "853-856",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "644",
+     "as": "parent",
+     "owner": "pas:register:0x1401"
+    }
+   ]
+  },
+  {
+   "key": "0x1801",
+   "name": "MIDI FIFO count",
+   "aliases": [
+    "1B89h",
+    "YM3802 register 5"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3655-3674"
+    },
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3714-3721"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Read",
+     "case": [
+      "0x1801"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Write",
+     "case": [
+      "0x1801"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x1801"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x1801"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "1B89h is the MIDI FIFO count register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3655-3656",
+       "sha": "aa1e3d898d0adc1fe86cd0cc6a16554a4cd374b6638ec1bcb76f677c10a4d1e0"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "2",
+     "on": "is",
+     "of": "doc",
+     "text": "It tells how many bytes fit in the output FIFO and how many have arrived in the input FIFO.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3657-3663",
+       "sha": "9471a5e750ad74f8c833e74d96cdaa0df63367dd9f8998a7cb47e678f7caa1d1"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits D7 through D4 give the output FIFO space, where 0 means either 0 or 16 bytes; the toolkit advises writing only 15 bytes at a time.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3664-3674",
+       "sha": "9c2bad82760744e6a1a415c1618c9e4ed077aef0a6af56aaf1ba487e31997e5f"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "text": "Bits D3 through D0 give the received byte count, where 0 means either 0 or 16 bytes.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3714-3721",
+       "sha": "56c19839cb6a3c24cd1e8765c1e0bc802af606b2b7aaa09c09709b0e3b56586a"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "doc",
+     "text": "A read returns the two four-bit FIFO counts.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3657-3663",
+       "sha": "9471a5e750ad74f8c833e74d96cdaa0df63367dd9f8998a7cb47e678f7caa1d1"
+      }
+     ],
+     "variant": "mv101"
+    },
+    {
+     "n": "A",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "text": "The Plus returns the byte last written at 0x1801, not two FIFO counts; the original returns its register's stored value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "771",
+       "sha": "171f2f5db9424ff5091e4d0777a6dc54cd0c00659eaf1fffb585e77ea7b0e127"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "874-876",
+       "sha": "3a4ac2f0f293d003c5d2730b77e1d5d16eae7f9bd35eacaa2f161f129f966a7e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "629-633",
+       "sha": "895e4dc1d7af4df0b92a8d98d8f640b37f0dbbdc6a0be609fff0a4530c282182"
+      }
+     ],
+     "row": "5"
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original a write stores the byte as bank 8's register, where the high half of the timer sits and bit 7 starts it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "665-672",
+       "sha": "6df4e4da69012362cc0d8277d29a856e17b9595f88a6a2f72faa394bcbbb92f5"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "626",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "640",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "753-756",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "853-856",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "644",
+     "as": "parent",
+     "owner": "pas:register:0x1401"
+    }
+   ]
+  },
+  {
+   "key": "0x403",
+   "name": "MV508 mixer (PAS 16)",
+   "aliases": [
+    "MV508"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x0403"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0x0403 is the MV508 mixer port of the PAS 16.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "789-791",
+       "sha": "aa02afe6d06ee7a5bd26f524ebc9093cd7684e0d6950f311af3ec57521c5c05b"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write on a PAS 16 hands the byte to the mixer routine; on the other boards nothing happens.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "789-791",
+       "sha": "aa02afe6d06ee7a5bd26f524ebc9093cd7684e0d6950f311af3ec57521c5c05b"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "In the mixer routine bit 7 selects a register index, and otherwise the value is masked and stored in bank 0, 1 or 2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "343-354",
+       "sha": "1e832de05285a99a48bb9c301ec1aa43400e26206135360caa8ddf794b22543b"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "355-359",
+       "sha": "bf767171f67ef883d74395559e506542409f3fc676d3fef2cfc454df042f2ef1"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x800",
+   "name": "audio mixer select",
+   "aliases": [
+    "B88h",
+    "audio mixer control"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x0800"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x0800"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0x0800 is the audio mixer port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "733",
+       "sha": "5de529759b2d239326c5081477a2b9195aa36a526732f0906d089f12122dfa24"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "792",
+       "sha": "14d23bd33b25fdf05a4a06134ab19b293768a4f686a3fb8b0d9ac45a6b349322"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns 0xFF on the original and the Plus, and the stored mixer byte on the PAS 16.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "733",
+       "sha": "5de529759b2d239326c5081477a2b9195aa36a526732f0906d089f12122dfa24"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the PAS 16 a write stores the byte unless bit 0 is set; on the other boards the byte drives the serial mixer state machine.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "792-802",
+       "sha": "da881e05059a8a093e8477c27e946e733c4e28262e3eada0c7f13c7e5256c192"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The serial stream shifts IDENT, CLOCK and DATA through STROBE into the LMC1982 or LMC835, and bit 7 of the shifted word marks an address.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "283-293",
+       "sha": "50e00b93b139e718b999243fed084e522fba65e6aa78848376b41a472650d163"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "330-339",
+       "sha": "b788ac6b692cab27cd50ff1b070c190781844c1b6c48738fc5a906e3674a19e0"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "place",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The port is installed for every board type in the 4-port block at base plus 0x800.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "694-698",
+       "sha": "64d91d20c782f87e7107d534a6a9c2d7e1e6f52799c4de3dfdd6cb065c636029"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The board type is fixed at init, and the original's power-up mixer byte is the FM-split-off value.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "946-953",
+       "sha": "f554cc12a1110946f7b249f7fa7b7753554d2fbfe16865537a03ff11aa30e663"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "954-959",
+       "sha": "bbeecec317cf0bc5efc6ab63478f7db637fe0d85c6706bb74239d7e6ae83b3a8"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ],
+   "searched": [
+    {
+     "where": "mame-header",
+     "gave": "MAME has no Pro Audio Spectrum device; its tree names no datasheet for the card."
+    },
+    {
+     "where": "maker",
+     "gave": "Media Vision was bought out; the 1992 Developer's Toolkit Reference was found in PASSDK_201.zip, and its state table names B88h the audio mixer control without a bit layout."
+    },
+    {
+     "where": "bitsavers",
+     "gave": "The Media Vision directory holds the SDK archive and no MV508 or board register document."
+    },
+    {
+     "where": "archive-org",
+     "gave": "Searches for the Pro Audio Spectrum returned drivers, books and the toolkit, no register manual."
+    },
+    {
+     "where": "index",
+     "gave": "datasheetarchive-like indexes answered with sound cards and no MV508 mixer or board register document."
+    }
+   ]
+  },
+  {
+   "key": "0xC01",
+   "name": "PCM sample data (16-bit)",
+   "aliases": [
+    "F89h"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x0c01"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xC01 is the second byte of the PCM data port.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "825",
+       "sha": "6f078ffea1f56afe903f2ee51cb01bb1474023829d3ebb24a7b5e7a95300e65a"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write at 0xC01 stores nothing; its case is shared with 0xC00 and only renders the audio.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "825-827",
+       "sha": "10cdaff0e9617c45eb8caf24617ea613dab18e55f72ef673bdb565ab8364cb57"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x4000",
+   "name": "timeout count",
+   "aliases": [],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x4000"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x4000"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0x4000 holds a timeout count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "742",
+       "sha": "ad6bbf428c1bda75f4d34ee1b9682493f07daa03627d74d64e19a11ab5871092"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the stored count.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "742",
+       "sha": "ad6bbf428c1bda75f4d34ee1b9682493f07daa03627d74d64e19a11ab5871092"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "842",
+       "sha": "518aa42998b74a3616108c62d037c6e1f702173ff671ceb8f6fdf10d859ea5ac"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x4001",
+   "name": "timeout status",
+   "aliases": [],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x4001"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x4001"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0x4001 holds a timeout status byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "743",
+       "sha": "1a601ab049676c358cfe42ea0cceec83d656f934de9ee920c14a0c01015f6f7d"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the stored status.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "743",
+       "sha": "1a601ab049676c358cfe42ea0cceec83d656f934de9ee920c14a0c01015f6f7d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte with bit 7 cleared.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "843",
+       "sha": "588ba1d4e34c1e4867838a990834e3a97c9f585bec1e3cc3375da5035f40b540"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x7C01",
+   "name": "enhanced SCSI",
+   "aliases": [],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x7c01"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x7c01"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0x7C01 holds the enhanced SCSI register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "744",
+       "sha": "a5bdcd11398983a731947599ada82799d20c34ffd6147c70a2314350245e8cae"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the stored byte with bit 0 forced to 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "744",
+       "sha": "a5bdcd11398983a731947599ada82799d20c34ffd6147c70a2314350245e8cae"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "844",
+       "sha": "f34c8c373f0a3307767299fe5e6260eeaf7c6cc6c8dc9dd17972366f591db1ea"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xBC00",
+   "name": "wait states",
+   "aliases": [],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xbc00"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0xbc00"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xBC00 holds the wait states byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "745",
+       "sha": "a34fb385f6cb37f5f870799a46cbc335fe71423c49ec67f177fe3015419c19d3"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the stored byte.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "745",
+       "sha": "a34fb385f6cb37f5f870799a46cbc335fe71423c49ec67f177fe3015419c19d3"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "845",
+       "sha": "04ab6f680dd582626fcff87bc26d5a7c3ceb1dc5d2726a6e1204d2b3b2a1201d"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xBC02",
+   "name": "prescale divider",
+   "aliases": [],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xbc02"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0xbc02"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xBC02 holds the PCM clock prescale divider.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "746",
+       "sha": "28ba0d6976bc026c63eb80ac65df6937826ed25b471819bfaf11e7293d6de6da"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the stored divider.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "746",
+       "sha": "28ba0d6976bc026c63eb80ac65df6937826ed25b471819bfaf11e7293d6de6da"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the divider and updates the PCM channel at once.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "846-850",
+       "sha": "83629627b974ae57edffa69887d309b9c14d1f9e7bd806683cb82bbfafd212a2"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The clock is 1,008,000 or 441,000 Hz divided by the divider while bit 1 of the configuration bytes is set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "372-376",
+       "sha": "8acba6c41e3bc18d20c5f460caafb048af666dc13a6f982ff991cf589bdd351c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The board reset clears the prescale divider.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "706-716",
+       "sha": "121c9970ba9ff6c55850e7312dd44da09fc8104cd3783b0df8fef4673450f73c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "717-718",
+       "sha": "a94d20188df92ebe28d0dd8537828d04b0b63cfa1c14910c296dbd110f9078ed"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "788",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xEC03",
+   "name": "operation mode",
+   "aliases": [],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xec03"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xEC03 reports the operation mode: bits 1-0 the CD interface, bit 2 stereo FM and bit 3 16-bit audio.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "747-748",
+       "sha": "dbda21b7fdac5e27e47609a7e2cf236c4d44e2b59efdde239ec6239e08d9c39f"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns 0x0F on the PAS 16 and 0x07 on the original and the Plus.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "748",
+       "sha": "eb6a3b19702f60d3e4e91158268057dddbf3b261843bd364ad8e945fdcb2eddd"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The board type these values depend on is fixed when the ports are installed at init.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "694-698",
+       "sha": "64d91d20c782f87e7107d534a6a9c2d7e1e6f52799c4de3dfdd6cb065c636029"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "946-953",
+       "sha": "f554cc12a1110946f7b249f7fa7b7753554d2fbfe16865537a03ff11aa30e663"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xFC00",
+   "name": "board model",
+   "aliases": [],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xfc00"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xFC00 reports the board model.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "749",
+       "sha": "c144fbe1a71fbaad33d789d51d96a5bb980d66f4e6c4835a7a149ab7d39ee226"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns 0x0C on the PAS 16 and 0x01 on the original and the Plus.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "749",
+       "sha": "c144fbe1a71fbaad33d789d51d96a5bb980d66f4e6c4835a7a149ab7d39ee226"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The board type these values depend on is fixed when the ports are installed at init.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "694-698",
+       "sha": "64d91d20c782f87e7107d534a6a9c2d7e1e6f52799c4de3dfdd6cb065c636029"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "946-953",
+       "sha": "f554cc12a1110946f7b249f7fa7b7753554d2fbfe16865537a03ff11aa30e663"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xFC03",
+   "name": "master mode",
+   "aliases": [],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xfc03"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xFC03 reports the master mode: AT bus and XT or AT timing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "750",
+       "sha": "57dbb830d893c4428f7d0218b3a46a014d90c85e99e89a4e3b895762c726f809"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns 0x31 on the PAS 16 and 0x11 on the original and the Plus.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "750",
+       "sha": "57dbb830d893c4428f7d0218b3a46a014d90c85e99e89a4e3b895762c726f809"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The board type these values depend on is fixed when the ports are installed at init.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "694-698",
+       "sha": "64d91d20c782f87e7107d534a6a9c2d7e1e6f52799c4de3dfdd6cb065c636029"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "946-953",
+       "sha": "f554cc12a1110946f7b249f7fa7b7753554d2fbfe16865537a03ff11aa30e663"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "732",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x1802",
+   "name": "MIDI compare time",
+   "aliases": [
+    "1B8Ah",
+    "YM3802 register 6"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3759-3774"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x1802"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x1802"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Read",
+     "case": [
+      "0x1802"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Write",
+     "case": [
+      "0x1802"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "mv101",
+     "text": "1B8Ah is the MIDI Compare Time register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3759-3760",
+       "sha": "c1d76ea8ca85cab8f89787d53072f1c26e3b070f62c37ca9787635445a35a902"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "mv101",
+     "text": "A write loads a compare value; an interrupt is generated when the MIDI timer count equals it, and bits D7 through D0 are programmed as a group.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3761-3764",
+       "sha": "307c19a645dd3fbcc3c4e45daf4fe6daa22fdc8078b2581d5297d867611a7f11"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3768-3773",
+       "sha": "0e3b511b48900b128c80e8317ed0b24ac8d71934bc455affaf76d23a64687a82"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "variant": "mv101",
+     "text": "Using the register is optional; the document says it is useful for generating special interrupts.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3766-3767",
+       "sha": "b7dd573f4f0b7a79d710271097a16e664d01d25c6194b6731cf473994a37bc53"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "variant": "mv101",
+     "text": "The document gives N/A as the register's default.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "3774",
+       "sha": "8e622219b2d2d39cc50242522768c350228e330372c0cc44f77866a42fe182e1"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "On the Plus and 16 a write stores the byte as MIDI data and sends it when the UART is set to output.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "866-869",
+       "sha": "06312299b2736f3eb7245a59bda14943498baa2f59f6b840939e45144a6c5a05"
+      }
+     ]
+    },
+    {
+     "n": "B",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS the offset is YM3802 register 6, banked by the register index; a write stores the byte in that bank.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "624",
+       "sha": "f3ff1a1bb8784e84fbd4831d246566aa4a4ffd82d6fc518e75b19233e6f77869"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "673-674",
+       "sha": "f5e6986a573587d12914918bd6ce6c85c6e0b192944d91a744e69578d23fe03e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "638-639",
+       "sha": "20737d185a74a8c0078682a731112d6b26c4064f7f1ebcb1abfdffef92fe10bf"
+      }
+     ]
+    },
+    {
+     "n": "C",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Register 6 index 5 also sends the byte to MIDI when register 5's index 5 has bit 0 set.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "624",
+       "sha": "f3ff1a1bb8784e84fbd4831d246566aa4a4ffd82d6fc518e75b19233e6f77869"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "673-676",
+       "sha": "fb475dd991d2c69158c02d0caad5a2c24ecd7783489cf59dd53fcfde9eb4f07f"
+      }
+     ]
+    },
+    {
+     "n": "D",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the stored byte, except at index 3 where it returns 0; the source notes there is no MIDI input.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "632",
+       "sha": "40f46c6d5a12b9077de457d3b4e851c7ed2da96b3ab05bdf9f6b632f86211b52"
+      }
+     ]
+    },
+    {
+     "n": "E",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns 0 unless the loopback value 0xAA is latched with control bit 2 set, and then clears status bit 2.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "760-769",
+       "sha": "5a11eebb931d886b99239fedce02ded252d77c6889832ebb8b90508cc1cc6389"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "626",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "640",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "753-756",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "853-856",
+     "as": "structure"
+    },
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "3765",
+     "as": "layout"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "644",
+     "as": "parent",
+     "owner": "pas:register:0x1401"
+    }
+   ]
+  },
+  {
+   "key": "0x1803",
+   "name": "YM3802 register 7",
+   "aliases": [
+    "1B8Bh"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Read",
+     "case": [
+      "0x1803"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_YM3802Write",
+     "case": [
+      "0x1803"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0x1803 is YM3802 register 7, one of the four registers banked by the register index.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "624",
+       "sha": "f3ff1a1bb8784e84fbd4831d246566aa4a4ffd82d6fc518e75b19233e6f77869"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "677-678",
+       "sha": "d3db5903015d01a06de547f6f577f7540ae694746bc9ffa51dbb16d579e6f574"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the stored byte of register 7 in the selected bank.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "633",
+       "sha": "bad47bd15717c64dd19ec025ec73573535f93e81affe2be3b08f72cc09c46b49"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte in register 7 of the selected bank.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "677-679",
+       "sha": "8b7277f726d45cec02e8d59d5473443f8efc2e31af20dc6a850b4c2145e338ba"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the Plus and 16 no case handles 0x1803, so a read reaches the fall-through 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "730",
+       "sha": "f603cb610321119d9fdbf3b3efa489596cc5455f47083cc8e5d865082deb9a5c"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "732-741",
+       "sha": "f19608c4602dc7ad59a64e00a3894528399f2c8364c54263f84b40c276ce3860"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "742-751",
+       "sha": "a33a15021a174322f4129816e5c61843a4abf58bb70453a6d9f237c9c332bee0"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "758-768",
+       "sha": "e7f2247f6b1238a0d819bf1f7bc156bc035261b6cb4a0cc19ace613fe1430fc8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "770-780",
+       "sha": "d91e71b2342f8e4f95536b2c2c5c8eb5f6fd3dc748fd2d52b68c1d721582a1df"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "626",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "640",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "644",
+     "as": "parent",
+     "owner": "pas:register:0x1401"
+    }
+   ]
+  },
+  {
+   "key": "0x8001",
+   "name": "sample size config",
+   "aliases": [
+    "8389h",
+    "system configuration 1"
+   ],
+   "regions": [
+    {
+     "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+     "lines": "2096-2120"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x8001"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x8001"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "variant": "mv101",
+     "text": "8389h is the Sample Size Configuration register.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2096-2097",
+       "sha": "527ec1d5b45deac8b0d503ea02c91f91dfcb05096174c61526fa281b276f32b4"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "write",
+     "of": "doc",
+     "variant": "mv101",
+     "text": "A program writes the register to select the output sample compression ratio and 8- or 16-bit audio.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2098-2099",
+       "sha": "67c7abbbbe156517c8004d5064927bd95ecd4b8cdb10c6ac1ba6cea389e46738"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "is",
+     "of": "doc",
+     "variant": "mv101",
+     "text": "Bits D7 through D3 are reserved; the document says not to program them, as that gives unpredictable behaviour.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2100-2103",
+       "sha": "ef088008b3042d68ad21ce4e555fecfc01db5f78a48c987e1cfaf6e8e7ebc0a7"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "is",
+     "of": "doc",
+     "variant": "mv101",
+     "text": "Bit D2 selects 8-bit audio when clear and 16-bit when set; the heading is printed as 8116-bit by the OCR.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2104-2109",
+       "sha": "f070232f0b2c4858c85544648b844113edf31f0b1292235cfdeeeed9df9fd98e"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "is",
+     "of": "doc",
+     "variant": "mv101",
+     "text": "Not all products support 16-bit audio; the MVGetHWVersion call tells which do.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2111-2113",
+       "sha": "ff0b018943d633b0b363cb3425eb283e0a044a48375dfcd5ca04e5478ca3e6e1"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "is",
+     "of": "doc",
+     "variant": "mv101",
+     "text": "Bits D1 and D0 select over-sampling of 1, 2 or 4 times: 00 is 1X, 01 is 2X and 11 is 4X.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2114-2119",
+       "sha": "ff7b50a8e6003d8bcc36211a215c6e7a6ed86ef6652f25dfb282fe15670f269a"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "is",
+     "of": "doc",
+     "variant": "mv101",
+     "text": "The document gives 0 as the default of the D2 field and of the D1-D0 field.",
+     "quotes": [
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2110",
+       "sha": "74fcea232e7149617d392ea960f3915edc61c83eaeb184caa46bca828d86cea4"
+      },
+      {
+       "ref": "datasheet:PASTECH-DeveloperToolkitReference.raw.txt",
+       "lines": "2120",
+       "sha": "8d21c7072191ad22777e19de1c84f15a29c8f8f67c0f9ce36e207ae7ede59244"
+      }
+     ]
+    },
+    {
+     "n": "A",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "773",
+       "sha": "6f5a3ce653f3ec0b0485752b4037259068f60f12ced32c3ef277789457f6348d"
+      }
+     ]
+    },
+    {
+     "n": "C",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "2",
+     "text": "A write stores the byte; the sample fetch takes 8- or 16-bit audio from D2 when it runs.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "893",
+       "sha": "69eca8102fd804f379b843ba47ebf65339d6019675364a321a797f17c2e23a98"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "59",
+       "sha": "d33e8aa578b708caf7c3a609467998b88d84e0d95b9de22713ca9dd136747ba3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "429-438",
+       "sha": "8b51bc501b6680f53b5db1415ce0dee9b280dca1b2a5c125335358c941d7ec2e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "439-448",
+       "sha": "29bf3ce0f453d34c30fe678deab95c841a9562eb824c161dee30331752c578e2"
+      }
+     ]
+    },
+    {
+     "n": "D",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "3",
+     "text": "DOSBox-X gives D4 the sign inversion of the sample and D3 a mask of its low four bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "59",
+       "sha": "d33e8aa578b708caf7c3a609467998b88d84e0d95b9de22713ca9dd136747ba3"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "441",
+       "sha": "8b4ff1e6e0d6771186c389828d5bca02b9a35da278cfc3e8ff8e62756b087368"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "446",
+       "sha": "ffceb80919be3ec85298d20748b6fe6f02d2042adca89d4264f872c488f1ba32"
+      }
+     ]
+    },
+    {
+     "n": "E",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "differs",
+     "row": "6",
+     "text": "The two over-sampling bits are stored and read back; the sample fetch, quoted whole, never tests them.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "893",
+       "sha": "69eca8102fd804f379b843ba47ebf65339d6019675364a321a797f17c2e23a98"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "773",
+       "sha": "6f5a3ce653f3ec0b0485752b4037259068f60f12ced32c3ef277789457f6348d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "429-438",
+       "sha": "8b51bc501b6680f53b5db1415ce0dee9b280dca1b2a5c125335358c941d7ec2e"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "439-448",
+       "sha": "29bf3ce0f453d34c30fe678deab95c841a9562eb824c161dee30331752c578e2"
+      }
+     ]
+    },
+    {
+     "n": "G",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      }
+     ]
+    },
+    {
+     "n": "H",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns without storing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "853-856",
+       "sha": "5df93e2eef37d22ecf3835605649edd452d23b94186f29c0569887f7b4e2a741"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x8000",
+   "name": "system configuration 0",
+   "aliases": [
+    "8388h"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x8000"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x8000"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0x8000 reads and writes element 0 of the four-byte system configuration array.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "773",
+       "sha": "6f5a3ce653f3ec0b0485752b4037259068f60f12ced32c3ef277789457f6348d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "878",
+       "sha": "e6e14852894320de2b6fb325de6d38bfd227335537a5da8dc703c6ab30625eaf"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written to it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "773",
+       "sha": "6f5a3ce653f3ec0b0485752b4037259068f60f12ced32c3ef277789457f6348d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte, unless bits 7 and 6 rise from clear.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "878-888",
+       "sha": "4cdc369854ce0eb6284d175e6131c1b578a7bbe16ffbb91640fb07f5c98a65c8"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "889-892",
+       "sha": "5693629c29e599808a4dd5add7259fabba2f43ade625f691e20855ad49dee6e2"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Bits 7 and 6 rising from clear reset the board, move the ports to the base stored at 0x9A01 and leave this register at 0.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "880-886",
+       "sha": "878c1019896324e44705a7e1e39a1d2560a09eba193954751e7e267c6332fb4f"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "With mono mode off, bit 1 set makes each timer tick fetch a left and then a right sample; clear, successive ticks alternate.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "365",
+       "sha": "35fb76143a2d196fc1d849589a027c7d95efc53fb7b290693562b127b518c7d6"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "471-477",
+       "sha": "b891ca632def581247eda88ff3f8d21115af1a3389d0a9790f5e354961c315d9"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "478-484",
+       "sha": "a9b34fb91e7e75adf4b8d126590419e248ff311c78a0e3557967289ebd0a7fd4"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On a PAS 16 with bit 1 set and a nonzero prescale divider, the sample clock is 441000 or 1008000 Hz, divided by the divider.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "372-375",
+       "sha": "e0247e9131e7d558141013caff5d89646769d5e72b905e3c89e9c3d34f492183"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns without storing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "853-856",
+       "sha": "5df93e2eef37d22ecf3835605649edd452d23b94186f29c0569887f7b4e2a741"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x8002",
+   "name": "system configuration 2",
+   "aliases": [
+    "838Ah"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x8002"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x8002"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0x8002 reads and writes element 2 of the four-byte system configuration array.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "773",
+       "sha": "6f5a3ce653f3ec0b0485752b4037259068f60f12ced32c3ef277789457f6348d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "894",
+       "sha": "fe5b5c63d6375c05e789d803ca5c0df52b476077d43f4c649c3b1b98c60df270"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written to it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "773",
+       "sha": "6f5a3ce653f3ec0b0485752b4037259068f60f12ced32c3ef277789457f6348d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte and updates the PCM channel.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "894",
+       "sha": "fe5b5c63d6375c05e789d803ca5c0df52b476077d43f4c649c3b1b98c60df270"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "For a PAS 16 with register 0 bit 1 set and a nonzero divider, bit 1 selects 1008000 Hz and clear 441000 Hz, both divided by the divider.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "372-375",
+       "sha": "e0247e9131e7d558141013caff5d89646769d5e72b905e3c89e9c3d34f492183"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns without storing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "853-856",
+       "sha": "5df93e2eef37d22ecf3835605649edd452d23b94186f29c0569887f7b4e2a741"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0x8003",
+   "name": "system configuration 3",
+   "aliases": [
+    "838Bh"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0x8003"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0x8003"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0x8003 reads and writes element 3 of the four-byte system configuration array.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "773",
+       "sha": "6f5a3ce653f3ec0b0485752b4037259068f60f12ced32c3ef277789457f6348d"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "895",
+       "sha": "a45b9d0621f2392a208e8900536f47d3d40498fa49383e8ed436e6285747cd61"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written to it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "773",
+       "sha": "6f5a3ce653f3ec0b0485752b4037259068f60f12ced32c3ef277789457f6348d"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte and does nothing else with it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "895",
+       "sha": "a45b9d0621f2392a208e8900536f47d3d40498fa49383e8ed436e6285747cd61"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns without storing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "853-856",
+       "sha": "5df93e2eef37d22ecf3835605649edd452d23b94186f29c0569887f7b4e2a741"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xF000",
+   "name": "I/O configuration 0",
+   "aliases": [
+    "F388h"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xF000"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0xF000"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xF000 reads and writes element 0 of the io_conf array; the source calls its bit 6 the joystick enable.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "774",
+       "sha": "500614403635e054c86ab637b8a277c484fa1c41748be9ef9c255044f133ef55"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "897",
+       "sha": "103b1cb5b4a7880c46771fa6617e4bd6d38ccc9caf2eb47accf896638948b035"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written to it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "774",
+       "sha": "500614403635e054c86ab637b8a277c484fa1c41748be9ef9c255044f133ef55"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte; the source notes that bit 6, the joystick enable, leaves DOSBox-X's joystick unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "897",
+       "sha": "103b1cb5b4a7880c46771fa6617e4bd6d38ccc9caf2eb47accf896638948b035"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns without storing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "853-856",
+       "sha": "5df93e2eef37d22ecf3835605649edd452d23b94186f29c0569887f7b4e2a741"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xF001",
+   "name": "I/O configuration 1",
+   "aliases": [
+    "F389h"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xF001"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0xF001"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xF001 reads and writes element 1 of the io_conf array and selects the DMA channel.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "774",
+       "sha": "500614403635e054c86ab637b8a277c484fa1c41748be9ef9c255044f133ef55"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "898-901",
+       "sha": "e6b5e7441bf60a981169ee1bc8cf3bf6e091278eae64f0fced46a913ed08afa0"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written to it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "774",
+       "sha": "500614403635e054c86ab637b8a277c484fa1c41748be9ef9c255044f133ef55"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte and selects the DMA channel from its low three bits through the table.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "898-902",
+       "sha": "c3ba3b62137657ad0141c743f83841d25f7489286ea97595ec5082ac0e502aff"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "86",
+       "sha": "cda539e5d4a08395959e6aea22bea9ef9ff998347a9b0525b287554c4f39a64d"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Power-up sets the register to 0x03 and the DMA channel to 3.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "965-966",
+       "sha": "5c87dcd7f14031b7c1cd05d034bf65f64cb390d3a3e460588c9cabd55d2559e6"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "The table's 4 leaves the card with no DMA channel.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "519",
+       "sha": "f8292a3b78f66c2b79483c42eb2dc3d7aac134e2ef32c61ee3e3a8a013ddd28f"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns without storing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "853-856",
+       "sha": "5df93e2eef37d22ecf3835605649edd452d23b94186f29c0569887f7b4e2a741"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xF002",
+   "name": "I/O configuration 2",
+   "aliases": [
+    "F38Ah"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xF002"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0xF002"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xF002 reads and writes element 2 of the io_conf array, whose low four bits set the IRQ.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "774",
+       "sha": "500614403635e054c86ab637b8a277c484fa1c41748be9ef9c255044f133ef55"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "906",
+       "sha": "0efe92d65e35b23a32653911222716868d3d8431f81fb672c8db3d80cb014f00"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written to it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "774",
+       "sha": "500614403635e054c86ab637b8a277c484fa1c41748be9ef9c255044f133ef55"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte, lowers the IRQ, and converts the low four bits to an IRQ number through the converter.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "903-907",
+       "sha": "0bc4ec252fed930a544297330a1b26687d44ec7e7ae51f9225aa66097f1cc3da"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "721-726",
+       "sha": "d419b46f6647ab4a4c061290ef28cd9bdcf7aeb8691d014d412342e8b0dc9367"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Power-up loads 0x07 with IRQ 10 on the PAS 16, and 0x04 with IRQ 5 on the Plus.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "963-964",
+       "sha": "8237a7845f22dbbd3abdd6a8de5b37087eb379b81909aab26d5c399a9c71c281"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns without storing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "853-856",
+       "sha": "5df93e2eef37d22ecf3835605649edd452d23b94186f29c0569887f7b4e2a741"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xF003",
+   "name": "I/O configuration 3",
+   "aliases": [
+    "F38Bh"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xF003"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0xF003"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xF003 reads and writes element 3 of the io_conf array.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "774",
+       "sha": "500614403635e054c86ab637b8a277c484fa1c41748be9ef9c255044f133ef55"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "908",
+       "sha": "d363b9c9aec71b673301764db082e8ae283df62a59d7a5b938e405de9f4b0840"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written to it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "774",
+       "sha": "500614403635e054c86ab637b8a277c484fa1c41748be9ef9c255044f133ef55"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte and does nothing else with it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "908",
+       "sha": "d363b9c9aec71b673301764db082e8ae283df62a59d7a5b938e405de9f4b0840"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns without storing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "853-856",
+       "sha": "5df93e2eef37d22ecf3835605649edd452d23b94186f29c0569887f7b4e2a741"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xF400",
+   "name": "SB/MPU emulation ctl",
+   "aliases": [
+    "F788h"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xF400"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0xF400"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xF400 holds the Sound Blaster and MPU-401 emulation control bits.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "910",
+       "sha": "4189063732143f1e49564cf2373cda0413d8cb27181f86f512a5a5eb46798037"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the stored byte with bit 2 reporting a pending Sound Blaster interrupt.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "776",
+       "sha": "e34c63bfe44ffdc342247c14883aed9a5715221f3d67d5683bf86d456b51c413"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write keeps bits 7 through 4 and 1 through 0, and applies the Sound Blaster compatibility.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "910-913",
+       "sha": "ab5c950cf040f0638b14b8593b2d00d0f6b1372d441d3c3dd7dbd52f351b39a0"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Bit 1 enables the Sound Blaster emulation; the source notes that bit 0 leaves DOSBox-X's own MPU-401 setting unchanged.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "910",
+       "sha": "4189063732143f1e49564cf2373cda0413d8cb27181f86f512a5a5eb46798037"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "702",
+       "sha": "28bcdb064b14af9823aaf877b5eb138ce0a5d92f6393290c5e1450473ea89bcc"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Power-up enables the Sound Blaster emulation with the byte 0x02.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "971",
+       "sha": "53d985e66425ad40119f1f0a480d0e0dc5475aef8c04563436efa94fa9ee2e73"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns without storing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "853-856",
+       "sha": "5df93e2eef37d22ecf3835605649edd452d23b94186f29c0569887f7b4e2a741"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xF401",
+   "name": "SB/MPU emulation base",
+   "aliases": [
+    "F789h"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xF401"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0xF401"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xF401 holds a byte from which the Sound Blaster base is derived.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "777",
+       "sha": "0242e2cb19104966a4c30247cfd6258e7224be84364c8188794bfd835c597aee"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "916",
+       "sha": "4073de5bda78546406868b53140968ed1dae4f2de1edfe0bb05fee6838454684"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written to it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "777",
+       "sha": "0242e2cb19104966a4c30247cfd6258e7224be84364c8188794bfd835c597aee"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte and sets the Sound Blaster base to 0x200 plus its low nibble shifted left four, then applies the compatibility.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "914-918",
+       "sha": "d088553480de7e9f0134258e6b4c8ff1212b3b642969170c526983dec07a9219"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Power-up sets the stored byte to 0x30 or-ed with bits 7 through 4 of the configured base.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "972",
+       "sha": "ba8508c879097f6b00cc014ec215c692092b258b2a1fba88add383008f55413c"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns without storing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "853-856",
+       "sha": "5df93e2eef37d22ecf3835605649edd452d23b94186f29c0569887f7b4e2a741"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  },
+  {
+   "key": "0xF802",
+   "name": "SB emulation IRQ/DMA",
+   "aliases": [
+    "FB8Ah"
+   ],
+   "source": "emulator",
+   "regions": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Read",
+     "case": [
+      "0xF802"
+     ]
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "function": "PAS_Write",
+     "case": [
+      "0xF802"
+     ]
+    }
+   ],
+   "rows": [
+    {
+     "n": "1",
+     "on": "is",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Offset 0xF802 holds a byte that selects the Sound Blaster emulation's IRQ and DMA.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "920-923",
+       "sha": "0423ad581c602fb460bd573bf60d8e3344c054fd78016785bc8c4c60b1c8d4a5"
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A read returns the byte last written to it.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "778",
+       "sha": "1bb51ae50664300087b4dd48841e28b23bbe4b6b9de911544d0ef8f1186abffd"
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "A write stores the byte, takes an IRQ index from bits 5 through 3, zero meaning none, and the DMA channel from bits 7 and 6.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "919-925",
+       "sha": "bdb854b9a072a2247b14da0329fef362eabfa8f982ddfa7297ccb41b13ac7331"
+      },
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "87",
+       "sha": "28f8f9b4df0af95e2689978ee63c2551a6116ed994898317c9b6ee9ca24dcf98"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "Power-up encodes the configured Sound Blaster IRQ and DMA into the register.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "973-975",
+       "sha": "c9124296c8b5b02cdde10fd26323bbf88b5c1673e54b85b77a7ce7d2a572680a"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "on": "read",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns 0xFF.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "753-756",
+       "sha": "bb5d0c1925b7982ec3ef3131188333a7f06357849d4d2c2d3c3b5c067e568499"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "on": "write",
+     "of": "dosbox-x",
+     "vs": "extra",
+     "text": "On the original PAS, an offset that reaches this block outside the YM3802 ranges returns without storing.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/hardware/pas.cpp",
+       "lines": "853-856",
+       "sha": "5df93e2eef37d22ecf3835605649edd452d23b94186f29c0569887f7b4e2a741"
+      }
+     ]
+    }
+   ],
+   "closed": [
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "758",
+     "as": "structure"
+    },
+    {
+     "ref": "dosbox-x:src/hardware/pas.cpp",
+     "lines": "858",
+     "as": "structure"
+    }
+   ]
+  }
+ ],
+ "engine": [
+  "GetDMAChannel",
+  "MIDI_RawOutByte",
+  "PAS_ApplyMixer",
+  "PAS_ApplySBCompat",
+  "PAS_BuildLMC835Tables",
+  "PAS_ClockCounter1",
+  "PAS_CompatStereo",
+  "PAS_CounterLoaded",
+  "PAS_CounterValue",
+  "PAS_DmaRead",
+  "PAS_FMSplit",
+  "PAS_IRQConvert",
+  "PAS_InstallPorts",
+  "PAS_LMC1982Update",
+  "PAS_LMC835Update",
+  "PAS_LowerIRQ",
+  "PAS_MV508Write",
+  "PAS_PITControl",
+  "PAS_PITRead",
+  "PAS_PITWrite",
+  "PAS_RaiseIRQ",
+  "PAS_ReadSample",
+  "PAS_ReadSample8",
+  "PAS_ResetMixer",
+  "PAS_ResetPCM",
+  "PAS_ResetRegs",
+  "PAS_SerialMixerWrite",
+  "PAS_SetDMA",
+  "PAS_Sync",
+  "PAS_Tick",
+  "PAS_UpdateChannel",
+  "PAS_UpdateFilter",
+  "PAS_UpdateMidiIRQ",
+  "PAS_Write9A01",
+  "PAS_YM3802Read",
+  "PAS_YM3802TimerEvent",
+  "PAS_YM3802Write",
+  "PIC_ActivateIRQ",
+  "PIC_AddEvent",
+  "PIC_DeActivateIRQ",
+  "PIC_RemoveEvents",
+  "SB_PAS_SetCompat"
+ ]
+}
