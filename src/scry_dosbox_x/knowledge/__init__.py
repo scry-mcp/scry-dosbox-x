@@ -7,13 +7,14 @@ from functools import cache
 from importlib import resources
 
 from scry_core.knowledge import base as rows
-from scry_core.knowledge import sealed, shared
+from scry_core.knowledge import quote, sealed, shared
 
 from scry_dosbox_x.knowledge.support import PINS
 
 SCOPE = "ibm-pc"
 #: Beside `knowledge_rows/`, for the same reason.
 ROWS_LOCK = "knowledge_index/rows-lock.json"
+ROWS_INDEX = "knowledge_index/quotes.json"
 ROWS_SOURCES = ("scry_dosbox_x", "scry_core")
 
 
@@ -33,6 +34,13 @@ def rows_lock() -> sealed.Lock:
     own = resources.files("scry_dosbox_x") / ROWS_LOCK
     return merged(sealed.parse_lock(own.read_text(encoding="utf-8"), ROWS_LOCK),
                   shared.rows_lock())
+
+
+def rows_index() -> quote.Quotes:
+    """The index of this server's quotes and of the shared dictionaries'."""
+    own = resources.files("scry_dosbox_x") / ROWS_INDEX
+    return quote.merge(quote.parse_quotes(own.read_text(encoding="utf-8"), ROWS_INDEX),
+                       shared.rows_index())
 
 
 def rows_base(fts5: bool | None = None) -> rows.Base:

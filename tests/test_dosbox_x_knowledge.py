@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 from scry_core import conformance, knowledge_tool
-from scry_core.knowledge import Support, sealed, shared
+from scry_core.knowledge import Support, quote, sealed, shared
 from scry_core.knowledge import base as rows
 
 from scry_dosbox_x import dos_calls
@@ -42,6 +42,9 @@ class PcKnowledge:
 
     def rows_lock(self) -> sealed.Lock:
         return pc.rows_lock()
+
+    def rows_index(self) -> quote.Quotes:
+        return pc.rows_index()
 
 
 class TestPcKnowledge(conformance.KnowledgeContract):
