@@ -1,23 +1,30 @@
 {
-  "format": "scry-knowledge/1",
-  "dictionary": "vectors",
-  "kind": "vector",
-  "scope": "ibm-pc",
-  "covers": "FIXTURE of the namer's tests: one interrupt vector",
-  "complete_against": "dosbox-x:src/ints/mouse.cpp INT33_Handler",
-  "entries": [
+ "format": "scry-knowledge/2",
+ "dictionary": "names-vectors",
+ "title": "The vector a namer test builds on",
+ "kind": "vector",
+ "scope": "ibm-pc",
+ "covers": "FIXTURE of a test: the mouse driver's interrupt vector",
+ "source": "official",
+ "entries": [
+  {
+   "key": "0x33",
+   "name": "mouse driver",
+   "rows": [
     {
-      "key": "0x33",
-      "name": "mouse driver",
-      "description": "The mouse driver's entry.",
-      "behaviour": "Calls pick a function by AX.",
-      "sources": [
-        {
-          "role": "emulator",
-          "ref": "dosbox-x:src/ints/mouse.cpp INT33_Handler",
-          "cites": "static Bitu INT33_Handler(void) {"
-        }
-      ]
+     "n": "1",
+     "on": "is",
+     "of": "doc",
+     "text": "Interrupt 33h belongs to the mouse driver.",
+     "quotes": [
+      {
+       "ref": "datasheet:names.raw.txt",
+       "lines": "5",
+       "sha": "6044d8b0988741873f81eb090087cdd77af918c38101d4719e70e81fbc2756d6"
+      }
+     ]
     }
-  ]
+   ]
+  }
+ ]
 }

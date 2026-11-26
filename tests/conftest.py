@@ -93,3 +93,25 @@ def served_rows(fixture_base: rows.Base, monkeypatch: pytest.MonkeyPatch) -> row
     """`fixture_base` as the base the server answers from."""
     monkeypatch.setattr(knowledge, "base", lambda: fixture_base)
     return fixture_base
+
+
+NAME_ROWS = Path(__file__).resolve().parent / "fixtures" / "knowledge" / "names"
+
+
+@pytest.fixture
+def named_base(tmp_path: Path) -> rows.Base:
+    """The namer's dictionaries as rows, sealed: the VGA DAC's index by direction, the
+    keyboard's data port and INT 33h's vector."""
+    folder = tmp_path / "names"
+    shutil.copytree(NAME_ROWS, folder)
+    lock = tmp_path / "names-lock.json"
+    lock.write_text(json.dumps({"format": sealed.LOCK_FORMAT, "sealed": {}}) + "\n",
+                    encoding="utf-8")
+    for name in ("ports", "vectors"):
+        file = folder / f"{name}.json"
+        dictionary, faults = rows_file.parse(file.read_text(encoding="utf-8"), name)
+        assert dictionary is not None and not faults, faults
+        ids = [entry.id for entry in dictionary.entries]
+        for part in sealed.parts(dictionary):
+            assert sealed.seal(file, ids, lock, part, "reader", "writer") == []
+    return rows.Base.load(folder, lock=sealed.read_lock(lock))

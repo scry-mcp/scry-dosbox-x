@@ -8,7 +8,7 @@ from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import clean_session, install  # noqa: F401
-from scry_core.knowledge import Base
+from scry_core.knowledge.base import Base
 from scry_core.naming import Guarded, Named
 
 from scry_dosbox_x import knowledge, naming, server
@@ -16,14 +16,13 @@ from scry_dosbox_x import state as dstate
 from scry_dosbox_x import symbols as sym
 
 ROOT = Path(__file__).resolve().parent
-SAMPLE = ROOT / "fixtures" / "knowledge" / "names"
 EXAMPLES = ROOT.parent / "docs" / "reference" / "examples.json"
 
 
 @pytest.fixture
-def sample() -> naming.DosboxNamer:
+def sample(named_base: Base) -> naming.DosboxNamer:
     """A namer over a base that holds ports and a vector, which the confirmed base does not yet."""
-    return naming.DosboxNamer(Base.load(SAMPLE))
+    return naming.DosboxNamer(named_base)
 
 
 def test_an_interrupt_is_named_by_its_function() -> None:

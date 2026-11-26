@@ -1,0 +1,5 @@
+synthetic datasheet line 1: the DAC index port is at hex 03C8
+synthetic datasheet line 2: a write to the index selects the palette entry the data writes reach
+synthetic datasheet line 3: a read of the index gives the palette entry the data reads reach
+synthetic datasheet line 4: the keyboard controller's data port is at hex 60
+synthetic datasheet line 5: interrupt 33h belongs to the mouse driver

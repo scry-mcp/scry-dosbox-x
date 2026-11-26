@@ -2,19 +2,17 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import cast
 
 import pytest
 from dosbox_x_server_support import clean_session, install  # noqa: F401
-from scry_core.knowledge import Base
+from scry_core.knowledge.base import Base
 from test_dosbox_x_code import COM_START, LOAD, StoppedCode, picture
 
 from scry_dosbox_x import code, disasm, knowledge, line_notes
 from scry_dosbox_x import session as ds
 from scry_dosbox_x import state as dstate
 
-SAMPLE = Path(__file__).resolve().parent / "fixtures" / "knowledge" / "names"
 #: `mov ah, 4Ch` then `int 21h`, which DOS reads as EXIT.
 EXIT = bytes.fromhex("B44CCD21")
 REGS = {"CS": "0814", "EIP": "00000102", "EAX": "00004C00", "EDX": "000003C8"}
@@ -25,10 +23,9 @@ def _insns(raw: bytes) -> list[disasm.Insn]:
 
 
 @pytest.fixture
-def ports(monkeypatch: pytest.MonkeyPatch) -> None:
+def ports(named_base: Base, monkeypatch: pytest.MonkeyPatch) -> None:
     """A base that holds the VGA DAC's port, which the confirmed base does not yet."""
-    held = Base.load(SAMPLE)
-    monkeypatch.setattr(knowledge, "base", lambda: held)
+    monkeypatch.setattr(knowledge, "base", lambda: named_base)
 
 
 def test_an_interrupt_is_named_only_at_the_stop_that_holds_its_function() -> None:
