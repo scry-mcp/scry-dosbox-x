@@ -1030,10 +1030,10 @@
   "dosbox-x:UpdateMixerShim": "engine",
   "dosbox-x:cs4231_init_vols": "engine",
   "dosbox-x:pow": "none:libc",
-  "dosbox-x:DOS_PlaceSDA": "shared:ibm-pc:call:0x21",
-  "dosbox-x:DOS_LayoutSFT": "shared:ibm-pc:call:0x21",
-  "dosbox-x:DOS_IS_IN_HMA": "shared:ibm-pc:call:0x21",
-  "dosbox-x:XMS_DOS_LocalA20EnableIfNotEnabled_XMSCALL": "shared:ibm-pc:call:0x21",
-  "dosbox-x:XMS_DOS_LocalA20EnableIfNotEnabled": "shared:ibm-pc:call:0x21"
+  "dosbox-x:DOS_PlaceSDA": "engine",
+  "dosbox-x:DOS_LayoutSFT": "engine",
+  "dosbox-x:DOS_IS_IN_HMA": "engine",
+  "dosbox-x:XMS_DOS_LocalA20EnableIfNotEnabled_XMSCALL": "engine",
+  "dosbox-x:XMS_DOS_LocalA20EnableIfNotEnabled": "engine"
  }
 }

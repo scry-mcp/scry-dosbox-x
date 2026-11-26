@@ -26,7 +26,8 @@
   "DOS_GetMemAllocStrategy",
   "DOS_SetMemAllocStrategy",
   "DOS_AllocateMemory",
-  "DOS_FreeMemory"
+  "DOS_FreeMemory",
+  "DOS_IS_IN_HMA"
  ],
  "entries": [
   {

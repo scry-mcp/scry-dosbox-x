@@ -16,6 +16,7 @@
   "CodePageGuestToHost",
   "DOS_ClipboardSetUTF8",
   "DOS_Clipboard_UTF8Text",
+  "DOS_IS_IN_HMA",
   "DOS_UTF8Clipboard",
   "DOS_Utf8Valid",
   "E_Exit",

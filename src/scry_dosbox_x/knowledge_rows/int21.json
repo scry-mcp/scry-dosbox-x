@@ -132,7 +132,15 @@
   "DOS_CloseFindSnapshot",
   "runMount",
   "DOS_26Handler_Actual",
-  "DOS_25Handler_Actual"
+  "DOS_25Handler_Actual",
+  "DOS_PlaceSDA",
+  "DOS_LayoutSFT",
+  "DOS_IS_IN_HMA",
+  "XMS_DOS_LocalA20EnableIfNotEnabled",
+  "XMS_DOS_LocalA20EnableIfNotEnabled_XMSCALL",
+  "DOS_BreakTest",
+  "SetStack",
+  "DOS_21Handler"
  ],
  "entries": [
   {
@@ -346,8 +354,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -648,14 +655,12 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1154",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1156-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -885,14 +890,12 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1154",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1156-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -1077,14 +1080,12 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1154",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1156-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -1261,14 +1262,12 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1154",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1156-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -1438,14 +1437,12 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1154",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1156-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -1805,14 +1802,12 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1144",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1154-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2066,14 +2061,12 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1144",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1154-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2293,8 +2286,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2521,14 +2513,12 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1154",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1156-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -2879,8 +2869,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -3188,14 +3177,12 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1154",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1156-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -3425,8 +3412,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -3597,8 +3583,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -3805,8 +3790,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -4008,8 +3992,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -4206,8 +4189,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -4399,8 +4381,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -4602,8 +4583,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -4863,8 +4843,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -5145,8 +5124,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -5341,8 +5319,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -5646,8 +5623,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -5892,8 +5868,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -6143,8 +6118,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -6404,8 +6378,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -6616,8 +6589,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -6943,8 +6915,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -7281,8 +7252,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -7451,8 +7421,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -7586,8 +7555,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -7721,8 +7689,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -7856,8 +7823,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -7970,8 +7936,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -8114,8 +8079,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -8369,8 +8333,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -8626,8 +8589,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -8914,8 +8876,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -9307,8 +9268,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -9620,8 +9580,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -9959,8 +9918,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -10258,8 +10216,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -10445,8 +10402,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -10684,8 +10640,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -10979,8 +10934,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -11197,8 +11151,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -11734,8 +11687,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -12261,8 +12213,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -12656,8 +12607,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -12959,8 +12909,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -13287,8 +13236,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -13581,8 +13529,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -13827,8 +13774,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -13930,8 +13876,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -14492,8 +14437,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -14750,8 +14694,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -14938,8 +14881,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -15126,8 +15068,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -15285,8 +15226,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -15418,8 +15358,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -15591,8 +15530,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -15772,8 +15710,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -15921,8 +15858,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -16200,8 +16136,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -16368,8 +16303,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -16578,8 +16512,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -16697,8 +16630,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -16996,8 +16928,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -17195,8 +17126,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -17399,8 +17329,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -17615,8 +17544,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -17765,8 +17693,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -17922,8 +17849,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "rbil61:INTERRUP.F",
@@ -18376,8 +18302,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -18662,8 +18587,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -18970,8 +18894,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -19232,8 +19155,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -19690,8 +19612,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -20493,8 +20414,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -20948,8 +20868,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -21363,8 +21282,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -21885,8 +21803,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -22392,8 +22309,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -22727,8 +22643,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -23180,8 +23095,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -23543,8 +23457,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -23875,8 +23788,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -24135,8 +24047,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -24413,8 +24324,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -24769,8 +24679,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -25572,8 +25481,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -26042,8 +25950,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -26284,8 +26191,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -26549,8 +26455,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -26798,8 +26703,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -27054,8 +26958,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -27292,8 +27195,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -27572,8 +27474,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -27821,8 +27722,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -28229,8 +28129,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -28562,8 +28461,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -28933,8 +28831,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -29237,8 +29134,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -29569,8 +29465,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -29833,8 +29728,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -30157,8 +30051,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -30450,8 +30343,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -30679,8 +30571,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -30899,8 +30790,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -31174,8 +31064,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -31487,8 +31376,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -31937,8 +31825,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -32575,8 +32462,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -32904,8 +32790,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -33106,8 +32991,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -33213,8 +33097,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -33359,8 +33242,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -33553,8 +33435,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -33732,8 +33613,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -34037,8 +33917,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -34292,8 +34171,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -34445,8 +34323,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -35160,8 +35037,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -36017,8 +35893,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -36207,8 +36082,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -36510,8 +36384,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -36675,8 +36548,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -36890,8 +36762,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -37296,8 +37167,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -37737,8 +37607,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -38137,8 +38006,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -38325,8 +38193,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -38494,8 +38361,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -39005,8 +38871,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -39197,8 +39062,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -39408,8 +39272,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -39580,8 +39443,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -39862,8 +39724,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -40138,8 +39999,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -40259,8 +40119,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -40382,8 +40241,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -40719,8 +40577,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41011,8 +40868,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41206,8 +41062,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41648,8 +41503,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41755,8 +41609,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -41919,8 +41772,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -42135,8 +41987,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -42472,8 +42323,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -42653,8 +42503,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -42793,8 +42642,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -42923,8 +42771,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -43039,8 +42886,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -43150,8 +42996,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -43276,8 +43121,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -43396,8 +43240,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -43586,8 +43429,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -43788,8 +43630,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -44007,8 +43848,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -44242,8 +44082,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1100-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -44505,8 +44344,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1145-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -48211,8 +48049,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1145-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -49224,8 +49061,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1145-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -49465,8 +49301,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1145-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -49754,8 +49589,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1145-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -50090,8 +49924,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1145-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -50365,8 +50198,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1145-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -50561,8 +50393,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1145-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
@@ -50654,8 +50485,7 @@
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
      "lines": "1145-1161",
-     "as": "preamble",
-     "owner": "ibm-pc:call:0x21"
+     "as": "structure"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
