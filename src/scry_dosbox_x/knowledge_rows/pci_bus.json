@@ -2042,7 +2042,6 @@
    "key": "0x4C",
    "name": "voodoo status read",
    "aliases": [
-    "SST status read",
     "SST ParseReadRegister"
    ],
    "regions": [

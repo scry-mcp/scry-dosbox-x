@@ -63555,9 +63555,9 @@
   },
   "pci:register:0x4C": {
    "doc": {
-    "seal": "5b785e8e107b828d93c2c3b500d2be1c686ee133382a5438cfa0960ef1192ad7",
-    "by": "slice dx-g10-pci_bus-01 reader",
-    "writer": "slice dx-g10-pci_bus-01 writer",
+    "seal": "ab13c0feb12448af185e14e3a17bde172a880e67549cd8919cde242fb174d447",
+    "by": "k2-reader",
+    "writer": "K2 alias corrector",
     "rows": {
      "1": {
       "digest": "f28a3b238434c49be2bb4b021753cbb2991a2b23f4b02e5c4a06521899ba2771",
@@ -81733,6 +81733,28 @@
      "101": {
       "digest": "b3452bd4571384bae07591706d8f7610cc434f608bd87dc0da2e22c28d83fbf8",
       "by": "slice dx-g10-vga_s3-02 reader"
+     }
+    }
+   }
+  },
+  {
+   "id": "pci:register:0x4C",
+   "part": "doc",
+   "rows": [],
+   "by": "K2 alias corrector",
+   "why": "its alias 'SST status read' is the name of pci:register:0x4D..0x4F, and one name belongs to one entry",
+   "was": {
+    "seal": "5b785e8e107b828d93c2c3b500d2be1c686ee133382a5438cfa0960ef1192ad7",
+    "by": "slice dx-g10-pci_bus-01 reader",
+    "writer": "slice dx-g10-pci_bus-01 writer",
+    "rows": {
+     "1": {
+      "digest": "f28a3b238434c49be2bb4b021753cbb2991a2b23f4b02e5c4a06521899ba2771",
+      "by": "slice dx-g10-pci_bus-01 reader"
+     },
+     "2": {
+      "digest": "953b3444201e5868ff9e42fa9e097dc16078d2c065f7731ae121a145586b5e22",
+      "by": "slice dx-g10-pci_bus-01 reader"
      }
     }
    }
