@@ -381,7 +381,7 @@ The second call's:
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
-    "note": "exit (0x4C)",
+    "note": "terminate with code (0x4C)",
     "note_live": true,
     "symbol": "main_loop",
     "delta": 30

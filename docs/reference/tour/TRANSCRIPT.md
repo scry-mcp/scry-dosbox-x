@@ -3502,7 +3502,7 @@ Also attached: image/png.
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "memory",
-    "note": "exit (0x4C)",
+    "note": "terminate with code (0x4C)",
     "note_live": true,
     "symbol": "main_loop",
     "delta": 30
@@ -3603,7 +3603,7 @@ Also attached: image/png.
     }
   ],
   "line_notes": [
-    {"line": 10, "note": "exit (0x4C)", "live": true}
+    {"line": 10, "note": "terminate with code (0x4C)", "live": true}
   ],
   "names": [
     {"field": "given.ref", "number": "0x00008f0b", "kind": "symbol", "name": "main_loop"}
