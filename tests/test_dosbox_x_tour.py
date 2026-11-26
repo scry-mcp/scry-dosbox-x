@@ -108,7 +108,7 @@ def test_the_stop_at_the_exit_is_judged_with_its_note(tour: ModuleType, exit_sto
     where, regs, _held = exit_stop.stop_survey()
     row = code.stop_instruction(cast(ds.Session, exit_stop), where, regs)["instruction"]
     reply = {"verdict": "OTHER_STOP", "instruction": row, "regs": {"EAX": "0x00004C00"}}
-    assert "names exit" in tour.leaving(reply, None)
+    assert "names terminate with code" in tour.leaving(reply, None)
     bare = {**reply, "instruction": {k: v for k, v in row.items() if k != "note"}}
     with pytest.raises(StepFailed):
         tour.leaving(bare, None)
