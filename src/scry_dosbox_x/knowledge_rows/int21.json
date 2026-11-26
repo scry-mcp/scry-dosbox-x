@@ -25405,6 +25405,39 @@
        "sha": "94ecfff0d7ad991134f62d9c5493f70d4823f879b5dbdbee2181c56d01e462a8"
       }
      ]
+    },
+    {
+     "n": "40",
+     "on": "does",
+     "of": "doc",
+     "text": "Under APPEND, after INT 2Fh AX=B711h returns the found name, AL picks what replaces the name at DS:DX: the found pathname at zero, the found path prepended otherwise.",
+     "quotes": [
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6207",
+       "sha": "4c8e982c1b32373617e45ae00f6127b038af8b155adc624cb964b8b0d1399e86"
+      },
+      {
+       "ref": "rbil61:INTERRUP.G",
+       "lines": "6224-6227",
+       "sha": "d0fc983410abe88a99d7044ac4e8710c8922b20ce2249ac3b51102faccf25bdb"
+      }
+     ]
+    },
+    {
+     "n": "41",
+     "on": "does",
+     "of": "dosbox-x",
+     "vs": "absent",
+     "row": "40",
+     "text": "The case has no APPEND interaction: DOSBox-X has no case for INT 2Fh AX=B711h, so the APPEND entry those lines name is not written.",
+     "quotes": [
+      {
+       "ref": "dosbox-x:src/dos/dos.cpp",
+       "lines": "2523-2539",
+       "sha": "d0d0dfb07ee6c34f79a8c8bc651f6dcfc9e3898fdb706a0c964dd267500ad8eb"
+      }
+     ]
     }
    ],
    "closed": [
@@ -25493,18 +25526,6 @@
      "lines": "2524",
      "as": "agrees",
      "row": "4"
-    },
-    {
-     "ref": "rbil61:INTERRUP.G",
-     "lines": "6207",
-     "as": "elsewhere",
-     "owner": "ibm-pc:call:0x2F/0xB7/0x11"
-    },
-    {
-     "ref": "rbil61:INTERRUP.G",
-     "lines": "6224-6227",
-     "as": "elsewhere",
-     "owner": "ibm-pc:call:0x2F/0xB7/0x11"
     },
     {
      "ref": "dosbox-x:src/dos/dos.cpp",
