@@ -1961,19 +1961,19 @@
      "ref": "dosbox-x:src/ints/int10.cpp",
      "lines": "147-150",
      "as": "parent",
-     "owner": "0x10/0x05/0x80"
+     "owner": "ibm-pc:call:0x10/0x05/0x80"
     },
     {
      "ref": "dosbox-x:src/ints/int10.cpp",
      "lines": "154-156",
      "as": "parent",
-     "owner": "0x10/0x05/0x82"
+     "owner": "ibm-pc:call:0x10/0x05/0x82"
     },
     {
      "ref": "dosbox-x:src/ints/int10.cpp",
      "lines": "157-159",
      "as": "parent",
-     "owner": "0x10/0x05/0x83"
+     "owner": "ibm-pc:call:0x10/0x05/0x83"
     },
     {
      "ref": "dosbox-x:src/ints/int10.cpp",
@@ -2199,19 +2199,19 @@
      "ref": "dosbox-x:src/ints/int10.cpp",
      "lines": "147-150",
      "as": "parent",
-     "owner": "0x10/0x05/0x80"
+     "owner": "ibm-pc:call:0x10/0x05/0x80"
     },
     {
      "ref": "dosbox-x:src/ints/int10.cpp",
      "lines": "151-153",
      "as": "parent",
-     "owner": "0x10/0x05/0x81"
+     "owner": "ibm-pc:call:0x10/0x05/0x81"
     },
     {
      "ref": "dosbox-x:src/ints/int10.cpp",
      "lines": "157-159",
      "as": "parent",
-     "owner": "0x10/0x05/0x83"
+     "owner": "ibm-pc:call:0x10/0x05/0x83"
     },
     {
      "ref": "dosbox-x:src/ints/int10.cpp",
@@ -2437,19 +2437,19 @@
      "ref": "dosbox-x:src/ints/int10.cpp",
      "lines": "147-150",
      "as": "parent",
-     "owner": "0x10/0x05/0x80"
+     "owner": "ibm-pc:call:0x10/0x05/0x80"
     },
     {
      "ref": "dosbox-x:src/ints/int10.cpp",
      "lines": "151-153",
      "as": "parent",
-     "owner": "0x10/0x05/0x81"
+     "owner": "ibm-pc:call:0x10/0x05/0x81"
     },
     {
      "ref": "dosbox-x:src/ints/int10.cpp",
      "lines": "154-156",
      "as": "parent",
-     "owner": "0x10/0x05/0x82"
+     "owner": "ibm-pc:call:0x10/0x05/0x82"
     },
     {
      "ref": "dosbox-x:src/ints/int10.cpp",
