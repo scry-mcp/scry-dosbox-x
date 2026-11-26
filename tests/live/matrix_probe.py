@@ -147,7 +147,7 @@ _WITHOUT_SESSION: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
                     "build_check docstring: about the build, answers with no session"),
     "status": (lambda r: ok(r) and no_session(r),
                "status docstring: `alive: false` when there is none, under status ok"),
-    "knowledge_find": (lambda r: ok(r) and [e["name"] for e in r["entries"]] == ["exit"]
+    "knowledge_find": (lambda r: ok(r) and [e["name"] for e in r["entries"]] == ["terminate with code"]
                        and no_session(r),
                        REF_DOC + "Names: `knowledge_find` needs no session"),
     "promote": (lambda r: refused(r, "bad_argument") and no_session(r),
@@ -419,7 +419,7 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                          REF_DOC + "Names for addresses: a real-mode map with a base"),
         "symbols_find": (lambda r: ok(r) and bool(r.get("symbols")),
                          "symbols_find docstring: by name"),
-        "knowledge_find": (lambda r: ok(r) and [e["name"] for e in r["entries"]] == ["exit"],
+        "knowledge_find": (lambda r: ok(r) and [e["name"] for e in r["entries"]] == ["terminate with code"],
                            "knowledge_find docstring: one match answers the whole entry"),
         "breakpoint_at": (lambda r: ok(r) and r.get("state") == "armed",
                           "breakpoint_at docstring: armed, read back"),
@@ -551,7 +551,7 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                          REF_DOC + "Names for addresses: with an explicit base while it runs"),
         "symbols_find": (lambda r: ok(r) and bool(r.get("symbols")),
                          REF_DOC + "Names for addresses: the table answers at once"),
-        "knowledge_find": (lambda r: ok(r) and [e["name"] for e in r["entries"]] == ["exit"],
+        "knowledge_find": (lambda r: ok(r) and [e["name"] for e in r["entries"]] == ["terminate with code"],
                            "knowledge_find docstring: the base answers while the guest runs"),
         "breakpoint_at": (lambda r: ok(r) and r.get("state") == "pending",
                           "breakpoint_at docstring: pending when the guest is running"),

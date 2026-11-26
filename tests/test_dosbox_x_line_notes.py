@@ -28,13 +28,13 @@ def _insns(raw: bytes) -> list[disasm.Insn]:
 def ports(monkeypatch: pytest.MonkeyPatch) -> None:
     """A base that holds the VGA DAC's port, which the confirmed base does not yet."""
     held = Base.load(SAMPLE)
-    monkeypatch.setattr(knowledge, "names_base", lambda: held)
+    monkeypatch.setattr(knowledge, "base", lambda: held)
 
 
 def test_an_interrupt_is_named_only_at_the_stop_that_holds_its_function() -> None:
     assert line_notes.of_listing(_insns(EXIT), LOAD, {}) == []
     at_int = line_notes.of_listing(_insns(EXIT), LOAD, REGS)
-    assert at_int == [{"line": 1, "note": "exit (0x4C)", "live": True}]
+    assert at_int == [{"line": 1, "note": "terminate with code (0x4C)", "live": True}]
 
 
 def test_the_registers_name_only_the_instruction_at_the_stop() -> None:
@@ -82,7 +82,7 @@ def test_a_stop_at_an_interrupt_carries_its_note_and_says_a_register_named_it() 
     s = _stopped_at(bytes.fromhex("CD21"), 0x4C00)
     got = picture(s)["instruction"]
     assert got["text"] == "int 0x21"
-    assert got["note"] == "exit (0x4C)" and got["note_live"] is True, got
+    assert got["note"] == "terminate with code (0x4C)" and got["note_live"] is True, got
 
 
 def test_a_stop_with_nothing_to_name_has_no_note_field() -> None:
@@ -95,7 +95,8 @@ def test_disassemble_lists_its_notes_apart_from_its_lines() -> None:
     install()
     dstate.STATE.session = cast(ds.Session, s)
     got = code.disassemble(cast(ds.Session, s), "0814:0100", 2)
-    assert got["line_notes"] == [{"line": 0, "note": "exit (0x4C)", "live": True}], got
+    assert got["line_notes"] == [{"line": 0, "note": "terminate with code (0x4C)",
+                                  "live": True}], got
     s2 = _stopped_at(bytes.fromhex("90CD21"), 0x4C00)
     dstate.STATE.session = cast(ds.Session, s2)
     plain = code.disassemble(cast(ds.Session, s2), "0814:0100", 3)

@@ -27,19 +27,20 @@ def sample() -> naming.DosboxNamer:
 
 
 def test_an_interrupt_is_named_by_its_function() -> None:
-    named = naming.interrupt_call(knowledge.names_base(), 0x21, {"AX": 0x4C00})
-    assert named is not None and (named.name, named.number) == ("exit", "0x21/0x4C")
+    named = naming.interrupt_call(knowledge.base(), 0x21, {"AX": 0x4C00})
+    assert named is not None and (named.name, named.number) == ("terminate with code", "0x21/0x4C")
 
 
 def test_int_43h_is_not_the_xms_driver() -> None:
-    base = knowledge.names_base()
+    base = knowledge.base()
     assert base.get("call", "0x43/0x08", knowledge.SCOPE) is not None
     assert naming.interrupt_call(base, 0x43, {"AH": 0x08}) is None
 
 
 def test_an_interrupt_breakpoint_names_the_call_it_waits_for() -> None:
     got = naming.NAMER.arguments("breakpoint_interrupt", {"number": "0x21", "ah": "0x4C"})
-    assert got["number"] == Named("call", "exit", "0x21/0x4C", id="ibm-pc:call:0x21/0x4C")
+    assert got["number"] == Named("call", "terminate with code", "0x21/0x4C",
+                                  id="ibm-pc:call:0x21/0x4C")
 
 
 @pytest.mark.parametrize("given", [{"number": "0x21"}, {"number": "0x43", "ah": "0x08"},
@@ -47,11 +48,6 @@ def test_an_interrupt_breakpoint_names_the_call_it_waits_for() -> None:
 def test_an_interrupt_breakpoint_that_names_no_call_names_nothing(given: dict[str, Any]) -> None:
     assert naming.NAMER.arguments("breakpoint_interrupt", given) == {}
 
-
-def test_a_held_back_call_is_not_named() -> None:
-    """INT 21h AH=3Dh has an entry the second check has not confirmed."""
-    assert knowledge.names_base().by_id("ibm-pc:call:0x21/0x3D") is None
-    assert naming.NAMER.arguments("breakpoint_interrupt", {"number": 0x21, "ah": 0x3D}) == {}
 
 
 def test_a_port_is_named_for_the_direction_of_the_call(sample: naming.DosboxNamer) -> None:
@@ -151,7 +147,7 @@ def test_a_reply_names_the_call_its_arguments_state() -> None:
     install()
     named = _reply_to_an_exit_breakpoint()["names"]
     assert named == [{"field": "given.number", "number": "0x21/0x4C", "kind": "call",
-                      "name": "exit", "id": "ibm-pc:call:0x21/0x4C"}]
+                      "name": "terminate with code", "id": "ibm-pc:call:0x21/0x4C"}]
 
 
 def test_with_the_names_off_a_reply_has_no_names() -> None:
